@@ -910,7 +910,12 @@ public final class OZWalletOperations: @unchecked Sendable {
         if let credentialIds = credentialIds {
             var built: [AllowCredential] = []
             built.reserveCapacity(credentialIds.count)
-            for credIdStr in credentialIds {
+            for rawCredIdStr in credentialIds {
+                // Storage entries are written under the canonical unpadded
+                // Base64URL form produced by ``Data.base64URLEncodedString()``;
+                // normalise the caller-supplied id before the storage lookup
+                // so padded inputs resolve to the same allow-list entry.
+                let credIdStr = OZWalletOperations.strippedBase64URLPadding(rawCredIdStr)
                 let idBytes: Data
                 do {
                     idBytes = try Data(base64URLEncoded: credIdStr)
@@ -1027,6 +1032,12 @@ public final class OZWalletOperations: @unchecked Sendable {
                 reason: "nativeTokenContract is required when autoFund is true"
             )
         }
+
+        // Normalise caller-supplied Base64URL credential id by stripping any
+        // trailing `=` padding so storage lookups, connected-state writes,
+        // event payloads, and the saved session all use the canonical unpadded
+        // form produced by ``Data.base64URLEncodedString()``.
+        let credentialId = OZWalletOperations.strippedBase64URLPadding(credentialId)
 
         let credential = try await credentialManager.getCredential(
             credentialId: credentialId
@@ -1188,6 +1199,12 @@ public final class OZWalletOperations: @unchecked Sendable {
                 reason: "contractId option requires credentialId to be provided"
             )
         }
+
+        // Normalise caller-supplied Base64URL credential id by stripping any
+        // trailing `=` padding so storage-key lookups, connected-state writes,
+        // event payloads, and the saved session all use the canonical unpadded
+        // form produced by ``Data.base64URLEncodedString()``.
+        let credentialId = credentialId.map(OZWalletOperations.strippedBase64URLPadding)
 
         var finalContractId: String? = contractId
 
@@ -1763,5 +1780,22 @@ public final class OZWalletOperations: @unchecked Sendable {
             )
         }
         return Data(bytes)
+    }
+
+    /// Strips trailing `=` padding from a Base64URL-encoded string.
+    ///
+    /// The SDK encoder always emits unpadded output; this helper normalises
+    /// caller-supplied strings so padded and unpadded spellings of the same
+    /// credential id resolve to the same storage key, connected-state value,
+    /// session record, and event payload.
+    internal static func strippedBase64URLPadding(_ value: String) -> String {
+        var index = value.endIndex
+        while index > value.startIndex {
+            let previous = value.index(before: index)
+            if value[previous] != "=" { break }
+            index = previous
+        }
+        if index == value.endIndex { return value }
+        return String(value[value.startIndex..<index])
     }
 }

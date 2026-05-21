@@ -589,6 +589,123 @@ final class OZTransactionOperationsPipelineTests: XCTestCase {
     }
 
     // ========================================================================
+    // C.3a — credential id padding normalisation
+    // ========================================================================
+
+    func test_connectWallet_paddedCredentialId_normalisedInConnectedState() async throws {
+        // Caller supplies a Base64URL credential id that carries trailing `=`
+        // padding. The storage entry is written under the canonical unpadded
+        // form (`Data.base64URLEncodedString()` strips padding); the storage
+        // hit must still resolve, and the kit's connected-state credential id
+        // must be the unpadded canonical form, not the padded caller input.
+        let provider = RecordingWebAuthnProvider()
+        let storage = InMemoryStorageAdapter()
+        let stored = StoredCredential(
+            credentialId: credentialIdB64Url,
+            publicKey: validPublicKey(),
+            contractId: contractA
+        )
+        try await storage.save(credential: stored)
+        let config = try OZSmartAccountConfig(
+            rpcUrl: "https://mock-rpc.invalid/rpc",
+            networkPassphrase: Network.testnet.passphrase,
+            accountWasmHash: "a" + String(repeating: "0", count: 63),
+            webauthnVerifierAddress: contractA,
+            webauthnProvider: provider,
+            storage: storage
+        )
+        let kit = MockOZSmartAccountKit(
+            config: config,
+            sorobanServer: MockSorobanServer.makeMockedSorobanServer()
+        )
+        try script.setGetContractDataResponse(contractId: contractA)
+
+        let paddedCredentialId = credentialIdB64Url + "=="
+        let walletOps = OZWalletOperations(kit: kit)
+        let result = try await walletOps.connectWallet(
+            options: ConnectWalletOptions(credentialId: paddedCredentialId)
+        )
+        guard let result = result, case .connected(let credId, let contractId, _) = result else {
+            XCTFail("expected .connected result, got \(String(describing: result))")
+            return
+        }
+        XCTAssertEqual(contractId, contractA)
+        XCTAssertEqual(
+            credId,
+            credentialIdB64Url,
+            "ConnectWalletResult must carry the canonical unpadded credential id"
+        )
+        XCTAssertEqual(
+            kit.currentConnectedState?.credentialId,
+            credentialIdB64Url,
+            "kit.connectedState.credentialId must be unpadded after a padded-input connect"
+        )
+        XCTAssertEqual(
+            kit.setConnectedStateInvocations.last?.credentialId,
+            credentialIdB64Url,
+            "setConnectedState must be invoked with the unpadded credential id"
+        )
+    }
+
+    func test_deployPendingCredential_paddedCredentialId_normalisedInConnectedState() async throws {
+        // Caller supplies a padded Base64URL credential id; the stored entry
+        // uses the unpadded canonical form. The deploy path must look the
+        // credential up under the unpadded key and propagate the unpadded
+        // form into the kit's connected state.
+        let provider = RecordingWebAuthnProvider()
+        let storage = InMemoryStorageAdapter()
+        let deployer = try deterministicDeployer()
+        let publicKey = validPublicKey()
+        let credentialIdBytes = try Data(base64URLEncoded: credentialIdB64Url)
+        let derivedContractId = try SmartAccountUtils.deriveContractAddress(
+            credentialId: credentialIdBytes,
+            deployerPublicKey: deployer.accountId,
+            networkPassphrase: Network.testnet.passphrase
+        )
+        let stored = StoredCredential(
+            credentialId: credentialIdB64Url,
+            publicKey: publicKey,
+            contractId: derivedContractId
+        )
+        try await storage.save(credential: stored)
+        let config = try OZSmartAccountConfig(
+            rpcUrl: "https://mock-rpc.invalid/rpc",
+            networkPassphrase: Network.testnet.passphrase,
+            accountWasmHash: "a" + String(repeating: "0", count: 63),
+            webauthnVerifierAddress: contractA,
+            deployerKeypair: deployer,
+            webauthnProvider: provider,
+            storage: storage
+        )
+        let kit = MockOZSmartAccountKit(
+            config: config,
+            sorobanServer: MockSorobanServer.makeMockedSorobanServer()
+        )
+        kit.configuredDeployer = deployer
+
+        enqueueDeployerAccount(deployer: deployer)
+        script.enqueueSimulate(authEntries: [], minResourceFee: 100_000)
+
+        let paddedCredentialId = credentialIdB64Url + "=="
+        let walletOps = OZWalletOperations(kit: kit)
+        let result = try await walletOps.deployPendingCredential(
+            credentialId: paddedCredentialId,
+            autoSubmit: false
+        )
+        XCTAssertEqual(result.contractId, derivedContractId)
+        XCTAssertEqual(
+            kit.currentConnectedState?.credentialId,
+            credentialIdB64Url,
+            "deployPendingCredential must record the unpadded credential id in connected state"
+        )
+        XCTAssertEqual(
+            kit.setConnectedStateInvocations.last?.credentialId,
+            credentialIdB64Url,
+            "setConnectedState must be invoked with the unpadded credential id"
+        )
+    }
+
+    // ========================================================================
     // C.4 — fundWallet conversion
     // ========================================================================
 

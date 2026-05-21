@@ -177,6 +177,10 @@ public enum OZSmartAccountBuilders {
 
     /// Returns `true` when `signer` is a WebAuthn signer whose credential ID, encoded as
     /// Base64URL, equals `credentialId`.
+    ///
+    /// The caller-supplied `credentialId` is normalised by stripping trailing `=` padding
+    /// before comparison so padded and unpadded Base64URL spellings of the same credential
+    /// match. The signer-derived id is already unpadded.
     public static func signerMatchesCredentialId(
         signer: any OZSmartAccountSigner,
         credentialId: String
@@ -184,7 +188,22 @@ public enum OZSmartAccountBuilders {
         guard let signerCredId = getCredentialIdStringFromSigner(signer: signer) else {
             return false
         }
-        return signerCredId == credentialId
+        return signerCredId == strippedBase64URLPadding(credentialId)
+    }
+
+    /// Strips trailing `=` padding from a Base64URL-encoded string.
+    ///
+    /// The SDK encoder always emits unpadded output; this helper normalises caller-supplied
+    /// strings so padded and unpadded spellings compare and key equal.
+    fileprivate static func strippedBase64URLPadding(_ value: String) -> String {
+        var index = value.endIndex
+        while index > value.startIndex {
+            let previous = value.index(before: index)
+            if value[previous] != "=" { break }
+            index = previous
+        }
+        if index == value.endIndex { return value }
+        return String(value[value.startIndex..<index])
     }
 
     /// Returns `true` when `signer` is an `OZDelegatedSigner` whose address equals `address`.

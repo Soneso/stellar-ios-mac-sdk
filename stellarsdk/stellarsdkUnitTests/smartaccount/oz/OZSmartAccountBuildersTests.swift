@@ -221,6 +221,68 @@ final class OZSmartAccountBuildersTests: XCTestCase {
         )
     }
 
+    func testSignerMatchesCredentialId_acceptsPaddedAndUnpaddedBase64UrlInputs() throws {
+        // Credential id whose canonical Base64URL encoding requires one `=`
+        // pad character: a single byte yields a 2-char unpadded encoding plus
+        // `==` padding under standard Base64. A 2-byte id maps to `kqs` /
+        // `kqs=` (1-char pad). Use a 2-byte fixture so we can compare against
+        // both spellings without ambiguity.
+        var pubkey = Data(repeating: 0x42, count: 65)
+        pubkey[0] = 0x04
+        let credId = Data([0x92, 0xAB])
+        let signer = try OZExternalSigner.webAuthn(
+            verifierAddress: validContractC,
+            publicKey: pubkey,
+            credentialId: credId
+        )
+        let unpadded = credId.base64URLEncodedString()
+        // Sanity-check the fixture: the SDK encoder strips padding, so
+        // re-padding by hand for the assertion below is well-defined.
+        XCTAssertFalse(unpadded.contains("="))
+        let paddedOnce = unpadded + "="
+        let paddedTwice = unpadded + "=="
+
+        XCTAssertTrue(
+            OZSmartAccountBuilders.signerMatchesCredentialId(signer: signer, credentialId: unpadded)
+        )
+        XCTAssertTrue(
+            OZSmartAccountBuilders.signerMatchesCredentialId(signer: signer, credentialId: paddedOnce),
+            "padded Base64URL input must match the unpadded signer-derived id"
+        )
+        XCTAssertTrue(
+            OZSmartAccountBuilders.signerMatchesCredentialId(signer: signer, credentialId: paddedTwice),
+            "double-padded Base64URL input must match the unpadded signer-derived id"
+        )
+    }
+
+    func testGetCredentialIdStringFromSigner_outputIsUnpadded() throws {
+        // Cover credential-id byte lengths whose Base64URL encoding would
+        // produce 1- and 2-char `=` padding under standard Base64. The SDK
+        // helper must strip both.
+        var pubkey = Data(repeating: 0x42, count: 65)
+        pubkey[0] = 0x04
+        let oneBytePaddingId = Data([0x92, 0xAB])  // → "kqs", padded form "kqs="
+        let twoBytePaddingId = Data([0xCC])         // → "zA", padded form "zA=="
+
+        let signer1 = try OZExternalSigner.webAuthn(
+            verifierAddress: validContractC,
+            publicKey: pubkey,
+            credentialId: oneBytePaddingId
+        )
+        let signer2 = try OZExternalSigner.webAuthn(
+            verifierAddress: validContractC,
+            publicKey: pubkey,
+            credentialId: twoBytePaddingId
+        )
+
+        let out1 = OZSmartAccountBuilders.getCredentialIdStringFromSigner(signer: signer1)
+        let out2 = OZSmartAccountBuilders.getCredentialIdStringFromSigner(signer: signer2)
+        XCTAssertNotNil(out1)
+        XCTAssertNotNil(out2)
+        XCTAssertFalse(out1!.hasSuffix("="), "credential id string must not carry trailing padding")
+        XCTAssertFalse(out2!.hasSuffix("="), "credential id string must not carry trailing padding")
+    }
+
     // MARK: - signerMatchesAddress
 
     func testSignerMatchesAddress_delegatedSignerMatchingAddress_returnsTrue() throws {
