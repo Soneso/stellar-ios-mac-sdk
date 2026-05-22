@@ -211,28 +211,14 @@ public final class AppleWebAuthnProvider: NSObject, WebAuthnProvider, @unchecked
             name: userName,
             userID: userId
         )
-
-        // why: the OZ WebAuthn verifier contract checks UV=true (error #3117
-        // VerifiedBitNotSet); the platform default of "preferred" can return
-        // UV=false on macOS even when Touch ID succeeds, so the resulting
-        // attestation would later produce assertions the contract rejects.
-        // Forcing "required" makes the authenticator set the UV bit during
-        // credential creation as well, matching the assertion-time policy and
-        // keeping cross-platform behavior consistent with the Android, web,
-        // and Flutter providers.
-        request.userVerificationPreference = .required
-
-        // why: request `direct` attestation so the relying party receives the
-        // raw attestation statement rather than an anonymized one. OZ's
-        // verifier does not consume the attestation statement directly, but
-        // the cross-platform providers (Android, web, Flutter) all request
-        // `direct`, and matching them keeps server-side attestation policies
-        // identical regardless of the originating client. Gated on the
-        // platform versions that introduced `attestationPreference` on
-        // `ASAuthorizationPlatformPublicKeyCredentialRegistrationRequest`.
-        if #available(iOS 17.4, macOS 14.4, *) {
-            request.attestationPreference = .direct
-        }
+        // userVerificationPreference and attestationPreference are intentionally
+        // left at their system defaults on registration. The OZ WebAuthn verifier
+        // inspects the UV bit only at signature verification time, so forcing
+        // .required here is unnecessary; the assertion path below sets it where
+        // it actually matters. Requesting .direct attestation is also unnecessary
+        // (no attestation-statement verification happens against the OZ contract)
+        // and would break iOS Simulator registration, whose authenticators cannot
+        // produce attestation statements.
 
         let authorization = try await performAuthorizationRequest(
             request: request,
