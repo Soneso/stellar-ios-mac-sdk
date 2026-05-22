@@ -1072,4 +1072,249 @@ final class OZIndexerClientTests: XCTestCase {
         indexer.close()
         indexer.close()
     }
+
+    // MARK: - String-encoded numeric fields
+
+    /// The production indexer serialises every numeric column as a JSON
+    /// string so values that exceed JavaScript's safe-integer range can
+    /// round-trip without precision loss. Every decoder site must accept
+    /// either a JSON number or a numeric string.
+    func testLookupByCredentialId_acceptsStringEncodedNumerics() async throws {
+        let responseJson = """
+        {
+            "credentialId": "aabbccdd",
+            "contracts": [
+                {
+                    "contract_id": "\(testContractId)",
+                    "context_rule_count": "2",
+                    "external_signer_count": "1",
+                    "delegated_signer_count": "1",
+                    "native_signer_count": "0",
+                    "first_seen_ledger": "100000",
+                    "last_seen_ledger": "200000",
+                    "context_rule_ids": ["0", "1"]
+                }
+            ],
+            "count": "1"
+        }
+        """
+        installResponder(body: responseJson)
+        let session = makeMockSession()
+        let indexer = try OZIndexerClient(
+            indexerUrl: "https://indexer.example.com",
+            urlSession: session
+        )
+        defer { indexer.close() }
+
+        let result = try await indexer.lookupByCredentialId(credentialId: "qrvM3Q")
+        XCTAssertEqual("aabbccdd", result.credentialId)
+        XCTAssertEqual(1, result.count)
+        XCTAssertEqual(1, result.contracts.count)
+        let summary = result.contracts[0]
+        XCTAssertEqual(testContractId, summary.contractId)
+        XCTAssertEqual(2, summary.contextRuleCount)
+        XCTAssertEqual(1, summary.externalSignerCount)
+        XCTAssertEqual(1, summary.delegatedSignerCount)
+        XCTAssertEqual(0, summary.nativeSignerCount)
+        XCTAssertEqual(100000, summary.firstSeenLedger)
+        XCTAssertEqual(200000, summary.lastSeenLedger)
+        XCTAssertEqual([0, 1], summary.contextRuleIds)
+    }
+
+    func testLookupByAddress_acceptsStringEncodedNumerics() async throws {
+        let responseJson = """
+        {
+            "signerAddress": "\(testAccountId)",
+            "contracts": [
+                {
+                    "contract_id": "\(testContractId)",
+                    "context_rule_count": "3",
+                    "external_signer_count": "0",
+                    "delegated_signer_count": "2",
+                    "native_signer_count": "1",
+                    "first_seen_ledger": "1808254",
+                    "last_seen_ledger": "2689784",
+                    "context_rule_ids": ["7", "11", "42"]
+                }
+            ],
+            "count": "1"
+        }
+        """
+        installResponder(body: responseJson)
+        let session = makeMockSession()
+        let indexer = try OZIndexerClient(
+            indexerUrl: "https://indexer.example.com",
+            urlSession: session
+        )
+        defer { indexer.close() }
+
+        let result = try await indexer.lookupByAddress(address: testAccountId)
+        XCTAssertEqual(testAccountId, result.signerAddress)
+        XCTAssertEqual(1, result.count)
+        XCTAssertEqual(1, result.contracts.count)
+        let summary = result.contracts[0]
+        XCTAssertEqual(3, summary.contextRuleCount)
+        XCTAssertEqual(0, summary.externalSignerCount)
+        XCTAssertEqual(2, summary.delegatedSignerCount)
+        XCTAssertEqual(1, summary.nativeSignerCount)
+        XCTAssertEqual(1808254, summary.firstSeenLedger)
+        XCTAssertEqual(2689784, summary.lastSeenLedger)
+        XCTAssertEqual([7, 11, 42], summary.contextRuleIds)
+    }
+
+    func testGetContract_acceptsStringEncodedNumerics() async throws {
+        let responseJson = """
+        {
+            "contractId": "\(testContractId)",
+            "summary": {
+                "contract_id": "\(testContractId)",
+                "context_rule_count": "2",
+                "external_signer_count": "1",
+                "delegated_signer_count": "0",
+                "native_signer_count": "1",
+                "first_seen_ledger": "100000",
+                "last_seen_ledger": "200000",
+                "context_rule_ids": ["0", "1"]
+            },
+            "contextRules": [
+                {
+                    "context_rule_id": "0",
+                    "signers": [
+                        {"signer_type": "Native"}
+                    ],
+                    "policies": []
+                },
+                {
+                    "context_rule_id": "1",
+                    "signers": [
+                        {"signer_type": "External", "credential_id": "aabbccdd"}
+                    ],
+                    "policies": []
+                }
+            ]
+        }
+        """
+        installResponder(body: responseJson)
+        let session = makeMockSession()
+        let indexer = try OZIndexerClient(
+            indexerUrl: "https://indexer.example.com",
+            urlSession: session
+        )
+        defer { indexer.close() }
+
+        let result = try await indexer.getContract(contractId: testContractId)
+        XCTAssertEqual(testContractId, result.contractId)
+        XCTAssertEqual(2, result.summary.contextRuleCount)
+        XCTAssertEqual(1, result.summary.externalSignerCount)
+        XCTAssertEqual(0, result.summary.delegatedSignerCount)
+        XCTAssertEqual(1, result.summary.nativeSignerCount)
+        XCTAssertEqual(100000, result.summary.firstSeenLedger)
+        XCTAssertEqual(200000, result.summary.lastSeenLedger)
+        XCTAssertEqual([0, 1], result.summary.contextRuleIds)
+
+        XCTAssertEqual(2, result.contextRules.count)
+        XCTAssertEqual(0, result.contextRules[0].contextRuleId)
+        XCTAssertEqual(1, result.contextRules[1].contextRuleId)
+    }
+
+    func testGetStats_acceptsStringEncodedNumerics() async throws {
+        let responseJson = """
+        {
+            "stats": {
+                "total_events": "7348",
+                "unique_contracts": "4217",
+                "unique_credentials": "1590",
+                "first_ledger": "1808254",
+                "last_ledger": "2689784",
+                "eventTypes": [
+                    {"event_type": "context_rule_added", "count": "6567"},
+                    {"event_type": "signer_added", "count": "5000"}
+                ]
+            }
+        }
+        """
+        installResponder(body: responseJson)
+        let session = makeMockSession()
+        let indexer = try OZIndexerClient(
+            indexerUrl: "https://indexer.example.com",
+            urlSession: session
+        )
+        defer { indexer.close() }
+
+        let result = try await indexer.getStats()
+        XCTAssertEqual(Int64(7348), result.stats.totalEvents)
+        XCTAssertEqual(Int64(4217), result.stats.uniqueContracts)
+        XCTAssertEqual(Int64(1590), result.stats.uniqueCredentials)
+        XCTAssertEqual(Int64(1808254), result.stats.firstLedger)
+        XCTAssertEqual(Int64(2689784), result.stats.lastLedger)
+        XCTAssertEqual(2, result.stats.eventTypes.count)
+        XCTAssertEqual("context_rule_added", result.stats.eventTypes[0].eventType)
+        XCTAssertEqual(Int64(6567), result.stats.eventTypes[0].count)
+        XCTAssertEqual("signer_added", result.stats.eventTypes[1].eventType)
+        XCTAssertEqual(Int64(5000), result.stats.eventTypes[1].count)
+    }
+
+    func testGetStats_acceptsMixedNumericAndStringEncoding() async throws {
+        // A single response can mix JSON numbers and numeric strings; the
+        // decoder must accept either representation per field.
+        let responseJson = """
+        {
+            "stats": {
+                "total_events": 7348,
+                "unique_contracts": "4217",
+                "unique_credentials": 1590,
+                "first_ledger": "1808254",
+                "last_ledger": 2689784,
+                "eventTypes": [
+                    {"event_type": "context_rule_added", "count": "6567"},
+                    {"event_type": "signer_added", "count": 5000}
+                ]
+            }
+        }
+        """
+        installResponder(body: responseJson)
+        let session = makeMockSession()
+        let indexer = try OZIndexerClient(
+            indexerUrl: "https://indexer.example.com",
+            urlSession: session
+        )
+        defer { indexer.close() }
+
+        let result = try await indexer.getStats()
+        XCTAssertEqual(Int64(7348), result.stats.totalEvents)
+        XCTAssertEqual(Int64(4217), result.stats.uniqueContracts)
+        XCTAssertEqual(Int64(1590), result.stats.uniqueCredentials)
+        XCTAssertEqual(Int64(1808254), result.stats.firstLedger)
+        XCTAssertEqual(Int64(2689784), result.stats.lastLedger)
+        XCTAssertEqual(Int64(6567), result.stats.eventTypes[0].count)
+        XCTAssertEqual(Int64(5000), result.stats.eventTypes[1].count)
+    }
+
+    func testLookupByCredentialId_rejectsNonNumericString() async throws {
+        // A non-numeric string for a numeric field must surface as a
+        // decoding failure mapped to IndexerException.RequestFailed.
+        let responseJson = """
+        {
+            "credentialId": "aabbccdd",
+            "contracts": [],
+            "count": "not-a-number"
+        }
+        """
+        installResponder(body: responseJson)
+        let session = makeMockSession()
+        let indexer = try OZIndexerClient(
+            indexerUrl: "https://indexer.example.com",
+            urlSession: session
+        )
+        defer { indexer.close() }
+
+        do {
+            _ = try await indexer.lookupByCredentialId(credentialId: "qrvM3Q")
+            XCTFail("Expected IndexerException.RequestFailed")
+        } catch is IndexerException.RequestFailed {
+            // expected
+        } catch {
+            XCTFail("Unexpected error: \(error)")
+        }
+    }
 }

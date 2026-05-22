@@ -7,6 +7,89 @@
 
 import Foundation
 
+// MARK: - Flexible integer decoding
+
+/// `KeyedDecodingContainer` extensions that accept either a JSON number or a
+/// JSON string-encoded number for a given key.
+///
+/// The OpenZeppelin Smart Account indexer serialises every numeric column
+/// (counts, ledger sequences, event totals) as a JSON string so values that
+/// exceed JavaScript's safe-integer range can round-trip without precision
+/// loss. Test fixtures in this repository express the same fields as plain
+/// JSON numbers. These helpers bridge both representations at the single
+/// container-level decode site so each `Decodable` model below can stay a
+/// straight-forward struct.
+extension KeyedDecodingContainer {
+
+    /// Decodes the value for `key` as an `Int`, accepting either a JSON
+    /// number or a numeric JSON string.
+    ///
+    /// - Throws: `DecodingError.dataCorruptedError` when the value is
+    ///   neither a JSON number nor a string that parses as an `Int`.
+    fileprivate func decodeFlexibleInt(forKey key: Key) throws -> Int {
+        if let intValue = try? decode(Int.self, forKey: key) {
+            return intValue
+        }
+        if let stringValue = try? decode(String.self, forKey: key),
+           let parsed = Int(stringValue) {
+            return parsed
+        }
+        throw DecodingError.dataCorruptedError(
+            forKey: key,
+            in: self,
+            debugDescription:
+                "Expected Int or numeric String for key \"\(key.stringValue)\""
+        )
+    }
+
+    /// Decodes the value for `key` as an `Int64`, accepting either a JSON
+    /// number or a numeric JSON string.
+    ///
+    /// - Throws: `DecodingError.dataCorruptedError` when the value is
+    ///   neither a JSON number nor a string that parses as an `Int64`.
+    fileprivate func decodeFlexibleInt64(forKey key: Key) throws -> Int64 {
+        if let intValue = try? decode(Int64.self, forKey: key) {
+            return intValue
+        }
+        if let stringValue = try? decode(String.self, forKey: key),
+           let parsed = Int64(stringValue) {
+            return parsed
+        }
+        throw DecodingError.dataCorruptedError(
+            forKey: key,
+            in: self,
+            debugDescription:
+                "Expected Int64 or numeric String for key \"\(key.stringValue)\""
+        )
+    }
+}
+
+/// `UnkeyedDecodingContainer` extension that accepts either a JSON number or
+/// a JSON string-encoded number when iterating numeric array elements (for
+/// example, the `context_rule_ids` list returned by the indexer).
+extension UnkeyedDecodingContainer {
+
+    /// Decodes the next element as an `Int`, accepting either a JSON number
+    /// or a numeric JSON string. Advances the container's `currentIndex`
+    /// exactly once.
+    ///
+    /// - Throws: `DecodingError.dataCorruptedError` when the next element is
+    ///   neither a JSON number nor a string that parses as an `Int`.
+    fileprivate mutating func decodeFlexibleInt() throws -> Int {
+        if let intValue = try? decode(Int.self) {
+            return intValue
+        }
+        if let stringValue = try? decode(String.self),
+           let parsed = Int(stringValue) {
+            return parsed
+        }
+        throw DecodingError.dataCorruptedError(
+            in: self,
+            debugDescription: "Expected Int or numeric String for array element"
+        )
+    }
+}
+
 // MARK: - Response Models
 
 /// Response from looking up a credential ID in the indexer.
@@ -24,6 +107,19 @@ public struct OZCredentialLookupResponse: Decodable, Equatable, Sendable {
         self.contracts = contracts
         self.count = count
     }
+
+    private enum CodingKeys: String, CodingKey {
+        case credentialId
+        case contracts
+        case count
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.credentialId = try container.decode(String.self, forKey: .credentialId)
+        self.contracts = try container.decode([OZIndexedContractSummary].self, forKey: .contracts)
+        self.count = try container.decodeFlexibleInt(forKey: .count)
+    }
 }
 
 /// Response from looking up a signer address in the indexer.
@@ -39,6 +135,19 @@ public struct OZAddressLookupResponse: Decodable, Equatable, Sendable {
         self.signerAddress = signerAddress
         self.contracts = contracts
         self.count = count
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case signerAddress
+        case contracts
+        case count
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.signerAddress = try container.decode(String.self, forKey: .signerAddress)
+        self.contracts = try container.decode([OZIndexedContractSummary].self, forKey: .contracts)
+        self.count = try container.decodeFlexibleInt(forKey: .count)
     }
 }
 
@@ -106,6 +215,27 @@ public struct OZIndexedContractSummary: Decodable, Equatable, Sendable {
         case lastSeenLedger = "last_seen_ledger"
         case contextRuleIds = "context_rule_ids"
     }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.contractId = try container.decode(String.self, forKey: .contractId)
+        self.contextRuleCount = try container.decodeFlexibleInt(forKey: .contextRuleCount)
+        self.externalSignerCount = try container.decodeFlexibleInt(forKey: .externalSignerCount)
+        self.delegatedSignerCount = try container.decodeFlexibleInt(forKey: .delegatedSignerCount)
+        self.nativeSignerCount = try container.decodeFlexibleInt(forKey: .nativeSignerCount)
+        self.firstSeenLedger = try container.decodeFlexibleInt(forKey: .firstSeenLedger)
+        self.lastSeenLedger = try container.decodeFlexibleInt(forKey: .lastSeenLedger)
+
+        var idsContainer = try container.nestedUnkeyedContainer(forKey: .contextRuleIds)
+        var ids: [Int] = []
+        if let count = idsContainer.count {
+            ids.reserveCapacity(count)
+        }
+        while !idsContainer.isAtEnd {
+            ids.append(try idsContainer.decodeFlexibleInt())
+        }
+        self.contextRuleIds = ids
+    }
 }
 
 /// A context rule within a smart account contract.
@@ -131,6 +261,13 @@ public struct OZIndexedContextRule: Decodable, Equatable, Sendable {
         case contextRuleId = "context_rule_id"
         case signers
         case policies
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.contextRuleId = try container.decodeFlexibleInt(forKey: .contextRuleId)
+        self.signers = try container.decode([OZIndexedSigner].self, forKey: .signers)
+        self.policies = try container.decode([OZIndexedPolicy].self, forKey: .policies)
     }
 }
 
@@ -225,6 +362,16 @@ public struct OZIndexerStats: Decodable, Equatable, Sendable {
         case lastLedger = "last_ledger"
         case eventTypes
     }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.totalEvents = try container.decodeFlexibleInt64(forKey: .totalEvents)
+        self.uniqueContracts = try container.decodeFlexibleInt64(forKey: .uniqueContracts)
+        self.uniqueCredentials = try container.decodeFlexibleInt64(forKey: .uniqueCredentials)
+        self.firstLedger = try container.decodeFlexibleInt64(forKey: .firstLedger)
+        self.lastLedger = try container.decodeFlexibleInt64(forKey: .lastLedger)
+        self.eventTypes = try container.decode([OZEventTypeCount].self, forKey: .eventTypes)
+    }
 }
 
 /// Count of events broken down by type.
@@ -240,6 +387,12 @@ public struct OZEventTypeCount: Decodable, Equatable, Sendable {
     private enum CodingKeys: String, CodingKey {
         case eventType = "event_type"
         case count
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.eventType = try container.decode(String.self, forKey: .eventType)
+        self.count = try container.decodeFlexibleInt64(forKey: .count)
     }
 }
 
