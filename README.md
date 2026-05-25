@@ -85,13 +85,16 @@ This repository includes an [Agent Skill](https://agentskills.io) that teaches A
 | [Getting started](docs/getting-started.md) | Keys, accounts, and fundamentals |
 | [SDK usage](docs/sdk-usage.md) | Transactions, operations, Horizon queries, streaming |
 | [Soroban](docs/soroban.md) | Smart contract deployment and interaction |
+| [Smart Accounts](docs/smart-accounts/README.md) | OpenZeppelin smart account support: passkeys, multi-signer authorization, context rules, policies |
 | [SEPs](docs/sep/) | Anchor integration, authentication, KYC, etc. |
 
 [API reference](https://soneso.github.io/stellar-ios-mac-sdk/)
 
-## Soroban Smart Wallets (Passkey) support
+## Smart Accounts (Passkey) support
 
-We are working on integrating passkey support for Soroban Smart Wallets into this SDK. In the meantime, we provide an experimental Passkey Kit: [SwiftPasskeyKit](https://github.com/Soneso/SwiftPasskeyKit).
+This SDK ships first-class support for OpenZeppelin smart accounts on Stellar: WebAuthn passkey authentication via Apple's `AuthenticationServices`, multi-signer authorization, on-chain context rules, and policy contracts (threshold, weighted threshold, spending limit). An optional fee-bump relayer and credential indexer integrate transparently.
+
+See the [Smart Accounts documentation](docs/smart-accounts/README.md) for an overview, the [developer onboarding guide](docs/smart-accounts/onboarding.md) for conceptual material, the [API reference](docs/smart-accounts/api-reference.md) for every public symbol, and the per-platform WebAuthn setup guides: [iOS](docs/smart-accounts/webauthn-ios.md), [macOS](docs/smart-accounts/webauthn-macos.md).
 
 ## Compatibility
 
