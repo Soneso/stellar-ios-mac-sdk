@@ -525,14 +525,22 @@ final class OZMultiSignerManagerTests: XCTestCase {
         XCTAssertNotNil(manager)
     }
 
-    /// The manager must conform to ``OZMultiSignerSubmitting`` so sibling
-    /// managers (signer / policy / context-rule) can route through it without
-    /// holding a typed reference. The kit composition root binds the concrete
-    /// manager into sibling managers through this protocol.
-    func test_manager_conformsToMultiSignerSubmitting() throws {
+    /// The manager exposes the three-argument
+    /// ``OZMultiSignerManager/submitWithMultipleSigners(hostFunction:selectedSigners:forceMethod:)``
+    /// overload consumed by sibling managers (signer / policy / context-rule)
+    /// when one of their state-changing methods is invoked with a non-empty
+    /// `selectedSigners` list. The kit exposes the same instance via
+    /// ``OZSmartAccountKitProtocol/multiSignerManager`` so sibling managers
+    /// reach it through the kit reference they already hold.
+    func test_manager_exposesSiblingManagerSubmissionEntryPoint() throws {
         let kit = MockOZSmartAccountKit(config: try buildConfig())
-        let manager: any OZMultiSignerSubmitting = OZMultiSignerManager(kit: kit)
-        XCTAssertNotNil(manager)
+        let manager = OZMultiSignerManager(kit: kit)
+        // why: bind to a function-value of the expected three-argument
+        // signature so the compiler verifies the overload exists on the
+        // type. The test does not invoke the function because doing so
+        // would require a connected kit and a live RPC backend; the
+        // compile-time type check is the contract lock.
+        let _: (HostFunctionXDR, [SelectedSigner], SubmissionMethod?) async throws -> TransactionResult = manager.submitWithMultipleSigners
     }
 
     // ========================================================================

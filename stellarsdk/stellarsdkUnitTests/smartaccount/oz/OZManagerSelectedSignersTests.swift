@@ -22,7 +22,8 @@ import XCTest
 ///   reached the next validation stage.
 ///
 /// Group J.1 cases at the bottom exercise the multi-signer fanout shape
-/// requirement (3-signer mix routing through ``OZMultiSignerSubmitting``).
+/// requirement (3-signer mix routing through
+/// ``OZSmartAccountKitProtocol/multiSignerManager``).
 /// Network-dependent multi-signer signing is covered by integration tests.
 final class OZManagerSelectedSignersTests: XCTestCase {
 
@@ -53,19 +54,14 @@ final class OZManagerSelectedSignersTests: XCTestCase {
     /// Builds a disconnected mock kit. Every method invocation under test
     /// should throw ``WalletException/NotConnected`` against this kit.
     private func disconnectedKit(
-        multiSignerSubmitter: OZMultiSignerSubmitting? = nil,
         contextRuleParser: OZContextRuleParser? = nil
     ) throws -> MockOZSmartAccountKit {
         let kit = MockOZSmartAccountKit(config: try buildConfig())
         kit.signerManagerOverride = OZSignerManager(
             kit: kit,
-            contextRuleParser: contextRuleParser,
-            multiSignerSubmitter: multiSignerSubmitter
+            contextRuleParser: contextRuleParser
         )
-        kit.policyManagerOverride = OZPolicyManager(
-            kit: kit,
-            multiSignerSubmitter: multiSignerSubmitter
-        )
+        kit.policyManagerOverride = OZPolicyManager(kit: kit)
         return kit
     }
 
@@ -73,7 +69,6 @@ final class OZManagerSelectedSignersTests: XCTestCase {
     /// and credential id pair. Used to verify validation reaches the field
     /// checks after `requireConnected()` succeeds.
     private func connectedKit(
-        multiSignerSubmitter: OZMultiSignerSubmitting? = nil,
         contextRuleParser: OZContextRuleParser? = nil
     ) throws -> MockOZSmartAccountKit {
         let kit = MockOZSmartAccountKit(config: try buildConfig())
@@ -83,27 +78,19 @@ final class OZManagerSelectedSignersTests: XCTestCase {
         )
         kit.signerManagerOverride = OZSignerManager(
             kit: kit,
-            contextRuleParser: contextRuleParser,
-            multiSignerSubmitter: multiSignerSubmitter
+            contextRuleParser: contextRuleParser
         )
-        kit.policyManagerOverride = OZPolicyManager(
-            kit: kit,
-            multiSignerSubmitter: multiSignerSubmitter
-        )
+        kit.policyManagerOverride = OZPolicyManager(kit: kit)
         return kit
     }
 
-    /// Builds a context-rule manager wired directly with a multi-signer
-    /// submitter. The manager isn't installed on the kit by default so tests
-    /// that exercise context-rule routing instantiate it here.
+    /// Builds a context-rule manager bound to the supplied kit. The manager
+    /// isn't installed on the kit by default so tests that exercise
+    /// context-rule routing instantiate it here.
     private func contextRuleManager(
-        for kit: MockOZSmartAccountKit,
-        multiSignerSubmitter: OZMultiSignerSubmitting? = nil
+        for kit: MockOZSmartAccountKit
     ) -> OZContextRuleManager {
-        return OZContextRuleManager(
-            kit: kit,
-            multiSignerSubmitter: multiSignerSubmitter
-        )
+        return OZContextRuleManager(kit: kit)
     }
 
     /// A `SelectedSigner.passkey` stub with empty bytes. Sufficient to drive
@@ -674,11 +661,13 @@ final class OZManagerSelectedSignersTests: XCTestCase {
     /// caller passes a non-empty `selectedSigners` list.
     ///
     /// Verifies that ``OZSignerManager`` forwards the host function and the
-    /// full three-entry signer list to ``OZMultiSignerSubmitting`` rather
-    /// than going through the kit's transaction operations directly.
+    /// full three-entry signer list to
+    /// ``OZSmartAccountKitProtocol/multiSignerManager`` rather than going
+    /// through the kit's transaction operations directly.
     func test_submitWithMultipleSigners_threeSigners_passkey_delegated_ed25519_collectsAllSignatures() async throws {
-        let recordingSubmitter = MockOZMultiSignerManager()
-        let kit = try connectedKit(multiSignerSubmitter: recordingSubmitter)
+        let kit = try connectedKit()
+        let recordingSubmitter = MockOZMultiSignerManager(kit: kit)
+        kit.multiSignerManagerOverride = recordingSubmitter
 
         let firstPasskey = SelectedSigner.passkey(
             credentialId: "cred-A",
@@ -710,8 +699,9 @@ final class OZManagerSelectedSignersTests: XCTestCase {
     /// submitter; the passkey-key-data and wallet-address shapes are
     /// preserved end-to-end.
     func test_submitWithMultipleSigners_passkey_plus_wallet_resolvesContextRulesForBothSignerKinds() async throws {
-        let recordingSubmitter = MockOZMultiSignerManager()
-        let kit = try connectedKit(multiSignerSubmitter: recordingSubmitter)
+        let kit = try connectedKit()
+        let recordingSubmitter = MockOZMultiSignerManager(kit: kit)
+        kit.multiSignerManagerOverride = recordingSubmitter
 
         let signers: [SelectedSigner] = [
             .passkey(
@@ -749,11 +739,12 @@ final class OZManagerSelectedSignersTests: XCTestCase {
     /// Models the behavior expected when a single signer cancels the ceremony
     /// (the submitter detects it and throws).
     func test_submitWithMultipleSigners_threeSigners_oneCancelled_failsFastNoFurtherPrompts() async throws {
-        let recordingSubmitter = MockOZMultiSignerManager()
+        let kit = try connectedKit()
+        let recordingSubmitter = MockOZMultiSignerManager(kit: kit)
         recordingSubmitter.throwOnSubmit = WebAuthnException.Cancelled(
             message: "User cancelled"
         )
-        let kit = try connectedKit(multiSignerSubmitter: recordingSubmitter)
+        kit.multiSignerManagerOverride = recordingSubmitter
 
         let signers: [SelectedSigner] = [
             passkeySignerStub(),
@@ -788,8 +779,9 @@ final class OZManagerSelectedSignersTests: XCTestCase {
     /// signing-pipeline integration layer; here we lock down the routing
     /// fidelity that the public `SelectedSigner` shape promises.
     func test_selectedSigner_passkey_transports_propagatesThroughRouting() async throws {
-        let recordingSubmitter = MockOZMultiSignerManager()
-        let kit = try connectedKit(multiSignerSubmitter: recordingSubmitter)
+        let kit = try connectedKit()
+        let recordingSubmitter = MockOZMultiSignerManager(kit: kit)
+        kit.multiSignerManagerOverride = recordingSubmitter
 
         let transports: [String] = ["internal", "hybrid"]
         let signers: [SelectedSigner] = [

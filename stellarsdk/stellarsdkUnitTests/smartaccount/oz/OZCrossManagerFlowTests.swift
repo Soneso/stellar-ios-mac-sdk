@@ -42,10 +42,11 @@ final class OZCrossManagerFlowTests: XCTestCase {
         )
     }
 
-    /// Builds a connected mock kit with the supplied multi-signer submitter
-    /// installed across both the signer and policy managers.
+    /// Builds a connected mock kit. Callers wire a recording multi-signer
+    /// manager onto the kit's ``MockOZSmartAccountKit/multiSignerManagerOverride``
+    /// slot after construction so both the signer and policy managers route
+    /// their multi-signer submissions through the recorder.
     private func connectedKit(
-        multiSignerSubmitter: OZMultiSignerSubmitting,
         contextRuleParser: OZContextRuleParser? = nil
     ) throws -> MockOZSmartAccountKit {
         let kit = MockOZSmartAccountKit(config: try buildConfig())
@@ -55,13 +56,9 @@ final class OZCrossManagerFlowTests: XCTestCase {
         )
         kit.signerManagerOverride = OZSignerManager(
             kit: kit,
-            contextRuleParser: contextRuleParser,
-            multiSignerSubmitter: multiSignerSubmitter
+            contextRuleParser: contextRuleParser
         )
-        kit.policyManagerOverride = OZPolicyManager(
-            kit: kit,
-            multiSignerSubmitter: multiSignerSubmitter
-        )
+        kit.policyManagerOverride = OZPolicyManager(kit: kit)
         return kit
     }
 
@@ -91,8 +88,9 @@ final class OZCrossManagerFlowTests: XCTestCase {
     /// against the same multi-signer pipeline rather than diverging into the
     /// single-signer path partway through the flow.
     func test_crossManagerFlow_addRule_addSigner_removeSigner_listRules_consistentState() async throws {
-        let recordingSubmitter = MockOZMultiSignerManager()
-        let kit = try connectedKit(multiSignerSubmitter: recordingSubmitter)
+        let kit = try connectedKit()
+        let recordingSubmitter = MockOZMultiSignerManager(kit: kit)
+        kit.multiSignerManagerOverride = recordingSubmitter
 
         let walletParticipant = SelectedSigner.wallet(accountId: validAccountAddress)
         let participants: [SelectedSigner] = [walletParticipant]
@@ -145,8 +143,9 @@ final class OZCrossManagerFlowTests: XCTestCase {
     /// submitter for both calls, and the policy address resolution surfaces
     /// the matching `policyId` in the resulting host function.
     func test_crossManagerFlow_addPolicy_byMultiSigner_removeByAddress_idResolution() async throws {
-        let recordingSubmitter = MockOZMultiSignerManager()
-        let kit = try connectedKit(multiSignerSubmitter: recordingSubmitter)
+        let kit = try connectedKit()
+        let recordingSubmitter = MockOZMultiSignerManager(kit: kit)
+        kit.multiSignerManagerOverride = recordingSubmitter
 
         let participants: [SelectedSigner] = [
             .wallet(accountId: validAccountAddress)
@@ -265,7 +264,7 @@ final class OZCrossManagerFlowTests: XCTestCase {
             credentialId: "test-credential-id",
             contractId: validContractId
         )
-        let manager = OZContextRuleManager(kit: kit, multiSignerSubmitter: nil)
+        let manager = OZContextRuleManager(kit: kit)
         do {
             _ = try await manager.addContextRule(
                 contextType: .defaultRule,
@@ -300,7 +299,7 @@ final class OZCrossManagerFlowTests: XCTestCase {
             credentialId: "test-credential-id",
             contractId: validContractId
         )
-        let manager = OZContextRuleManager(kit: kit, multiSignerSubmitter: nil)
+        let manager = OZContextRuleManager(kit: kit)
 
         let signer = try OZDelegatedSigner(address: validAccountAddress)
         let alternateSigner = try OZDelegatedSigner(

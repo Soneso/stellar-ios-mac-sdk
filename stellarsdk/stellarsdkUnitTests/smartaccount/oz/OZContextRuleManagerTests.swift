@@ -262,14 +262,16 @@ final class OZContextRuleManagerTests: XCTestCase {
     }
 
     // ========================================================================
-    // Multi-signer routing — configuration error path
+    // Multi-signer routing — wallet signer without external-wallet adapter
     // ========================================================================
 
-    /// When a caller supplies a non-empty `selectedSigners` list and the
-    /// manager was constructed without a multi-signer submitter (the unit-test
-    /// composition path), the manager surfaces a configuration error so the
-    /// caller can correct the kit composition.
-    func test_addContextRule_multiSigner_withoutSubmitter_throwsConfigurationError() async throws {
+    /// A non-empty `selectedSigners` list containing a wallet entry routes
+    /// through the kit's multi-signer manager, whose initial validation
+    /// rejects wallet-kind signers when the kit's config does not declare an
+    /// external wallet adapter. The check surfaces as
+    /// ``ValidationException/InvalidInput`` naming the `selectedSigners`
+    /// field so callers can correct the kit configuration before retrying.
+    func test_addContextRule_walletSigner_withoutExternalWalletAdapter_throwsValidation() async throws {
         let (_, manager) = try connectedKit()
         do {
             _ = try await manager.addContextRule(
@@ -278,59 +280,13 @@ final class OZContextRuleManagerTests: XCTestCase {
                 signers: [try OZDelegatedSigner(address: validAccountAddress)],
                 selectedSigners: [.wallet(accountId: validAccountAddress)]
             )
-            XCTFail("expected ConfigurationException.InvalidConfig")
-        } catch is ConfigurationException.InvalidConfig {
-            // expected
-        }
-    }
-
-    /// `updateName` routes through the same multi-signer collaborator so it
-    /// must surface the configuration error in the same shape as
-    /// `addContextRule` when the submitter is absent.
-    func test_updateName_multiSigner_withoutSubmitter_throwsConfigurationError() async throws {
-        let (_, manager) = try connectedKit()
-        do {
-            _ = try await manager.updateName(
-                id: 1,
-                name: "x",
-                selectedSigners: [.wallet(accountId: validAccountAddress)]
+            XCTFail("expected ValidationException.InvalidInput")
+        } catch let error as ValidationException.InvalidInput {
+            XCTAssertEqual(error.code, .invalidInput)
+            XCTAssertTrue(
+                error.message.contains("selectedSigners"),
+                "expected 'selectedSigners' in message, got: \(error.message)"
             )
-            XCTFail("expected ConfigurationException.InvalidConfig")
-        } catch is ConfigurationException.InvalidConfig {
-            // expected
-        }
-    }
-
-    /// `removeContextRule` routes through the same multi-signer collaborator
-    /// so it must surface the configuration error in the same shape as
-    /// `addContextRule` when the submitter is absent.
-    func test_removeContextRule_multiSigner_withoutSubmitter_throwsConfigurationError() async throws {
-        let (_, manager) = try connectedKit()
-        do {
-            _ = try await manager.removeContextRule(
-                id: 1,
-                selectedSigners: [.wallet(accountId: validAccountAddress)]
-            )
-            XCTFail("expected ConfigurationException.InvalidConfig")
-        } catch is ConfigurationException.InvalidConfig {
-            // expected
-        }
-    }
-
-    /// `updateValidUntil` routes through the same multi-signer collaborator
-    /// so it must surface the configuration error in the same shape as
-    /// `addContextRule` when the submitter is absent.
-    func test_updateValidUntil_multiSigner_withoutSubmitter_throwsConfigurationError() async throws {
-        let (_, manager) = try connectedKit()
-        do {
-            _ = try await manager.updateValidUntil(
-                id: 1,
-                validUntil: 12345,
-                selectedSigners: [.wallet(accountId: validAccountAddress)]
-            )
-            XCTFail("expected ConfigurationException.InvalidConfig")
-        } catch is ConfigurationException.InvalidConfig {
-            // expected
         }
     }
 

@@ -366,20 +366,21 @@ public final class OZSmartAccountKit: OZSmartAccountKitProtocol, @unchecked Send
         // optional backing storage is the standard Swift workaround for the
         // two-stage initialization rule: every other `let` / `var` stored
         // property has now been initialized, so `self` is reachable and
-        // each manager can capture it. The order below matches the
-        // cross-manager wiring graph: parser- and submitter-collaborators
-        // must exist before the managers that consume them.
+        // each manager can capture it. The context-rule manager is
+        // constructed first because the signer and policy managers consume
+        // it as a parser collaborator; the multi-signer manager is reached
+        // through `kit.multiSignerManager` at call time, so its
+        // construction no longer needs to precede the signer- and
+        // policy-manager constructions.
         let credentialManager = OZCredentialManager(kit: self)
         let contextRuleManager = OZContextRuleManager(kit: self)
         let multiSignerManager = OZMultiSignerManager(kit: self)
         let signerManager = OZSignerManager(
             kit: self,
-            contextRuleParser: contextRuleManager,
-            multiSignerSubmitter: multiSignerManager
+            contextRuleParser: contextRuleManager
         )
         let policyManager = OZPolicyManager(
             kit: self,
-            multiSignerSubmitter: multiSignerManager,
             contextRuleParser: contextRuleManager
         )
         let walletOperations = OZWalletOperations(kit: self)

@@ -8,19 +8,23 @@
 import Foundation
 @testable import stellarsdk
 
-/// Recording test double conforming to ``OZMultiSignerSubmitting``.
+/// Recording test double subclassing ``OZMultiSignerManager``.
 ///
-/// ``OZMultiSignerManager`` is declared `final`, so this type cannot subclass
-/// it. Sibling smart-account managers depend on the multi-signer manager through
-/// the ``OZMultiSignerSubmitting`` protocol injected at construction time,
-/// which makes this fixture a drop-in replacement for any test that needs to
-/// observe multi-signer routing without exercising the multi-signer pipeline.
+/// Sibling smart-account managers call
+/// ``OZSmartAccountKitProtocol/multiSignerManager`` directly when a non-empty
+/// `selectedSigners` list is supplied. To observe that routing without
+/// exercising the real signing pipeline, tests install this fixture on the
+/// kit's ``MockOZSmartAccountKit/multiSignerManagerOverride`` slot; the
+/// override is returned in place of the lazily-constructed real manager so
+/// every sibling-manager submission flows through this recorder.
 ///
-/// Use the ``invocations`` array to assert what was forwarded to
-/// ``submitWithMultipleSigners(hostFunction:selectedSigners:forceMethod:)``.
-/// The fixture returns ``defaultResult`` from every call unless a per-test
-/// override is enqueued via ``queuedResults``.
-final class MockOZMultiSignerManager: OZMultiSignerSubmitting, @unchecked Sendable {
+/// Use the ``invocations`` array to assert what was forwarded to the
+/// three-argument
+/// ``submitWithMultipleSigners(hostFunction:selectedSigners:forceMethod:)``
+/// overload (the one sibling managers consume). The fixture returns
+/// ``defaultResult`` from every call unless a per-test override is enqueued
+/// via ``queuedResults`` or ``throwOnSubmit`` is set.
+final class MockOZMultiSignerManager: OZMultiSignerManager, @unchecked Sendable {
 
     /// Snapshot of a single captured `submitWithMultipleSigners` call.
     struct Invocation {
@@ -60,15 +64,14 @@ final class MockOZMultiSignerManager: OZMultiSignerSubmitting, @unchecked Sendab
     /// failure.
     var throwOnSubmit: Error?
 
-    /// Initializes a recording multi-signer mock.
-    init() {}
-
-    /// Recording implementation of
-    /// ``OZMultiSignerSubmitting/submitWithMultipleSigners(hostFunction:selectedSigners:forceMethod:)``.
+    /// Recording override of the three-argument sibling-manager entry point.
     ///
     /// Captures the call and returns the next canned result (or the default
-    /// when the queue is empty).
-    func submitWithMultipleSigners(
+    /// when the queue is empty). The four-argument
+    /// ``OZMultiSignerManager/submitWithMultipleSigners(hostFunction:selectedSigners:forceMethod:resolveContextRuleIds:)``
+    /// is left to the real implementation so direct unit tests of the
+    /// multi-signer pipeline are not affected by this fixture.
+    override func submitWithMultipleSigners(
         hostFunction: HostFunctionXDR,
         selectedSigners: [SelectedSigner],
         forceMethod: SubmissionMethod?

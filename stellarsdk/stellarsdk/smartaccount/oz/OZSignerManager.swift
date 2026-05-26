@@ -201,12 +201,6 @@ public final class OZSignerManager: @unchecked Sendable {
     /// failure deeper in the resolution path.
     private let contextRuleParser: OZContextRuleParser?
 
-    /// Multi-signer submission collaborator consulted when a caller supplies
-    /// a non-empty `selectedSigners` list. Optional so the manager can be
-    /// constructed independently of the multi-signer manager; when `nil`,
-    /// calls that route to the multi-signer path throw a configuration error.
-    private let multiSignerSubmitter: OZMultiSignerSubmitting?
-
     /// WebAuthn provider override used by ``addNewPasskeySigner(contextRuleId:userName:selectedSigners:forceMethod:)``
     /// when the caller wants to drive the registration ceremony through an
     /// adapter other than the one configured on the kit. When `nil`, the
@@ -233,18 +227,15 @@ public final class OZSignerManager: @unchecked Sendable {
     /// - Parameters:
     ///   - kit: The smart-account kit this manager belongs to. Used to resolve
     ///     the connected contract id, the configured WebAuthn provider, the
-    ///     credential manager, and to delegate single-signer submission to the
-    ///     kit's transaction operations.
+    ///     credential manager, to delegate single-signer submission to the
+    ///     kit's transaction operations, and to delegate multi-signer
+    ///     submission to ``OZSmartAccountKitProtocol/multiSignerManager`` when
+    ///     a caller supplies a non-empty `selectedSigners` list.
     ///   - contextRuleParser: Optional parser consulted when resolving a
     ///     signer value to its on-chain numeric id. The kit assembles the
     ///     concrete context-rule manager and supplies it here at construction
     ///     time. Pass `nil` in unit tests that exclusively cover the
     ///     id-based remove path.
-    ///   - multiSignerSubmitter: Optional collaborator consulted when a
-    ///     caller supplies a non-empty `selectedSigners` list. The kit
-    ///     assembles the concrete multi-signer manager and supplies it here
-    ///     at construction time. Pass `nil` in unit tests that exclusively
-    ///     cover the single-signer routing path.
     ///   - webauthnProvider: Optional WebAuthn provider override. When `nil`,
     ///     the provider configured on `kit.config.webauthnProvider` is used.
     ///   - credentialManager: Optional credential manager override. When
@@ -252,13 +243,11 @@ public final class OZSignerManager: @unchecked Sendable {
     internal init(
         kit: OZSmartAccountKitProtocol,
         contextRuleParser: OZContextRuleParser? = nil,
-        multiSignerSubmitter: OZMultiSignerSubmitting? = nil,
         webauthnProvider: WebAuthnProvider? = nil,
         credentialManager: OZCredentialManagerProtocol? = nil
     ) {
         self.kit = kit
         self.contextRuleParser = contextRuleParser
-        self.multiSignerSubmitter = multiSignerSubmitter
         self.webauthnProviderOverride = webauthnProvider
         self.credentialManagerOverride = credentialManager
     }
@@ -737,20 +726,27 @@ public final class OZSignerManager: @unchecked Sendable {
     /// Routes a host-function submission to either the single-signer or the
     /// multi-signer code path based on the supplied `selectedSigners` list.
     ///
-    /// Thin forwarding wrapper over ``OZSubmissionRouter/route(hostFunction:selectedSigners:forceMethod:kit:multiSignerSubmitter:managerName:)``
-    /// that carries the manager-specific configuration-error name.
+    /// When `selectedSigners` is empty, the submission is forwarded through the
+    /// kit's transaction operations on the single-signer path bound to the
+    /// connected passkey. When non-empty, the kit's multi-signer manager is
+    /// consulted directly to coordinate signature collection across every
+    /// supplied signer.
     private func routeSubmission(
         hostFunction: HostFunctionXDR,
         selectedSigners: [SelectedSigner],
         forceMethod: SubmissionMethod?
     ) async throws -> TransactionResult {
-        return try await OZSubmissionRouter.route(
+        if selectedSigners.isEmpty {
+            return try await kit.transactionOperations.submit(
+                hostFunction: hostFunction,
+                auth: [],
+                forceMethod: forceMethod
+            )
+        }
+        return try await kit.multiSignerManager.submitWithMultipleSigners(
             hostFunction: hostFunction,
             selectedSigners: selectedSigners,
-            forceMethod: forceMethod,
-            kit: kit,
-            multiSignerSubmitter: multiSignerSubmitter,
-            managerName: "signer manager"
+            forceMethod: forceMethod
         )
     }
 

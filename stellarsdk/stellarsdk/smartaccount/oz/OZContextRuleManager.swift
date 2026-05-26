@@ -94,7 +94,7 @@ private enum ContextRuleMethod {
 /// ``removeContextRule(id:selectedSigners:forceMethod:)``) accept an optional
 /// `selectedSigners` list. When empty (the default), the operation routes
 /// through the single-signer submission path bound to the connected passkey.
-/// When non-empty, it routes through ``OZMultiSignerSubmitting``.
+/// When non-empty, it routes through the kit's multi-signer manager.
 ///
 /// Contract limits enforced at validation time:
 /// - Maximum ``OZConstants/maxSigners`` signers per context rule.
@@ -128,35 +128,23 @@ public final class OZContextRuleManager: OZContextRuleManagerProtocol, @unchecke
 
     // MARK: - Stored properties
 
-    /// Kit reference used to resolve the connected smart-account contract id
-    /// and to delegate host-function submission to the kit's transaction
-    /// operations.
+    /// Kit reference used to resolve the connected smart-account contract id,
+    /// the multi-signer manager, and to delegate host-function submission to
+    /// the kit's transaction operations.
     private let kit: OZSmartAccountKitProtocol
-
-    /// Multi-signer submission collaborator consulted when a caller supplies a
-    /// non-empty `selectedSigners` list. Optional so the manager can be
-    /// constructed and unit-tested independently of the multi-signer manager;
-    /// when the collaborator is `nil`, calls that route to the multi-signer
-    /// path throw a configuration error.
-    private let multiSignerSubmitter: OZMultiSignerSubmitting?
 
     // MARK: - Initialization
 
     /// Initializes a new `OZContextRuleManager` bound to the supplied kit.
     ///
-    /// - Parameters:
-    ///   - kit: The owning smart account kit.
-    ///   - multiSignerSubmitter: Optional collaborator consulted when a caller
-    ///     supplies a non-empty `selectedSigners` list. The kit assembles the
-    ///     concrete multi-signer manager and supplies it here at construction
-    ///     time. Pass `nil` in unit tests that exclusively cover the
-    ///     single-signer routing path or read-only operations.
-    internal init(
-        kit: OZSmartAccountKitProtocol,
-        multiSignerSubmitter: OZMultiSignerSubmitting? = nil
-    ) {
+    /// - Parameter kit: The owning smart account kit. Used to resolve the
+    ///   connected smart-account contract id, to delegate single-signer
+    ///   submission to the kit's transaction operations, and to delegate
+    ///   multi-signer submission to
+    ///   ``OZSmartAccountKitProtocol/multiSignerManager`` when a caller
+    ///   supplies a non-empty `selectedSigners` list.
+    internal init(kit: OZSmartAccountKitProtocol) {
         self.kit = kit
-        self.multiSignerSubmitter = multiSignerSubmitter
     }
 
     // MARK: - Add Context Rule
@@ -895,20 +883,27 @@ public final class OZContextRuleManager: OZContextRuleManagerProtocol, @unchecke
     /// Routes a host-function submission to either the single-signer or
     /// multi-signer code path based on the supplied `selectedSigners` list.
     ///
-    /// Thin forwarding wrapper over ``OZSubmissionRouter/route(hostFunction:selectedSigners:forceMethod:kit:multiSignerSubmitter:managerName:)``
-    /// that carries the manager-specific configuration-error name.
+    /// When `selectedSigners` is empty, the submission is forwarded through the
+    /// kit's transaction operations on the single-signer path bound to the
+    /// connected passkey. When non-empty, the kit's multi-signer manager is
+    /// consulted directly to coordinate signature collection across every
+    /// supplied signer.
     private func routeSubmission(
         hostFunction: HostFunctionXDR,
         selectedSigners: [SelectedSigner],
         forceMethod: SubmissionMethod?
     ) async throws -> TransactionResult {
-        return try await OZSubmissionRouter.route(
+        if selectedSigners.isEmpty {
+            return try await kit.transactionOperations.submit(
+                hostFunction: hostFunction,
+                auth: [],
+                forceMethod: forceMethod
+            )
+        }
+        return try await kit.multiSignerManager.submitWithMultipleSigners(
             hostFunction: hostFunction,
             selectedSigners: selectedSigners,
-            forceMethod: forceMethod,
-            kit: kit,
-            multiSignerSubmitter: multiSignerSubmitter,
-            managerName: "context rule manager"
+            forceMethod: forceMethod
         )
     }
 }

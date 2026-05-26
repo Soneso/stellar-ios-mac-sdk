@@ -81,16 +81,14 @@ final class OZSignerManagerTests: XCTestCase {
     /// Builds a disconnected ``MockOZSmartAccountKit`` plus a signer manager.
     /// Used by the requireConnected gate assertions.
     private func disconnectedKit(
-        contextRuleParser: OZContextRuleParser? = nil,
-        multiSignerSubmitter: OZMultiSignerSubmitting? = nil
+        contextRuleParser: OZContextRuleParser? = nil
     ) throws -> (MockOZSmartAccountKit, OZSignerManager) {
         let kit = MockOZSmartAccountKit(config: try buildConfig())
         return (
             kit,
             OZSignerManager(
                 kit: kit,
-                contextRuleParser: contextRuleParser,
-                multiSignerSubmitter: multiSignerSubmitter
+                contextRuleParser: contextRuleParser
             )
         )
     }
@@ -99,8 +97,7 @@ final class OZSignerManagerTests: XCTestCase {
     /// bound to a deterministic credential id / contract id pair.
     private func connectedKit(
         contractId: String? = nil,
-        contextRuleParser: OZContextRuleParser? = nil,
-        multiSignerSubmitter: OZMultiSignerSubmitting? = nil
+        contextRuleParser: OZContextRuleParser? = nil
     ) throws -> (MockOZSmartAccountKit, OZSignerManager) {
         let kit = MockOZSmartAccountKit(config: try buildConfig())
         kit.setConnectedState(
@@ -111,8 +108,7 @@ final class OZSignerManagerTests: XCTestCase {
             kit,
             OZSignerManager(
                 kit: kit,
-                contextRuleParser: contextRuleParser,
-                multiSignerSubmitter: multiSignerSubmitter
+                contextRuleParser: contextRuleParser
             )
         )
     }
@@ -334,11 +330,13 @@ final class OZSignerManagerTests: XCTestCase {
         }
     }
 
-    /// Multi-signer routing without a wired submitter surfaces a
-    /// ``ConfigurationException`` so the caller can correct the kit
-    /// composition rather than seeing a confusing runtime failure deeper in
-    /// the submission pipeline.
-    func test_addPasskey_multiSignerWithoutSubmitter_throwsConfiguration() async throws {
+    /// A non-empty `selectedSigners` list containing a wallet entry routes
+    /// through the kit's multi-signer manager, whose initial validation
+    /// rejects wallet-kind signers when the kit's config does not declare an
+    /// external wallet adapter. The check surfaces as
+    /// ``ValidationException/InvalidInput`` naming the `selectedSigners`
+    /// field so callers can correct the kit configuration before retrying.
+    func test_addPasskey_walletSigner_withoutExternalWalletAdapter_throwsValidation() async throws {
         let (_, manager) = try connectedKit()
         do {
             _ = try await manager.addPasskey(
@@ -347,9 +345,13 @@ final class OZSignerManagerTests: XCTestCase {
                 credentialId: Data([0x01, 0x02]),
                 selectedSigners: [.wallet(accountId: validGAddr1)]
             )
-            XCTFail("expected ConfigurationException.InvalidConfig")
-        } catch is ConfigurationException.InvalidConfig {
-            // expected
+            XCTFail("expected ValidationException.InvalidInput")
+        } catch let error as ValidationException.InvalidInput {
+            XCTAssertEqual(error.code, .invalidInput)
+            XCTAssertTrue(
+                error.message.contains("selectedSigners"),
+                "expected 'selectedSigners' in message, got: \(error.message)"
+            )
         }
     }
 
@@ -471,11 +473,9 @@ final class OZSignerManagerTests: XCTestCase {
         )
 
         let parser = _StubContextRuleParser(rule: rule)
-        let recorder = _RecordingMultiSignerSubmitter()
-        let (_, manager) = try connectedKit(
-            contextRuleParser: parser,
-            multiSignerSubmitter: recorder
-        )
+        let (kit, manager) = try connectedKit(contextRuleParser: parser)
+        let recorder = MockOZMultiSignerManager(kit: kit)
+        kit.multiSignerManagerOverride = recorder
 
         // why: routing through the multi-signer submitter captures the
         // host function produced by the manager without performing any
@@ -529,11 +529,9 @@ final class OZSignerManagerTests: XCTestCase {
         )
 
         let parser = _StubContextRuleParser(rule: rule)
-        let recorder = _RecordingMultiSignerSubmitter()
-        let (_, manager) = try connectedKit(
-            contextRuleParser: parser,
-            multiSignerSubmitter: recorder
-        )
+        let (kit, manager) = try connectedKit(contextRuleParser: parser)
+        let recorder = MockOZMultiSignerManager(kit: kit)
+        kit.multiSignerManagerOverride = recorder
 
         let absent = try OZDelegatedSigner(address: validGAddr3)
         do {
@@ -742,39 +740,3 @@ private final class _StubContextRuleParser: OZContextRuleParser, @unchecked Send
     }
 }
 
-/// Recording ``OZMultiSignerSubmitting`` test double that captures every
-/// submission and returns a deterministic success result. Used by the
-/// value-based remove tests so the host function produced by the manager can
-/// be observed without performing any RPC traffic.
-private final class _RecordingMultiSignerSubmitter: OZMultiSignerSubmitting, @unchecked Sendable {
-
-    /// Snapshot of a single captured submission.
-    struct Invocation {
-        let hostFunction: HostFunctionXDR
-        let selectedSigners: [SelectedSigner]
-        let forceMethod: SubmissionMethod?
-    }
-
-    /// Captured submissions in invocation order.
-    private(set) var invocations: [Invocation] = []
-
-    /// Deterministic success result returned from every call. Tests assert
-    /// over the captured invocations rather than the return value, so the
-    /// canonical "submitted ok" shape suffices.
-    private let result = TransactionResult(success: true, hash: "deadbeef")
-
-    func submitWithMultipleSigners(
-        hostFunction: HostFunctionXDR,
-        selectedSigners: [SelectedSigner],
-        forceMethod: SubmissionMethod?
-    ) async throws -> TransactionResult {
-        invocations.append(
-            Invocation(
-                hostFunction: hostFunction,
-                selectedSigners: selectedSigners,
-                forceMethod: forceMethod
-            )
-        )
-        return result
-    }
-}

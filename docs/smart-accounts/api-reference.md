@@ -1393,7 +1393,7 @@ The SDK ships a parallel struct `OZSignerWeight` (with `Int` weight) used by `OZ
 ## Multi-Signer Operations
 
 ```swift
-public final class OZMultiSignerManager: @unchecked Sendable { ... }
+public class OZMultiSignerManager: @unchecked Sendable { ... }
 ```
 
 Accessed via `kit.multiSignerManager`. Collects signatures from a caller-supplied list of signers (passkeys and external-wallet addresses) and submits the resulting transaction through the kit's transaction operations.
@@ -1464,7 +1464,7 @@ public func submitWithMultipleSigners(
 ) async throws -> TransactionResult
 ```
 
-Shared low-level multi-signer signing pipeline. Validates the wallet-signer set, simulates the host function to discover authorization entries, signs every matching entry with every supplied signer, re-simulates so the resource fees reflect the real signature payload size, and submits the final envelope. The three higher-level entry points delegate here; the signer, policy, and context-rule managers also route to this method through the internal `OZMultiSignerSubmitting` protocol when a non-empty `selectedSigners` list is supplied to one of their state-changing methods.
+Shared low-level multi-signer signing pipeline. Validates the wallet-signer set, simulates the host function to discover authorization entries, signs every matching entry with every supplied signer, re-simulates so the resource fees reflect the real signature payload size, and submits the final envelope. The three higher-level entry points delegate here; the signer, policy, and context-rule managers also reach this method internally when a non-empty `selectedSigners` list is supplied to one of their state-changing methods.
 
 Validation order: connection check, external-wallet adapter check, per-wallet-signer reachability via `ExternalWalletAdapter.canSignFor(address:)`, per-passkey-signer `keyData` precondition (every passkey entry must carry pre-fetched `keyData` so context-rule resolution and signature binding can run without an extra on-chain lookup), initial simulation surface error, re-simulation surface error.
 

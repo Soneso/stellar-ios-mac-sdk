@@ -645,6 +645,31 @@ final class OZPolicyManagerTests: XCTestCase {
         }
     }
 
+    /// A non-empty `selectedSigners` list containing a wallet entry routes
+    /// through the kit's multi-signer manager, whose initial validation
+    /// rejects wallet-kind signers when the kit's config does not declare an
+    /// external wallet adapter. The check surfaces as
+    /// ``ValidationException/InvalidInput`` naming the `selectedSigners`
+    /// field so callers can correct the kit configuration before retrying.
+    func test_addSimpleThreshold_walletSigner_withoutExternalWalletAdapter_throwsValidation() async throws {
+        let (_, manager) = try connectedKit()
+        do {
+            _ = try await manager.addSimpleThreshold(
+                contextRuleId: 0,
+                policyAddress: validVerifier,
+                threshold: 2,
+                selectedSigners: [.wallet(accountId: validAddr1)]
+            )
+            XCTFail("expected ValidationException.InvalidInput")
+        } catch let error as ValidationException.InvalidInput {
+            XCTAssertEqual(error.code, .invalidInput)
+            XCTAssertTrue(
+                error.message.contains("selectedSigners"),
+                "expected 'selectedSigners' in message, got: \(error.message)"
+            )
+        }
+    }
+
     /// Connected kit + addPolicy with malformed policy address must throw
     /// `ValidationException.InvalidAddress` before any submission attempt.
     func test_addPolicy_invalidPolicyAddress_throws() async throws {

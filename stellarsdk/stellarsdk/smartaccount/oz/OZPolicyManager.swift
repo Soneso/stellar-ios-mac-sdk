@@ -61,41 +61,6 @@ public enum SelectedSigner: Sendable, Hashable {
 }
 
 // ============================================================================
-// MARK: - OZMultiSignerSubmitting
-// ============================================================================
-
-/// Internal collaborator surface consumed by ``OZPolicyManager`` when a caller
-/// supplies a non-empty `selectedSigners` list.
-///
-/// The kit's multi-signer manager (defined in a sibling file shipped with the
-/// remainder of the OZ port) conforms to this protocol so the policy manager
-/// can route to it without holding a typed reference. The protocol exists so
-/// ``OZPolicyManager`` can be constructed and unit-tested without instantiating
-/// the multi-signer manager.
-internal protocol OZMultiSignerSubmitting: AnyObject, Sendable {
-
-    /// Submits the supplied host function with multi-signer authorization.
-    ///
-    /// Coordinates signature collection from every signer in `selectedSigners`,
-    /// assembles the final OZ authorization payload, and submits the resulting
-    /// transaction via the kit's transaction operations.
-    ///
-    /// - Parameters:
-    ///   - hostFunction: Host function being authorized.
-    ///   - selectedSigners: Signers participating in the ceremony. Must be
-    ///     non-empty; an empty list indicates a routing bug at the call site.
-    ///   - forceMethod: Optional submission-method override.
-    /// - Returns: The on-chain submission outcome.
-    /// - Throws: ``WalletException``, ``TransactionException``,
-    ///   ``ValidationException`` for validation, signing, or submission failures.
-    func submitWithMultipleSigners(
-        hostFunction: HostFunctionXDR,
-        selectedSigners: [SelectedSigner],
-        forceMethod: SubmissionMethod?
-    ) async throws -> TransactionResult
-}
-
-// ============================================================================
 // MARK: - PolicyInstallParams
 // ============================================================================
 
@@ -478,16 +443,10 @@ public final class OZPolicyManager: @unchecked Sendable {
 
     // MARK: - Stored properties
 
-    /// Kit reference used to resolve the connected smart-account contract id and
-    /// to delegate host-function submission to the kit's transaction operations.
+    /// Kit reference used to resolve the connected smart-account contract id,
+    /// the multi-signer manager, and to delegate host-function submission to
+    /// the kit's transaction operations.
     private let kit: OZSmartAccountKitProtocol
-
-    /// Multi-signer submission collaborator consulted when a caller supplies a
-    /// non-empty `selectedSigners` list. Optional so the manager can be
-    /// constructed and unit-tested independently of the multi-signer manager;
-    /// when the collaborator is `nil`, calls that route to the multi-signer
-    /// path throw a configuration error.
-    private let multiSignerSubmitter: OZMultiSignerSubmitting?
 
     /// Context-rule parser consulted by
     /// ``removePolicyByAddress(contextRuleId:policyAddress:selectedSigners:forceMethod:)``
@@ -503,12 +462,10 @@ public final class OZPolicyManager: @unchecked Sendable {
     ///
     /// - Parameters:
     ///   - kit: The kit this manager belongs to. Used to resolve the connected
-    ///     smart-account contract id and to delegate single-signer submission.
-    ///   - multiSignerSubmitter: Optional collaborator consulted when a caller
-    ///     supplies a non-empty `selectedSigners` list. The kit assembles the
-    ///     concrete multi-signer manager and supplies it here at construction
-    ///     time. Pass `nil` in unit tests that exclusively cover the
-    ///     single-signer routing path.
+    ///     smart-account contract id, to delegate single-signer submission to
+    ///     the kit's transaction operations, and to delegate multi-signer
+    ///     submission to ``OZSmartAccountKitProtocol/multiSignerManager`` when
+    ///     a caller supplies a non-empty `selectedSigners` list.
     ///   - contextRuleParser: Optional parser consulted by
     ///     ``removePolicyByAddress(contextRuleId:policyAddress:selectedSigners:forceMethod:)``
     ///     so a single rule can be fetched and parsed instead of paginating
@@ -516,11 +473,9 @@ public final class OZPolicyManager: @unchecked Sendable {
     ///     list-everything path which performs `N` RPC simulations.
     internal init(
         kit: OZSmartAccountKitProtocol,
-        multiSignerSubmitter: OZMultiSignerSubmitting? = nil,
         contextRuleParser: OZContextRuleParser? = nil
     ) {
         self.kit = kit
-        self.multiSignerSubmitter = multiSignerSubmitter
         self.contextRuleParser = contextRuleParser
     }
 
@@ -841,8 +796,11 @@ public final class OZPolicyManager: @unchecked Sendable {
     /// Routes a host-function submission to either the single-signer or
     /// multi-signer code path based on the supplied `selectedSigners` list.
     ///
-    /// Thin forwarding wrapper over ``OZSubmissionRouter/route(hostFunction:selectedSigners:forceMethod:kit:multiSignerSubmitter:managerName:)``
-    /// that carries the manager-specific configuration-error name.
+    /// When `selectedSigners` is empty, the submission is forwarded through the
+    /// kit's transaction operations on the single-signer path bound to the
+    /// connected passkey. When non-empty, the kit's multi-signer manager is
+    /// consulted directly to coordinate signature collection across every
+    /// supplied signer.
     ///
     /// - Parameters:
     ///   - hostFunction: The host function to submit.
@@ -850,20 +808,22 @@ public final class OZPolicyManager: @unchecked Sendable {
     ///     single-signer routing.
     ///   - forceMethod: Optional submission-method override.
     /// - Returns: A ``TransactionResult`` describing the on-chain outcome.
-    /// - Throws: ``TransactionException``, ``WalletException``,
-    ///   ``ConfigurationException``.
     private func routeSubmission(
         hostFunction: HostFunctionXDR,
         selectedSigners: [SelectedSigner],
         forceMethod: SubmissionMethod?
     ) async throws -> TransactionResult {
-        return try await OZSubmissionRouter.route(
+        if selectedSigners.isEmpty {
+            return try await kit.transactionOperations.submit(
+                hostFunction: hostFunction,
+                auth: [],
+                forceMethod: forceMethod
+            )
+        }
+        return try await kit.multiSignerManager.submitWithMultipleSigners(
             hostFunction: hostFunction,
             selectedSigners: selectedSigners,
-            forceMethod: forceMethod,
-            kit: kit,
-            multiSignerSubmitter: multiSignerSubmitter,
-            managerName: "policy manager"
+            forceMethod: forceMethod
         )
     }
 

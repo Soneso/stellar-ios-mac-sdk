@@ -69,7 +69,8 @@ import Security
 /// captured at construction time, so concurrent invocation is safe at this
 /// layer — concurrent invocation of WebAuthn or external-wallet signing is
 /// constrained by the underlying OS-level prompt serialization.
-public final class OZMultiSignerManager: @unchecked Sendable {
+// non-final to allow internal test subclassing in the unit-test target.
+public class OZMultiSignerManager: @unchecked Sendable {
 
     // MARK: - Stored properties
 
@@ -302,6 +303,44 @@ public final class OZMultiSignerManager: @unchecked Sendable {
         )
     }
 
+    // MARK: - Sibling-Manager Submission Entry Point
+
+    /// Three-argument overload consumed by sibling managers
+    /// (signer / policy / context-rule) when one of their state-changing
+    /// methods is invoked with a non-empty `selectedSigners` list.
+    ///
+    /// Routes through the four-argument
+    /// ``submitWithMultipleSigners(hostFunction:selectedSigners:forceMethod:resolveContextRuleIds:)``
+    /// with `resolveContextRuleIds = nil` so sibling managers do not need to
+    /// know about the context-rule resolver override.
+    ///
+    /// Declared in the main class body (rather than in an extension) so test
+    /// doubles can subclass ``OZMultiSignerManager`` and override this
+    /// overload to observe routing decisions without exercising the real
+    /// signing pipeline.
+    ///
+    /// - Parameters:
+    ///   - hostFunction: Host function being authorized.
+    ///   - selectedSigners: Signers participating in the ceremony. Must be
+    ///     non-empty.
+    ///   - forceMethod: Optional submission-method override.
+    /// - Returns: The on-chain submission outcome.
+    /// - Throws: ``WalletException``, ``ValidationException``,
+    ///           ``TransactionException``, ``WebAuthnException``,
+    ///           ``ConfigurationException``.
+    internal func submitWithMultipleSigners(
+        hostFunction: HostFunctionXDR,
+        selectedSigners: [SelectedSigner],
+        forceMethod: SubmissionMethod?
+    ) async throws -> TransactionResult {
+        return try await submitWithMultipleSigners(
+            hostFunction: hostFunction,
+            selectedSigners: selectedSigners,
+            forceMethod: forceMethod,
+            resolveContextRuleIds: nil
+        )
+    }
+
     // MARK: - Shared Multi-Signer Submission Pipeline
 
     /// Shared multi-signer signing pipeline.
@@ -316,8 +355,8 @@ public final class OZMultiSignerManager: @unchecked Sendable {
     /// ``multiSignerContractCall(target:targetFn:targetArgs:selectedSigners:forceMethod:resolveContextRuleIds:)``,
     /// ``multiSignerExecuteAndSubmit(target:targetFn:targetArgs:selectedSigners:forceMethod:resolveContextRuleIds:)``)
     /// build the host function and delegate to this method. Sibling managers
-    /// (signer / policy / context-rule) call this method directly through the
-    /// ``OZMultiSignerSubmitting`` protocol when a non-empty
+    /// (signer / policy / context-rule) call this method directly on
+    /// ``OZSmartAccountKitProtocol/multiSignerManager`` when a non-empty
     /// `selectedSigners` list is supplied to one of their state-changing
     /// methods.
     ///
@@ -1307,35 +1346,3 @@ public final class OZMultiSignerManager: @unchecked Sendable {
     }
 }
 
-// ============================================================================
-// MARK: - OZMultiSignerSubmitting conformance
-// ============================================================================
-
-/// Conformance to the cross-manager multi-signer submission protocol declared
-/// by ``OZPolicyManager``.
-///
-/// Sibling managers (signer / policy / context-rule) hold a typed reference to
-/// ``OZMultiSignerSubmitting`` rather than to the concrete
-/// ``OZMultiSignerManager`` so they can be unit-tested without instantiating
-/// the multi-signer pipeline. The kit's composition root wires the concrete
-/// ``OZMultiSignerManager`` instance through this protocol when the kit is
-/// constructed.
-extension OZMultiSignerManager: OZMultiSignerSubmitting {
-
-    /// Routes through the four-argument
-    /// ``submitWithMultipleSigners(hostFunction:selectedSigners:forceMethod:resolveContextRuleIds:)``
-    /// with `resolveContextRuleIds = nil` so sibling managers do not need to
-    /// know about the context-rule resolver override.
-    public func submitWithMultipleSigners(
-        hostFunction: HostFunctionXDR,
-        selectedSigners: [SelectedSigner],
-        forceMethod: SubmissionMethod?
-    ) async throws -> TransactionResult {
-        return try await submitWithMultipleSigners(
-            hostFunction: hostFunction,
-            selectedSigners: selectedSigners,
-            forceMethod: forceMethod,
-            resolveContextRuleIds: nil
-        )
-    }
-}
