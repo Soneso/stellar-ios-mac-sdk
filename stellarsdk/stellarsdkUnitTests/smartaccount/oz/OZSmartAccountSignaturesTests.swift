@@ -402,14 +402,17 @@ final class OZSmartAccountSignaturesTests: XCTestCase {
         }
     }
 
-    func testEd25519Signature_toScVal_alphabeticalKeys() throws {
+    func testEd25519Signature_toScVal_returnsBytesContainingSignature() throws {
+        let sig = Data(repeating: 0x03, count: 64)
         let signature = try OZEd25519Signature(
             publicKey: Data(repeating: 0x02, count: 32),
-            signature: Data(repeating: 0x03, count: 64)
+            signature: sig
         )
-        let entries = mapEntries(of: signature.toScVal())
-        let keys = entries.map { symbolName($0.key) }
-        XCTAssertEqual(keys, ["public_key", "signature"])
+        guard case .bytes(let bytes) = signature.toScVal() else {
+            XCTFail("Expected SCValXDR.bytes, got \(signature.toScVal())")
+            return
+        }
+        XCTAssertEqual(bytes, sig, "toScVal() must return the raw 64-byte signature")
     }
 
     func testEd25519Signature_equality_constantTime() throws {
@@ -435,33 +438,100 @@ final class OZSmartAccountSignaturesTests: XCTestCase {
         XCTAssertEqual(a.hashValue, b.hashValue)
     }
 
-    func testEd25519Signature_toScVal_returnsMapType() throws {
+    func testEd25519Signature_toScVal_returnsBytesType() throws {
         let signature = try OZEd25519Signature(
             publicKey: Data(repeating: 0x02, count: 32),
             signature: Data(repeating: 0x03, count: 64)
         )
-        XCTAssertTrue(signature.toScVal().isMap)
+        if case .bytes = signature.toScVal() { } else {
+            XCTFail("Expected SCValXDR.bytes, got \(signature.toScVal())")
+        }
     }
 
-    func testEd25519Signature_toScVal_hasExactlyTwoEntries() throws {
+    func testEd25519Signature_toScVal_bytesLength64() throws {
+        let sig = Data(repeating: 0x03, count: 64)
         let signature = try OZEd25519Signature(
             publicKey: Data(repeating: 0x02, count: 32),
-            signature: Data(repeating: 0x03, count: 64)
+            signature: sig
         )
-        guard case .map(let entries) = signature.toScVal() else {
-            XCTFail("Expected map")
+        guard case .bytes(let bytes) = signature.toScVal() else {
+            XCTFail("Expected SCValXDR.bytes")
             return
         }
-        XCTAssertEqual(entries?.count, 2)
+        XCTAssertEqual(bytes.count, 64)
     }
 
-    // MARK: - Cross-SDK byte-identity golden vector (WebAuthnSignature)
+    // MARK: - toAuthPayloadBytes
+
+    func testEd25519Signature_toAuthPayloadBytes_isRaw64Bytes() throws {
+        let sig = Data(repeating: 0x03, count: 64)
+        let signature = try OZEd25519Signature(
+            publicKey: Data(repeating: 0x02, count: 32),
+            signature: sig
+        )
+        let bytes = try signature.toAuthPayloadBytes()
+        XCTAssertEqual(bytes, sig, "Ed25519 toAuthPayloadBytes() must return the raw 64-byte signature")
+        XCTAssertEqual(bytes.count, 64)
+    }
+
+    func testEd25519Signature_toAuthPayloadBytes_notXdrWrapped() throws {
+        // XDR-encoding SCValXDR.bytes(64 bytes) produces ~70 bytes (4-byte tag +
+        // 4-byte length + 64 bytes + optional padding). toAuthPayloadBytes() must
+        // return exactly 64 bytes — not the XDR envelope — so the Ed25519 verifier
+        // can coerce Bytes(64) to BytesN<64>.
+        let sig = Data(repeating: 0x42, count: 64)
+        let signature = try OZEd25519Signature(
+            publicKey: Data(repeating: 0x01, count: 32),
+            signature: sig
+        )
+        let bytes = try signature.toAuthPayloadBytes()
+        XCTAssertEqual(bytes.count, 64, "must be exactly 64 bytes — XDR envelope would be longer")
+    }
+
+    func testWebAuthnSignature_toAuthPayloadBytes_isXdrEncodedMap() throws {
+        let webauthn = try makeWebAuthn()
+        let bytes = try webauthn.toAuthPayloadBytes()
+        // XDR-encoded SCValXDR.map always starts with the map type tag 0x00000011.
+        // The payload must be longer than 64 bytes (the signature field alone is 64).
+        XCTAssertGreaterThan(bytes.count, 64,
+            "WebAuthn toAuthPayloadBytes() must be an XDR-encoded map, not raw bytes")
+        // First 4 bytes are the SCValXDR.map discriminant (type tag 17 = 0x11).
+        let tag = bytes.prefix(4)
+        XCTAssertEqual(tag, Data([0x00, 0x00, 0x00, 0x11]),
+            "WebAuthn payload must start with SCValXDR map discriminant 0x00000011")
+    }
+
+    func testPolicySignature_toAuthPayloadBytes_isXdrEncodedEmptyMap() throws {
+        let bytes = try OZPolicySignature.instance.toAuthPayloadBytes()
+        // XDR-encoded SCValXDR.map([]) encodes as:
+        //   0x00000011  — SCVal discriminant for map (17)
+        //   0x00000001  — optional array present indicator
+        //   0x00000000  — array count 0
+        // Total: 12 bytes.
+        XCTAssertEqual(bytes.count, 12,
+            "Policy toAuthPayloadBytes() must be the XDR-encoded empty map (12 bytes)")
+        // Verify discriminant: first 4 bytes must be the SCVal map type tag.
+        XCTAssertEqual(bytes.prefix(4), Data([0x00, 0x00, 0x00, 0x11]),
+            "First 4 bytes must be the SCVal map discriminant 0x00000011")
+    }
+
+    func testWebAuthnAndEd25519_toAuthPayloadBytes_areDistinctLengths() throws {
+        let sig = Data(repeating: 0x03, count: 64)
+        let ed25519 = try OZEd25519Signature(publicKey: Data(repeating: 0x02, count: 32), signature: sig)
+        let webauthn = try makeWebAuthn()
+        let edBytes = try ed25519.toAuthPayloadBytes()
+        let waBytes = try webauthn.toAuthPayloadBytes()
+        XCTAssertEqual(edBytes.count, 64)
+        XCTAssertGreaterThan(waBytes.count, 64)
+        XCTAssertNotEqual(edBytes, waBytes)
+    }
+
+    // MARK: - Byte-identity golden vector (WebAuthnSignature)
     //
-    // Pins the byte-level XDR encoding of `OZWebAuthnSignature.toScVal()`. The
-    // fixture inputs (37 bytes 0xAA, 16 bytes 0xBB, 64 bytes 0xCC) are chosen
-    // so any drift in field name (`client_data` vs `client_data_json`),
-    // alphabetical key ordering, or value-bytes encoding produces a different
-    // hex output and breaks the cross-SDK test in lockstep.
+    // Pins the byte-level XDR encoding of OZWebAuthnSignature.toScVal().
+    // Any drift in field name (client_data vs client_data_json), alphabetical
+    // key ordering, or value-bytes encoding produces a different hex output
+    // and breaks this test.
 
     func test_goldenVector6_webAuthnSignatureWireShape_matchesFixture() throws {
         let signature = try OZWebAuthnSignature(

@@ -379,12 +379,11 @@ final class OZSmartAccountAuthTests: XCTestCase {
         XCTAssertNotEqual(d1, d2)
     }
 
-    // MARK: - Cross-SDK byte-identity golden vectors (auth-digest)
+    // MARK: - Golden vectors (auth-digest)
     //
     // These tests pin the byte-level output of the OZ auth-digest formula so a
-    // wire-format regression in this SDK or in a sibling SDK fails immediately
-    // rather than silently shipping divergent encodings. The expected hex
-    // strings are byte-identical across SDKs and must be updated in lockstep.
+    // wire-format regression surfaces immediately. The expected hex strings are
+    // fixed constants and must be updated whenever the formula changes.
 
     func test_goldenVector1_emptyRulesMinimalPayload_authDigest_matchesFixture() async throws {
         let signaturePayload = Data("test1".utf8).sha256Hash

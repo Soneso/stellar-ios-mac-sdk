@@ -14,8 +14,11 @@ import Foundation
 /// - `OZEd25519Signature` for traditional Ed25519 keypair signatures.
 /// - `OZPolicySignature` as a marker for policy-based authorization (an empty map).
 ///
-/// Each variant converts to the `SCValXDR` map shape that the smart-account contract
-/// verifies.
+/// Each variant converts to the `SCValXDR` representation expected by the on-chain
+/// verifier contract. The shape differs per variant:
+/// - WebAuthn: `SCValXDR.map` with alphabetically-ordered keys.
+/// - Ed25519: `SCValXDR.bytes` containing the raw 64-byte signature.
+/// - Policy: `SCValXDR.map([])` (empty map).
 ///
 /// Example:
 /// ```swift
@@ -30,12 +33,27 @@ public protocol OZSmartAccountSignature: Sendable {
 
     /// Converts this signature to its on-chain `SCValXDR` representation.
     ///
-    /// The returned value is typically an `SCValXDR.map` whose keys are alphabetically
-    /// sorted because the verifier contract requires that ordering. Construction-time
-    /// validation may throw `ValidationException.InvalidInput`; this conversion is total.
+    /// Construction-time validation may throw `ValidationException.InvalidInput`;
+    /// this conversion is total (non-throwing).
     ///
-    /// - Returns: The signature encoded as an `SCValXDR` map.
+    /// - Returns: The signature encoded as an `SCValXDR` value. The concrete type
+    ///   depends on the variant (map for WebAuthn/Policy, bytes for Ed25519).
     func toScVal() -> SCValXDR
+
+    /// Returns the raw bytes content that is stored inside the `ScVal::Bytes` value of the
+    /// smart account's on-chain `AuthPayload.signers: Map<Signer, Bytes>`.
+    ///
+    /// The exact content is verifier-dependent:
+    /// - **WebAuthn**: XDR-encoded `WebAuthnSigData` contracttype struct. The WebAuthn
+    ///   verifier receives this as `sig_data: Bytes` and deserializes it to `WebAuthnSigData`.
+    /// - **Ed25519**: the raw 64-byte Ed25519 signature with no XDR wrapper. The Ed25519
+    ///   verifier receives `sig_data: BytesN<64>` and the host coerces `Bytes(64)` to
+    ///   `BytesN<64>` directly. Wrapping in an XDR envelope inflates the content to ~70 bytes,
+    ///   which the coercion rejects with `InvalidAction`.
+    /// - **Policy**: XDR-encoded empty map (same byte sequence as `toScVal()` encoded).
+    ///
+    /// - Throws: `TransactionException.SigningFailed` if XDR encoding fails (WebAuthn/Policy).
+    func toAuthPayloadBytes() throws -> Data
 }
 
 // ============================================================================
@@ -98,6 +116,24 @@ public struct OZWebAuthnSignature: OZSmartAccountSignature, Hashable {
         return .map(entries)
     }
 
+    /// Returns the XDR-encoded `WebAuthnSigData` map as the auth payload bytes.
+    ///
+    /// The WebAuthn verifier contract receives `sig_data: Bytes` and deserializes it to
+    /// `WebAuthnSigData` (a contracttype struct). The Bytes content must therefore be the
+    /// XDR encoding of the `SCValXDR.map` produced by `toScVal()`.
+    ///
+    /// - Throws: `TransactionException.SigningFailed` if XDR encoding fails.
+    public func toAuthPayloadBytes() throws -> Data {
+        do {
+            return Data(try XDREncoder.encode(toScVal()))
+        } catch {
+            throw TransactionException.signingFailed(
+                reason: "Failed to XDR encode WebAuthn signature for auth payload",
+                cause: error
+            )
+        }
+    }
+
     /// Equality implemented with constant-time comparison over each byte field to avoid
     /// leaking information about the byte content through a timing side channel.
     ///
@@ -135,13 +171,17 @@ public struct OZWebAuthnSignature: OZSmartAccountSignature, Hashable {
 /// Ed25519 signatures are 64 bytes and provide deterministic signing with strong
 /// side-channel resistance.
 ///
-/// Field ordering in the SCVal map is alphabetical and is required for contract
-/// compatibility:
-/// 1. `public_key`
-/// 2. `signature`
+/// The `publicKey` field is retained on this struct for local signature verification
+/// inside the multi-signer pipeline before submission. It is **not** transmitted in
+/// the auth payload: the OZ Ed25519 verifier contract looks up the public key from
+/// the on-chain `External(verifier, key_data)` signer storage. Only the raw 64-byte
+/// signature is placed in the payload.
 public struct OZEd25519Signature: OZSmartAccountSignature, Hashable {
 
     /// Ed25519 public key (`SmartAccountConstants.ed25519PublicKeySize` bytes).
+    ///
+    /// Used for local pre-submission signature verification only. Not transmitted
+    /// in the auth payload.
     public let publicKey: Data
 
     /// Ed25519 signature (64 bytes).
@@ -150,7 +190,7 @@ public struct OZEd25519Signature: OZSmartAccountSignature, Hashable {
     /// Initializes a new `OZEd25519Signature`.
     ///
     /// - Parameters:
-    ///   - publicKey: 32-byte Ed25519 public key.
+    ///   - publicKey: 32-byte Ed25519 public key (used for local verification only).
     ///   - signature: 64-byte Ed25519 signature.
     /// - Throws: `ValidationException.InvalidInput` when `publicKey` is not 32 bytes or
     ///           `signature` is not 64 bytes.
@@ -171,16 +211,27 @@ public struct OZEd25519Signature: OZSmartAccountSignature, Hashable {
         self.signature = signature
     }
 
-    /// Converts the signature to a Soroban `SCValXDR` map with alphabetically-ordered keys
-    /// (`public_key`, `signature`).
+    /// Returns the raw 64-byte Ed25519 signature as `SCValXDR.bytes`.
     ///
-    /// - Returns: An `SCValXDR.map` with two byte-valued entries.
+    /// The OZ Ed25519 verifier contract expects `BytesN<64>` directly as the per-signer
+    /// `sig_data` in the `AuthPayload.signers` map. The public key is supplied separately
+    /// by the smart account contract from its on-chain `External(verifier, key_data)`
+    /// storage and is NOT transmitted in the auth payload.
+    ///
+    /// - Returns: `SCValXDR.bytes(signature)` — the raw 64-byte signature.
     public func toScVal() -> SCValXDR {
-        let entries: [SCMapEntryXDR] = [
-            SCMapEntryXDR(key: .symbol("public_key"), val: .bytes(publicKey)),
-            SCMapEntryXDR(key: .symbol("signature"), val: .bytes(signature))
-        ]
-        return .map(entries)
+        return .bytes(signature)
+    }
+
+    /// Returns the raw 64-byte Ed25519 signature with no XDR wrapping.
+    ///
+    /// The Ed25519 verifier contract receives `sig_data: BytesN<64>`. The host coerces
+    /// `Bytes(64)` → `BytesN<64>` directly. XDR-encoding the ScVal first inflates the
+    /// content to ~70 bytes and the coercion rejects it with `Error(Auth, InvalidAction)`.
+    ///
+    /// - Returns: The raw 64-byte `signature` field.
+    public func toAuthPayloadBytes() throws -> Data {
+        return signature
     }
 
     /// Equality implemented with constant-time comparison over each byte field; the boolean
@@ -219,5 +270,19 @@ public struct OZPolicySignature: OZSmartAccountSignature, Hashable {
     /// Converts the policy signature to an empty Soroban `SCValXDR` map.
     public func toScVal() -> SCValXDR {
         return .map([])
+    }
+
+    /// Returns the XDR-encoded empty map as the auth payload bytes.
+    ///
+    /// - Throws: `TransactionException.SigningFailed` if XDR encoding fails.
+    public func toAuthPayloadBytes() throws -> Data {
+        do {
+            return Data(try XDREncoder.encode(toScVal()))
+        } catch {
+            throw TransactionException.signingFailed(
+                reason: "Failed to XDR encode policy signature for auth payload",
+                cause: error
+            )
+        }
     }
 }

@@ -108,7 +108,7 @@ final class OZSmartAccountKitTests: XCTestCase {
     }
 
     // ========================================================================
-    // MARK: - Group A: Kit initialization
+    // MARK: - Kit initialization
     // ========================================================================
 
     func testKitInitialization_validConfig() throws {
@@ -128,6 +128,31 @@ final class OZSmartAccountKitTests: XCTestCase {
         XCTAssertNotNil(kit.contextRuleManagerConcrete)
         XCTAssertNotNil(kit.credentialManagerConcrete)
         XCTAssertNil(kit.externalSignerManager)
+    }
+
+    func test_externalSignerManager_nilWhenNotSetInConfig() throws {
+        let config = try makeConfig()
+        let kit = OZSmartAccountKit.create(config: config)
+        XCTAssertNil(
+            kit.externalSignerManager,
+            "externalSignerManager must be nil when not set on the config"
+        )
+    }
+
+    func test_externalSignerManager_returnsConfigValue() throws {
+        let manager = OZExternalSignerManager(networkPassphrase: validPassphrase)
+        let config = try OZSmartAccountConfig(
+            rpcUrl: validRpcUrl,
+            networkPassphrase: validPassphrase,
+            accountWasmHash: validWasmHash,
+            webauthnVerifierAddress: validVerifier,
+            externalSignerManager: manager
+        )
+        let kit = OZSmartAccountKit.create(config: config)
+        XCTAssertTrue(
+            kit.externalSignerManager === manager,
+            "externalSignerManager must return the exact instance supplied via config"
+        )
     }
 
     func testKitInitialization_missingRpcUrl() {
@@ -231,7 +256,7 @@ final class OZSmartAccountKitTests: XCTestCase {
     }
 
     // ========================================================================
-    // MARK: - Group B: Close lifecycle
+    // MARK: - Close lifecycle
     // ========================================================================
 
     func testClose_canBeCalledOnFreshKit() async throws {
@@ -284,7 +309,7 @@ final class OZSmartAccountKitTests: XCTestCase {
     }
 
     // ========================================================================
-    // MARK: - Group C: Disconnect + requireConnected
+    // MARK: - Disconnect + requireConnected
     // ========================================================================
 
     func testKitDisconnect() async throws {
@@ -364,7 +389,7 @@ final class OZSmartAccountKitTests: XCTestCase {
     }
 
     // ========================================================================
-    // MARK: - Group D: Default deployer
+    // MARK: - Default deployer
     // ========================================================================
 
     func testDefaultDeployer() async throws {
@@ -402,11 +427,11 @@ final class OZSmartAccountKitTests: XCTestCase {
     }
 
     // ========================================================================
-    // MARK: - Group E: Additional kit invariants (factory, transitions,
+    // MARK: - Additional kit invariants (factory, transitions,
     // close-releases, identity preservation, concurrency, memory)
     // ========================================================================
 
-    // E1: Factory invalid-config rejection — covered by Group A error tests.
+    // E1: Factory invalid-config rejection — covered by Kit initialization error tests.
 
     // E2: State transitions
     func testStateTransitions_connectThenDisconnect() async throws {
@@ -638,7 +663,7 @@ final class OZSmartAccountKitTests: XCTestCase {
     }
 
     // ========================================================================
-    // MARK: - Group F: Events directly invoking kit
+    // MARK: - Events directly invoking kit
     // ========================================================================
 
     func testEvents_typeSafeSubscription() async throws {

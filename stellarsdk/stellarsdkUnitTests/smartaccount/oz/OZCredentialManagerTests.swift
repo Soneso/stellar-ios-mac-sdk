@@ -281,8 +281,8 @@ final class OZCredentialManagerTests: XCTestCase {
     }
 
     /// A.3.11: sync returns false silently when the on-chain check fails
-    /// (transport error, RPC error, parse failure). Per D-126 the credential
-    /// is retained in storage and no exception escapes.
+    /// (transport error, RPC error, parse failure). The credential is retained
+    /// in storage and no exception escapes.
     func testSync_rpcError_returnsFalseSilently() async throws {
         // why: no MockSorobanServer.activate here — the kit is constructed
         // with a SorobanServer pointing at 127.0.0.1:1 which yields immediate
@@ -441,8 +441,8 @@ final class OZCredentialManagerTests: XCTestCase {
     }
 
     /// A.4.15: deleteCredential refuses to delete when the on-chain contract
-    /// already exists; per D-127 the prior sync removes the credential and
-    /// the deletion then throws CredentialException.Invalid.
+    /// already exists; sync removes the credential and the deletion then
+    /// throws CredentialException.Invalid.
     func testDeleteCredential_deployedCredential_throwsCannotDelete() async throws {
         let script = MockSorobanServerScript()
         MockSorobanServer.activate(script: script)
@@ -535,7 +535,7 @@ final class OZCredentialManagerTests: XCTestCase {
     }
 
     /// A.5.19: getForConnectedWallet returns empty when no wallet is
-    /// currently connected (per D-122).
+    /// currently connected.
     func testGetForConnectedWallet_noConnection_returnsEmpty() async throws {
         let (manager, _, _) = try makeManager()
         _ = try await manager.createPendingCredential(
@@ -609,7 +609,7 @@ final class OZCredentialManagerTests: XCTestCase {
     }
 
     /// A.6.23: setPrimary demotes any existing primary credential for the
-    /// same contract before promoting the target credential (per D-124).
+    /// same contract before promoting the target credential.
     func testSetPrimary_internal_unsetsExistingPrimary() async throws {
         let (manager, _, _) = try makeManager()
         _ = try await manager.createPendingCredential(

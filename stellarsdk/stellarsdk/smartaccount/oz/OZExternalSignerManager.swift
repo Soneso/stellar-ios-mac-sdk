@@ -8,6 +8,63 @@
 import Foundation
 
 // ============================================================================
+// OZExternalEd25519SignerAdapter
+// ============================================================================
+
+/// Adapter protocol for external Ed25519 signing sources.
+///
+/// Conform to this protocol to plug in a hardware wallet, remote signing service, or any
+/// other out-of-process Ed25519 signing backend into the multi-signer pipeline. The manager
+/// consults the adapter before falling back to its in-memory keypair registry (adapter-first
+/// precedence rule).
+///
+/// Example:
+/// ```swift
+/// final class MyHardwareWalletAdapter: OZExternalEd25519SignerAdapter {
+///     func canSignFor(verifierAddress: String, publicKey: Data) -> Bool {
+///         hardwareWallet.hasSigner(for: publicKey)
+///     }
+///
+///     func signAuthDigest(authDigest: Data, publicKey: Data) async throws -> Data {
+///         try await hardwareWallet.sign(digest: authDigest, publicKey: publicKey)
+///     }
+/// }
+///
+/// let manager = OZExternalSignerManager(networkPassphrase: ...)
+/// await manager.setEd25519Adapter(MyHardwareWalletAdapter())
+/// ```
+public protocol OZExternalEd25519SignerAdapter: Sendable {
+
+    /// Returns whether this adapter can produce an Ed25519 signature for the given
+    /// verifier-contract address and public key pair.
+    ///
+    /// Called before the in-memory keypair registry is consulted. When this method
+    /// returns `true`, the adapter must be able to fulfil a subsequent
+    /// ``signAuthDigest(authDigest:publicKey:)`` call for the same key without error.
+    ///
+    /// - Parameters:
+    ///   - verifierAddress: Contract address (`C…` strkey) of the Ed25519 verifier
+    ///     contract identifying the on-chain signer slot.
+    ///   - publicKey: 32-byte Ed25519 public key identifying the signer slot.
+    /// - Returns: `true` when the adapter can sign for this `(verifierAddress, publicKey)` pair.
+    func canSignFor(verifierAddress: String, publicKey: Data) -> Bool
+
+    /// Produces a 64-byte Ed25519 signature over the supplied auth digest.
+    ///
+    /// Called by the multi-signer pipeline when ``canSignFor(verifierAddress:publicKey:)``
+    /// returned `true` for the same `publicKey`. The pipeline locally verifies the returned
+    /// signature before incorporating it into the authorization payload.
+    ///
+    /// - Parameters:
+    ///   - authDigest: 32-byte digest to sign. Computed as
+    ///     `SHA-256(signaturePayload || contextRuleIds.toXDR())`.
+    ///   - publicKey: 32-byte Ed25519 public key that identifies which key to sign with.
+    /// - Returns: 64-byte raw Ed25519 signature over `authDigest`.
+    /// - Throws: Any error that prevents signing (hardware unavailable, user cancelled, etc.).
+    func signAuthDigest(authDigest: Data, publicKey: Data) async throws -> Data
+}
+
+// ============================================================================
 // External Signer Type
 // ============================================================================
 
@@ -213,6 +270,8 @@ public actor InMemoryWalletConnectionStorage: WalletConnectionStorage {
 /// // List all signers
 /// let signers = await manager.getAll()
 /// ```
+private let addressLogPrefixCount = 8
+
 public actor OZExternalSignerManager {
 
     // ------------------------------------------------------------------
@@ -247,6 +306,54 @@ public actor OZExternalSignerManager {
     /// this instance. Used to short-circuit subsequent calls so that storage
     /// is read at most once per session.
     private var restored: Bool = false
+
+    // ------------------------------------------------------------------
+    // Ed25519 state
+    // ------------------------------------------------------------------
+
+    /// Composite key for the Ed25519 signer registry. Two entries with the same
+    /// public key but different verifier addresses are distinct signers on-chain
+    /// and must be stored as separate entries.
+    struct Ed25519SignerKey: Hashable, Sendable {
+        let verifierAddress: String
+        let publicKey: Data
+    }
+
+    /// Ed25519 keypairs keyed by `(verifierAddress, publicKey)`. Memory-only, never persisted.
+    private var ed25519Signers: [Ed25519SignerKey: KeyPair] = [:]
+
+    /// Optional adapter for out-of-process Ed25519 signing (hardware wallets, remote services).
+    ///
+    /// When set, the adapter is consulted via ``OZExternalEd25519SignerAdapter/canSignFor(verifierAddress:publicKey:)``
+    /// before the in-memory keypair registry. If the adapter claims it can sign, it is used.
+    /// If the adapter cannot sign (or is `nil`), the in-memory registry is consulted instead.
+    ///
+    /// Read this property via `await manager.ed25519Adapter`. To set it, call
+    /// ``setEd25519Adapter(_:)`` from any async context.
+    public var ed25519Adapter: OZExternalEd25519SignerAdapter?
+
+    /// Sets the optional Ed25519 adapter.
+    ///
+    /// Because `OZExternalSignerManager` is a Swift actor, direct assignment to
+    /// `ed25519Adapter` from outside the actor is not permitted by the compiler.
+    /// Use this method instead:
+    ///
+    /// ```swift
+    /// await manager.setEd25519Adapter(MyHardwareWalletAdapter())
+    /// // Clear the adapter:
+    /// await manager.setEd25519Adapter(nil)
+    /// ```
+    ///
+    /// When set, the adapter takes precedence over in-memory keypairs for every
+    /// `(verifierAddress, publicKey)` pair for which its
+    /// ``OZExternalEd25519SignerAdapter/canSignFor(verifierAddress:publicKey:)``
+    /// returns `true`. Pass `nil` to clear the adapter and force the in-memory
+    /// keypair path.
+    ///
+    /// - Parameter adapter: A conforming instance, or `nil` to remove the adapter.
+    public func setEd25519Adapter(_ adapter: (any OZExternalEd25519SignerAdapter)?) {
+        self.ed25519Adapter = adapter
+    }
 
     // ------------------------------------------------------------------
     // Initialisation
@@ -511,11 +618,9 @@ public actor OZExternalSignerManager {
                 )
             }
 
-            // F-SEC-iOS-1: locally verify the wallet adapter's signature
-            // against the requested address. Refusing here is far more
-            // actionable than the on-chain `auth-failed` we would otherwise
-            // see after submission. Failure to decode either the preimage or
-            // the signature is treated as a signing failure.
+            // why: locally verify the wallet adapter's signature against the requested address.
+            // Refusing here is far more actionable than the on-chain auth-failed we would
+            // otherwise see after submission.
             try verifyExternalWalletSignature(
                 preimageXdrBase64: authEntry,
                 signatureBase64: result.signedAuthEntry,
@@ -609,20 +714,160 @@ public actor OZExternalSignerManager {
 
     /// Removes all signers.
     ///
-    /// Clears all keypair signers from memory, disconnects all external
-    /// wallets, and removes all persisted wallet connections from storage.
-    /// This is best-effort with no internal error suppression: failures from
-    /// the adapter or storage layer propagate to the caller. The signer
-    /// taxonomy intentionally lacks a `removeFailed` arm because the operation
-    /// is idempotent on retry.
+    /// Clears all wallet keypair signers from memory, clears all Ed25519 keypairs
+    /// from memory, disconnects all external wallets, and removes all persisted wallet
+    /// connections from storage. This is best-effort with no internal error suppression:
+    /// failures from the adapter or storage layer propagate to the caller. The signer
+    /// taxonomy intentionally lacks a `removeFailed` arm because the operation is
+    /// idempotent on retry.
     ///
     /// - Throws: Rethrows any error raised by the adapter or storage layer.
     public func removeAll() async throws {
 
         keypairSigners.removeAll()
+        ed25519Signers.removeAll()
 
         try await walletAdapter?.disconnect()
         try await walletConnectionStorage?.removeItem(key: OZExternalSignerManager.walletStorageKey)
+    }
+
+    // ------------------------------------------------------------------
+    // Ed25519 methods
+    // ------------------------------------------------------------------
+
+    /// Registers an Ed25519 signing keypair derived from a Stellar secret key.
+    ///
+    /// Creates a `KeyPair` from the supplied raw 32-byte Ed25519 secret seed and stores it
+    /// in memory under the composite `(verifierAddress, publicKey)` key. The keypair is
+    /// never persisted to storage and is lost when the application terminates or the manager
+    /// is deinitialized.
+    ///
+    /// If a keypair is already registered for the same `(verifierAddress, publicKey)` pair,
+    /// it is silently overwritten with the new one.
+    ///
+    /// - Parameters:
+    ///   - secretKeyBytes: Raw 32-byte Ed25519 secret seed. Must be exactly 32 bytes.
+    ///   - verifierAddress: Contract address (`C…` strkey) of the Ed25519 verifier contract
+    ///     under which the signer is registered on-chain.
+    /// - Returns: The derived 32-byte Ed25519 public key.
+    /// - Throws: ``ValidationException/InvalidInput`` when `verifierAddress` is not a valid
+    ///   contract strkey or when `secretKeyBytes` is not exactly 32 bytes;
+    ///   ``SignerException/Invalid`` when keypair construction fails.
+    public func addEd25519FromRawKey(secretKeyBytes: Data, verifierAddress: String) throws -> Data {
+        if !verifierAddress.isValidContractId() {
+            throw ValidationException.invalidInput(
+                field: "verifierAddress",
+                reason: "Ed25519 signer has an invalid verifier address (must be a C... contract strkey): \(verifierAddress)"
+            )
+        }
+        guard secretKeyBytes.count == SmartAccountConstants.ed25519SecretSeedSize else {
+            throw ValidationException.invalidInput(
+                field: "secretKeyBytes",
+                reason: "Ed25519 secret key must be exactly \(SmartAccountConstants.ed25519SecretSeedSize) bytes, " +
+                    "got \(secretKeyBytes.count)"
+            )
+        }
+
+        let keypair: KeyPair
+        do {
+            let seed = try Seed(bytes: [UInt8](secretKeyBytes))
+            keypair = KeyPair(seed: seed)
+        } catch {
+            throw SignerException.invalid(
+                reason: "Failed to construct Ed25519 keypair from raw key bytes: \(describe(error))",
+                cause: error
+            )
+        }
+
+        let publicKey = Data(keypair.publicKey.bytes)
+        let storeKey = Ed25519SignerKey(verifierAddress: verifierAddress, publicKey: publicKey)
+        ed25519Signers[storeKey] = keypair
+        return publicKey
+    }
+
+    /// Returns whether a signing source is available for the given Ed25519 signer.
+    ///
+    /// Checks the adapter first (adapter-first precedence rule). When the adapter returns
+    /// `true` for ``OZExternalEd25519SignerAdapter/canSignFor(verifierAddress:publicKey:)``,
+    /// this method returns `true` without consulting the in-memory registry. Falls back to
+    /// checking whether an in-memory keypair is registered for `(verifierAddress, publicKey)`.
+    ///
+    /// - Parameters:
+    ///   - verifierAddress: Contract address (`C…` strkey) of the Ed25519 verifier contract.
+    ///   - publicKey: 32-byte Ed25519 public key identifying the signer slot.
+    /// - Returns: `true` when a signing source (adapter or in-memory keypair) can sign for
+    ///   this `(verifierAddress, publicKey)` pair.
+    public func canSignEd25519For(verifierAddress: String, publicKey: Data) -> Bool {
+        if let adapter = ed25519Adapter, adapter.canSignFor(verifierAddress: verifierAddress, publicKey: publicKey) {
+            return true
+        }
+        let storeKey = Ed25519SignerKey(verifierAddress: verifierAddress, publicKey: publicKey)
+        return ed25519Signers[storeKey] != nil
+    }
+
+    /// Produces a 64-byte Ed25519 signature over the supplied auth digest.
+    ///
+    /// Resolves the signing source using the adapter-first precedence rule: the adapter is
+    /// consulted first via ``OZExternalEd25519SignerAdapter/canSignFor(verifierAddress:publicKey:)``.
+    /// If the adapter claims it can sign, it is invoked via
+    /// ``OZExternalEd25519SignerAdapter/signAuthDigest(authDigest:publicKey:)``. Otherwise
+    /// the in-memory keypair registry is used. Throws when neither source is available.
+    ///
+    /// - Parameters:
+    ///   - verifierAddress: Contract address (`C…` strkey) of the Ed25519 verifier contract.
+    ///   - publicKey: 32-byte Ed25519 public key identifying the signer slot.
+    ///   - authDigest: 32-byte auth digest to sign.
+    /// - Returns: 64-byte raw Ed25519 signature over `authDigest`.
+    /// - Throws: ``ValidationException/InvalidInput`` when no signing source is registered;
+    ///   ``TransactionException/SigningFailed`` when the adapter or in-memory keypair fails.
+    public func signEd25519AuthDigest(
+        verifierAddress: String,
+        publicKey: Data,
+        authDigest: Data
+    ) async throws -> Data {
+        // Snapshot ed25519Adapter before awaiting to avoid actor-reentrancy issues.
+        let adapterSnapshot = ed25519Adapter
+
+        if let adapter = adapterSnapshot, adapter.canSignFor(verifierAddress: verifierAddress, publicKey: publicKey) {
+            // Exit actor isolation for the potentially long-running adapter call.
+            let rawSignature: Data
+            do {
+                rawSignature = try await adapter.signAuthDigest(authDigest: authDigest, publicKey: publicKey)
+            } catch {
+                throw TransactionException.signingFailed(
+                    reason: "Ed25519 adapter signing failed for verifier \(verifierAddress): \(SmartAccountException.messageOf(error) ?? "adapter signing failed")",
+                    cause: error
+                )
+            }
+            return rawSignature
+        }
+
+        // Snapshot the in-memory keypair from actor-isolated state (no await needed here).
+        let storeKey = Ed25519SignerKey(verifierAddress: verifierAddress, publicKey: publicKey)
+        guard let keypair = ed25519Signers[storeKey] else {
+            let prefix = String(verifierAddress.prefix(addressLogPrefixCount))
+            throw ValidationException.invalidInput(
+                field: "selectedSigners",
+                reason: "Ed25519 signer (verifier=\(prefix)...) has no registered keypair or adapter — " +
+                    "register via OZExternalSignerManager.addEd25519FromRawKey(...) before signing"
+            )
+        }
+
+        let signatureBytes = keypair.sign([UInt8](authDigest))
+        return Data(signatureBytes)
+    }
+
+    /// Removes a registered Ed25519 signer from the in-memory registry.
+    ///
+    /// Clears the keypair stored under `(verifierAddress, publicKey)`. No-op when no
+    /// keypair is registered for that pair. The adapter is not affected by this call.
+    ///
+    /// - Parameters:
+    ///   - verifierAddress: Contract address (`C…` strkey) of the Ed25519 verifier contract.
+    ///   - publicKey: 32-byte Ed25519 public key identifying the signer slot to remove.
+    public func removeEd25519(verifierAddress: String, publicKey: Data) {
+        let storeKey = Ed25519SignerKey(verifierAddress: verifierAddress, publicKey: publicKey)
+        ed25519Signers.removeValue(forKey: storeKey)
     }
 
     // ------------------------------------------------------------------
@@ -635,7 +880,7 @@ public actor OZExternalSignerManager {
     /// and attempts to reconnect each wallet via
     /// ``ExternalWalletAdapter/reconnect(walletId:)``.
     ///
-    /// Failure handling is differentiated per F-SEC-iOS-2:
+    /// Failure handling is differentiated:
     /// - When `reconnect` returns `nil`, the entry is purged from storage
     ///   because the adapter has reported the wallet as unavailable in a
     ///   definitive way.
@@ -683,16 +928,9 @@ public actor OZExternalSignerManager {
                     try await removeWalletFromStorage(address: savedWallet.address)
                 }
             } catch {
-                // why: `reconnect` raising an error is treated as a
-                // potentially-transient failure (network outage, adapter
-                // backend rate-limiting, browser pop-up blocked, etc.). We
-                // intentionally do NOT purge the storage entry here per
-                // F-SEC-iOS-2 — purging on transient failure breaks user
-                // sessions on a flaky network. The next `restoreConnections`
-                // call (after the idempotency flag is reset by the caller's
-                // session-reset path) re-attempts the reconnect; the user
-                // can also explicitly call `remove(address:)` to drop a
-                // stale entry. Storage is left untouched.
+                // why: treat reconnect errors as transient (network outage, rate-limit, pop-up blocked).
+                // Purging on transient failure would break user sessions on a flaky network;
+                // the next restore call retries.
             }
         }
 
@@ -760,9 +998,7 @@ public actor OZExternalSignerManager {
 
     /// Reads stored wallet connections from storage.
     ///
-    /// Parses the JSON array stored under ``OZExternalSignerManager.walletStorageKey``. Returns an
-    /// empty list when storage is not configured, the key does not exist, or
-    /// parsing fails.
+    /// Returns an empty list when storage is not configured, the key does not exist, or parsing fails.
     private func getStoredWallets() async -> [StoredWalletConnection] {
 
         guard let storage = walletConnectionStorage else { return [] }

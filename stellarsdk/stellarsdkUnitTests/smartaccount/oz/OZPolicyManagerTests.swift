@@ -791,7 +791,7 @@ final class OZPolicyManagerTests: XCTestCase {
     }
 
     // ========================================================================
-    // F-TC-iOS-1 — amountToStroops boundary cases
+    // MARK: - amountToStroops boundary cases
     // ========================================================================
 
     /// Sub-stroop amount strings (8 fractional digits) must be rejected. The
@@ -845,7 +845,7 @@ final class OZPolicyManagerTests: XCTestCase {
     }
 
     // ========================================================================
-    // F-TC-iOS-1 — amountToStroops additional boundary coverage
+    // MARK: - amountToStroops additional boundary coverage
     // ========================================================================
 
     /// `"0"` is not a valid spending amount: the parser surfaces a strict

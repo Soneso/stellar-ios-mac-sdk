@@ -8,10 +8,9 @@
 import XCTest
 @testable import stellarsdk
 
-/// Group F unit tests verifying that the `selectedSigners` and `forceMethod`
-/// parameters on ``OZSignerManager``, ``OZPolicyManager``, and
-/// ``OZContextRuleManager`` are accepted and routed correctly. Mirrors
-/// `ManagerSelectedSignersTest` from the cross-SDK source-of-truth suite.
+/// Unit tests verifying that selectedSigners and forceMethod parameters on
+/// OZSignerManager, OZPolicyManager, and OZContextRuleManager are accepted
+/// and routed correctly.
 ///
 /// These tests cover input-validation paths that do not require a live
 /// Soroban server. Each manager method is exercised in two scenarios:
@@ -21,9 +20,7 @@ import XCTest
 ///   confirming the method accepted the `selectedSigners` parameter and
 ///   reached the next validation stage.
 ///
-/// Group J.1 cases at the bottom exercise the multi-signer fanout shape
-/// requirement (3-signer mix routing through
-/// ``OZSmartAccountKitProtocol/multiSignerManager``).
+/// Multi-signer fanout coverage is at the bottom (3-signer mix routing through multiSignerManager).
 /// Network-dependent multi-signer signing is covered by integration tests.
 final class OZManagerSelectedSignersTests: XCTestCase {
 
@@ -109,8 +106,7 @@ final class OZManagerSelectedSignersTests: XCTestCase {
         return .wallet(accountId: validAccountAddress)
     }
 
-    /// Two-signer mix used across most Group F cases: a passkey plus a wallet
-    /// signer.
+    /// Two-signer mix used across most cases: a passkey plus a wallet signer.
     private var multiSigners: [SelectedSigner] {
         return [passkeySignerStub(), walletSignerStub()]
     }
@@ -654,7 +650,7 @@ final class OZManagerSelectedSignersTests: XCTestCase {
     }
 
     // ========================================================================
-    // MARK: - Group J.1 — multi-signer fanout (3-signer mix)
+    // MARK: - Multi-signer fanout (3-signer mix)
     // ========================================================================
 
     /// Three-signer mix routes through the multi-signer submitter when the
@@ -770,6 +766,127 @@ final class OZManagerSelectedSignersTests: XCTestCase {
     // ========================================================================
     // SelectedSigner.passkey transport propagation
     // ========================================================================
+
+    // ========================================================================
+    // MARK: - Ed25519 routing through sibling managers
+    // ========================================================================
+
+    /// `addContextRule` routes an Ed25519 signer through the multi-signer
+    /// submitter unchanged. The recording submitter captures the full signer
+    /// list so the test can confirm the Ed25519 arm is preserved end-to-end.
+    func test_addContextRule_withEd25519SelectedSigner_routesThroughMultiSignerManager() async throws {
+        let kit = try connectedKit()
+        let recordingSubmitter = MockOZMultiSignerManager(kit: kit)
+        kit.multiSignerManagerOverride = recordingSubmitter
+
+        let ed25519Signer = SelectedSigner.ed25519(
+            verifierAddress: validVerifierAddress,
+            publicKey: Data(repeating: 0x11, count: 32)
+        )
+        let signers: [SelectedSigner] = [passkeySignerStub(), ed25519Signer]
+
+        // addContextRule validates that at least one context-rule signer (OZSmartAccountSigner) is
+        // present. Supply a delegated signer so the validation passes before the routing hop.
+        let contextRuleSigner = try OZDelegatedSigner(address: validAccountAddress)
+        _ = try await contextRuleManager(for: kit).addContextRule(
+            contextType: .defaultRule,
+            name: "TestRule",
+            signers: [contextRuleSigner],
+            selectedSigners: signers
+        )
+
+        XCTAssertEqual(recordingSubmitter.invocations.count, 1)
+        let recorded = recordingSubmitter.invocations[0]
+        XCTAssertEqual(recorded.selectedSigners.count, 2)
+        guard case .ed25519(let verifier, let key) = recorded.selectedSigners[1] else {
+            return XCTFail("second signer must remain an Ed25519 entry")
+        }
+        XCTAssertEqual(verifier, validVerifierAddress)
+        XCTAssertEqual(key, Data(repeating: 0x11, count: 32))
+    }
+
+    /// `addPasskey` (signer manager) routes an Ed25519 signer through the
+    /// multi-signer submitter; the Ed25519 arm is preserved verbatim.
+    func test_addPasskey_withEd25519SelectedSigner_routesThroughMultiSignerManager() async throws {
+        let kit = try connectedKit()
+        let recordingSubmitter = MockOZMultiSignerManager(kit: kit)
+        kit.multiSignerManagerOverride = recordingSubmitter
+
+        let ed25519Signer = SelectedSigner.ed25519(
+            verifierAddress: validVerifierAddress,
+            publicKey: Data(repeating: 0x22, count: 32)
+        )
+        let signers: [SelectedSigner] = [ed25519Signer]
+
+        // addPasskey validates that publicKey starts with 0x04 (uncompressed secp256r1).
+        var rawKey = Data(count: 65)
+        rawKey[0] = 0x04
+        _ = try await kit.signerManager.addPasskey(
+            contextRuleId: 0,
+            publicKey: rawKey,
+            credentialId: Data(count: 16),
+            selectedSigners: signers
+        )
+
+        XCTAssertEqual(recordingSubmitter.invocations.count, 1)
+        let recorded = recordingSubmitter.invocations[0]
+        XCTAssertEqual(recorded.selectedSigners.count, 1)
+        guard case .ed25519(let verifier, let key) = recorded.selectedSigners[0] else {
+            return XCTFail("signer must remain an Ed25519 entry after routing")
+        }
+        XCTAssertEqual(verifier, validVerifierAddress)
+        XCTAssertEqual(key, Data(repeating: 0x22, count: 32))
+    }
+
+    /// `addSimpleThreshold` (policy manager) routes a three-entry signer list
+    /// that includes a passkey, a wallet, and an Ed25519 signer. All three must
+    /// reach the recording submitter in declaration order.
+    func test_addSimpleThreshold_withEd25519InThreeSignerMix_preservesAllSigners() async throws {
+        let kit = try connectedKit()
+        let recordingSubmitter = MockOZMultiSignerManager(kit: kit)
+        kit.multiSignerManagerOverride = recordingSubmitter
+
+        let ed25519Signer = SelectedSigner.ed25519(
+            verifierAddress: validVerifierAddress,
+            publicKey: Data(repeating: 0x33, count: 32)
+        )
+        let signers: [SelectedSigner] = [
+            .passkey(
+                credentialId: "cred-A",
+                credentialIdBytes: Data([0x0A]),
+                keyData: Data(repeating: 0xAA, count: 65)
+            ),
+            .wallet(accountId: validAccountAddress),
+            ed25519Signer
+        ]
+
+        _ = try await kit.policyManager.addSimpleThreshold(
+            contextRuleId: 0,
+            policyAddress: validContractId,
+            threshold: 2,
+            selectedSigners: signers
+        )
+
+        XCTAssertEqual(recordingSubmitter.invocations.count, 1)
+        let recorded = recordingSubmitter.invocations[0]
+        XCTAssertEqual(recorded.selectedSigners.count, 3)
+
+        guard case .passkey(let cid, _, _, _) = recorded.selectedSigners[0] else {
+            return XCTFail("first signer must remain a passkey entry")
+        }
+        XCTAssertEqual(cid, "cred-A")
+
+        guard case .wallet(let accountId) = recorded.selectedSigners[1] else {
+            return XCTFail("second signer must remain a wallet entry")
+        }
+        XCTAssertEqual(accountId, validAccountAddress)
+
+        guard case .ed25519(let verifier, let key) = recorded.selectedSigners[2] else {
+            return XCTFail("third signer must remain an Ed25519 entry")
+        }
+        XCTAssertEqual(verifier, validVerifierAddress)
+        XCTAssertEqual(key, Data(repeating: 0x33, count: 32))
+    }
 
     /// `SelectedSigner.passkey` carries optional `transports` hints that must
     /// flow through the multi-signer pipeline unchanged. The recording

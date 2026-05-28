@@ -47,7 +47,7 @@ final class OZTransactionOperationsTests: XCTestCase {
     }
 
     // ========================================================================
-    // Group A.1: transfer validation (not connected)
+    // MARK: - transfer validation (not connected)
     // ========================================================================
 
     func test_transfer_notConnected_throws() async throws {
@@ -220,7 +220,7 @@ final class OZTransactionOperationsTests: XCTestCase {
     }
 
     // ========================================================================
-    // Group A.2: transfer happy-path validation (network call expected to fail)
+    // MARK: - transfer happy-path validation (network call expected to fail)
     // ========================================================================
 
     func test_transfer_recipientGAddress_passesValidation() async throws {
@@ -259,7 +259,7 @@ final class OZTransactionOperationsTests: XCTestCase {
     }
 
     // ========================================================================
-    // Group A.3: contractCall validation
+    // MARK: - contractCall validation
     // ========================================================================
 
     func test_contractCall_notConnected_throws() async throws {
@@ -357,7 +357,7 @@ final class OZTransactionOperationsTests: XCTestCase {
     }
 
     // ========================================================================
-    // Group A.4: executeAndSubmit validation
+    // MARK: - executeAndSubmit validation
     // ========================================================================
 
     func test_executeAndSubmit_notConnected_throws() async throws {
@@ -426,7 +426,7 @@ final class OZTransactionOperationsTests: XCTestCase {
     }
 
     // ========================================================================
-    // Group A.5: TransactionResult data-class behavior
+    // MARK: - TransactionResult data-class behavior
     // ========================================================================
 
     func test_transactionResult_allFields() {
@@ -493,7 +493,7 @@ final class OZTransactionOperationsTests: XCTestCase {
     }
 
     // ========================================================================
-    // Group A.6: SubmissionMethod enum behavior
+    // MARK: - SubmissionMethod enum behavior
     // ========================================================================
 
     func test_submissionMethod_values() {
@@ -533,7 +533,7 @@ final class OZTransactionOperationsTests: XCTestCase {
     }
 
     // ========================================================================
-    // Group A.7: ResolveContextRuleIds typealias behavior
+    // MARK: - ResolveContextRuleIds typealias behavior
     // ========================================================================
 
     func test_resolveContextRuleIds_lambdaUsable() async throws {
@@ -557,7 +557,7 @@ final class OZTransactionOperationsTests: XCTestCase {
     }
 
     // ========================================================================
-    // Group A.8: Order-of-validation tests
+    // MARK: - Order-of-validation tests
     // ========================================================================
 
     func test_transfer_notConnected_beforeRecipientValidation() async throws {
@@ -615,7 +615,7 @@ final class OZTransactionOperationsTests: XCTestCase {
     }
 
     // ========================================================================
-    // Group C.1: Auth-entry signing helpers (static-helper coverage)
+    // MARK: - Auth-entry signing helpers (static-helper coverage)
     // ========================================================================
 
     func test_classicalEd25519SignatureScVal_shape_isVec_ofMap() {
@@ -683,7 +683,7 @@ final class OZTransactionOperationsTests: XCTestCase {
     }
 
     // ========================================================================
-    // Group C.4: fundWallet amount formatting / balance parsing helpers
+    // MARK: - fundWallet amount formatting / balance parsing helpers
     // ========================================================================
 
     func test_formatXlmAmount_wholeNumber() {
@@ -724,7 +724,7 @@ final class OZTransactionOperationsTests: XCTestCase {
     }
 
     // ========================================================================
-    // Group C.4: fundWallet validation (insufficient balance / wrong contract)
+    // MARK: - fundWallet validation (insufficient balance / wrong contract)
     // ========================================================================
 
     func test_fundWallet_invalidNativeContract_throwsInvalidAddress() async throws {
@@ -748,7 +748,7 @@ final class OZTransactionOperationsTests: XCTestCase {
     }
 
     // ========================================================================
-    // Group C.5: amountToStroops static helper coverage
+    // MARK: - amountToStroops static helper coverage
     // ========================================================================
 
     func test_amountToStroops_validInteger_returnsStroops() throws {
@@ -803,7 +803,7 @@ final class OZTransactionOperationsTests: XCTestCase {
     }
 
     // ========================================================================
-    // Group C.6: failure-mode tests — submit pipeline failures
+    // MARK: - failure-mode tests — submit pipeline failures
     // ========================================================================
 
     func test_submit_simulationRpcFailure_throwsSimulationFailed() async throws {

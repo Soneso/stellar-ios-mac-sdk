@@ -148,10 +148,11 @@ public enum OZSmartAccountAuth {
     /// using the same `expirationLedger` value.
     ///
     /// The procedure clones the input entry via XDR round-trip, sets the signature
-    /// expiration on the cloned credentials, builds the signer-key ScVal, double-XDR-encodes
-    /// the signature value, reads the existing OZSmartAccountAuthPayload (if any), upserts
-    /// the new signer entry, writes the payload back, and returns a new authorisation entry
-    /// with the updated credentials. The input entry is never mutated.
+    /// expiration on the cloned credentials, builds the signer-key ScVal, encodes the
+    /// signature bytes via `toAuthPayloadBytes()` (verifier-dependent: XDR for WebAuthn/
+    /// Policy, raw bytes for Ed25519), reads the existing OZSmartAccountAuthPayload (if any),
+    /// upserts the new signer entry, writes the payload back, and returns a new authorisation
+    /// entry with the updated credentials. The input entry is never mutated.
     ///
     /// When `contextRuleIds` is non-empty it overrides any existing context-rule IDs in the
     /// payload; otherwise the existing value is preserved.
@@ -216,17 +217,15 @@ public enum OZSmartAccountAuth {
         }
         _ = signerKey
 
-        // STEP 4: produce the double-XDR-encoded signature bytes. The signature ScVal is
-        // serialised to raw bytes; the codec.write step later wraps those bytes into
-        // `ScVal::Bytes` because the OZ verifier expects a double-XDR-encoded signature
-        // (outer `ScVal::Bytes` wrapping the XDR-encoded ScVal::Map of components).
-        let signatureScVal = signature.toScVal()
+        // STEP 4: produce the bytes content for the on-wire signers Map. The exact content
+        // is verifier-dependent: WebAuthn/Policy XDR-encode their ScVal; Ed25519 passes the
+        // raw 64-byte signature directly (see `OZSmartAccountSignature.toAuthPayloadBytes()`).
         let sigXdrBytes: Data
         do {
-            sigXdrBytes = Data(try XDREncoder.encode(signatureScVal))
+            sigXdrBytes = try signature.toAuthPayloadBytes()
         } catch {
             throw TransactionException.signingFailed(
-                reason: "Failed to XDR encode signature ScVal",
+                reason: "Failed to encode signature bytes for auth payload",
                 cause: error
             )
         }
@@ -268,9 +267,8 @@ public enum OZSmartAccountAuth {
 
     /// Adds a raw key/value entry to the auth entry's signature map.
     ///
-    /// Used for delegated-signer placeholders where the value is `Bytes` (often empty)
-    /// rather than a double-XDR-encoded signature. Uses the AuthPayload format accepted
-    /// by the OpenZeppelin Smart Account contract.
+    /// Used for delegated-signer placeholders where the value is `Bytes` (often empty).
+    /// Uses the AuthPayload format accepted by the OpenZeppelin Smart Account contract.
     ///
     /// When `signatureValue` is an `SCValXDR.bytes` value its raw bytes are stored
     /// directly; otherwise the value is XDR-encoded and the resulting bytes are stored.

@@ -606,13 +606,12 @@ final class OZSmartAccountAuthPayloadTests: XCTestCase {
         XCTAssertEqual(decoded.signers[0].signatureBytes, Data([0x99]))
     }
 
-    // MARK: - Cross-SDK byte-identity golden vector (AuthPayload codec)
+    // MARK: - Golden vector (AuthPayload codec)
     //
     // Pins the byte-level XDR encoding of the OZ AuthPayload outer named-struct
     // map plus inner signer-map sort. Uses deterministic strkey constants
     // (rather than randomly-generated KeyPairs) so the encoded bytes are
-    // reproducible across SDKs. The expected hex is byte-identical to the
-    // matching fixture in the sibling SDK and must be updated in lockstep.
+    // reproducible. Must be updated whenever the codec changes.
 
     func test_goldenVector5_authPayloadWithTwoDelegatedSigners_matchesFixture() throws {
         let stableG = "GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX"

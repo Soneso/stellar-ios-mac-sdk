@@ -29,7 +29,11 @@ import Foundation
 /// entries and rule IDs) when crossing isolation boundaries.
 public final class OZSmartAccountAuthPayload {
 
-    /// Mutable map from signer to its double-XDR-encoded signature bytes.
+    /// Mutable list of signer entries.
+    ///
+    /// Each entry carries verifier-appropriate signature bytes: WebAuthn and Policy
+    /// entries contain XDR-encoded `SCValXDR`; Ed25519 entries carry the raw
+    /// 64-byte signature (no XDR wrapper). See `OZSmartAccountSignature.toAuthPayloadBytes()`.
     public var signers: [SignerEntry]
 
     /// Context rule IDs bound into the signing digest.
@@ -64,14 +68,18 @@ public final class OZSmartAccountAuthPayload {
         /// The signer for this entry.
         public let signer: any OZSmartAccountSigner
 
-        /// The double-XDR-encoded signature bytes for this signer.
+        /// The signature bytes for this signer, as stored in the on-wire `AuthPayload.signers`
+        /// `Map<Signer, Bytes>` value. The exact content is verifier-dependent:
+        /// - WebAuthn: XDR-encoded `WebAuthnSigData` map.
+        /// - Ed25519: raw 64-byte signature (no XDR wrapping).
+        /// - Policy: XDR-encoded empty map.
         public let signatureBytes: Data
 
         /// Initializes a new signer entry.
         ///
         /// - Parameters:
         ///   - signer: Signer carrying the entry.
-        ///   - signatureBytes: Double-XDR-encoded signature bytes for the signer.
+        ///   - signatureBytes: Signature bytes from `OZSmartAccountSignature.toAuthPayloadBytes()`.
         public init(signer: any OZSmartAccountSigner, signatureBytes: Data) {
             self.signer = signer
             self.signatureBytes = signatureBytes
@@ -234,7 +242,7 @@ public enum OZSmartAccountAuthPayloadCodec {
     /// - Parameters:
     ///   - payload: Payload to update.
     ///   - signer: Signer to add or replace.
-    ///   - signatureBytes: Double-XDR-encoded signature bytes for the signer.
+    ///   - signatureBytes: Signature bytes from `OZSmartAccountSignature.toAuthPayloadBytes()`.
     public static func upsertSigner(
         payload: OZSmartAccountAuthPayload,
         signer: any OZSmartAccountSigner,

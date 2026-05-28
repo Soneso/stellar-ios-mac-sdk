@@ -70,6 +70,8 @@ import Security
 /// layer — concurrent invocation of WebAuthn or external-wallet signing is
 /// constrained by the underlying OS-level prompt serialization.
 // non-final to allow internal test subclassing in the unit-test target.
+private let addressLogPrefixCount = 8
+
 public class OZMultiSignerManager: @unchecked Sendable {
 
     // MARK: - Stored properties
@@ -392,8 +394,8 @@ public class OZMultiSignerManager: @unchecked Sendable {
         let connected = try kit.requireConnected()
 
         // Step 0: validate signer-set preconditions (wallet adapter
-        // availability, per-wallet reachability, passkey keyData).
-        let (walletSigners, externalWallet) = try validateSignerSet(
+        // availability, per-wallet reachability, passkey keyData, Ed25519 registration).
+        let (walletSigners, externalWallet) = try await validateSignerSet(
             selectedSigners: selectedSigners
         )
 
@@ -435,7 +437,7 @@ public class OZMultiSignerManager: @unchecked Sendable {
                 // The auth entry references some address other than the
                 // connected smart-account contract. Either it matches one
                 // of the wallet signers (sign via the wallet adapter
-                // directly, per D-112), or it is unsupported.
+                // directly), or it is unsupported.
                 if let entryAddressString = entryAddressString,
                    walletSigners.contains(entryAddressString) {
                     let signedWalletEntry = try await signWalletAddressAuthEntry(
@@ -499,6 +501,15 @@ public class OZMultiSignerManager: @unchecked Sendable {
                 selectedSigners: selectedSigners
             )
 
+            // Step 4d.5: sign with every Ed25519 signer in declaration order.
+            workingEntry = try await signEntryWithEd25519Signers(
+                workingEntry: workingEntry,
+                authDigest: authDigest,
+                expirationLedger: expirationLedger,
+                resolvedContextRuleIds: resolvedContextRuleIds,
+                selectedSigners: selectedSigners
+            )
+
             // Step 4e: append delegated-signer auth entries and the
             // matching signature-map placeholders.
             workingEntry = try await appendDelegatedAuthEntries(
@@ -544,7 +555,7 @@ public class OZMultiSignerManager: @unchecked Sendable {
     /// - Wallet signers require an external-wallet adapter to be configured.
     /// - Every wallet signer must be reachable through the configured adapter.
     /// - Every passkey signer must carry pre-fetched `keyData` so the
-    ///   rule-resolution loop avoids an extra on-chain lookup (D-114).
+    ///   rule-resolution loop avoids an extra on-chain lookup.
     ///
     /// - Parameter selectedSigners: The signer set supplied by the caller.
     /// - Returns: The extracted wallet signer addresses and the resolved
@@ -552,7 +563,7 @@ public class OZMultiSignerManager: @unchecked Sendable {
     /// - Throws: ``ValidationException`` when any of the preconditions fail.
     private func validateSignerSet(
         selectedSigners: [SelectedSigner]
-    ) throws -> (walletSigners: [String], externalWallet: ExternalWalletAdapter?) {
+    ) async throws -> (walletSigners: [String], externalWallet: ExternalWalletAdapter?) {
         var walletSigners: [String] = []
         for signer in selectedSigners {
             if case .wallet(let accountId) = signer {
@@ -573,19 +584,60 @@ public class OZMultiSignerManager: @unchecked Sendable {
             externalWallet = configured
         }
 
-        if let externalWallet = externalWallet {
-            for walletAddress in walletSigners {
-                let canSign = externalWallet.canSignFor(address: walletAddress)
-                if !canSign {
+        try await validateWalletSigners(walletSigners, externalWallet: externalWallet)
+
+        try validatePasskeyKeyData(selectedSigners)
+
+        // Validate Ed25519 signers: verifier address format, public-key length, and
+        // signing-source availability. All precondition checks run before any RPC.
+        guard let externalSignerManager = kit.externalSignerManager else {
+            // Only fails when Ed25519 signers are present but no external signer manager
+            // is wired. The manager is always present when the kit is constructed normally.
+            for signer in selectedSigners {
+                if case .ed25519 = signer {
                     throw ValidationException.invalidInput(
                         field: "selectedSigners",
-                        reason: "No signer available for address: \(walletAddress). " +
-                            "Use externalWallet.addFromSecret() or externalWallet.addFromWallet() to add a signer."
+                        reason: "Ed25519 signers require OZExternalSignerManager to be configured on the kit"
                     )
                 }
             }
+            return (walletSigners, externalWallet)
         }
 
+        try await validateEd25519Signers(selectedSigners, externalSignerManager: externalSignerManager)
+
+        return (walletSigners, externalWallet)
+    }
+
+    /// Verifies that the external wallet adapter can sign for every wallet signer address.
+    ///
+    /// - Parameters:
+    ///   - walletSigners: G-address strings extracted from the `selectedSigners` list.
+    ///   - externalWallet: The resolved external-wallet adapter, or `nil` when no wallet
+    ///     signers are present.
+    /// - Throws: ``ValidationException`` when a signer address cannot be served by the adapter.
+    private func validateWalletSigners(
+        _ walletSigners: [String],
+        externalWallet: ExternalWalletAdapter?
+    ) async throws {
+        guard let externalWallet else { return }
+        for walletAddress in walletSigners {
+            let canSign = externalWallet.canSignFor(address: walletAddress)
+            if !canSign {
+                throw ValidationException.invalidInput(
+                    field: "selectedSigners",
+                    reason: "No signer available for address: \(walletAddress). " +
+                        "Use externalWallet.addFromSecret() or externalWallet.addFromWallet() to add a signer."
+                )
+            }
+        }
+    }
+
+    /// Verifies that every passkey signer in `selectedSigners` carries non-nil `keyData`.
+    ///
+    /// - Parameter selectedSigners: The full signer list; non-passkey entries are skipped.
+    /// - Throws: ``ValidationException`` when any passkey entry has `keyData == nil`.
+    private func validatePasskeyKeyData(_ selectedSigners: [SelectedSigner]) throws {
         for signer in selectedSigners {
             if case .passkey(_, _, let keyData, _) = signer {
                 if keyData == nil {
@@ -596,8 +648,50 @@ public class OZMultiSignerManager: @unchecked Sendable {
                 }
             }
         }
+    }
 
-        return (walletSigners, externalWallet)
+    /// Verifies verifier address format, public-key length, and registration for every
+    /// Ed25519 signer in `selectedSigners`.
+    ///
+    /// - Parameters:
+    ///   - selectedSigners: The full signer list; non-Ed25519 entries are skipped.
+    ///   - externalSignerManager: The kit's external signer manager.
+    /// - Throws: ``ValidationException`` when any Ed25519 precondition fails.
+    private func validateEd25519Signers(
+        _ selectedSigners: [SelectedSigner],
+        externalSignerManager: OZExternalSignerManager
+    ) async throws {
+        for signer in selectedSigners {
+            guard case .ed25519(let verifierAddress, let publicKey) = signer else { continue }
+
+            if !verifierAddress.isValidContractId() {
+                throw ValidationException.invalidInput(
+                    field: "selectedSigners",
+                    reason: "Ed25519 signer has an invalid verifier address (must be a C... contract strkey): \(verifierAddress)"
+                )
+            }
+
+            if publicKey.count != SmartAccountConstants.ed25519PublicKeySize {
+                throw ValidationException.invalidInput(
+                    field: "selectedSigners",
+                    reason: "Ed25519 signer public key must be exactly \(SmartAccountConstants.ed25519PublicKeySize) bytes, " +
+                        "got \(publicKey.count)"
+                )
+            }
+
+            let canSign = await externalSignerManager.canSignEd25519For(
+                verifierAddress: verifierAddress,
+                publicKey: publicKey
+            )
+            if !canSign {
+                let prefix = String(verifierAddress.prefix(addressLogPrefixCount))
+                throw ValidationException.invalidInput(
+                    field: "selectedSigners",
+                    reason: "Ed25519 signer (verifier=\(prefix)...) has no registered keypair or adapter — " +
+                        "register via OZExternalSignerManager.addEd25519FromRawKey(...) before signing"
+                )
+            }
+        }
     }
 
     /// Initial-simulation result carrying the auth entries the host function
@@ -663,10 +757,7 @@ public class OZMultiSignerManager: @unchecked Sendable {
             switch signer {
             case .passkey(_, _, let keyData, _):
                 guard let keyData = keyData else {
-                    // Defensive — `validateSignerSet` has already rejected
-                    // nil keyData; the guard exists so the compiler is
-                    // satisfied that we can build a signer without
-                    // force-unwrapping.
+                    // compiler-required unwrap; validateSignerSet rejects nil keyData upstream.
                     throw ValidationException.invalidInput(
                         field: "selectedSigners",
                         reason: "keyData is required for passkey signers for rule resolution"
@@ -680,6 +771,12 @@ public class OZMultiSignerManager: @unchecked Sendable {
             case .wallet(let accountId):
                 let delegated = try OZDelegatedSigner(address: accountId)
                 smartAccountSigners.append(delegated)
+            case .ed25519(let verifierAddress, let publicKey):
+                let externalSigner = try OZExternalSigner.ed25519(
+                    verifierAddress: verifierAddress,
+                    publicKey: publicKey
+                )
+                smartAccountSigners.append(externalSigner)
             }
         }
         return smartAccountSigners
@@ -733,7 +830,7 @@ public class OZMultiSignerManager: @unchecked Sendable {
                 )
             }
             guard let keyData = keyData else {
-                // Defensive — `validateSignerSet` guarantees this is non-nil.
+                // compiler-required unwrap; validateSignerSet rejects nil keyData upstream.
                 throw ValidationException.invalidInput(
                     field: "selectedSigners",
                     reason: "keyData is required for passkey signers for rule resolution"
@@ -744,8 +841,8 @@ public class OZMultiSignerManager: @unchecked Sendable {
             // AllowCredential carrying it and any transport hints so the
             // OS routing layer can pick the correct passkey when more
             // than one is registered for this RP. When credentialIdBytes
-            // is nil per D-115 we pass no allowCredentials list at all
-            // so the authenticator falls back to its default credential
+            // is nil we pass no allowCredentials list at all so the
+            // authenticator falls back to its default credential
             // discovery flow.
             let allowCredentials: [AllowCredential]?
             if let credentialIdBytes = credentialIdBytes {
@@ -807,6 +904,140 @@ public class OZMultiSignerManager: @unchecked Sendable {
         return workingEntry
     }
 
+    /// Collects one Ed25519 signature per `.ed25519` signer in declaration order and chains
+    /// it onto the working entry's signature map.
+    ///
+    /// The signing source is resolved via the adapter-first precedence rule documented on
+    /// ``OZExternalSignerManager/signEd25519AuthDigest(verifierAddress:publicKey:authDigest:)``.
+    /// After the adapter or in-memory keypair returns the 64-byte signature, the pipeline
+    /// locally verifies it using the SDK's existing ``KeyPair/verify(signature:message:)``
+    /// primitive before accepting it. This prevents an adapter that silently returns a
+    /// valid-looking but wrong signature from causing an opaque on-chain failure after
+    /// submission.
+    ///
+    /// - Parameters:
+    ///   - workingEntry: The auth entry to accumulate signatures onto.
+    ///   - authDigest: 32-byte digest shared across all signers for this entry.
+    ///   - expirationLedger: Ledger at which all signatures on this entry expire.
+    ///   - resolvedContextRuleIds: Context rule IDs bound into the auth-payload map.
+    ///   - selectedSigners: Full signer list; non-Ed25519 entries are skipped.
+    /// - Returns: The updated working entry after all Ed25519 signatures have been attached.
+    /// - Throws: ``ValidationException`` when the external signer manager is not configured;
+    ///   ``TransactionException/SigningFailed`` when signing or local verification fails.
+    private func signEntryWithEd25519Signers(
+        workingEntry: SorobanAuthorizationEntryXDR,
+        authDigest: Data,
+        expirationLedger: UInt32,
+        resolvedContextRuleIds: [UInt32],
+        selectedSigners: [SelectedSigner]
+    ) async throws -> SorobanAuthorizationEntryXDR {
+        var workingEntry = workingEntry
+
+        // validateSignerSet upstream guarantees externalSignerManager is non-nil
+        // whenever any Ed25519 signer is in selectedSigners.
+        let externalSignerManager = kit.externalSignerManager!
+
+        for signer in selectedSigners {
+            guard case .ed25519(let verifierAddress, let publicKey) = signer else { continue }
+            try Task.checkCancellation()
+
+            // Request the 64-byte signature from the external signer manager.
+            // The manager implements adapter-first precedence internally and exits
+            // actor isolation for any adapter await it performs.
+            let rawSignature = try await externalSignerManager.signEd25519AuthDigest(
+                verifierAddress: verifierAddress,
+                publicKey: publicKey,
+                authDigest: authDigest
+            )
+
+            // Local signature verification: derive the public key from the raw bytes and
+            // verify using the SDK's KeyPair.verify primitive before trusting the signature
+            // downstream.
+            try locallyVerifyEd25519(
+                rawSignature: rawSignature,
+                publicKey: publicKey,
+                authDigest: authDigest,
+                verifierAddress: verifierAddress
+            )
+
+            // Wrap the verified 64-byte signature and attach it to the working entry.
+            // OZEd25519Signature.toScVal() produces Bytes(<64-byte raw signature>);
+            // the public key is not transmitted — the verifier reads it from on-chain storage.
+            let ed25519Sig = try OZEd25519Signature(publicKey: publicKey, signature: rawSignature)
+
+            let ed25519Signer = try OZExternalSigner.ed25519(
+                verifierAddress: verifierAddress,
+                publicKey: publicKey
+            )
+
+            workingEntry = try await OZSmartAccountAuth.signAuthEntry(
+                entry: workingEntry,
+                signer: ed25519Signer,
+                signature: ed25519Sig,
+                expirationLedger: expirationLedger,
+                contextRuleIds: resolvedContextRuleIds
+            )
+        }
+
+        return workingEntry
+    }
+
+    /// Verifies that a raw 64-byte Ed25519 signature covers `authDigest` under the
+    /// given `publicKey`.
+    ///
+    /// - Parameters:
+    ///   - rawSignature: 64-byte signature returned by the signing source.
+    ///   - publicKey: 32-byte Ed25519 public key used to verify the signature.
+    ///   - authDigest: 32-byte message that was signed.
+    ///   - verifierAddress: On-chain verifier contract address; used only in error messages.
+    /// - Throws: ``TransactionException/signingFailed`` when the length check, key
+    ///   construction, or signature verification fails.
+    private func locallyVerifyEd25519(
+        rawSignature: Data,
+        publicKey: Data,
+        authDigest: Data,
+        verifierAddress: String
+    ) throws {
+        guard rawSignature.count == SmartAccountConstants.ed25519SignatureSize else {
+            throw TransactionException.signingFailed(
+                reason: "Ed25519 signing source returned \(rawSignature.count) bytes for verifier " +
+                    "\(verifierAddress); expected \(SmartAccountConstants.ed25519SignatureSize)"
+            )
+        }
+
+        let pubKeyObj: PublicKey
+        do {
+            pubKeyObj = try PublicKey([UInt8](publicKey))
+        } catch {
+            throw TransactionException.signingFailed(
+                reason: "Failed to construct Ed25519 public key for local verification: " +
+                    (SmartAccountException.messageOf(error) ?? "unknown"),
+                cause: error
+            )
+        }
+        let signerKeyPair = KeyPair(publicKey: pubKeyObj)
+
+        let signatureValid: Bool
+        do {
+            signatureValid = try signerKeyPair.verify(
+                signature: [UInt8](rawSignature),
+                message: [UInt8](authDigest)
+            )
+        } catch {
+            throw TransactionException.signingFailed(
+                reason: "Ed25519 signature local verification failed for verifier \(verifierAddress): " +
+                    (SmartAccountException.messageOf(error) ?? "unknown"),
+                cause: error
+            )
+        }
+        if !signatureValid {
+            throw TransactionException.signingFailed(
+                reason: "Ed25519 signing source returned a signature that does not verify " +
+                    "against the registered public key for verifier \(verifierAddress)"
+            )
+        }
+    }
+
     /// Produces one delegated-signer auth entry per wallet signer and
     /// appends it to `signedAuthEntries`. Each delegated entry is signed via
     /// ``authorizeInvocation(walletAddress:validUntilLedger:invocation:networkPassphrase:externalWallet:)``
@@ -830,8 +1061,7 @@ public class OZMultiSignerManager: @unchecked Sendable {
         for signer in selectedSigners {
             guard case .wallet(let walletAddress) = signer else { continue }
             guard let externalWallet = externalWallet else {
-                // Defensive — `validateSignerSet` guarantees externalWallet
-                // is non-nil whenever a wallet signer is in the list.
+                // compiler-required unwrap; validateSignerSet guarantees non-nil for wallet signers.
                 throw ConfigurationException.invalidConfig(
                     details: "External wallet adapter is required for wallet signers but is not configured"
                 )
@@ -944,7 +1174,7 @@ public class OZMultiSignerManager: @unchecked Sendable {
     /// The signature is formatted as the classical Stellar
     /// `Vec([Map({"public_key": Bytes, "signature": Bytes})])` shape. The
     /// preimage construction reuses the EXISTING entry nonce and the supplied
-    /// expiration ledger, matching D-112.
+    /// expiration ledger.
     ///
     /// - Parameters:
     ///   - entry: The unsigned auth entry whose `Address` credentials reference
@@ -1091,12 +1321,12 @@ public class OZMultiSignerManager: @unchecked Sendable {
     /// the response, locally verifies the signature against `walletAddress`,
     /// and assembles the final classical Ed25519 ``SorobanAddressCredentialsXDR``.
     ///
-    /// Local verification (per F-SEC-iOS-1) refuses signatures that do not
-    /// verify under the requested wallet's public key. This protects against
-    /// adapters that silently return a valid-looking but wrong signature
-    /// (for example because the user authorised a different account in their
-    /// wallet UI), which would otherwise surface as an opaque on-chain
-    /// `auth-failed` only after submission.
+    /// Local verification refuses signatures that do not verify under the
+    /// requested wallet's public key. This protects against adapters that
+    /// silently return a valid-looking but wrong signature (for example
+    /// because the user authorised a different account in their wallet UI),
+    /// which would otherwise surface as an opaque on-chain `auth-failed`
+    /// only after submission.
     ///
     /// - Parameters:
     ///   - walletAddress: Stellar G-address that should sign the entry.
@@ -1187,10 +1417,9 @@ public class OZMultiSignerManager: @unchecked Sendable {
             )
         }
 
-        // F-SEC-iOS-1: locally verify the wallet adapter's signature against
-        // the requested address before trusting it downstream. Failure here
-        // is far more actionable than the on-chain `auth-failed` we would
-        // otherwise see after submission.
+        // why: locally verify the wallet adapter's signature against the requested address
+        // before trusting it downstream. Failure here is far more actionable than the
+        // on-chain `auth-failed` we would otherwise see after submission.
         let preimageHash = Data(preimageBytes).sha256Hash
         let signatureValid: Bool
         do {

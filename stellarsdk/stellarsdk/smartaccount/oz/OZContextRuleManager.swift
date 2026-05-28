@@ -249,7 +249,7 @@ public final class OZContextRuleManager: OZContextRuleManagerProtocol, @unchecke
 
         // arg 4: policies — Map<Address, ScVal>. Keys MUST be sorted by their
         // XDR-byte representation per the Soroban `ScMap` ordering invariant;
-        // delegated to ``OZPolicyManager/sortMapByKeyXdr(_:)`` (D-120).
+        // delegated to ``OZPolicyManager/sortMapByKeyXdr(_:)``.
         var policyEntries: [SCMapEntryXDR] = []
         policyEntries.reserveCapacity(policies.count)
         for (address, installParam) in policies {
@@ -415,10 +415,10 @@ public final class OZContextRuleManager: OZContextRuleManagerProtocol, @unchecke
         var id: UInt32 = 0
         while id < effectiveScanId {
             try Task.checkCancellation()
-            // why: stop as soon as the active rules have been collected per
-            // D-121 — the count fetched at the start of the scan is the
-            // authoritative termination signal. A "3-consecutive-miss" rule
-            // would behave incorrectly with sparse identifier layouts.
+            // why: stop as soon as the active rules have been collected — the
+            // count fetched at the start of the scan is the authoritative
+            // termination signal. A "3-consecutive-miss" rule would behave
+            // incorrectly with sparse identifier layouts.
             if UInt32(result.count) >= activeCount { break }
             do {
                 let ruleScVal = try await getContextRule(id: id)
@@ -515,17 +515,17 @@ public final class OZContextRuleManager: OZContextRuleManagerProtocol, @unchecke
     /// Implements the three-tier resolution algorithm:
     /// 1. Filter rules by context-type match
     ///    (``contextRuleTypeMatches(ruleType:requiredType:)``).
-    /// 2. If exactly one rule matches, use it (D-135 fast path).
+    /// 2. If exactly one rule matches, use it (fast path).
     /// 3. **Tier 1** — exact signer match: same signer count plus bidirectional
-    ///    containment between `signers` and the rule's signer list (D-135).
+    ///    containment between `signers` and the rule's signer list.
     /// 4. **Tier 2** — rule-signers-subset-of-selected with no policies: every
     ///    rule signer must appear in `signers`, and the rule must have no
-    ///    installed policies (D-136 precondition).
+    ///    installed policies.
     /// 5. **Tier 3** — selected-signers-subset-of-rule: every selected signer
     ///    must appear in the rule (threshold scenarios where the user picks
-    ///    fewer signers than the rule has) (D-137).
+    ///    fewer signers than the rule has).
     ///
-    /// Failure semantics (D-138):
+    /// Failure semantics:
     /// - No candidates after the context-type filter → ``ValidationException``
     ///   advising the caller to add a Default rule.
     /// - Multiple candidates whose signer sets all contain every selected
@@ -578,7 +578,7 @@ public final class OZContextRuleManager: OZContextRuleManagerProtocol, @unchecke
                 continue
             }
 
-            // Tier 2: rule signers are a subset of selected and the rule has no policies (D-136).
+            // Tier 2: rule signers are a subset of selected and the rule has no policies.
             let signerSubsetMatches = candidates.filter { rule in
                 if !rule.policies.isEmpty { return false }
                 return rule.signers.allSatisfy { ruleSigner in
@@ -601,7 +601,7 @@ public final class OZContextRuleManager: OZContextRuleManagerProtocol, @unchecke
                 continue
             }
 
-            // Failure paths (D-138).
+            // Failure paths.
             if candidates.isEmpty {
                 throw ValidationException.invalidInput(
                     field: "contextRuleIds",

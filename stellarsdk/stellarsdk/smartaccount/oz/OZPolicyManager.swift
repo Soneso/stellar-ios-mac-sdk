@@ -58,6 +58,22 @@ public enum SelectedSigner: Sendable, Hashable {
     ///   wallet adapter or through an in-process keypair registered via
     ///   `OZExternalSignerManager`.
     case wallet(accountId: String)
+
+    /// An Ed25519 signer backed by a verifier contract.
+    ///
+    /// Identifies a signer registered on-chain as an `External(verifierAddress, publicKey)`
+    /// entry. The actual signing capability must be registered separately via
+    /// ``OZExternalSignerManager/addEd25519FromRawKey(secretKeyBytes:verifierAddress:)`` or by
+    /// supplying a conforming ``OZExternalEd25519SignerAdapter`` before the multi-signer
+    /// pipeline executes.
+    ///
+    /// - Parameters:
+    ///   - verifierAddress: Contract address (`C…` strkey) of the Ed25519 verifier
+    ///     contract registered as part of the on-chain `External(verifierAddress, publicKey)`
+    ///     signer entry.
+    ///   - publicKey: 32-byte Ed25519 public key that identifies the signer slot on the
+    ///     smart account. Must match the public key registered in the on-chain signer entry.
+    case ed25519(verifierAddress: String, publicKey: Data)
 }
 
 // ============================================================================
@@ -956,7 +972,7 @@ public final class OZPolicyManager: @unchecked Sendable {
         return HostFunctionXDR.invokeContract(invokeArgs)
     }
 
-    // MARK: - Companion: ScMap key sorting (D-120)
+    // MARK: - ScMap key sorting
 
     /// Sorts a list of `SCMapEntryXDR` entries by the lexicographic byte
     /// ordering of their keys' XDR encoding.

@@ -8,10 +8,9 @@
 import XCTest
 @testable import stellarsdk
 
-/// Group H tests verifying that every smart-account contract method
-/// invocation built by the manager surface matches the OpenZeppelin Smart
-/// Account contract ABI: function name (Symbol), argument count, argument
-/// types, and argument order.
+/// Tests verifying that every smart-account contract method invocation built
+/// by the manager surface matches the OpenZeppelin Smart Account contract ABI:
+/// function name (Symbol), argument count, argument types, and argument order.
 ///
 /// These tests pin down the precise on-chain shape produced by the manager
 /// builders so a future contract-ABI drift or a refactor that flips an

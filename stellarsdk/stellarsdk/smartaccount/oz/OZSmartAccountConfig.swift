@@ -153,6 +153,15 @@ public struct OZSmartAccountConfig: @unchecked Sendable {
     /// WebAuthn credentials.
     public let externalWallet: ExternalWalletAdapter?
 
+    /// External-signer manager for Ed25519 signing in multi-signer ceremonies.
+    ///
+    /// Consumer applications construct ``OZExternalSignerManager`` separately, register
+    /// Ed25519 keypairs or adapters on it, and supply it here so the kit's multi-signer
+    /// pipeline can resolve signing sources for ``SelectedSigner/ed25519(verifierAddress:publicKey:)``
+    /// entries. When `nil`, any ``SelectedSigner/ed25519(...)`` entry in a multi-signer
+    /// call throws `ValidationException.InvalidInput` at the validation stage.
+    public let externalSignerManager: OZExternalSignerManager?
+
     /// Maximum rule ID to scan when iterating context rules.
     ///
     /// The contract assigns monotonically increasing IDs to context rules. When rules
@@ -183,6 +192,9 @@ public struct OZSmartAccountConfig: @unchecked Sendable {
     ///   - webauthnProvider: Optional WebAuthn provider.
     ///   - storage: Storage adapter; defaults to a fresh `InMemoryStorageAdapter`.
     ///   - externalWallet: Optional external wallet adapter.
+    ///   - externalSignerManager: Optional external-signer manager for Ed25519 multi-signer
+    ///     ceremonies. Construct ``OZExternalSignerManager`` separately, register signing
+    ///     sources on it, then supply it here.
     ///   - maxContextRuleScanId: Maximum context-rule ID to scan; defaults to 50.
     /// - Throws: `ConfigurationException.MissingConfig` for blank required strings;
     ///           `ConfigurationException.InvalidConfig` for malformed `accountWasmHash`
@@ -203,6 +215,7 @@ public struct OZSmartAccountConfig: @unchecked Sendable {
         webauthnProvider: WebAuthnProvider? = nil,
         storage: StorageAdapter = InMemoryStorageAdapter(),
         externalWallet: ExternalWalletAdapter? = nil,
+        externalSignerManager: OZExternalSignerManager? = nil,
         maxContextRuleScanId: UInt32 = 50
     ) throws {
         if rpcUrl.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
@@ -259,6 +272,7 @@ public struct OZSmartAccountConfig: @unchecked Sendable {
         self.webauthnProvider = webauthnProvider
         self.storage = storage
         self.externalWallet = externalWallet
+        self.externalSignerManager = externalSignerManager
         self.maxContextRuleScanId = maxContextRuleScanId
     }
 
@@ -404,6 +418,7 @@ public struct OZSmartAccountConfig: @unchecked Sendable {
         private var _webauthnProvider: WebAuthnProvider? = nil
         private var _storage: StorageAdapter = InMemoryStorageAdapter()
         private var _externalWallet: ExternalWalletAdapter? = nil
+        private var _externalSignerManager: OZExternalSignerManager? = nil
         private var _maxContextRuleScanId: UInt32 = 50
 
         /// Initializes a new `Builder` with the four required configuration fields.
@@ -538,6 +553,17 @@ public struct OZSmartAccountConfig: @unchecked Sendable {
             return self
         }
 
+        /// Sets the external-signer manager for Ed25519 multi-signer ceremonies.
+        ///
+        /// - Parameter externalSignerManager: The manager instance (`nil` to disable
+        ///                                    Ed25519 signing support).
+        /// - Returns: `self` for chaining.
+        @discardableResult
+        public func externalSignerManager(_ externalSignerManager: OZExternalSignerManager?) -> Builder {
+            _externalSignerManager = externalSignerManager
+            return self
+        }
+
         /// Sets the maximum context-rule ID to scan when iterating rules.
         ///
         /// - Parameter value: The maximum scan ID.
@@ -569,6 +595,7 @@ public struct OZSmartAccountConfig: @unchecked Sendable {
                 webauthnProvider: _webauthnProvider,
                 storage: _storage,
                 externalWallet: _externalWallet,
+                externalSignerManager: _externalSignerManager,
                 maxContextRuleScanId: _maxContextRuleScanId
             )
         }
@@ -614,6 +641,9 @@ extension OZSmartAccountConfig: Equatable {
         if !externalWalletAdaptersEqual(lhs.externalWallet, rhs.externalWallet) {
             return false
         }
+        if !externalSignerManagersEqual(lhs.externalSignerManager, rhs.externalSignerManager) {
+            return false
+        }
         return true
     }
 
@@ -641,6 +671,9 @@ extension OZSmartAccountConfig: Equatable {
         }
         if let wallet = externalWallet {
             hasher.combine(ObjectIdentifier(wallet as AnyObject))
+        }
+        if let mgr = externalSignerManager {
+            hasher.combine(ObjectIdentifier(mgr))
         }
     }
 
@@ -682,6 +715,20 @@ extension OZSmartAccountConfig: Equatable {
             return true
         case let (l?, r?):
             return (l as AnyObject) === (r as AnyObject)
+        default:
+            return false
+        }
+    }
+
+    private static func externalSignerManagersEqual(
+        _ lhs: OZExternalSignerManager?,
+        _ rhs: OZExternalSignerManager?
+    ) -> Bool {
+        switch (lhs, rhs) {
+        case (nil, nil):
+            return true
+        case let (l?, r?):
+            return l === r
         default:
             return false
         }

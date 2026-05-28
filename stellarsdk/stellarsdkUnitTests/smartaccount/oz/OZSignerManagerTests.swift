@@ -14,8 +14,7 @@ import XCTest
 /// `remove_signer`, the validation surface across the four signer-addition
 /// paths (passkey, delegated, Ed25519, and the value-based remove overload),
 /// the routing of single- versus multi-signer submissions, and the
-/// signer-value resolution Group J.2 mandates against the on-chain context
-/// rule.
+/// signer-value resolution validated against the on-chain context rule.
 ///
 /// Network-dependent submission (the kit's transaction-operations pipeline) is
 /// exercised by integration tests; the unit-level coverage here focuses on
@@ -448,14 +447,14 @@ final class OZSignerManagerTests: XCTestCase {
     }
 
     // ========================================================================
-    // MARK: - removeSignerBySigner — Group J.2 (plan §7 lines 720-724)
+    // MARK: - removeSignerBySigner
     // ========================================================================
 
-    /// Group J.2 case 4: given a context rule with three signers and known
-    /// signer ids, `removeSignerBySigner(_:contextRuleId:)` must resolve the
-    /// supplied value to the correct numeric id and produce a host function
-    /// byte-equal to the id-based `removeSigner(_:contextRuleId:signerId:)`
-    /// invocation for the same target.
+    /// Given a context rule with three signers and known signer ids,
+    /// `removeSignerBySigner(_:contextRuleId:)` must resolve the supplied
+    /// value to the correct numeric id and produce a host function byte-equal
+    /// to the id-based `removeSigner(_:contextRuleId:signerId:)` invocation
+    /// for the same target.
     func test_removeSigner_bySignerValue_resolvesToCorrectIdViaListContextRules() async throws {
         let signerA = try OZDelegatedSigner(address: validGAddr1)
         let signerB = try OZDelegatedSigner(address: validGAddr2)
@@ -510,10 +509,9 @@ final class OZSignerManagerTests: XCTestCase {
         )
     }
 
-    /// Group J.2 case 5: when the supplied signer value is not present on
-    /// the resolved context rule, the manager must throw
-    /// ``ValidationException/InvalidInput`` without producing a host
-    /// function or invoking the submitter.
+    /// When the supplied signer value is not present on the resolved context
+    /// rule, the manager must throw ``ValidationException/InvalidInput``
+    /// without producing a host function or invoking the submitter.
     func test_removeSigner_bySignerValue_signerNotInRule_throwsValidation() async throws {
         let signerA = try OZDelegatedSigner(address: validGAddr1)
         let signerB = try OZDelegatedSigner(address: validGAddr2)

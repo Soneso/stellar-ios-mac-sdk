@@ -1034,7 +1034,7 @@ final class OZContextRuleParsingTests: XCTestCase {
     }
 
     // ========================================================================
-    // F-SEC-iOS-6 — External signer verifier address must be contract-only
+    // MARK: - External signer verifier address validation
     // ========================================================================
 
     /// An ``External`` signer's verifier address must be a contract (`C…`)

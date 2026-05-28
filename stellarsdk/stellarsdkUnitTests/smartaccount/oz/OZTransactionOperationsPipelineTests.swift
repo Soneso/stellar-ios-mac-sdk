@@ -1054,8 +1054,7 @@ final class OZTransactionOperationsPipelineTests: XCTestCase {
     func test_submit_rpcTimeout_throwsTransactionTimeout() async throws {
         // iOS surfaces URLSession timeouts as `requestFailed(message:)` from
         // `SorobanRpcRequestError`, which the pipeline lifts into
-        // `TransactionException.SimulationFailed` (the iOS equivalent of
-        // Flutter's TransactionSubmissionFailed-with-timeout).
+        // `TransactionException.SimulationFailed`.
         let h = try await buildPipelineHarness()
         enqueueDeployerAccount(deployer: h.deployer)
 

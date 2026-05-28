@@ -237,15 +237,19 @@ public final class OZSmartAccountKit: OZSmartAccountKitProtocol, @unchecked Send
     }
     private var _multiSignerManager: OZMultiSignerManager!
 
-    /// External-signer manager bound to this kit.
+    /// External-signer manager resolved from the kit's configuration.
     ///
-    /// Not instantiated by the kit. Consumer applications construct
-    /// ``OZExternalSignerManager`` directly when they need to coordinate
-    /// non-WebAuthn signers; the manager is standalone and does not hold a
-    /// kit reference. The kit exposes this property for protocol conformance
-    /// and to make the absence of a kit-owned external-signer pipeline
-    /// explicit at the API surface.
-    public let externalSignerManager: OZExternalSignerManager? = nil
+    /// Consumer applications construct ``OZExternalSignerManager`` separately,
+    /// register Ed25519 keypairs or adapters on it, and supply it via
+    /// ``OZSmartAccountConfig/externalSignerManager`` before calling
+    /// ``OZSmartAccountKit/create(config:)``. Returns `nil` when no manager
+    /// was set on the config. Multi-signer flows that include
+    /// ``SelectedSigner/ed25519(verifierAddress:publicKey:)`` entries require
+    /// this to be non-`nil`; flows that use only passkey and wallet signers work
+    /// with this `nil`.
+    public var externalSignerManager: OZExternalSignerManager? {
+        return config.externalSignerManager
+    }
 
     /// External-wallet adapter resolved from the kit's configuration.
     ///

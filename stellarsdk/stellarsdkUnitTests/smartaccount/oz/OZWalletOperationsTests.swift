@@ -38,7 +38,7 @@ final class OZWalletOperationsTests: XCTestCase {
     }
 
     // ========================================================================
-    // Group B.1: createWallet pre-network validation
+    // MARK: - createWallet pre-network validation
     // ========================================================================
 
     func test_createWallet_noWebAuthnProvider_throwsNotSupported() async throws {
@@ -85,7 +85,7 @@ final class OZWalletOperationsTests: XCTestCase {
     }
 
     // ========================================================================
-    // Group B.2: authenticatePasskey pre-network validation
+    // MARK: - authenticatePasskey pre-network validation
     // ========================================================================
 
     func test_authenticatePasskey_noWebAuthnProvider_throwsNotSupported() async throws {
@@ -121,7 +121,7 @@ final class OZWalletOperationsTests: XCTestCase {
     }
 
     // ========================================================================
-    // Group B.3: connectWallet validation
+    // MARK: - connectWallet validation
     // ========================================================================
 
     func test_connectWallet_defaultOptions_noSession_returnsNull() async throws {
@@ -175,7 +175,7 @@ final class OZWalletOperationsTests: XCTestCase {
     }
 
     // ========================================================================
-    // Group B.4: ConnectWalletOptions data-class behavior
+    // MARK: - ConnectWalletOptions data-class behavior
     // ========================================================================
 
     func test_connectWalletOptions_defaultValues() {
@@ -244,7 +244,7 @@ final class OZWalletOperationsTests: XCTestCase {
     }
 
     // ========================================================================
-    // Group B.5: CreateWalletResult data-class behavior
+    // MARK: - CreateWalletResult data-class behavior
     // ========================================================================
 
     func test_createWalletResult_construction_defaultOptionalFields() {
@@ -408,7 +408,7 @@ final class OZWalletOperationsTests: XCTestCase {
     }
 
     // ========================================================================
-    // Group B.6: ConnectWalletResult sealed-type behavior
+    // MARK: - ConnectWalletResult sealed-type behavior
     // ========================================================================
 
     func test_connectWalletResult_connected_construction() {
@@ -522,7 +522,7 @@ final class OZWalletOperationsTests: XCTestCase {
     }
 
     // ========================================================================
-    // Group B.7: DeployPendingResult data-class behavior
+    // MARK: - DeployPendingResult data-class behavior
     // ========================================================================
 
     func test_deployPendingResult_construction_defaultOptionalFields() {
@@ -561,7 +561,7 @@ final class OZWalletOperationsTests: XCTestCase {
     }
 
     // ========================================================================
-    // Group B.8: AuthenticatePasskeyResult data-class behavior
+    // MARK: - AuthenticatePasskeyResult data-class behavior
     // ========================================================================
 
     private func buildSignature() throws -> OZWebAuthnSignature {
@@ -656,7 +656,7 @@ final class OZWalletOperationsTests: XCTestCase {
     }
 
     // ========================================================================
-    // Group B.9: Kit connected-state lifecycle (mock kit)
+    // MARK: - Kit connected-state lifecycle (mock kit)
     // ========================================================================
 
     func test_kit_initialState_notConnected() throws {
@@ -686,7 +686,7 @@ final class OZWalletOperationsTests: XCTestCase {
     }
 
     // ========================================================================
-    // Group B.10: disconnect-equivalent lifecycle (modelled via clearConnectedState)
+    // MARK: - disconnect-equivalent lifecycle (modelled via clearConnectedState)
     // ========================================================================
 
     func test_disconnect_afterConnectedState_clearsState() throws {
@@ -770,7 +770,7 @@ final class OZWalletOperationsTests: XCTestCase {
     }
 
     // ========================================================================
-    // Group B.11: requireConnected behavior
+    // MARK: - requireConnected behavior
     // ========================================================================
 
     func test_requireConnected_whenNotConnected_throwsNotConnected() throws {
@@ -801,7 +801,7 @@ final class OZWalletOperationsTests: XCTestCase {
     }
 
     // ========================================================================
-    // Group B.12: deployPendingCredential validation
+    // MARK: - deployPendingCredential validation
     // ========================================================================
 
     func test_deployPendingCredential_autoFundWithoutToken_throwsValidation() async throws {
@@ -903,7 +903,7 @@ final class OZWalletOperationsTests: XCTestCase {
     }
 
     // ========================================================================
-    // Group C.3: connectWallet cascade — storage hit (failed status)
+    // MARK: - connectWallet cascade — storage hit (failed status)
     // ========================================================================
 
     func test_connectWallet_explicitContractIdWithoutCredentialId_validationOrder() async throws {
@@ -942,7 +942,7 @@ final class OZWalletOperationsTests: XCTestCase {
     }
 
     // ========================================================================
-    // Group C.7: createWallet auto-fund validation order
+    // MARK: - createWallet auto-fund validation order
     // ========================================================================
 
     func test_createWallet_autoFundWithoutToken_throwsValidation() async throws {

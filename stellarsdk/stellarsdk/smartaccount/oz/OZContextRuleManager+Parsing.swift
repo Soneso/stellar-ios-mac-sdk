@@ -20,7 +20,7 @@ import Foundation
 
 extension OZContextRuleManager {
 
-    // MARK: - parseContextRule (internal, cross-manager surface per D-104)
+    // MARK: - parseContextRule
 
     /// Parses a context rule from its on-chain `SCValXDR` representation.
     ///
@@ -340,11 +340,11 @@ extension OZContextRuleManager {
                     reason: "\(SignerDiscriminant.external) signer missing address or keyData element"
                 )
             }
-            // why (F-SEC-iOS-6): the OZ contract dispatches an `External`
-            // signer through its verifier contract. An account (`G…`) address
-            // cannot host a verifier method, so reject anything that is not a
-            // strict contract (`C…`) address here rather than constructing a
-            // signer that would silently fail at submission time.
+            // why: the OZ contract dispatches an `External` signer through its
+            // verifier contract. An account (`G…`) address cannot host a
+            // verifier method, so reject anything that is not a strict
+            // contract (`C…`) address here rather than constructing a signer
+            // that would silently fail at submission time.
             let verifierAddress: String
             do {
                 verifierAddress = try parseContractAddress(scVal: vec[1])

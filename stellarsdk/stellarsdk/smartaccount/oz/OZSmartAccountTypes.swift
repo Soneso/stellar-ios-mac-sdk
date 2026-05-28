@@ -161,6 +161,11 @@ public struct OZExternalSigner: OZSmartAccountSigner, Equatable, Hashable {
     /// - Throws: `ValidationException.InvalidAddress` if `verifierAddress` is not a valid
     ///   contract strkey; `ValidationException.InvalidInput` if `keyData` is empty.
     public init(verifierAddress: String, keyData: Data) throws {
+        // Verifier address is also validated at registration time
+        // (OZExternalSignerManager.addEd25519FromRawKey) and at pre-signing time
+        // (OZMultiSignerManager.validateEd25519Signers). Keeping the check here
+        // guarantees the invariant for any caller that constructs OZExternalSigner
+        // directly without going through those paths.
         if !verifierAddress.isValidContractId() {
             throw ValidationException.invalidAddress(
                 address: "Verifier address must be a valid contract address (C...), got: \(verifierAddress)"

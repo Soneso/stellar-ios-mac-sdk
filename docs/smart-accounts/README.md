@@ -9,7 +9,7 @@ New to smart accounts? Start with the [Developer Onboarding](onboarding.md) guid
 A smart account is a Soroban contract that replaces traditional key-based authorization with programmable on-chain rules. Each smart account supports:
 
 - **Passkey authentication** via WebAuthn (secp256r1) for biometric sign-in on Apple platforms.
-- **Multiple signer types** on a single account: WebAuthn passkeys, Ed25519 keys, and delegated Stellar addresses (G- or C-strkeys).
+- **Multiple signer types** on a single account: WebAuthn passkeys, Ed25519 keys, and delegated Stellar addresses (G- or C-strkeys). All three types support full multi-signer signing through the `OZMultiSignerManager` pipeline.
 - **Context rules** that bind sets of signers and policies to specific operation types (default, call-contract, create-contract).
 - **Policies** that enforce constraints on-chain, including M-of-N thresholds, weighted thresholds, and per-period spending limits. Custom policy contracts are also supported.
 - **Optional fee sponsoring** through a relayer so end users never pay XLM fees.
@@ -298,23 +298,58 @@ let custom = try await kit.policyManager.addPolicy(
 
 ### Multi-signer transfer
 
-When a context rule requires more than one signature, use `kit.multiSignerManager`. The `selectedSigners` array names the signers that should authorize the call. Passkey entries trigger WebAuthn ceremonies; wallet entries delegate signing to the configured `ExternalWalletAdapter`.
+When a context rule requires more than one signature, use `kit.multiSignerManager`. The `selectedSigners` array names the signers that should authorize the call. Three signer kinds are supported:
 
-For multi-signer ceremonies, every `SelectedSigner.passkey(...)` entry must carry the credential's stored `keyData` -- the auth pipeline reconstructs external signers once per call, not per entry.
+- `SelectedSigner.passkey(...)` — triggers a WebAuthn authentication ceremony.
+- `SelectedSigner.wallet(...)` — delegates signing to the configured `ExternalWalletAdapter` or to an in-process keypair registered via `OZExternalSignerManager`.
+- `SelectedSigner.ed25519(...)` — calls `OZExternalSignerManager.signEd25519AuthDigest(...)` using the signing source registered for the `(verifierAddress, publicKey)` tuple.
+
+For multi-signer ceremonies, every `SelectedSigner.passkey(...)` entry must carry the credential's stored `keyData` — the auth pipeline reconstructs external signers once per call, not per entry.
+
+For `SelectedSigner.ed25519(...)` entries, register the signing source before calling the multi-signer method:
 
 ```swift
+// 1. Construct the manager and register the signing source.
+let ed25519VerifierAddress = "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM"
+let externalSignerManager = OZExternalSignerManager(
+    networkPassphrase: Network.testnet.passphrase
+)
+// rawSecretKeyBytes must be exactly 32 bytes (the raw Ed25519 seed, not an S-strkey).
+let ed25519PublicKey = try externalSignerManager.addEd25519FromRawKey(
+    secretKeyBytes: rawSecretKeyBytes,
+    verifierAddress: ed25519VerifierAddress
+)
+
+// 2. Wire the manager into the kit's config before constructing the kit.
+//    Ed25519 signers require OZExternalSignerManager to be set on the config;
+//    omitting it causes validateSignerSet to throw at call time.
+let config = try OZSmartAccountConfig(
+    rpcUrl: "https://soroban-testnet.stellar.org",
+    networkPassphrase: Network.testnet.passphrase,
+    accountWasmHash: "<64-char hex WASM hash>",
+    webauthnVerifierAddress: "<C-strkey of WebAuthn verifier>",
+    webauthnProvider: provider,
+    storage: KeychainStorageAdapter(),
+    externalSignerManager: externalSignerManager
+)
+let kit = OZSmartAccountKit.create(config: config)
+
+// 3. All three signer kinds in a single call.
 let result = try await kit.multiSignerManager.multiSignerTransfer(
     tokenContract: "<C-strkey of token contract>",
-    recipient: "GA7QYNF7...",
+    recipient: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ",
     amount: "10",
     selectedSigners: [
-        .passkey(credentialId: passkeyA, credentialIdBytes: nil, keyData: existingKeyData, transports: nil),
-        .wallet(accountId: "GBBBBB...")
+        .passkey(credentialId: savedCredId, keyData: savedKeyData),
+        .wallet(accountId: "GA7QYNF7..."),
+        .ed25519(verifierAddress: ed25519VerifierAddress, publicKey: ed25519PublicKey)
     ]
 )
 ```
 
 For arbitrary contract calls with multiple signers, use `multiSignerContractCall(...)`. To route through the smart account's `execute` entry point, use `multiSignerExecuteAndSubmit(...)`.
+
+The full `SelectedSigner` enum, `OZExternalSignerManager` Ed25519 methods, and the `OZExternalEd25519SignerAdapter` adapter protocol are documented in the [API Reference](api-reference.md#selectedsigner).
 
 ### Error handling
 

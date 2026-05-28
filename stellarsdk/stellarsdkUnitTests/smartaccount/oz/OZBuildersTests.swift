@@ -111,7 +111,7 @@ final class OZBuildersTests: XCTestCase {
         XCTAssertTrue(result.isEmpty)
     }
 
-    // MARK: - Group D NEW above-floor case
+    // MARK: - Additional above-floor case
 
     func test_collectUniqueSignersFromRules_overlappingSignersDeduplicatedAcrossRules() throws {
         let signer1 = try OZDelegatedSigner(address: KeyPair.generateRandomKeyPair().accountId)

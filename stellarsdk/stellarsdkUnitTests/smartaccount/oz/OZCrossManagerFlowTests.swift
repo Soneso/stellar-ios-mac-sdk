@@ -8,14 +8,12 @@
 import XCTest
 @testable import stellarsdk
 
-/// Group J.4 and J.5 above-floor tests for cross-manager flow consistency
-/// and cross-SDK behavior probes.
+/// Tests for cross-manager flow consistency and encoding conformance probes.
 ///
-/// J.4 (cross-manager flow) verifies orchestrated multi-manager sequences
+/// Cross-manager flow tests verify orchestrated multi-manager sequences
 /// produce the expected host-function shapes and routing decisions.
-/// J.5 (cross-SDK behavior probe) pins down the SDK's outbound encoding
-/// against the intent recorded in the source-of-truth implementations so a
-/// silent encoding drift between platforms surfaces immediately.
+/// Encoding conformance tests pin the SDK's outbound encoding so a silent
+/// encoding drift surfaces immediately.
 final class OZCrossManagerFlowTests: XCTestCase {
 
     // ========================================================================
@@ -76,7 +74,7 @@ final class OZCrossManagerFlowTests: XCTestCase {
     }
 
     // ========================================================================
-    // MARK: - J.4 Cross-Manager Flow
+    // MARK: - Cross-Manager Flow
     // ========================================================================
 
     /// Orchestrate `addPasskey` on the signer manager followed by
@@ -214,13 +212,13 @@ final class OZCrossManagerFlowTests: XCTestCase {
     }
 
     // ========================================================================
-    // MARK: - J.5 Cross-SDK Behavior Probe
+    // MARK: - Encoding Conformance Probes
     // ========================================================================
 
     /// `addPasskey` with an empty `selectedSigners` list (single-signer path)
-    /// builds an `add_signer` host function whose argument shape is identical
-    /// across SDK ports. Probes the cross-SDK invariant by asserting the
-    /// shape directly through ``OZSignerManager/buildAddSignerFunction(contractId:contextRuleId:signer:)``.
+    /// builds an `add_signer` host function with a fixed argument shape.
+    /// Asserts the shape directly through
+    /// ``OZSignerManager/buildAddSignerFunction(contractId:contextRuleId:signer:)``.
     func test_crossSDK_addPasskey_singleSigner_relayer_buildsIdenticalHostFunction() throws {
         let signer = try OZExternalSigner.webAuthn(
             verifierAddress: validVerifierAddress,
@@ -257,7 +255,7 @@ final class OZCrossManagerFlowTests: XCTestCase {
 
     /// `addContextRule` validates the policy address before any host function
     /// is built — verified by feeding a malformed address and asserting the
-    /// thrown error type. Mirrors the cross-SDK validation-order invariant.
+    /// thrown error type.
     func test_crossSDK_addContextRule_validatesPolicyAddressBeforeBuilding() async throws {
         let kit = MockOZSmartAccountKit(config: try buildConfig())
         kit.setConnectedState(

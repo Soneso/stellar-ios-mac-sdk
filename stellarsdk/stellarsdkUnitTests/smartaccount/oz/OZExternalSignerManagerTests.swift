@@ -350,9 +350,9 @@ final class OZExternalSignerManagerTests: XCTestCase {
     }
 
     func test_signAuthEntry_walletDelegate_passesNetworkPassphraseAndAddress() async throws {
-        // Adapter returns a real Ed25519 signature so the F-SEC-iOS-1 local
-        // verification step accepts the signature and surfaces the routing
-        // assertions this test cares about.
+        // Adapter returns a real Ed25519 signature so the local verification
+        // step accepts the signature and surfaces the routing assertions this
+        // test cares about.
         let adapter = FakeExternalWalletAdapter()
         let walletKeyPair = try newKeypair()
         let wallet = ConnectedWallet(
@@ -384,9 +384,9 @@ final class OZExternalSignerManagerTests: XCTestCase {
         XCTAssertEqual(result.signerAddress, walletKeyPair.accountId)
     }
 
-    /// F-SEC-iOS-1: signatures returned by an external wallet adapter that
-    /// do not verify against the requested address must be rejected before
-    /// the transaction is forwarded to the on-chain pipeline.
+    /// Signatures returned by an external wallet adapter that do not verify
+    /// against the requested address must be rejected before the transaction
+    /// is forwarded to the on-chain pipeline.
     func test_signAuthEntry_walletDelegate_signatureDoesNotVerify_throwsSigningFailed() async throws {
         let adapter = FakeExternalWalletAdapter()
         let walletKeyPair = try newKeypair()
@@ -642,7 +642,7 @@ final class OZExternalSignerManagerTests: XCTestCase {
             walletConnectionStorage: storage
         )
         _ = try await manager.addFromWallet()
-        // Now add a keypair (this also clears storage by D-129).
+        // Now add a keypair (this also clears storage).
         _ = try await manager.addFromSecret(secretKey: kp.secretSeed!)
 
         // Re-add wallet to storage manually (simulate a stale entry surviving).
@@ -731,6 +731,52 @@ final class OZExternalSignerManagerTests: XCTestCase {
 
         let afterJson = await storage.getItem(key: walletStorageKey)
         XCTAssertNil(afterJson)
+    }
+
+    func test_removeAll_clearsEd25519RegistrationsAlongsideWalletSigners() async throws {
+        let adapter = FakeExternalWalletAdapter()
+        adapter.nextConnect = ConnectedWallet(
+            address: validAddress1,
+            walletId: "w1",
+            walletName: "WalletOne"
+        )
+        let storage = InMemoryWalletConnectionStorage()
+        let manager = makeManager(
+            walletAdapter: adapter,
+            walletConnectionStorage: storage
+        )
+
+        // Register one wallet signer.
+        _ = try await manager.addFromWallet()
+
+        // Register one Ed25519 signer.
+        let ed25519Seed = Data(0x00 ..< 0x20)
+        let verifierAddress = "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM"
+        let pubKey = try await manager.addEd25519FromRawKey(
+            secretKeyBytes: ed25519Seed,
+            verifierAddress: verifierAddress
+        )
+
+        // Confirm both are registered before clearing.
+        let canSignWallet = await manager.canSignFor(address: validAddress1)
+        let canSignEd25519 = await manager.canSignEd25519For(
+            verifierAddress: verifierAddress,
+            publicKey: pubKey
+        )
+        XCTAssertTrue(canSignWallet, "wallet signer must be registered before removeAll")
+        XCTAssertTrue(canSignEd25519, "Ed25519 signer must be registered before removeAll")
+
+        try await manager.removeAll()
+
+        let canSignWalletAfter = await manager.canSignFor(address: validAddress1)
+        let canSignEd25519After = await manager.canSignEd25519For(
+            verifierAddress: verifierAddress,
+            publicKey: pubKey
+        )
+        XCTAssertFalse(canSignWalletAfter,
+                       "removeAll() must clear the wallet signer")
+        XCTAssertFalse(canSignEd25519After,
+                       "removeAll() must clear the Ed25519 signer from ed25519Signers")
     }
 
     // ========================================================================
@@ -1066,7 +1112,7 @@ final class OZExternalSignerManagerTests: XCTestCase {
     }
 
     // ========================================================================
-    // F-TC-iOS-2 — Lifecycle, idempotency, and serialization edge cases
+    // Lifecycle, idempotency, and serialization edge cases
     // ========================================================================
 
     /// An empty secret key string must be rejected before the keypair is
@@ -1236,6 +1282,261 @@ final class OZExternalSignerManagerTests: XCTestCase {
         let parsed = try JSONSerialization.jsonObject(with: data) as? [[String: Any]]
         XCTAssertEqual(parsed?.first?["walletId"] as? String, "")
         XCTAssertEqual(parsed?.first?["walletName"] as? String, "")
+    }
+
+    // ========================================================================
+    // E.9 — Ed25519 methods (9 cases)
+    // ========================================================================
+
+    /// A valid C-strkey used as a verifier address throughout Ed25519 tests.
+    private let ed25519VerifierAlpha =
+        "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM"
+
+    /// A second valid C-strkey used to test tuple-key disambiguation.
+    private let ed25519VerifierBeta =
+        "CDCYWK73YTYFJZZSJ5V7EDFNHYBG4QN3VUNG2IGD27KJDDPNCZKBCBXK"
+
+    /// Raw 32-byte Ed25519 secret seed used for in-process Ed25519 signing tests.
+    /// Shared with the fixture emitter so keys are byte-identical across test and
+    /// fixture files. Bytes 0x00..0x1F provide a stable, deterministic seed.
+    private let ed25519SecretBytes = Data(0x00 ..< 0x20)
+
+    func test_addEd25519FromRawKey_validRawKey_storesKeypairAndReturnsPublicKey() async throws {
+        let manager = makeManager()
+        let seed = try Seed(bytes: [UInt8](ed25519SecretBytes))
+        let expectedPublicKey = Data(KeyPair(seed: seed).publicKey.bytes)
+
+        let publicKey = try await manager.addEd25519FromRawKey(
+            secretKeyBytes: ed25519SecretBytes,
+            verifierAddress: ed25519VerifierAlpha
+        )
+
+        XCTAssertEqual(publicKey, expectedPublicKey)
+        XCTAssertEqual(publicKey.count, 32)
+
+        // Registration must be visible via canSignEd25519For.
+        let canSign = await manager.canSignEd25519For(verifierAddress: ed25519VerifierAlpha, publicKey: publicKey)
+        XCTAssertTrue(canSign)
+    }
+
+    func test_addEd25519FromRawKey_invalidRawKey_throwsInvalidInput() async throws {
+        let manager = makeManager()
+
+        // Wrong length: 16 bytes.
+        do {
+            _ = try await manager.addEd25519FromRawKey(
+                secretKeyBytes: Data(repeating: 0, count: 16),
+                verifierAddress: ed25519VerifierAlpha
+            )
+            XCTFail("expected ValidationException.InvalidInput for 16-byte key")
+        } catch let error as ValidationException.InvalidInput {
+            XCTAssertEqual(error.code, .invalidInput)
+            XCTAssertTrue(error.message.lowercased().contains("32"))
+        }
+
+        // Empty data.
+        do {
+            _ = try await manager.addEd25519FromRawKey(
+                secretKeyBytes: Data(),
+                verifierAddress: ed25519VerifierAlpha
+            )
+            XCTFail("expected ValidationException.InvalidInput for empty key")
+        } catch is ValidationException.InvalidInput {
+            // expected
+        }
+
+        // Wrong length: 33 bytes.
+        do {
+            _ = try await manager.addEd25519FromRawKey(
+                secretKeyBytes: Data(repeating: 0, count: 33),
+                verifierAddress: ed25519VerifierAlpha
+            )
+            XCTFail("expected ValidationException.InvalidInput for 33-byte key")
+        } catch is ValidationException.InvalidInput {
+            // expected
+        }
+    }
+
+    func test_addEd25519FromRawKey_sameKeyTwoVerifiers_storedAsDistinctEntries() async throws {
+        let manager = makeManager()
+
+        let publicKeyAlpha = try await manager.addEd25519FromRawKey(
+            secretKeyBytes: ed25519SecretBytes,
+            verifierAddress: ed25519VerifierAlpha
+        )
+        let publicKeyBeta = try await manager.addEd25519FromRawKey(
+            secretKeyBytes: ed25519SecretBytes,
+            verifierAddress: ed25519VerifierBeta
+        )
+
+        // Both verifier slots return the same public key (same seed bytes).
+        XCTAssertEqual(publicKeyAlpha, publicKeyBeta)
+
+        // Both (verifierAddress, publicKey) tuples must resolve to canSign = true.
+        let canSignAlphaBefore = await manager.canSignEd25519For(verifierAddress: ed25519VerifierAlpha, publicKey: publicKeyAlpha)
+        let canSignBetaBefore = await manager.canSignEd25519For(verifierAddress: ed25519VerifierBeta, publicKey: publicKeyBeta)
+        XCTAssertTrue(canSignAlphaBefore)
+        XCTAssertTrue(canSignBetaBefore)
+
+        // Removing one entry must not affect the other.
+        await manager.removeEd25519(verifierAddress: ed25519VerifierAlpha, publicKey: publicKeyAlpha)
+        let canSignAlphaAfter = await manager.canSignEd25519For(verifierAddress: ed25519VerifierAlpha, publicKey: publicKeyAlpha)
+        let canSignBetaAfter = await manager.canSignEd25519For(verifierAddress: ed25519VerifierBeta, publicKey: publicKeyBeta)
+        XCTAssertFalse(canSignAlphaAfter)
+        XCTAssertTrue(canSignBetaAfter)
+    }
+
+    func test_canSignEd25519For_registered_returnsTrue() async throws {
+        let manager = makeManager()
+        let publicKey = try await manager.addEd25519FromRawKey(
+            secretKeyBytes: ed25519SecretBytes,
+            verifierAddress: ed25519VerifierAlpha
+        )
+
+        let canSign = await manager.canSignEd25519For(verifierAddress: ed25519VerifierAlpha, publicKey: publicKey)
+        XCTAssertTrue(canSign)
+    }
+
+    func test_canSignEd25519For_unregistered_returnsFalse() async throws {
+        let manager = makeManager()
+        let seed = try Seed(bytes: [UInt8](ed25519SecretBytes))
+        let publicKey = Data(KeyPair(seed: seed).publicKey.bytes)
+
+        // Nothing registered yet.
+        let canSign = await manager.canSignEd25519For(verifierAddress: ed25519VerifierAlpha, publicKey: publicKey)
+        XCTAssertFalse(canSign)
+    }
+
+    func test_signEd25519AuthDigest_registered_returnsValidSignature() async throws {
+        let manager = makeManager()
+        let publicKey = try await manager.addEd25519FromRawKey(
+            secretKeyBytes: ed25519SecretBytes,
+            verifierAddress: ed25519VerifierAlpha
+        )
+
+        let authDigest = Data(repeating: 0x42, count: 32)
+        let signature = try await manager.signEd25519AuthDigest(
+            verifierAddress: ed25519VerifierAlpha,
+            publicKey: publicKey,
+            authDigest: authDigest
+        )
+
+        XCTAssertEqual(signature.count, 64, "Ed25519 signatures are 64 bytes")
+
+        // Locally verify: derive keypair from the same seed bytes and check.
+        let verifySeed = try Seed(bytes: [UInt8](ed25519SecretBytes))
+        let verifyKeypair = KeyPair(seed: verifySeed)
+        let verifyValid = try verifyKeypair.verify(
+            signature: [UInt8](signature),
+            message: [UInt8](authDigest)
+        )
+        XCTAssertTrue(verifyValid, "signature produced by signEd25519AuthDigest must verify against the registered public key")
+    }
+
+    func test_signEd25519AuthDigest_unregistered_throwsValidation() async throws {
+        let manager = makeManager()
+        let seed = try Seed(bytes: [UInt8](ed25519SecretBytes))
+        let publicKey = Data(KeyPair(seed: seed).publicKey.bytes)
+        let authDigest = Data(repeating: 0x01, count: 32)
+
+        do {
+            _ = try await manager.signEd25519AuthDigest(
+                verifierAddress: ed25519VerifierAlpha,
+                publicKey: publicKey,
+                authDigest: authDigest
+            )
+            XCTFail("expected ValidationException.InvalidInput")
+        } catch is ValidationException.InvalidInput {
+            // expected
+        }
+    }
+
+    func test_removeEd25519_clearsRegistration() async throws {
+        let manager = makeManager()
+        let publicKey = try await manager.addEd25519FromRawKey(
+            secretKeyBytes: ed25519SecretBytes,
+            verifierAddress: ed25519VerifierAlpha
+        )
+
+        let canSignBefore = await manager.canSignEd25519For(verifierAddress: ed25519VerifierAlpha, publicKey: publicKey)
+        XCTAssertTrue(canSignBefore)
+
+        await manager.removeEd25519(verifierAddress: ed25519VerifierAlpha, publicKey: publicKey)
+
+        let canSignAfter = await manager.canSignEd25519For(verifierAddress: ed25519VerifierAlpha, publicKey: publicKey)
+        XCTAssertFalse(canSignAfter)
+
+        // Removing a non-existent entry is a no-op.
+        await manager.removeEd25519(verifierAddress: ed25519VerifierAlpha, publicKey: publicKey)
+    }
+
+    func test_ed25519Adapter_takesPrecedenceForCanSignForTrue() async throws {
+        let manager = makeManager()
+        let seed = try Seed(bytes: [UInt8](ed25519SecretBytes))
+        let publicKey = Data(KeyPair(seed: seed).publicKey.bytes)
+
+        // Adapter claims it can sign; no in-process keypair registered.
+        let adapter = FakeEd25519SignerAdapter(canSign: true)
+        await manager.setEd25519Adapter(adapter)
+
+        let canSignViaAdapter = await manager.canSignEd25519For(
+            verifierAddress: ed25519VerifierAlpha,
+            publicKey: publicKey
+        )
+        XCTAssertTrue(
+            canSignViaAdapter,
+            "adapter returning true must short-circuit to true without consulting in-process registry"
+        )
+    }
+
+    func test_ed25519Adapter_falsyAdapterFallsBackToInProcessKeypair() async throws {
+        let manager = makeManager()
+        let publicKey = try await manager.addEd25519FromRawKey(
+            secretKeyBytes: ed25519SecretBytes,
+            verifierAddress: ed25519VerifierAlpha
+        )
+
+        // Adapter claims it cannot sign; should fall back to in-process keypair.
+        let adapter = FakeEd25519SignerAdapter(canSign: false)
+        await manager.setEd25519Adapter(adapter)
+
+        let canSignViaFallback = await manager.canSignEd25519For(
+            verifierAddress: ed25519VerifierAlpha,
+            publicKey: publicKey
+        )
+        XCTAssertTrue(
+            canSignViaFallback,
+            "when adapter returns false, canSignEd25519For must fall back to the in-process keypair registry"
+        )
+    }
+}
+
+// ============================================================================
+// OZExternalSignerManager test helpers
+// ============================================================================
+
+// ============================================================================
+// Ed25519 test doubles
+// ============================================================================
+
+/// Minimal stub ``OZExternalEd25519SignerAdapter`` that returns a fixed value for
+/// ``canSignFor(verifierAddress:publicKey:)`` and produces a zeroed signature from
+/// ``signAuthDigest(authDigest:publicKey:)``. Used to exercise adapter-first
+/// precedence without a real hardware-signing backend.
+private final class FakeEd25519SignerAdapter: OZExternalEd25519SignerAdapter, @unchecked Sendable {
+
+    private let canSignResult: Bool
+
+    init(canSign: Bool) {
+        self.canSignResult = canSign
+    }
+
+    func canSignFor(verifierAddress: String, publicKey: Data) -> Bool {
+        return canSignResult
+    }
+
+    func signAuthDigest(authDigest: Data, publicKey: Data) async throws -> Data {
+        return Data(repeating: 0x00, count: 64)
     }
 }
 
