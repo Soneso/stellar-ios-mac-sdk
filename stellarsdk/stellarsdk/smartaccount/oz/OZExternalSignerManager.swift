@@ -7,9 +7,6 @@
 
 import Foundation
 
-// ============================================================================
-// OZExternalEd25519SignerAdapter
-// ============================================================================
 
 /// Adapter protocol for external Ed25519 signing sources.
 ///
@@ -64,9 +61,6 @@ public protocol OZExternalEd25519SignerAdapter: Sendable {
     func signAuthDigest(authDigest: Data, publicKey: Data) async throws -> Data
 }
 
-// ============================================================================
-// External Signer Type
-// ============================================================================
 
 /// The type of an external signer managed by ``OZExternalSignerManager``.
 ///
@@ -85,9 +79,6 @@ public enum ExternalSignerType: String, Sendable, Codable, CaseIterable {
     case wallet = "WALLET"
 }
 
-// ============================================================================
-// External Signer Info
-// ============================================================================
 
 /// Information about a managed external signer.
 ///
@@ -140,9 +131,6 @@ public struct ExternalSignerInfo: Sendable, Codable, Equatable, Hashable {
     }
 }
 
-// ============================================================================
-// Wallet Connection Storage
-// ============================================================================
 
 /// Simple key-value storage interface for persisting external wallet connections.
 ///
@@ -216,67 +204,22 @@ public actor InMemoryWalletConnectionStorage: WalletConnectionStorage {
     }
 }
 
-// ============================================================================
-// External Signer Manager
-// ============================================================================
 
-/// Manager for external (non-passkey) signers used by multi-signature smart account operations.
+/// Manager for external (non-passkey) signers in multi-signature smart-account operations.
 ///
-/// ``OZExternalSignerManager`` provides a unified interface for managing Stellar
-/// account signers that originate from Ed25519 secret keys or external wallet
-/// connections (for example Freighter or LOBSTR). It supports two methods of
-/// adding signers:
+/// Maintains two signer kinds:
+/// - **Keypair signers** (``addFromSecret(secretKey:)``): held in memory only; secret-key
+///   material is never persisted.
+/// - **Wallet signers** (``addFromWallet()``): connected through an ``ExternalWalletAdapter``;
+///   connection metadata is persisted via ``WalletConnectionStorage`` and restored on the next
+///   launch via ``restoreConnections()``.
 ///
-/// 1. **Keypair signers** (via ``addFromSecret(secretKey:)``): created from a raw
-///    Ed25519 secret key. These are held in memory only and are never persisted
-///    to storage. Secret-key material is reachable only through the in-memory
-///    `KeyPair` instance.
-/// 2. **Wallet signers** (via ``addFromWallet()``): connected through an
-///    ``ExternalWalletAdapter``. Wallet-connection metadata (address, wallet
-///    identifier, wallet name) is persisted to ``WalletConnectionStorage`` so
-///    that connections can be restored across app launches via
-///    ``restoreConnections()``.
-///
-/// Concurrency:
-/// All mutable state is protected by Swift actor isolation. Public methods can
-/// be safely awaited from any concurrent context.
-///
-/// Example usage:
+/// Example:
 /// ```swift
-/// let manager = OZExternalSignerManager(
-///     networkPassphrase: Network.testnet.passphrase,
-///     walletAdapter: myWalletAdapter,
-///     walletConnectionStorage: myStorage
-/// )
-///
-/// // Add from secret key (memory-only)
 /// let address = try await manager.addFromSecret(secretKey: "SCZANGBA5YHT...")
-/// print("Added keypair signer: \(address)")
-///
-/// // Add from external wallet
-/// if let wallet = try await manager.addFromWallet() {
-///     print("Connected wallet: \(wallet.walletName) (\(wallet.address))")
-/// }
-///
-/// // Check signing capability
-/// if await manager.canSignFor(address: "GABC...") {
-///     let result = try await manager.signAuthEntry(
-///         address: "GABC...",
-///         authEntry: preimageXdrBase64
-///     )
-///     print("Signed by: \(result.signerAddress ?? "unknown")")
-/// }
-///
-/// // List all signers
-/// let signers = await manager.getAll()
+/// let wallet  = try await manager.addFromWallet()
 /// ```
-private let addressLogPrefixCount = 8
-
 public actor OZExternalSignerManager {
-
-    // ------------------------------------------------------------------
-    // Public static constants
-    // ------------------------------------------------------------------
 
     /// Storage key under which the manager persists wallet connections in the
     /// supplied ``WalletConnectionStorage``.
@@ -287,17 +230,11 @@ public actor OZExternalSignerManager {
     /// storage consumers sharing the same backing store.
     public static let walletStorageKey: String = "oz_smart_account.connected_wallets"
 
-    // ------------------------------------------------------------------
-    // Configuration
-    // ------------------------------------------------------------------
+    private let addressLogPrefixCount = 8
 
     private let networkPassphrase: String
     private let walletAdapter: ExternalWalletAdapter?
     private let walletConnectionStorage: WalletConnectionStorage?
-
-    // ------------------------------------------------------------------
-    // Internal state
-    // ------------------------------------------------------------------
 
     /// Keypair-based signers keyed by G-address. Memory-only, never persisted.
     private var keypairSigners: [String: KeyPair] = [:]
@@ -307,9 +244,7 @@ public actor OZExternalSignerManager {
     /// is read at most once per session.
     private var restored: Bool = false
 
-    // ------------------------------------------------------------------
-    // Ed25519 state
-    // ------------------------------------------------------------------
+    // MARK: - Ed25519 state
 
     /// Composite key for the Ed25519 signer registry. Two entries with the same
     /// public key but different verifier addresses are distinct signers on-chain
@@ -355,10 +290,6 @@ public actor OZExternalSignerManager {
         self.ed25519Adapter = adapter
     }
 
-    // ------------------------------------------------------------------
-    // Initialisation
-    // ------------------------------------------------------------------
-
     /// Initializes a new ``OZExternalSignerManager``.
     ///
     /// - Parameters:
@@ -380,10 +311,6 @@ public actor OZExternalSignerManager {
         self.walletConnectionStorage = walletConnectionStorage
     }
 
-    // ------------------------------------------------------------------
-    // Wallet adapter access
-    // ------------------------------------------------------------------
-
     /// Whether an external wallet adapter is configured.
     ///
     /// Returns `true` when the manager was initialized with a non-`nil`
@@ -393,9 +320,7 @@ public actor OZExternalSignerManager {
         return walletAdapter != nil
     }
 
-    // ------------------------------------------------------------------
-    // Add signers
-    // ------------------------------------------------------------------
+    // MARK: - Add signers
 
     /// Adds an Ed25519 keypair signer from a raw secret key.
     ///
@@ -469,18 +394,9 @@ public actor OZExternalSignerManager {
         return wallet
     }
 
-    // ------------------------------------------------------------------
-    // Query signers
-    // ------------------------------------------------------------------
+    // MARK: - Query signers
 
-    /// Checks whether any managed signer can sign for the given address.
-    ///
-    /// Checks keypair signers first (O(1) map lookup), then delegates to the
-    /// wallet adapter's ``ExternalWalletAdapter/canSignFor(address:)`` when
-    /// available.
-    ///
-    /// - Parameter address: The Stellar G-address to check.
-    /// - Returns: `true` when a keypair or connected wallet can sign for this address.
+    /// Returns true when any keypair or connected-wallet adapter can sign for `address`.
     public func canSignFor(address: String) async -> Bool {
 
         if keypairSigners[address] != nil {
@@ -565,9 +481,7 @@ public actor OZExternalSignerManager {
         return walletCount > 0
     }
 
-    // ------------------------------------------------------------------
-    // Sign auth entry
-    // ------------------------------------------------------------------
+    // MARK: - Sign auth entry
 
     /// Signs an authorization-entry preimage with the appropriate signer for the given address.
     ///
@@ -690,10 +604,6 @@ public actor OZExternalSignerManager {
         }
     }
 
-    // ------------------------------------------------------------------
-    // Remove signers
-    // ------------------------------------------------------------------
-
     /// Removes a signer by address.
     ///
     /// For keypair signers, removes the keypair from memory. For wallet
@@ -712,16 +622,9 @@ public actor OZExternalSignerManager {
         try await removeWalletFromStorage(address: address)
     }
 
-    /// Removes all signers.
-    ///
-    /// Clears all wallet keypair signers from memory, clears all Ed25519 keypairs
-    /// from memory, disconnects all external wallets, and removes all persisted wallet
-    /// connections from storage. This is best-effort with no internal error suppression:
-    /// failures from the adapter or storage layer propagate to the caller. The signer
-    /// taxonomy intentionally lacks a `removeFailed` arm because the operation is
-    /// idempotent on retry.
-    ///
-    /// - Throws: Rethrows any error raised by the adapter or storage layer.
+    /// Removes all signers. Clears in-memory keypair signers, in-memory Ed25519
+    /// keypairs, disconnects all external wallets, and removes all persisted
+    /// wallet connections from storage. Failures propagate to the caller.
     public func removeAll() async throws {
 
         keypairSigners.removeAll()
@@ -731,9 +634,7 @@ public actor OZExternalSignerManager {
         try await walletConnectionStorage?.removeItem(key: OZExternalSignerManager.walletStorageKey)
     }
 
-    // ------------------------------------------------------------------
-    // Ed25519 methods
-    // ------------------------------------------------------------------
+    // MARK: - Ed25519 methods
 
     /// Registers an Ed25519 signing keypair derived from a Stellar secret key.
     ///
@@ -870,10 +771,6 @@ public actor OZExternalSignerManager {
         ed25519Signers.removeValue(forKey: storeKey)
     }
 
-    // ------------------------------------------------------------------
-    // Wallet connection persistence
-    // ------------------------------------------------------------------
-
     /// Restores previously connected wallets from storage.
     ///
     /// Reads stored wallet-connection metadata from ``WalletConnectionStorage``
@@ -937,9 +834,7 @@ public actor OZExternalSignerManager {
         return restoredWallets
     }
 
-    // ------------------------------------------------------------------
-    // Private signing helpers
-    // ------------------------------------------------------------------
+    // MARK: - Private helpers
 
     /// Signs an auth-entry preimage with an Ed25519 keypair.
     ///
@@ -979,10 +874,6 @@ public actor OZExternalSignerManager {
             signerAddress: address
         )
     }
-
-    // ------------------------------------------------------------------
-    // Private storage helpers
-    // ------------------------------------------------------------------
 
     /// Stored wallet-connection record persisted to ``WalletConnectionStorage``.
     ///
@@ -1062,10 +953,6 @@ public actor OZExternalSignerManager {
         }
     }
 
-    // ------------------------------------------------------------------
-    // JSON serialization
-    // ------------------------------------------------------------------
-
     /// Serializes wallet connections to a JSON array string.
     ///
     /// Encodes a `[StoredWalletConnection]` to UTF-8 JSON via `JSONEncoder`,
@@ -1106,11 +993,6 @@ public actor OZExternalSignerManager {
         }
     }
 
-    // ------------------------------------------------------------------
-    // Misc helpers
-    // ------------------------------------------------------------------
-
-    /// Current wall-clock time in milliseconds since the Unix epoch.
     private func currentTimeMillis() -> Int64 {
         return Int64(Date().timeIntervalSince1970 * 1000.0)
     }

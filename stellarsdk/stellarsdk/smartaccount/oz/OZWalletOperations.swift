@@ -8,8 +8,6 @@
 import Foundation
 import Security
 
-// MARK: - CreateWalletResult
-
 /// Result of creating a new smart account wallet.
 ///
 /// Carries the credential identifier, the derived contract address, the
@@ -37,7 +35,6 @@ public struct CreateWalletResult: Sendable, Hashable {
     /// User display name supplied during wallet creation.
     public let nickname: String?
 
-    /// Initializes a new `CreateWalletResult`.
     public init(
         credentialId: String,
         contractId: String,
@@ -70,8 +67,6 @@ public struct CreateWalletResult: Sendable, Hashable {
     /// Combines every field into the supplied hasher. The `publicKey` field is
     /// hashed by raw byte content so two results with byte-equal public keys
     /// produce the same hash value (matching the constant-time `==` contract).
-    ///
-    /// - Parameter hasher: Hasher to feed.
     public func hash(into hasher: inout Hasher) {
         hasher.combine(credentialId)
         hasher.combine(contractId)
@@ -81,7 +76,6 @@ public struct CreateWalletResult: Sendable, Hashable {
         hasher.combine(nickname)
     }
 
-    /// Returns a copy of this result with the supplied fields replaced.
     public func copy(
         credentialId: String? = nil,
         contractId: String? = nil,
@@ -111,12 +105,7 @@ public struct CreateWalletResult: Sendable, Hashable {
     }
 }
 
-// MARK: - DeployPendingResult
-
-/// Result of deploying a pending credential.
-///
-/// Returned by ``OZWalletOperations/deployPendingCredential(credentialId:autoSubmit:autoFund:nativeTokenContract:forceMethod:)``
-/// when retrying a failed or deferred wallet deployment.
+/// Result of deploying a pending credential when retrying a failed or deferred wallet deployment.
 public struct DeployPendingResult: Sendable, Equatable, Hashable {
 
     /// Smart account contract address (`C…` strkey).
@@ -129,7 +118,6 @@ public struct DeployPendingResult: Sendable, Equatable, Hashable {
     /// was `false`.
     public let transactionHash: String?
 
-    /// Initializes a new `DeployPendingResult`.
     public init(
         contractId: String,
         signedTransactionXdr: String,
@@ -140,7 +128,6 @@ public struct DeployPendingResult: Sendable, Equatable, Hashable {
         self.transactionHash = transactionHash
     }
 
-    /// Returns a copy with the supplied fields replaced.
     public func copy(
         contractId: String? = nil,
         signedTransactionXdr: String? = nil,
@@ -158,8 +145,6 @@ public struct DeployPendingResult: Sendable, Equatable, Hashable {
         )
     }
 }
-
-// MARK: - ConnectWalletResult
 
 /// Outcome of a connect-wallet operation.
 ///
@@ -191,14 +176,8 @@ public enum ConnectWalletResult: Sendable, Equatable, Hashable {
     }
 }
 
-// MARK: - AuthenticatePasskeyResult
-
-/// Result of standalone passkey authentication.
-///
-/// Returned by ``OZWalletOperations/authenticatePasskey(challenge:credentialIds:)``
-/// when authenticating outside of a wallet-connect flow. The result is
-/// typically used with the indexer to discover the user's deployed contracts
-/// before calling `connectWallet(options:)` with the chosen contract id.
+/// Result of standalone passkey authentication, typically used with the indexer to
+/// discover deployed contracts before calling `connectWallet(options:)`.
 public struct AuthenticatePasskeyResult: Sendable, Hashable {
 
     /// Base64URL-encoded credential identifier.
@@ -212,7 +191,6 @@ public struct AuthenticatePasskeyResult: Sendable, Hashable {
     /// through the indexer or on-chain context rules when needed.
     public let publicKey: Data
 
-    /// Initializes a new `AuthenticatePasskeyResult`.
     public init(
         credentialId: String,
         signature: OZWebAuthnSignature,
@@ -235,8 +213,6 @@ public struct AuthenticatePasskeyResult: Sendable, Hashable {
     /// Combines every field into the supplied hasher. The `publicKey` field is
     /// hashed by raw byte content so two results with byte-equal public keys
     /// produce the same hash value (matching the constant-time `==` contract).
-    ///
-    /// - Parameter hasher: Hasher to feed.
     public func hash(into hasher: inout Hasher) {
         hasher.combine(credentialId)
         hasher.combine(signature)
@@ -244,11 +220,8 @@ public struct AuthenticatePasskeyResult: Sendable, Hashable {
     }
 }
 
-// MARK: - ConnectWalletOptions
-
-/// Options passed to ``OZWalletOperations/connectWallet(options:)``.
+/// Options controlling how ``OZWalletOperations/connectWallet(options:)`` resolves the credential and contract.
 ///
-/// Controls how the connect-wallet flow resolves the credential and contract.
 /// All fields default to permissive values so a zero-argument call performs a
 /// silent session check.
 ///
@@ -278,7 +251,6 @@ public struct ConnectWalletOptions: Sendable, Equatable, Hashable {
     /// can be restored.
     public let prompt: Bool
 
-    /// Initializes a new `ConnectWalletOptions`.
     public init(
         credentialId: String? = nil,
         contractId: String? = nil,
@@ -291,7 +263,9 @@ public struct ConnectWalletOptions: Sendable, Equatable, Hashable {
         self.prompt = prompt
     }
 
-    /// Returns a copy with the supplied fields replaced.
+    /// Returns a copy with the supplied fields replaced. Parameters left as their
+    /// default sentinel (`.none`) preserve the current field value; pass an explicit
+    /// value (including `nil`) to override.
     public func copy(
         credentialId: String?? = .none,
         contractId: String?? = .none,
@@ -317,8 +291,6 @@ public struct ConnectWalletOptions: Sendable, Equatable, Hashable {
     }
 }
 
-// MARK: - OZWalletOperations
-
 /// Wallet-lifecycle operations for OpenZeppelin Smart Accounts.
 ///
 /// Handles wallet creation (WebAuthn registration + deterministic contract
@@ -333,18 +305,11 @@ public final class OZWalletOperations: @unchecked Sendable {
 
     // MARK: - Stored properties
 
-    /// Strong reference back to the owning kit.
     private let kit: OZSmartAccountKitProtocol
 
     // MARK: - Initialization
 
-    /// Initializes a new `OZWalletOperations`.
-    ///
-    /// Internal: instances are created by ``OZSmartAccountKit`` and exposed as
-    /// `kit.walletOperations`. Consumer applications never call this
-    /// initializer directly.
-    ///
-    /// - Parameter kit: The owning smart account kit.
+    /// Internal initializer; instances are constructed by `OZSmartAccountKit`.
     internal init(kit: OZSmartAccountKitProtocol) {
         self.kit = kit
     }
@@ -354,43 +319,25 @@ public final class OZWalletOperations: @unchecked Sendable {
         return kit.credentialManager
     }
 
-    // MARK: - createWallet
-
     /// Creates a new smart-account wallet backed by a fresh WebAuthn credential.
     ///
-    /// Flow:
-    /// 1. Validate that a WebAuthn provider is configured.
-    /// 2. Validate `autoFund` requirements (requires `nativeTokenContract`).
-    /// 3. Generate random challenge / userId, prompt the user to register a
-    ///    passkey, extract the secp256r1 public key from the attestation.
-    /// 4. Derive the deterministic contract address from the credential id and
-    ///    the deployer account.
-    /// 5. Save the credential as `pending` in storage and emit
-    ///    ``SmartAccountEvent/credentialCreated(credential:)``.
-    /// 6. Set the kit's connected state and emit
-    ///    ``SmartAccountEvent/walletConnected(contractId:credentialId:)``;
-    ///    save the session.
-    /// 7. Always build and sign the deploy transaction (regardless of
-    ///    `autoSubmit`).
-    /// 8. When `autoSubmit` is `true`: submit, optionally fund the wallet,
-    ///    and delete the transitional credential on success.
+    /// Registers a passkey, derives the deterministic contract address, builds
+    /// and signs the deploy transaction, and optionally submits it. The signed
+    /// deploy XDR is always present in the result for deferred submission.
     ///
     /// - Parameters:
     ///   - userName: Display name persisted with the credential.
-    ///   - autoSubmit: Whether to submit the deploy transaction (default
-    ///     `false`). The deploy transaction is always built and signed; the
-    ///     `signedTransactionXdr` field of the returned result carries it
-    ///     for later external submission.
-    ///   - autoFund: Whether to fund the freshly deployed wallet using
-    ///     Friendbot (testnet only). Requires `autoSubmit = true` and
-    ///     `nativeTokenContract != nil` to be meaningful.
+    ///   - autoSubmit: When `true`, submits the deploy transaction immediately
+    ///     (default `false`). The `signedTransactionXdr` field of the result
+    ///     carries the signed envelope for later external submission regardless.
+    ///   - autoFund: Fund the freshly deployed wallet via Friendbot (testnet
+    ///     only). Requires `autoSubmit = true` and `nativeTokenContract != nil`.
     ///   - nativeTokenContract: Native token (XLM SAC) contract address used
     ///     when `autoFund = true`.
     ///   - forceMethod: Optional submission-method override.
     /// - Returns: ``CreateWalletResult`` describing the new wallet.
     /// - Throws: ``WebAuthnException``, ``ValidationException``,
     ///   ``TransactionException``, ``CredentialException``, ``StorageException``.
-    /// - Note: This method respects task cancellation at every await point.
     public func createWallet(
         userName: String = "Smart Account User",
         autoSubmit: Bool = false,
@@ -414,9 +361,6 @@ public final class OZWalletOperations: @unchecked Sendable {
             )
         }
 
-        // why: drawing both the WebAuthn challenge and the user-id from the
-        // system CSPRNG with strict error propagation prevents a hardware
-        // failure from silently producing a predictable zero buffer.
         let challengeData = try OZWalletOperations.secureRandomData(count: 32)
         let userIdData = try OZWalletOperations.secureRandomData(count: 32)
 
@@ -665,8 +609,6 @@ public final class OZWalletOperations: @unchecked Sendable {
         return transactionHash
     }
 
-    // MARK: - connectWallet
-
     /// Connects to an existing smart-account wallet.
     ///
     /// Returns ``ConnectWalletResult`` on success, or `nil` when no valid
@@ -684,7 +626,6 @@ public final class OZWalletOperations: @unchecked Sendable {
     ///   contract resolved), ``ValidationException`` (options validation),
     ///   ``TransactionException`` (RPC failure), ``IndexerException`` (indexer
     ///   transport failure).
-    /// - Note: This method respects task cancellation at every await point.
     public func connectWallet(
         options: ConnectWalletOptions = ConnectWalletOptions()
     ) async throws -> ConnectWalletResult? {
@@ -748,9 +689,6 @@ public final class OZWalletOperations: @unchecked Sendable {
             )
         }
 
-        // why: redrawing the WebAuthn challenge from the system CSPRNG with
-        // strict error propagation ensures a hardware failure cannot reuse
-        // the previous (or a zero) challenge across authentications.
         let challengeData = try OZWalletOperations.secureRandomData(count: 32)
         let authenticationResult: WebAuthnAuthenticationResult
         do {
@@ -875,8 +813,6 @@ public final class OZWalletOperations: @unchecked Sendable {
         )
     }
 
-    // MARK: - authenticatePasskey
-
     /// Authenticates with a passkey without connecting to a wallet.
     ///
     /// Used to authenticate the user before contract selection (for example to
@@ -893,7 +829,6 @@ public final class OZWalletOperations: @unchecked Sendable {
     ///   normalised signature, and stored public key (when available).
     /// - Throws: ``WebAuthnException`` (authentication failure / no provider),
     ///   ``ValidationException`` (signature normalisation failure).
-    /// - Note: This method respects task cancellation at every await point.
     public func authenticatePasskey(
         challenge: Data? = nil,
         credentialIds: [String]? = nil
@@ -994,8 +929,6 @@ public final class OZWalletOperations: @unchecked Sendable {
         )
     }
 
-    // MARK: - deployPendingCredential
-
     /// Deploys a wallet from a previously created pending credential.
     ///
     /// Used to retry a failed deployment or to submit a wallet created with
@@ -1016,7 +949,6 @@ public final class OZWalletOperations: @unchecked Sendable {
     /// - Returns: ``DeployPendingResult`` describing the deployment.
     /// - Throws: ``CredentialException``, ``ValidationException``,
     ///   ``TransactionException``.
-    /// - Note: This method respects task cancellation at every await point.
     public func deployPendingCredential(
         credentialId: String,
         autoSubmit: Bool = true,
@@ -1169,17 +1101,7 @@ public final class OZWalletOperations: @unchecked Sendable {
 
     // MARK: - Private helpers
 
-    /// Shortcut to the kit's transaction-operations instance.
-    ///
-    /// Used by ``createWallet(userName:autoSubmit:autoFund:nativeTokenContract:forceMethod:)``
-    /// and ``deployPendingCredential(credentialId:autoSubmit:autoFund:nativeTokenContract:forceMethod:)``
-    /// to invoke ``OZTransactionOperations/fundWallet(nativeTokenContract:forceMethod:)``
-    /// on the same kit instance.
-    ///
-    /// Returns the kit's pinned `transactionOperations` instance so call-site
-    /// invocation recording in test doubles observes every funding-flow call
-    /// and so production allocation is amortised across the lifetime of the
-    /// kit rather than re-instantiated per autoSubmit / autoFund pass.
+    /// Passthrough to the kit's transaction-operations instance.
     private var transactionOperations: OZTransactionOperations {
         return kit.transactionOperations
     }
@@ -1692,7 +1614,6 @@ public final class OZWalletOperations: @unchecked Sendable {
         return kit.relayerClient != nil ? .relayer : .rpc
     }
 
-    /// Best-effort wrapper around `getStorage().getSession()`.
     private func safeGetSession() async -> StoredSession? {
         do {
             return try await kit.getStorage().getSession()
@@ -1701,7 +1622,6 @@ public final class OZWalletOperations: @unchecked Sendable {
         }
     }
 
-    /// Best-effort wrapper around `getStorage().clearSession()`.
     private func safeClearSession() async {
         do {
             try await kit.getStorage().clearSession()
@@ -1710,7 +1630,6 @@ public final class OZWalletOperations: @unchecked Sendable {
         }
     }
 
-    /// Best-effort wrapper around `credentialManager.getCredential(...)`.
     private func safeGetCredential(credentialId: String) async -> StoredCredential? {
         do {
             return try await credentialManager.getCredential(credentialId: credentialId)
@@ -1719,7 +1638,6 @@ public final class OZWalletOperations: @unchecked Sendable {
         }
     }
 
-    /// Best-effort wrapper around `credentialManager.markDeploymentFailed(...)`.
     private func markDeploymentFailedSafely(credentialId: String, error: String) async {
         do {
             try await credentialManager.markDeploymentFailed(
@@ -1745,8 +1663,6 @@ public final class OZWalletOperations: @unchecked Sendable {
         }
     }
 
-    /// Returns a stable error string for `SorobanRpcRequestError` values, used
-    /// by every wrapping site in this file.
     private func rpcErrorMessage(_ error: SorobanRpcRequestError) -> String {
         switch error {
         case .requestFailed(let message):
@@ -1761,16 +1677,7 @@ public final class OZWalletOperations: @unchecked Sendable {
         }
     }
 
-    /// Returns a buffer of cryptographically random bytes drawn from
-    /// `SecRandomCopyBytes`.
-    ///
-    /// - Parameter count: Number of bytes to read.
-    /// - Returns: `count` cryptographically random bytes.
-    /// - Throws: ``WebAuthnException/RegistrationFailed`` when the system
-    ///   CSPRNG returns a non-success status. Defensive: refusing to produce
-    ///   a predictable buffer is the only safe action when `SecRandomCopyBytes`
-    ///   fails to fill the buffer — silently returning zero bytes would let a
-    ///   WebAuthn challenge or user-id be reused across registrations.
+    /// Reads cryptographically random bytes from `SecRandomCopyBytes`; throws on hardware failure rather than returning zero bytes.
     internal static func secureRandomData(count: Int) throws -> Data {
         var bytes = [UInt8](repeating: 0, count: count)
         let status = SecRandomCopyBytes(kSecRandomDefault, count, &bytes)

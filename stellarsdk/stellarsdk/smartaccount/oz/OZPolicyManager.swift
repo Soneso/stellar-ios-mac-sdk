@@ -7,9 +7,6 @@
 
 import Foundation
 
-// ============================================================================
-// MARK: - SelectedSigner
-// ============================================================================
 
 /// A signer selected for participation in a multi-signer authorization ceremony.
 ///
@@ -76,9 +73,6 @@ public enum SelectedSigner: Sendable, Hashable {
     case ed25519(verifierAddress: String, publicKey: Data)
 }
 
-// ============================================================================
-// MARK: - PolicyInstallParams
-// ============================================================================
 
 /// Installation parameters for the three built-in OpenZeppelin policy types.
 ///
@@ -351,9 +345,6 @@ public enum PolicyInstallParams: Sendable {
     }
 }
 
-// ============================================================================
-// MARK: - SignerWeightEntry
-// ============================================================================
 
 /// A single signer-weight pair carried by ``PolicyInstallParams/weightedThreshold(signerWeights:threshold:)``.
 ///
@@ -395,73 +386,33 @@ public struct SignerWeightEntry: Sendable {
     }
 }
 
-// ============================================================================
-// MARK: - OZPolicyManager
-// ============================================================================
 
 /// Manager for policy operations on OpenZeppelin Smart Accounts.
 ///
-/// Adds and removes policies on context rules. Policies are authorization rules
-/// that must be satisfied for transactions to execute on the smart account; a
-/// context rule may carry up to ``OZConstants/maxPolicies`` policies, and every
-/// attached policy must be satisfied for a transaction to authorize.
+/// Adds and removes policies on context rules. A context rule may carry up to
+/// ``OZConstants/maxPolicies`` policies; every attached policy must be satisfied
+/// for a transaction to authorize.
 ///
-/// Three convenience methods are provided for the built-in policy types:
-/// ``addSimpleThreshold(contextRuleId:policyAddress:threshold:selectedSigners:forceMethod:)``,
-/// ``addWeightedThreshold(contextRuleId:policyAddress:signerWeights:threshold:selectedSigners:forceMethod:)``,
-/// and ``addSpendingLimit(contextRuleId:policyAddress:spendingLimit:periodLedgers:selectedSigners:forceMethod:)``.
-/// For custom policy contracts, encode the installation parameters as `SCValXDR`
-/// and call ``addPolicy(contextRuleId:policyAddress:installParams:selectedSigners:forceMethod:)``
-/// directly.
+/// Built-in conveniences: ``addSimpleThreshold``, ``addWeightedThreshold``,
+/// ``addSpendingLimit``. For custom policy contracts, pass encoded `SCValXDR`
+/// install params to ``addPolicy(contextRuleId:policyAddress:installParams:selectedSigners:forceMethod:)``.
 ///
-/// All state-changing methods accept an optional `selectedSigners` parameter. When
-/// the supplied list is empty (default), the operation uses single-signer
-/// authorization with the connected passkey credential. When the list is
-/// non-empty, the manager routes the host-function submission through a
-/// multi-signer ceremony coordinator that collects signatures from every listed
-/// signer.
-///
-/// This manager is typically accessed via the kit; constructing one directly is
-/// reserved for advanced integrations.
+/// All state-changing methods accept an optional `selectedSigners` list. An
+/// empty list routes through the single-signer path (connected passkey);
+/// a non-empty list routes through the multi-signer ceremony coordinator.
 ///
 /// Example:
 /// ```swift
-/// let kit = OZSmartAccountKit.create(config: cfg)
-/// let policyManager = kit.policyManager
-///
-/// // Single-signer add of a 2-of-3 simple threshold.
-/// let result = try await policyManager.addSimpleThreshold(
+/// let result = try await kit.policyManager.addSimpleThreshold(
 ///     contextRuleId: 0,
 ///     policyAddress: "CBCD1234...",
 ///     threshold: 2
 /// )
-///
-/// // Multi-signer add with custom installation parameters.
-/// let custom = SCValXDR.map([
-///     SCMapEntryXDR(key: .symbol("max_ops"), val: .u32(5))
-/// ])
-/// let multi = try await policyManager.addPolicy(
-///     contextRuleId: 0,
-///     policyAddress: "CBCD5678...",
-///     installParams: custom,
-///     selectedSigners: [
-///         .passkey(credentialId: "AAAA", credentialIdBytes: Data([0]), keyData: savedKeyData),
-///         .wallet(accountId: "GA7Q...")
-///     ]
-/// )
 /// ```
-///
-/// - Note: Thread safety — every method is `async` and may be invoked
-///   concurrently. Internal state is limited to immutable properties
-///   captured at initialization time, so no synchronization is required at
-///   this layer.
 public final class OZPolicyManager: @unchecked Sendable {
 
     // MARK: - Stored properties
 
-    /// Kit reference used to resolve the connected smart-account contract id,
-    /// the multi-signer manager, and to delegate host-function submission to
-    /// the kit's transaction operations.
     private let kit: OZSmartAccountKitProtocol
 
     /// Context-rule parser consulted by
@@ -474,19 +425,7 @@ public final class OZPolicyManager: @unchecked Sendable {
 
     // MARK: - Initialization
 
-    /// Initializes a new `OZPolicyManager` bound to the supplied kit.
-    ///
-    /// - Parameters:
-    ///   - kit: The kit this manager belongs to. Used to resolve the connected
-    ///     smart-account contract id, to delegate single-signer submission to
-    ///     the kit's transaction operations, and to delegate multi-signer
-    ///     submission to ``OZSmartAccountKitProtocol/multiSignerManager`` when
-    ///     a caller supplies a non-empty `selectedSigners` list.
-    ///   - contextRuleParser: Optional parser consulted by
-    ///     ``removePolicyByAddress(contextRuleId:policyAddress:selectedSigners:forceMethod:)``
-    ///     so a single rule can be fetched and parsed instead of paginating
-    ///     the full rule set. When `nil`, that method falls back to the
-    ///     list-everything path which performs `N` RPC simulations.
+    /// Internal initializer; instances are constructed by `OZSmartAccountKit`.
     internal init(
         kit: OZSmartAccountKitProtocol,
         contextRuleParser: OZContextRuleParser? = nil
@@ -494,8 +433,6 @@ public final class OZPolicyManager: @unchecked Sendable {
         self.kit = kit
         self.contextRuleParser = contextRuleParser
     }
-
-    // MARK: - Add Simple Threshold Policy
 
     /// Adds a simple threshold policy to the supplied context rule.
     ///
@@ -543,8 +480,6 @@ public final class OZPolicyManager: @unchecked Sendable {
         )
     }
 
-    // MARK: - Add Weighted Threshold Policy
-
     /// Adds a weighted threshold policy to the supplied context rule.
     ///
     /// A weighted threshold policy authorizes when the sum of weights of every
@@ -590,8 +525,6 @@ public final class OZPolicyManager: @unchecked Sendable {
             forceMethod: forceMethod
         )
     }
-
-    // MARK: - Add Spending Limit Policy
 
     /// Adds a spending limit policy to the supplied context rule.
     ///
@@ -669,8 +602,6 @@ public final class OZPolicyManager: @unchecked Sendable {
             forceMethod: forceMethod
         )
     }
-
-    // MARK: - Remove Policy
 
     /// Removes a policy from a context rule by its on-chain numeric id.
     ///
@@ -757,8 +688,6 @@ public final class OZPolicyManager: @unchecked Sendable {
         )
     }
 
-    // MARK: - Add Generic Policy
-
     /// Adds a policy to a context rule with caller-supplied installation
     /// parameters.
     ///
@@ -809,21 +738,7 @@ public final class OZPolicyManager: @unchecked Sendable {
 
     // MARK: - Private routing & helpers
 
-    /// Routes a host-function submission to either the single-signer or
-    /// multi-signer code path based on the supplied `selectedSigners` list.
-    ///
-    /// When `selectedSigners` is empty, the submission is forwarded through the
-    /// kit's transaction operations on the single-signer path bound to the
-    /// connected passkey. When non-empty, the kit's multi-signer manager is
-    /// consulted directly to coordinate signature collection across every
-    /// supplied signer.
-    ///
-    /// - Parameters:
-    ///   - hostFunction: The host function to submit.
-    ///   - selectedSigners: Multi-signer participants. Empty selects
-    ///     single-signer routing.
-    ///   - forceMethod: Optional submission-method override.
-    /// - Returns: A ``TransactionResult`` describing the on-chain outcome.
+    // Single-signer path when selectedSigners is empty; multi-signer path otherwise.
     private func routeSubmission(
         hostFunction: HostFunctionXDR,
         selectedSigners: [SelectedSigner],

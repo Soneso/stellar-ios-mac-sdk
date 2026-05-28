@@ -7,9 +7,6 @@
 
 import Foundation
 
-// ============================================================================
-// SyncResult
-// ============================================================================
 
 /// Result of synchronising every stored credential against on-chain contract state.
 ///
@@ -41,9 +38,6 @@ public struct SyncResult: Sendable, Equatable, Hashable {
     }
 }
 
-// ============================================================================
-// OZCredentialManager
-// ============================================================================
 
 /// Manages the lifecycle of stored Smart Account credentials.
 ///
@@ -66,13 +60,6 @@ public struct SyncResult: Sendable, Equatable, Hashable {
 /// from local storage. Reconnection works through sessions or the indexer.
 /// Failed deployments can be retried by deleting the credential and creating a
 /// new one with the same identifier.
-///
-/// ## Thread Safety
-///
-/// All operations delegate to the underlying ``StorageAdapter``, which is
-/// responsible for serialising concurrent access. The default in-process
-/// storage adapter is implemented as an `actor` and is safe to share across
-/// concurrent contexts.
 ///
 /// ## Usage
 ///
@@ -106,21 +93,13 @@ public final class OZCredentialManager: OZCredentialManagerProtocol, @unchecked 
 
     // MARK: - Initialisation
 
-    /// Initialises a new ``OZCredentialManager`` bound to the supplied kit.
-    ///
-    /// The manager is created by ``OZSmartAccountKit`` during kit construction
-    /// and is reachable through `kit.credentialManager`. Manual instantiation
-    /// is supported only for tests that need to drive the manager directly
-    /// against a stub kit.
-    ///
-    /// - Parameter kit: The Smart Account kit this manager belongs to.
+    /// Internal initializer; instances are constructed by `OZSmartAccountKit`.
     internal init(kit: OZSmartAccountKitProtocol) {
         self.kit = kit
     }
 
     // MARK: - Computed accessors
 
-    /// Convenience accessor for the kit-owned storage adapter.
     private var storage: StorageAdapter {
         return kit.getStorage()
     }
@@ -545,13 +524,16 @@ public final class OZCredentialManager: OZCredentialManagerProtocol, @unchecked 
 
     /// Updates the nickname of a stored credential.
     ///
-    /// Pass `nil` to clear the nickname. The credential must exist before the
-    /// update; the manager does not create a new credential as a side effect.
+    /// Overwrites the nickname when `nickname` is non-nil. To clear an existing
+    /// nickname, call `StorageAdapter.save(...)` with a full `StoredCredential`
+    /// replacement (the partial-update path treats `nil` as "no change").
+    /// The credential must exist before the update; the manager does not create
+    /// a new credential as a side effect.
     ///
     /// - Parameters:
     ///   - credentialId: Identifier of the credential to update.
-    ///   - nickname: New nickname (or `nil` to leave unchanged per
-    ///     ``StoredCredentialUpdate`` partial-update semantics).
+    ///   - nickname: New nickname, or `nil` to leave the existing nickname
+    ///     unchanged.
     /// - Throws:
     ///   - ``CredentialException/NotFound`` when the credential does not exist.
     ///   - ``StorageException/WriteFailed`` when the update fails.

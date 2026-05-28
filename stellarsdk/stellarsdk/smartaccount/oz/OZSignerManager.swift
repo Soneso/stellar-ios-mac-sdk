@@ -7,53 +7,18 @@
 
 import Foundation
 
-// ============================================================================
-// MARK: - OZContextRuleParser
-// ============================================================================
 
-/// Internal collaborator surface consumed by ``OZSignerManager`` when the
-/// signer-by-value overload of ``OZSignerManager/removeSignerBySigner(contextRuleId:signer:selectedSigners:forceMethod:)``
-/// needs to resolve a signer's on-chain numeric identifier.
-///
-/// The kit's context-rule manager conforms to this protocol so the signer
-/// manager can fetch and parse a single rule without holding a typed reference
-/// to the context-rule manager class. The protocol exists so
-/// ``OZSignerManager`` can be constructed and unit-tested without instantiating
-/// the full context-rule manager dependency graph.
-///
-/// - Important: Conformance is supplied by the kit composition root. Tests
-///   stub this protocol directly with an in-line fake to validate the
-///   resolution path without coupling to the real context-rule manager.
+/// Internal collaborator surface used by ``OZSignerManager`` to resolve a signer's
+/// on-chain numeric identifier via the kit's context-rule manager.
 internal protocol OZContextRuleParser: AnyObject, Sendable {
 
-    /// Returns the raw on-chain `SCValXDR` representation of a single context
-    /// rule, identified by its numeric id.
-    ///
-    /// - Parameter contextRuleId: The numeric identifier of the rule.
-    /// - Returns: The raw `SCValXDR` payload describing the rule.
-    /// - Throws: ``TransactionException`` on simulation failure;
-    ///   ``ValidationException`` when the rule is not found.
     func getContextRule(contextRuleId: UInt32) async throws -> SCValXDR
 
-    /// Parses a raw context-rule `SCValXDR` into the typed
-    /// ``ParsedContextRule`` representation.
-    ///
-    /// - Parameter scVal: The raw on-chain context-rule payload.
-    /// - Returns: A typed view over the rule's signers, signer ids, policies,
-    ///   policy ids, name, and expiration ledger.
-    /// - Throws: ``ValidationException`` when the payload is malformed.
     func parseContextRule(_ scVal: SCValXDR) throws -> ParsedContextRule
 }
 
-// ============================================================================
-// MARK: - AddPasskeySignerResult
-// ============================================================================
 
-/// Result of ``OZSignerManager/addNewPasskeySigner(contextRuleId:userName:selectedSigners:forceMethod:)``.
-///
-/// Carries the WebAuthn credential information from the registration ceremony
-/// and the on-chain transaction outcome from adding the new passkey as a signer
-/// on the smart-account contract.
+/// WebAuthn registration result and on-chain transaction outcome from adding a new passkey signer.
 public struct AddPasskeySignerResult: Sendable, Hashable {
 
     /// Base64URL-encoded credential identifier (no padding).
@@ -65,12 +30,6 @@ public struct AddPasskeySignerResult: Sendable, Hashable {
     /// Outcome of the on-chain signer-addition transaction.
     public let transactionResult: TransactionResult
 
-    /// Initializes a new ``AddPasskeySignerResult``.
-    ///
-    /// - Parameters:
-    ///   - credentialId: Base64URL-encoded credential identifier.
-    ///   - publicKey: Uncompressed secp256r1 public key bytes.
-    ///   - transactionResult: On-chain transaction outcome.
     public init(
         credentialId: String,
         publicKey: Data,
@@ -84,11 +43,6 @@ public struct AddPasskeySignerResult: Sendable, Hashable {
     /// Field-by-field equality using a constant-time comparison for the
     /// `publicKey` bytes so the comparison cost does not depend on where the
     /// first differing byte sits in the buffer.
-    ///
-    /// - Parameters:
-    ///   - lhs: The first value to compare.
-    ///   - rhs: The second value to compare.
-    /// - Returns: `true` when every field matches.
     public static func == (lhs: AddPasskeySignerResult, rhs: AddPasskeySignerResult) -> Bool {
         if lhs.credentialId != rhs.credentialId { return false }
         if lhs.transactionResult != rhs.transactionResult { return false }
@@ -126,69 +80,32 @@ public struct AddPasskeySignerResult: Sendable, Hashable {
     }
 }
 
-// ============================================================================
-// MARK: - OZSignerManager
-// ============================================================================
 
 /// Manager for signer operations on OpenZeppelin Smart Accounts.
 ///
-/// `OZSignerManager` provides high-level operations for managing the signer
-/// set bound to a context rule on a smart-account contract. The supported
-/// signer kinds are:
+/// Manages the signer set bound to a context rule. Supported signer kinds:
+/// - WebAuthn passkeys (secp256r1, verified through a verifier contract)
+/// - Delegated signers (`G…` accounts or `C…` contracts via `require_auth`)
+/// - Ed25519 signers (32-byte keys verified by a verifier contract)
 ///
-/// - WebAuthn passkeys (secp256r1 verification through a verifier contract)
-/// - Delegated signers (Stellar `G…` accounts or `C…` contract addresses
-///   authorising through the host's built-in `require_auth`)
-/// - Ed25519 signers (32-byte Ed25519 keys verified by a verifier contract)
+/// All state-changing methods accept an optional `selectedSigners` list. An
+/// empty list routes through the single-signer path (connected passkey);
+/// a non-empty list routes through the multi-signer ceremony coordinator.
 ///
-/// Every state-changing method accepts an optional `selectedSigners`
-/// parameter. When the list is empty (default) the operation uses
-/// single-signer authorization through the connected passkey credential. When
-/// the list is non-empty the manager routes through a multi-signer ceremony
-/// coordinator that collects signatures from every listed signer and assembles
-/// the final authorization payload.
-///
-/// The manager performs no state mutation of its own; all on-chain side
-/// effects flow through the kit's transaction operations (single-signer path)
-/// or the multi-signer submitter (multi-signer path).
-///
-/// This manager is typically accessed via the kit; constructing one directly
-/// is reserved for advanced integrations and unit tests.
+/// The manager itself performs no on-chain state mutation; effects flow through
+/// the kit's transaction operations or the multi-signer submitter.
 ///
 /// Example:
 /// ```swift
-/// let kit = OZSmartAccountKit.create(config: cfg)
-/// let signerManager = kit.signerManager
-///
-/// // Add a delegated account signer to the Default context rule.
-/// let result = try await signerManager.addDelegated(
+/// let result = try await kit.signerManager.addDelegated(
 ///     contextRuleId: 0,
 ///     address: "GA7QYNF7SOWQ..."
 /// )
-///
-/// // Add a passkey signer through multi-signer authorisation.
-/// let passkeyResult = try await signerManager.addPasskey(
-///     contextRuleId: 0,
-///     publicKey: secp256r1PublicKey,
-///     credentialId: credentialIdBytes,
-///     selectedSigners: [
-///         .passkey(credentialId: "AAAA", credentialIdBytes: Data([0]), keyData: savedKeyData),
-///         .wallet(accountId: "GA7Q...")
-///     ]
-/// )
 /// ```
-///
-/// - Note: Thread safety — every method is `async` and may be invoked
-///   concurrently. Internal state is limited to immutable properties
-///   captured at initialisation time, so no synchronisation is required at
-///   this layer.
 public final class OZSignerManager: @unchecked Sendable {
 
     // MARK: - Stored properties
 
-    /// Kit reference used to resolve the connected smart-account contract id
-    /// and to delegate single-signer host-function submission through the
-    /// kit's transaction operations.
     private let kit: OZSmartAccountKitProtocol
 
     /// Context-rule parser consulted when ``removeSignerBySigner(contextRuleId:signer:selectedSigners:forceMethod:)``
@@ -218,28 +135,7 @@ public final class OZSignerManager: @unchecked Sendable {
 
     // MARK: - Initialization
 
-    /// Initializes a new ``OZSignerManager`` bound to the supplied kit.
-    ///
-    /// The manager is created by the kit during construction and is reachable
-    /// through `kit.signerManager`. Manual instantiation is supported for
-    /// advanced integrations and unit tests.
-    ///
-    /// - Parameters:
-    ///   - kit: The smart-account kit this manager belongs to. Used to resolve
-    ///     the connected contract id, the configured WebAuthn provider, the
-    ///     credential manager, to delegate single-signer submission to the
-    ///     kit's transaction operations, and to delegate multi-signer
-    ///     submission to ``OZSmartAccountKitProtocol/multiSignerManager`` when
-    ///     a caller supplies a non-empty `selectedSigners` list.
-    ///   - contextRuleParser: Optional parser consulted when resolving a
-    ///     signer value to its on-chain numeric id. The kit assembles the
-    ///     concrete context-rule manager and supplies it here at construction
-    ///     time. Pass `nil` in unit tests that exclusively cover the
-    ///     id-based remove path.
-    ///   - webauthnProvider: Optional WebAuthn provider override. When `nil`,
-    ///     the provider configured on `kit.config.webauthnProvider` is used.
-    ///   - credentialManager: Optional credential manager override. When
-    ///     `nil`, `kit.credentialManager` is used.
+    /// Internal initializer; instances are constructed by `OZSmartAccountKit`.
     internal init(
         kit: OZSmartAccountKitProtocol,
         contextRuleParser: OZContextRuleParser? = nil,
@@ -352,9 +248,10 @@ public final class OZSignerManager: @unchecked Sendable {
         // uncompressed 65-byte form (the on-chain verifier signature
         // contract rejects any other shape), and the caller may have driven
         // the registration through an adapter that bypasses platform
-        // extraction. Pass the raw `publicKey` bytes through unchanged here
-        // so the validation in `addPasskey` surfaces the correct error if the
-        // bytes are malformed.
+        // extraction. Pass the raw `publicKey` bytes through unchanged here.
+        // The length check in `createPendingCredential` rejects wrong-length
+        // keys before the credential is persisted; `addPasskey` then rejects
+        // wrong-prefix keys after the credential is persisted.
         let credentialManager = credentialManagerOverride ?? kit.credentialManager
         let credential: StoredCredential
         do {
@@ -626,11 +523,7 @@ public final class OZSignerManager: @unchecked Sendable {
     /// - Note: The Swift name differs from the underlying contract method to
     ///   distinguish this overload at the call site from the id-based
     ///   ``removeSigner(contextRuleId:signerId:selectedSigners:forceMethod:)``.
-    ///   Swift's argument-label-based overload resolution cannot
-    ///   disambiguate `removeSigner(by: UInt32)` from
-    ///   `removeSigner(by: any OZSmartAccountSigner)` without parameter
-    ///   labels that name the value's shape, so the explicit suffix keeps the
-    ///   call site self-documenting.
+    ///   The `BySigner` suffix keeps the call site self-documenting.
     public func removeSignerBySigner(
         contextRuleId: UInt32,
         signer: any OZSmartAccountSigner,
@@ -723,14 +616,7 @@ public final class OZSignerManager: @unchecked Sendable {
         )
     }
 
-    /// Routes a host-function submission to either the single-signer or the
-    /// multi-signer code path based on the supplied `selectedSigners` list.
-    ///
-    /// When `selectedSigners` is empty, the submission is forwarded through the
-    /// kit's transaction operations on the single-signer path bound to the
-    /// connected passkey. When non-empty, the kit's multi-signer manager is
-    /// consulted directly to coordinate signature collection across every
-    /// supplied signer.
+    // Single-signer path when selectedSigners is empty; multi-signer path otherwise.
     private func routeSubmission(
         hostFunction: HostFunctionXDR,
         selectedSigners: [SelectedSigner],

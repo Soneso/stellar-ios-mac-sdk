@@ -14,7 +14,7 @@ import Foundation
 ///
 /// The OpenZeppelin Smart Account indexer serialises every numeric column
 /// (counts, ledger sequences, event totals) as a JSON string so values that
-/// exceed JavaScript's safe-integer range can round-trip without precision
+/// exceed the 2^53 IEEE-754 double-precision safe-integer ceiling can round-trip without precision
 /// loss. Test fixtures in this repository express the same fields as plain
 /// JSON numbers. These helpers bridge both representations at the single
 /// container-level decode site so each `Decodable` model below can stay a
@@ -69,12 +69,6 @@ extension KeyedDecodingContainer {
 /// example, the `context_rule_ids` list returned by the indexer).
 extension UnkeyedDecodingContainer {
 
-    /// Decodes the next element as an `Int`, accepting either a JSON number
-    /// or a numeric JSON string. Advances the container's `currentIndex`
-    /// exactly once.
-    ///
-    /// - Throws: `DecodingError.dataCorruptedError` when the next element is
-    ///   neither a JSON number nor a string that parses as an `Int`.
     fileprivate mutating func decodeFlexibleInt() throws -> Int {
         if let intValue = try? decode(Int.self) {
             return intValue
@@ -529,25 +523,19 @@ public enum OZJSONValue: Decodable, Equatable, Hashable, Sendable {
 /// invalidate the owned `URLSession`. When a custom `urlSession` is supplied (for
 /// testing) the caller retains ownership.
 ///
-/// Subclassing contract: `OZIndexerClient` is `open`-able for test doubles. Any
-/// subclass that overrides ``close()`` MUST either call `super.close()` or invoke
-/// the internal teardown helper, otherwise the owned `URLSession` will leak. The
-/// SDK recording mocks (`MockOZIndexerClient`) follow this pattern; consumer
-/// code is generally expected to inject a custom `urlSession` rather than
-/// subclass.
+/// Subclassing contract: subclassable inside the SDK (and from `@testable`
+/// consumers); not designed for outside-module subclassing — inject a custom
+/// `URLSession` instead. SDK-internal subclasses that override ``close()`` MUST
+/// either call `super.close()` or invoke the internal teardown helper, otherwise
+/// the owned `URLSession` will leak.
 public class OZIndexerClient: @unchecked Sendable {
 
     // MARK: - Configuration
 
-    /// HTTP path that returns `{"status": "ok"}` when the indexer service is reachable.
-    /// Compared against `HealthCheckResponse.status` in `isHealthy()`.
+    /// HTTP status payload returned by the indexer's health endpoint.
     private static let healthStatusOk = "ok"
 
-    /// Default indexer URLs by Stellar network passphrase.
-    ///
-    /// Used as the central source of truth for the SDK's built-in indexer endpoints.
-    /// `OZSmartAccountConfig.effectiveIndexerUrl()` consults this map when the
-    /// caller did not supply an explicit `indexerUrl`.
+    /// Default indexer URLs by Stellar network passphrase. Consulted by `OZSmartAccountConfig.effectiveIndexerUrl()` when no `indexerUrl` is supplied.
     public static let defaultIndexerUrls: [String: String] = [
         Network.testnet.passphrase: "https://smart-account-indexer.sdf-ecosystem.workers.dev",
         Network.public.passphrase: "https://smart-account-indexer-mainnet.sdf-ecosystem.workers.dev",
@@ -786,11 +774,8 @@ public class OZIndexerClient: @unchecked Sendable {
             if !(200...299).contains(httpResponse.statusCode) {
                 return false
             }
-            // why: enforce the indexer body cap here too. `isHealthy()` is
-            // contractually a never-throws probe, so an oversize body returns
-            // `false` rather than surfacing the protocol failure as an
-            // exception. A compromised endpoint cannot bypass the size guard
-            // by responding on the health route.
+            // why: `isHealthy()` is contractually a never-throws probe, so an
+            // oversize body returns `false` rather than surfacing the failure as an exception.
             if data.count > OZConstants.maxIndexerResponseBytes {
                 return false
             }
@@ -847,8 +832,6 @@ public class OZIndexerClient: @unchecked Sendable {
 
     // MARK: - Private helpers
 
-    /// Issues a GET request, decodes the JSON response body, and maps HTTP / network
-    /// failures into `IndexerException` instances.
     private func performRequest<T: Decodable>(url: String) async throws -> T {
         guard let urlObject = URL(string: url) else {
             throw IndexerException.requestFailed(reason: "Invalid URL: \(url)")

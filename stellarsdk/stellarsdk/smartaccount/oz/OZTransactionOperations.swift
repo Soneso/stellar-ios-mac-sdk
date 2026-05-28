@@ -8,8 +8,6 @@
 import Foundation
 import Security
 
-// MARK: - TransactionResult
-
 /// Outcome of a smart-account transaction submission.
 ///
 /// Carries the success flag, the transaction hash (when one was assigned at the
@@ -47,7 +45,6 @@ public struct TransactionResult: Sendable, Equatable, Hashable {
     /// Human-readable failure description. `nil` on success.
     public let error: String?
 
-    /// Initializes a new `TransactionResult`.
     public init(
         success: Bool,
         hash: String? = nil,
@@ -60,8 +57,6 @@ public struct TransactionResult: Sendable, Equatable, Hashable {
         self.error = error
     }
 
-    /// Returns a copy of this result with the supplied fields replaced.
-    ///
     /// Parameters left as their default sentinel preserve the current field value;
     /// pass an explicit value (including `nil`) to override.
     public func copy(
@@ -94,8 +89,6 @@ public struct TransactionResult: Sendable, Equatable, Hashable {
     }
 }
 
-// MARK: - ResolveContextRuleIds
-
 /// Callback that resolves the context rule identifiers to bind into the auth
 /// digest for a single authorization entry during the signing loop.
 ///
@@ -111,45 +104,21 @@ public typealias ResolveContextRuleIds = @Sendable (
     _ index: Int
 ) async throws -> [UInt32]
 
-// MARK: - OZTransactionOperations
-
 /// Transaction-pipeline operations for OpenZeppelin Smart Accounts.
 ///
 /// Builds, signs, and submits transactions for a connected smart account wallet.
-/// Handles the full simulate / sign / re-simulate / submit pipeline including
-/// auth-entry signing via WebAuthn, relayer-vs-RPC submission selection, and
+/// Drives the full simulate / sign / re-simulate / submit pipeline, including
+/// WebAuthn auth-entry signing, relayer-vs-RPC submission selection, and
 /// transaction-result polling.
 ///
-/// ## Fee Sponsoring
+/// When a relayer is configured, submission mode is auto-selected: Mode 1
+/// (host function + auth entries, envelope unsigned) when all auth entries use
+/// `Address` credentials; Mode 2 (signed envelope XDR forwarded to the relayer)
+/// when any auth entry carries `sourceAccount` credentials. The `forceMethod`
+/// parameter overrides auto-detection per call.
 ///
-/// When a relayer is configured on the kit, this class auto-selects relayer
-/// submission. Two relayer modes are used depending on the authorization
-/// shape of the assembled transaction:
-///
-/// - **Mode 1** (host function + auth entries): used when every signed auth
-///   entry uses `Address` credentials. The transaction envelope is NOT signed by
-///   the deployer; the relayer wraps the host function in its own envelope.
-/// - **Mode 2** (signed envelope XDR): used when any auth entry carries
-///   `sourceAccount` credentials. The transaction envelope IS signed by the
-///   deployer and is forwarded to the relayer as a signed envelope.
-///
-/// The `forceMethod` parameter on every public method overrides the default
-/// auto-detection for a single call.
-///
-/// ## Auth-Entry Signing
-///
-/// The signing loop iterates the auth entries produced by the simulation. For
-/// each entry whose `Address` credentials match the connected smart account
-/// contract, the loop computes the auth payload hash, derives the auth digest
-/// from the resolved context-rule IDs, prompts the user for a WebAuthn
-/// authentication, normalises the resulting DER signature to compact 64-byte
-/// form with low-S, and writes the OpenZeppelin AuthPayload Map directly into
-/// the `signature` field of the credentials.
-///
-/// The transaction is re-simulated after the signing pass because WebAuthn
-/// signatures are larger than the placeholders the initial simulation used;
-/// resource fees must reflect the real payload size to be accepted by the
-/// network.
+/// The transaction is re-simulated after the signing pass so that resource fees
+/// reflect the real WebAuthn signature payload size.
 ///
 /// Instances are constructed by ``OZSmartAccountKit`` and accessed through
 /// `kit.transactionOperations`.
@@ -157,25 +126,14 @@ public final class OZTransactionOperations: @unchecked Sendable {
 
     // MARK: - Stored properties
 
-    /// Strong reference back to the owning kit. The kit's lifecycle outlives the
-    /// operations instance; the kit is responsible for breaking the reference
-    /// cycle when it tears down.
     private let kit: OZSmartAccountKitProtocol
 
     // MARK: - Initialization
 
-    /// Initializes a new `OZTransactionOperations`.
-    ///
-    /// Internal: instances are created by ``OZSmartAccountKit`` and exposed as
-    /// `kit.transactionOperations`. Consumer applications never call this
-    /// initializer directly.
-    ///
-    /// - Parameter kit: The owning smart account kit.
+    /// Internal initializer; instances are constructed by `OZSmartAccountKit`.
     internal init(kit: OZSmartAccountKitProtocol) {
         self.kit = kit
     }
-
-    // MARK: - Token transfer
 
     /// Transfers tokens from the connected smart account to a recipient.
     ///
@@ -195,7 +153,6 @@ public final class OZTransactionOperations: @unchecked Sendable {
     ///   ``ValidationException`` for invalid inputs or self-transfer;
     ///   ``TransactionException`` for simulation, signing, or submission failures;
     ///   ``WebAuthnException`` for biometric-authentication failures.
-    /// - Note: This method respects task cancellation at every await point.
     public func transfer(
         tokenContract: String,
         recipient: String,
@@ -235,8 +192,6 @@ public final class OZTransactionOperations: @unchecked Sendable {
         )
     }
 
-    // MARK: - Direct contract call
-
     /// Calls an arbitrary function on an external contract directly from the
     /// smart account.
     ///
@@ -255,7 +210,6 @@ public final class OZTransactionOperations: @unchecked Sendable {
     /// - Returns: ``TransactionResult`` describing the on-chain outcome.
     /// - Throws: ``WalletException/NotConnected``, ``ValidationException``,
     ///   ``TransactionException``, ``WebAuthnException``, ``CredentialException``.
-    /// - Note: This method respects task cancellation at every await point.
     public func contractCall(
         target: String,
         targetFn: String,
@@ -288,8 +242,6 @@ public final class OZTransactionOperations: @unchecked Sendable {
         )
     }
 
-    // MARK: - Execute (smart-account-mediated call)
-
     /// Executes an arbitrary function via the smart account contract's `execute`
     /// entry point.
     ///
@@ -306,7 +258,6 @@ public final class OZTransactionOperations: @unchecked Sendable {
     /// - Returns: ``TransactionResult`` describing the on-chain outcome.
     /// - Throws: ``WalletException/NotConnected``, ``ValidationException``,
     ///   ``TransactionException``, ``WebAuthnException``, ``CredentialException``.
-    /// - Note: This method respects task cancellation at every await point.
     public func executeAndSubmit(
         target: String,
         targetFn: String,
@@ -346,8 +297,6 @@ public final class OZTransactionOperations: @unchecked Sendable {
         )
     }
 
-    // MARK: - submit
-
     /// Submits a host function through the full simulate / sign / re-simulate /
     /// submit pipeline.
     ///
@@ -369,7 +318,6 @@ public final class OZTransactionOperations: @unchecked Sendable {
     /// - Returns: ``TransactionResult`` describing the on-chain outcome.
     /// - Throws: ``WalletException/NotConnected``, ``ValidationException``,
     ///   ``TransactionException``, ``WebAuthnException``, ``CredentialException``.
-    /// - Note: This method respects task cancellation at every await point.
     public func submit(
         hostFunction: HostFunctionXDR,
         auth: [SorobanAuthorizationEntryXDR],
@@ -642,8 +590,6 @@ public final class OZTransactionOperations: @unchecked Sendable {
         return signedTransaction
     }
 
-    // MARK: - submitMultiSignerTransaction (internal, consumed by multi-signer manager)
-
     /// Submits a multi-signer transaction using the same Mode 1 / Mode 2 routing
     /// as ``submit(hostFunction:auth:forceMethod:resolveContextRuleIds:)``.
     ///
@@ -688,8 +634,6 @@ public final class OZTransactionOperations: @unchecked Sendable {
         )
     }
 
-    // MARK: - fundWallet
-
     /// Funds the connected smart account wallet using Friendbot (testnet only).
     ///
     /// Generates a fresh temporary keypair, funds it via Friendbot, queries its
@@ -711,7 +655,6 @@ public final class OZTransactionOperations: @unchecked Sendable {
     ///   `"12.34567"`). Trailing zeroes in the fractional component are trimmed.
     /// - Throws: ``WalletException/NotConnected``, ``ValidationException``,
     ///   ``TransactionException``.
-    /// - Note: This method respects task cancellation at every await point.
     public func fundWallet(
         nativeTokenContract: String,
         forceMethod: SubmissionMethod? = nil
@@ -863,8 +806,6 @@ public final class OZTransactionOperations: @unchecked Sendable {
         return OZTransactionOperations.formatXlmAmount(stroops: transferStroops)
     }
 
-    // MARK: - simulateAndExtractResult (internal, consumed by managers)
-
     /// Simulates a host function in isolation and returns the parsed `SCValXDR`
     /// result.
     ///
@@ -941,12 +882,6 @@ public final class OZTransactionOperations: @unchecked Sendable {
         }
     }
 
-    /// Wraps ``SorobanServer/simulateTransaction(simulateTxRequest:)`` and lifts
-    /// the response into ``TransactionException/SimulationFailed`` when the RPC
-    /// reports a transport-level failure or the simulation surfaces an `error`
-    /// field. The `failureMessagePrefix` is concatenated with the underlying
-    /// error description so initial- and re-simulation paths produce distinct
-    /// messages.
     private func simulate(
         transaction: Transaction,
         failureMessagePrefix: String
@@ -971,8 +906,6 @@ public final class OZTransactionOperations: @unchecked Sendable {
         }
     }
 
-    /// Wraps ``SorobanServer/getAccount(accountId:)`` and lifts the response
-    /// into ``TransactionException/SubmissionFailed`` for transport-level failures.
     private func fetchAccount(accountId: String) async throws -> Account {
         let response = await kit.sorobanServer.getAccount(accountId: accountId)
         switch response {
@@ -986,8 +919,6 @@ public final class OZTransactionOperations: @unchecked Sendable {
         }
     }
 
-    /// Wraps ``SorobanServer/getLatestLedger()`` and lifts transport-level
-    /// failures into ``TransactionException/SubmissionFailed``.
     private func fetchLatestLedger() async throws -> GetLatestLedgerResponse {
         let response = await kit.sorobanServer.getLatestLedger()
         switch response {
@@ -1001,9 +932,6 @@ public final class OZTransactionOperations: @unchecked Sendable {
         }
     }
 
-    /// Best-effort wrapper around ``OZCredentialManagerProtocol/getCredential(credentialId:)``.
-    /// Returns `nil` on any thrown error so the on-chain fallback path can
-    /// proceed without leaking storage failures to the caller.
     private func safeGetCredential(credentialId: String) async -> StoredCredential? {
         do {
             return try await kit.credentialManager.getCredential(
@@ -1364,8 +1292,6 @@ public final class OZTransactionOperations: @unchecked Sendable {
         return nil
     }
 
-    /// Converts a Soroban RPC request error to a stable string for the various
-    /// `TransactionException` messages produced by this class.
     private func rpcErrorMessage(_ error: SorobanRpcRequestError) -> String {
         switch error {
         case .requestFailed(let message):
@@ -1463,10 +1389,7 @@ public final class OZTransactionOperations: @unchecked Sendable {
     /// endian).
     ///
     /// - Throws: ``TransactionException/SigningFailed`` when the system CSPRNG
-    ///   returns a non-success status. Defensive: `SecRandomCopyBytes` returning
-    ///   `errSecSuccess` is the cryptographic contract; on the rare hardware
-    ///   failure path we must refuse to produce a predictable nonce rather than
-    ///   ship the zero buffer as a "random" value.
+    ///   returns a non-success status; throws rather than returning zero bytes.
     internal static func generateNonce() throws -> Int64 {
         var bytes = [UInt8](repeating: 0, count: 8)
         let status = SecRandomCopyBytes(kSecRandomDefault, bytes.count, &bytes)
@@ -1539,8 +1462,6 @@ public final class OZTransactionOperations: @unchecked Sendable {
             return Int64(parts.lo)
         }
         if parts.hi == -1 {
-            // Two's-complement negative i128 with high bits all set fits in
-            // Int64 when the low bits have the sign bit set.
             if parts.lo >= UInt64(bitPattern: Int64.min) {
                 return Int64(bitPattern: parts.lo)
             }

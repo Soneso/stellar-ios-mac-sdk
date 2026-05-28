@@ -7,21 +7,9 @@
 
 import Foundation
 
-// ============================================================================
 // MARK: - Contract-ABI field-name constants
-// ============================================================================
 
-/// Single source-of-truth for the smart-account contract's `ContextRule`
-/// struct field names. The on-chain Soroban runtime serialises Rust struct
-/// values as `SCVal::Map` with `Symbol`-typed keys and enforces strict
-/// lexicographic ordering. Centralising these strings keeps the internal
-/// context-rule parser (`parseContextRule(scVal:)`) and the
-/// argument builder (``OZContextRuleManager/addContextRule(contextType:name:validUntil:signers:policies:selectedSigners:forceMethod:)``)
-/// reading and writing one canonical name set, preventing a silent ABI drift
-/// if either side is edited in isolation.
-///
-/// `internal` (rather than file-private) so the parser extension declared in
-/// ``OZContextRuleManager+Parsing.swift`` can reference the same constants.
+/// Stable wire-format key strings used by `parseContextRule(...)` and the argument builder.
 internal enum ContextRuleField {
     static let id = "id"
     static let name = "name"
@@ -34,30 +22,19 @@ internal enum ContextRuleField {
 }
 
 /// Contract-ABI discriminant strings for ``ContextRuleType`` arms.
-///
-/// These strings appear in both the parser (decoding `Vec` discriminants from
-/// the on-chain rule) and the encoder (``ContextRuleType/toScVal()``). Defined
-/// at module scope so a single edit covers both paths and so the parser
-/// extension in ``OZContextRuleManager+Parsing.swift`` can reference them.
 internal enum ContextTypeDiscriminant {
     static let defaultRule = "Default"
     static let callContract = "CallContract"
     static let createContract = "CreateContract"
 }
 
-/// Contract-ABI discriminant strings for the on-chain `Signer` enum arms
-/// returned in the `signers` field of a parsed context rule.
-///
-/// `internal` so the parser extension in ``OZContextRuleManager+Parsing.swift``
-/// can reference the same constants.
+/// Contract-ABI discriminant strings for the on-chain `Signer` enum arms.
 internal enum SignerDiscriminant {
     static let delegated = "Delegated"
     static let external = "External"
 }
 
-/// Contract method names invoked by ``OZContextRuleManager``. Co-located with
-/// the parser/encoder so the smart-account ABI is single-source-of-truth in
-/// this file.
+/// Contract method names invoked by ``OZContextRuleManager``.
 private enum ContextRuleMethod {
     static let addContextRule = "add_context_rule"
     static let getContextRule = "get_context_rule"
@@ -67,87 +44,45 @@ private enum ContextRuleMethod {
     static let removeContextRule = "remove_context_rule"
 }
 
-// ============================================================================
-// MARK: - OZContextRuleManager
-// ============================================================================
 
 /// Manages context rules for an OpenZeppelin Smart Account.
 ///
-/// Context rules define authorization requirements for different categories of
-/// operations. Each rule specifies:
-/// - **Context type** — what operations the rule applies to (``ContextRuleType/defaultRule``,
-///   ``ContextRuleType/callContract(contractAddress:)``, or
-///   ``ContextRuleType/createContract(wasmHash:)``)
-/// - **Name** — a human-readable identifier
-/// - **Signers** — who can authorize operations matching this context
-/// - **Policies** — additional constraints (spending limits, time locks,
-///   multi-sig thresholds, and so on)
-/// - **Valid until** — optional expiration ledger
+/// Context rules define authorization requirements per operation category. Each
+/// rule specifies a context type (default, `callContract`, or `createContract`),
+/// a name, signers, optional policies, and an optional expiration ledger. The
+/// smart-account contract evaluates inbound transactions against the rule set to
+/// determine which signers must sign and which policy contracts must approve.
 ///
-/// The smart-account contract evaluates inbound transactions against the rule
-/// set to determine which signers must sign and which policy contracts must
-/// approve.
+/// Contract limits enforced at validation time: ``OZConstants/maxSigners`` signers
+/// and ``OZConstants/maxPolicies`` policies per rule.
 ///
-/// State-changing methods (``addContextRule(contextType:name:validUntil:signers:policies:selectedSigners:forceMethod:)``,
-/// ``updateName(id:name:selectedSigners:forceMethod:)``,
-/// ``updateValidUntil(id:validUntil:selectedSigners:forceMethod:)``,
-/// ``removeContextRule(id:selectedSigners:forceMethod:)``) accept an optional
-/// `selectedSigners` list. When empty (the default), the operation routes
-/// through the single-signer submission path bound to the connected passkey.
-/// When non-empty, it routes through the kit's multi-signer manager.
-///
-/// Contract limits enforced at validation time:
-/// - Maximum ``OZConstants/maxSigners`` signers per context rule.
-/// - Maximum ``OZConstants/maxPolicies`` policies per context rule.
+/// All state-changing methods accept an optional `selectedSigners` list. An
+/// empty list routes through the single-signer path; a non-empty list routes
+/// through the kit's multi-signer manager.
 ///
 /// Example:
 /// ```swift
-/// let manager = kit.contextRuleManager
-///
-/// // Add a rule for token transfers requiring 2-of-3 multi-sig.
-/// let result = try await manager.addContextRule(
+/// let result = try await kit.contextRuleManager.addContextRule(
 ///     contextType: .callContract(contractAddress: tokenContractAddress),
 ///     name: "TokenTransfers",
-///     validUntil: nil,
 ///     signers: [signer1, signer2, signer3],
-///     policies: [thresholdPolicyAddress: thresholdScVal]
+///     policies: [policyAddress: installParamsScVal]
 /// )
-///
-/// // Discover existing rules.
-/// let rules = try await manager.listContextRules()
-/// let count = try await manager.getContextRulesCount()
-///
-/// // Remove a context rule.
-/// _ = try await manager.removeContextRule(id: ruleId)
 /// ```
-///
-/// - Note: Thread safety — every public method is `async` and may be invoked
-///   concurrently. Internal state is limited to immutable properties captured
-///   at initialization time, so no synchronization is required at this layer.
 public final class OZContextRuleManager: OZContextRuleManagerProtocol, @unchecked Sendable {
 
     // MARK: - Stored properties
 
-    /// Kit reference used to resolve the connected smart-account contract id,
-    /// the multi-signer manager, and to delegate host-function submission to
-    /// the kit's transaction operations.
     private let kit: OZSmartAccountKitProtocol
 
     // MARK: - Initialization
 
-    /// Initializes a new `OZContextRuleManager` bound to the supplied kit.
-    ///
-    /// - Parameter kit: The owning smart account kit. Used to resolve the
-    ///   connected smart-account contract id, to delegate single-signer
-    ///   submission to the kit's transaction operations, and to delegate
-    ///   multi-signer submission to
-    ///   ``OZSmartAccountKitProtocol/multiSignerManager`` when a caller
-    ///   supplies a non-empty `selectedSigners` list.
+    /// Internal initializer; instances are constructed by `OZSmartAccountKit`.
     internal init(kit: OZSmartAccountKitProtocol) {
         self.kit = kit
     }
 
-    // MARK: - Add Context Rule
+    // MARK: - Public API
 
     /// Adds a new context rule to the connected smart account.
     ///
@@ -283,25 +218,12 @@ public final class OZContextRuleManager: OZContextRuleManagerProtocol, @unchecke
         )
     }
 
-    // MARK: - Get Context Rule
-
-    /// Retrieves a specific context rule by its on-chain numeric id.
-    ///
-    /// Returns the raw `SCValXDR` payload exactly as the contract emits it.
-    /// Callers that need a typed view should parse the result with
-    /// ``parseContextRule(scVal:)`` or use ``listContextRules()``, which
-    /// performs the parse step internally.
-    ///
-    /// This is a read-only operation that issues a simulated invocation
-    /// against the connected contract without producing or submitting an
-    /// authorized transaction.
+    /// Returns the raw `SCValXDR` payload for the rule with the given `id`.
+    /// For a typed view, parse with ``parseContextRule(scVal:)`` or use ``listContextRules()``.
     ///
     /// - Parameter id: The context-rule identifier to look up.
-    /// - Returns: The raw `SCValXDR` returned by the contract method.
-    /// - Throws:
-    ///   - ``WalletException/NotConnected`` when no wallet is connected.
-    ///   - ``TransactionException/SimulationFailed`` when the simulation
-    ///     fails (commonly because the rule does not exist on chain).
+    /// - Returns: The raw `SCValXDR` returned by the contract.
+    /// - Throws: ``WalletException/NotConnected``, ``TransactionException/SimulationFailed``.
     public func getContextRule(id: UInt32) async throws -> SCValXDR {
         let connected = try kit.requireConnected()
 
@@ -316,8 +238,6 @@ public final class OZContextRuleManager: OZContextRuleManagerProtocol, @unchecke
             hostFunction: hostFunction
         )
     }
-
-    // MARK: - Get Context Rules Count
 
     /// Retrieves the number of context rules currently configured on the
     /// connected smart account.
@@ -353,8 +273,6 @@ public final class OZContextRuleManager: OZContextRuleManagerProtocol, @unchecke
         }
         return count
     }
-
-    // MARK: - Get All Context Rules (raw)
 
     /// Retrieves every active context rule on the connected contract as raw
     /// `SCValXDR` map payloads, observing the kit's configured scan upper
@@ -432,8 +350,6 @@ public final class OZContextRuleManager: OZContextRuleManagerProtocol, @unchecke
         return result
     }
 
-    // MARK: - List Context Rules (parsed)
-
     /// Returns the parsed view of every active context rule on the connected
     /// smart account contract.
     ///
@@ -481,23 +397,9 @@ public final class OZContextRuleManager: OZContextRuleManagerProtocol, @unchecke
         return result
     }
 
-    // MARK: - Resolve Context Rule IDs
+    // MARK: - Resolution helpers
 
-    /// Resolves the on-chain context-rule identifiers that should be bound
-    /// into the signing digest for the supplied authorization entry.
-    ///
-    /// Fetches the active rule set via ``listContextRules()`` then delegates
-    /// to the three-arg overload. Callers that need to resolve multiple auth
-    /// entries inside the same transaction should fetch the rules once and
-    /// invoke the three-arg overload directly to avoid redundant RPC round
-    /// trips.
-    ///
-    /// - Parameters:
-    ///   - entry: The authorization entry being signed.
-    ///   - signers: The signer values participating in the current ceremony.
-    /// - Returns: One identifier per invocation context (depth-first traversal
-    ///   of the entry's invocation tree).
-    /// - Throws: ``ValidationException``, ``TransactionException``.
+    // Internal overload: refetches rules each call; prefer the three-arg form when iterating.
     internal func resolveContextRuleIdsForEntry(
         entry: SorobanAuthorizationEntryXDR,
         signers: [any OZSmartAccountSigner]
@@ -632,7 +534,7 @@ public final class OZContextRuleManager: OZContextRuleManagerProtocol, @unchecke
         return result
     }
 
-    // MARK: - Invocation tree traversal
+    // MARK: - Private helpers
 
     /// Extracts the context-type list from an auth entry's invocation tree.
     ///
@@ -718,9 +620,6 @@ public final class OZContextRuleManager: OZContextRuleManagerProtocol, @unchecke
         }
     }
 
-    /// Decodes an `SCAddressXDR` to its strkey form. Mirrors the helper used
-    /// in ``OZSmartAccountAuthPayload`` so the entire OZ module shares one
-    /// canonical address-stringification routine.
     private func addressString(from scAddress: SCAddressXDR) throws -> String {
         if let accountId = scAddress.accountId {
             return accountId
@@ -733,8 +632,6 @@ public final class OZContextRuleManager: OZContextRuleManagerProtocol, @unchecke
             reason: "Unsupported SCAddressXDR variant: \(scAddress)"
         )
     }
-
-    // MARK: - Context Rule Type Matching
 
     /// Returns `true` when the rule's context type matches the required
     /// context type.
@@ -749,8 +646,6 @@ public final class OZContextRuleManager: OZContextRuleManagerProtocol, @unchecke
         if case .defaultRule = ruleType { return true }
         return ruleType == requiredType
     }
-
-    // MARK: - Update Context Rule Name
 
     /// Updates the human-readable name of an existing context rule.
     ///
@@ -797,8 +692,6 @@ public final class OZContextRuleManager: OZContextRuleManagerProtocol, @unchecke
         )
     }
 
-    // MARK: - Update Context Rule Valid Until
-
     /// Updates the expiration ledger of an existing context rule.
     ///
     /// Pass `nil` to clear the expiration (the rule becomes non-expiring).
@@ -844,8 +737,6 @@ public final class OZContextRuleManager: OZContextRuleManagerProtocol, @unchecke
         )
     }
 
-    // MARK: - Remove Context Rule
-
     /// Removes a context rule from the connected smart account.
     ///
     /// Removed rules leave a numeric gap in the identifier sequence that
@@ -878,16 +769,7 @@ public final class OZContextRuleManager: OZContextRuleManagerProtocol, @unchecke
         )
     }
 
-    // MARK: - Private routing helpers
-
-    /// Routes a host-function submission to either the single-signer or
-    /// multi-signer code path based on the supplied `selectedSigners` list.
-    ///
-    /// When `selectedSigners` is empty, the submission is forwarded through the
-    /// kit's transaction operations on the single-signer path bound to the
-    /// connected passkey. When non-empty, the kit's multi-signer manager is
-    /// consulted directly to coordinate signature collection across every
-    /// supplied signer.
+    // Single-signer path when selectedSigners is empty; multi-signer path otherwise.
     private func routeSubmission(
         hostFunction: HostFunctionXDR,
         selectedSigners: [SelectedSigner],

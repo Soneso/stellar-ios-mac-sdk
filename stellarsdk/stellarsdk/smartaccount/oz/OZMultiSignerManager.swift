@@ -8,89 +8,46 @@
 import Foundation
 import Security
 
-// ============================================================================
-// MARK: - OZMultiSignerManager
-// ============================================================================
 
 /// Manager for multi-signature smart-account operations.
 ///
-/// `OZMultiSignerManager` collects signatures from a caller-supplied list of
-/// signers (passkeys, external wallet addresses, and Ed25519 external signers) and submits the
-/// resulting transaction through the kit's transaction operations. The manager
-/// supports three caller-facing entry points and one shared low-level
-/// submission pipeline:
+/// Collects signatures from a caller-supplied list of signers (passkeys,
+/// external wallet addresses, and Ed25519 external signers) and submits the
+/// assembled transaction through the kit's transaction operations.
 ///
-/// - ``multiSignerTransfer(tokenContract:recipient:amount:selectedSigners:forceMethod:resolveContextRuleIds:)``
-///   — multi-signer SEP-41 token transfer.
-/// - ``multiSignerContractCall(target:targetFn:targetArgs:selectedSigners:forceMethod:resolveContextRuleIds:)``
-///   — direct multi-signer contract call (the smart account is the caller via
-///   `require_auth`).
-/// - ``multiSignerExecuteAndSubmit(target:targetFn:targetArgs:selectedSigners:forceMethod:resolveContextRuleIds:)``
-///   — smart-account-mediated multi-signer call routed through the smart
-///   account contract's `execute` entry point.
-/// - ``submitWithMultipleSigners(hostFunction:selectedSigners:forceMethod:resolveContextRuleIds:)``
-///   — low-level shared pipeline consumed by the three high-level entry points
-///   above and by sibling managers (signer / policy / context-rule) when they
-///   route a non-empty `selectedSigners` list through the multi-signer path.
+/// Signatures are collected sequentially in `selectedSigners` order. Each
+/// passkey signer triggers one OS WebAuthn prompt; each wallet signer triggers
+/// one external-wallet signing request. The connected passkey is NOT added
+/// implicitly — include it explicitly when it should sign.
 ///
-/// ## Signer Ordering
+/// Each delegated wallet signer produces its own signed auth entry (root
+/// invocation `__check_auth(authDigest)`) plus an empty-bytes placeholder in
+/// the smart account's signature map. Direct wallet entries are signed via the
+/// external wallet adapter and written into the classical
+/// `Vec([Map({public_key, signature})])` shape; the smart account signature
+/// map is not modified for those entries.
 ///
-/// Signatures are collected sequentially in the order the caller supplies them
-/// via `selectedSigners`. Each ``SelectedSigner/passkey(credentialId:credentialIdBytes:keyData:transports:)``
-/// triggers exactly one OS WebAuthn authentication prompt. Each
-/// ``SelectedSigner/wallet(accountId:)`` triggers exactly one external-wallet
-/// signing request. Sequential collection enables fail-fast behaviour on user
-/// cancellation.
-///
-/// The connected passkey is NOT added implicitly. Include it explicitly via
-/// ``SelectedSigner/passkey(credentialId:credentialIdBytes:keyData:transports:)`` when the
-/// connected passkey should sign.
-///
-/// ## Delegated-Signer Auth Entries
-///
-/// Each delegated wallet signer in `selectedSigners` produces:
-/// - Its own signed authorization entry whose `Address` credentials reference
-///   the wallet's G-address and whose root invocation calls
-///   `<smart_account>.__check_auth(authDigest)` — built and signed by the
-///   hand-rolled `Auth.authorizeInvocation` equivalent inside this file.
-/// - An empty-bytes placeholder in the smart account's signature map so the
-///   smart-account contract counts the delegated signer when evaluating the
-///   active context rule.
-///
-/// Auth entries whose `Address` matches a `SelectedSigner.wallet(accountId:)`
-/// are signed directly via the external wallet adapter (without the
-/// `__check_auth` indirection) and the resulting signature is written into the
-/// classical `Vec([Map({public_key, signature})])` shape. The smart account's
-/// signature map remains untouched on these entries.
-///
-/// ## Thread Safety
-///
-/// All methods are `async`. The manager holds only immutable references
-/// captured at construction time, so concurrent invocation is safe at this
-/// layer — concurrent invocation of WebAuthn or external-wallet signing is
-/// constrained by the underlying OS-level prompt serialization.
+/// Example:
+/// ```swift
+/// let result = try await kit.multiSignerManager.multiSignerTransfer(
+///     tokenContract: xlmSac,
+///     recipient: recipientAddress,
+///     amount: "10",
+///     selectedSigners: [.passkey(credentialId: id, credentialIdBytes: idBytes, keyData: key)]
+/// )
+/// ```
 // non-final to allow internal test subclassing in the unit-test target.
-private let addressLogPrefixCount = 8
-
 public class OZMultiSignerManager: @unchecked Sendable {
 
     // MARK: - Stored properties
 
-    /// Kit reference used to resolve the connected smart-account contract id,
-    /// the configured external-wallet adapter, the WebAuthn provider, the
-    /// network passphrase, and to delegate the final transaction submission to
-    /// the kit's transaction operations.
+    private let addressLogPrefixCount = 8
+
     private let kit: OZSmartAccountKitProtocol
 
     // MARK: - Initialization
 
-    /// Initializes a new `OZMultiSignerManager` bound to the supplied kit.
-    ///
-    /// Internal: instances are created by the smart-account kit and exposed as
-    /// `kit.multiSignerManager`. Consumer applications never call this
-    /// initializer directly.
-    ///
-    /// - Parameter kit: The owning smart account kit.
+    /// Internal initializer; instances are constructed by `OZSmartAccountKit`.
     internal init(kit: OZSmartAccountKitProtocol) {
         self.kit = kit
     }
@@ -933,8 +890,7 @@ public class OZMultiSignerManager: @unchecked Sendable {
     ) async throws -> SorobanAuthorizationEntryXDR {
         var workingEntry = workingEntry
 
-        // validateSignerSet upstream guarantees externalSignerManager is non-nil
-        // whenever any Ed25519 signer is in selectedSigners.
+        // !-unwrap: validateSignerSet guarantees externalSignerManager non-nil when Ed25519 signers are present.
         let externalSignerManager = kit.externalSignerManager!
 
         for signer in selectedSigners {
@@ -1226,39 +1182,8 @@ public class OZMultiSignerManager: @unchecked Sendable {
 
     // MARK: - Hand-rolled Auth.authorizeInvocation equivalent
 
-    /// Hand-rolled equivalent of the `Auth.authorizeInvocation` static helper
-    /// that the iOS SDK does not expose at top level.
-    ///
-    /// Builds an unsigned `SorobanAuthorizationEntryXDR` from scratch:
-    /// - Generates a fresh cryptographically random nonce via
-    ///   ``OZTransactionOperations/generateNonce()``.
-    /// - Constructs the `Address` credentials referencing `walletAddress`,
-    ///   with the supplied `validUntilLedger` and a `void` placeholder
-    ///   signature.
-    /// - Builds the `HashIDPreimage::SorobanAuthorization` preimage and
-    ///   base64-encodes it for the external wallet adapter.
-    /// - Requests the raw Ed25519 signature from the external wallet
-    ///   adapter.
-    /// - Wraps the resulting signature into the classical
-    ///   `Vec([Map({public_key, signature})])` shape used by stock Stellar
-    ///   accounts and writes it into the credentials.
-    ///
-    /// The iOS SDK does not expose a top-level `Auth.authorizeInvocation`
-    /// helper, so the algorithm is hand-rolled here and kept internal to this
-    /// manager. The public surface of the smart-account module remains
-    /// unchanged.
-    ///
-    /// - Parameters:
-    ///   - walletAddress: The Stellar `G…` address of the delegated wallet
-    ///     signer.
-    ///   - validUntilLedger: Ledger sequence at which the signature expires.
-    ///   - invocation: Invocation tree being authorized — typically the
-    ///     `__check_auth(authDigest)` call on the smart account contract.
-    ///   - networkPassphrase: Network passphrase used to derive the network
-    ///     id bound into the preimage.
-    ///   - externalWallet: External wallet adapter that produces the raw
-    ///     Ed25519 signature.
-    /// - Returns: The fully signed delegated auth entry.
+    /// Builds and signs a delegated wallet auth entry for `walletAddress`.
+    /// Produces the `Vec([Map({public_key, signature})])` credential shape.
     /// - Throws: ``TransactionException/SigningFailed``.
     private static func authorizeInvocation(
         walletAddress: String,
@@ -1558,8 +1483,6 @@ public class OZMultiSignerManager: @unchecked Sendable {
         return nil
     }
 
-    /// Converts an `SorobanRpcRequestError` to a stable string for the
-    /// various ``TransactionException`` messages produced by this class.
     private func rpcErrorMessage(_ error: SorobanRpcRequestError) -> String {
         switch error {
         case .requestFailed(let message):

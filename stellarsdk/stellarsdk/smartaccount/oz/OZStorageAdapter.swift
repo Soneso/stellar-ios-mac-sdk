@@ -7,18 +7,12 @@
 
 import Foundation
 
-// ============================================================================
-// Credential Deployment Status
-// ============================================================================
 
 /// The deployment status of a smart account credential.
 public enum CredentialDeploymentStatus: String, Sendable, CaseIterable {
 
-    /// The credential has been created but the smart account contract has not been
-    /// deployed yet.
     case pending = "PENDING"
 
-    /// The deployment transaction failed.
     case failed = "FAILED"
 
     // why: there is no `success` arm because a credential is deleted from storage on
@@ -26,9 +20,6 @@ public enum CredentialDeploymentStatus: String, Sendable, CaseIterable {
     // credential can occupy are PENDING and FAILED.
 }
 
-// ============================================================================
-// Stored Credential
-// ============================================================================
 
 /// A stored smart account credential with deployment and usage metadata.
 ///
@@ -48,13 +39,9 @@ public enum CredentialDeploymentStatus: String, Sendable, CaseIterable {
 public struct StoredCredential: Sendable {
 
     /// The WebAuthn credential ID (Base64URL encoded).
-    ///
-    /// Unique identifier returned by the browser during WebAuthn registration.
     public let credentialId: String
 
-    /// The uncompressed secp256r1 public key (65 bytes starting with `0x04`).
-    ///
-    /// Used for signature verification in the WebAuthn verifier contract.
+    /// The uncompressed secp256r1 public key (65 bytes, `0x04`-prefixed).
     public let publicKey: Data
 
     /// The smart account contract address (`C…` strkey).
@@ -111,21 +98,6 @@ public struct StoredCredential: Sendable {
     /// `credentialBackedUp` flag in WebAuthn authenticator data.
     public let backedUp: Bool?
 
-    /// Initializes a new `StoredCredential`.
-    ///
-    /// - Parameters:
-    ///   - credentialId: WebAuthn credential ID (Base64URL).
-    ///   - publicKey: Uncompressed secp256r1 public key (65 bytes starting with `0x04`).
-    ///   - contractId: Optional smart account contract address (`C…` strkey).
-    ///   - deploymentStatus: Current deployment status; defaults to `.pending`.
-    ///   - deploymentError: Optional deployment error message.
-    ///   - createdAt: Creation timestamp in milliseconds since epoch; defaults to now.
-    ///   - lastUsedAt: Optional last-used timestamp in milliseconds since epoch.
-    ///   - nickname: Optional user-friendly nickname.
-    ///   - isPrimary: Whether this is the primary credential; defaults to `false`.
-    ///   - transports: Optional authenticator transport hints.
-    ///   - deviceType: Optional authenticator device type.
-    ///   - backedUp: Optional cloud-sync flag.
     public init(
         credentialId: String,
         publicKey: Data,
@@ -254,9 +226,6 @@ extension StoredCredential: Hashable {
     }
 }
 
-// ============================================================================
-// Stored Session
-// ============================================================================
 
 /// A stored user session for silent reconnection.
 ///
@@ -279,19 +248,11 @@ extension StoredCredential: Hashable {
 /// ```
 public struct StoredSession: Sendable, Equatable, Hashable {
 
-    /// The credential ID associated with this session.
     public let credentialId: String
-
-    /// The smart account contract address.
     public let contractId: String
-
-    /// When the session was established (milliseconds since epoch).
     public let connectedAt: Int64
-
-    /// When the session expires (milliseconds since epoch).
     public let expiresAt: Int64
 
-    /// Initializes a new `StoredSession`.
     public init(
         credentialId: String,
         contractId: String,
@@ -312,9 +273,6 @@ public struct StoredSession: Sendable, Equatable, Hashable {
     }
 }
 
-// ============================================================================
-// Stored Credential Update
-// ============================================================================
 
 /// Partial updates for a stored credential.
 ///
@@ -334,35 +292,16 @@ public struct StoredSession: Sendable, Equatable, Hashable {
 /// ```
 public struct StoredCredentialUpdate: Sendable, Equatable, Hashable {
 
-    /// New deployment status, or `nil` to leave unchanged.
     public let deploymentStatus: CredentialDeploymentStatus?
-
-    /// New deployment error message, or `nil` to leave unchanged.
     public let deploymentError: String?
-
-    /// New contract ID, or `nil` to leave unchanged.
     public let contractId: String?
-
-    /// New last-used timestamp, or `nil` to leave unchanged.
     public let lastUsedAt: Int64?
-
-    /// New nickname, or `nil` to leave unchanged.
     public let nickname: String?
-
-    /// New primary flag, or `nil` to leave unchanged.
     public let isPrimary: Bool?
-
-    /// New authenticator transport hints, or `nil` to leave unchanged.
     public let transports: [String]?
-
-    /// New device type, or `nil` to leave unchanged.
     public let deviceType: String?
-
-    /// New backed-up flag, or `nil` to leave unchanged.
     public let backedUp: Bool?
 
-    /// Initializes a new `StoredCredentialUpdate`. All parameters default to `nil`,
-    /// meaning "leave the corresponding field unchanged".
     public init(
         deploymentStatus: CredentialDeploymentStatus? = nil,
         deploymentError: String? = nil,
@@ -386,9 +325,6 @@ public struct StoredCredentialUpdate: Sendable, Equatable, Hashable {
     }
 }
 
-// ============================================================================
-// Storage Adapter Protocol
-// ============================================================================
 
 /// Protocol for persisting smart account credentials and sessions.
 ///
@@ -468,9 +404,6 @@ public protocol StorageAdapter: AnyObject, Sendable {
     func clearSession() async throws
 }
 
-// ============================================================================
-// In-Memory Storage Adapter
-// ============================================================================
 
 /// In-memory storage adapter for credentials and sessions.
 ///
@@ -580,9 +513,6 @@ extension InMemoryStorageAdapter: Hashable {
     }
 }
 
-// ============================================================================
-// Connected Wallet
-// ============================================================================
 
 /// Information about an externally connected wallet.
 ///
@@ -619,9 +549,6 @@ public struct ConnectedWallet: Sendable, Equatable, Hashable {
     }
 }
 
-// ============================================================================
-// Sign Auth Entry Types
-// ============================================================================
 
 /// Options for signing an authorization entry with an external wallet.
 ///
@@ -665,9 +592,6 @@ public struct SignAuthEntryResult: Sendable, Equatable, Hashable {
     }
 }
 
-// ============================================================================
-// External Wallet Adapter Protocol
-// ============================================================================
 
 /// Protocol for integrating external wallet adapters for multi-signer support.
 ///
