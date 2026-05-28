@@ -18,10 +18,8 @@
 //    REGENERATE_ED25519_FIXTURE=1 \
 //    swift test --filter "stellarsdkUnitTests.*Ed25519Fixture"
 //
-//  After regenerating, copy the file to any downstream SDK that consumes the
-//  same byte-equivalence fixture (for example the Flutter SDK at
-//  stellar_flutter_sdk/test/fixtures/ed25519_cross_sdk_fixture.json) and commit
-//  both copies together to keep them in sync.
+//  After regenerating, copy the file to every consumer of the same
+//  byte-equivalence fixture and commit them together to keep them in sync.
 //
 
 import XCTest

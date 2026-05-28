@@ -41,10 +41,8 @@ public enum ContextRuleType: Sendable, Hashable {
     /// Matches contract deployments using a specific 32-byte WASM hash.
     case createContract(wasmHash: Data)
 
-    // why: hand-written `==` keeps the byte comparison on `wasmHash` in
-    // constant time. Swift's auto-synthesized `Equatable` for `Data` is a fast
-    // length-then-memcmp short-circuit that leaks information about how many
-    // leading bytes match through measurable timing differences.
+    // why: `wasmHash` uses constant-time comparison via `Data.constantTimeEquals`;
+    // see that extension for the timing-attack rationale.
     public static func == (lhs: ContextRuleType, rhs: ContextRuleType) -> Bool {
         switch (lhs, rhs) {
         case (.defaultRule, .defaultRule):
@@ -58,9 +56,6 @@ public enum ContextRuleType: Sendable, Hashable {
         }
     }
 
-    // why: combine only the discriminant and length-aware content hash for
-    // `wasmHash` so the hash output of two equal `CreateContract` arms is
-    // identical (mirroring the constant-time equality contract above).
     public func hash(into hasher: inout Hasher) {
         switch self {
         case .defaultRule:
@@ -144,17 +139,6 @@ public struct ParsedContextRule: Sendable, Hashable {
     /// Optional ledger number when this rule expires (`nil` = never expires).
     public let validUntil: UInt32?
 
-    /// Initializes a new ``ParsedContextRule`` from already-parsed on-chain data.
-    ///
-    /// - Parameters:
-    ///   - id: Unique rule identifier.
-    ///   - contextType: Operation-matching type.
-    ///   - name: Human-readable rule name.
-    ///   - signers: Signers authorized by this rule.
-    ///   - signerIds: Positionally-aligned signer IDs.
-    ///   - policies: Policy contract addresses applied by this rule.
-    ///   - policyIds: Positionally-aligned policy IDs.
-    ///   - validUntil: Optional expiration ledger number.
     public init(
         id: UInt32,
         contextType: ContextRuleType,

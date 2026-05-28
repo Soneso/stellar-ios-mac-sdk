@@ -902,8 +902,8 @@ public class SorobanServer: @unchecked Sendable {
     ///
     /// Transient RPC failures during a poll attempt (network glitches, rate limiting) are
     /// swallowed: polling continues, and only the most recent successful response is kept.
-    /// If every poll attempt produces a transient failure, the helper returns a parsing-style
-    /// failure response so the caller is not left waiting on a never-resolving call.
+    /// If every poll attempt produces a transient failure, the helper returns a
+    /// request-failed result so the caller is not left waiting on a never-resolving call.
     ///
     /// Argument validation: `maxAttempts` must be greater than zero. To preserve the
     /// non-throwing convention used by `simulateTransaction`, `sendTransaction`, and

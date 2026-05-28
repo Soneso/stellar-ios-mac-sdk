@@ -13,33 +13,15 @@ import CommonCrypto
 /// Provides utilities for WebAuthn signature processing, public-key extraction, and
 /// contract-address derivation. All members operate on raw byte material and do not
 /// depend on any platform-specific WebAuthn API.
-///
-/// For general-purpose helpers (Base64URL, hex, stroops, SDK version) see
-/// `SmartAccountUtil`. The two namespaces have similar names but distinct
-/// responsibilities — this one is secp256r1- and WebAuthn-specific, the other is
-/// general-purpose SDK utilities.
 public enum SmartAccountUtils {
 
-    // ========================================================================
-    // Signature normalisation
-    // ========================================================================
-
     /// Parses a DER-encoded secp256r1 signature and returns its `(r, s)` components as
-    /// unsigned big-endian byte arrays.
-    ///
-    /// Validates the full DER structure, strips leading `0x00` padding bytes from both
-    /// components, and enforces secp256r1-specific constraints:
-    /// - `r` and `s` must each be at most 32 bytes after stripping.
-    /// - `r` and `s` must not be all-zero (invalid ECDSA values).
-    /// - `r` and `s` must each be strictly less than the curve order.
-    ///
-    /// DER format: `0x30 [total_len] 0x02 [r_len] [r_bytes] 0x02 [s_len] [s_bytes]`.
+    /// stripped, unsigned big-endian byte arrays (each at most 32 bytes, in `[1, n-1]`).
     ///
     /// - Parameter derSignature: DER-encoded signature bytes.
-    /// - Returns: A pair of unsigned big-endian byte arrays for `r` and `s`, each in
-    ///            `[1, n-1]` and at most 32 bytes long.
+    /// - Returns: `(r, s)` pair after stripping leading zero-padding.
     /// - Throws: `ValidationException.InvalidInput` when the DER structure is malformed
-    ///           or the `r`/`s` values violate the secp256r1 constraints.
+    ///           or `r`/`s` violate secp256r1 constraints.
     internal static func parseDerSignature(_ derSignature: Data) throws -> (r: Data, s: Data) {
         if derSignature.count < 8 || derSignature[derSignature.startIndex] != 0x30 {
             throw ValidationException.invalidInput(
@@ -193,35 +175,19 @@ public enum SmartAccountUtils {
         return result
     }
 
-    // ========================================================================
-    // Public key extraction
-    // ========================================================================
-
-    /// Extracts the secp256r1 public key from a WebAuthn registration response using
-    /// multiple fallback strategies.
+    /// Extracts the secp256r1 public key from a WebAuthn registration response.
     ///
-    /// Tries three strategies in order:
-    /// 1. **Direct public key**: when `publicKey` is provided, validate it as a 65-byte
-    ///    uncompressed secp256r1 key (`0x04` prefix) and verify the point is on the curve.
-    /// 2. **Authenticator data parsing**: when `authenticatorData` is provided, parse the
-    ///    attested credential data structure to extract `X`/`Y` coordinates from the COSE
-    ///    key.
-    /// 3. **Attestation object pattern matching**: when `attestationObject` is provided,
-    ///    search for the COSE key prefix pattern and extract `X`/`Y` coordinates.
-    ///
-    /// At least one of the three parameters must be non-nil. Compressed keys (`0x02`/`0x03`
-    /// prefix) are not supported and cause the method to throw immediately rather than fall
-    /// through to other strategies.
+    /// Tries `publicKey`, `authenticatorData`, and `attestationObject` in order; at least
+    /// one must be non-nil. Compressed keys (`0x02`/`0x03` prefix) throw immediately.
     ///
     /// - Parameters:
-    ///   - publicKey: Optional direct public key bytes (the last 65 bytes are used when
-    ///                longer than 65 bytes; this handles COSE/SPKI-wrapped keys).
+    ///   - publicKey: Optional direct public key bytes (last 65 bytes used when longer,
+    ///                handling COSE/SPKI-wrapped keys).
     ///   - authenticatorData: Optional raw authenticator data from registration.
     ///   - attestationObject: Optional raw attestation object from registration.
     /// - Returns: 65-byte uncompressed public key (`0x04` prefix + `X` + `Y`).
-    /// - Throws: `ValidationException.InvalidInput` when a compressed-key prefix is
-    ///           detected, when no extraction source is provided, or when all strategies
-    ///           fail.
+    /// - Throws: `ValidationException.InvalidInput` when a compressed key is detected,
+    ///           when no source is provided, or when all strategies fail.
     public static func extractPublicKeyFromRegistration(
         publicKey: Data? = nil,
         authenticatorData: Data? = nil,
@@ -433,10 +399,6 @@ public enum SmartAccountUtils {
         return publicKey
     }
 
-    // ========================================================================
-    // Contract salt and address derivation
-    // ========================================================================
-
     /// Computes the contract salt from a WebAuthn credential ID.
     ///
     /// The salt is used during contract-address derivation so each credential ID maps to a
@@ -531,10 +493,6 @@ public enum SmartAccountUtils {
         }
     }
 
-    // ========================================================================
-    // Internal helpers
-    // ========================================================================
-
     /// Finds the first occurrence of `subarray` within `array` using a sliding-window scan.
     ///
     /// Returns `-1` when not found, when `subarray` is empty, or when `array` is shorter
@@ -565,10 +523,6 @@ public enum SmartAccountUtils {
         }
         return -1
     }
-
-    // ========================================================================
-    // Private helpers and curve constants
-    // ========================================================================
 
     /// secp256r1 curve order `n` as a 32-byte unsigned big-endian integer.
     /// Hex: ffffffff00000000ffffffffffffffffbce6faada7179e84f3b9cac2fc632551.

@@ -477,8 +477,8 @@ public protocol StorageAdapter: AnyObject, Sendable {
 /// Stores all data in memory and does not persist across application restarts.
 /// Thread-safe via Swift Concurrency actor isolation.
 ///
-/// Use platform-specific implementations for persistent storage (for example
-/// Keychain on iOS, encrypted SharedPreferences on Android, IndexedDB on Web).
+/// Use `KeychainStorageAdapter` for persistent encrypted storage on Apple platforms
+/// (Keychain Services), or `UserDefaultsStorageAdapter` for non-sensitive metadata.
 ///
 /// All `InMemoryStorageAdapter` instances are considered equal because two
 /// freshly-created instances are functionally identical (both empty), so they are

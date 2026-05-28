@@ -54,7 +54,7 @@ The provider initializer is `throws` and validates that `rpId` and `rpName` are 
 
 Set `presentationContextProvider` once at setup time and leave it assigned. The provider retains it strongly; you do not need to manage the lifetime explicitly. Mutating the property while a ceremony is in flight is not supported.
 
-The same `rpId` MUST be passed to both the provider and the config: the provider value is what the system passkey UI uses, the config value is read by the kit when relevant for auth-entry encoding and indexing.
+The same `rpId` MUST be passed to both the provider and the config: the provider value is what the system passkey UI uses, the config value is stored for application reference (e.g. UI display, logging); the kit does not read it internally.
 
 ## Add the Associated Domains entitlement (Xcode)
 

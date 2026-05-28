@@ -2231,7 +2231,7 @@ public class WebAuthnException: SmartAccountException {
 
     public static func registrationFailed(reason: String, cause: Error? = nil) -> RegistrationFailed
     public static func authenticationFailed(reason: String, cause: Error? = nil) -> AuthenticationFailed
-    public static func notSupported(details: String, cause: Error? = nil) -> NotSupported
+    public static func notSupported(details: String? = nil, cause: Error? = nil) -> NotSupported
     public static func cancelled(cause: Error? = nil) -> Cancelled
 }
 ```
@@ -2250,7 +2250,7 @@ public class TransactionException: SmartAccountException {
     public static func simulationFailed(reason: String, cause: Error? = nil) -> SimulationFailed
     public static func signingFailed(reason: String, cause: Error? = nil) -> SigningFailed
     public static func submissionFailed(reason: String, cause: Error? = nil) -> SubmissionFailed
-    public static func timeout(details: String, cause: Error? = nil) -> Timeout
+    public static func timeout(details: String? = nil, cause: Error? = nil) -> Timeout
 }
 ```
 
@@ -2301,7 +2301,7 @@ public class SessionException: SmartAccountException {
     public final class Expired: SessionException { ... }
     public final class Invalid: SessionException { ... }
 
-    public static func expired(sessionId: String, cause: Error? = nil) -> Expired
+    public static func expired(sessionId: String? = nil, cause: Error? = nil) -> Expired
     public static func invalid(reason: String, cause: Error? = nil) -> Invalid
 }
 ```
@@ -2484,7 +2484,7 @@ The provider enforces `userVerificationPreference = .required` on assertion so t
 public enum SmartAccountUtils {
     public static func normalizeSignature(_ derSignature: Data) throws -> Data
     public static func extractPublicKeyFromRegistration(
-        publicKey: Data,
+        publicKey: Data? = nil,
         authenticatorData: Data? = nil,
         attestationObject: Data? = nil
     ) throws -> Data
@@ -3109,7 +3109,7 @@ Cross-cutting behavioral notes that affect multiple classes or are easy to miss.
 - **Post-`close()` trap**: accessing any manager or operations property after `kit.close()` has returned traps with an implicitly-unwrapped-optional nil. Call `close()` last, and never retain manager references across the kit's lifetime.
 - **`connectWallet` tri-state return**: `connectWallet(options:)` returns `nil` (no session, `prompt` was `false`), `.connected` (single contract resolved), or `.ambiguous` (indexer reported multiple contracts for the credential — kit state is NOT set; the caller must prompt the user to pick and then re-call with `options.contractId`).
 - **`OZRelayerClient` does not throw**: network and HTTP errors are captured in the returned `OZRelayerResponse`; only XDR encoding failures (pre-request) surface as `OZRelayerResponse(success: false, ...)` with no `errorCode`. Always check `response.success`.
-- **Default deployer seed**: when `deployerKeypair` is `nil`, the kit derives a deterministic deployer from `SHA-256("openzeppelin-smart-account-kit")`. The literal string is fixed by the cross-implementation contract; changing it would break interoperability with deployments made by other Smart Account Kit clients.
+- **Default deployer seed**: when `deployerKeypair` is `nil`, the kit derives a deterministic deployer from `SHA-256("openzeppelin-smart-account-kit")`. The literal string is a fixed protocol constant; changing it would produce a different deployer address and orphan every wallet deployed via the default.
 - **`OZConstants` does not bundle testnet values**: `accountWasmHash` and `webauthnVerifierAddress` are never bundled in `OZConstants`; consumers must supply them from their deployment configuration.
 - **`SelectedSigner.passkey(...)` `keyData` requirement**: in multi-signer ceremonies every passkey `SelectedSigner` entry must supply `keyData` non-nil. The auth pipeline validates this upfront in `validateSignerSet` and throws `ValidationException.InvalidInput` (field `"selectedSigners"`) when `keyData` is absent.
 - **`autoFund: true` is testnet-only**: `fundWallet` calls the hardcoded Friendbot URL at `https://friendbot.stellar.org`. On mainnet, fund the deployer externally and omit `autoFund`.

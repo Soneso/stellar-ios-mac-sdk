@@ -31,13 +31,7 @@ internal struct ConnectedState: Sendable, Equatable, Hashable {
 
 // MARK: - Credential Manager Protocol
 
-/// Storage-coordinator surface consumed by wallet and transaction operations.
-///
-/// Concrete implementations persist credential metadata, mark deployment outcomes,
-/// and track the most recently used credential. Wallet and transaction operations
-/// invoke these methods on best-effort paths; failures are swallowed at the call site
-/// when the underlying operation is non-critical (for example, tracking
-/// `lastUsedAt` after a successful signing pass).
+/// Internal credential-metadata persistence protocol consumed by wallet and transaction operations.
 internal protocol OZCredentialManagerProtocol: AnyObject, Sendable {
 
     /// Persists a new credential in the `pending` deployment state.
@@ -153,10 +147,6 @@ internal protocol OZContextRuleManagerProtocol: AnyObject, Sendable {
     /// Parses a raw context-rule `SCValXDR` payload into the typed
     /// ``ParsedContextRule`` representation.
     ///
-    /// Pure-function helper exposed on the protocol so callers (and test
-    /// doubles) can decode context-rule payloads without holding a typed
-    /// reference to the concrete context-rule manager.
-    ///
     /// - Parameter scVal: The raw `SCValXDR` payload returned by the contract.
     /// - Returns: A typed view over the rule's signers, signer ids, policies,
     ///   policy ids, name, and expiration ledger.
@@ -179,7 +169,7 @@ internal protocol OZContextRuleManagerProtocol: AnyObject, Sendable {
 /// Lifetime: the kit owns both operations classes (`kit.transactionOperations`
 /// and `kit.walletOperations`). Each operations instance holds a strong
 /// reference back to the kit through this protocol. The kit's own
-/// `disconnect()` method is responsible for breaking the cycle when the kit
+/// `close()` method is responsible for breaking the cycle when the kit
 /// is torn down.
 internal protocol OZSmartAccountKitProtocol: AnyObject, Sendable {
 
@@ -210,12 +200,8 @@ internal protocol OZSmartAccountKitProtocol: AnyObject, Sendable {
     var contextRuleManager: OZContextRuleManagerProtocol { get }
 
     /// Transaction-operations instance bound to this kit. Wallet operations
-    /// reach back through this property to delegate the funding flow
-    /// (``OZTransactionOperations/fundWallet(nativeTokenContract:forceMethod:)``)
-    /// to a single pinned instance per kit. Constructing a throwaway
-    /// transaction-operations instance per call would break call-site
-    /// invocation recording in test doubles and would silently double the
-    /// number of allocation sites in production.
+    /// delegate the funding flow to this pinned instance so a single
+    /// allocation site is shared across all callers.
     var transactionOperations: OZTransactionOperations { get }
 
     /// Returns the storage adapter used by the kit.
@@ -258,8 +244,8 @@ internal protocol OZSmartAccountKitProtocol: AnyObject, Sendable {
     var multiSignerManager: OZMultiSignerManager { get }
 
     /// External-signer manager bound to this kit. Optional because the
-    /// manager is only constructed when external (Stellar G-address)
-    /// signers participate in the active configuration.
+    /// consumer supplies it explicitly via `OZSmartAccountConfig.externalSignerManager`;
+    /// the kit does not construct one automatically.
     var externalSignerManager: OZExternalSignerManager? { get }
 
     /// Active external-wallet adapter, when configured. Mirrors the

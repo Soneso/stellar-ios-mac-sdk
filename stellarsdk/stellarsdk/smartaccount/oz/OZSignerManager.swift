@@ -157,7 +157,7 @@ public struct AddPasskeySignerResult: Sendable, Hashable {
 ///
 /// Example:
 /// ```swift
-/// let kit = try await OZSmartAccountKit.create(config: cfg)
+/// let kit = OZSmartAccountKit.create(config: cfg)
 /// let signerManager = kit.signerManager
 ///
 /// // Add a delegated account signer to the Default context rule.
@@ -172,7 +172,7 @@ public struct AddPasskeySignerResult: Sendable, Hashable {
 ///     publicKey: secp256r1PublicKey,
 ///     credentialId: credentialIdBytes,
 ///     selectedSigners: [
-///         .passkey(credentialId: "AAAA", credentialIdBytes: Data([0])),
+///         .passkey(credentialId: "AAAA", credentialIdBytes: Data([0]), keyData: savedKeyData),
 ///         .wallet(accountId: "GA7Q...")
 ///     ]
 /// )

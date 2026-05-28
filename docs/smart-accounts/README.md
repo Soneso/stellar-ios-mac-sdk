@@ -431,6 +431,7 @@ Eight event arms are emitted: `.walletConnected`, `.walletDisconnected`, `.crede
 | `webauthnProvider` | `WebAuthnProvider?` | `nil` | Required for `createWallet`, `connectWallet(prompt: true)`, `authenticatePasskey`, `addNewPasskeySigner`, and any operation that signs with a passkey. |
 | `storage` | `StorageAdapter` | `InMemoryStorageAdapter()` | Credential and session persistence. See [Storage trade-offs](#storage-trade-offs). |
 | `externalWallet` | `ExternalWalletAdapter?` | `nil` | Required only when `SelectedSigner.wallet(accountId:)` participates in a multi-signer ceremony. |
+| `externalSignerManager` | `OZExternalSignerManager?` | `nil` | External-signer manager for Ed25519 signing in multi-signer ceremonies. Consumer code constructs and registers keypairs on this object; when `nil`, any `SelectedSigner.ed25519(...)` entry throws at the validation stage. |
 | `maxContextRuleScanId` | `UInt32` | `50` | Upper bound on the IDs scanned by `listContextRules()` / `getAllContextRules()` when no `maxScanId` argument is provided. |
 
 ### Initializer or builder

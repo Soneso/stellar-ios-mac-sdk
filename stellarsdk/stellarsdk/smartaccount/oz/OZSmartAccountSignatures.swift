@@ -56,10 +56,6 @@ public protocol OZSmartAccountSignature: Sendable {
     func toAuthPayloadBytes() throws -> Data
 }
 
-// ============================================================================
-// OZWebAuthnSignature
-// ============================================================================
-
 /// A WebAuthn signature produced by a passkey authentication ceremony.
 ///
 /// Carries the complete attestation data required to verify biometric or security-key
@@ -81,15 +77,9 @@ public struct OZWebAuthnSignature: OZSmartAccountSignature, Hashable {
     /// Client data JSON from the WebAuthn ceremony, stored under the `client_data` map key.
     public let clientData: Data
 
-    /// ECDSA signature in compact 64-byte format (`r || s`), already low-S normalised.
+    /// ECDSA signature in compact 64-byte format (r || s), low-S normalised.
     public let signature: Data
 
-    /// Initializes a new `OZWebAuthnSignature`.
-    ///
-    /// - Parameters:
-    ///   - authenticatorData: Raw authenticator data bytes.
-    ///   - clientData: Client data JSON bytes.
-    ///   - signature: ECDSA signature in compact 64-byte format.
     /// - Throws: `ValidationException.InvalidInput` when `signature` is not exactly 64 bytes.
     public init(authenticatorData: Data, clientData: Data, signature: Data) throws {
         if signature.count != 64 {
@@ -116,11 +106,7 @@ public struct OZWebAuthnSignature: OZSmartAccountSignature, Hashable {
         return .map(entries)
     }
 
-    /// Returns the XDR-encoded `WebAuthnSigData` map as the auth payload bytes.
-    ///
-    /// The WebAuthn verifier contract receives `sig_data: Bytes` and deserializes it to
-    /// `WebAuthnSigData` (a contracttype struct). The Bytes content must therefore be the
-    /// XDR encoding of the `SCValXDR.map` produced by `toScVal()`.
+    /// See ``OZSmartAccountSignature/toAuthPayloadBytes()`` for the per-variant byte format.
     ///
     /// - Throws: `TransactionException.SigningFailed` if XDR encoding fails.
     public func toAuthPayloadBytes() throws -> Data {
@@ -134,17 +120,7 @@ public struct OZWebAuthnSignature: OZSmartAccountSignature, Hashable {
         }
     }
 
-    /// Equality implemented with constant-time comparison over each byte field to avoid
-    /// leaking information about the byte content through a timing side channel.
-    ///
-    /// The boolean per-field results are combined with bitwise `and` (rather than the
-    /// short-circuiting `&&`) so a difference in one field cannot leak through the timing
-    /// of the boolean reduction.
-    ///
-    /// - Parameters:
-    ///   - lhs: First signature.
-    ///   - rhs: Second signature.
-    /// - Returns: `true` when all three byte fields compare equal.
+    /// Uses constant-time byte comparison via `Data.constantTimeEquals` — see that extension for the timing-attack rationale.
     public static func == (lhs: OZWebAuthnSignature, rhs: OZWebAuthnSignature) -> Bool {
         let a = lhs.authenticatorData.constantTimeEquals(rhs.authenticatorData)
         let b = lhs.clientData.constantTimeEquals(rhs.clientData)
@@ -152,19 +128,12 @@ public struct OZWebAuthnSignature: OZSmartAccountSignature, Hashable {
         return ((a ? 1 : 0) & (b ? 1 : 0) & (c ? 1 : 0)) == 1
     }
 
-    /// Combines content-based hashes of the three byte fields into a single hash value.
-    ///
-    /// - Parameter hasher: Hasher to feed.
     public func hash(into hasher: inout Hasher) {
         hasher.combine(authenticatorData)
         hasher.combine(clientData)
         hasher.combine(signature)
     }
 }
-
-// ============================================================================
-// OZEd25519Signature
-// ============================================================================
 
 /// An Ed25519 signature produced by a traditional Ed25519 keypair.
 ///
@@ -223,35 +192,25 @@ public struct OZEd25519Signature: OZSmartAccountSignature, Hashable {
         return .bytes(signature)
     }
 
-    /// Returns the raw 64-byte Ed25519 signature with no XDR wrapping.
-    ///
-    /// The Ed25519 verifier contract receives `sig_data: BytesN<64>`. The host coerces
-    /// `Bytes(64)` → `BytesN<64>` directly. XDR-encoding the ScVal first inflates the
-    /// content to ~70 bytes and the coercion rejects it with `Error(Auth, InvalidAction)`.
+    /// See ``OZSmartAccountSignature/toAuthPayloadBytes()`` for the per-variant byte format.
     ///
     /// - Returns: The raw 64-byte `signature` field.
     public func toAuthPayloadBytes() throws -> Data {
         return signature
     }
 
-    /// Equality implemented with constant-time comparison over each byte field; the boolean
-    /// per-field results are combined with bitwise `and` to avoid early-exit timing leaks.
+    /// Uses constant-time byte comparison via `Data.constantTimeEquals` — see that extension for the timing-attack rationale.
     public static func == (lhs: OZEd25519Signature, rhs: OZEd25519Signature) -> Bool {
         let a = lhs.publicKey.constantTimeEquals(rhs.publicKey)
         let b = lhs.signature.constantTimeEquals(rhs.signature)
         return ((a ? 1 : 0) & (b ? 1 : 0)) == 1
     }
 
-    /// Combines content-based hashes of both byte fields into a single hash value.
     public func hash(into hasher: inout Hasher) {
         hasher.combine(publicKey)
         hasher.combine(signature)
     }
 }
-
-// ============================================================================
-// OZPolicySignature
-// ============================================================================
 
 /// Marker signature representing policy-based authorization.
 ///
@@ -272,7 +231,7 @@ public struct OZPolicySignature: OZSmartAccountSignature, Hashable {
         return .map([])
     }
 
-    /// Returns the XDR-encoded empty map as the auth payload bytes.
+    /// See ``OZSmartAccountSignature/toAuthPayloadBytes()`` for the per-variant byte format.
     ///
     /// - Throws: `TransactionException.SigningFailed` if XDR encoding fails.
     public func toAuthPayloadBytes() throws -> Data {

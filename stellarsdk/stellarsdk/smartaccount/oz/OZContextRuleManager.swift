@@ -14,8 +14,8 @@ import Foundation
 /// Single source-of-truth for the smart-account contract's `ContextRule`
 /// struct field names. The on-chain Soroban runtime serialises Rust struct
 /// values as `SCVal::Map` with `Symbol`-typed keys and enforces strict
-/// lexicographic ordering. Centralising these strings keeps the parser
-/// (``OZContextRuleManager/parseContextRule(scVal:)``) and the
+/// lexicographic ordering. Centralising these strings keeps the internal
+/// context-rule parser (`parseContextRule(scVal:)`) and the
 /// argument builder (``OZContextRuleManager/addContextRule(contextType:name:validUntil:signers:policies:selectedSigners:forceMethod:)``)
 /// reading and writing one canonical name set, preventing a silent ABI drift
 /// if either side is edited in isolation.

@@ -7,25 +7,8 @@
 
 import Foundation
 
-// MARK: - Shared helpers for OZ HTTP clients
-
-/// Truncates a body or message string to at most `maxChars` characters,
-/// appending a literal `"..."` ellipsis when the input is longer.
-///
-/// Used by both `OZIndexerClient` and `OZRelayerClient` to cap arbitrarily
-/// large server-supplied strings (raw response body snippets surfaced in
-/// JSON parse failures, server-supplied error messages echoed back to
-/// callers) so a hostile remote endpoint cannot force unbounded text into
-/// caller-side logs or rendered UI surfaces.
-///
-/// - Parameters:
-///   - body: The input string to truncate.
-///   - maxChars: Maximum number of characters retained before the trailing
-///     ellipsis. Defaults to 200, matching the documented cap on both
-///     clients' surfaced error strings.
-/// - Returns: The original string when its character count is at most
-///   `maxChars`; otherwise the first `maxChars` characters followed by
-///   `"..."`.
+/// Truncates `body` to `maxChars` characters, appending `"..."` when truncation occurs.
+/// Defaults to 200 characters, matching the cap documented on both HTTP clients.
 internal func ozTruncateBody(_ body: String, maxChars: Int = 200) -> String {
     if body.count > maxChars {
         let prefixIndex = body.index(body.startIndex, offsetBy: maxChars)
@@ -110,8 +93,6 @@ internal func ozResponseIsJson(_ contentType: String?) -> Bool {
     let media = mediaType(of: contentType)
     return media == "application/json" || media == "application/problem+json"
 }
-
-// MARK: - Bundle anchor
 
 /// Internal sentinel type used as the `Bundle(for:)` anchor inside
 /// `ozResolveClientVersion`. Anchoring on a class declared in this module

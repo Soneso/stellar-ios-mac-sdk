@@ -155,7 +155,7 @@ final class OZTransactionOperationsPipelineTests: XCTestCase {
     }
 
     // ========================================================================
-    // C.1 — Auth-entry signing pipeline
+    // Auth-entry signing pipeline
     // ========================================================================
 
     func test_submit_signsAuthEntryForOurContract_writesAuthPayloadMap() async throws {
@@ -376,7 +376,7 @@ final class OZTransactionOperationsPipelineTests: XCTestCase {
     }
 
     // ========================================================================
-    // C.2 — Re-simulation
+    // Re-simulation
     // ========================================================================
 
     func test_submit_reSimulatesAfterSigning_consumesNewResourceFees() async throws {
@@ -485,7 +485,7 @@ final class OZTransactionOperationsPipelineTests: XCTestCase {
     }
 
     // ========================================================================
-    // C.3 — connectWallet cascade
+    // connectWallet cascade
     // ========================================================================
 
     func test_connectWallet_storageHit_pendingCredential_setsContractId() async throws {
@@ -589,7 +589,7 @@ final class OZTransactionOperationsPipelineTests: XCTestCase {
     }
 
     // ========================================================================
-    // C.3a — credential id padding normalisation
+    // credential id padding normalisation
     // ========================================================================
 
     func test_connectWallet_paddedCredentialId_normalisedInConnectedState() async throws {
@@ -706,7 +706,7 @@ final class OZTransactionOperationsPipelineTests: XCTestCase {
     }
 
     // ========================================================================
-    // C.4 — fundWallet conversion
+    // fundWallet conversion
     // ========================================================================
 
     func test_fundWallet_convertsVoidCredentialsToAddress_withNonce() async throws {
@@ -864,7 +864,7 @@ final class OZTransactionOperationsPipelineTests: XCTestCase {
     }
 
     // ========================================================================
-    // C.5 — Relayer-vs-RPC
+    // Relayer-vs-RPC
     // ========================================================================
 
     func test_submit_relayerConfigured_defaultsToRelayer_mode1() async throws {
@@ -1048,7 +1048,7 @@ final class OZTransactionOperationsPipelineTests: XCTestCase {
     }
 
     // ========================================================================
-    // C.6 — §9.1 failure modes
+    // Submit failure modes — timeout, rejection, malformed response
     // ========================================================================
 
     func test_submit_rpcTimeout_throwsTransactionTimeout() async throws {
@@ -1290,7 +1290,7 @@ final class OZTransactionOperationsPipelineTests: XCTestCase {
     }
 
     // ========================================================================
-    // C.7 — Deploy
+    // Deploy
     // ========================================================================
 
     func test_createWallet_buildsCreateContractV2_correctArgs() async throws {
@@ -1556,7 +1556,7 @@ final class OZTransactionOperationsPipelineTests: XCTestCase {
     }
 
     // ========================================================================
-    // C.8 — Cross-SDK behaviour probe
+    // Relayer-path engagement smoke
     // ========================================================================
 
     func test_transfer_singleSigner_relayerPath_engagesRelayer() async throws {
@@ -1729,7 +1729,7 @@ final class OZTransactionOperationsPipelineTests: XCTestCase {
     }
 
     // ========================================================================
-    // C.3 / C.7 helpers retained from earlier test pass
+    // Helpers shared with connectWallet and deploy tests
     // ========================================================================
 
     func test_connectWallet_explicitCredentialAndContract_engagesPipeline() async throws {

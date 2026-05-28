@@ -53,14 +53,8 @@ private func combineConstantTime(_ flags: Bool...) -> Bool {
 /// WebAuthn authentication result from a passkey ceremony.
 ///
 /// Contains the complete attestation data required to verify biometric or security-key
-/// authentication.
-///
-/// - `credentialId`: WebAuthn credential identifier (raw bytes).
-/// - `authenticatorData`: Raw authenticator data from the WebAuthn ceremony.
-/// - `clientDataJSON`: Client data JSON from the WebAuthn ceremony.
-/// - `signature`: ECDSA signature in DER format. Will be normalized to a 64-byte compact
-///   low-S signature by `SmartAccountUtils.normalizeSignature` (separate facade type) before
-///   on-chain submission.
+/// authentication. The `signature` field is in DER format; normalize it to a 64-byte compact
+/// low-S signature via `SmartAccountUtils.normalizeSignature` before on-chain submission.
 public struct WebAuthnAuthenticationResult: Equatable, Hashable, Sendable {
 
     /// WebAuthn credential identifier (raw bytes).
@@ -76,13 +70,6 @@ public struct WebAuthnAuthenticationResult: Equatable, Hashable, Sendable {
     /// `authenticatorData || sha256(clientDataJSON)` payload.
     public let signature: Data
 
-    /// Memberwise initializer.
-    ///
-    /// - Parameters:
-    ///   - credentialId: WebAuthn credential identifier bytes.
-    ///   - authenticatorData: Raw authenticator data bytes.
-    ///   - clientDataJSON: Raw `clientDataJSON` bytes.
-    ///   - signature: DER-encoded ECDSA signature bytes.
     public init(
         credentialId: Data,
         authenticatorData: Data,
@@ -95,10 +82,8 @@ public struct WebAuthnAuthenticationResult: Equatable, Hashable, Sendable {
         self.signature = signature
     }
 
-    /// Constant-time field-by-field equality.
-    ///
-    /// Each `Data` field is compared with a constant-time XOR-OR loop, then results are
-    /// combined without short-circuiting so the timing does not reveal which field differs.
+    /// All four `Data` fields use constant-time byte comparison via `constantTimeEquals`;
+    /// see `Data.constantTimeEquals` for the timing-attack rationale.
     public static func == (lhs: WebAuthnAuthenticationResult, rhs: WebAuthnAuthenticationResult) -> Bool {
         let a = constantTimeEquals(lhs.credentialId, rhs.credentialId)
         let b = constantTimeEquals(lhs.authenticatorData, rhs.authenticatorData)
@@ -129,22 +114,10 @@ public struct WebAuthnAuthenticationResult: Equatable, Hashable, Sendable {
 /// secp256r1 key (`0x04 || X || Y`). Most platform WebAuthn APIs expose the public key via
 /// `getPublicKey()` or equivalent.
 ///
-/// **Fallback:** if the provider cannot extract the public key directly, it can pass the raw
-/// bytes from the WebAuthn API in `publicKey` and supply `attestationObject`. Callers can
-/// then use the public smart-account utility (`SmartAccountUtils.extractPublicKeyFromRegistration`,
-/// shipped alongside this type) which supports three extraction strategies: direct
-/// validation, authenticator-data parsing, and attestation-object pattern matching.
-///
-/// - `credentialId`: WebAuthn credential identifier (raw bytes).
-/// - `publicKey`: Uncompressed secp256r1 public key (65 bytes, starting with `0x04`).
-/// - `attestationObject`: Raw attestation object from WebAuthn registration. Always provided
-///   by the WebAuthn ceremony. Used as the input for the fallback extractor when the platform
-///   returns the key in COSE or SPKI encoding rather than as a raw 65-byte uncompressed key.
-/// - `transports`: Authenticator transport hints (`usb`, `nfc`, `ble`, `internal`). Used when
-///   constructing `allowCredentials` for future authentication ceremonies.
-/// - `deviceType`: `singleDevice` for hardware security keys or `multiDevice` for synced /
-///   cloud-backed passkeys.
-/// - `backedUp`: Whether the passkey is backed up or synced to a cloud provider.
+/// **Fallback:** if the provider cannot extract the public key directly, supply the raw bytes
+/// in `publicKey` along with `attestationObject`. Pass the result to
+/// `SmartAccountUtils.extractPublicKeyFromRegistration`, which tries direct validation,
+/// authenticator-data parsing, and attestation-object pattern matching in order.
 public struct WebAuthnRegistrationResult: Equatable, Hashable, Sendable {
 
     /// WebAuthn credential identifier (raw bytes).
@@ -168,16 +141,6 @@ public struct WebAuthnRegistrationResult: Equatable, Hashable, Sendable {
     /// state cannot be determined.
     public let backedUp: Bool?
 
-    /// Memberwise initializer.
-    ///
-    /// - Parameters:
-    ///   - credentialId: WebAuthn credential identifier bytes.
-    ///   - publicKey: Uncompressed secp256r1 public key bytes (65 bytes), or raw platform
-    ///     WebAuthn API output when direct extraction is not possible.
-    ///   - attestationObject: Raw attestation object bytes.
-    ///   - transports: Optional transport hints.
-    ///   - deviceType: Optional device type (`singleDevice` / `multiDevice`).
-    ///   - backedUp: Optional backup-state flag.
     public init(
         credentialId: Data,
         publicKey: Data,
@@ -194,11 +157,9 @@ public struct WebAuthnRegistrationResult: Equatable, Hashable, Sendable {
         self.backedUp = backedUp
     }
 
-    /// Constant-time field-by-field equality.
-    ///
-    /// The three `Data` fields are compared with constant-time XOR-OR loops; the optional
-    /// scalar / list fields use ordinary value equality (those fields do not protect against
-    /// timing inference).
+    /// The three `Data` fields (`credentialId`, `publicKey`, `attestationObject`) use
+    /// constant-time comparison via `constantTimeEquals`; optional scalar/list fields use
+    /// ordinary value equality. See `Data.constantTimeEquals` for the timing-attack rationale.
     public static func == (lhs: WebAuthnRegistrationResult, rhs: WebAuthnRegistrationResult) -> Bool {
         let a = constantTimeEquals(lhs.credentialId, rhs.credentialId)
         let b = constantTimeEquals(lhs.publicKey, rhs.publicKey)

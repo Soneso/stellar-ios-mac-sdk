@@ -38,10 +38,6 @@ import Foundation
 /// pubkey-extraction and authenticator-flag primitives via dedicated public facade types.
 enum WebAuthnCborParser {
 
-    // =========================================================================
-    // Named constants for all magic numbers
-    // =========================================================================
-
     /// Minimum length of valid authenticator data (rpIdHash + flags + signCount).
     static let authDataMinLength: Int = 37
 
@@ -100,10 +96,6 @@ enum WebAuthnCborParser {
     /// for `fmt`/`attStmt`/`authData` plus an inner attestation-statement map).
     private static let maxSkipDepth: Int = 64
 
-    // =========================================================================
-    // Authenticator flags
-    // =========================================================================
-
     /// Parsed authenticator flags from WebAuthn authenticator data.
     ///
     /// `deviceType` is `singleDevice` if the credential is device-bound, `multiDevice` if it is
@@ -129,10 +121,6 @@ enum WebAuthnCborParser {
         }
     }
 
-    // =========================================================================
-    // 1. Attestation object parsing
-    // =========================================================================
-
     /// Extracts the raw authenticator data from a CBOR-encoded WebAuthn attestation object.
     ///
     /// A WebAuthn attestation object is a CBOR map with the following structure:
@@ -144,10 +132,9 @@ enum WebAuthnCborParser {
     /// }
     /// ```
     ///
-    /// This method performs a full CBOR map iteration to locate the `"authData"` key and
-    /// return its byte string value. The iteration approach is more robust than pattern
-    /// matching because it correctly handles variable-length values in preceding map entries
-    /// (such as non-empty attestation statements).
+    /// Iterates the CBOR map rather than pattern-matching at a fixed offset, because
+    /// preceding entries (e.g., a non-empty attestation statement) may have variable
+    /// length and shift the key offset.
     ///
     /// - Parameter attestationObject: Raw CBOR-encoded attestation object bytes.
     /// - Returns: Authenticator data bytes, or `nil` if the attestation object is malformed,
@@ -201,10 +188,6 @@ enum WebAuthnCborParser {
 
         return nil
     }
-
-    // =========================================================================
-    // 2. COSE key extraction
-    // =========================================================================
 
     /// Extracts the uncompressed secp256r1 public key from a CBOR-encoded COSE key.
     ///
@@ -340,10 +323,6 @@ enum WebAuthnCborParser {
         return buildUncompressedKey(x: x, y: y)
     }
 
-    // =========================================================================
-    // 3. SPKI key extraction
-    // =========================================================================
-
     /// Extracts an uncompressed secp256r1 public key from SubjectPublicKeyInfo (SPKI) bytes.
     ///
     /// The SPKI structure for a P-256 key (RFC 5480 / SEC 1) is:
@@ -377,10 +356,6 @@ enum WebAuthnCborParser {
         return spkiBytes.subdata(in: (base + candidateStart)..<(base + spkiBytes.count))
     }
 
-    // =========================================================================
-    // 4. Authenticator flags parsing
-    // =========================================================================
-
     /// Parses the flags byte from raw authenticator data and extracts device type and backup
     /// state.
     ///
@@ -412,10 +387,6 @@ enum WebAuthnCborParser {
 
         return AuthenticatorFlags(deviceType: deviceType, backedUp: backedUp)
     }
-
-    // =========================================================================
-    // 5. Low-level CBOR helpers
-    // =========================================================================
 
     /// Reads a CBOR byte string (major type 2) at the given offset.
     ///
@@ -459,7 +430,7 @@ enum WebAuthnCborParser {
             if offset + 4 >= data.count { return nil }
             // Compose a 32-bit big-endian unsigned value into a UInt32 first to model
             // the on-the-wire encoding faithfully, then convert to Int with an explicit
-            // overflow guard mirroring the reference behavior (negative-int rejection).
+            // overflow guard: rejects negative integers because the host signed an unsigned length (per CBOR RFC 8949).
             let raw: UInt32 =
                 (UInt32(data[base + offset + 1]) << 24) |
                 (UInt32(data[base + offset + 2]) << 16) |
@@ -678,10 +649,6 @@ enum WebAuthnCborParser {
         if additionalInfo == 27 { return offset + 8 < data.count ? offset + 9 : nil }
         return nil
     }
-
-    // =========================================================================
-    // Private helpers
-    // =========================================================================
 
     /// Constructs an uncompressed secp256r1 public key byte array from X and Y coordinates.
     ///

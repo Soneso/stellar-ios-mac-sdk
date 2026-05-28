@@ -36,15 +36,6 @@ import Foundation
 /// delegate is not attached to injected sessions.
 internal final class OZNoRedirectDelegate: NSObject, URLSessionTaskDelegate {
 
-    /// Denies the redirect by invoking the completion handler with `nil`.
-    ///
-    /// - Parameters:
-    ///   - session: The session that received the 3xx response.
-    ///   - task: The task whose request would be redirected.
-    ///   - response: The 3xx HTTP response.
-    ///   - request: The redirect target proposed by `URLSession`.
-    ///   - completionHandler: Invoked with `nil` to suppress the redirect; the
-    ///     original 3xx response is returned to the request site.
     func urlSession(_ session: URLSession,
                     task: URLSessionTask,
                     willPerformHTTPRedirection response: HTTPURLResponse,

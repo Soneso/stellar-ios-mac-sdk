@@ -8,10 +8,6 @@
 import Foundation
 import Security
 
-// ============================================================================
-// KeychainStorageAdapter
-// ============================================================================
-
 /// Persistent `StorageAdapter` backed by the iOS / macOS Keychain Services API.
 ///
 /// Stores credential and session payloads as `kSecClassGenericPassword` items

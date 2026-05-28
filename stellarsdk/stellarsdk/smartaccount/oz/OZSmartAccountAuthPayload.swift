@@ -39,11 +39,6 @@ public final class OZSmartAccountAuthPayload {
     /// Context rule IDs bound into the signing digest.
     public let contextRuleIds: [UInt32]
 
-    /// Initializes a payload with the given signer entries and context rule IDs.
-    ///
-    /// - Parameters:
-    ///   - signers: Signer entries (preserved in insertion order).
-    ///   - contextRuleIds: Context rule IDs to bind into the signing digest.
     public init(signers: [SignerEntry], contextRuleIds: [UInt32]) {
         self.signers = signers
         self.contextRuleIds = contextRuleIds
@@ -69,27 +64,16 @@ public final class OZSmartAccountAuthPayload {
         public let signer: any OZSmartAccountSigner
 
         /// The signature bytes for this signer, as stored in the on-wire `AuthPayload.signers`
-        /// `Map<Signer, Bytes>` value. The exact content is verifier-dependent:
-        /// - WebAuthn: XDR-encoded `WebAuthnSigData` map.
-        /// - Ed25519: raw 64-byte signature (no XDR wrapping).
-        /// - Policy: XDR-encoded empty map.
+        /// `Map<Signer, Bytes>` value. See ``OZSmartAccountSignature/toAuthPayloadBytes()``
+        /// for the per-variant byte format.
         public let signatureBytes: Data
 
-        /// Initializes a new signer entry.
-        ///
-        /// - Parameters:
-        ///   - signer: Signer carrying the entry.
-        ///   - signatureBytes: Signature bytes from `OZSmartAccountSignature.toAuthPayloadBytes()`.
         public init(signer: any OZSmartAccountSigner, signatureBytes: Data) {
             self.signer = signer
             self.signatureBytes = signatureBytes
         }
     }
 }
-
-// ============================================================================
-// OZSmartAccountAuthPayloadCodec
-// ============================================================================
 
 /// Codec for reading and writing `OZSmartAccountAuthPayload` to/from `SCValXDR`.
 ///
@@ -354,8 +338,8 @@ public enum OZSmartAccountAuthPayloadCodec {
         return false
     }
 
-    /// Converts an `SCAddressXDR` back to its strkey representation. Supports `G…` accounts,
-    /// `C…` contracts (decoded from the 32-byte contract id), and `M…` muxed accounts.
+    /// Converts an `SCAddressXDR` back to its strkey representation. Supports `G…` accounts
+    /// and `C…` contracts (decoded from the 32-byte contract id).
     private static func addressString(from scAddress: SCAddressXDR) throws -> String {
         if let accountId = scAddress.accountId {
             return accountId

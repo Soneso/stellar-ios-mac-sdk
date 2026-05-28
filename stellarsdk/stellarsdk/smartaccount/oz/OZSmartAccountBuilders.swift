@@ -130,12 +130,10 @@ public enum OZSmartAccountBuilders {
         return credentialId.base64URLEncodedString()
     }
 
-    /// Returns `true` when `signer` is an `OZDelegatedSigner`.
     public static func isDelegatedSigner(signer: any OZSmartAccountSigner) -> Bool {
         return signer is OZDelegatedSigner
     }
 
-    /// Returns `true` when `signer` is an `OZExternalSigner`.
     public static func isExternalSigner(signer: any OZSmartAccountSigner) -> Bool {
         return signer is OZExternalSigner
     }

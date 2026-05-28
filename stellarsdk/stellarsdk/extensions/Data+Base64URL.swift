@@ -29,10 +29,6 @@ public enum Base64URLEncodingError: Error, Sendable {
 public extension Data {
 
     /// Returns a Base64URL-encoded string (RFC 4648 §5, no padding).
-    ///
-    /// Substitutes `+` with `-` and `/` with `_`, then strips trailing `=` padding.
-    ///
-    /// - Returns: Base64URL-encoded string without padding characters.
     func base64URLEncodedString() -> String {
         let standard = base64EncodedString()
         var result = ""

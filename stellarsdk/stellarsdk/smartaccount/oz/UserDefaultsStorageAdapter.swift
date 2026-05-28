@@ -7,10 +7,6 @@
 
 import Foundation
 
-// ============================================================================
-// UserDefaultsStorageAdapter
-// ============================================================================
-
 /// Persistent `StorageAdapter` backed by an isolated `UserDefaults` suite.
 ///
 /// Stores credential and session payloads as UTF-8 JSON strings under stable

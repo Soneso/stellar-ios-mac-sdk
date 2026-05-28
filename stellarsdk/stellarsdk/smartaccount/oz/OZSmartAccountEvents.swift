@@ -13,12 +13,6 @@ import Foundation
 
 /// Events emitted by the Smart Account Kit during wallet lifecycle operations.
 ///
-/// These events provide hooks for monitoring and responding to key operations:
-/// - Wallet connection and disconnection
-/// - Credential lifecycle (creation, deletion)
-/// - Transaction lifecycle (signing, submission)
-/// - Session management (expiration)
-///
 /// Example:
 /// ```swift
 /// kit.events.addListener { event in

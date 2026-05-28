@@ -15,7 +15,7 @@ import Security
 /// Manager for multi-signature smart-account operations.
 ///
 /// `OZMultiSignerManager` collects signatures from a caller-supplied list of
-/// signers (passkeys and / or external wallet addresses) and submits the
+/// signers (passkeys, external wallet addresses, and Ed25519 external signers) and submits the
 /// resulting transaction through the kit's transaction operations. The manager
 /// supports three caller-facing entry points and one shared low-level
 /// submission pipeline:

@@ -5,35 +5,7 @@
 //  Copyright (c) 2026 Soneso. All rights reserved.
 //
 
-// ============================================================================
-// CONSUMER ENTITLEMENT REQUIREMENT
-// ============================================================================
-//
-// `AppleWebAuthnProvider` triggers Apple's `ASAuthorizationController` flow.
-// For the platform authenticator to register or assert a passkey, the host
-// application's `.entitlements` file MUST declare the `Associated Domains`
-// capability with a `webcredentials:` entry that matches the `rpId` passed
-// to this provider. Without the entitlement Apple rejects the request with
-// ASAuthorizationError code 1004 ("Failed").
-//
-// Sample iOS / macOS `.entitlements` snippet (replace `your-domain.com`):
-//
-//     <key>com.apple.developer.associated-domains</key>
-//     <array>
-//         <string>webcredentials:your-domain.com</string>
-//     </array>
-//
-// The same domain MUST serve `.well-known/apple-app-site-association` over
-// HTTPS containing the host application's `TEAM_ID.bundle.identifier`. For
-// local development without publishing the AASA file, append
-// `?mode=developer`:
-//
-//     <string>webcredentials:your-domain.com?mode=developer</string>
-//
-// The developer-mode suffix bypasses Apple's CDN cache and MUST be removed
-// for production builds. On macOS, the host app must additionally enable App
-// Sandbox (`com.apple.security.app-sandbox`) or be Developer ID-signed.
-// ============================================================================
+// See docs/smart-accounts/webauthn-ios.md for entitlement setup.
 
 import Foundation
 import AuthenticationServices
@@ -42,28 +14,18 @@ import AuthenticationServices
 // AppleWebAuthnProvider
 // ============================================================================
 
-/// Apple-platform `WebAuthnProvider` backed by the AuthenticationServices
-/// framework's `ASAuthorizationPlatformPublicKeyCredentialProvider`.
+/// Apple-platform `WebAuthnProvider` backed by `ASAuthorizationPlatformPublicKeyCredentialProvider`.
 ///
-/// Provides passkey registration and assertion for iOS 16+ and macOS 13+:
+/// Provides passkey registration (secp256r1 key creation via Touch ID / Face ID) and
+/// assertion (passkey signing) for iOS 16+ and macOS 13+. Returns
+/// ``WebAuthnRegistrationResult`` and ``WebAuthnAuthenticationResult`` respectively.
 ///
-/// - Registration triggers the system's passkey-creation UI (Touch ID /
-///   Face ID), generates a secp256r1 keypair, and returns the credential ID,
-///   public key, and attestation object.
-/// - Authentication triggers the passkey-assertion UI, signs the supplied
-///   challenge with the selected credential, and returns the authenticator
-///   data, client data JSON, and DER-encoded ECDSA signature.
+/// On macOS set `presentationContextProvider` before calling `register` or `authenticate`;
+/// the system requires a host window reference. iOS handles presentation automatically.
 ///
-/// All authentication flows require the host application to declare the
-/// `Associated Domains` entitlement with a `webcredentials:<rpId>` entry and
-/// to publish a matching `.well-known/apple-app-site-association` file on the
-/// relying-party domain. See the comment block at the top of this file for
-/// a complete entitlement template.
-///
-/// On macOS the system requires a presentation context provider that returns
-/// the host window. iOS handles presentation automatically. Set
-/// `presentationContextProvider` before invoking `register` or `authenticate`
-/// on macOS; failure to do so yields ASAuthorizationError code 1004.
+/// The host application must declare an `Associated Domains` entitlement
+/// (`webcredentials:<rpId>`) and publish a matching AASA file.
+/// See `docs/smart-accounts/webauthn-ios.md` for setup details.
 ///
 /// Example:
 /// ```swift
@@ -77,11 +39,6 @@ import AuthenticationServices
 ///     userName: "user@example.com"
 /// )
 /// ```
-// why: `ASAuthorizationPlatformPublicKeyCredentialProvider` is only available
-// on iOS 16+ and macOS 13+, so the entire provider must be gated on those
-// minimums. The platform availability annotation is required by the Swift
-// compiler to use the framework symbols and is not present in the cross-SDK
-// reference implementation (those platforms have their own gating mechanisms).
 @available(iOS 16.0, macOS 13.0, *)
 public final class AppleWebAuthnProvider: NSObject, WebAuthnProvider, @unchecked Sendable {
 
@@ -211,14 +168,9 @@ public final class AppleWebAuthnProvider: NSObject, WebAuthnProvider, @unchecked
             name: userName,
             userID: userId
         )
-        // userVerificationPreference and attestationPreference are intentionally
-        // left at their system defaults on registration. The OZ WebAuthn verifier
-        // inspects the UV bit only at signature verification time, so forcing
-        // .required here is unnecessary; the assertion path below sets it where
-        // it actually matters. Requesting .direct attestation is also unnecessary
-        // (no attestation-statement verification happens against the OZ contract)
-        // and would break iOS Simulator registration, whose authenticators cannot
-        // produce attestation statements.
+        // userVerificationPreference left at system default: the UV bit is checked at
+        // assertion time (see below), not here. Requesting .direct attestation would
+        // break iOS Simulator registration (its authenticators cannot produce statements).
 
         let authorization = try await performAuthorizationRequest(
             request: request,

@@ -45,35 +45,10 @@ public struct AllowCredential: Equatable, Hashable, Sendable {
         self.transports = transports
     }
 
-    /// Compares two descriptors by `id` byte content and `transports` value equality.
-    ///
-    /// `Data.==` compares byte content (not reference identity), so independently allocated
-    /// arrays with the same bytes compare equal. Optional `transports` are compared elementwise
-    /// — `nil` and `[]` are not equal.
-    public static func == (lhs: AllowCredential, rhs: AllowCredential) -> Bool {
-        return lhs.id == rhs.id && lhs.transports == rhs.transports
-    }
-
-    /// Hashes the byte content of `id` and the `transports` list.
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(id)
-        hasher.combine(transports)
-    }
-
-    /// Creates an `AllowCredential` from a raw credential ID with no transport hints.
-    ///
-    /// - Parameter id: Raw credential ID bytes.
-    /// - Returns: An `AllowCredential` with `transports` set to `nil`.
     public static func fromId(_ id: Data) -> AllowCredential {
         return AllowCredential(id: id)
     }
 
-    /// Creates a list of `AllowCredential` values from raw credential IDs with no transport
-    /// hints.
-    ///
-    /// - Parameter ids: Array of raw credential IDs.
-    /// - Returns: An array of `AllowCredential` values, one per input ID, each with `transports`
-    ///   set to `nil`. Returns an empty array when `ids` is empty.
     public static func fromIds(_ ids: [Data]) -> [AllowCredential] {
         return ids.map { fromId($0) }
     }

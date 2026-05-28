@@ -7,10 +7,6 @@
 
 import Foundation
 
-// ============================================================================
-// Signer Types
-// ============================================================================
-
 /// Represents a signer that can authorize OpenZeppelin Smart Account transactions.
 ///
 /// Smart account signers describe who can authorize transactions on the wallet contract.
@@ -22,7 +18,7 @@ import Foundation
 ///
 /// Example:
 /// ```swift
-/// let delegated = try OZDelegatedSigner(address: "GA7Q...")
+/// let delegated = try OZDelegatedSigner(address: "<G-address>")
 /// let webAuthn = try OZExternalSigner.webAuthn(
 ///     verifierAddress: "CBCD...",
 ///     publicKey: publicKeyBytes,
@@ -39,17 +35,10 @@ public protocol OZSmartAccountSigner: Sendable {
     ///   address strkey decoding fails).
     func toScVal() throws -> SCValXDR
 
-    /// Stable string identifying this signer for deduplication and lookup.
-    ///
-    /// Format varies by signer type:
-    /// - Delegated: `"delegated:<address>"`
-    /// - External: `"external:<verifierAddress>:<keyDataHex>"`
+    /// Stable string identifying this signer for deduplication and lookup (`"delegated:<address>"`
+    /// or `"external:<verifierAddress>:<keyDataHex>"`).
     var uniqueKey: String { get }
 }
-
-// ============================================================================
-// OZDelegatedSigner
-// ============================================================================
 
 /// A signer authorized through a Soroban address using the host's `require_auth` mechanism.
 ///
@@ -111,13 +100,8 @@ public struct OZDelegatedSigner: OZSmartAccountSigner, Equatable, Hashable {
         }
     }
 
-    /// Unique identifier for deduplication, formatted as `"delegated:<address>"`.
     public var uniqueKey: String { "delegated:\(address)" }
 }
-
-// ============================================================================
-// OZExternalSigner
-// ============================================================================
 
 /// A signer that delegates signature verification to a custom verifier contract.
 ///
@@ -202,13 +186,13 @@ public struct OZExternalSigner: OZSmartAccountSigner, Equatable, Hashable {
         }
     }
 
-    /// Unique identifier for deduplication, formatted as `"external:<verifierAddress>:<keyDataHex>"`.
     public var uniqueKey: String {
         "external:\(verifierAddress):\(keyData.base16EncodedString())"
     }
 
-    /// Equality implemented with constant-time comparison over `keyData` to avoid leaking
-    /// information about the byte content through a timing side channel.
+    /// Uses constant-time byte comparison via `Data.constantTimeEquals` for `keyData` —
+    /// see that extension for the timing-attack rationale. Both fields are always evaluated
+    /// regardless of the address result (bitwise AND, not short-circuit).
     ///
     /// - Parameters:
     ///   - lhs: The first signer to compare.
@@ -217,15 +201,9 @@ public struct OZExternalSigner: OZSmartAccountSigner, Equatable, Hashable {
     public static func == (lhs: OZExternalSigner, rhs: OZExternalSigner) -> Bool {
         let addressMatch = lhs.verifierAddress == rhs.verifierAddress
         let keyMatch = OZExternalSigner.constantTimeEquals(lhs.keyData, rhs.keyData)
-        // Use bitwise AND (Bool conversion via Int) to avoid short-circuit evaluation,
-        // so both comparisons always run regardless of the address result.
         return (addressMatch ? 1 : 0) & (keyMatch ? 1 : 0) == 1
     }
 
-    /// Hashes the signer using content-based hashing of `keyData` so two signers with
-    /// equal byte contents hash identically.
-    ///
-    /// - Parameter hasher: The hasher to feed.
     public func hash(into hasher: inout Hasher) {
         hasher.combine(verifierAddress)
         hasher.combine(keyData)
@@ -295,15 +273,7 @@ public struct OZExternalSigner: OZSmartAccountSigner, Equatable, Hashable {
         return try OZExternalSigner(verifierAddress: verifierAddress, keyData: publicKey)
     }
 
-    /// Constant-time byte comparison.
-    ///
-    /// Folds a length-difference flag with the XOR of every byte pair across the common
-    /// prefix into a single accumulator, so the comparison cost does not depend on where
-    /// the first differing byte sits. This avoids leaking information about cryptographic
-    /// key contents through timing measurements. The length-difference flag is a Boolean
-    /// indicator (0 or 1) rather than a narrowed XOR of the lengths, which both keeps the
-    /// helper trap-free for any input sizes and prevents two different-length inputs from
-    /// collapsing to a zero-difference accumulator through integer overflow truncation.
+    /// Private constant-time comparison for `keyData` fields on this type.
     private static func constantTimeEquals(_ lhs: Data, _ rhs: Data) -> Bool {
         var diff: UInt8 = (lhs.count == rhs.count) ? 0 : 1
         let length = min(lhs.count, rhs.count)
@@ -315,10 +285,6 @@ public struct OZExternalSigner: OZSmartAccountSigner, Equatable, Hashable {
         return diff == 0
     }
 }
-
-// ============================================================================
-// Submission Method
-// ============================================================================
 
 /// Determines how a Smart Account transaction is submitted to the network.
 ///
@@ -336,11 +302,6 @@ public struct OZExternalSigner: OZSmartAccountSigner, Equatable, Hashable {
 /// )
 /// ```
 public enum SubmissionMethod: Sendable {
-
-    /// Submit via the relayer proxy for fee-sponsored transactions. Fails if no relayer is
-    /// configured.
     case relayer
-
-    /// Submit directly via Soroban RPC. Always available.
     case rpc
 }

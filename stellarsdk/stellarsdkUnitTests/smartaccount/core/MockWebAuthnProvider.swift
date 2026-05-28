@@ -125,7 +125,7 @@ final class MockWebAuthnProvider: WebAuthnProvider, @unchecked Sendable {
     /// Creates a deterministic 65-byte uncompressed secp256r1 test public key.
     ///
     /// Layout: `0x04` prefix followed by 64 deterministic bytes derived from `seed`. Reusable
-    /// across SDKs as a stand-in for a real authenticator response.
+    /// as a stand-in for a real authenticator response in unit tests.
     ///
     /// - Parameter seed: Integer seed mixed into each byte to produce distinct fixtures.
     /// - Returns: 65-byte deterministic public key.

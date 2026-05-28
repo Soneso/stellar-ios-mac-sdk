@@ -14,7 +14,7 @@ import Foundation
 /// A signer selected for participation in a multi-signer authorization ceremony.
 ///
 /// The smart-account contract supports M-of-N authorization across a mix of signer
-/// kinds (passkey-backed external signers and Stellar G-address wallet signers).
+/// kinds (passkey-backed external signers, Stellar G-address wallet signers, and Ed25519 external signers).
 /// `SelectedSigner` is the single tagged-union shape passed by callers to manager
 /// methods that take a `selectedSigners` parameter (for example
 /// ``OZPolicyManager/addPolicy(contextRuleId:policyAddress:installParams:selectedSigners:forceMethod:)``).
@@ -426,7 +426,7 @@ public struct SignerWeightEntry: Sendable {
 ///
 /// Example:
 /// ```swift
-/// let kit = try await OZSmartAccountKit.create(config: cfg)
+/// let kit = OZSmartAccountKit.create(config: cfg)
 /// let policyManager = kit.policyManager
 ///
 /// // Single-signer add of a 2-of-3 simple threshold.
@@ -445,7 +445,7 @@ public struct SignerWeightEntry: Sendable {
 ///     policyAddress: "CBCD5678...",
 ///     installParams: custom,
 ///     selectedSigners: [
-///         .passkey(credentialId: "AAAA", credentialIdBytes: Data([0])),
+///         .passkey(credentialId: "AAAA", credentialIdBytes: Data([0]), keyData: savedKeyData),
 ///         .wallet(accountId: "GA7Q...")
 ///     ]
 /// )

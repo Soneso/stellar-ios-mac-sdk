@@ -141,19 +141,10 @@ public enum OZSmartAccountAuth {
     // Entry signing
     // ========================================================================
 
-    /// Attaches a pre-computed signature to an authorisation entry.
+    /// Attaches a pre-computed signature to an authorisation entry without mutating the input.
     ///
-    /// This method does not perform cryptographic signing. The caller is responsible for
-    /// computing the signature over the payload hash returned by `buildAuthPayloadHash`
-    /// using the same `expirationLedger` value.
-    ///
-    /// The procedure clones the input entry via XDR round-trip, sets the signature
-    /// expiration on the cloned credentials, builds the signer-key ScVal, encodes the
-    /// signature bytes via `toAuthPayloadBytes()` (verifier-dependent: XDR for WebAuthn/
-    /// Policy, raw bytes for Ed25519), reads the existing OZSmartAccountAuthPayload (if any),
-    /// upserts the new signer entry, writes the payload back, and returns a new authorisation
-    /// entry with the updated credentials. The input entry is never mutated.
-    ///
+    /// Does not perform cryptographic signing; the caller must compute the signature over
+    /// the hash returned by `buildAuthPayloadHash` using the same `expirationLedger`.
     /// When `contextRuleIds` is non-empty it overrides any existing context-rule IDs in the
     /// payload; otherwise the existing value is preserved.
     ///
@@ -165,9 +156,8 @@ public enum OZSmartAccountAuth {
     ///                       value used when computing the payload hash).
     ///   - contextRuleIds: Optional override for the bound context rule IDs.
     /// - Returns: A new authorisation entry with the signature attached.
-    /// - Throws: `TransactionException.SigningFailed` when credentials are not address
-    ///           type, when the entry cannot be cloned via XDR, when the signer cannot be
-    ///           encoded as an ScVal, or when the signature ScVal cannot be XDR-encoded.
+    /// - Throws: `TransactionException.SigningFailed` when credentials are not address type,
+    ///           when the XDR clone fails, or when encoding the signer or signature fails.
     public static func signAuthEntry(
         entry: SorobanAuthorizationEntryXDR,
         signer: any OZSmartAccountSigner,
@@ -175,8 +165,7 @@ public enum OZSmartAccountAuth {
         expirationLedger: UInt32,
         contextRuleIds: [UInt32] = []
     ) async throws -> SorobanAuthorizationEntryXDR {
-        // STEP 1: clone the entry via XDR round-trip so the caller's instance is never
-        // mutated even if downstream code modifies the returned value.
+        // Clone via XDR round-trip so the caller's instance is never mutated.
         let entryBytes: [UInt8]
         do {
             entryBytes = try XDREncoder.encode(entry)
@@ -197,15 +186,12 @@ public enum OZSmartAccountAuth {
             )
         }
 
-        // STEP 2: extract the address credentials from the cloned entry.
         guard case .address(let credentialsCopy) = entryCopy.credentials else {
             throw TransactionException.signingFailed(
                 reason: "Credentials must be of type address to sign auth entry"
             )
         }
 
-        // STEP 3: build the signer key as an ScVal; surfaces signer-encoding errors before
-        // the signature ScVal is computed.
         let signerKey: SCValXDR
         do {
             signerKey = try signer.toScVal()
@@ -217,9 +203,6 @@ public enum OZSmartAccountAuth {
         }
         _ = signerKey
 
-        // STEP 4: produce the bytes content for the on-wire signers Map. The exact content
-        // is verifier-dependent: WebAuthn/Policy XDR-encode their ScVal; Ed25519 passes the
-        // raw 64-byte signature directly (see `OZSmartAccountSignature.toAuthPayloadBytes()`).
         let sigXdrBytes: Data
         do {
             sigXdrBytes = try signature.toAuthPayloadBytes()
@@ -230,8 +213,6 @@ public enum OZSmartAccountAuth {
             )
         }
 
-        // STEP 5: read the existing payload from the cloned credentials, override or
-        // preserve context rule IDs, upsert the signer entry, and write the payload back.
         let existingPayload = try OZSmartAccountAuthPayloadCodec.read(credentialsCopy.signature)
 
         let updatedRuleIds = contextRuleIds.isEmpty

@@ -39,25 +39,6 @@ import Foundation
 ///     .build()
 /// ```
 ///
-/// | Field | Required | Default |
-/// |-------|----------|---------|
-/// | rpcUrl | Yes | - |
-/// | networkPassphrase | Yes | - |
-/// | accountWasmHash | Yes | - |
-/// | webauthnVerifierAddress | Yes | - |
-/// | deployerKeypair | No | Deterministic deployer |
-/// | rpId | No | Browser default |
-/// | rpName | No | "Smart Account" |
-/// | sessionExpiryMs | No | 604_800_000 (7 days) |
-/// | signatureExpirationLedgers | No | 720 (~1 hour) |
-/// | timeoutInSeconds | No | 30 |
-/// | relayerUrl | No | nil |
-/// | indexerUrl | No | nil |
-/// | webauthnProvider | No | nil |
-/// | storage | No | InMemoryStorageAdapter |
-/// | externalWallet | No | nil |
-/// | maxContextRuleScanId | No | 50 |
-///
 /// Throws `ConfigurationException` if required parameters are blank or invalid (for
 /// example, `accountWasmHash` is not a 64-character hex string, or
 /// `webauthnVerifierAddress` is not a valid C-address).
@@ -118,9 +99,7 @@ public struct OZSmartAccountConfig: @unchecked Sendable {
     /// approximates one hour at five seconds per ledger.
     public let signatureExpirationLedgers: Int
 
-    /// Default timeout for operations in seconds.
-    ///
-    /// Used for network requests and transaction submission.
+    /// Default timeout in seconds for network requests and transaction submission.
     public let timeoutInSeconds: Int
 
     /// Optional relayer endpoint URL for fee sponsoring.
@@ -147,10 +126,7 @@ public struct OZSmartAccountConfig: @unchecked Sendable {
     /// Defaults to `InMemoryStorageAdapter` (non-persistent, suitable for testing).
     public let storage: StorageAdapter
 
-    /// External wallet adapter for signing transactions with an external signer.
-    ///
-    /// When set, the kit delegates transaction signing to this adapter instead of using
-    /// WebAuthn credentials.
+    /// When set, delegates transaction signing to this adapter instead of using WebAuthn credentials.
     public let externalWallet: ExternalWalletAdapter?
 
     /// External-signer manager for Ed25519 signing in multi-signer ceremonies.
@@ -173,29 +149,6 @@ public struct OZSmartAccountConfig: @unchecked Sendable {
 
     /// Initializes a new `OZSmartAccountConfig`.
     ///
-    /// - Parameters:
-    ///   - rpcUrl: Soroban RPC endpoint URL (required, must not be blank).
-    ///   - networkPassphrase: Stellar network passphrase (required, must not be blank).
-    ///   - accountWasmHash: 64-character hex SHA-256 of the smart account contract WASM
-    ///     (required, must not be blank, must match `[0-9a-fA-F]{64}`).
-    ///   - webauthnVerifierAddress: Contract address (`C…` strkey) of the WebAuthn
-    ///     verifier (required, must be a valid `C…` strkey).
-    ///   - deployerKeypair: Optional deployer keypair; defaults to the deterministic
-    ///     deployer when `nil`.
-    ///   - rpId: Optional WebAuthn Relying Party ID; `nil` means the browser default.
-    ///   - rpName: WebAuthn Relying Party name; defaults to `"Smart Account"`.
-    ///   - sessionExpiryMs: Session expiry in milliseconds; defaults to 7 days.
-    ///   - signatureExpirationLedgers: Signature expiration in ledgers; defaults to 720.
-    ///   - timeoutInSeconds: Operation timeout in seconds; defaults to 30.
-    ///   - relayerUrl: Optional relayer endpoint URL.
-    ///   - indexerUrl: Optional indexer endpoint URL.
-    ///   - webauthnProvider: Optional WebAuthn provider.
-    ///   - storage: Storage adapter; defaults to a fresh `InMemoryStorageAdapter`.
-    ///   - externalWallet: Optional external wallet adapter.
-    ///   - externalSignerManager: Optional external-signer manager for Ed25519 multi-signer
-    ///     ceremonies. Construct ``OZExternalSignerManager`` separately, register signing
-    ///     sources on it, then supply it here.
-    ///   - maxContextRuleScanId: Maximum context-rule ID to scan; defaults to 50.
     /// - Throws: `ConfigurationException.MissingConfig` for blank required strings;
     ///           `ConfigurationException.InvalidConfig` for malformed `accountWasmHash`
     ///           or `webauthnVerifierAddress`.
@@ -280,20 +233,17 @@ public struct OZSmartAccountConfig: @unchecked Sendable {
 
     /// Creates a deterministic deployer keypair for smart account deployment.
     ///
-    /// Derives a keypair from `SHA-256("openzeppelin-smart-account-kit")`. The
-    /// derivation is deterministic and reproducible across all Smart Account Kit
-    /// implementations, so the same default deployer is used everywhere unless
-    /// overridden. This keypair only pays deployment fees and does not control user
-    /// wallets. Suitable for testing and simple deployments; production apps typically
-    /// supply a custom deployer for attribution and traceability.
+    /// Derives a keypair from `SHA-256("openzeppelin-smart-account-kit")`. The derivation
+    /// is deterministic, so the same deployer is produced on every invocation unless
+    /// overridden. This keypair only pays deployment fees and does not control user wallets.
+    /// Production apps typically supply a custom deployer for attribution and traceability.
     ///
     /// - Returns: A deterministic `KeyPair` for contract deployment.
     /// - Throws: `ConfigurationException.InvalidConfig` if seed generation fails.
     public static func createDefaultDeployer() async throws -> KeyPair {
-        // why: the literal seed string is a cross-implementation contract — every Smart
-        // Account Kit derives the same default deployer from this exact UTF-8 byte
-        // sequence, so changing it would break interoperability with deployments
-        // performed by other clients.
+        // why: the seed must remain byte-stable: the default deployer's contract address
+        // is derived from this exact UTF-8 sequence, and changing it would orphan every
+        // wallet deployed via the default deployer path.
         let seedString = "openzeppelin-smart-account-kit"
         do {
             let seedBytes = Data(seedString.utf8).sha256Hash
@@ -315,7 +265,7 @@ public struct OZSmartAccountConfig: @unchecked Sendable {
     ///   - accountWasmHash: The smart account contract WASM hash (64-char hex).
     ///   - webauthnVerifierAddress: The WebAuthn verifier contract address (`C…` strkey).
     /// - Returns: A new `Builder` with the four required fields set and defaults
-    ///            applied to the twelve optional fields.
+    ///            applied to every optional field.
     public static func builder(
         rpcUrl: String,
         networkPassphrase: String,
@@ -606,7 +556,7 @@ public struct OZSmartAccountConfig: @unchecked Sendable {
 
 extension OZSmartAccountConfig: Equatable {
 
-    /// Two configurations are equal when all sixteen fields compare equal.
+    /// Two configurations are equal when every field compares equal.
     ///
     /// `KeyPair` and the protocol-typed `storage`, `webauthnProvider`, and
     /// `externalWallet` fields use reference / instance equality where applicable.

@@ -138,7 +138,7 @@ final class WebAuthnCborParserTests: XCTestCase {
     private let testX = Data((0..<32).map { UInt8($0 + 1) })
     private let testY = Data((0..<32).map { UInt8($0 + 33) })
 
-    /// Pinned seed for the seeded-random fuzz test. Plan-pinned constant.
+    /// Pinned seed for the seeded-random fuzz test; constant so CI runs are reproducible across machines.
     private let cborFuzzSeed: UInt64 = 0xDEADBEEF
 
     // =========================================================================
@@ -847,7 +847,7 @@ final class WebAuthnCborParserTests: XCTestCase {
     }
 
     // =========================================================================
-    // Plan §9.4 minimum-bar additions (15 cases incl. fuzz)
+    // Additional CBOR decoding cases: uints, negative ints, byte strings, maps, fuzz
     // =========================================================================
 
     func test_cbor_decode_uint_small() {

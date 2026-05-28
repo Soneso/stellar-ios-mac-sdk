@@ -27,7 +27,7 @@ extension OZContextRuleManager {
     /// The on-chain shape is a Soroban named struct serialised as
     /// `SCVal::Map` with `Symbol`-keyed entries. Fields are looked up by name
     /// (see ``ContextRuleField``) rather than by positional index, so the
-    /// parser is robust to the ordering chosen by the Soroban host.
+    /// parser tolerates any field ordering chosen by the Soroban host.
     ///
     /// - Parameter scVal: The raw `SCValXDR` payload returned by the contract.
     /// - Returns: A parsed view of the rule.

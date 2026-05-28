@@ -7,14 +7,12 @@
 
 import Foundation
 
-// MARK: - Relayer Error Codes
+// MARK: - Relayer Errors
 
 /// Known error codes returned by the OpenZeppelin Smart Account relayer service.
 ///
-/// These string constants identify specific failure conditions and can be compared
-/// directly against `OZRelayerResponse.errorCode` for programmatic error handling. The
-/// constant identifier and string value are intentionally identical so that the
-/// printed and compared forms always match.
+/// String constants that can be compared against `OZRelayerResponse.errorCode`
+/// for programmatic error handling.
 public enum OZRelayerErrorCodes {
     public static let INVALID_PARAMS: String = "INVALID_PARAMS"
     public static let INVALID_XDR: String = "INVALID_XDR"
@@ -26,8 +24,6 @@ public enum OZRelayerErrorCodes {
     public static let UNAUTHORIZED: String = "UNAUTHORIZED"
     public static let TIMEOUT: String = "TIMEOUT"
 }
-
-// MARK: - Relayer Response
 
 /// Response from the relayer service.
 ///
@@ -204,7 +200,7 @@ public struct OZRelayerResponse: Decodable, Equatable, Hashable, Sendable {
 /// Example:
 /// ```swift
 /// let relayer = try OZRelayerClient(relayerUrl: "https://relayer.example.com")
-/// let response = try await relayer.send(hostFunction: hf, authEntries: entries)
+/// let response = await relayer.send(hostFunction: hf, authEntries: entries)
 /// if response.success {
 ///     print("Transaction hash: \(response.hash ?? "unknown")")
 /// } else {
@@ -225,8 +221,6 @@ public struct OZRelayerResponse: Decodable, Equatable, Hashable, Sendable {
 /// SDK recording mocks (`MockOZRelayerClient`) follow this pattern; consumer code
 /// is generally expected to inject a custom `urlSession` rather than subclass.
 public class OZRelayerClient: @unchecked Sendable {
-
-    // MARK: - Instance state
 
     /// Normalized base URL (no trailing slashes).
     private let normalizedUrl: String
@@ -260,8 +254,6 @@ public class OZRelayerClient: @unchecked Sendable {
     /// owned `URLSession`. `nil` when the caller injected a `URLSession`.
     /// Used by unit tests to verify that redirects are denied on owned sessions.
     internal var noRedirectDelegateForTesting: OZNoRedirectDelegate? { noRedirectDelegate }
-
-    // MARK: - Initialization
 
     /// Creates a new `OZRelayerClient`.
     ///
@@ -344,8 +336,6 @@ public class OZRelayerClient: @unchecked Sendable {
             self.urlSessionWasInjected = false
         }
     }
-
-    // MARK: - Public methods
 
     /// Submits a transaction using a host function and authorization entries.
     ///
@@ -459,8 +449,6 @@ public class OZRelayerClient: @unchecked Sendable {
             urlSession.invalidateAndCancel()
         }
     }
-
-    // MARK: - Private helpers
 
     /// Issues a POST request, decodes the JSON response body via `JSONDecoder`,
     /// and maps every failure mode into a `OZRelayerResponse`. This method
