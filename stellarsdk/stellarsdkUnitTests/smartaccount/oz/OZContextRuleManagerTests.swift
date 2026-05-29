@@ -522,4 +522,786 @@ final class OZContextRuleManagerTests: XCTestCase {
         )
         return (kit, OZContextRuleManager(kit: kit))
     }
+
+    // ========================================================================
+    // Batch C — updateName / updateValidUntil / removeContextRule submission
+    // ========================================================================
+
+    // ========================================================================
+    // addContextRule — validUntil and policy encoding paths
+    // ========================================================================
+
+    /// `addContextRule` with a non-nil `validUntil` must build a U32 ScVal
+    /// for the `valid_until` field and reach the submission layer (line 176).
+    func test_addContextRule_withValidUntil_initiatesSubmission() async throws {
+        let (_, manager) = try connectedKit()
+        do {
+            _ = try await manager.addContextRule(
+                contextType: .defaultRule,
+                name: "ExpiringRule",
+                validUntil: 900_000,
+                signers: [try OZDelegatedSigner(address: validAccountAddress)]
+            )
+            XCTFail("expected network error from non-routable RPC")
+        } catch is WalletException {
+            XCTFail("unexpected WalletException — kit is connected")
+        } catch is ValidationException {
+            XCTFail("unexpected ValidationException — input is valid")
+        } catch {
+            // Any non-validation error means the host function was built
+            // (including the valid_until U32 ScVal) and submission was attempted.
+        }
+    }
+
+    /// `addContextRule` with a non-empty policy map must encode the policy
+    /// `SCMapEntryXDR` entries (lines 191-195) and reach the submission layer.
+    func test_addContextRule_withPolicy_initiatesSubmission() async throws {
+        let (_, manager) = try connectedKit()
+        do {
+            _ = try await manager.addContextRule(
+                contextType: .defaultRule,
+                name: "RuleWithPolicy",
+                signers: [try OZDelegatedSigner(address: validAccountAddress)],
+                policies: [validContractAddress: .void]
+            )
+            XCTFail("expected network error from non-routable RPC")
+        } catch is WalletException {
+            XCTFail("unexpected WalletException — kit is connected")
+        } catch is ValidationException {
+            XCTFail("unexpected ValidationException — policy address is valid")
+        } catch {
+            // Policy encoding executed; RPC error confirms submission was attempted.
+        }
+    }
+
+    /// `updateName` with a valid non-empty name on a connected kit must reach
+    /// the submission layer and fail with a network error (not a validation or
+    /// configuration error).
+    func test_updateContextRuleName_connected_callsSubmit() async throws {
+        let (_, manager) = try connectedKit()
+        do {
+            _ = try await manager.updateName(id: 0, name: "NewName")
+            XCTFail("expected network or transaction error from non-routable RPC")
+        } catch is WalletException {
+            XCTFail("unexpected WalletException — kit is connected")
+        } catch is ValidationException {
+            XCTFail("unexpected ValidationException — name is valid")
+        } catch {
+            // Any non-validation error means validation passed and the
+            // manager attempted to reach the RPC endpoint.
+        }
+    }
+
+    /// `updateName` with an empty string must throw
+    /// `ValidationException.InvalidInput` before any network access.
+    func test_updateContextRuleName_emptyName_throwsValidationException() async throws {
+        let (_, manager) = try connectedKit()
+        do {
+            _ = try await manager.updateName(id: 0, name: "")
+            XCTFail("expected ValidationException.InvalidInput")
+        } catch let error as ValidationException.InvalidInput {
+            XCTAssertTrue(
+                error.message.contains("name"),
+                "error must mention the name field, got: \(error.message)"
+            )
+        }
+    }
+
+    /// `updateValidUntil` with a non-nil `validUntil` on a connected kit must
+    /// build a U32-valued `valid_until` argument and reach the submission layer.
+    func test_updateValidUntil_withValue_encodesU32() async throws {
+        let (_, manager) = try connectedKit()
+        do {
+            _ = try await manager.updateValidUntil(id: 1, validUntil: 500_000)
+            XCTFail("expected network or transaction error from non-routable RPC")
+        } catch is WalletException {
+            XCTFail("unexpected WalletException — kit is connected")
+        } catch {
+            // Any non-wallet error means validation passed and the build succeeded.
+        }
+    }
+
+    /// `updateValidUntil` with `nil` must build a Void-valued `valid_until`
+    /// argument and reach the submission layer.
+    func test_updateValidUntil_nil_encodesVoid() async throws {
+        let (_, manager) = try connectedKit()
+        do {
+            _ = try await manager.updateValidUntil(id: 2, validUntil: nil)
+            XCTFail("expected network or transaction error from non-routable RPC")
+        } catch is WalletException {
+            XCTFail("unexpected WalletException — kit is connected")
+        } catch {
+            // Any non-wallet error means build succeeded and submission was attempted.
+        }
+    }
+
+    /// `removeContextRule` on a connected kit must build the host function
+    /// and reach the submission layer.
+    func test_removeContextRule_connected_callsSubmit() async throws {
+        let (_, manager) = try connectedKit()
+        do {
+            _ = try await manager.removeContextRule(id: 3)
+            XCTFail("expected network or transaction error from non-routable RPC")
+        } catch is WalletException {
+            XCTFail("unexpected WalletException — kit is connected")
+        } catch {
+            // Any non-wallet error means the host function was built and
+            // submission was attempted.
+        }
+    }
+
+    // ========================================================================
+    // Batch C — resolveContextRuleIdsForEntry (multi-candidate resolution)
+    // ========================================================================
+
+    /// When the rule set has two candidates for the same context type and the
+    /// supplied signers match exactly one of them, the resolver must return
+    /// that rule's identifier.
+    func test_resolveContextRuleIds_multipleCandidates_exactMatch_returnsMatchingRule() async throws {
+        let signerA = try OZDelegatedSigner(address: validAccountAddress)
+        let signerB = try OZDelegatedSigner(address: "GBGWONUYEPTSADFMLRQSPRAPTWMGX5PMQXXHGSBVRF2KLUNVZT57SLVW")
+
+        let ruleExact = ParsedContextRule(
+            id: 10,
+            contextType: .defaultRule,
+            name: "RuleExact",
+            signers: [signerA],
+            signerIds: [0],
+            policies: [],
+            policyIds: [],
+            validUntil: nil
+        )
+        let ruleOther = ParsedContextRule(
+            id: 20,
+            contextType: .defaultRule,
+            name: "RuleOther",
+            signers: [signerA, signerB],
+            signerIds: [0, 1],
+            policies: [],
+            policyIds: [],
+            validUntil: nil
+        )
+
+        let entry = try OZPipelineFixtures.addressCredentialsAuthEntry(
+            contractAddress: validContractAddress,
+            targetContract: validContractAddress,
+            targetFn: "noop"
+        )
+        let (_, manager) = try connectedKit()
+        let ids = try await manager.resolveContextRuleIdsForEntry(
+            entry: entry,
+            signers: [signerA],
+            contextRules: [ruleExact, ruleOther]
+        )
+
+        XCTAssertEqual([UInt32(10)], ids, "Exact-signer match must return rule id 10")
+    }
+
+    /// When no candidate rule's signer set contains all selected signers,
+    /// the resolver must throw `ValidationException.InvalidInput`.
+    func test_resolveContextRuleIds_multipleCandidates_noMatch_throws() async throws {
+        let signerA = try OZDelegatedSigner(address: validAccountAddress)
+        let signerB = try OZDelegatedSigner(address: "GBGWONUYEPTSADFMLRQSPRAPTWMGX5PMQXXHGSBVRF2KLUNVZT57SLVW")
+        let signerC = try OZDelegatedSigner(address: "GB33CUURS5XLLECMLSE2EMMDJBMZSVF27BW6PLS53OFTJMP46CZH3CVG")
+
+        let ruleOne = ParsedContextRule(
+            id: 1,
+            contextType: .defaultRule,
+            name: "RuleOne",
+            signers: [signerA],
+            signerIds: [0],
+            policies: [],
+            policyIds: [],
+            validUntil: nil
+        )
+        let ruleTwo = ParsedContextRule(
+            id: 2,
+            contextType: .defaultRule,
+            name: "RuleTwo",
+            signers: [signerB],
+            signerIds: [0],
+            policies: [],
+            policyIds: [],
+            validUntil: nil
+        )
+
+        let entry = try OZPipelineFixtures.addressCredentialsAuthEntry(
+            contractAddress: validContractAddress,
+            targetContract: validContractAddress,
+            targetFn: "noop"
+        )
+        let (_, manager) = try connectedKit()
+        do {
+            _ = try await manager.resolveContextRuleIdsForEntry(
+                entry: entry,
+                signers: [signerC],
+                contextRules: [ruleOne, ruleTwo]
+            )
+            XCTFail("expected ValidationException.InvalidInput")
+        } catch is ValidationException.InvalidInput {
+            // expected
+        }
+    }
+
+    /// When multiple candidate rules all contain the selected signers,
+    /// the resolver must throw `ValidationException.InvalidInput` naming the
+    /// ambiguous rule ids.
+    func test_resolveContextRuleIds_multipleCandidates_multipleMatching_throws() async throws {
+        let signerA = try OZDelegatedSigner(address: validAccountAddress)
+
+        let ruleOne = ParsedContextRule(
+            id: 1,
+            contextType: .defaultRule,
+            name: "RuleOne",
+            signers: [signerA],
+            signerIds: [0],
+            policies: [],
+            policyIds: [],
+            validUntil: nil
+        )
+        let ruleTwo = ParsedContextRule(
+            id: 2,
+            contextType: .defaultRule,
+            name: "RuleTwo",
+            signers: [signerA],
+            signerIds: [0],
+            policies: [],
+            policyIds: [],
+            validUntil: nil
+        )
+
+        let entry = try OZPipelineFixtures.addressCredentialsAuthEntry(
+            contractAddress: validContractAddress,
+            targetContract: validContractAddress,
+            targetFn: "noop"
+        )
+        let (_, manager) = try connectedKit()
+        do {
+            _ = try await manager.resolveContextRuleIdsForEntry(
+                entry: entry,
+                signers: [signerA],
+                contextRules: [ruleOne, ruleTwo]
+            )
+            XCTFail("expected ValidationException.InvalidInput for ambiguous match")
+        } catch is ValidationException.InvalidInput {
+            // expected
+        }
+    }
+
+    // ========================================================================
+    // Batch C — collectInvocationContextTypes (createContractV2 + SAC token)
+    // ========================================================================
+
+    /// `createContractV2HostFn` root invocation produces a
+    /// `ContextRuleType.createContract(wasmHash:)` with the WASM hash from
+    /// the executable.
+    func test_collectInvocationContextTypes_createContractV2_returnsCreateContract() async throws {
+        let wasmHashBytes = Data(repeating: 0xAB, count: 32)
+        let wasmHash = HashXDR(wasmHashBytes)
+        let executable = ContractExecutableXDR.wasm(wasmHash)
+
+        let preimage = ContractIDPreimageXDR.fromAddress(
+            ContractIDPreimageFromAddressXDR(
+                address: try SCAddressXDR(contractId: validContractAddress),
+                salt: WrappedData32(Data(repeating: 0, count: 32))
+            )
+        )
+        let createArgs = CreateContractV2ArgsXDR(
+            contractIDPreimage: preimage,
+            executable: executable,
+            constructorArgs: []
+        )
+        let function = SorobanAuthorizedFunctionXDR.createContractV2HostFn(createArgs)
+        let invocation = SorobanAuthorizedInvocationXDR(function: function, subInvocations: [])
+        let credentials = SorobanAddressCredentialsXDR(
+            address: try SCAddressXDR(contractId: validContractAddress),
+            nonce: 0,
+            signatureExpirationLedger: 0,
+            signature: .void
+        )
+        let entry = SorobanAuthorizationEntryXDR(
+            credentials: .address(credentials),
+            rootInvocation: invocation
+        )
+
+        let (_, manager) = try connectedKit()
+        let ids = try await manager.resolveContextRuleIdsForEntry(
+            entry: entry,
+            signers: [],
+            contextRules: [
+                ParsedContextRule(
+                    id: 99,
+                    contextType: .createContract(wasmHash: wasmHashBytes),
+                    name: "CreateRule",
+                    signers: [],
+                    signerIds: [],
+                    policies: [],
+                    policyIds: [],
+                    validUntil: nil
+                )
+            ]
+        )
+        XCTAssertEqual([UInt32(99)], ids, "createContractV2 invocation must resolve to the CreateContract rule")
+    }
+
+    /// A `createContractHostFn` / `createContractV2HostFn` whose executable
+    /// is `.token` (Stellar Asset Contract) must throw
+    /// `ValidationException.InvalidInput` when the rule-resolution pipeline
+    /// tries to extract the WASM hash.
+    func test_extractWasmHash_sacToken_throwsValidationException() async throws {
+        let executable = ContractExecutableXDR.token
+        let preimage = ContractIDPreimageXDR.fromAddress(
+            ContractIDPreimageFromAddressXDR(
+                address: try SCAddressXDR(contractId: validContractAddress),
+                salt: WrappedData32(Data(repeating: 0, count: 32))
+            )
+        )
+        let createArgs = CreateContractV2ArgsXDR(
+            contractIDPreimage: preimage,
+            executable: executable,
+            constructorArgs: []
+        )
+        let function = SorobanAuthorizedFunctionXDR.createContractV2HostFn(createArgs)
+        let invocation = SorobanAuthorizedInvocationXDR(function: function, subInvocations: [])
+        let credentials = SorobanAddressCredentialsXDR(
+            address: try SCAddressXDR(contractId: validContractAddress),
+            nonce: 0,
+            signatureExpirationLedger: 0,
+            signature: .void
+        )
+        let entry = SorobanAuthorizationEntryXDR(
+            credentials: .address(credentials),
+            rootInvocation: invocation
+        )
+
+        let (_, manager) = try connectedKit()
+        do {
+            _ = try await manager.resolveContextRuleIdsForEntry(
+                entry: entry,
+                signers: [],
+                contextRules: []
+            )
+            XCTFail("expected ValidationException.InvalidInput for SAC token executable")
+        } catch is ValidationException.InvalidInput {
+            // expected
+        }
+    }
+
+    // ========================================================================
+    // Batch C — OZSmartAccountKit+Wiring protocol forwarding
+    // ========================================================================
+
+    /// Exercises the `OZContextRuleParser` protocol extension in
+    /// `OZSmartAccountKit+Wiring.swift` by calling `parseContextRule(_:)`
+    /// through the protocol interface directly on a real `OZContextRuleManager`.
+    ///
+    /// The wiring extension simply forwards the label-renamed call; this test
+    /// verifies both forwarding lines are reachable and produce the same result
+    /// as calling the underlying `parseContextRule(scVal:)` method directly.
+    func test_wiringExtension_parseContextRule_forwardsCorrectly() throws {
+        let (_, manager) = try disconnectedKit()
+        let parser: OZContextRuleParser = manager
+
+        // A minimal valid context-rule Map ScVal.
+        let ruleMap: SCValXDR = .map([
+            SCMapEntryXDR(key: .symbol("id"), val: .u32(7)),
+            SCMapEntryXDR(key: .symbol("name"), val: .string("WiringTest")),
+            SCMapEntryXDR(key: .symbol("context_type"), val: .vec([.symbol("Default")])),
+            SCMapEntryXDR(key: .symbol("signers"), val: .vec([])),
+            SCMapEntryXDR(key: .symbol("signer_ids"), val: .vec([])),
+            SCMapEntryXDR(key: .symbol("policies"), val: .vec([])),
+            SCMapEntryXDR(key: .symbol("policy_ids"), val: .vec([])),
+            SCMapEntryXDR(key: .symbol("valid_until"), val: .void)
+        ])
+
+        let parsed = try parser.parseContextRule(ruleMap)
+        XCTAssertEqual(7, parsed.id, "parseContextRule forwarding must preserve the id field")
+        XCTAssertEqual("WiringTest", parsed.name, "parseContextRule forwarding must preserve the name field")
+        XCTAssertEqual(.defaultRule, parsed.contextType)
+    }
+
+    /// Exercises the `getContextRule(contextRuleId:)` forwarding method in
+    /// `OZSmartAccountKit+Wiring.swift` by calling it through the
+    /// `OZContextRuleParser` protocol interface. The kit is connected and
+    /// points at a non-routable RPC host, so the call fails at the network
+    /// level after the wiring lines execute.
+    func test_wiringExtension_getContextRule_forwardsToManager() async throws {
+        let (_, manager) = try connectedKit()
+        let parser: OZContextRuleParser = manager
+
+        do {
+            _ = try await parser.getContextRule(contextRuleId: 0)
+            XCTFail("expected network error from non-routable RPC")
+        } catch is WalletException {
+            XCTFail("unexpected WalletException — kit is connected")
+        } catch {
+            // Any non-wallet error means the wiring forwarding lines executed
+            // and the call reached the underlying network stack.
+        }
+    }
+
+    // ========================================================================
+    // getContextRulesCount — non-U32 result path
+    // ========================================================================
+
+    /// `getContextRulesCount` must throw `ValidationException.InvalidInput`
+    /// when simulation returns a non-U32 ScVal.
+    func test_getContextRulesCount_nonU32Result_throwsValidationException() async throws {
+        let script = MockSorobanServerScript()
+        MockSorobanServer.activate(script: script)
+        defer {
+            MockSorobanServer.deactivate()
+            MockURLProtocol.reset()
+        }
+
+        let (kit, manager) = try connectedKitWithScriptedServer()
+        let deployer = try await kit.getDeployer()
+        script.setGetAccountResponse(accountId: deployer.accountId, sequence: 1)
+        // Return a String instead of U32 — simulates a malformed contract response.
+        script.enqueueSimulate(resultXdr: SCValXDR.string("not-a-u32").xdrEncoded ?? "")
+
+        do {
+            _ = try await manager.getContextRulesCount()
+            XCTFail("expected ValidationException.InvalidInput")
+        } catch is ValidationException.InvalidInput {
+            // expected
+        } catch {
+            XCTFail("Unexpected error type: \(error)")
+        }
+    }
+
+    // ========================================================================
+    // getAllContextRules — zero-count shortcut path
+    // ========================================================================
+
+    // ========================================================================
+    // resolveContextRuleIds — Tier 2 and Tier 3 match paths
+    // ========================================================================
+
+    /// Tier 2: when the rule's signer set is a strict subset of the selected
+    /// signers and the rule has no policies, the resolver picks that rule.
+    func test_resolveContextRuleIds_tier2_ruleSignersSubsetOfSelected_returnsRule() async throws {
+        let signerA = try OZDelegatedSigner(address: validAccountAddress)
+        let signerB = try OZDelegatedSigner(address: "GBGWONUYEPTSADFMLRQSPRAPTWMGX5PMQXXHGSBVRF2KLUNVZT57SLVW")
+        let signerC = try OZDelegatedSigner(address: "GB33CUURS5XLLECMLSE2EMMDJBMZSVF27BW6PLS53OFTJMP46CZH3CVG")
+
+        // rule1 has only A (strict subset of [A,B,C]) and no policies — Tier 2 candidate.
+        let rule1 = ParsedContextRule(
+            id: 5,
+            contextType: .defaultRule,
+            name: "RuleA",
+            signers: [signerA],
+            signerIds: [0],
+            policies: [],
+            policyIds: [],
+            validUntil: nil
+        )
+        // rule2 has [B, C] but with a policy — excluded from Tier 2.
+        let rule2 = ParsedContextRule(
+            id: 6,
+            contextType: .defaultRule,
+            name: "RuleBC",
+            signers: [signerB, signerC],
+            signerIds: [0, 1],
+            policies: [validContractAddress],
+            policyIds: [0],
+            validUntil: nil
+        )
+
+        let entry = try OZPipelineFixtures.addressCredentialsAuthEntry(
+            contractAddress: validContractAddress,
+            targetContract: validContractAddress,
+            targetFn: "noop"
+        )
+        let (_, manager) = try connectedKit()
+        // Select [A, B, C]; no Tier 1 exact match (neither rule has exactly [A,B,C]).
+        // Only rule1 satisfies Tier 2 (subset + no policies).
+        let ids = try await manager.resolveContextRuleIdsForEntry(
+            entry: entry,
+            signers: [signerA, signerB, signerC],
+            contextRules: [rule1, rule2]
+        )
+        XCTAssertEqual([UInt32(5)], ids, "Tier 2: rule with signer-subset and no policies must be selected")
+    }
+
+    /// Tier 3: when the selected signers are a subset of a single candidate
+    /// rule's signer set, the resolver picks that rule.
+    func test_resolveContextRuleIds_tier3_selectedSubsetOfRuleSigners_returnsRule() async throws {
+        let signerA = try OZDelegatedSigner(address: validAccountAddress)
+        let signerB = try OZDelegatedSigner(address: "GBGWONUYEPTSADFMLRQSPRAPTWMGX5PMQXXHGSBVRF2KLUNVZT57SLVW")
+        let signerC = try OZDelegatedSigner(address: "GB33CUURS5XLLECMLSE2EMMDJBMZSVF27BW6PLS53OFTJMP46CZH3CVG")
+
+        let rule = ParsedContextRule(
+            id: 7,
+            contextType: .defaultRule,
+            name: "BigRule",
+            signers: [signerA, signerB, signerC],
+            signerIds: [0, 1, 2],
+            policies: [],
+            policyIds: [],
+            validUntil: nil
+        )
+
+        let entry = try OZPipelineFixtures.addressCredentialsAuthEntry(
+            contractAddress: validContractAddress,
+            targetContract: validContractAddress,
+            targetFn: "noop"
+        )
+        let (_, manager) = try connectedKit()
+        // Select only A and B; they are a subset of rule's [A, B, C] — Tier 3.
+        let ids = try await manager.resolveContextRuleIdsForEntry(
+            entry: entry,
+            signers: [signerA, signerB],
+            contextRules: [rule]
+        )
+        XCTAssertEqual([UInt32(7)], ids, "Tier 3: selected signers as subset of rule must resolve to that rule")
+    }
+
+    /// When no context rule matches the required context type, the resolver
+    /// must throw `ValidationException.InvalidInput` advising the caller to
+    /// add a Default rule.
+    func test_resolveContextRuleIds_noCandidates_throwsValidationException() async throws {
+        let signerA = try OZDelegatedSigner(address: validAccountAddress)
+        let callContractRule = ParsedContextRule(
+            id: 1,
+            contextType: .callContract(contractAddress: validContractAddress),
+            name: "CallContractRule",
+            signers: [signerA],
+            signerIds: [0],
+            policies: [],
+            policyIds: [],
+            validUntil: nil
+        )
+
+        // Build an entry with a DIFFERENT target contract so no rule matches.
+        let differentTarget = try Data(repeating: 0xCD, count: 32).encodeContractId()
+        let entry = try OZPipelineFixtures.addressCredentialsAuthEntry(
+            contractAddress: validContractAddress,
+            targetContract: differentTarget,
+            targetFn: "noop"
+        )
+        let (_, manager) = try connectedKit()
+        do {
+            _ = try await manager.resolveContextRuleIdsForEntry(
+                entry: entry,
+                signers: [signerA],
+                contextRules: [callContractRule]
+            )
+            XCTFail("expected ValidationException.InvalidInput when no candidates match")
+        } catch is ValidationException.InvalidInput {
+            // expected
+        }
+    }
+
+    // ========================================================================
+    // collectInvocationContextTypes — createContractHostFn + G-address
+    // ========================================================================
+
+    /// `createContractHostFn` (non-V2) root invocation produces a
+    /// `ContextRuleType.createContract(wasmHash:)`.
+    func test_collectInvocationContextTypes_createContractHostFn_returnsCreateContract() async throws {
+        let wasmHashBytes = Data(repeating: 0xAA, count: 32)
+        let wasmHash = HashXDR(wasmHashBytes)
+        let executable = ContractExecutableXDR.wasm(wasmHash)
+
+        let preimage = ContractIDPreimageXDR.fromAddress(
+            ContractIDPreimageFromAddressXDR(
+                address: try SCAddressXDR(contractId: validContractAddress),
+                salt: WrappedData32(Data(repeating: 0, count: 32))
+            )
+        )
+        let createArgs = CreateContractArgsXDR(
+            contractIDPreimage: preimage,
+            executable: executable
+        )
+        let function = SorobanAuthorizedFunctionXDR.createContractHostFn(createArgs)
+        let invocation = SorobanAuthorizedInvocationXDR(function: function, subInvocations: [])
+        let credentials = SorobanAddressCredentialsXDR(
+            address: try SCAddressXDR(contractId: validContractAddress),
+            nonce: 0,
+            signatureExpirationLedger: 0,
+            signature: .void
+        )
+        let entry = SorobanAuthorizationEntryXDR(
+            credentials: .address(credentials),
+            rootInvocation: invocation
+        )
+
+        let (_, manager) = try connectedKit()
+        let ids = try await manager.resolveContextRuleIdsForEntry(
+            entry: entry,
+            signers: [],
+            contextRules: [
+                ParsedContextRule(
+                    id: 88,
+                    contextType: .createContract(wasmHash: wasmHashBytes),
+                    name: "CreateV1Rule",
+                    signers: [],
+                    signerIds: [],
+                    policies: [],
+                    policyIds: [],
+                    validUntil: nil
+                )
+            ]
+        )
+        XCTAssertEqual([UInt32(88)], ids)
+    }
+
+    /// A `callContract` invocation targeting a G-address exercises the
+    /// `addressString(from:)` `return accountId` branch (line 625).
+    func test_collectInvocationContextTypes_callContractGAddress_producesCallContractRule() async throws {
+        let invokeArgs = InvokeContractArgsXDR(
+            contractAddress: try SCAddressXDR(accountId: validAccountAddress),
+            functionName: "noop",
+            args: []
+        )
+        let function = SorobanAuthorizedFunctionXDR.contractFn(invokeArgs)
+        let invocation = SorobanAuthorizedInvocationXDR(function: function, subInvocations: [])
+        let credentials = SorobanAddressCredentialsXDR(
+            address: try SCAddressXDR(contractId: validContractAddress),
+            nonce: 0,
+            signatureExpirationLedger: 0,
+            signature: .void
+        )
+        let entry = SorobanAuthorizationEntryXDR(
+            credentials: .address(credentials),
+            rootInvocation: invocation
+        )
+
+        let (_, manager) = try connectedKit()
+        // G-addresses produce a `.callContract` context type — the rule that
+        // matches is a Default rule (falls through all CallContract-specific rules).
+        let ids = try await manager.resolveContextRuleIdsForEntry(
+            entry: entry,
+            signers: [],
+            contextRules: [
+                ParsedContextRule(
+                    id: 77,
+                    contextType: .defaultRule,
+                    name: "DefaultForGAddr",
+                    signers: [],
+                    signerIds: [],
+                    policies: [],
+                    policyIds: [],
+                    validUntil: nil
+                )
+            ]
+        )
+        XCTAssertEqual([UInt32(77)], ids)
+    }
+
+    /// An invocation with sub-invocations exercises `collectSubInvocationContextTypes`.
+    func test_collectInvocationContextTypes_withSubInvocations_collectsSubContextTypes() async throws {
+        let mainInvokeArgs = InvokeContractArgsXDR(
+            contractAddress: try SCAddressXDR(contractId: validContractAddress),
+            functionName: "main_fn",
+            args: []
+        )
+        let subInvokeArgs = InvokeContractArgsXDR(
+            contractAddress: try SCAddressXDR(contractId: validContractAddress),
+            functionName: "sub_fn",
+            args: []
+        )
+        let subFunction = SorobanAuthorizedFunctionXDR.contractFn(subInvokeArgs)
+        let subInvocation = SorobanAuthorizedInvocationXDR(function: subFunction, subInvocations: [])
+
+        let mainFunction = SorobanAuthorizedFunctionXDR.contractFn(mainInvokeArgs)
+        let rootInvocation = SorobanAuthorizedInvocationXDR(
+            function: mainFunction,
+            subInvocations: [subInvocation]
+        )
+        let credentials = SorobanAddressCredentialsXDR(
+            address: try SCAddressXDR(contractId: validContractAddress),
+            nonce: 0,
+            signatureExpirationLedger: 0,
+            signature: .void
+        )
+        let entry = SorobanAuthorizationEntryXDR(
+            credentials: .address(credentials),
+            rootInvocation: rootInvocation
+        )
+
+        let (_, manager) = try connectedKit()
+        // Both root and sub invocation target the same contract — they both
+        // produce `.callContract` context types. A single `defaultRule`
+        // matches both.
+        let ids = try await manager.resolveContextRuleIdsForEntry(
+            entry: entry,
+            signers: [],
+            contextRules: [
+                ParsedContextRule(
+                    id: 66,
+                    contextType: .defaultRule,
+                    name: "DefaultForSubInvoc",
+                    signers: [],
+                    signerIds: [],
+                    policies: [],
+                    policyIds: [],
+                    validUntil: nil
+                )
+            ]
+        )
+        XCTAssertEqual([UInt32(66), UInt32(66)], ids, "Both root and sub invocation must resolve to the same default rule")
+    }
+
+    // ========================================================================
+    // listContextRules — parseContextRule call path (line 395)
+    // ========================================================================
+
+    /// `listContextRules` must parse each raw ScVal returned by `getAllContextRules`
+    /// through `parseContextRule`. This test scripts the server to return one
+    /// rule and verifies the parsed result is returned.
+    func test_listContextRules_oneRule_parsesAndReturns() async throws {
+        let script = MockSorobanServerScript()
+        MockSorobanServer.activate(script: script)
+        defer {
+            MockSorobanServer.deactivate()
+            MockURLProtocol.reset()
+        }
+
+        let (kit, manager) = try connectedKitWithScriptedServer()
+        let deployer = try await kit.getDeployer()
+
+        // Script: count = 1
+        script.setGetAccountResponse(accountId: deployer.accountId, sequence: 1)
+        script.enqueueSimulate(resultXdr: SCValXDR.u32(1).xdrEncoded ?? "")
+
+        // Script: rule at id=0 — a minimal valid rule map.
+        let ruleMap: SCValXDR = .map([
+            SCMapEntryXDR(key: .symbol("id"), val: .u32(0)),
+            SCMapEntryXDR(key: .symbol("name"), val: .string("ScriptedRule")),
+            SCMapEntryXDR(key: .symbol("context_type"), val: .vec([.symbol("Default")])),
+            SCMapEntryXDR(key: .symbol("signers"), val: .vec([])),
+            SCMapEntryXDR(key: .symbol("signer_ids"), val: .vec([])),
+            SCMapEntryXDR(key: .symbol("policies"), val: .vec([])),
+            SCMapEntryXDR(key: .symbol("policy_ids"), val: .vec([])),
+            SCMapEntryXDR(key: .symbol("valid_until"), val: .void)
+        ])
+        script.setGetAccountResponse(accountId: deployer.accountId, sequence: 2)
+        script.enqueueSimulate(resultXdr: ruleMap.xdrEncoded ?? "")
+
+        let rules = try await manager.listContextRules()
+        XCTAssertEqual(1, rules.count, "listContextRules must return 1 parsed rule")
+        XCTAssertEqual("ScriptedRule", rules.first?.name)
+    }
+
+    /// `getAllContextRules()` (the no-arg overload) must delegate to the
+    /// per-call-maxScanId overload. With a count of zero the result must be
+    /// an empty array.
+    func test_getAllContextRules_noArgOverload_zeroCount_returnsEmpty() async throws {
+        let script = MockSorobanServerScript()
+        MockSorobanServer.activate(script: script)
+        defer {
+            MockSorobanServer.deactivate()
+            MockURLProtocol.reset()
+        }
+
+        let (kit, manager) = try connectedKitWithScriptedServer()
+        let deployer = try await kit.getDeployer()
+        script.setGetAccountResponse(accountId: deployer.accountId, sequence: 1)
+        script.enqueueSimulate(resultXdr: SCValXDR.u32(0).xdrEncoded ?? "")
+
+        let rules = try await manager.getAllContextRules()
+        XCTAssertEqual(0, rules.count, "getAllContextRules() with zero count must return empty array")
+    }
 }

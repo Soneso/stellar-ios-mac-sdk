@@ -561,4 +561,24 @@ final class OZPolicyInstallParamsTests: XCTestCase {
         }
         return name
     }
+
+    // MARK: - isAllZeroDigits internal helper coverage
+
+    /// A spending limit of "00" (multiple zeros) must also be rejected —
+    /// exercises the `return true` branch in `isAllZeroDigits`.
+    func test_spendingLimit_multipleZeros_throwsValidationException() throws {
+        let params = PolicyInstallParams.spendingLimit(
+            spendingLimit: "00",
+            periodLedgers: 100
+        )
+        do {
+            _ = try params.toScVal()
+            XCTFail("expected ValidationException for all-zero spending limit")
+        } catch let error as ValidationException.InvalidInput {
+            XCTAssertTrue(
+                error.message.contains("greater than zero"),
+                "Error must mention the zero constraint"
+            )
+        }
+    }
 }

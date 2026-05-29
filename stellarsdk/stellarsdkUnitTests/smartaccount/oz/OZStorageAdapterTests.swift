@@ -1015,4 +1015,66 @@ final class OZStorageAdapterTests: XCTestCase {
         let storedIds = Set(all.map { $0.credentialId })
         XCTAssertEqual(Set(expected.keys), storedIds, "Stored ID set must equal the written set")
     }
+
+    // MARK: - InMemoryStorageAdapter Hashable
+
+    /// `InMemoryStorageAdapter` is `Hashable`; two fresh instances must hash to
+    /// the same value because they use the shared type-level tag.
+    func test_inMemoryStorageAdapter_hashable_twoInstancesSameHash() {
+        let a = InMemoryStorageAdapter()
+        let b = InMemoryStorageAdapter()
+        var hasherA = Hasher()
+        a.hash(into: &hasherA)
+        var hasherB = Hasher()
+        b.hash(into: &hasherB)
+        XCTAssertEqual(hasherA.finalize(), hasherB.finalize())
+    }
+
+    // MARK: - ExternalWalletAdapter default implementations
+
+    /// `ExternalWalletAdapter.disconnectByAddress` has a no-op default
+    /// implementation. Calling it must not throw.
+    func test_externalWalletAdapter_disconnectByAddress_defaultNoOp() async throws {
+        let adapter = _NoOpExternalWalletAdapter()
+        try await adapter.disconnectByAddress(address: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ")
+    }
+
+    /// `ExternalWalletAdapter.getWalletForAddress` has a default that returns `nil`.
+    func test_externalWalletAdapter_getWalletForAddress_defaultReturnsNil() {
+        let adapter = _NoOpExternalWalletAdapter()
+        let result = adapter.getWalletForAddress(
+            address: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ"
+        )
+        XCTAssertNil(result)
+    }
+
+    /// `ExternalWalletAdapter.reconnect` has a default that returns `nil`.
+    func test_externalWalletAdapter_reconnect_defaultReturnsNil() async throws {
+        let adapter = _NoOpExternalWalletAdapter()
+        let result = try await adapter.reconnect(walletId: "some-wallet-id")
+        XCTAssertNil(result)
+    }
+}
+
+// MARK: - _NoOpExternalWalletAdapter
+
+/// Minimal `ExternalWalletAdapter` that exercises the protocol's default
+/// extension method implementations. It delegates `connect`, `disconnect`,
+/// `signAuthEntry`, `getConnectedWallets`, and `canSignFor` to no-ops.
+private final class _NoOpExternalWalletAdapter: ExternalWalletAdapter, @unchecked Sendable {
+
+    func connect() async throws -> ConnectedWallet? { return nil }
+
+    func disconnect() async throws {}
+
+    func signAuthEntry(
+        preimageXdr: String,
+        options: SignAuthEntryOptions?
+    ) async throws -> SignAuthEntryResult {
+        return SignAuthEntryResult(signedAuthEntry: "")
+    }
+
+    func getConnectedWallets() -> [ConnectedWallet] { return [] }
+
+    func canSignFor(address: String) -> Bool { return false }
 }

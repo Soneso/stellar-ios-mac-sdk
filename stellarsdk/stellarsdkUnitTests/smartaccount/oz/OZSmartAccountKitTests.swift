@@ -715,4 +715,20 @@ final class OZSmartAccountKitTests: XCTestCase {
 
         XCTAssertEqual(counter.value, 0)
     }
+
+    // MARK: - Protocol-typed accessor coverage
+
+    /// Accessing `credentialManager`, `contextRuleManager`, and
+    /// `externalWallet` through the `OZSmartAccountKitProtocol` interface
+    /// covers the internal computed-property forwarding bodies (lines 139-141,
+    /// 163-165, 202-204 in OZSmartAccountKit.swift).
+    func test_protocolAccessors_credentialManagerAndExternalWallet_areAccessible() async throws {
+        let config = try makeConfig()
+        let kit = OZSmartAccountKit.create(config: config)
+        let protocol_kit: OZSmartAccountKitProtocol = kit
+        XCTAssertNotNil(protocol_kit.credentialManager)
+        XCTAssertNotNil(protocol_kit.contextRuleManager)
+        XCTAssertNil(protocol_kit.externalWallet)
+        await kit.close()
+    }
 }

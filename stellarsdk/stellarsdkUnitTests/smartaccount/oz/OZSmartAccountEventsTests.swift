@@ -831,3 +831,102 @@ final class UnsubscribeReceiver: @unchecked Sendable {
         u?()
     }
 }
+
+// MARK: - SmartAccountEvent equality and hash — extra coverage
+
+extension OZSmartAccountEventsTests {
+
+    /// `SmartAccountEvent.credentialCreated` equality and hash coverage.
+    func test_event_credentialCreated_equalityAndHash() {
+        let key = Data(repeating: 0x04, count: 65)
+        let cred = StoredCredential(
+            credentialId: "cred-eq",
+            publicKey: key,
+            contractId: "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM",
+            deploymentStatus: .pending,
+            createdAt: 0,
+            nickname: nil,
+            isPrimary: false
+        )
+        let event1: SmartAccountEvent = .credentialCreated(credential: cred)
+        let event2: SmartAccountEvent = .credentialCreated(credential: cred)
+        XCTAssertEqual(event1, event2)
+        XCTAssertEqual(event1.hashValue, event2.hashValue)
+    }
+
+    /// `SmartAccountEvent.transactionSigned` equality and hash coverage.
+    func test_event_transactionSigned_equalityAndHash() {
+        let event1: SmartAccountEvent = .transactionSigned(
+            contractId: "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM",
+            credentialId: "cred-ts"
+        )
+        let event2: SmartAccountEvent = .transactionSigned(
+            contractId: "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM",
+            credentialId: "cred-ts"
+        )
+        XCTAssertEqual(event1, event2)
+        XCTAssertEqual(event1.hashValue, event2.hashValue)
+    }
+
+    /// `SmartAccountEvent.transactionSubmitted` equality and hash coverage.
+    func test_event_transactionSubmitted_equalityAndHash() {
+        let event1: SmartAccountEvent = .transactionSubmitted(hash: "abc", success: true)
+        let event2: SmartAccountEvent = .transactionSubmitted(hash: "abc", success: true)
+        XCTAssertEqual(event1, event2)
+        XCTAssertEqual(event1.hashValue, event2.hashValue)
+    }
+
+    /// `SmartAccountEvent.credentialSyncFailed` equality and hash coverage.
+    func test_event_credentialSyncFailed_equalityAndHash() {
+        struct _SyncErr: Error, LocalizedError {
+            var errorDescription: String? { "sync failed" }
+        }
+        let err = _SyncErr()
+        let event1: SmartAccountEvent = .credentialSyncFailed(credentialId: "cred-sf", error: err)
+        let event2: SmartAccountEvent = .credentialSyncFailed(credentialId: "cred-sf", error: err)
+        XCTAssertEqual(event1, event2)
+        XCTAssertEqual(event1.hashValue, event2.hashValue)
+    }
+
+    /// `SmartAccountEvent.credentialDeleted` hash coverage.
+    func test_event_credentialDeleted_hashCoverageAndEquality() {
+        let event1: SmartAccountEvent = .credentialDeleted(credentialId: "cred-del")
+        let event2: SmartAccountEvent = .credentialDeleted(credentialId: "cred-del")
+        XCTAssertEqual(event1, event2)
+        XCTAssertEqual(event1.hashValue, event2.hashValue)
+    }
+
+    // MARK: - once — double-callOnce path (UnsubscribeBox lines 478-480)
+
+    /// Calling the returned unsubscribe closure AFTER the event has already
+    /// fired must be a no-op. This exercises the `if fired { ... return }`
+    /// guard inside `UnsubscribeBox.callOnce()` (lines 478-480).
+    func test_once_callingReturnedUnsubscribeAfterEventFires_isNoOp() {
+        let emitter = SmartAccountEventEmitter()
+        let callCount = Counter()
+        let unsubscribe = emitter.once(.transactionSubmitted) { _ in
+            callCount.increment()
+        }
+        emitter.emit(.transactionSubmitted(hash: "h1", success: true))
+        XCTAssertEqual(1, callCount.value, "listener must fire exactly once")
+
+        // Calling the returned unsubscribe after the event has already fired
+        // must be a no-op (not a crash or double-invocation).
+        unsubscribe()
+        XCTAssertEqual(1, callCount.value, "calling unsubscribe after event fires must not increment count")
+    }
+
+    /// Calling the returned unsubscribe BEFORE the event fires prevents the
+    /// listener from running. Exercises the `set` path normally and verifies
+    /// `callOnce` from the event does not double-fire.
+    func test_once_callingReturnedUnsubscribeBeforeEventFires_preventsListenerFromRunning() {
+        let emitter = SmartAccountEventEmitter()
+        let callCount = Counter()
+        let unsubscribe = emitter.once(.transactionSubmitted) { _ in
+            callCount.increment()
+        }
+        unsubscribe()
+        emitter.emit(.transactionSubmitted(hash: "h2", success: false))
+        XCTAssertEqual(0, callCount.value, "listener must not fire after unsubscribe is called")
+    }
+}

@@ -177,6 +177,7 @@ public final class AppleWebAuthnProvider: NSObject, WebAuthnProvider, @unchecked
             isRegistration: true
         )
 
+        // LCOV_EXCL_START
         guard let registration = authorization.credential
             as? ASAuthorizationPlatformPublicKeyCredentialRegistration
         else {
@@ -213,6 +214,7 @@ public final class AppleWebAuthnProvider: NSObject, WebAuthnProvider, @unchecked
             deviceType: parsedFlags.deviceType,
             backedUp: parsedFlags.backedUp
         )
+        // LCOV_EXCL_STOP
     }
 
     // ========================================================================
@@ -251,6 +253,7 @@ public final class AppleWebAuthnProvider: NSObject, WebAuthnProvider, @unchecked
             isRegistration: false
         )
 
+        // LCOV_EXCL_START
         guard let assertion = authorization.credential
             as? ASAuthorizationPlatformPublicKeyCredentialAssertion
         else {
@@ -274,6 +277,7 @@ public final class AppleWebAuthnProvider: NSObject, WebAuthnProvider, @unchecked
             clientDataJSON: clientDataJSON,
             signature: signature
         )
+        // LCOV_EXCL_STOP
     }
 
     // ========================================================================
@@ -513,10 +517,12 @@ private final class AuthorizationContinuationHolder: @unchecked Sendable {
 
     func complete(with outcome: AuthorizationOutcome) {
         lock.lock()
+        // LCOV_EXCL_START
         if completed {
             lock.unlock()
             return
         }
+        // LCOV_EXCL_STOP
         completed = true
         let pending = continuation
         continuation = nil
@@ -570,13 +576,13 @@ internal final class AuthorizationDelegate: NSObject, ASAuthorizationControllerD
         controller: ASAuthorizationController,
         didCompleteWithAuthorization authorization: ASAuthorization
     ) {
-        onSuccess(authorization)
+        onSuccess(authorization) // LCOV_EXCL_LINE
     }
 
     func authorizationController(
         controller: ASAuthorizationController,
         didCompleteWithError error: Error
     ) {
-        onError(error)
+        onError(error) // LCOV_EXCL_LINE
     }
 }

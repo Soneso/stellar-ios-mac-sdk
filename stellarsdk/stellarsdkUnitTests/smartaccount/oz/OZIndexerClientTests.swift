@@ -1317,4 +1317,198 @@ final class OZIndexerClientTests: XCTestCase {
             XCTFail("Unexpected error: \(error)")
         }
     }
+
+    // MARK: - Oversized response body
+
+    func test_lookupByCredentialId_oversizedBody_throwsIndexerException() async throws {
+        // Build a body that exceeds the maximum allowed response size.
+        let bigBody = String(repeating: "x", count: OZConstants.maxIndexerResponseBytes + 1)
+        MockURLProtocol.requestHandler = { request in
+            let url = request.url ?? URL(string: "https://placeholder")!
+            let response = HTTPURLResponse(
+                url: url,
+                statusCode: 200,
+                httpVersion: nil,
+                headerFields: ["Content-Type": "application/json"]
+            )!
+            return .success((response, bigBody.data(using: .utf8)))
+        }
+        let session = makeMockSession()
+        let indexer = try OZIndexerClient(
+            indexerUrl: "https://indexer.example.com",
+            urlSession: session
+        )
+        defer { indexer.close() }
+
+        do {
+            _ = try await indexer.lookupByCredentialId(credentialId: "qrvM3Q")
+            XCTFail("Expected IndexerException.RequestFailed for oversized body")
+        } catch let error as IndexerException.RequestFailed {
+            XCTAssertTrue(
+                error.message.lowercased().contains("size") ||
+                error.message.lowercased().contains("maximum") ||
+                error.message.lowercased().contains("bytes"),
+                "Error message must describe the size constraint, got: \(error.message)"
+            )
+        } catch {
+            XCTFail("Unexpected error: \(error)")
+        }
+    }
+
+    // MARK: - isHealthy — additional branches
+
+    func test_isHealthy_oversizedBody_returnsFalse() async throws {
+        let bigBody = String(repeating: "y", count: OZConstants.maxIndexerResponseBytes + 1)
+        installResponder(body: bigBody)
+        let session = makeMockSession()
+        let indexer = try OZIndexerClient(
+            indexerUrl: "https://indexer.example.com",
+            urlSession: session
+        )
+        defer { indexer.close() }
+
+        let healthy = await indexer.isHealthy()
+        XCTAssertFalse(healthy, "isHealthy must return false when response body exceeds the size limit")
+    }
+
+    func test_isHealthy_nonJsonContentType_returnsFalse() async throws {
+        installResponder(body: #"{"status":"ok"}"#, contentType: "text/html")
+        let session = makeMockSession()
+        let indexer = try OZIndexerClient(
+            indexerUrl: "https://indexer.example.com",
+            urlSession: session
+        )
+        defer { indexer.close() }
+
+        let healthy = await indexer.isHealthy()
+        XCTAssertFalse(healthy, "isHealthy must return false when Content-Type is not JSON")
+    }
+
+    func test_isHealthy_closeBeforeCall_doesNotCrash() async throws {
+        installResponder(body: #"{"status":"ok"}"#)
+        let session = makeMockSession()
+        let indexer = try OZIndexerClient(
+            indexerUrl: "https://indexer.example.com",
+            urlSession: session
+        )
+        indexer.close()
+        // Calling isHealthy after close should not crash; the underlying session
+        // is invalidated. The result may be true or false depending on whether
+        // the URLSession has already released its resources.
+        _ = await indexer.isHealthy()
+        // Reaching here without a crash or unhandled exception is the assertion.
+    }
+
+    // MARK: - Model memberwise inits (direct construction paths)
+
+    /// Constructs `OZCredentialLookupResponse` via the memberwise init to
+    /// exercise its stored-property assignment path (lines 99-103 in the source).
+    func test_credentialLookupResponse_memberwiseInit_storesFields() {
+        let summary = OZIndexedContractSummary(
+            contractId: testContractId,
+            contextRuleCount: 2,
+            externalSignerCount: 1,
+            delegatedSignerCount: 0,
+            nativeSignerCount: 0,
+            firstSeenLedger: 100,
+            lastSeenLedger: 200,
+            contextRuleIds: [0, 1]
+        )
+        let response = OZCredentialLookupResponse(
+            credentialId: "aabb",
+            contracts: [summary],
+            count: 1
+        )
+        XCTAssertEqual("aabb", response.credentialId)
+        XCTAssertEqual(1, response.contracts.count)
+        XCTAssertEqual(1, response.count)
+    }
+
+    /// Constructs `OZAddressLookupResponse` via the memberwise init.
+    func test_addressLookupResponse_memberwiseInit_storesFields() {
+        let response = OZAddressLookupResponse(
+            signerAddress: testAccountId,
+            contracts: [],
+            count: 0
+        )
+        XCTAssertEqual(testAccountId, response.signerAddress)
+        XCTAssertEqual(0, response.contracts.count)
+        XCTAssertEqual(0, response.count)
+    }
+
+    // MARK: - Flexible Int64 decode error path
+
+    /// The stats response with a non-numeric string in an Int64 field must
+    /// surface as `IndexerException.RequestFailed` (exercises `decodeFlexibleInt64`
+    /// error throw path).
+    func test_getStats_nonNumericStringForInt64Field_throwsIndexerException() async throws {
+        let responseJson = """
+        {
+            "stats": {
+                "total_events": "not-a-number",
+                "unique_contracts": 1,
+                "unique_credentials": 1,
+                "first_ledger": 1,
+                "last_ledger": 1,
+                "eventTypes": []
+            }
+        }
+        """
+        installResponder(body: responseJson)
+        let session = makeMockSession()
+        let indexer = try OZIndexerClient(
+            indexerUrl: "https://indexer.example.com",
+            urlSession: session
+        )
+        defer { indexer.close() }
+
+        do {
+            _ = try await indexer.getStats()
+            XCTFail("Expected IndexerException.RequestFailed")
+        } catch is IndexerException.RequestFailed {
+            // expected
+        } catch {
+            XCTFail("Unexpected error: \(error)")
+        }
+    }
+
+    /// The `lookupByCredentialId` response with a non-numeric string for a
+    /// contract_id array element must surface as `IndexerException.RequestFailed`
+    /// (exercises `UnkeyedDecodingContainer.decodeFlexibleInt` error path).
+    func test_lookupByCredentialId_nonNumericContextRuleId_throwsIndexerException() async throws {
+        let responseJson = """
+        {
+            "credentialId": "aabbccdd",
+            "contracts": [
+                {
+                    "contract_id": "\(testContractId)",
+                    "context_rule_count": 1,
+                    "external_signer_count": 0,
+                    "delegated_signer_count": 0,
+                    "native_signer_count": 0,
+                    "first_seen_ledger": 1,
+                    "last_seen_ledger": 2,
+                    "context_rule_ids": ["not-a-number"]
+                }
+            ],
+            "count": 1
+        }
+        """
+        installResponder(body: responseJson)
+        let session = makeMockSession()
+        let indexer = try OZIndexerClient(
+            indexerUrl: "https://indexer.example.com",
+            urlSession: session
+        )
+        defer { indexer.close() }
+
+        do {
+            _ = try await indexer.lookupByCredentialId(credentialId: "qrvM3Q")
+            XCTFail("Expected IndexerException.RequestFailed")
+        } catch is IndexerException.RequestFailed {
+            // expected
+        } catch {
+            XCTFail("Unexpected error: \(error)")
+        }
+    }
 }

@@ -1071,4 +1071,252 @@ final class OZContextRuleParsingTests: XCTestCase {
             )
         }
     }
+
+    // ========================================================================
+    // MARK: - parseContextRule — malformed Vec fields (Batch I)
+    // ========================================================================
+
+    /// When `signers` is a non-Vec ScVal (e.g. a U32), the parser must throw
+    /// `ValidationException.InvalidInput` naming the `signers` field.
+    func test_parseContextRule_malformedSignerIds_throwsValidationException() throws {
+        let manager = try disconnectedManager()
+        let ruleMap = buildMapScVal([
+            ("id", .u32(1)),
+            ("name", .string("Rule")),
+            ("context_type", defaultContextTypeScVal()),
+            ("signers", .u32(42)),
+            ("signer_ids", .vec([.u32(1)])),
+            ("policies", .vec([])),
+            ("policy_ids", .vec([])),
+            ("valid_until", .void)
+        ])
+        XCTAssertThrowsError(try manager.parseContextRule(scVal: ruleMap)) { error in
+            guard let validation = error as? ValidationException.InvalidInput else {
+                return XCTFail("expected ValidationException.InvalidInput, got \(error)")
+            }
+            XCTAssertTrue(
+                validation.message.contains("signers"),
+                "error must mention the signers field, got: \(validation.message)"
+            )
+        }
+    }
+
+    /// When `policies` is a non-Vec ScVal (e.g. a Bytes), the parser must
+    /// throw `ValidationException.InvalidInput` naming the `policies` field.
+    func test_parseContextRule_malformedPolicies_throwsValidationException() throws {
+        let manager = try disconnectedManager()
+        let ruleMap = buildMapScVal([
+            ("id", .u32(1)),
+            ("name", .string("Rule")),
+            ("context_type", defaultContextTypeScVal()),
+            ("signers", .vec([])),
+            ("signer_ids", .vec([])),
+            ("policies", .bytes(Data([0x01, 0x02]))),
+            ("policy_ids", .vec([])),
+            ("valid_until", .void)
+        ])
+        XCTAssertThrowsError(try manager.parseContextRule(scVal: ruleMap)) { error in
+            guard let validation = error as? ValidationException.InvalidInput else {
+                return XCTFail("expected ValidationException.InvalidInput, got \(error)")
+            }
+            XCTAssertTrue(
+                validation.message.contains("policies"),
+                "error must mention the policies field, got: \(validation.message)"
+            )
+        }
+    }
+
+    /// When `policy_ids` is a non-Vec ScVal (e.g. a String), the parser must
+    /// throw `ValidationException.InvalidInput` naming the `policy_ids` field.
+    func test_parseContextRule_malformedPolicyIds_throwsValidationException() throws {
+        let manager = try disconnectedManager()
+        let ruleMap = buildMapScVal([
+            ("id", .u32(1)),
+            ("name", .string("Rule")),
+            ("context_type", defaultContextTypeScVal()),
+            ("signers", .vec([])),
+            ("signer_ids", .vec([])),
+            ("policies", .vec([])),
+            ("policy_ids", .string("bad")),
+            ("valid_until", .void)
+        ])
+        XCTAssertThrowsError(try manager.parseContextRule(scVal: ruleMap)) { error in
+            guard let validation = error as? ValidationException.InvalidInput else {
+                return XCTFail("expected ValidationException.InvalidInput, got \(error)")
+            }
+            XCTAssertTrue(
+                validation.message.contains("policy_ids"),
+                "error must mention the policy_ids field, got: \(validation.message)"
+            )
+        }
+    }
+
+    /// When `valid_until` is not `Void` or `U32` (e.g. a String), the parser
+    /// must throw `ValidationException.InvalidInput` naming the `valid_until`
+    /// field.
+    func test_parseContextRule_malformedValidUntil_throwsValidationException() throws {
+        let manager = try disconnectedManager()
+        let ruleMap = buildMapScVal([
+            ("id", .u32(1)),
+            ("name", .string("Rule")),
+            ("context_type", defaultContextTypeScVal()),
+            ("signers", .vec([])),
+            ("signer_ids", .vec([])),
+            ("policies", .vec([])),
+            ("policy_ids", .vec([])),
+            ("valid_until", .string("not-a-u32"))
+        ])
+        XCTAssertThrowsError(try manager.parseContextRule(scVal: ruleMap)) { error in
+            guard let validation = error as? ValidationException.InvalidInput else {
+                return XCTFail("expected ValidationException.InvalidInput, got \(error)")
+            }
+            XCTAssertTrue(
+                validation.message.contains("valid_until"),
+                "error must mention the valid_until field, got: \(validation.message)"
+            )
+        }
+    }
+
+    // ========================================================================
+    // MARK: - Signer parsing — non-Address element paths
+    // ========================================================================
+
+    /// When `signer_ids` is a non-Vec ScVal (e.g. a String), the parser must
+    /// throw `ValidationException.InvalidInput` naming the `signer_ids` field.
+    func test_parseContextRule_malformedSignerIdsVec_throwsValidationException() throws {
+        let manager = try disconnectedManager()
+        let ruleMap = buildMapScVal([
+            ("id", .u32(1)),
+            ("name", .string("Rule")),
+            ("context_type", defaultContextTypeScVal()),
+            ("signers", .vec([])),
+            ("signer_ids", .string("not-a-vec")),
+            ("policies", .vec([])),
+            ("policy_ids", .vec([])),
+            ("valid_until", .void)
+        ])
+        XCTAssertThrowsError(try manager.parseContextRule(scVal: ruleMap)) { error in
+            guard let validation = error as? ValidationException.InvalidInput else {
+                return XCTFail("expected ValidationException.InvalidInput, got \(error)")
+            }
+            XCTAssertTrue(
+                validation.message.contains("signer_ids"),
+                "error must mention signer_ids, got: \(validation.message)"
+            )
+        }
+    }
+
+    /// A Delegated signer whose second element is not an Address but a U32
+    /// must throw `ValidationException.InvalidInput`.
+    func test_parseContextRule_delegatedSignerNonAddressElement_throwsValidationException() throws {
+        let manager = try disconnectedManager()
+        let badDelegatedSigner: SCValXDR = .vec([
+            .symbol("Delegated"),
+            .u32(42)
+        ])
+        let ruleMap = buildFullRuleMap(
+            signers: [badDelegatedSigner],
+            signerIds: [0]
+        )
+        XCTAssertThrowsError(try manager.parseContextRule(scVal: ruleMap)) { error in
+            XCTAssertTrue(error is ValidationException.InvalidInput)
+        }
+    }
+
+    /// An External signer whose second element is not an Address but a U32
+    /// must throw `ValidationException.InvalidInput`.
+    func test_parseContextRule_externalSignerNonAddressVerifier_throwsValidationException() throws {
+        let manager = try disconnectedManager()
+        let badExternalSigner: SCValXDR = .vec([
+            .symbol("External"),
+            .u32(99),
+            .bytes(secp256r1Key())
+        ])
+        let ruleMap = buildFullRuleMap(
+            signers: [badExternalSigner],
+            signerIds: [0]
+        )
+        XCTAssertThrowsError(try manager.parseContextRule(scVal: ruleMap)) { error in
+            XCTAssertTrue(error is ValidationException.InvalidInput)
+        }
+    }
+
+    /// A Delegated signer whose address element is a non-address type
+    /// (e.g. Bytes instead of Address ScVal) must throw `ValidationException`.
+    func test_parseContextRule_delegatedSignerNonAddressScVal_throwsValidationException() throws {
+        let manager = try disconnectedManager()
+        let badDelegated: SCValXDR = .vec([
+            .symbol("Delegated"),
+            .bytes(Data([0x00, 0x01]))
+        ])
+        let ruleMap = buildFullRuleMap(
+            signers: [badDelegated],
+            signerIds: [0]
+        )
+        XCTAssertThrowsError(try manager.parseContextRule(scVal: ruleMap)) { error in
+            XCTAssertTrue(error is ValidationException.InvalidInput)
+        }
+    }
+
+    /// A CallContract context type whose second element is a non-address
+    /// (e.g. U32) must throw `ValidationException.InvalidInput`.
+    func test_parseContextRule_callContractNonAddressElement_throwsValidationException() throws {
+        let manager = try disconnectedManager()
+        let badContextType: SCValXDR = .vec([
+            .symbol("CallContract"),
+            .u32(12345)
+        ])
+        let ruleMap = buildFullRuleMap(contextType: badContextType)
+        XCTAssertThrowsError(try manager.parseContextRule(scVal: ruleMap)) { error in
+            XCTAssertTrue(error is ValidationException.InvalidInput)
+        }
+    }
+
+    /// A CreateContract context type whose second element is not Bytes
+    /// (e.g. a U32) must throw `ValidationException.InvalidInput`.
+    func test_parseContextRule_createContractNonBytesElement_throwsValidationException() throws {
+        let manager = try disconnectedManager()
+        let badContextType: SCValXDR = .vec([
+            .symbol("CreateContract"),
+            .u32(12345)
+        ])
+        let ruleMap = buildFullRuleMap(contextType: badContextType)
+        XCTAssertThrowsError(try manager.parseContextRule(scVal: ruleMap)) { error in
+            XCTAssertTrue(error is ValidationException.InvalidInput)
+        }
+    }
+
+    /// A signer Vec whose first element is not a Symbol must throw
+    /// `ValidationException.InvalidInput` naming the signer field.
+    func test_parseContextRule_signerNonSymbolDiscriminant_throwsValidationException() throws {
+        let manager = try disconnectedManager()
+        let badSigner: SCValXDR = .vec([
+            .u32(99)
+        ])
+        let ruleMap = buildFullRuleMap(
+            signers: [badSigner],
+            signerIds: [0]
+        )
+        XCTAssertThrowsError(try manager.parseContextRule(scVal: ruleMap)) { error in
+            XCTAssertTrue(error is ValidationException.InvalidInput)
+        }
+    }
+
+    /// An External signer whose `keyData` slot is not Bytes (e.g. a U32)
+    /// must throw `ValidationException.InvalidInput`.
+    func test_parseContextRule_externalSignerNonBytesKeyData_throwsValidationException() throws {
+        let manager = try disconnectedManager()
+        let badExternal: SCValXDR = .vec([
+            .symbol("External"),
+            .address(try SCAddressXDR(contractId: validContractAddress)),
+            .u32(77)
+        ])
+        let ruleMap = buildFullRuleMap(
+            signers: [badExternal],
+            signerIds: [0]
+        )
+        XCTAssertThrowsError(try manager.parseContextRule(scVal: ruleMap)) { error in
+            XCTAssertTrue(error is ValidationException.InvalidInput)
+        }
+    }
 }

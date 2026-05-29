@@ -647,4 +647,38 @@ final class OZSmartAccountBuildersTests: XCTestCase {
         XCTAssertEqual(params.threshold, 2)
         XCTAssertEqual(params.signerWeights.count, 1)
     }
+
+    // MARK: - getCredentialIdFromSigner — Ed25519 path (line 115 coverage)
+
+    /// An Ed25519 signer's `keyData` is exactly 32 bytes (≤ secp256r1PublicKeySize),
+    /// so `getCredentialIdFromSigner` must return `nil`.
+    func testGetCredentialIdFromSigner_ed25519Signer_returnsNil() throws {
+        let ed25519Key = Data(repeating: 0x42, count: SmartAccountConstants.ed25519PublicKeySize)
+        let signer = try OZExternalSigner.ed25519(
+            verifierAddress: validContractC,
+            publicKey: ed25519Key
+        )
+        XCTAssertNil(
+            OZSmartAccountBuilders.getCredentialIdFromSigner(signer: signer),
+            "Ed25519 signer has no credential ID suffix — must return nil"
+        )
+    }
+
+    // MARK: - getCredentialIdFromSigner — exact-size Ed25519 path
+
+    /// An Ed25519 signer with exactly 32 bytes of key data hits the
+    /// `keyData.count <= secp256r1PublicKeySize` guard and returns `nil`.
+    func testGetCredentialIdFromSigner_ed25519ExactSize_returnsNilCoverage() throws {
+        // Ed25519 key is 32 bytes; secp256r1PublicKeySize is 65 bytes.
+        // 32 <= 65, so the guard fires and returns nil.
+        let ed25519Key = Data(repeating: 0x01, count: SmartAccountConstants.ed25519PublicKeySize)
+        let signer = try OZExternalSigner.ed25519(
+            verifierAddress: validContractC,
+            publicKey: ed25519Key
+        )
+        XCTAssertNil(
+            OZSmartAccountBuilders.getCredentialIdFromSigner(signer: signer),
+            "Ed25519 signer key is 32 bytes which is <= secp256r1PublicKeySize; must return nil"
+        )
+    }
 }

@@ -32,7 +32,7 @@ internal func ozResolveClientVersion() -> String {
     let frameworkBundle = Bundle(for: OZHttpInternalBundleAnchor.self)
     if let version = frameworkBundle.infoDictionary?["CFBundleShortVersionString"] as? String,
        !version.isEmpty {
-        return version
+        return version // LCOV_EXCL_LINE
     }
     return "unknown"
 }

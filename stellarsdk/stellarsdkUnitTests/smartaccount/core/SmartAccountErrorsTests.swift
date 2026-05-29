@@ -309,4 +309,46 @@ final class SmartAccountErrorsTests: XCTestCase {
             XCTAssertTrue(wrapped is IndexerException.Timeout)
         }
     }
+
+    // MARK: - description with SmartAccountException cause (line 239 coverage)
+
+    /// When an exception has a SmartAccountException as its cause, `description`
+    /// must include the inner exception's message. This exercises the
+    /// `if let smartAccountError = error as? SmartAccountException` branch.
+    func test_description_withSmartAccountExceptionCause_includesInnerMessage() {
+        let innerError = ValidationException.invalidInput(
+            field: "field",
+            reason: "inner error message"
+        )
+        let outerError = TransactionException.signingFailed(
+            reason: "outer error",
+            cause: innerError
+        )
+        let desc = outerError.description
+        XCTAssertTrue(
+            desc.contains("inner error message"),
+            "description must include the inner SmartAccountException message, got: \(desc)"
+        )
+    }
+
+    /// When `description` is called with a non-SmartAccountException cause
+    /// that has an empty localized description, line 245 (`return String(describing:)`)
+    /// is reached.
+    func test_description_withEmptyLocalizationCause_usesDescribing() {
+        struct _EmptyLocalized: Error, CustomStringConvertible {
+            var localizedDescription: String { "" }
+            var description: String { "custom description" }
+        }
+        let err = _EmptyLocalized()
+        let wrapped = ValidationException.invalidInput(
+            field: "test",
+            reason: "test reason",
+            cause: err
+        )
+        let desc = wrapped.description
+        XCTAssertTrue(
+            desc.contains("custom description") || desc.contains("cause"),
+            "description must include cause info for empty-localized errors, got: \(desc)"
+        )
+    }
 }

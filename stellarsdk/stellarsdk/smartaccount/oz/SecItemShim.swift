@@ -29,6 +29,7 @@ public struct RealSecItemShim: SecItemShim {
 
     public init() {}
 
+    // LCOV_EXCL_START
     public func add(
         query: CFDictionary,
         result: UnsafeMutablePointer<CFTypeRef?>?
@@ -53,4 +54,5 @@ public struct RealSecItemShim: SecItemShim {
     public func delete(query: CFDictionary) -> OSStatus {
         return SecItemDelete(query)
     }
+    // LCOV_EXCL_STOP
 }

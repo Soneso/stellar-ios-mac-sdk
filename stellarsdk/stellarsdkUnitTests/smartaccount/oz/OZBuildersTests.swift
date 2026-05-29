@@ -158,4 +158,93 @@ final class OZBuildersTests: XCTestCase {
         XCTAssertEqual(result[2].uniqueKey, signer3.uniqueKey)
         XCTAssertEqual(result[3].uniqueKey, signer4.uniqueKey)
     }
+
+    // MARK: - ContextRuleType equality (default: return false branch)
+
+    /// Comparing a `callContract` type against a `createContract` type must
+    /// return `false` (the `default:` branch in `ContextRuleType.==`).
+    func test_contextRuleTypeEquality_callContractVsCreateContract_returnsFalse() {
+        let a = ContextRuleType.callContract(contractAddress: "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM")
+        let b = ContextRuleType.createContract(wasmHash: Data(repeating: 0xAB, count: 32))
+        XCTAssertNotEqual(a, b)
+    }
+
+    /// Comparing `defaultRule` against `callContract` must return `false`.
+    func test_contextRuleTypeEquality_defaultVsCallContract_returnsFalse() {
+        let a = ContextRuleType.defaultRule
+        let b = ContextRuleType.callContract(contractAddress: "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM")
+        XCTAssertNotEqual(a, b)
+    }
+
+    // MARK: - ParsedContextRule equality
+
+    /// Two rules that differ in name must not be equal (exercises the
+    /// guard-condition early-exit path in `ParsedContextRule.==`).
+    func test_parsedContextRule_equality_differentName_notEqual() throws {
+        let address = "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ"
+        let signer = try OZDelegatedSigner(address: address)
+        let ruleA = ParsedContextRule(
+            id: 1,
+            contextType: .defaultRule,
+            name: "Alpha",
+            signers: [signer],
+            signerIds: [0],
+            policies: [],
+            policyIds: [],
+            validUntil: nil
+        )
+        let ruleB = ParsedContextRule(
+            id: 1,
+            contextType: .defaultRule,
+            name: "Beta",
+            signers: [signer],
+            signerIds: [0],
+            policies: [],
+            policyIds: [],
+            validUntil: nil
+        )
+        XCTAssertNotEqual(ruleA, ruleB)
+    }
+
+    /// Two identical rules must compare equal (exercises the `return true`
+    /// branch at the end of `ParsedContextRule.==`).
+    func test_parsedContextRule_equality_identicalRules_equal() throws {
+        let address = "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ"
+        let signer = try OZDelegatedSigner(address: address)
+        let rule = ParsedContextRule(
+            id: 2,
+            contextType: .defaultRule,
+            name: "Same",
+            signers: [signer],
+            signerIds: [0],
+            policies: [],
+            policyIds: [],
+            validUntil: nil
+        )
+        let ruleCopy = ParsedContextRule(
+            id: 2,
+            contextType: .defaultRule,
+            name: "Same",
+            signers: [signer],
+            signerIds: [0],
+            policies: [],
+            policyIds: [],
+            validUntil: nil
+        )
+        XCTAssertEqual(rule, ruleCopy)
+    }
+
+    // MARK: - createCreateContractContext invalid hex characters
+
+    /// `createCreateContractContext(wasmHashHex:)` with a 64-character string
+    /// that contains non-hex characters must throw `ValidationException.InvalidInput`.
+    func test_createCreateContractContext_invalidHexChars_throws() {
+        XCTAssertThrowsError(
+            try OZBuilders.createCreateContractContext(
+                wasmHashHex: String(repeating: "g", count: 64)
+            )
+        ) { error in
+            XCTAssertTrue(error is ValidationException.InvalidInput)
+        }
+    }
 }

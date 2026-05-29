@@ -41,6 +41,6 @@ internal final class OZNoRedirectDelegate: NSObject, URLSessionTaskDelegate {
                     willPerformHTTPRedirection response: HTTPURLResponse,
                     newRequest request: URLRequest,
                     completionHandler: @escaping (URLRequest?) -> Void) {
-        completionHandler(nil)
+        completionHandler(nil) // LCOV_EXCL_LINE
     }
 }

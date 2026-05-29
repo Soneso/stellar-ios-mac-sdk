@@ -122,4 +122,17 @@ final class OZValidationTests: XCTestCase {
         // failure.
         XCTAssertTrue(ozResponseIsJson(nil))
     }
+
+    // MARK: - isLocalhostUrl — missing branches
+
+    /// A `http://` URL with user info must be rejected (line 77 coverage).
+    func test_isLocalhostUrl_withUserInfo_returnsFalse() throws {
+        // A URL with user credentials must be rejected even if the host is
+        // localhost, to prevent host-confusion attacks.
+        XCTAssertThrowsError(
+            try OZIndexerClient(indexerUrl: "http://user:pass@localhost:8080")
+        ) { error in
+            XCTAssertTrue(error is ConfigurationException.InvalidConfig)
+        }
+    }
 }

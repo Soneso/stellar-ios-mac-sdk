@@ -484,4 +484,433 @@ final class OZSmartAccountConfigTests: XCTestCase {
     func testOZConstants_defaultTimeoutSeconds() {
         XCTAssertEqual(30, OZConstants.defaultTimeoutSeconds)
     }
+
+    // MARK: - Builder optional setters (Batch G)
+
+    /// Exercises every optional builder setter. Verifies that the built
+    /// `OZSmartAccountConfig` reflects the values set via the fluent API.
+    func test_builder_allOptionalSetters_buildSucceeds() throws {
+        let customStorage = InMemoryStorageAdapter()
+        let customMaxScanId: UInt32 = 200
+
+        let config = try OZSmartAccountConfig.builder(
+            rpcUrl: validRpcUrl,
+            networkPassphrase: validPassphrase,
+            accountWasmHash: validWasmHash,
+            webauthnVerifierAddress: validVerifier
+        )
+        .rpId("wallet.example.com")
+        .rpName("Test Wallet")
+        .sessionExpiryMs(86_400_000)
+        .signatureExpirationLedgers(720)
+        .timeoutInSeconds(60)
+        .relayerUrl("https://relayer.example.com")
+        .indexerUrl("https://indexer.example.com")
+        .webauthnProvider(nil)
+        .storage(customStorage)
+        .externalWallet(nil)
+        .externalSignerManager(nil)
+        .maxContextRuleScanId(customMaxScanId)
+        .build()
+
+        XCTAssertEqual("wallet.example.com", config.rpId)
+        XCTAssertEqual("Test Wallet", config.rpName)
+        XCTAssertEqual(86_400_000, config.sessionExpiryMs)
+        XCTAssertEqual(720, config.signatureExpirationLedgers)
+        XCTAssertEqual(60, config.timeoutInSeconds)
+        XCTAssertEqual("https://relayer.example.com", config.relayerUrl)
+        XCTAssertEqual("https://indexer.example.com", config.indexerUrl)
+        XCTAssertNil(config.webauthnProvider)
+        XCTAssertNil(config.externalWallet)
+        XCTAssertNil(config.externalSignerManager)
+        XCTAssertEqual(customMaxScanId, config.maxContextRuleScanId)
+    }
+
+    // MARK: - isValidWasmHashHex — invalid character in 64-char string (line 328)
+
+    /// A 64-character string that is otherwise the right length but contains a
+    /// non-hex character must throw `ConfigurationException.InvalidConfig`.
+    /// This exercises the `return false` branch inside the hex character loop
+    /// (line 328 in `OZSmartAccountConfig.swift`).
+    func testAccountWasmHash_invalidCharInHexString_throws() {
+        let invalidHash = "a" + String(repeating: "0", count: 62) + "Z"
+        XCTAssertThrowsError(
+            try OZSmartAccountConfig(
+                rpcUrl: validRpcUrl,
+                networkPassphrase: validPassphrase,
+                accountWasmHash: invalidHash,
+                webauthnVerifierAddress: validVerifier
+            )
+        ) { error in
+            XCTAssertTrue(error is ConfigurationException.InvalidConfig)
+        }
+    }
+
+    // MARK: - Validation error paths
+
+    /// `signatureExpirationLedgers` of zero must throw
+    /// `ConfigurationException.InvalidConfig`.
+    func test_signatureExpirationLedgers_zeroThrows() {
+        XCTAssertThrowsError(
+            try OZSmartAccountConfig(
+                rpcUrl: validRpcUrl,
+                networkPassphrase: validPassphrase,
+                accountWasmHash: validWasmHash,
+                webauthnVerifierAddress: validVerifier,
+                signatureExpirationLedgers: 0
+            )
+        ) { error in
+            XCTAssertTrue(error is ConfigurationException.InvalidConfig)
+        }
+    }
+
+    /// `signatureExpirationLedgers` above the maximum (535_680) must throw.
+    func test_signatureExpirationLedgers_tooLargeThrows() {
+        XCTAssertThrowsError(
+            try OZSmartAccountConfig(
+                rpcUrl: validRpcUrl,
+                networkPassphrase: validPassphrase,
+                accountWasmHash: validWasmHash,
+                webauthnVerifierAddress: validVerifier,
+                signatureExpirationLedgers: 535_681
+            )
+        ) { error in
+            XCTAssertTrue(error is ConfigurationException.InvalidConfig)
+        }
+    }
+
+    /// `timeoutInSeconds` of zero must throw `ConfigurationException.InvalidConfig`.
+    func test_timeoutInSeconds_zeroThrows() {
+        XCTAssertThrowsError(
+            try OZSmartAccountConfig(
+                rpcUrl: validRpcUrl,
+                networkPassphrase: validPassphrase,
+                accountWasmHash: validWasmHash,
+                webauthnVerifierAddress: validVerifier,
+                timeoutInSeconds: 0
+            )
+        ) { error in
+            XCTAssertTrue(error is ConfigurationException.InvalidConfig)
+        }
+    }
+
+    /// `timeoutInSeconds` above 600 must throw `ConfigurationException.InvalidConfig`.
+    func test_timeoutInSeconds_tooLargeThrows() {
+        XCTAssertThrowsError(
+            try OZSmartAccountConfig(
+                rpcUrl: validRpcUrl,
+                networkPassphrase: validPassphrase,
+                accountWasmHash: validWasmHash,
+                webauthnVerifierAddress: validVerifier,
+                timeoutInSeconds: 601
+            )
+        ) { error in
+            XCTAssertTrue(error is ConfigurationException.InvalidConfig)
+        }
+    }
+
+    // MARK: - Equality and hash coverage
+
+    /// Configs with different deployer keypairs must not be equal.
+    func test_equality_differentDeployerKeypairNotEqual() throws {
+        let keypair = try KeyPair(secretSeed: "SC4CGETADVYTCR5HEAVZRB3DZQY5Y4J7RFNJTRA6ESMHIPEZUSTE2QDK")
+        let config1 = try OZSmartAccountConfig(
+            rpcUrl: validRpcUrl,
+            networkPassphrase: validPassphrase,
+            accountWasmHash: validWasmHash,
+            webauthnVerifierAddress: validVerifier,
+            deployerKeypair: keypair
+        )
+        let config2 = try OZSmartAccountConfig(
+            rpcUrl: validRpcUrl,
+            networkPassphrase: validPassphrase,
+            accountWasmHash: validWasmHash,
+            webauthnVerifierAddress: validVerifier,
+            deployerKeypair: nil
+        )
+        XCTAssertNotEqual(config1, config2)
+    }
+
+    /// Configs with two non-nil deployer keypairs that are equal must be equal.
+    func test_equality_sameDeployerKeypairEqual() throws {
+        let keypair1 = try KeyPair(secretSeed: "SC4CGETADVYTCR5HEAVZRB3DZQY5Y4J7RFNJTRA6ESMHIPEZUSTE2QDK")
+        let keypair2 = try KeyPair(secretSeed: "SC4CGETADVYTCR5HEAVZRB3DZQY5Y4J7RFNJTRA6ESMHIPEZUSTE2QDK")
+        let config1 = try OZSmartAccountConfig(
+            rpcUrl: validRpcUrl,
+            networkPassphrase: validPassphrase,
+            accountWasmHash: validWasmHash,
+            webauthnVerifierAddress: validVerifier,
+            deployerKeypair: keypair1
+        )
+        let config2 = try OZSmartAccountConfig(
+            rpcUrl: validRpcUrl,
+            networkPassphrase: validPassphrase,
+            accountWasmHash: validWasmHash,
+            webauthnVerifierAddress: validVerifier,
+            deployerKeypair: keypair2
+        )
+        XCTAssertEqual(config1, config2)
+    }
+
+    /// Configs with two different non-nil storage adapters that are NOT
+    /// `InMemoryStorageAdapter` must be unequal when they are different instances.
+    func test_equality_differentNonInMemoryStorageNotEqual() throws {
+        let storage1 = _TestNamedStorageAdapter(name: "A")
+        let storage2 = _TestNamedStorageAdapter(name: "B")
+        let config1 = try OZSmartAccountConfig(
+            rpcUrl: validRpcUrl,
+            networkPassphrase: validPassphrase,
+            accountWasmHash: validWasmHash,
+            webauthnVerifierAddress: validVerifier,
+            storage: storage1
+        )
+        let config2 = try OZSmartAccountConfig(
+            rpcUrl: validRpcUrl,
+            networkPassphrase: validPassphrase,
+            accountWasmHash: validWasmHash,
+            webauthnVerifierAddress: validVerifier,
+            storage: storage2
+        )
+        XCTAssertNotEqual(config1, config2)
+    }
+
+    /// Hash includes the storage identity when the adapter is not `InMemoryStorageAdapter`.
+    func test_hash_nonInMemoryStorageIncludesIdentity() throws {
+        let storage = _TestNamedStorageAdapter(name: "X")
+        let config = try OZSmartAccountConfig(
+            rpcUrl: validRpcUrl,
+            networkPassphrase: validPassphrase,
+            accountWasmHash: validWasmHash,
+            webauthnVerifierAddress: validVerifier,
+            storage: storage
+        )
+        var hasher = Hasher()
+        config.hash(into: &hasher)
+        let hashValue = hasher.finalize()
+        XCTAssertNotEqual(0, hashValue)
+    }
+
+    /// Two configs where one has a WebAuthn provider and the other does not
+    /// must not be equal.
+    func test_equality_differentWebAuthnProviderNotEqual() throws {
+        let provider = MockWebAuthnProvider()
+        let config1 = try OZSmartAccountConfig(
+            rpcUrl: validRpcUrl,
+            networkPassphrase: validPassphrase,
+            accountWasmHash: validWasmHash,
+            webauthnVerifierAddress: validVerifier,
+            webauthnProvider: provider
+        )
+        let config2 = try OZSmartAccountConfig(
+            rpcUrl: validRpcUrl,
+            networkPassphrase: validPassphrase,
+            accountWasmHash: validWasmHash,
+            webauthnVerifierAddress: validVerifier,
+            webauthnProvider: nil
+        )
+        XCTAssertNotEqual(config1, config2)
+    }
+
+    /// Two configs with the same non-nil WebAuthn provider instance must be equal.
+    func test_equality_sameWebAuthnProviderEqual() throws {
+        let provider = MockWebAuthnProvider()
+        let config1 = try OZSmartAccountConfig(
+            rpcUrl: validRpcUrl,
+            networkPassphrase: validPassphrase,
+            accountWasmHash: validWasmHash,
+            webauthnVerifierAddress: validVerifier,
+            webauthnProvider: provider
+        )
+        let config2 = try OZSmartAccountConfig(
+            rpcUrl: validRpcUrl,
+            networkPassphrase: validPassphrase,
+            accountWasmHash: validWasmHash,
+            webauthnVerifierAddress: validVerifier,
+            webauthnProvider: provider
+        )
+        XCTAssertEqual(config1, config2)
+        XCTAssertEqual(config1.hashValue, config2.hashValue)
+    }
+
+    /// Configs that share the same `externalWallet` instance must be equal
+    /// (exercises the identity-comparison branch, line 667).
+    func test_equality_sameExternalWalletEqual() throws {
+        let wallet = _TestExternalWalletAdapter()
+        let config1 = try OZSmartAccountConfig(
+            rpcUrl: validRpcUrl,
+            networkPassphrase: validPassphrase,
+            accountWasmHash: validWasmHash,
+            webauthnVerifierAddress: validVerifier,
+            externalWallet: wallet
+        )
+        let config2 = try OZSmartAccountConfig(
+            rpcUrl: validRpcUrl,
+            networkPassphrase: validPassphrase,
+            accountWasmHash: validWasmHash,
+            webauthnVerifierAddress: validVerifier,
+            externalWallet: wallet
+        )
+        XCTAssertEqual(config1, config2)
+    }
+
+    /// A config with an `externalWallet` vs one without must not be equal
+    /// (exercises the `default: return false` branch, line 669).
+    func test_equality_externalWalletNilVsNonNilNotEqual() throws {
+        let wallet = _TestExternalWalletAdapter()
+        let config1 = try OZSmartAccountConfig(
+            rpcUrl: validRpcUrl,
+            networkPassphrase: validPassphrase,
+            accountWasmHash: validWasmHash,
+            webauthnVerifierAddress: validVerifier,
+            externalWallet: wallet
+        )
+        let config2 = try OZSmartAccountConfig(
+            rpcUrl: validRpcUrl,
+            networkPassphrase: validPassphrase,
+            accountWasmHash: validWasmHash,
+            webauthnVerifierAddress: validVerifier,
+            externalWallet: nil
+        )
+        XCTAssertNotEqual(config1, config2)
+    }
+
+    /// Two configs that differ only in `externalWallet` must not be equal
+    /// (exercises line 592 — the `return false` after `externalWalletAdaptersEqual`).
+    func test_equality_differentExternalWalletNotEqual() throws {
+        let wallet1 = _TestExternalWalletAdapter()
+        let wallet2 = _TestExternalWalletAdapter()
+        let config1 = try OZSmartAccountConfig(
+            rpcUrl: validRpcUrl,
+            networkPassphrase: validPassphrase,
+            accountWasmHash: validWasmHash,
+            webauthnVerifierAddress: validVerifier,
+            externalWallet: wallet1
+        )
+        let config2 = try OZSmartAccountConfig(
+            rpcUrl: validRpcUrl,
+            networkPassphrase: validPassphrase,
+            accountWasmHash: validWasmHash,
+            webauthnVerifierAddress: validVerifier,
+            externalWallet: wallet2
+        )
+        XCTAssertNotEqual(config1, config2)
+    }
+
+    /// Configs with different `externalSignerManager` instances must not be equal.
+    func test_equality_differentExternalSignerManagerNotEqual() throws {
+        let mgr1 = OZExternalSignerManager(networkPassphrase: validPassphrase)
+        let mgr2 = OZExternalSignerManager(networkPassphrase: validPassphrase)
+        let config1 = try OZSmartAccountConfig(
+            rpcUrl: validRpcUrl,
+            networkPassphrase: validPassphrase,
+            accountWasmHash: validWasmHash,
+            webauthnVerifierAddress: validVerifier,
+            externalSignerManager: mgr1
+        )
+        let config2 = try OZSmartAccountConfig(
+            rpcUrl: validRpcUrl,
+            networkPassphrase: validPassphrase,
+            accountWasmHash: validWasmHash,
+            webauthnVerifierAddress: validVerifier,
+            externalSignerManager: mgr2
+        )
+        XCTAssertNotEqual(config1, config2)
+    }
+
+    /// A config with a non-nil `externalSignerManager` must not equal a config
+    /// with a nil one (exercises the `default: return false` branch).
+    func test_equality_externalSignerManagerNilVsNonNilNotEqual() throws {
+        let mgr = OZExternalSignerManager(networkPassphrase: validPassphrase)
+        let config1 = try OZSmartAccountConfig(
+            rpcUrl: validRpcUrl,
+            networkPassphrase: validPassphrase,
+            accountWasmHash: validWasmHash,
+            webauthnVerifierAddress: validVerifier,
+            externalSignerManager: mgr
+        )
+        let config2 = try OZSmartAccountConfig(
+            rpcUrl: validRpcUrl,
+            networkPassphrase: validPassphrase,
+            accountWasmHash: validWasmHash,
+            webauthnVerifierAddress: validVerifier,
+            externalSignerManager: nil
+        )
+        XCTAssertNotEqual(config1, config2)
+    }
+
+    /// Hash includes the `externalWallet` identity when non-nil (line 623-624).
+    func test_hash_externalWalletIncludesIdentity() throws {
+        let wallet = _TestExternalWalletAdapter()
+        let configWithWallet = try OZSmartAccountConfig(
+            rpcUrl: validRpcUrl,
+            networkPassphrase: validPassphrase,
+            accountWasmHash: validWasmHash,
+            webauthnVerifierAddress: validVerifier,
+            externalWallet: wallet
+        )
+        let configWithoutWallet = try OZSmartAccountConfig(
+            rpcUrl: validRpcUrl,
+            networkPassphrase: validPassphrase,
+            accountWasmHash: validWasmHash,
+            webauthnVerifierAddress: validVerifier,
+            externalWallet: nil
+        )
+        XCTAssertNotEqual(configWithWallet.hashValue, configWithoutWallet.hashValue)
+    }
+
+    /// Hash includes the `externalSignerManager` identity when non-nil.
+    func test_hash_externalSignerManagerIncludesIdentity() throws {
+        let mgr = OZExternalSignerManager(networkPassphrase: validPassphrase)
+        let configWithMgr = try OZSmartAccountConfig(
+            rpcUrl: validRpcUrl,
+            networkPassphrase: validPassphrase,
+            accountWasmHash: validWasmHash,
+            webauthnVerifierAddress: validVerifier,
+            externalSignerManager: mgr
+        )
+        let configWithoutMgr = try OZSmartAccountConfig(
+            rpcUrl: validRpcUrl,
+            networkPassphrase: validPassphrase,
+            accountWasmHash: validWasmHash,
+            webauthnVerifierAddress: validVerifier,
+            externalSignerManager: nil
+        )
+        XCTAssertNotEqual(configWithMgr.hashValue, configWithoutMgr.hashValue)
+    }
+}
+
+// MARK: - _TestExternalWalletAdapter
+
+/// Minimal `ExternalWalletAdapter` used by equality/hash tests.
+private final class _TestExternalWalletAdapter: ExternalWalletAdapter, @unchecked Sendable {
+    func connect() async throws -> ConnectedWallet? { return nil }
+    func disconnect() async throws {}
+    func signAuthEntry(preimageXdr: String, options: SignAuthEntryOptions?) async throws -> SignAuthEntryResult {
+        return SignAuthEntryResult(signedAuthEntry: "")
+    }
+    func getConnectedWallets() -> [ConnectedWallet] { return [] }
+    func canSignFor(address: String) -> Bool { return false }
+}
+
+// MARK: - _TestNamedStorageAdapter
+
+/// Concrete `StorageAdapter` that is neither `InMemoryStorageAdapter` nor
+/// `KeychainStorageAdapter`. Used by equality tests to exercise the identity-
+/// comparison branch in `storageAdaptersEqual(_:_:)`.
+private final class _TestNamedStorageAdapter: StorageAdapter, @unchecked Sendable {
+    let name: String
+    private let inner = InMemoryStorageAdapter()
+
+    init(name: String) { self.name = name }
+
+    func save(credential: StoredCredential) async throws { try await inner.save(credential: credential) }
+    func get(credentialId: String) async throws -> StoredCredential? { try await inner.get(credentialId: credentialId) }
+    func getByContract(contractId: String) async throws -> [StoredCredential] { try await inner.getByContract(contractId: contractId) }
+    func getAll() async throws -> [StoredCredential] { try await inner.getAll() }
+    func delete(credentialId: String) async throws { try await inner.delete(credentialId: credentialId) }
+    func update(credentialId: String, updates: StoredCredentialUpdate) async throws { try await inner.update(credentialId: credentialId, updates: updates) }
+    func clear() async throws { try await inner.clear() }
+    func saveSession(_ session: StoredSession) async throws { try await inner.saveSession(session) }
+    func getSession() async throws -> StoredSession? { try await inner.getSession() }
+    func clearSession() async throws { try await inner.clearSession() }
 }
