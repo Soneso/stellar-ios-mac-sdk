@@ -243,16 +243,11 @@ internal protocol OZSmartAccountKitProtocol: AnyObject, Sendable {
     /// invoked with a non-empty `selectedSigners` list.
     var multiSignerManager: OZMultiSignerManager { get }
 
-    /// External-signer manager bound to this kit. Optional because the
-    /// consumer supplies it explicitly via `OZSmartAccountConfig.externalSignerManager`;
-    /// the kit does not construct one automatically.
-    var externalSignerManager: OZExternalSignerManager? { get }
-
-    /// Active external-wallet adapter, when configured. Mirrors the
-    /// ``OZSmartAccountConfig/externalWallet`` value at the kit's
-    /// composition root so callers can resolve it from the protocol surface
-    /// without going through the configuration object.
-    var externalWallet: ExternalWalletAdapter? { get }
+    /// Kit-owned external-signer manager. The single front door for all
+    /// external (non-passkey) signing sources. Constructed at kit
+    /// initialization from the configuration's wallet adapter and Ed25519
+    /// adapter; always non-`nil` and valid after ``close()``.
+    var externalSigners: OZExternalSignerManager { get }
 
     /// Connected smart-account contract identifier, when a wallet is
     /// connected. Returns `nil` when no wallet is connected; callers that

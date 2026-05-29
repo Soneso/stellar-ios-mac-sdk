@@ -107,34 +107,38 @@ See the [Signing](#signing) subsection below for how to authorize transactions o
 
 When a multi-signer ceremony involves an Ed25519 signer, the smart-account contract calls the registered verifier contract during `__check_auth` to validate the signature. The auth digest — `SHA-256(signaturePayload || contextRuleIds.toXDR())` — is computed by the SDK and must be signed with the Ed25519 private key that corresponds to the on-chain `(verifierAddress, publicKey)` entry.
 
-The `OZExternalSignerManager` actor manages Ed25519 signing sources independently of the kit. Construct one, register the signing capability, then pass an `ed25519` signer into any multi-signer method.
+`kit.externalSigners` is the single front door for all Ed25519 signing. Two custody models are available:
 
-**Register with a secret key (memory-only):**
+**Model 1 — in-memory keypair (key held in process):** register the key at runtime via `kit.externalSigners`.
 
 ```swift
 let ed25519VerifierAddress = "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM"
-let externalSignerManager = OZExternalSignerManager(
-    networkPassphrase: Network.testnet.passphrase
-)
 // rawSecretKeyBytes must be exactly 32 bytes (the raw Ed25519 seed, not an S-strkey).
 // Stores the keypair in memory under the (verifierAddress, publicKey) tuple.
 // Returns the 32-byte public key.
-let ed25519PublicKey = try await externalSignerManager.addEd25519FromRawKey(
+let ed25519PublicKey = try kit.externalSigners.addEd25519FromRawKey(
     secretKeyBytes: rawSecretKeyBytes,
     verifierAddress: ed25519VerifierAddress
 )
 ```
 
-**Register an out-of-process adapter (optional, for hardware wallets and remote services):**
-
-Call `setEd25519Adapter(_:)` on the actor before the first multi-signer call. Because `OZExternalSignerManager` is a Swift actor, direct property assignment from outside the actor is not permitted by the compiler; use the dedicated setter method instead:
+**Model 2 — adapter (key managed externally, e.g. a hardware wallet):** supply a conforming `OZExternalEd25519SignerAdapter` via `config.externalEd25519Adapter` at kit construction. The adapter is injected into `kit.externalSigners` and takes precedence over any in-memory keypair registered for the same `(verifierAddress, publicKey)` pair.
 
 ```swift
-// setEd25519Adapter(_:) is actor-isolated; call it with await.
-await externalSignerManager.setEd25519Adapter(myHardwareWalletAdapter)
+let config = try OZSmartAccountConfig(
+    rpcUrl: "https://soroban-testnet.stellar.org",
+    networkPassphrase: Network.testnet.passphrase,
+    accountWasmHash: "<64-char hex WASM hash>",
+    webauthnVerifierAddress: "<C-strkey of WebAuthn verifier>",
+    externalEd25519Adapter: myHardwareWalletAdapter
+)
+let kit = OZSmartAccountKit.create(config: config)
+// kit.externalSigners automatically delegates Ed25519 signing to the adapter.
 ```
 
-When an adapter is set, it takes precedence over the in-memory keypair for the same `(verifierAddress, publicKey)` pair. See the [API Reference](api-reference.md#external-signer-management) for the full adapter protocol.
+See the [API Reference](api-reference.md#external-signer-management) for the full adapter protocol.
+
+Wallet (G-address) signers follow the same two-model symmetry: an in-memory keypair registered at runtime via `kit.externalSigners.addFromSecret(secretKey:)`, or an adapter supplied via `config.externalWallet` at kit construction.
 
 **Pass the signer to a multi-signer method:**
 

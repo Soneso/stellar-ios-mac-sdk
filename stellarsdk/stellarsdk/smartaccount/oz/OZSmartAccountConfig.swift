@@ -129,14 +129,15 @@ public struct OZSmartAccountConfig: @unchecked Sendable {
     /// When set, delegates transaction signing to this adapter instead of using WebAuthn credentials.
     public let externalWallet: ExternalWalletAdapter?
 
-    /// External-signer manager for Ed25519 signing in multi-signer ceremonies.
+    /// Optional adapter for out-of-process Ed25519 signing in multi-signer ceremonies.
     ///
-    /// Consumer applications construct ``OZExternalSignerManager`` separately, register
-    /// Ed25519 keypairs or adapters on it, and supply it here so the kit's multi-signer
-    /// pipeline can resolve signing sources for ``SelectedSigner/ed25519(verifierAddress:publicKey:)``
-    /// entries. When `nil`, any ``SelectedSigner/ed25519(...)`` entry in a multi-signer
-    /// call throws `ValidationException.InvalidInput` at the validation stage.
-    public let externalSignerManager: OZExternalSignerManager?
+    /// When non-`nil`, the adapter is injected into the kit's ``OZExternalSignerManager`` at
+    /// construction time and consulted (with adapter-first precedence) before the in-memory
+    /// Ed25519 keypair registry for every
+    /// ``SelectedSigner/ed25519(verifierAddress:publicKey:)`` entry. In-memory keypairs can
+    /// still be registered at runtime via ``OZSmartAccountKit/externalSigners``
+    /// ``OZExternalSignerManager/addEd25519FromRawKey(secretKeyBytes:verifierAddress:)``.
+    public let externalEd25519Adapter: OZExternalEd25519SignerAdapter?
 
     /// Maximum rule ID to scan when iterating context rules.
     ///
@@ -168,7 +169,7 @@ public struct OZSmartAccountConfig: @unchecked Sendable {
         webauthnProvider: WebAuthnProvider? = nil,
         storage: StorageAdapter = InMemoryStorageAdapter(),
         externalWallet: ExternalWalletAdapter? = nil,
-        externalSignerManager: OZExternalSignerManager? = nil,
+        externalEd25519Adapter: OZExternalEd25519SignerAdapter? = nil,
         maxContextRuleScanId: UInt32 = 50
     ) throws {
         if rpcUrl.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
@@ -225,7 +226,7 @@ public struct OZSmartAccountConfig: @unchecked Sendable {
         self.webauthnProvider = webauthnProvider
         self.storage = storage
         self.externalWallet = externalWallet
-        self.externalSignerManager = externalSignerManager
+        self.externalEd25519Adapter = externalEd25519Adapter
         self.maxContextRuleScanId = maxContextRuleScanId
     }
 
@@ -368,7 +369,7 @@ public struct OZSmartAccountConfig: @unchecked Sendable {
         private var _webauthnProvider: WebAuthnProvider? = nil
         private var _storage: StorageAdapter = InMemoryStorageAdapter()
         private var _externalWallet: ExternalWalletAdapter? = nil
-        private var _externalSignerManager: OZExternalSignerManager? = nil
+        private var _externalEd25519Adapter: OZExternalEd25519SignerAdapter? = nil
         private var _maxContextRuleScanId: UInt32 = 50
 
         /// Initializes a new `Builder` with the four required configuration fields.
@@ -503,14 +504,16 @@ public struct OZSmartAccountConfig: @unchecked Sendable {
             return self
         }
 
-        /// Sets the external-signer manager for Ed25519 multi-signer ceremonies.
+        /// Sets the Ed25519 adapter for out-of-process Ed25519 signing.
         ///
-        /// - Parameter externalSignerManager: The manager instance (`nil` to disable
-        ///                                    Ed25519 signing support).
+        /// When set, the adapter is injected into the kit's external-signer manager at
+        /// construction time and consulted before the in-memory Ed25519 keypair registry.
+        ///
+        /// - Parameter adapter: The Ed25519 adapter (`nil` to disable adapter-based Ed25519 signing).
         /// - Returns: `self` for chaining.
         @discardableResult
-        public func externalSignerManager(_ externalSignerManager: OZExternalSignerManager?) -> Builder {
-            _externalSignerManager = externalSignerManager
+        public func externalEd25519Adapter(_ adapter: OZExternalEd25519SignerAdapter?) -> Builder {
+            _externalEd25519Adapter = adapter
             return self
         }
 
@@ -545,7 +548,7 @@ public struct OZSmartAccountConfig: @unchecked Sendable {
                 webauthnProvider: _webauthnProvider,
                 storage: _storage,
                 externalWallet: _externalWallet,
-                externalSignerManager: _externalSignerManager,
+                externalEd25519Adapter: _externalEd25519Adapter,
                 maxContextRuleScanId: _maxContextRuleScanId
             )
         }
@@ -591,7 +594,7 @@ extension OZSmartAccountConfig: Equatable {
         if !externalWalletAdaptersEqual(lhs.externalWallet, rhs.externalWallet) {
             return false
         }
-        if !externalSignerManagersEqual(lhs.externalSignerManager, rhs.externalSignerManager) {
+        if !externalEd25519AdaptersEqual(lhs.externalEd25519Adapter, rhs.externalEd25519Adapter) {
             return false
         }
         return true
@@ -622,8 +625,8 @@ extension OZSmartAccountConfig: Equatable {
         if let wallet = externalWallet {
             hasher.combine(ObjectIdentifier(wallet as AnyObject))
         }
-        if let mgr = externalSignerManager {
-            hasher.combine(ObjectIdentifier(mgr))
+        if let adapter = externalEd25519Adapter {
+            hasher.combine(ObjectIdentifier(adapter as AnyObject))
         }
     }
 
@@ -670,15 +673,15 @@ extension OZSmartAccountConfig: Equatable {
         }
     }
 
-    private static func externalSignerManagersEqual(
-        _ lhs: OZExternalSignerManager?,
-        _ rhs: OZExternalSignerManager?
+    private static func externalEd25519AdaptersEqual(
+        _ lhs: OZExternalEd25519SignerAdapter?,
+        _ rhs: OZExternalEd25519SignerAdapter?
     ) -> Bool {
         switch (lhs, rhs) {
         case (nil, nil):
             return true
         case let (l?, r?):
-            return l === r
+            return (l as AnyObject) === (r as AnyObject)
         default:
             return false
         }

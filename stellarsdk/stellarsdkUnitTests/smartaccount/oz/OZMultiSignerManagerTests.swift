@@ -748,7 +748,7 @@ final class OZMultiSignerManagerTests: XCTestCase {
 
         // Wire up a real external signer manager so the validation path is reached.
         let extMgr = OZExternalSignerManager(networkPassphrase: Network.testnet.passphrase)
-        kit.externalSignerManagerOverride = extMgr
+        kit.externalSignersOverride = extMgr
 
         let signers: [SelectedSigner] = [
             .ed25519(verifierAddress: "NOT_A_CONTRACT_ADDRESS", publicKey: Data(count: 32))
@@ -779,7 +779,7 @@ final class OZMultiSignerManagerTests: XCTestCase {
     func test_submitWithMultipleSigners_ed25519_wrongPublicKeyLength_throwsInvalidInput() async throws {
         let (kit, manager) = try connectedKit()
         let extMgr = OZExternalSignerManager(networkPassphrase: Network.testnet.passphrase)
-        kit.externalSignerManagerOverride = extMgr
+        kit.externalSignersOverride = extMgr
 
         let signers: [SelectedSigner] = [
             .ed25519(verifierAddress: validContractId, publicKey: Data(count: 16))
@@ -811,7 +811,7 @@ final class OZMultiSignerManagerTests: XCTestCase {
     func test_submitWithMultipleSigners_ed25519_noSigningSource_throwsInvalidInput() async throws {
         let (kit, manager) = try connectedKit()
         let extMgr = OZExternalSignerManager(networkPassphrase: Network.testnet.passphrase)
-        kit.externalSignerManagerOverride = extMgr
+        kit.externalSignersOverride = extMgr
 
         // A valid 32-byte key, but nothing is registered for it.
         let unregisteredKey = Data(repeating: 0x77, count: 32)
@@ -834,19 +834,25 @@ final class OZMultiSignerManagerTests: XCTestCase {
             XCTFail("expected ValidationException.InvalidInput")
         } catch let error as ValidationException.InvalidInput {
             XCTAssertTrue(
-                error.message.contains("no registered keypair or adapter"),
+                error.message.contains("no registered signing source"),
                 "error message must reference missing signing source, got: \(error.message)"
             )
         }
     }
 
-    /// When no `OZExternalSignerManager` is wired to the kit, passing an
-    /// Ed25519 signer must surface a clear `ValidationException.InvalidInput`
-    /// rather than a nil-dereference or ambiguous error.
-    func test_submitWithMultipleSigners_ed25519_noExternalSignerManager_throwsInvalidInput() async throws {
+    /// An Ed25519 signer with a valid public key but no registered keypair and no
+    /// `config.externalEd25519Adapter` must throw `ValidationException.InvalidInput`
+    /// naming the two real remedies.
+    ///
+    /// The kit always constructs an `OZExternalSignerManager`; the absence of any
+    /// registered key or adapter is a per-signer not-found condition, not a missing-manager
+    /// condition. The error text must reference both remedies:
+    /// `kit.externalSigners.addEd25519FromRawKey(...)` and `config.externalEd25519Adapter`.
+    func test_submitWithMultipleSigners_ed25519_noKeyAndNoAdapter_throwsInvalidInput() async throws {
         let (kit, manager) = try connectedKit()
-        // kit.externalSignerManagerOverride is nil by default (see MockOZSmartAccountKit).
-        XCTAssertNil(kit.externalSignerManagerOverride)
+        // No externalSignersOverride: kit.externalSigners falls back to the default manager
+        // built from the config — which has no ed25519Adapter and no registered keys.
+        XCTAssertNil(kit.externalSignersOverride)
 
         let signers: [SelectedSigner] = [
             .ed25519(verifierAddress: validContractId, publicKey: Data(count: 32))
@@ -867,9 +873,333 @@ final class OZMultiSignerManagerTests: XCTestCase {
             XCTFail("expected ValidationException.InvalidInput")
         } catch let error as ValidationException.InvalidInput {
             XCTAssertTrue(
-                error.message.contains("OZExternalSignerManager"),
-                "error message must reference OZExternalSignerManager, got: \(error.message)"
+                error.message.contains("no registered signing source"),
+                "error message must reference missing signing source, got: \(error.message)"
             )
+            XCTAssertTrue(
+                error.message.contains("addEd25519FromRawKey"),
+                "error message must reference the in-memory registration remedy, got: \(error.message)"
+            )
+            XCTAssertTrue(
+                error.message.contains("config.externalEd25519Adapter"),
+                "error message must reference the adapter remedy, got: \(error.message)"
+            )
+        }
+    }
+
+    // ========================================================================
+    // Wallet signer validation (2 cases)
+    // ========================================================================
+
+    /// A wallet signer whose address is neither registered via
+    /// `kit.externalSigners.addFromSecret` nor covered by a wallet adapter must
+    /// throw `ValidationException.InvalidInput` naming both remedies.
+    func test_submitWithMultipleSigners_wallet_noSigningSource_throwsInvalidInput() async throws {
+        let (kit, manager) = try connectedKit()
+        let extMgr = OZExternalSignerManager(networkPassphrase: Network.testnet.passphrase)
+        kit.externalSignersOverride = extMgr
+
+        // No adapter, no registered keypair for validAccountAddress.
+        let signers: [SelectedSigner] = [
+            .wallet(accountId: validAccountAddress)
+        ]
+        let hostFn = HostFunctionXDR.invokeContract(
+            InvokeContractArgsXDR(
+                contractAddress: try SCAddressXDR(contractId: validContractId),
+                functionName: "test",
+                args: []
+            )
+        )
+
+        do {
+            _ = try await manager.submitWithMultipleSigners(
+                hostFunction: hostFn,
+                selectedSigners: signers
+            )
+            XCTFail("expected ValidationException.InvalidInput")
+        } catch let error as ValidationException.InvalidInput {
+            XCTAssertTrue(
+                error.message.contains("No signing source available for wallet address"),
+                "error message must reference the missing wallet signing source, got: \(error.message)"
+            )
+            XCTAssertTrue(
+                error.message.contains("addFromSecret"),
+                "error message must reference the in-memory registration remedy, got: \(error.message)"
+            )
+            XCTAssertTrue(
+                error.message.contains("config.externalWallet"),
+                "error message must reference the adapter remedy, got: \(error.message)"
+            )
+        }
+    }
+
+    /// A wallet signer whose address is registered via
+    /// `kit.externalSigners.addFromSecret` with NO wallet adapter configured
+    /// must pass the validation stage and proceed to the RPC step.
+    ///
+    /// This is the positive custody-model-2 case: the kit-owned
+    /// `OZExternalSignerManager` holds the in-memory keypair, so no external
+    /// wallet adapter is needed for signing.
+    func test_submitWithMultipleSigners_wallet_inMemoryKeypair_noAdapter_passesValidation() async throws {
+        let (kit, manager) = try connectedKit()
+        let extMgr = OZExternalSignerManager(networkPassphrase: Network.testnet.passphrase)
+        // No walletAdapter supplied: in-memory-only path.
+        kit.externalSignersOverride = extMgr
+
+        // Register the wallet G-address in-memory — no adapter needed.
+        let walletKeypair = try KeyPair.generateRandomKeyPair()
+        guard let secret = walletKeypair.secretSeed else {
+            XCTFail("generated keypair must expose a secret seed")
+            return
+        }
+        let registeredAddress = try await extMgr.addFromSecret(secretKey: secret)
+
+        let signers: [SelectedSigner] = [
+            .wallet(accountId: registeredAddress)
+        ]
+        let hostFn = HostFunctionXDR.invokeContract(
+            InvokeContractArgsXDR(
+                contractAddress: try SCAddressXDR(contractId: validContractId),
+                functionName: "test",
+                args: []
+            )
+        )
+
+        do {
+            _ = try await manager.submitWithMultipleSigners(
+                hostFunction: hostFn,
+                selectedSigners: signers
+            )
+        } catch is ValidationException.InvalidInput {
+            XCTFail(
+                "wallet signer with an in-memory keypair must pass validation " +
+                "even when no wallet adapter is configured"
+            )
+        } catch {
+            // Expected: any non-validation error (RPC refused on non-routable server).
+        }
+    }
+
+    // ========================================================================
+    // Both custody models, both signer kinds
+    // ========================================================================
+
+    /// `kit.externalSigners.addFromSecret` registers a G-address keypair via
+    /// the wallet custody-model-2 (in-memory) path. The signing pipeline reaches
+    /// the RPC step, confirming the per-address `canSignFor` check passes.
+    func test_externalSigners_walletInMemoryKeypair_passesValidationAndReachesRpc() async throws {
+        let (kit, manager) = try connectedKit()
+        let extMgr = OZExternalSignerManager(networkPassphrase: Network.testnet.passphrase)
+        kit.externalSignersOverride = extMgr
+
+        let walletKeypair = try KeyPair.generateRandomKeyPair()
+        guard let secret = walletKeypair.secretSeed else {
+            XCTFail("generated keypair must expose a secret seed")
+            return
+        }
+        let address = try await extMgr.addFromSecret(secretKey: secret)
+
+        let signers: [SelectedSigner] = [.wallet(accountId: address)]
+        let hostFn = HostFunctionXDR.invokeContract(
+            InvokeContractArgsXDR(
+                contractAddress: try SCAddressXDR(contractId: validContractId),
+                functionName: "pay",
+                args: []
+            )
+        )
+
+        do {
+            _ = try await manager.submitWithMultipleSigners(
+                hostFunction: hostFn,
+                selectedSigners: signers
+            )
+        } catch is ValidationException.InvalidInput {
+            XCTFail("wallet signer registered in-memory must pass the validation stage")
+        } catch {
+            // Expected: RPC-layer error on the non-routable server.
+        }
+    }
+
+    /// Supplying a wallet adapter via `config.externalWallet` (custody model 1)
+    /// is the other wallet path. The adapter claims `canSignFor` = true for
+    /// `validAccountAddress`, so validation passes and the pipeline reaches RPC.
+    func test_externalSigners_walletConfigAdapter_passesValidationAndReachesRpc() async throws {
+        let walletAdapter = FakeCanSignWalletAdapter(address: validAccountAddress)
+        let config = try OZSmartAccountConfig.builder(
+            rpcUrl: "http://127.0.0.1:1",
+            networkPassphrase: Network.testnet.passphrase,
+            accountWasmHash: "a" + String(repeating: "0", count: 63),
+            webauthnVerifierAddress: validContractId
+        )
+        .externalWallet(walletAdapter)
+        .build()
+
+        let kit = MockOZSmartAccountKit(config: config)
+        kit.setConnectedState(credentialId: "test-cred", contractId: validContractId)
+        let manager = OZMultiSignerManager(kit: kit)
+
+        let signers: [SelectedSigner] = [.wallet(accountId: validAccountAddress)]
+        let hostFn = HostFunctionXDR.invokeContract(
+            InvokeContractArgsXDR(
+                contractAddress: try SCAddressXDR(contractId: validContractId),
+                functionName: "pay",
+                args: []
+            )
+        )
+
+        do {
+            _ = try await manager.submitWithMultipleSigners(
+                hostFunction: hostFn,
+                selectedSigners: signers
+            )
+        } catch is ValidationException.InvalidInput {
+            XCTFail(
+                "wallet signer covered by config.externalWallet adapter must pass validation"
+            )
+        } catch {
+            // Expected: RPC-layer error on the non-routable server.
+        }
+    }
+
+    /// `kit.externalSigners.addEd25519FromRawKey` registers an Ed25519 key via
+    /// the in-memory (custody model 2) path. Validation passes and the pipeline
+    /// reaches RPC.
+    func test_externalSigners_ed25519InMemoryKey_passesValidationAndReachesRpc() async throws {
+        let (kit, manager) = try connectedKit()
+        let extMgr = OZExternalSignerManager(networkPassphrase: Network.testnet.passphrase)
+        kit.externalSignersOverride = extMgr
+
+        let ed25519Seed = Data(0x00 ..< 0x20)
+        let pubKey = try await extMgr.addEd25519FromRawKey(
+            secretKeyBytes: ed25519Seed,
+            verifierAddress: validContractId
+        )
+
+        let signers: [SelectedSigner] = [
+            .ed25519(verifierAddress: validContractId, publicKey: pubKey)
+        ]
+        let hostFn = HostFunctionXDR.invokeContract(
+            InvokeContractArgsXDR(
+                contractAddress: try SCAddressXDR(contractId: validContractId),
+                functionName: "action",
+                args: []
+            )
+        )
+
+        do {
+            _ = try await manager.submitWithMultipleSigners(
+                hostFunction: hostFn,
+                selectedSigners: signers
+            )
+        } catch is ValidationException.InvalidInput {
+            XCTFail("Ed25519 signer registered in-memory must pass validation")
+        } catch {
+            // Expected: RPC-layer error on the non-routable server.
+        }
+    }
+
+    /// Supplying an Ed25519 adapter via `config.externalEd25519Adapter` (custody
+    /// model 1) lets the adapter claim responsibility for a given
+    /// (verifierAddress, publicKey) pair. Validation passes and the pipeline
+    /// reaches RPC.
+    func test_externalSigners_ed25519ConfigAdapter_passesValidationAndReachesRpc() async throws {
+        let pubKey = Data(repeating: 0xAA, count: 32)
+        let ed25519Adapter = FakeCanSignEd25519Adapter(
+            targetVerifierAddress: validContractId,
+            targetPublicKey: pubKey
+        )
+        let config = try OZSmartAccountConfig.builder(
+            rpcUrl: "http://127.0.0.1:1",
+            networkPassphrase: Network.testnet.passphrase,
+            accountWasmHash: "a" + String(repeating: "0", count: 63),
+            webauthnVerifierAddress: validContractId
+        )
+        .externalEd25519Adapter(ed25519Adapter)
+        .build()
+
+        let kit = MockOZSmartAccountKit(config: config)
+        kit.setConnectedState(credentialId: "test-cred", contractId: validContractId)
+        let manager = OZMultiSignerManager(kit: kit)
+
+        let signers: [SelectedSigner] = [
+            .ed25519(verifierAddress: validContractId, publicKey: pubKey)
+        ]
+        let hostFn = HostFunctionXDR.invokeContract(
+            InvokeContractArgsXDR(
+                contractAddress: try SCAddressXDR(contractId: validContractId),
+                functionName: "action",
+                args: []
+            )
+        )
+
+        do {
+            _ = try await manager.submitWithMultipleSigners(
+                hostFunction: hostFn,
+                selectedSigners: signers
+            )
+        } catch is ValidationException.InvalidInput {
+            XCTFail(
+                "Ed25519 signer covered by config.externalEd25519Adapter must pass validation"
+            )
+        } catch {
+            // Expected: RPC-layer error on the non-routable server.
+        }
+    }
+
+    /// A mixed passkey + wallet + Ed25519 ceremony with all signers correctly
+    /// wired passes the full validation stage and proceeds to RPC.
+    func test_submitWithMultipleSigners_mixedPasskeyWalletEd25519_allWired_passesValidation() async throws {
+        let (kit, manager) = try connectedKit()
+        let extMgr = OZExternalSignerManager(networkPassphrase: Network.testnet.passphrase)
+        kit.externalSignersOverride = extMgr
+
+        // Register wallet G-address in-memory.
+        let walletKeypair = try KeyPair.generateRandomKeyPair()
+        guard let secret = walletKeypair.secretSeed else {
+            XCTFail("generated keypair must expose a secret seed")
+            return
+        }
+        let walletAddress = try await extMgr.addFromSecret(secretKey: secret)
+
+        // Register Ed25519 key in-memory.
+        let ed25519Seed = Data(0x10 ..< 0x30)
+        let ed25519PubKey = try await extMgr.addEd25519FromRawKey(
+            secretKeyBytes: ed25519Seed,
+            verifierAddress: validContractId
+        )
+
+        // Build a valid 65-byte uncompressed secp256r1 public key for the passkey.
+        var passkeyKeyData = Data(repeating: 0x44, count: SmartAccountConstants.secp256r1PublicKeySize + 4)
+        passkeyKeyData[0] = SmartAccountConstants.uncompressedPubkeyPrefix
+
+        let signers: [SelectedSigner] = [
+            .passkey(
+                credentialId: "mixed-cred",
+                credentialIdBytes: Data([0x11]),
+                keyData: Data(passkeyKeyData.prefix(SmartAccountConstants.secp256r1PublicKeySize + 4))
+            ),
+            .wallet(accountId: walletAddress),
+            .ed25519(verifierAddress: validContractId, publicKey: ed25519PubKey)
+        ]
+        let hostFn = HostFunctionXDR.invokeContract(
+            InvokeContractArgsXDR(
+                contractAddress: try SCAddressXDR(contractId: validContractId),
+                functionName: "multi_signer_action",
+                args: []
+            )
+        )
+
+        do {
+            _ = try await manager.submitWithMultipleSigners(
+                hostFunction: hostFn,
+                selectedSigners: signers
+            )
+        } catch is ValidationException.InvalidInput {
+            XCTFail(
+                "passkey + wallet + Ed25519 ceremony with all signers wired must pass validation"
+            )
+        } catch {
+            // Expected: RPC-layer error on the non-routable server.
         }
     }
 
@@ -883,7 +1213,7 @@ final class OZMultiSignerManagerTests: XCTestCase {
     func test_submitWithMultipleSigners_ed25519_sameKeyDifferentVerifiers_validatesEachSeparately() async throws {
         let (kit, manager) = try connectedKit()
         let extMgr = OZExternalSignerManager(networkPassphrase: Network.testnet.passphrase)
-        kit.externalSignerManagerOverride = extMgr
+        kit.externalSignersOverride = extMgr
 
         let verifierAlpha = "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM"
         let verifierBeta  = "CDCYWK73YTYFJZZSJ5V7EDFNHYBG4QN3VUNG2IGD27KJDDPNCZKBCBXK"
@@ -923,7 +1253,7 @@ final class OZMultiSignerManagerTests: XCTestCase {
     func test_submitWithMultipleSigners_ed25519_sameKeyBothVerifiersRegistered_passesValidation() async throws {
         let (kit, manager) = try connectedKit()
         let extMgr = OZExternalSignerManager(networkPassphrase: Network.testnet.passphrase)
-        kit.externalSignerManagerOverride = extMgr
+        kit.externalSignersOverride = extMgr
 
         let verifierAlpha = "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM"
         let verifierBeta  = "CDCYWK73YTYFJZZSJ5V7EDFNHYBG4QN3VUNG2IGD27KJDDPNCZKBCBXK"
@@ -973,7 +1303,7 @@ final class OZMultiSignerManagerTests: XCTestCase {
     func test_submitWithMultipleSigners_ed25519AndPasskeyMix_passkeyKeyDataNilStillRejects() async throws {
         let (kit, manager) = try connectedKit()
         let extMgr = OZExternalSignerManager(networkPassphrase: Network.testnet.passphrase)
-        kit.externalSignerManagerOverride = extMgr
+        kit.externalSignersOverride = extMgr
 
         let ed25519Seed = Data(0x00 ..< 0x20)
         let pubKey = try await extMgr.addEd25519FromRawKey(secretKeyBytes: ed25519Seed, verifierAddress: validContractId)
@@ -1011,7 +1341,7 @@ final class OZMultiSignerManagerTests: XCTestCase {
     func test_submitWithMultipleSigners_ed25519AndWalletMix_walletAdapterMissingThrowsFirst() async throws {
         let (kit, manager) = try connectedKit()
         let extMgr = OZExternalSignerManager(networkPassphrase: Network.testnet.passphrase)
-        kit.externalSignerManagerOverride = extMgr
+        kit.externalSignersOverride = extMgr
 
         let ed25519Seed = Data(0x00 ..< 0x20)
         let pubKey = try await extMgr.addEd25519FromRawKey(secretKeyBytes: ed25519Seed, verifierAddress: validContractId)
@@ -1051,7 +1381,7 @@ final class OZMultiSignerManagerTests: XCTestCase {
     func test_submitWithMultipleSigners_ed25519WithRegisteredKeyAndPasskeyWithKeyData_passesValidation() async throws {
         let (kit, manager) = try connectedKit()
         let extMgr = OZExternalSignerManager(networkPassphrase: Network.testnet.passphrase)
-        kit.externalSignerManagerOverride = extMgr
+        kit.externalSignersOverride = extMgr
 
         let ed25519Seed = Data(0x00 ..< 0x20)
         let pubKey = try await extMgr.addEd25519FromRawKey(secretKeyBytes: ed25519Seed, verifierAddress: validContractId)
@@ -1090,7 +1420,7 @@ final class OZMultiSignerManagerTests: XCTestCase {
     func test_submitWithMultipleSigners_ed25519Only_passesValidationReachesRpc() async throws {
         let (kit, manager) = try connectedKit()
         let extMgr = OZExternalSignerManager(networkPassphrase: Network.testnet.passphrase)
-        kit.externalSignerManagerOverride = extMgr
+        kit.externalSignersOverride = extMgr
 
         let ed25519Seed = Data(0x00 ..< 0x20)
         let pubKey = try await extMgr.addEd25519FromRawKey(secretKeyBytes: ed25519Seed, verifierAddress: validContractId)
@@ -1157,22 +1487,22 @@ final class OZMultiSignerManagerTests: XCTestCase {
         kit.configuredDeployer = deployer
         kit.setConnectedState(credentialId: "test-cred", contractId: validContractId)
 
-        // Register an Ed25519 keypair so validation passes (canSign returns true).
-        let extMgr = OZExternalSignerManager(networkPassphrase: Network.testnet.passphrase)
-        kit.externalSignerManagerOverride = extMgr
+        // Install a fake adapter that returns 64 zero-bytes so local
+        // verification fails. The adapter claims canSign = true for every
+        // (verifierAddress, publicKey) pair, which takes precedence over the
+        // in-memory keypair and causes the pipeline to reach the verify step.
+        let zeroAdapter = FakeZeroByteEd25519Adapter()
+        let extMgr = OZExternalSignerManager(
+            networkPassphrase: Network.testnet.passphrase,
+            ed25519Adapter: zeroAdapter
+        )
+        kit.externalSignersOverride = extMgr
 
         let ed25519Seed = Data(0x00 ..< 0x20)
         let pubKey = try await extMgr.addEd25519FromRawKey(
             secretKeyBytes: ed25519Seed,
             verifierAddress: validContractId
         )
-
-        // Install a fake adapter that returns 64 zero-bytes so local
-        // verification fails. The adapter claims canSign = true for every
-        // (verifierAddress, publicKey) pair, which takes precedence over the
-        // in-memory keypair and causes the pipeline to reach the verify step.
-        let zeroAdapter = FakeZeroByteEd25519Adapter()
-        await extMgr.setEd25519Adapter(zeroAdapter)
 
         // Script: deployer account lookup (needed by runInitialSimulation).
         script.setGetAccountResponse(accountId: deployer.accountId, sequence: 1)
@@ -1229,14 +1559,25 @@ final class OZMultiSignerManagerTests: XCTestCase {
     /// through the Ed25519 validation path.
     func test_validateSignerSet_ed25519PubkeyMatchesWalletGAddressBytes_noFalseMatch() async throws {
         let (kit, manager) = try connectedKit()
-        let extMgr = OZExternalSignerManager(networkPassphrase: Network.testnet.passphrase)
-        kit.externalSignerManagerOverride = extMgr
 
         // Extract the 32-byte raw public key bytes from the wallet G-address.
         let walletKeypair = try KeyPair(accountId: validAccountAddress)
         let rawPubKeyBytes = Data(walletKeypair.publicKey.bytes)
         XCTAssertEqual(rawPubKeyBytes.count, 32,
                        "raw Ed25519 public key must be exactly 32 bytes")
+
+        // An Ed25519 signer with the same 32-byte key bytes as the G-address
+        // raw pubkey. We can only register this via an adapter that claims
+        // canSign = true for this specific key pair.
+        let adapter = FixedKeyEd25519Adapter(
+            targetPublicKey: rawPubKeyBytes,
+            targetVerifierAddress: validContractId
+        )
+        let extMgr = OZExternalSignerManager(
+            networkPassphrase: Network.testnet.passphrase,
+            ed25519Adapter: adapter
+        )
+        kit.externalSignersOverride = extMgr
 
         // Register a different Ed25519 key under verifierAddress and confirm that the
         // ONLY signer in selectedSigners is an Ed25519 entry — no wallet signer present,
@@ -1257,15 +1598,6 @@ final class OZMultiSignerManagerTests: XCTestCase {
             rawPubKeyBytes,
             "test fixture assumes the Ed25519 key and the wallet pubkey bytes are different"
         )
-
-        // An Ed25519 signer with the same 32-byte key bytes as the G-address
-        // raw pubkey. We can only register this via an adapter that claims
-        // canSign = true for this specific key pair.
-        let adapter = FixedKeyEd25519Adapter(
-            targetPublicKey: rawPubKeyBytes,
-            targetVerifierAddress: validContractId
-        )
-        await extMgr.setEd25519Adapter(adapter)
 
         // selectedSigners contains only an Ed25519 entry — no wallet signer.
         // The wallet-adapter check must not fire; the Ed25519 path must validate
@@ -1315,7 +1647,7 @@ final class OZMultiSignerManagerTests: XCTestCase {
     func test_submitWithMultipleSigners_mixedRuleEd25519AndPasskeyAtSameIndex_routesCorrectly() async throws {
         let (kit, manager) = try connectedKit()
         let extMgr = OZExternalSignerManager(networkPassphrase: Network.testnet.passphrase)
-        kit.externalSignerManagerOverride = extMgr
+        kit.externalSignersOverride = extMgr
 
         let ed25519Seed = Data(0x00 ..< 0x20)
         let pubKey = try await extMgr.addEd25519FromRawKey(
@@ -1373,7 +1705,7 @@ final class OZMultiSignerManagerTests: XCTestCase {
     func test_submitWithMultipleSigners_ed25519PolicyOnlyAuth_succeedsWithZeroSelectedSigners() async throws {
         let (kit, manager) = try connectedKit()
         let extMgr = OZExternalSignerManager(networkPassphrase: Network.testnet.passphrase)
-        kit.externalSignerManagerOverride = extMgr
+        kit.externalSignersOverride = extMgr
 
         let hostFn = HostFunctionXDR.invokeContract(
             InvokeContractArgsXDR(
@@ -1607,6 +1939,247 @@ extension OZMultiSignerManagerTests {
     }
 
     // ========================================================================
+    // MARK: - Wallet signing pipeline (scripted MockSorobanServer)
+    // ========================================================================
+
+    /// When the initial simulation returns an auth entry whose credential
+    /// address is the wallet G-address (a direct auth entry, not a delegated
+    /// smart-account auth entry), the pipeline routes through
+    /// `signWalletAddressAuthEntry` via `kit.externalSigners.signAuthEntry`.
+    ///
+    /// The test scripts a simulation that returns one wallet-address auth entry.
+    /// The in-memory keypair registered via `kit.externalSigners.addFromSecret`
+    /// handles the signing. The pipeline then fails at re-simulation (scripted
+    /// to return an error) so no real submission attempt is made.
+    func test_submitWithMultipleSigners_walletDirectAuthEntry_signsViaExternalSigners() async throws {
+        let script = MockSorobanServerScript()
+        MockSorobanServer.activate(script: script)
+        defer {
+            MockSorobanServer.deactivate()
+            MockURLProtocol.reset()
+        }
+
+        let seedBytes = Data(repeating: 0x55, count: 32)
+        let stellarSeed = try Seed(bytes: [UInt8](seedBytes))
+        let deployer = KeyPair(seed: stellarSeed)
+
+        let walletKeypair = try KeyPair.generateRandomKeyPair()
+        guard let walletSecret = walletKeypair.secretSeed else {
+            XCTFail("generated keypair must expose a secret seed")
+            return
+        }
+        let walletAddress = walletKeypair.accountId
+
+        let liveServer = MockSorobanServer.makeMockedSorobanServer()
+        let kit = MockOZSmartAccountKit(
+            config: try buildConfig(),
+            sorobanServer: liveServer
+        )
+        kit.configuredDeployer = deployer
+        kit.setConnectedState(credentialId: "test-cred", contractId: validContractId)
+
+        let extMgr = OZExternalSignerManager(networkPassphrase: Network.testnet.passphrase)
+        kit.externalSignersOverride = extMgr
+        _ = try await extMgr.addFromSecret(secretKey: walletSecret)
+
+        // Script the deployer account lookup.
+        script.setGetAccountResponse(accountId: deployer.accountId, sequence: 1)
+
+        // Build a wallet-address auth entry (credential address = G-address of
+        // walletAddress, not the connected smart-account C-address).
+        let walletAuthEntry = try walletAddressAuthEntry(
+            accountId: walletAddress,
+            targetContractId: validTargetContract,
+            targetFn: "pay"
+        )
+        script.enqueueSimulate(authEntries: [walletAuthEntry])
+        script.setGetLatestLedger(sequence: 1000)
+
+        // Script re-simulation to return an error so the pipeline stops there.
+        script.enqueueSimulateError("re-simulation intentionally aborted for test")
+
+        let signers: [SelectedSigner] = [.wallet(accountId: walletAddress)]
+        let hostFn = HostFunctionXDR.invokeContract(
+            InvokeContractArgsXDR(
+                contractAddress: try SCAddressXDR(contractId: validTargetContract),
+                functionName: "pay",
+                args: []
+            )
+        )
+        let manager = OZMultiSignerManager(kit: kit)
+
+        do {
+            _ = try await manager.submitWithMultipleSigners(
+                hostFunction: hostFn,
+                selectedSigners: signers
+            )
+        } catch is TransactionException.SimulationFailed {
+            // Expected: re-simulation was scripted to fail.
+        } catch is ValidationException.InvalidInput {
+            XCTFail("wallet signer with a registered in-memory keypair must pass validation")
+        }
+    }
+
+    /// When the initial simulation returns an auth entry for the connected smart-account
+    /// contract and the signer list includes a wallet signer, the pipeline creates a
+    /// delegated auth entry for `__check_auth` via `kit.externalSigners.signAuthEntry`
+    /// (the `appendDelegatedAuthEntries` path).
+    ///
+    /// The in-memory keypair registered via `addFromSecret` handles the signing. After
+    /// all auth entries are assembled the pipeline proceeds to re-simulation, which is
+    /// scripted to fail, confirming the delegated signing path was reached and exercised.
+    func test_submitWithMultipleSigners_walletDelegatedAuthEntry_appendsSignedEntry() async throws {
+        let script = MockSorobanServerScript()
+        MockSorobanServer.activate(script: script)
+        defer {
+            MockSorobanServer.deactivate()
+            MockURLProtocol.reset()
+        }
+
+        let seedBytes = Data(repeating: 0x44, count: 32)
+        let stellarSeed = try Seed(bytes: [UInt8](seedBytes))
+        let deployer = KeyPair(seed: stellarSeed)
+
+        let walletKeypair = try KeyPair.generateRandomKeyPair()
+        guard let walletSecret = walletKeypair.secretSeed else {
+            XCTFail("generated keypair must expose a secret seed")
+            return
+        }
+        let walletAddress = walletKeypair.accountId
+
+        let liveServer = MockSorobanServer.makeMockedSorobanServer()
+        let kit = MockOZSmartAccountKit(
+            config: try buildConfig(),
+            sorobanServer: liveServer
+        )
+        kit.configuredDeployer = deployer
+        kit.setConnectedState(credentialId: "test-cred", contractId: validContractId)
+
+        let extMgr = OZExternalSignerManager(networkPassphrase: Network.testnet.passphrase)
+        kit.externalSignersOverride = extMgr
+        _ = try await extMgr.addFromSecret(secretKey: walletSecret)
+
+        script.setGetAccountResponse(accountId: deployer.accountId, sequence: 3)
+
+        // Auth entry for the connected smart-account C-address: this routes through
+        // the passkey/Ed25519/delegated signing steps, not signWalletAddressAuthEntry.
+        let smartAccountAuthEntry = try OZPipelineFixtures.addressCredentialsAuthEntry(
+            contractAddress: validContractId,
+            targetContract: validTargetContract,
+            targetFn: "noop"
+        )
+        script.enqueueSimulate(authEntries: [smartAccountAuthEntry])
+        script.setGetLatestLedger(sequence: 1000)
+
+        // Script re-simulation to fail so the test does not proceed to submission.
+        script.enqueueSimulateError("re-simulation aborted for delegated wallet path test")
+
+        // Wallet signer: no passkeys, so only the delegated-entry path fires.
+        let signers: [SelectedSigner] = [.wallet(accountId: walletAddress)]
+        let hostFn = HostFunctionXDR.invokeContract(
+            InvokeContractArgsXDR(
+                contractAddress: try SCAddressXDR(contractId: validTargetContract),
+                functionName: "noop",
+                args: []
+            )
+        )
+        let manager = OZMultiSignerManager(kit: kit)
+
+        do {
+            _ = try await manager.submitWithMultipleSigners(
+                hostFunction: hostFn,
+                selectedSigners: signers
+            )
+        } catch is TransactionException.SimulationFailed {
+            // Expected: re-simulation was scripted to fail after the delegated
+            // signing path completed successfully.
+        } catch is ValidationException.InvalidInput {
+            XCTFail("wallet signer with a registered in-memory keypair must pass validation")
+        } catch {
+            // Acceptable: any other non-validation failure after the signing phase.
+        }
+    }
+
+    /// When the initial simulation returns an auth entry whose credential
+    /// address is an unknown address (not the connected contract, not any wallet
+    /// signer), the pipeline must throw `TransactionException.SigningFailed` with
+    /// a message referencing the unsupported address.
+    func test_submitWithMultipleSigners_unknownAuthEntryAddress_throwsSigningFailed() async throws {
+        let script = MockSorobanServerScript()
+        MockSorobanServer.activate(script: script)
+        defer {
+            MockSorobanServer.deactivate()
+            MockURLProtocol.reset()
+        }
+
+        let seedBytes = Data(repeating: 0x66, count: 32)
+        let stellarSeed = try Seed(bytes: [UInt8](seedBytes))
+        let deployer = KeyPair(seed: stellarSeed)
+
+        let liveServer = MockSorobanServer.makeMockedSorobanServer()
+        let kit = MockOZSmartAccountKit(
+            config: try buildConfig(),
+            sorobanServer: liveServer
+        )
+        kit.configuredDeployer = deployer
+        kit.setConnectedState(credentialId: "test-cred", contractId: validContractId)
+
+        // No wallet signer registered; any wallet in the selectedSigners will
+        // not be in the auth entry address list.
+        let extMgr = OZExternalSignerManager(networkPassphrase: Network.testnet.passphrase)
+        kit.externalSignersOverride = extMgr
+
+        script.setGetAccountResponse(accountId: deployer.accountId, sequence: 2)
+
+        // Build an auth entry for a DIFFERENT G-address (not in walletSigners).
+        let strangerKeypair = try KeyPair.generateRandomKeyPair()
+        let strangerAddress = strangerKeypair.accountId
+        let strangerAuthEntry = try walletAddressAuthEntry(
+            accountId: strangerAddress,
+            targetContractId: validTargetContract,
+            targetFn: "vote"
+        )
+        script.enqueueSimulate(authEntries: [strangerAuthEntry])
+        script.setGetLatestLedger(sequence: 1000)
+
+        // Use a passkey signer so validation passes (passkeys always pass the
+        // wallet/ed25519 validation; the unknown auth entry is discovered only
+        // after simulation, inside the signing loop).
+        let passkeyKeyData = Data(repeating: SmartAccountConstants.uncompressedPubkeyPrefix, count: 65)
+        let signers: [SelectedSigner] = [
+            .passkey(
+                credentialId: "cred",
+                credentialIdBytes: Data([0x01]),
+                keyData: passkeyKeyData
+            )
+        ]
+        let hostFn = HostFunctionXDR.invokeContract(
+            InvokeContractArgsXDR(
+                contractAddress: try SCAddressXDR(contractId: validTargetContract),
+                functionName: "vote",
+                args: []
+            )
+        )
+        let manager = OZMultiSignerManager(kit: kit)
+
+        do {
+            _ = try await manager.submitWithMultipleSigners(
+                hostFunction: hostFn,
+                selectedSigners: signers
+            )
+            XCTFail("expected TransactionException.SigningFailed for unknown auth entry address")
+        } catch let e as TransactionException.SigningFailed {
+            XCTAssertTrue(
+                e.message.lowercased().contains("unsupported") || e.message.lowercased().contains("auth entry"),
+                "error message must describe the unsupported auth entry, got: \(e.message)"
+            )
+        } catch is WebAuthnException {
+            // Acceptable: the passkey prompt fires before the unknown-address check because
+            // the pipeline signs passkey entries before detecting unsupported wallet entries.
+        }
+    }
+
+    // ========================================================================
     // MARK: - validatePasskeyKeyData nil guard
     // ========================================================================
 
@@ -1660,9 +2233,90 @@ private extension Hashable {
     }
 }
 
+/// Builds an `Address`-credentials authorization entry whose credential
+/// address is a Stellar `G…` account address (wallet signer path).
+///
+/// This is the auth-entry shape returned by Soroban simulation when a wallet
+/// G-address has a direct authorization entry (not a delegated smart-account
+/// entry). The pipeline routes it through `signWalletAddressAuthEntry`.
+private func walletAddressAuthEntry(
+    accountId: String,
+    targetContractId: String,
+    targetFn: String = "pay",
+    nonce: Int64 = 0,
+    expirationLedger: UInt32 = 0
+) throws -> SorobanAuthorizationEntryXDR {
+    let invokeArgs = InvokeContractArgsXDR(
+        contractAddress: try SCAddressXDR(contractId: targetContractId),
+        functionName: targetFn,
+        args: []
+    )
+    let invocation = SorobanAuthorizedInvocationXDR(
+        function: .contractFn(invokeArgs),
+        subInvocations: []
+    )
+    let credentials = SorobanAddressCredentialsXDR(
+        address: try SCAddressXDR(accountId: accountId),
+        nonce: nonce,
+        signatureExpirationLedger: expirationLedger,
+        signature: .void
+    )
+    return SorobanAuthorizationEntryXDR(
+        credentials: .address(credentials),
+        rootInvocation: invocation
+    )
+}
+
 // ============================================================================
 // MARK: - Ed25519 test doubles
 // ============================================================================
+
+/// Minimal `ExternalWalletAdapter` that claims `canSignFor` is true for a
+/// single pre-configured address. Used to exercise the config-injected wallet
+/// adapter path (custody model 1) in `validateWalletSigners` without a real
+/// external wallet.
+private final class FakeCanSignWalletAdapter: ExternalWalletAdapter, @unchecked Sendable {
+
+    private let claimedAddress: String
+
+    init(address: String) {
+        self.claimedAddress = address
+    }
+
+    func canSignFor(address: String) -> Bool {
+        return address == claimedAddress
+    }
+
+    func connect() async throws -> ConnectedWallet? { return nil }
+    func disconnect() async throws {}
+    func signAuthEntry(preimageXdr: String, options: SignAuthEntryOptions?) async throws -> SignAuthEntryResult {
+        return SignAuthEntryResult(signedAuthEntry: preimageXdr)
+    }
+    func getConnectedWallets() -> [ConnectedWallet] { return [] }
+}
+
+/// Minimal `OZExternalEd25519SignerAdapter` that claims `canSignFor` is true
+/// for a single pre-configured (verifierAddress, publicKey) pair. Used to
+/// exercise the config-injected Ed25519 adapter path (custody model 1) in
+/// `validateEd25519Signers` without a real signing backend.
+private final class FakeCanSignEd25519Adapter: OZExternalEd25519SignerAdapter, @unchecked Sendable {
+
+    private let targetVerifierAddress: String
+    private let targetPublicKey: Data
+
+    init(targetVerifierAddress: String, targetPublicKey: Data) {
+        self.targetVerifierAddress = targetVerifierAddress
+        self.targetPublicKey = targetPublicKey
+    }
+
+    func canSignFor(verifierAddress: String, publicKey: Data) -> Bool {
+        return verifierAddress == targetVerifierAddress && publicKey == targetPublicKey
+    }
+
+    func signAuthDigest(authDigest: Data, publicKey: Data) async throws -> Data {
+        return Data(repeating: 0x00, count: 64)
+    }
+}
 
 /// `OZExternalEd25519SignerAdapter` stub that always returns 64 zero-bytes from
 /// `signAuthDigest` and reports `canSignFor` as `true` for every

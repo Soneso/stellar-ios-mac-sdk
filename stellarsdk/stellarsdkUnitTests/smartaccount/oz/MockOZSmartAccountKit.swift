@@ -73,9 +73,10 @@ final class MockOZSmartAccountKit: OZSmartAccountKitProtocol, @unchecked Sendabl
     /// invocation behaviour install a recording subclass here.
     var multiSignerManagerOverride: OZMultiSignerManager?
 
-    /// Test override for ``externalSignerManager``. Defaults to `nil` so the
-    /// kit reports no external-signer support unless a test installs one.
-    var externalSignerManagerOverride: OZExternalSignerManager?
+    /// Pre-built external-signer manager returned by ``externalSigners``.
+    /// Tests that exercise the wallet or Ed25519 signing path install one here
+    /// (or rely on the default manager constructed from ``config``).
+    var externalSignersOverride: OZExternalSignerManager?
 
     /// Lazily-constructed signer manager bound to this kit. Returns the
     /// override when one is installed.
@@ -111,16 +112,19 @@ final class MockOZSmartAccountKit: OZSmartAccountKitProtocol, @unchecked Sendabl
         return created
     }
 
-    /// Optional external-signer manager. Defaults to `nil`; tests install one
-    /// via ``externalSignerManagerOverride`` when wallet-signer paths are
-    /// exercised.
-    var externalSignerManager: OZExternalSignerManager? {
-        return externalSignerManagerOverride
-    }
-
-    /// Optional external-wallet adapter resolved from the kit's configuration.
-    var externalWallet: ExternalWalletAdapter? {
-        return config.externalWallet
+    /// Kit-owned external-signer manager returned by the protocol requirement.
+    ///
+    /// Returns ``externalSignersOverride`` when set, otherwise lazily constructs
+    /// a manager from the mock config's wallet adapter and Ed25519 adapter so
+    /// tests that don't need a custom manager still satisfy the protocol.
+    var externalSigners: OZExternalSignerManager {
+        if let override = externalSignersOverride { return override }
+        return OZExternalSignerManager(
+            networkPassphrase: config.networkPassphrase,
+            walletAdapter: config.externalWallet,
+            walletConnectionStorage: nil,
+            ed25519Adapter: config.externalEd25519Adapter
+        )
     }
 
     /// Connected contract identifier or `nil` when no wallet is connected.

@@ -1300,9 +1300,8 @@ private final class _CredentialManagerTestKit: OZSmartAccountKitProtocol, @unche
     let indexerClient: OZIndexerClient? = nil
     let relayerClient: OZRelayerClient? = nil
     let events: SmartAccountEventEmitter = SmartAccountEventEmitter()
-    let externalWallet: ExternalWalletAdapter? = nil
-    let externalSignerManager: OZExternalSignerManager? = nil
     let contractId: String? = nil
+    let externalSigners: OZExternalSignerManager
 
     private let _storage: StorageAdapter
     let credentialManager: OZCredentialManagerProtocol
@@ -1316,6 +1315,9 @@ private final class _CredentialManagerTestKit: OZSmartAccountKitProtocol, @unche
         self._storage = storage
         self.credentialManager = MockCredentialManager(storage: InMemoryStorageAdapter())
         self.contextRuleManager = StubContextRuleManager()
+        self.externalSigners = OZExternalSignerManager(
+            networkPassphrase: config.networkPassphrase
+        )
     }
 
     func getStorage() -> StorageAdapter { _storage }

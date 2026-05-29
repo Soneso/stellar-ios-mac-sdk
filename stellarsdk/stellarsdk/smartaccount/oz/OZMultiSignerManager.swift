@@ -92,9 +92,7 @@ public class OZMultiSignerManager: @unchecked Sendable {
     ///           ``ValidationException`` for invalid inputs;
     ///           ``TransactionException`` for simulation, signing, or
     ///           submission failures;
-    ///           ``WebAuthnException`` for biometric-authentication failures;
-    ///           ``ConfigurationException`` when wallet signers are supplied
-    ///           but no external-wallet adapter is configured.
+    ///           ``WebAuthnException`` for biometric-authentication failures.
     public func multiSignerTransfer(
         tokenContract: String,
         recipient: String,
@@ -321,16 +319,13 @@ public class OZMultiSignerManager: @unchecked Sendable {
     ///
     /// Validation order (each step is exercised by a dedicated unit test):
     /// 1. ``OZSmartAccountKitProtocol/requireConnected()``.
-    /// 2. Wallet-signer adapter check — wallet entries require an external
-    ///    wallet adapter to be configured on the kit's
-    ///    ``OZSmartAccountConfig/externalWallet``.
-    /// 3. Per-wallet-signer reachability check via
-    ///    ``ExternalWalletAdapter/canSignFor(address:)``.
-    /// 4. Per-passkey-signer `keyData` precondition — every passkey entry must
+    /// 2. Per-wallet-signer reachability check via
+    ///    ``OZExternalSignerManager/canSignFor(address:)``.
+    /// 3. Per-passkey-signer `keyData` precondition — every passkey entry must
     ///    carry pre-fetched `keyData` so context-rule resolution and signature
     ///    binding can run without an extra on-chain lookup.
-    /// 5. Initial simulation surface error.
-    /// 6. Re-simulation surface error after attaching collected signatures.
+    /// 4. Initial simulation surface error.
+    /// 5. Re-simulation surface error after attaching collected signatures.
     ///
     /// - Parameters:
     ///   - hostFunction: Host function to authorize and submit.
@@ -350,9 +345,9 @@ public class OZMultiSignerManager: @unchecked Sendable {
     ) async throws -> TransactionResult {
         let connected = try kit.requireConnected()
 
-        // Step 0: validate signer-set preconditions (wallet adapter
-        // availability, per-wallet reachability, passkey keyData, Ed25519 registration).
-        let (walletSigners, externalWallet) = try await validateSignerSet(
+        // Step 0: validate signer-set preconditions (per-wallet reachability,
+        // passkey keyData, Ed25519 registration).
+        let walletSigners = try await validateSignerSet(
             selectedSigners: selectedSigners
         )
 
@@ -400,8 +395,7 @@ public class OZMultiSignerManager: @unchecked Sendable {
                     let signedWalletEntry = try await signWalletAddressAuthEntry(
                         entry: entry,
                         walletAddress: entryAddressString,
-                        expirationLedger: expirationLedger,
-                        externalWallet: externalWallet
+                        expirationLedger: expirationLedger
                     )
                     signedAuthEntries.append(signedWalletEntry)
                 } else {
@@ -475,7 +469,6 @@ public class OZMultiSignerManager: @unchecked Sendable {
                 expirationLedger: expirationLedger,
                 resolvedContextRuleIds: resolvedContextRuleIds,
                 selectedSigners: selectedSigners,
-                externalWallet: externalWallet,
                 connectedContractId: connected.contractId,
                 signedAuthEntries: &signedAuthEntries
             )
@@ -509,18 +502,18 @@ public class OZMultiSignerManager: @unchecked Sendable {
     // MARK: - Pipeline step helpers
 
     /// Validates the selected-signer set:
-    /// - Wallet signers require an external-wallet adapter to be configured.
-    /// - Every wallet signer must be reachable through the configured adapter.
+    /// - Every wallet signer must be reachable through the kit's external-signer manager.
     /// - Every passkey signer must carry pre-fetched `keyData` so the
     ///   rule-resolution loop avoids an extra on-chain lookup.
+    /// - Every Ed25519 signer must have a valid verifier address, correct public-key length,
+    ///   and a registered signing source.
     ///
     /// - Parameter selectedSigners: The signer set supplied by the caller.
-    /// - Returns: The extracted wallet signer addresses and the resolved
-    ///   external-wallet adapter (or `nil` when no wallet signers are present).
+    /// - Returns: The extracted wallet signer addresses.
     /// - Throws: ``ValidationException`` when any of the preconditions fail.
     private func validateSignerSet(
         selectedSigners: [SelectedSigner]
-    ) async throws -> (walletSigners: [String], externalWallet: ExternalWalletAdapter?) {
+    ) async throws -> [String] {
         var walletSigners: [String] = []
         for signer in selectedSigners {
             if case .wallet(let accountId) = signer {
@@ -528,63 +521,31 @@ public class OZMultiSignerManager: @unchecked Sendable {
             }
         }
 
-        let externalWallet: ExternalWalletAdapter?
-        if walletSigners.isEmpty {
-            externalWallet = nil
-        } else {
-            guard let configured = kit.config.externalWallet else {
-                throw ValidationException.invalidInput(
-                    field: "selectedSigners",
-                    reason: "Wallet signers require an external wallet adapter to be configured"
-                )
-            }
-            externalWallet = configured
-        }
-
-        try await validateWalletSigners(walletSigners, externalWallet: externalWallet)
+        try await validateWalletSigners(walletSigners)
 
         try validatePasskeyKeyData(selectedSigners)
 
-        // Validate Ed25519 signers: verifier address format, public-key length, and
-        // signing-source availability. All precondition checks run before any RPC.
-        guard let externalSignerManager = kit.externalSignerManager else {
-            // Only fails when Ed25519 signers are present but no external signer manager
-            // is wired. The manager is always present when the kit is constructed normally.
-            for signer in selectedSigners {
-                if case .ed25519 = signer {
-                    throw ValidationException.invalidInput(
-                        field: "selectedSigners",
-                        reason: "Ed25519 signers require OZExternalSignerManager to be configured on the kit"
-                    )
-                }
-            }
-            return (walletSigners, externalWallet)
-        }
+        try await validateEd25519Signers(selectedSigners, signerManager: kit.externalSigners)
 
-        try await validateEd25519Signers(selectedSigners, externalSignerManager: externalSignerManager)
-
-        return (walletSigners, externalWallet)
+        return walletSigners
     }
 
-    /// Verifies that the external wallet adapter can sign for every wallet signer address.
+    /// Verifies that the kit's external-signer manager can sign for every wallet signer address.
     ///
-    /// - Parameters:
-    ///   - walletSigners: G-address strings extracted from the `selectedSigners` list.
-    ///   - externalWallet: The resolved external-wallet adapter, or `nil` when no wallet
-    ///     signers are present.
-    /// - Throws: ``ValidationException`` when a signer address cannot be served by the adapter.
+    /// - Parameter walletSigners: G-address strings extracted from the `selectedSigners` list.
+    /// - Throws: ``ValidationException`` when a signer address has no signing source available.
     private func validateWalletSigners(
-        _ walletSigners: [String],
-        externalWallet: ExternalWalletAdapter?
+        _ walletSigners: [String]
     ) async throws {
-        guard let externalWallet else { return }
+        guard !walletSigners.isEmpty else { return }
         for walletAddress in walletSigners {
-            let canSign = externalWallet.canSignFor(address: walletAddress)
+            let canSign = await kit.externalSigners.canSignFor(address: walletAddress)
             if !canSign {
                 throw ValidationException.invalidInput(
                     field: "selectedSigners",
-                    reason: "No signer available for address: \(walletAddress). " +
-                        "Use externalWallet.addFromSecret() or externalWallet.addFromWallet() to add a signer."
+                    reason: "No signing source available for wallet address: \(walletAddress). " +
+                        "Register a keypair via kit.externalSigners.addFromSecret(secretKey:), " +
+                        "or supply a wallet adapter via config.externalWallet at kit construction."
                 )
             }
         }
@@ -612,11 +573,11 @@ public class OZMultiSignerManager: @unchecked Sendable {
     ///
     /// - Parameters:
     ///   - selectedSigners: The full signer list; non-Ed25519 entries are skipped.
-    ///   - externalSignerManager: The kit's external signer manager.
+    ///   - signerManager: The kit's external-signer manager.
     /// - Throws: ``ValidationException`` when any Ed25519 precondition fails.
     private func validateEd25519Signers(
         _ selectedSigners: [SelectedSigner],
-        externalSignerManager: OZExternalSignerManager
+        signerManager: OZExternalSignerManager
     ) async throws {
         for signer in selectedSigners {
             guard case .ed25519(let verifierAddress, let publicKey) = signer else { continue }
@@ -636,7 +597,7 @@ public class OZMultiSignerManager: @unchecked Sendable {
                 )
             }
 
-            let canSign = await externalSignerManager.canSignEd25519For(
+            let canSign = await signerManager.canSignEd25519For(
                 verifierAddress: verifierAddress,
                 publicKey: publicKey
             )
@@ -644,8 +605,9 @@ public class OZMultiSignerManager: @unchecked Sendable {
                 let prefix = String(verifierAddress.prefix(addressLogPrefixCount))
                 throw ValidationException.invalidInput(
                     field: "selectedSigners",
-                    reason: "Ed25519 signer (verifier=\(prefix)...) has no registered keypair or adapter — " +
-                        "register via OZExternalSignerManager.addEd25519FromRawKey(...) before signing"
+                    reason: "Ed25519 signer (verifier=\(prefix)...) has no registered signing source. " +
+                        "Register a keypair via kit.externalSigners.addEd25519FromRawKey(...), " +
+                        "or supply an Ed25519 adapter via config.externalEd25519Adapter at kit construction."
                 )
             }
         }
@@ -889,18 +851,16 @@ public class OZMultiSignerManager: @unchecked Sendable {
         selectedSigners: [SelectedSigner]
     ) async throws -> SorobanAuthorizationEntryXDR {
         var workingEntry = workingEntry
-
-        // !-unwrap: validateSignerSet guarantees externalSignerManager non-nil when Ed25519 signers are present.
-        let externalSignerManager = kit.externalSignerManager!
+        let signerManager = kit.externalSigners
 
         for signer in selectedSigners {
             guard case .ed25519(let verifierAddress, let publicKey) = signer else { continue }
             try Task.checkCancellation()
 
-            // Request the 64-byte signature from the external signer manager.
+            // Request the 64-byte signature from the kit's external-signer manager.
             // The manager implements adapter-first precedence internally and exits
             // actor isolation for any adapter await it performs.
-            let rawSignature = try await externalSignerManager.signEd25519AuthDigest(
+            let rawSignature = try await signerManager.signEd25519AuthDigest(
                 verifierAddress: verifierAddress,
                 publicKey: publicKey,
                 authDigest: authDigest
@@ -996,10 +956,10 @@ public class OZMultiSignerManager: @unchecked Sendable {
 
     /// Produces one delegated-signer auth entry per wallet signer and
     /// appends it to `signedAuthEntries`. Each delegated entry is signed via
-    /// ``authorizeInvocation(walletAddress:validUntilLedger:invocation:networkPassphrase:externalWallet:)``
-    /// and contributes a `{public_key: <empty>, signature: <empty>}` placeholder
-    /// to the smart-account signature map so the rule engine counts the
-    /// delegated signer when evaluating the active context rule.
+    /// the kit's external-signer manager and contributes a
+    /// `{public_key: <empty>, signature: <empty>}` placeholder to the
+    /// smart-account signature map so the rule engine counts the delegated
+    /// signer when evaluating the active context rule.
     ///
     /// - Returns: The updated `workingEntry` after every delegated-signer
     ///   placeholder has been merged into its signature map.
@@ -1009,19 +969,12 @@ public class OZMultiSignerManager: @unchecked Sendable {
         expirationLedger: UInt32,
         resolvedContextRuleIds: [UInt32],
         selectedSigners: [SelectedSigner],
-        externalWallet: ExternalWalletAdapter?,
         connectedContractId: String,
         signedAuthEntries: inout [SorobanAuthorizationEntryXDR]
     ) async throws -> SorobanAuthorizationEntryXDR {
         var workingEntry = workingEntry
         for signer in selectedSigners {
             guard case .wallet(let walletAddress) = signer else { continue }
-            guard let externalWallet = externalWallet else {
-                // compiler-required unwrap; validateSignerSet guarantees non-nil for wallet signers.
-                throw ConfigurationException.invalidConfig(
-                    details: "External wallet adapter is required for wallet signers but is not configured"
-                )
-            }
 
             let checkAuthInvocation = SorobanAuthorizedInvocationXDR(
                 function: .contractFn(
@@ -1039,7 +992,7 @@ public class OZMultiSignerManager: @unchecked Sendable {
                 validUntilLedger: expirationLedger,
                 invocation: checkAuthInvocation,
                 networkPassphrase: kit.config.networkPassphrase,
-                externalWallet: externalWallet
+                externalSigners: kit.externalSigners
             )
             signedAuthEntries.append(signedDelegatedEntry)
 
@@ -1124,8 +1077,7 @@ public class OZMultiSignerManager: @unchecked Sendable {
     }
 
     /// Signs an auth entry whose `Address` credentials match a wallet signer
-    /// directly, using the external wallet adapter rather than the smart
-    /// account's `__check_auth` indirection.
+    /// directly, routing through the kit's external-signer manager.
     ///
     /// The signature is formatted as the classical Stellar
     /// `Vec([Map({"public_key": Bytes, "signature": Bytes})])` shape. The
@@ -1137,24 +1089,13 @@ public class OZMultiSignerManager: @unchecked Sendable {
     ///     `walletAddress`.
     ///   - walletAddress: The Stellar `G…` address of the wallet signer.
     ///   - expirationLedger: Ledger sequence at which the signature expires.
-    ///   - externalWallet: External wallet adapter that produces the raw
-    ///     Ed25519 signature. Must be non-nil; the caller (Step 0a above)
-    ///     guarantees this.
     /// - Returns: The signed auth entry.
-    /// - Throws: ``TransactionException/SigningFailed``,
-    ///           ``ConfigurationException``.
+    /// - Throws: ``TransactionException/SigningFailed``.
     private func signWalletAddressAuthEntry(
         entry: SorobanAuthorizationEntryXDR,
         walletAddress: String,
-        expirationLedger: UInt32,
-        externalWallet: ExternalWalletAdapter?
+        expirationLedger: UInt32
     ) async throws -> SorobanAuthorizationEntryXDR {
-        guard let externalWallet = externalWallet else {
-            throw ConfigurationException.invalidConfig(
-                details: "External wallet adapter is required for wallet auth entries but is not configured"
-            )
-        }
-
         // Clone the entry via XDR round-trip so the caller's instance is
         // never mutated, and stamp the new expiration ledger on the cloned
         // address credentials.
@@ -1165,171 +1106,36 @@ public class OZMultiSignerManager: @unchecked Sendable {
             )
         }
 
-        let signedCredentials = try await signSorobanAuthEntryViaExternalWallet(
-            walletAddress: walletAddress,
+        let preimage = HashIDPreimageSorobanAuthorizationXDR(
+            networkID: HashXDR(kit.config.networkPassphrase.sha256Hash),
             nonce: credentials.nonce,
-            expirationLedger: expirationLedger,
-            invocation: cloned.rootInvocation,
-            credentialsAddress: credentials.address,
-            externalWallet: externalWallet
-        )
-
-        return SorobanAuthorizationEntryXDR(
-            credentials: .address(signedCredentials),
-            rootInvocation: cloned.rootInvocation
-        )
-    }
-
-    // MARK: - Hand-rolled Auth.authorizeInvocation equivalent
-
-    /// Builds and signs a delegated wallet auth entry for `walletAddress`.
-    /// Produces the `Vec([Map({public_key, signature})])` credential shape.
-    /// - Throws: ``TransactionException/SigningFailed``.
-    private static func authorizeInvocation(
-        walletAddress: String,
-        validUntilLedger: UInt32,
-        invocation: SorobanAuthorizedInvocationXDR,
-        networkPassphrase: String,
-        externalWallet: ExternalWalletAdapter
-    ) async throws -> SorobanAuthorizationEntryXDR {
-        // Generate a cryptographically random nonce. The Soroban host
-        // requires unique nonces per credentials value within an envelope.
-        let nonce = try OZTransactionOperations.generateNonce()
-
-        let walletAccountAddress = try SCAddressXDR(accountId: walletAddress)
-
-        let signedCredentials = try await Self.signSorobanAuthEntryViaExternalWalletStatic(
-            walletAddress: walletAddress,
-            nonce: nonce,
-            expirationLedger: validUntilLedger,
-            invocation: invocation,
-            credentialsAddress: walletAccountAddress,
-            networkPassphrase: networkPassphrase,
-            externalWallet: externalWallet,
-            preimageEncodeFailureLabel: "Failed to XDR-encode delegated wallet auth preimage"
-        )
-        return SorobanAuthorizationEntryXDR(
-            credentials: .address(signedCredentials),
-            rootInvocation: invocation
-        )
-    }
-
-    // MARK: - Shared external-wallet signing helper
-
-    /// Instance-method wrapper around
-    /// ``signSorobanAuthEntryViaExternalWalletStatic(walletAddress:nonce:expirationLedger:invocation:credentialsAddress:networkPassphrase:externalWallet:preimageEncodeFailureLabel:)``
-    /// that captures the kit's network passphrase so callers in instance
-    /// context don't need to pass it explicitly.
-    private func signSorobanAuthEntryViaExternalWallet(
-        walletAddress: String,
-        nonce: Int64,
-        expirationLedger: UInt32,
-        invocation: SorobanAuthorizedInvocationXDR,
-        credentialsAddress: SCAddressXDR,
-        externalWallet: ExternalWalletAdapter
-    ) async throws -> SorobanAddressCredentialsXDR {
-        return try await Self.signSorobanAuthEntryViaExternalWalletStatic(
-            walletAddress: walletAddress,
-            nonce: nonce,
-            expirationLedger: expirationLedger,
-            invocation: invocation,
-            credentialsAddress: credentialsAddress,
-            networkPassphrase: kit.config.networkPassphrase,
-            externalWallet: externalWallet,
-            preimageEncodeFailureLabel: "Failed to XDR-encode wallet auth preimage"
-        )
-    }
-
-    /// Builds a ``HashIDPreimageSorobanAuthorizationXDR`` from the supplied
-    /// `(nonce, expirationLedger, invocation)` tuple, base64-encodes it,
-    /// requests an Ed25519 signature from `externalWallet`, base64-decodes
-    /// the response, locally verifies the signature against `walletAddress`,
-    /// and assembles the final classical Ed25519 ``SorobanAddressCredentialsXDR``.
-    ///
-    /// Local verification refuses signatures that do not verify under the
-    /// requested wallet's public key. This protects against adapters that
-    /// silently return a valid-looking but wrong signature (for example
-    /// because the user authorised a different account in their wallet UI),
-    /// which would otherwise surface as an opaque on-chain `auth-failed`
-    /// only after submission.
-    ///
-    /// - Parameters:
-    ///   - walletAddress: Stellar G-address that should sign the entry.
-    ///   - nonce: Nonce already present on (or freshly generated for) the
-    ///     credentials value the entry references.
-    ///   - expirationLedger: Signature expiration ledger to bind into the
-    ///     preimage.
-    ///   - invocation: Invocation tree the entry authorises.
-    ///   - credentialsAddress: Address value that ends up on the produced
-    ///     ``SorobanAddressCredentialsXDR``. Distinct from `walletAddress`
-    ///     because the credentials may carry the address as an encoded
-    ///     ``SCAddressXDR`` value sourced from a different code path.
-    ///   - networkPassphrase: Network passphrase used to derive the network
-    ///     id bound into the preimage.
-    ///   - externalWallet: Adapter that produces the raw Ed25519 signature.
-    ///   - preimageEncodeFailureLabel: Caller-specific message prefix used
-    ///     when the preimage XDR encode fails. Distinguishes the immediate
-    ///     auth-entry path from the freshly-built delegated invocation path
-    ///     in surfaced error messages.
-    /// - Returns: The signed ``SorobanAddressCredentialsXDR``.
-    /// - Throws: ``TransactionException/SigningFailed`` for signing or
-    ///   verification failures.
-    private static func signSorobanAuthEntryViaExternalWalletStatic(
-        walletAddress: String,
-        nonce: Int64,
-        expirationLedger: UInt32,
-        invocation: SorobanAuthorizedInvocationXDR,
-        credentialsAddress: SCAddressXDR,
-        networkPassphrase: String,
-        externalWallet: ExternalWalletAdapter,
-        preimageEncodeFailureLabel: String
-    ) async throws -> SorobanAddressCredentialsXDR {
-        let networkIdBytes = networkPassphrase.sha256Hash
-        let authPreimage = HashIDPreimageSorobanAuthorizationXDR(
-            networkID: HashXDR(networkIdBytes),
-            nonce: nonce,
             signatureExpirationLedger: expirationLedger,
-            invocation: invocation
+            invocation: cloned.rootInvocation
         )
-        let preimage = HashIDPreimageXDR.sorobanAuthorization(authPreimage)
-
+        let preimageXdr = HashIDPreimageXDR.sorobanAuthorization(preimage)
         let preimageBytes: [UInt8]
         do {
-            preimageBytes = try XDREncoder.encode(preimage)
+            preimageBytes = try XDREncoder.encode(preimageXdr)
         } catch {
             throw TransactionException.signingFailed(
-                reason: "\(preimageEncodeFailureLabel): " +
+                reason: "Failed to XDR-encode wallet auth preimage: " +
                     (SmartAccountException.messageOf(error) ?? "unknown"),
                 cause: error
             )
         }
         let preimageBase64 = Data(preimageBytes).base64EncodedString()
 
-        let signResult: SignAuthEntryResult
-        do {
-            signResult = try await externalWallet.signAuthEntry(
-                preimageXdr: preimageBase64,
-                options: SignAuthEntryOptions(
-                    networkPassphrase: networkPassphrase,
-                    address: walletAddress
-                )
-            )
-        } catch {
-            throw TransactionException.signingFailed(
-                reason: "External wallet signing failed for \(walletAddress): " +
-                    (SmartAccountException.messageOf(error) ?? "unknown"),
-                cause: error
-            )
-        }
+        let signResult = try await kit.externalSigners.signAuthEntry(
+            address: walletAddress,
+            authEntry: preimageBase64
+        )
 
         guard let signatureBytes = Data(base64Encoded: signResult.signedAuthEntry) else {
             throw TransactionException.signingFailed(
-                reason: "External wallet returned non-base64 signature for \(walletAddress)"
+                reason: "External signer returned non-base64 signature for \(walletAddress)"
             )
         }
 
-        // Derive the raw 32-byte Ed25519 public key from the wallet signer's
-        // G-address (or use the address the adapter reported when present).
         let resolvedSignerAddress = signResult.signerAddress ?? walletAddress
         let signerKeyPair: KeyPair
         do {
@@ -1342,41 +1148,98 @@ public class OZMultiSignerManager: @unchecked Sendable {
             )
         }
 
-        // why: locally verify the wallet adapter's signature against the requested address
-        // before trusting it downstream. Failure here is far more actionable than the
-        // on-chain `auth-failed` we would otherwise see after submission.
-        let preimageHash = Data(preimageBytes).sha256Hash
-        let signatureValid: Bool
-        do {
-            signatureValid = try signerKeyPair.verify(
-                signature: [UInt8](signatureBytes),
-                message: [UInt8](preimageHash)
-            )
-        } catch {
-            throw TransactionException.signingFailed(
-                reason: "Wallet adapter returned signature that does not verify against requested address \(resolvedSignerAddress): " +
-                    (SmartAccountException.messageOf(error) ?? "unknown"),
-                cause: error
-            )
-        }
-        if !signatureValid {
-            throw TransactionException.signingFailed(
-                reason: "Wallet adapter returned signature that does not verify against requested address \(resolvedSignerAddress)"
-            )
-        }
-
         let publicKeyBytes = Data(signerKeyPair.publicKey.bytes)
-
         let signatureScVal = OZTransactionOperations.classicalEd25519SignatureScVal(
             publicKey: publicKeyBytes,
             signature: signatureBytes
         )
 
-        return SorobanAddressCredentialsXDR(
-            address: credentialsAddress,
+        return SorobanAuthorizationEntryXDR(
+            credentials: .address(SorobanAddressCredentialsXDR(
+                address: credentials.address,
+                nonce: credentials.nonce,
+                signatureExpirationLedger: expirationLedger,
+                signature: signatureScVal
+            )),
+            rootInvocation: cloned.rootInvocation
+        )
+    }
+
+    // MARK: - Hand-rolled Auth.authorizeInvocation equivalent
+
+    /// Builds and signs a delegated wallet auth entry for `walletAddress` via the
+    /// kit's external-signer manager. Produces the `Vec([Map({public_key, signature})])`
+    /// credential shape.
+    /// - Throws: ``TransactionException/SigningFailed``.
+    private static func authorizeInvocation(
+        walletAddress: String,
+        validUntilLedger: UInt32,
+        invocation: SorobanAuthorizedInvocationXDR,
+        networkPassphrase: String,
+        externalSigners: OZExternalSignerManager
+    ) async throws -> SorobanAuthorizationEntryXDR {
+        // Generate a cryptographically random nonce. The Soroban host
+        // requires unique nonces per credentials value within an envelope.
+        let nonce = try OZTransactionOperations.generateNonce()
+
+        let networkIdBytes = networkPassphrase.sha256Hash
+        let authPreimage = HashIDPreimageSorobanAuthorizationXDR(
+            networkID: HashXDR(networkIdBytes),
             nonce: nonce,
-            signatureExpirationLedger: expirationLedger,
-            signature: signatureScVal
+            signatureExpirationLedger: validUntilLedger,
+            invocation: invocation
+        )
+        let preimage = HashIDPreimageXDR.sorobanAuthorization(authPreimage)
+
+        let preimageBytes: [UInt8]
+        do {
+            preimageBytes = try XDREncoder.encode(preimage)
+        } catch {
+            throw TransactionException.signingFailed(
+                reason: "Failed to XDR-encode delegated wallet auth preimage: " +
+                    (SmartAccountException.messageOf(error) ?? "unknown"),
+                cause: error
+            )
+        }
+        let preimageBase64 = Data(preimageBytes).base64EncodedString()
+
+        let signResult = try await externalSigners.signAuthEntry(
+            address: walletAddress,
+            authEntry: preimageBase64
+        )
+
+        guard let signatureBytes = Data(base64Encoded: signResult.signedAuthEntry) else {
+            throw TransactionException.signingFailed(
+                reason: "External signer returned non-base64 signature for \(walletAddress)"
+            )
+        }
+
+        let resolvedSignerAddress = signResult.signerAddress ?? walletAddress
+        let signerKeyPair: KeyPair
+        do {
+            signerKeyPair = try KeyPair(accountId: resolvedSignerAddress)
+        } catch {
+            throw TransactionException.signingFailed(
+                reason: "Failed to derive public key from wallet signer address \(resolvedSignerAddress): " +
+                    (SmartAccountException.messageOf(error) ?? "unknown"),
+                cause: error
+            )
+        }
+
+        let publicKeyBytes = Data(signerKeyPair.publicKey.bytes)
+        let signatureScVal = OZTransactionOperations.classicalEd25519SignatureScVal(
+            publicKey: publicKeyBytes,
+            signature: signatureBytes
+        )
+
+        return SorobanAuthorizationEntryXDR(
+            credentials: .address(SorobanAddressCredentialsXDR(
+                address: try SCAddressXDR(accountId: walletAddress),
+                nonce: nonce,
+                signatureExpirationLedger: validUntilLedger,
+                signature: signatureScVal
+            )),
+            rootInvocation: invocation
         )
     }
 

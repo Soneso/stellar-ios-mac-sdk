@@ -509,7 +509,7 @@ final class OZSmartAccountConfigTests: XCTestCase {
         .webauthnProvider(nil)
         .storage(customStorage)
         .externalWallet(nil)
-        .externalSignerManager(nil)
+        .externalEd25519Adapter(nil)
         .maxContextRuleScanId(customMaxScanId)
         .build()
 
@@ -522,7 +522,7 @@ final class OZSmartAccountConfigTests: XCTestCase {
         XCTAssertEqual("https://indexer.example.com", config.indexerUrl)
         XCTAssertNil(config.webauthnProvider)
         XCTAssertNil(config.externalWallet)
-        XCTAssertNil(config.externalSignerManager)
+        XCTAssertNil(config.externalEd25519Adapter)
         XCTAssertEqual(customMaxScanId, config.maxContextRuleScanId)
     }
 
@@ -796,49 +796,49 @@ final class OZSmartAccountConfigTests: XCTestCase {
         XCTAssertNotEqual(config1, config2)
     }
 
-    /// Configs with different `externalSignerManager` instances must not be equal.
-    func test_equality_differentExternalSignerManagerNotEqual() throws {
-        let mgr1 = OZExternalSignerManager(networkPassphrase: validPassphrase)
-        let mgr2 = OZExternalSignerManager(networkPassphrase: validPassphrase)
+    /// Configs with different `externalEd25519Adapter` instances must not be equal.
+    func test_equality_differentExternalEd25519AdapterNotEqual() throws {
+        let adapter1 = _TestEd25519SignerAdapter()
+        let adapter2 = _TestEd25519SignerAdapter()
         let config1 = try OZSmartAccountConfig(
             rpcUrl: validRpcUrl,
             networkPassphrase: validPassphrase,
             accountWasmHash: validWasmHash,
             webauthnVerifierAddress: validVerifier,
-            externalSignerManager: mgr1
+            externalEd25519Adapter: adapter1
         )
         let config2 = try OZSmartAccountConfig(
             rpcUrl: validRpcUrl,
             networkPassphrase: validPassphrase,
             accountWasmHash: validWasmHash,
             webauthnVerifierAddress: validVerifier,
-            externalSignerManager: mgr2
+            externalEd25519Adapter: adapter2
         )
         XCTAssertNotEqual(config1, config2)
     }
 
-    /// A config with a non-nil `externalSignerManager` must not equal a config
+    /// A config with a non-nil `externalEd25519Adapter` must not equal a config
     /// with a nil one (exercises the `default: return false` branch).
-    func test_equality_externalSignerManagerNilVsNonNilNotEqual() throws {
-        let mgr = OZExternalSignerManager(networkPassphrase: validPassphrase)
+    func test_equality_externalEd25519AdapterNilVsNonNilNotEqual() throws {
+        let adapter = _TestEd25519SignerAdapter()
         let config1 = try OZSmartAccountConfig(
             rpcUrl: validRpcUrl,
             networkPassphrase: validPassphrase,
             accountWasmHash: validWasmHash,
             webauthnVerifierAddress: validVerifier,
-            externalSignerManager: mgr
+            externalEd25519Adapter: adapter
         )
         let config2 = try OZSmartAccountConfig(
             rpcUrl: validRpcUrl,
             networkPassphrase: validPassphrase,
             accountWasmHash: validWasmHash,
             webauthnVerifierAddress: validVerifier,
-            externalSignerManager: nil
+            externalEd25519Adapter: nil
         )
         XCTAssertNotEqual(config1, config2)
     }
 
-    /// Hash includes the `externalWallet` identity when non-nil (line 623-624).
+    /// Hash includes the `externalWallet` identity when non-nil.
     func test_hash_externalWalletIncludesIdentity() throws {
         let wallet = _TestExternalWalletAdapter()
         let configWithWallet = try OZSmartAccountConfig(
@@ -858,24 +858,24 @@ final class OZSmartAccountConfigTests: XCTestCase {
         XCTAssertNotEqual(configWithWallet.hashValue, configWithoutWallet.hashValue)
     }
 
-    /// Hash includes the `externalSignerManager` identity when non-nil.
-    func test_hash_externalSignerManagerIncludesIdentity() throws {
-        let mgr = OZExternalSignerManager(networkPassphrase: validPassphrase)
-        let configWithMgr = try OZSmartAccountConfig(
+    /// Hash includes the `externalEd25519Adapter` identity when non-nil.
+    func test_hash_externalEd25519AdapterIncludesIdentity() throws {
+        let adapter = _TestEd25519SignerAdapter()
+        let configWithAdapter = try OZSmartAccountConfig(
             rpcUrl: validRpcUrl,
             networkPassphrase: validPassphrase,
             accountWasmHash: validWasmHash,
             webauthnVerifierAddress: validVerifier,
-            externalSignerManager: mgr
+            externalEd25519Adapter: adapter
         )
-        let configWithoutMgr = try OZSmartAccountConfig(
+        let configWithoutAdapter = try OZSmartAccountConfig(
             rpcUrl: validRpcUrl,
             networkPassphrase: validPassphrase,
             accountWasmHash: validWasmHash,
             webauthnVerifierAddress: validVerifier,
-            externalSignerManager: nil
+            externalEd25519Adapter: nil
         )
-        XCTAssertNotEqual(configWithMgr.hashValue, configWithoutMgr.hashValue)
+        XCTAssertNotEqual(configWithAdapter.hashValue, configWithoutAdapter.hashValue)
     }
 }
 
@@ -890,6 +890,14 @@ private final class _TestExternalWalletAdapter: ExternalWalletAdapter, @unchecke
     }
     func getConnectedWallets() -> [ConnectedWallet] { return [] }
     func canSignFor(address: String) -> Bool { return false }
+}
+
+// MARK: - _TestEd25519SignerAdapter
+
+/// Minimal `OZExternalEd25519SignerAdapter` used by equality/hash tests.
+private final class _TestEd25519SignerAdapter: OZExternalEd25519SignerAdapter, @unchecked Sendable {
+    func canSignFor(verifierAddress: String, publicKey: Data) -> Bool { return false }
+    func signAuthDigest(authDigest: Data, publicKey: Data) async throws -> Data { return Data(repeating: 0, count: 64) }
 }
 
 // MARK: - _TestNamedStorageAdapter

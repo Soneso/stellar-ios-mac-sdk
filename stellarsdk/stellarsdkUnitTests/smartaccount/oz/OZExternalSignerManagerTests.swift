@@ -1471,13 +1471,15 @@ final class OZExternalSignerManagerTests: XCTestCase {
     }
 
     func test_ed25519Adapter_takesPrecedenceForCanSignForTrue() async throws {
-        let manager = makeManager()
         let seed = try Seed(bytes: [UInt8](ed25519SecretBytes))
         let publicKey = Data(KeyPair(seed: seed).publicKey.bytes)
 
         // Adapter claims it can sign; no in-process keypair registered.
         let adapter = FakeEd25519SignerAdapter(canSign: true)
-        await manager.setEd25519Adapter(adapter)
+        let manager = OZExternalSignerManager(
+            networkPassphrase: testNetworkPassphrase,
+            ed25519Adapter: adapter
+        )
 
         let canSignViaAdapter = await manager.canSignEd25519For(
             verifierAddress: ed25519VerifierAlpha,
@@ -1490,15 +1492,16 @@ final class OZExternalSignerManagerTests: XCTestCase {
     }
 
     func test_ed25519Adapter_falsyAdapterFallsBackToInProcessKeypair() async throws {
-        let manager = makeManager()
+        // Adapter claims it cannot sign; should fall back to in-process keypair.
+        let adapter = FakeEd25519SignerAdapter(canSign: false)
+        let manager = OZExternalSignerManager(
+            networkPassphrase: testNetworkPassphrase,
+            ed25519Adapter: adapter
+        )
         let publicKey = try await manager.addEd25519FromRawKey(
             secretKeyBytes: ed25519SecretBytes,
             verifierAddress: ed25519VerifierAlpha
         )
-
-        // Adapter claims it cannot sign; should fall back to in-process keypair.
-        let adapter = FakeEd25519SignerAdapter(canSign: false)
-        await manager.setEd25519Adapter(adapter)
 
         let canSignViaFallback = await manager.canSignEd25519For(
             verifierAddress: ed25519VerifierAlpha,

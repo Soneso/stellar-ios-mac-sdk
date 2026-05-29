@@ -70,7 +70,7 @@ Concrete-typed accessors for `contextRuleManager` and `credentialManager` are al
 
 `OZSmartAccountKit` is the single entry point. It holds the immutable configuration, the connection state (`isConnected`, `credentialId`, `contractId`), the shared `SorobanServer`, and the optional relayer and indexer clients.
 
-Each sub-manager receives a reference to the kit and uses its Soroban server, relayer, and storage internally. `OZExternalSignerManager` is intentionally not built by the kit; consumers construct it directly when they need external-wallet signing.
+Each sub-manager receives a reference to the kit and uses its Soroban server, relayer, and storage internally. The kit constructs and owns one `OZExternalSignerManager`, accessible via `kit.externalSigners`, which serves as the single front door for all external (non-passkey) signing.
 
 The kit and its managers are safe to share across `async` contexts. Storage adapters are `public actor` types, so their methods are implicitly async from outside the actor.
 
@@ -301,28 +301,16 @@ let custom = try await kit.policyManager.addPolicy(
 When a context rule requires more than one signature, use `kit.multiSignerManager`. The `selectedSigners` array names the signers that should authorize the call. Three signer kinds are supported:
 
 - `SelectedSigner.passkey(...)` — triggers a WebAuthn authentication ceremony.
-- `SelectedSigner.wallet(...)` — delegates signing to the configured `ExternalWalletAdapter` or to an in-process keypair registered via `OZExternalSignerManager`.
-- `SelectedSigner.ed25519(...)` — calls `OZExternalSignerManager.signEd25519AuthDigest(...)` using the signing source registered for the `(verifierAddress, publicKey)` tuple.
+- `SelectedSigner.wallet(...)` — signing resolved by `kit.externalSigners`: an in-memory keypair registered via `kit.externalSigners.addFromSecret(secretKey:)`, or the `ExternalWalletAdapter` supplied via `config.externalWallet`.
+- `SelectedSigner.ed25519(...)` — signing resolved by `kit.externalSigners`: an in-memory keypair registered via `kit.externalSigners.addEd25519FromRawKey(secretKeyBytes:verifierAddress:)`, or the `OZExternalEd25519SignerAdapter` supplied via `config.externalEd25519Adapter`.
 
 For multi-signer ceremonies, every `SelectedSigner.passkey(...)` entry must carry the credential's stored `keyData` — the auth pipeline reconstructs external signers once per call, not per entry.
 
-For `SelectedSigner.ed25519(...)` entries, register the signing source before calling the multi-signer method:
+Two custody models are available for each non-passkey kind:
 
+**Model 1 — adapter (key managed externally):** supply the adapter via config at kit construction.
 ```swift
-// 1. Construct the manager and register the signing source.
-let ed25519VerifierAddress = "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM"
-let externalSignerManager = OZExternalSignerManager(
-    networkPassphrase: Network.testnet.passphrase
-)
-// rawSecretKeyBytes must be exactly 32 bytes (the raw Ed25519 seed, not an S-strkey).
-let ed25519PublicKey = try externalSignerManager.addEd25519FromRawKey(
-    secretKeyBytes: rawSecretKeyBytes,
-    verifierAddress: ed25519VerifierAddress
-)
-
-// 2. Wire the manager into the kit's config before constructing the kit.
-//    Ed25519 signers require OZExternalSignerManager to be set on the config;
-//    omitting it causes validateSignerSet to throw at call time.
+// Ed25519 with an external adapter (e.g. a hardware wallet).
 let config = try OZSmartAccountConfig(
     rpcUrl: "https://soroban-testnet.stellar.org",
     networkPassphrase: Network.testnet.passphrase,
@@ -330,24 +318,49 @@ let config = try OZSmartAccountConfig(
     webauthnVerifierAddress: "<C-strkey of WebAuthn verifier>",
     webauthnProvider: provider,
     storage: KeychainStorageAdapter(),
-    externalSignerManager: externalSignerManager
+    externalWallet: myFreighterAdapter,          // wallet adapter (optional)
+    externalEd25519Adapter: myHardwareAdapter    // Ed25519 adapter (optional)
+)
+let kit = OZSmartAccountKit.create(config: config)
+```
+
+**Model 2 — in-memory keypair:** register the key at runtime via `kit.externalSigners`.
+```swift
+let config = try OZSmartAccountConfig(
+    rpcUrl: "https://soroban-testnet.stellar.org",
+    networkPassphrase: Network.testnet.passphrase,
+    accountWasmHash: "<64-char hex WASM hash>",
+    webauthnVerifierAddress: "<C-strkey of WebAuthn verifier>",
+    webauthnProvider: provider,
+    storage: KeychainStorageAdapter()
 )
 let kit = OZSmartAccountKit.create(config: config)
 
-// 3. All three signer kinds in a single call.
+// Register a wallet G-address keypair in memory.
+let walletAddress = try await kit.externalSigners.addFromSecret(secretKey: "S...")
+
+// Register an Ed25519 keypair in memory.
+// rawSecretKeyBytes must be exactly 32 bytes (the raw Ed25519 seed, not an S-strkey).
+let ed25519VerifierAddress = "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM"
+let ed25519PublicKey = try kit.externalSigners.addEd25519FromRawKey(
+    secretKeyBytes: rawSecretKeyBytes,
+    verifierAddress: ed25519VerifierAddress
+)
+
+// All three signer kinds in a single call.
 let result = try await kit.multiSignerManager.multiSignerTransfer(
     tokenContract: "<C-strkey of token contract>",
     recipient: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ",
     amount: "10",
     selectedSigners: [
         .passkey(credentialId: savedCredId, keyData: savedKeyData),
-        .wallet(accountId: "GA7QYNF7..."),
+        .wallet(accountId: walletAddress),
         .ed25519(verifierAddress: ed25519VerifierAddress, publicKey: ed25519PublicKey)
     ]
 )
 ```
 
-For arbitrary contract calls with multiple signers, use `multiSignerContractCall(...)`. To route through the smart account's `execute` entry point, use `multiSignerExecuteAndSubmit(...)`.
+A wallet signer is valid with only an in-memory keypair and no adapter. For arbitrary contract calls with multiple signers, use `multiSignerContractCall(...)`. To route through the smart account's `execute` entry point, use `multiSignerExecuteAndSubmit(...)`.
 
 The full `SelectedSigner` enum, `OZExternalSignerManager` Ed25519 methods, and the `OZExternalEd25519SignerAdapter` adapter protocol are documented in the [API Reference](api-reference.md#selectedsigner).
 
@@ -430,8 +443,8 @@ Eight event arms are emitted: `.walletConnected`, `.walletDisconnected`, `.crede
 | `indexerUrl` | `String?` | `nil` | When `nil`, `effectiveIndexerUrl()` falls back to the built-in per-network default for testnet or mainnet. |
 | `webauthnProvider` | `WebAuthnProvider?` | `nil` | Required for `createWallet`, `connectWallet(prompt: true)`, `authenticatePasskey`, `addNewPasskeySigner`, and any operation that signs with a passkey. |
 | `storage` | `StorageAdapter` | `InMemoryStorageAdapter()` | Credential and session persistence. See [Storage trade-offs](#storage-trade-offs). |
-| `externalWallet` | `ExternalWalletAdapter?` | `nil` | Required only when `SelectedSigner.wallet(accountId:)` participates in a multi-signer ceremony. |
-| `externalSignerManager` | `OZExternalSignerManager?` | `nil` | External-signer manager for Ed25519 signing in multi-signer ceremonies. Consumer code constructs and registers keypairs on this object; when `nil`, any `SelectedSigner.ed25519(...)` entry throws at the validation stage. |
+| `externalWallet` | `ExternalWalletAdapter?` | `nil` | Optional external-wallet adapter injected into `kit.externalSigners`. Required when `SelectedSigner.wallet(accountId:)` participates in a multi-signer ceremony and the key is managed by an external service. In-memory wallet keypairs can be registered at runtime via `kit.externalSigners.addFromSecret(secretKey:)` without this field. |
+| `externalEd25519Adapter` | `OZExternalEd25519SignerAdapter?` | `nil` | Optional Ed25519 adapter injected into `kit.externalSigners`. Provides out-of-process Ed25519 signing. In-memory Ed25519 keypairs can be registered at runtime via `kit.externalSigners.addEd25519FromRawKey(...)` without this field. |
 | `maxContextRuleScanId` | `UInt32` | `50` | Upper bound on the IDs scanned by `listContextRules()` / `getAllContextRules()` when no `maxScanId` argument is provided. |
 
 ### Initializer or builder

@@ -127,31 +127,29 @@ final class OZSmartAccountKitTests: XCTestCase {
         XCTAssertNotNil(kit.multiSignerManager)
         XCTAssertNotNil(kit.contextRuleManagerConcrete)
         XCTAssertNotNil(kit.credentialManagerConcrete)
-        XCTAssertNil(kit.externalSignerManager)
+        XCTAssertNotNil(kit.externalSigners)
     }
 
-    func test_externalSignerManager_nilWhenNotSetInConfig() throws {
+    func test_externalSigners_isNonNilByDefault() throws {
         let config = try makeConfig()
         let kit = OZSmartAccountKit.create(config: config)
-        XCTAssertNil(
-            kit.externalSignerManager,
-            "externalSignerManager must be nil when not set on the config"
+        XCTAssertNotNil(
+            kit.externalSigners,
+            "externalSigners must be non-nil even when no adapters are supplied via config"
         )
     }
 
-    func test_externalSignerManager_returnsConfigValue() throws {
-        let manager = OZExternalSignerManager(networkPassphrase: validPassphrase)
+    func test_externalSigners_kitOwnedManagerUsesConfigAdapters() throws {
         let config = try OZSmartAccountConfig(
             rpcUrl: validRpcUrl,
             networkPassphrase: validPassphrase,
             accountWasmHash: validWasmHash,
-            webauthnVerifierAddress: validVerifier,
-            externalSignerManager: manager
+            webauthnVerifierAddress: validVerifier
         )
         let kit = OZSmartAccountKit.create(config: config)
-        XCTAssertTrue(
-            kit.externalSignerManager === manager,
-            "externalSignerManager must return the exact instance supplied via config"
+        XCTAssertNotNil(
+            kit.externalSigners,
+            "externalSigners must be the kit-owned manager constructed from config"
         )
     }
 
@@ -719,16 +717,15 @@ final class OZSmartAccountKitTests: XCTestCase {
     // MARK: - Protocol-typed accessor coverage
 
     /// Accessing `credentialManager`, `contextRuleManager`, and
-    /// `externalWallet` through the `OZSmartAccountKitProtocol` interface
-    /// covers the internal computed-property forwarding bodies (lines 139-141,
-    /// 163-165, 202-204 in OZSmartAccountKit.swift).
-    func test_protocolAccessors_credentialManagerAndExternalWallet_areAccessible() async throws {
+    /// `externalSigners` through the `OZSmartAccountKitProtocol` interface
+    /// verifies the internal computed-property forwarding paths.
+    func test_protocolAccessors_credentialManagerAndExternalSigners_areAccessible() async throws {
         let config = try makeConfig()
         let kit = OZSmartAccountKit.create(config: config)
         let protocol_kit: OZSmartAccountKitProtocol = kit
         XCTAssertNotNil(protocol_kit.credentialManager)
         XCTAssertNotNil(protocol_kit.contextRuleManager)
-        XCTAssertNil(protocol_kit.externalWallet)
+        XCTAssertNotNil(protocol_kit.externalSigners)
         await kit.close()
     }
 }

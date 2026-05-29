@@ -184,24 +184,18 @@ public final class OZSmartAccountKit: OZSmartAccountKitProtocol, @unchecked Send
     }
     private var _multiSignerManager: OZMultiSignerManager!
 
-    /// External-signer manager resolved from the kit's configuration.
+    /// Kit-owned external-signer manager. The single front door for all external (non-passkey)
+    /// signing sources.
     ///
-    /// Consumer applications construct ``OZExternalSignerManager`` separately,
-    /// register Ed25519 keypairs or adapters on it, and supply it via
-    /// ``OZSmartAccountConfig/externalSignerManager`` before calling
-    /// ``OZSmartAccountKit/create(config:)``. Returns `nil` when no manager
-    /// was set on the config. Multi-signer flows that include
-    /// ``SelectedSigner/ed25519(verifierAddress:publicKey:)`` entries require
-    /// this to be non-`nil`; flows that use only passkey and wallet signers work
-    /// with this `nil`.
-    public var externalSignerManager: OZExternalSignerManager? {
-        return config.externalSignerManager
+    /// Constructed at kit initialization from ``OZSmartAccountConfig/externalWallet`` and
+    /// ``OZSmartAccountConfig/externalEd25519Adapter``. Always non-`nil`; remains valid
+    /// after ``close()``. Register in-memory keypairs at runtime via
+    /// ``OZExternalSignerManager/addFromSecret(secretKey:)`` and
+    /// ``OZExternalSignerManager/addEd25519FromRawKey(secretKeyBytes:verifierAddress:)``.
+    public var externalSigners: OZExternalSignerManager {
+        return _externalSigners
     }
-
-    /// External-wallet adapter resolved from the kit's configuration.
-    public var externalWallet: ExternalWalletAdapter? {
-        return config.externalWallet
-    }
+    private let _externalSigners: OZExternalSignerManager
 
     // Sync lock keeps the non-async accessors (isConnected, credentialId, contractId) lock-free at the Swift-concurrency boundary.
     private let stateLock = NSLock()
@@ -285,6 +279,12 @@ public final class OZSmartAccountKit: OZSmartAccountKitProtocol, @unchecked Send
         self.indexerClient = indexerClient
         self.ownedUrlSession = ownedUrlSession
         self.events = SmartAccountEventEmitter()
+        self._externalSigners = OZExternalSignerManager(
+            networkPassphrase: config.networkPassphrase,
+            walletAdapter: config.externalWallet,
+            walletConnectionStorage: nil,
+            ed25519Adapter: config.externalEd25519Adapter
+        )
 
         // Every manager captures the kit through the internal protocol. The IUO backing
         // stores are the standard Swift workaround for the two-phase init rule (see

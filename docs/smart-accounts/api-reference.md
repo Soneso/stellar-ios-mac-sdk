@@ -172,13 +172,13 @@ public var contractId: String? { get }
 
 The smart-account contract address (`C…` strkey, 56 characters) of the currently connected wallet, or `nil` when no wallet is connected.
 
-#### externalWallet
+#### externalSigners
 
 ```swift
-public var externalWallet: ExternalWalletAdapter? { get }
+public var externalSigners: OZExternalSignerManager { get }
 ```
 
-Convenience accessor that returns `config.externalWallet`.
+The kit-owned `OZExternalSignerManager`. Always non-`nil`; constructed at kit initialization from `config.externalWallet` and `config.externalEd25519Adapter`. Use this property to register in-memory keypairs at runtime (`addFromSecret(secretKey:)`, `addEd25519FromRawKey(secretKeyBytes:verifierAddress:)`) and to check signer availability (`hasWalletAdapter`, `canSignFor(address:)`, `canSignEd25519For(verifierAddress:publicKey:)`). The multi-signer pipeline resolves all external-signer calls through this property. See [External Signer Management](#external-signer-management) for the full manager API.
 
 ### Manager Properties
 
@@ -237,16 +237,6 @@ public var multiSignerManager: OZMultiSignerManager { get }
 ```
 
 The [Multi-Signer Operations](#multi-signer-operations) manager. Coordinates ceremonies that combine multiple passkeys, Ed25519 external signers, and external-wallet signers.
-
-#### externalSignerManager
-
-```swift
-public var externalSignerManager: OZExternalSignerManager? { get }
-```
-
-Resolves from `config.externalSignerManager`. Returns `nil` when the consumer did not set it on the config. Multi-signer flows that include `SelectedSigner.ed25519(...)` entries require this to be non-`nil`; multi-signer flows with only passkey and wallet signers work with this `nil`.
-
-Construct `OZExternalSignerManager` separately (see [External Signer Management](#external-signer-management)), register Ed25519 signing sources on it, then supply it via `OZSmartAccountConfig(externalSignerManager:)` before calling `OZSmartAccountKit.create(config:)`.
 
 ### Lifecycle
 
@@ -319,8 +309,8 @@ Immutable configuration value type passed to `OZSmartAccountKit.create(config:)`
 | `indexerUrl` | `String?` | `nil` | Optional indexer endpoint URL. When `nil`, `effectiveIndexerUrl()` falls back to the built-in default for the configured network. |
 | `webauthnProvider` | `WebAuthnProvider?` | `nil` | WebAuthn provider used by `createWallet`, `connectWallet(prompt: true)`, `authenticatePasskey`, `addNewPasskeySigner`, and the per-entry signing pass. Required for every flow that prompts for biometric authentication. |
 | `storage` | `StorageAdapter` | `InMemoryStorageAdapter()` | Adapter for persisting credentials and sessions. Production apps pass `KeychainStorageAdapter()` or `UserDefaultsStorageAdapter()`. |
-| `externalWallet` | `ExternalWalletAdapter?` | `nil` | Optional external-wallet adapter used by `SelectedSigner.wallet(accountId:)` in multi-signer ceremonies. |
-| `externalSignerManager` | `OZExternalSignerManager?` | `nil` | Optional external-signer manager for `SelectedSigner.ed25519(...)` entries in multi-signer ceremonies. Construct the manager separately, register Ed25519 signing sources, and supply it here. |
+| `externalWallet` | `ExternalWalletAdapter?` | `nil` | Optional external-wallet adapter injected into `kit.externalSigners` at construction. Required when `SelectedSigner.wallet(accountId:)` participates in a multi-signer ceremony and the wallet key is managed by an external service rather than an in-memory keypair. |
+| `externalEd25519Adapter` | `OZExternalEd25519SignerAdapter?` | `nil` | Optional Ed25519 adapter injected into `kit.externalSigners` at construction. Provides out-of-process Ed25519 signing (hardware wallets, remote signing services) as an alternative to in-memory keypairs registered via `kit.externalSigners.addEd25519FromRawKey(...)`. |
 | `maxContextRuleScanId` | `UInt32` | `50` | Maximum context-rule identifier to scan during `getAllContextRules()` / `listContextRules()`. Increase when the account has had many add / remove cycles. |
 
 ### Initialization
@@ -342,7 +332,7 @@ public init(
     webauthnProvider: WebAuthnProvider? = nil,
     storage: StorageAdapter = InMemoryStorageAdapter(),
     externalWallet: ExternalWalletAdapter? = nil,
-    externalSignerManager: OZExternalSignerManager? = nil,
+    externalEd25519Adapter: OZExternalEd25519SignerAdapter? = nil,
     maxContextRuleScanId: UInt32 = 50
 ) throws
 ```
@@ -1470,7 +1460,7 @@ public func submitWithMultipleSigners(
 
 Shared low-level multi-signer signing pipeline. Validates the complete signer set, simulates the host function to discover authorization entries, signs every matching entry with every supplied signer, re-simulates so the resource fees reflect the real signature payload size, and submits the final envelope. The three higher-level entry points delegate here; the signer, policy, and context-rule managers also reach this method internally when a non-empty `selectedSigners` list is supplied to one of their state-changing methods.
 
-Validation order: connection check, external-wallet adapter check (when wallet signers are present), per-wallet-signer reachability via `ExternalWalletAdapter.canSignFor(address:)`, per-passkey-signer `keyData` precondition (every passkey entry must carry pre-fetched `keyData` so context-rule resolution and signature binding can run without an extra on-chain lookup), per-Ed25519-signer registration check via `OZExternalSignerManager.canSignEd25519For(verifierAddress:publicKey:)` and public-key length enforcement (must be 32 bytes), initial simulation surface error, re-simulation surface error.
+Validation order: connection check, per-wallet-signer reachability via `kit.externalSigners.canSignFor(address:)` (covers both in-memory keypairs and the configured wallet adapter), per-passkey-signer `keyData` precondition (every passkey entry must carry pre-fetched `keyData` so context-rule resolution and signature binding can run without an extra on-chain lookup), per-Ed25519-signer registration check via `kit.externalSigners.canSignEd25519For(verifierAddress:publicKey:)` and public-key length enforcement (must be 32 bytes), initial simulation surface error, re-simulation surface error.
 
 **Throws**: `WalletException`, `ValidationException`, `TransactionException`, `WebAuthnException`, `ConfigurationException`.
 
@@ -1498,39 +1488,39 @@ A signer selected for participation in a multi-signer authorization ceremony. Th
 - `transports` — Optional WebAuthn transport hints (`"internal"`, `"hybrid"`, `"usb"`, `"ble"`, `"nfc"`) propagated into the `AllowCredential` when `credentialIdBytes` is non-`nil`.
 
 `wallet`:
-- `accountId` — Stellar `G…` strkey of the wallet that will produce the signature, either through a configured external wallet adapter or through an in-process keypair registered via `OZExternalSignerManager`.
+- `accountId` — Stellar `G…` strkey of the wallet that will produce the signature. The signing source is resolved via `kit.externalSigners`: an in-memory keypair registered via `kit.externalSigners.addFromSecret(secretKey:)` takes precedence; when no in-memory keypair is registered for the address, the configured `ExternalWalletAdapter` is used.
 
 `ed25519`:
 - `verifierAddress` — C-strkey of the Ed25519 verifier contract registered as part of the on-chain `External(verifierAddress, publicKey)` signer entry. The smart-account contract calls this verifier during `__check_auth` to validate the Ed25519 signature.
 - `publicKey` — 32-byte Ed25519 public key that identifies the signer slot on the smart account. Must match the public key registered in the on-chain signer entry.
 
-The `ed25519` case carries no signing material. It is purely an identifier; the actual signing capability is registered separately via [`OZExternalSignerManager.addEd25519FromRawKey`](#external-signer-management) or by setting [`ed25519Adapter`](#external-signer-management) on the manager before the multi-signer pipeline executes.
+The `ed25519` case carries no signing material. It is purely an identifier; the actual signing capability is provided by registering an in-memory keypair via `kit.externalSigners.addEd25519FromRawKey(secretKeyBytes:verifierAddress:)` at runtime, or by supplying an `OZExternalEd25519SignerAdapter` via `config.externalEd25519Adapter` at kit construction.
 
 ```swift
 // Example: transfer authorized by three different signer kinds in one call.
 let ed25519VerifierAddress = "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM"
 
-// 1. Construct the external-signer manager and register the Ed25519 key.
-let signerManager = OZExternalSignerManager(
-    networkPassphrase: Network.testnet.passphrase
-)
-// rawSecretKeyBytes must be exactly 32 bytes (the raw Ed25519 seed).
-let derivedPublicKey = try await signerManager.addEd25519FromRawKey(
-    secretKeyBytes: rawSecretKeyBytes,
-    verifierAddress: ed25519VerifierAddress
-)
-
-// 2. Supply the manager via config when constructing the kit.
+// 1. Build the config. For the wallet signer, supply a wallet adapter at construction time
+//    if the key is managed externally; omit it if you will register an in-memory keypair
+//    at runtime. For the Ed25519 signer, supply an adapter via externalEd25519Adapter
+//    for out-of-process signing, or register an in-memory key after kit construction.
 let config = try OZSmartAccountConfig(
     rpcUrl: "https://soroban-testnet.stellar.org",
     networkPassphrase: Network.testnet.passphrase,
     accountWasmHash: "86b49fe03f7df0ad1c2a28bd8361b923ab57096e09f397f92f0c00ae3bd06d28",
     webauthnVerifierAddress: "CB26VN37RCVNTHJZDEPK6IRO2MMTS3Z2IEO5JD5BINY2OOJ5KKJG7NKY",
-    externalSignerManager: signerManager
+    externalWallet: myExternalWalletAdapter   // optional; omit for in-memory wallet keypair path
 )
 let kit = OZSmartAccountKit.create(config: config)
 
-// 3. Call the multi-signer method; the kit resolves the signing source automatically.
+// 2. Register the Ed25519 signing key in memory at runtime.
+//    rawSecretKeyBytes must be exactly 32 bytes (the raw Ed25519 seed).
+let derivedPublicKey = try kit.externalSigners.addEd25519FromRawKey(
+    secretKeyBytes: rawSecretKeyBytes,
+    verifierAddress: ed25519VerifierAddress
+)
+
+// 3. Call the multi-signer method; kit.externalSigners resolves signing sources.
 let result = try await kit.multiSignerManager.multiSignerTransfer(
     tokenContract: "CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC",
     recipient: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ",
@@ -1551,17 +1541,20 @@ let result = try await kit.multiSignerManager.multiSignerTransfer(
 public actor OZExternalSignerManager
 ```
 
-Manager for non-passkey signers used by multi-signer smart-account operations. Coordinates Stellar account signers that originate from raw Ed25519 secret keys (memory-only) or from external wallet connections through an `ExternalWalletAdapter`, and Ed25519 signers identified by a `(verifierAddress, publicKey)` tuple. Construct the manager separately, register signing sources on it, then supply it to the kit via `OZSmartAccountConfig(externalSignerManager:)` before calling `OZSmartAccountKit.create(config:)`.
+Manager for non-passkey signers used by multi-signer smart-account operations. Coordinates Stellar account signers (raw Ed25519 secret keys in memory or external wallet connections through `ExternalWalletAdapter`), and Ed25519 signers identified by a `(verifierAddress, publicKey)` tuple. The kit constructs and owns one instance, accessible via `kit.externalSigners`. Two custody models are available for each signer kind: supply an adapter at kit-construction time via the config, or register an in-memory key at runtime via the manager methods.
 
 ```swift
 public init(
     networkPassphrase: String,
     walletAdapter: ExternalWalletAdapter? = nil,
-    walletConnectionStorage: WalletConnectionStorage? = nil
+    walletConnectionStorage: WalletConnectionStorage? = nil,
+    ed25519Adapter: OZExternalEd25519SignerAdapter? = nil
 )
 ```
 
-`walletAdapter` is required to add wallet-based signers via `addFromWallet()`. `walletConnectionStorage` (defaults to `InMemoryWalletConnectionStorage` semantics when `nil`) persists wallet-connection metadata so connections can be restored across app launches via `restoreConnections()`. Keypair signers are never persisted — secret material is reachable only through the in-memory `KeyPair` instance.
+`walletAdapter` enables wallet-based signers via `addFromWallet()`. `walletConnectionStorage` persists wallet-connection metadata for cross-launch restoration via `restoreConnections()`; when `nil`, the manager's wallet connections are in-memory only. `ed25519Adapter` provides out-of-process Ed25519 signing at construction time; in-memory keypairs are registered at runtime via `addEd25519FromRawKey(secretKeyBytes:verifierAddress:)`. Keypair signers are never persisted — secret material is reachable only through the in-memory `KeyPair` instance.
+
+The kit-owned instance (accessed via `kit.externalSigners`) is constructed with `walletConnectionStorage: nil`, so `restoreConnections()` is a no-op on that instance. For cross-launch wallet-connection persistence, the demo or application layer should construct its own `OZExternalSignerManager` with a non-`nil` storage.
 
 All public methods are `async` (or `async throws`) due to actor isolation.
 
@@ -1582,33 +1575,6 @@ public var hasWalletAdapter: Bool { get }
 ```
 
 `true` when a non-`nil` `walletAdapter` was supplied at construction time.
-
-#### ed25519Adapter
-
-```swift
-public var ed25519Adapter: OZExternalEd25519SignerAdapter? { get }
-```
-
-Optional adapter for out-of-process Ed25519 signing (hardware wallets, remote signing services). When set, the adapter is consulted via `OZExternalEd25519SignerAdapter.canSignFor(verifierAddress:publicKey:)` before the in-memory keypair registry for every Ed25519 signing request (adapter-first precedence). Read via `await manager.ed25519Adapter`. To assign, use [`setEd25519Adapter(_:)`](#seted25519adapter_).
-
-See [`OZExternalEd25519SignerAdapter`](#external-signer-management) for the protocol definition and the adapter-first precedence rule.
-
-#### setEd25519Adapter(_:)
-
-```swift
-public func setEd25519Adapter(_ adapter: (any OZExternalEd25519SignerAdapter)?)
-```
-
-Sets the optional Ed25519 adapter. Because `OZExternalSignerManager` is a Swift actor, direct property assignment to `ed25519Adapter` from outside the actor is not permitted by the compiler. Use this method instead:
-
-```swift
-await manager.setEd25519Adapter(MyHardwareWalletAdapter())
-// Clear the adapter:
-await manager.setEd25519Adapter(nil)
-```
-
-**Parameters**:
-- `adapter`: A conforming `OZExternalEd25519SignerAdapter` instance, or `nil` to remove the adapter and fall back to the in-memory keypair registry.
 
 ### Methods
 
@@ -1724,28 +1690,24 @@ If a keypair is already registered for the same tuple, it is silently overwritte
 **Throws**: `ValidationException.InvalidInput` when `secretKeyBytes` is not exactly 32 bytes; `SignerException.Invalid` when keypair construction fails from the supplied seed.
 
 ```swift
-// 1. Construct the manager and register the signing source.
-let ed25519VerifierAddress = "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM"
-let signerManager = OZExternalSignerManager(
-    networkPassphrase: Network.testnet.passphrase
-)
-// rawSecretKeyBytes is the raw 32-byte Ed25519 seed (not a Stellar S-strkey).
-let ed25519PublicKey = try await signerManager.addEd25519FromRawKey(
-    secretKeyBytes: rawSecretKeyBytes,
-    verifierAddress: ed25519VerifierAddress
-)
-
-// 2. Supply the manager via config — construct the kit after the manager is ready.
+// Create the kit first.
 let config = try OZSmartAccountConfig(
     rpcUrl: "https://soroban-testnet.stellar.org",
     networkPassphrase: Network.testnet.passphrase,
     accountWasmHash: "86b49fe03f7df0ad1c2a28bd8361b923ab57096e09f397f92f0c00ae3bd06d28",
-    webauthnVerifierAddress: "CB26VN37RCVNTHJZDEPK6IRO2MMTS3Z2IEO5JD5BINY2OOJ5KKJG7NKY",
-    externalSignerManager: signerManager
+    webauthnVerifierAddress: "CB26VN37RCVNTHJZDEPK6IRO2MMTS3Z2IEO5JD5BINY2OOJ5KKJG7NKY"
 )
 let kit = OZSmartAccountKit.create(config: config)
 
-// 3. Pass the identifier to the multi-signer call.
+// Register the Ed25519 signing key in memory at runtime.
+let ed25519VerifierAddress = "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM"
+// rawSecretKeyBytes is the raw 32-byte Ed25519 seed (not a Stellar S-strkey).
+let ed25519PublicKey = try kit.externalSigners.addEd25519FromRawKey(
+    secretKeyBytes: rawSecretKeyBytes,
+    verifierAddress: ed25519VerifierAddress
+)
+
+// Pass the identifier to the multi-signer call.
 let signer = SelectedSigner.ed25519(
     verifierAddress: ed25519VerifierAddress,
     publicKey: ed25519PublicKey
@@ -1760,7 +1722,7 @@ See also: [`SelectedSigner.ed25519`](#selectedsigner) in the Multi-Signer Operat
 public func canSignEd25519For(verifierAddress: String, publicKey: Data) -> Bool
 ```
 
-Registry lookup that returns `true` when a signing source is available for the given `(verifierAddress, publicKey)` tuple. Checks the adapter first (adapter-first precedence): if `ed25519Adapter?.canSignFor(verifierAddress:publicKey:)` returns `true`, this method returns `true` without consulting the in-memory registry. Falls back to checking whether an in-memory keypair is registered for the tuple.
+Registry lookup that returns `true` when a signing source is available for the given `(verifierAddress, publicKey)` tuple. Checks the adapter (supplied via `config.externalEd25519Adapter`) first: if `adapter.canSignFor(verifierAddress:publicKey:)` returns `true`, this method returns `true` without consulting the in-memory registry. Falls back to checking whether an in-memory keypair is registered for the tuple.
 
 This method is synchronous (no `await` needed) because actor isolation guarantees serial access to the in-memory registry, and `OZExternalEd25519SignerAdapter.canSignFor` is synchronous by contract.
 
@@ -1793,7 +1755,7 @@ The multi-signer pipeline calls this method automatically for each `SelectedSign
 
 **Throws**: `ValidationException.InvalidInput` (field `"selectedSigners"`) when no signing source is registered; `TransactionException.SigningFailed` when the adapter or in-memory keypair fails to produce a valid signature.
 
-> **Quirk — adapter-first precedence**: when `ed25519Adapter` is set and its `canSignFor(verifierAddress:publicKey:)` returns `true`, the adapter always signs, even if an in-memory keypair is also registered for the same tuple. To force use of the in-memory keypair, set `ed25519Adapter = nil`.
+> **Quirk — adapter-first precedence**: when an `OZExternalEd25519SignerAdapter` is supplied via `config.externalEd25519Adapter` and its `canSignFor(verifierAddress:publicKey:)` returns `true`, the adapter always signs, even if an in-memory keypair is also registered for the same tuple. To force the in-memory path, construct the kit without `externalEd25519Adapter`.
 
 > **Quirk — tuple-keyed storage**: the same 32-byte public key registered under two different verifier addresses is stored as two distinct entries. This matches the on-chain signer identity, where an `External(verifierAddress, publicKey)` entry is uniquely identified by both fields. Passing the wrong `verifierAddress` results in `ValidationException.InvalidInput` even when the public key is correct.
 
@@ -1805,7 +1767,7 @@ See also: [`OZExternalEd25519SignerAdapter`](#external-signer-management).
 public func removeEd25519(verifierAddress: String, publicKey: Data)
 ```
 
-Removes the keypair registered under `(verifierAddress, publicKey)` from the in-memory registry. No-op when no keypair is registered for that tuple. The `ed25519Adapter` is not affected by this call.
+Removes the keypair registered under `(verifierAddress, publicKey)` from the in-memory registry. No-op when no keypair is registered for that tuple. The adapter supplied via `config.externalEd25519Adapter` is not affected by this call.
 
 **Parameters**:
 - `verifierAddress`: C-strkey of the Ed25519 verifier contract.
@@ -1822,7 +1784,7 @@ public protocol OZExternalEd25519SignerAdapter: Sendable {
 }
 ```
 
-Adapter protocol for out-of-process Ed25519 signing sources such as hardware wallets and remote signing services. Assign a conforming instance to `OZExternalSignerManager.ed25519Adapter` to intercept signing requests before the in-memory keypair registry is consulted.
+Adapter protocol for out-of-process Ed25519 signing sources such as hardware wallets and remote signing services. Supply a conforming instance via `config.externalEd25519Adapter` at kit construction to intercept signing requests before the in-memory keypair registry is consulted.
 
 `canSignFor(verifierAddress:publicKey:)`:
 - Called synchronously by the pipeline before every Ed25519 sign request.
@@ -1851,24 +1813,19 @@ final class MyHardwareWalletAdapter: OZExternalEd25519SignerAdapter {
     }
 }
 
-// Construct the manager, attach the adapter, then wire via config before creating the kit.
-let signerMgr = OZExternalSignerManager(
-    networkPassphrase: Network.testnet.passphrase
-)
-// setEd25519Adapter(_:) is actor-isolated; call it with await.
-await signerMgr.setEd25519Adapter(MyHardwareWalletAdapter())
-
+// Supply the adapter via config.externalEd25519Adapter at kit construction.
 let config = try OZSmartAccountConfig(
     rpcUrl: "https://soroban-testnet.stellar.org",
     networkPassphrase: Network.testnet.passphrase,
     accountWasmHash: "86b49fe03f7df0ad1c2a28bd8361b923ab57096e09f397f92f0c00ae3bd06d28",
     webauthnVerifierAddress: "CB26VN37RCVNTHJZDEPK6IRO2MMTS3Z2IEO5JD5BINY2OOJ5KKJG7NKY",
-    externalSignerManager: signerMgr
+    externalEd25519Adapter: MyHardwareWalletAdapter()
 )
 let kit = OZSmartAccountKit.create(config: config)
+// kit.externalSigners automatically uses the adapter for signing.
 ```
 
-> **Quirk — adapter-first precedence**: the adapter always signs when `canSignFor` returns `true`, even when an in-memory keypair is registered for the same `(verifierAddress, publicKey)` pair. Call `await manager.setEd25519Adapter(nil)` to clear the adapter and force the in-memory path.
+> **Quirk — adapter-first precedence**: the adapter always signs when `canSignFor` returns `true`, even when an in-memory keypair is registered for the same `(verifierAddress, publicKey)` pair. To force the in-memory path, construct the kit without `externalEd25519Adapter`.
 
 See also: [`OZExternalSignerManager.signEd25519AuthDigest`](#external-signer-management).
 

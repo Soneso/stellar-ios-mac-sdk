@@ -26,9 +26,6 @@ import Foundation
 ///         try await hardwareWallet.sign(digest: authDigest, publicKey: publicKey)
 ///     }
 /// }
-///
-/// let manager = OZExternalSignerManager(networkPassphrase: ...)
-/// await manager.setEd25519Adapter(MyHardwareWalletAdapter())
 /// ```
 public protocol OZExternalEd25519SignerAdapter: Sendable {
 
@@ -89,7 +86,7 @@ public enum ExternalSignerType: String, Sendable, Codable, CaseIterable {
 ///
 /// Example:
 /// ```swift
-/// let signers = await externalSignerManager.getAll()
+/// let signers = await kit.externalSigners.getAll()
 /// for signer in signers {
 ///     print("\(signer.address) (\(signer.type))")
 ///     if signer.type == .wallet {
@@ -259,36 +256,11 @@ public actor OZExternalSignerManager {
 
     /// Optional adapter for out-of-process Ed25519 signing (hardware wallets, remote services).
     ///
-    /// When set, the adapter is consulted via ``OZExternalEd25519SignerAdapter/canSignFor(verifierAddress:publicKey:)``
-    /// before the in-memory keypair registry. If the adapter claims it can sign, it is used.
-    /// If the adapter cannot sign (or is `nil`), the in-memory registry is consulted instead.
-    ///
-    /// Read this property via `await manager.ed25519Adapter`. To set it, call
-    /// ``setEd25519Adapter(_:)`` from any async context.
-    public var ed25519Adapter: OZExternalEd25519SignerAdapter?
-
-    /// Sets the optional Ed25519 adapter.
-    ///
-    /// Because `OZExternalSignerManager` is a Swift actor, direct assignment to
-    /// `ed25519Adapter` from outside the actor is not permitted by the compiler.
-    /// Use this method instead:
-    ///
-    /// ```swift
-    /// await manager.setEd25519Adapter(MyHardwareWalletAdapter())
-    /// // Clear the adapter:
-    /// await manager.setEd25519Adapter(nil)
-    /// ```
-    ///
-    /// When set, the adapter takes precedence over in-memory keypairs for every
-    /// `(verifierAddress, publicKey)` pair for which its
-    /// ``OZExternalEd25519SignerAdapter/canSignFor(verifierAddress:publicKey:)``
-    /// returns `true`. Pass `nil` to clear the adapter and force the in-memory
-    /// keypair path.
-    ///
-    /// - Parameter adapter: A conforming instance, or `nil` to remove the adapter.
-    public func setEd25519Adapter(_ adapter: (any OZExternalEd25519SignerAdapter)?) {
-        self.ed25519Adapter = adapter
-    }
+    /// When non-`nil`, the adapter is consulted via
+    /// ``OZExternalEd25519SignerAdapter/canSignFor(verifierAddress:publicKey:)`` before the
+    /// in-memory keypair registry (adapter-first precedence rule). Supplied at construction
+    /// time via the `ed25519Adapter` initializer parameter.
+    private let ed25519Adapter: OZExternalEd25519SignerAdapter?
 
     /// Initializes a new ``OZExternalSignerManager``.
     ///
@@ -301,14 +273,19 @@ public actor OZExternalSignerManager {
     ///   - walletConnectionStorage: Optional persistent storage for wallet
     ///     connections. When `nil`, wallet connections live only for the
     ///     duration of the running process.
+    ///   - ed25519Adapter: Optional adapter for out-of-process Ed25519 signing.
+    ///     When non-`nil`, consulted before the in-memory keypair registry for
+    ///     every ``signEd25519AuthDigest(verifierAddress:publicKey:authDigest:)`` call.
     public init(
         networkPassphrase: String,
         walletAdapter: ExternalWalletAdapter? = nil,
-        walletConnectionStorage: WalletConnectionStorage? = nil
+        walletConnectionStorage: WalletConnectionStorage? = nil,
+        ed25519Adapter: OZExternalEd25519SignerAdapter? = nil
     ) {
         self.networkPassphrase = networkPassphrase
         self.walletAdapter = walletAdapter
         self.walletConnectionStorage = walletConnectionStorage
+        self.ed25519Adapter = ed25519Adapter
     }
 
     /// Whether an external wallet adapter is configured.
@@ -726,10 +703,7 @@ public actor OZExternalSignerManager {
         publicKey: Data,
         authDigest: Data
     ) async throws -> Data {
-        // Snapshot ed25519Adapter before awaiting to avoid actor-reentrancy issues.
-        let adapterSnapshot = ed25519Adapter
-
-        if let adapter = adapterSnapshot, adapter.canSignFor(verifierAddress: verifierAddress, publicKey: publicKey) {
+        if let adapter = ed25519Adapter, adapter.canSignFor(verifierAddress: verifierAddress, publicKey: publicKey) {
             // Exit actor isolation for the potentially long-running adapter call.
             let rawSignature: Data
             do {
@@ -749,8 +723,9 @@ public actor OZExternalSignerManager {
             let prefix = String(verifierAddress.prefix(addressLogPrefixCount))
             throw ValidationException.invalidInput(
                 field: "selectedSigners",
-                reason: "Ed25519 signer (verifier=\(prefix)...) has no registered keypair or adapter — " +
-                    "register via OZExternalSignerManager.addEd25519FromRawKey(...) before signing"
+                reason: "Ed25519 signer (verifier=\(prefix)...) has no signing source. " +
+                    "Register a keypair via addEd25519FromRawKey(...), " +
+                    "or supply an Ed25519 adapter via config.externalEd25519Adapter at kit construction."
             )
         }
 
