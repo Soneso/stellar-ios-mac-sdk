@@ -407,7 +407,21 @@ public init(
 
 #### Setters
 
-Setters match every optional field name on the config; each returns the builder for chaining.
+One setter per optional field, each `@discardableResult` and returning `Builder` for chaining. The label is the field name (note the lowercase `webauthn` / `externalEd25519` casing):
+
+- `deployerKeypair(_:)` — `KeyPair?`
+- `rpId(_:)` — `String?`
+- `rpName(_:)` — `String`
+- `sessionExpiryMs(_:)` — `Int64`
+- `signatureExpirationLedgers(_:)` — `Int`
+- `timeoutInSeconds(_:)` — `Int`
+- `relayerUrl(_:)` — `String?`
+- `indexerUrl(_:)` — `String?`
+- `webauthnProvider(_:)` — `WebAuthnProvider?`
+- `storage(_:)` — `StorageAdapter`
+- `externalWallet(_:)` — `ExternalWalletAdapter?`
+- `externalEd25519Adapter(_:)` — `OZExternalEd25519SignerAdapter?`
+- `maxContextRuleScanId(_:)` — `UInt32`
 
 #### build()
 
@@ -684,7 +698,7 @@ public func submit(
 ) async throws -> TransactionResult
 ```
 
-Low-level escape hatch. Submits a manually constructed host function through the full simulate / sign / re-simulate / submit pipeline. `transfer`, `contractCall`, and `executeAndSubmit` all delegate to this method internally. Callers needing to construct a host function whose shape is not covered by the higher-level entry points use this method directly. The simulation discovers auth entries when `auth` is empty; the signing pass writes the OpenZeppelin AuthPayload Map directly into the credentials' `signature` field; the transaction is re-simulated after signing because WebAuthn signatures are larger than the placeholders the initial simulation used.
+Low-level escape hatch. Submits a manually constructed host function through the full simulate / sign / re-simulate / submit pipeline. `transfer`, `contractCall`, and `executeAndSubmit` all delegate here. Use it directly to submit a host function whose shape is not covered by the higher-level entry points. When `auth` is empty, simulation discovers the authorization entries; the transaction is re-simulated after signing so resource fees reflect the real signature size.
 
 **Throws**: `WalletException.NotConnected`, `ValidationException`, `TransactionException`, `WebAuthnException`, `CredentialException`.
 
@@ -697,7 +711,7 @@ public func fundWallet(
 ) async throws -> String
 ```
 
-Funds the connected smart-account wallet using Friendbot. Testnet only; hard-codes the Friendbot URL `https://friendbot.stellar.org/` and has no mainnet equivalent. Generates a fresh temporary keypair, funds it via Friendbot, queries its XLM balance via the native token contract, and transfers the surplus (balance minus the protocol minimum-balance reserve) to the smart-account contract. Source-account authorization entries from the inner transfer simulation are converted to classical Ed25519 `Address` credentials so the relayer can substitute its own channel accounts for fee sponsoring.
+Funds the connected smart-account wallet using Friendbot. Testnet only; hard-codes the Friendbot URL `https://friendbot.stellar.org/` and has no mainnet equivalent. Generates a fresh temporary keypair, funds it via Friendbot, then transfers the surplus (balance minus the protocol minimum-balance reserve) to the smart-account contract over the native token contract.
 
 **Returns**: Funded amount as a decimal XLM string (for example `"100"` or `"12.34567"`); trailing zeros in the fractional component are trimmed.
 
@@ -1497,41 +1511,20 @@ A signer selected for participation in a multi-signer authorization ceremony. Th
 The `ed25519` case carries no signing material. It is purely an identifier; the actual signing capability is provided by registering an in-memory keypair via `kit.externalSigners.addEd25519FromRawKey(secretKeyBytes:verifierAddress:)` at runtime, or by supplying an `OZExternalEd25519SignerAdapter` via `config.externalEd25519Adapter` at kit construction.
 
 ```swift
-// Example: transfer authorized by three different signer kinds in one call.
-let ed25519VerifierAddress = "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM"
-
-// 1. Build the config. For the wallet signer, supply a wallet adapter at construction time
-//    if the key is managed externally; omit it if you will register an in-memory keypair
-//    at runtime. For the Ed25519 signer, supply an adapter via externalEd25519Adapter
-//    for out-of-process signing, or register an in-memory key after kit construction.
-let config = try OZSmartAccountConfig(
-    rpcUrl: "https://soroban-testnet.stellar.org",
-    networkPassphrase: Network.testnet.passphrase,
-    accountWasmHash: "86b49fe03f7df0ad1c2a28bd8361b923ab57096e09f397f92f0c00ae3bd06d28",
-    webauthnVerifierAddress: "CB26VN37RCVNTHJZDEPK6IRO2MMTS3Z2IEO5JD5BINY2OOJ5KKJG7NKY",
-    externalWallet: myExternalWalletAdapter   // optional; omit for in-memory wallet keypair path
-)
-let kit = OZSmartAccountKit.create(config: config)
-
-// 2. Register the Ed25519 signing key in memory at runtime.
-//    rawSecretKeyBytes must be exactly 32 bytes (the raw Ed25519 seed).
-let derivedPublicKey = try kit.externalSigners.addEd25519FromRawKey(
-    secretKeyBytes: rawSecretKeyBytes,
-    verifierAddress: ed25519VerifierAddress
-)
-
-// 3. Call the multi-signer method; kit.externalSigners resolves signing sources.
+// One transfer authorized by three signer kinds. kit.externalSigners resolves each source.
 let result = try await kit.multiSignerManager.multiSignerTransfer(
-    tokenContract: "CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC",
-    recipient: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ",
+    tokenContract: tokenContract,
+    recipient: recipient,
     amount: "10",
     selectedSigners: [
         .passkey(credentialId: savedCredId, keyData: savedKeyData),
-        .wallet(accountId: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ"),
-        .ed25519(verifierAddress: ed25519VerifierAddress, publicKey: derivedPublicKey)
+        .wallet(accountId: walletAccountId),
+        .ed25519(verifierAddress: ed25519VerifierAddress, publicKey: ed25519PublicKey)
     ]
 )
 ```
+
+See [Onboarding — Signing](onboarding.md#signing) for registering each signing source and the full multi-signer walkthrough.
 
 ---
 
@@ -1800,30 +1793,14 @@ Adapter protocol for out-of-process Ed25519 signing sources such as hardware wal
 - Throws any error that prevents signing (hardware unavailable, user cancelled, etc.).
 
 ```swift
-// Example adapter for a hypothetical hardware wallet.
 final class MyHardwareWalletAdapter: OZExternalEd25519SignerAdapter {
-    func canSignFor(verifierAddress: String, publicKey: Data) -> Bool {
-        // Check whether the hardware wallet holds the key for this public key.
-        return hardwareWallet.hasSigner(for: publicKey)
-    }
-
-    func signAuthDigest(authDigest: Data, publicKey: Data) async throws -> Data {
-        // Request a 64-byte Ed25519 signature from the hardware wallet.
-        return try await hardwareWallet.sign(digest: authDigest, publicKey: publicKey)
-    }
+    func canSignFor(verifierAddress: String, publicKey: Data) -> Bool { /* ... */ }
+    func signAuthDigest(authDigest: Data, publicKey: Data) async throws -> Data { /* 64-byte sig */ }
 }
-
-// Supply the adapter via config.externalEd25519Adapter at kit construction.
-let config = try OZSmartAccountConfig(
-    rpcUrl: "https://soroban-testnet.stellar.org",
-    networkPassphrase: Network.testnet.passphrase,
-    accountWasmHash: "86b49fe03f7df0ad1c2a28bd8361b923ab57096e09f397f92f0c00ae3bd06d28",
-    webauthnVerifierAddress: "CB26VN37RCVNTHJZDEPK6IRO2MMTS3Z2IEO5JD5BINY2OOJ5KKJG7NKY",
-    externalEd25519Adapter: MyHardwareWalletAdapter()
-)
-let kit = OZSmartAccountKit.create(config: config)
-// kit.externalSigners automatically uses the adapter for signing.
+// Supply via config.externalEd25519Adapter; kit.externalSigners then routes signing through it.
 ```
+
+See [Onboarding — Signing](onboarding.md#signing) for the adapter custody model and a worked configuration example.
 
 > **Quirk — adapter-first precedence**: the adapter always signs when `canSignFor` returns `true`, even when an in-memory keypair is registered for the same `(verifierAddress, publicKey)` pair. To force the in-memory path, construct the kit without `externalEd25519Adapter`.
 
@@ -1896,28 +1873,15 @@ Options bag and result value used by `ExternalWalletAdapter.signAuthEntry(preima
 
 > **Scope — SDK lifecycle events only.** `kit.events` emits **kit-level** events (wallet connected/disconnected, credential created/deleted, session expired, transaction signed/submitted). It does **not** emit on-chain smart-account contract events such as `SignerAdded`, `SignerRemoved`, `PolicyInstalled`, `PolicyRemoved`, `ContextRuleAdded`, or `ContextRuleRemoved`. Those are emitted by the OpenZeppelin smart-account contract and must be queried via `SorobanServer.getEvents(...)` with the account's contract ID as a filter.
 >
-> To fetch on-chain contract events (after the wallet is connected):
+> To fetch on-chain contract events, query the core SDK once the wallet is connected:
 >
 > ```swift
-> let filter = EventFilter(
->     type: "contract",
->     contractIds: [contractId]
-> )
-> let response = await kit.sorobanServer.getEvents(
->     startLedger: fromLedger,
->     eventFilters: [filter]
-> )
-> switch response {
-> case .success(let eventsResponse):
->     for event in eventsResponse.events {
->         // event.topic and event.value are base64-XDR-encoded SCVal entries
->     }
-> case .failure(let error):
->     // handle error
-> }
+> let filter = EventFilter(type: "contract", contractIds: [contractId])
+> let response = await kit.sorobanServer.getEvents(startLedger: fromLedger, eventFilters: [filter])
+> // On .success, each event's topic and value are base64-XDR-encoded SCVal entries.
 > ```
 >
-> Each event's `topic` and `value` are base64-XDR-encoded `SCVal` entries that can be parsed with the SDK's XDR utilities.
+> See the core SDK `SorobanServer.getEvents(...)` documentation for the full response shape; parse `topic` and `value` with the SDK's XDR utilities.
 
 ```swift
 public final class SmartAccountEventEmitter: @unchecked Sendable { ... }
@@ -2067,7 +2031,7 @@ Every error path in the kit funnels into a `SmartAccountException` subclass so c
 > | 3002 | `.credentialAlreadyExists` | `UnvalidatedContext` |
 > | 3003 | `.credentialInvalid` | `ExternalVerificationFailed` |
 >
-> The table above shows only the two codes the SDK enum reuses; the on-chain enum spans `3000` and `3002`-`3016`. When inspecting an error code, first check the exception type to determine which namespace it belongs to. SDK-defined contract codes that the SDK interprets directly are declared in [`ContractErrorCodes`](#contracterrorcodes); see the [OpenZeppelin contracts source](https://github.com/OpenZeppelin/stellar-contracts/blob/main/packages/accounts/src/smart_account/mod.rs) for the full on-chain `SmartAccountError` enum, along with the `WebAuthnError` and policy error enums.
+> The table above shows only the two codes the SDK enum reuses. On chain, the smart-account contract's `SmartAccountError` spans `3000` and `3002`-`3016`; the WebAuthn verifier's `WebAuthnError` occupies `3110`-`3119`; and the built-in policy contracts occupy `3200`-`3227`. When inspecting an error code, first check the exception type to determine which namespace it belongs to. SDK-defined contract codes that the SDK interprets directly are declared in [`ContractErrorCodes`](#contracterrorcodes); see the [OpenZeppelin contracts source](https://github.com/OpenZeppelin/stellar-contracts/blob/main/packages/accounts/src/smart_account/mod.rs) for the full on-chain `SmartAccountError` enum, along with the `WebAuthnError` and policy error enums.
 
 
 ```swift
@@ -2124,6 +2088,33 @@ public class SmartAccountException: Error, CustomStringConvertible, @unchecked S
 ```
 
 The base class is not directly constructible by consumers (its initializer is `fileprivate`). `wrapError(_:defaultCode:)` maps any `Error` into the matching subclass; if the input is already a `SmartAccountException`, it is returned unchanged so typed information is preserved through pass-through layers.
+
+### Error Handling Example
+
+Catch the specific arms you care about first, then fall back to the base type. Arm subclasses are nested (`WebAuthnException.Cancelled`, `TransactionException.SimulationFailed`); the base `SmartAccountException` catches everything else.
+
+```swift
+do {
+    let result = try await kit.transactionOperations.transfer(
+        tokenContract: tokenContract,
+        recipient: recipient,
+        amount: "10"
+    )
+    print("hash: \(result.hash ?? "n/a")")
+} catch let error as WebAuthnException.Cancelled {
+    // User dismissed the passkey prompt.
+    print("Cancelled by user")
+} catch let error as WebAuthnException.NotSupported {
+    // No WebAuthn provider configured, or the platform cannot run the ceremony.
+    print("WebAuthn unavailable: \(error.message)")
+} catch let error as TransactionException.SimulationFailed {
+    // Simulation rejected the call (e.g. an on-chain contract error code in the message).
+    print("Simulation failed: \(error.message)")
+} catch let error as SmartAccountException {
+    // Any other kit error, mapped to a stable numeric code.
+    print("Smart account error \(error.code.code): \(error.message)")
+}
+```
 
 ### Domain Subclasses
 
@@ -2330,6 +2321,8 @@ public enum OZConstants {
 ```
 
 Timeouts and budgets used by the kit, the WebAuthn provider, and the HTTP clients. `maxSigners` and `maxPolicies` are the contract limits enforced at validation time inside `OZContextRuleManager.addContextRule(...)`. `friendbotReserveXlm` is the protocol minimum-balance reserve retained on the funded temporary account during `OZTransactionOperations.fundWallet(...)`. The HTTP identification headers are pinned at the `URLSession` configuration layer by both `OZIndexerClient` and `OZRelayerClient`.
+
+Stroop and ledger conversions live on the core SDK `StellarProtocolConstants` — for example `StellarProtocolConstants.stroopsPerXlm` (10,000,000), `.ledgersPerHour` (720), and `.ledgersPerDay` (17,280) — and are the defaults behind `signatureExpirationLedgers` and the spending-limit period conversions.
 
 ---
 
@@ -2560,6 +2553,8 @@ The `signAuthEntry(preimageXdr:options:)` contract: the adapter receives the bas
 ---
 
 ## Indexer and Relayer Clients
+
+> Prefer the kit-owned accessors `kit.indexerClient` and `kit.relayerClient` as the entry point — the kit constructs, configures, and tears down these clients for you. Construct an `OZIndexerClient` / `OZRelayerClient` directly only for standalone use outside a kit.
 
 ### OZIndexerClient
 

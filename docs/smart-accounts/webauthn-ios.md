@@ -25,7 +25,7 @@ let config = try OZSmartAccountConfig.builder(
     rpcUrl: "https://soroban-testnet.stellar.org",
     networkPassphrase: Network.testnet.passphrase,
     accountWasmHash: "your-wasm-hash-hex",
-    webauthnVerifierAddress: "CBCD1234..."
+    webauthnVerifierAddress: "CB26VN37RCVNTHJZDEPK6IRO2MMTS3Z2IEO5JD5BINY2OOJ5KKJG7NKY"
 )
     .rpId("wallet.example.com")
     .rpName("Example Smart Wallet")
@@ -140,9 +140,7 @@ Pass the conformance through `OZSmartAccountConfig.webauthnProvider` exactly as 
 
 ## Storage Adapters
 
-- **`KeychainStorageAdapter`**: production storage backed by iOS Keychain Services with `kSecAttrAccessibleAfterFirstUnlock`. Custom `serviceName` for scoping.
-- **`UserDefaultsStorageAdapter`**: scoped `UserDefaults(suiteName:)` storage. Suitable for testing or non-production builds; data is not encrypted at rest.
-- **`InMemoryStorageAdapter`**: process-memory only; data is lost on app restart. Use for unit tests and ephemeral demos. Not for production.
+Use `KeychainStorageAdapter` for production; `UserDefaultsStorageAdapter` and `InMemoryStorageAdapter` are for non-sensitive or test-only use. See the [Storage trade-offs](README.md#storage-trade-offs) table in the kit guide for the full comparison.
 
 ## Common errors
 

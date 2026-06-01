@@ -320,11 +320,9 @@ let config = try OZSmartAccountConfig(
 
 ### Verifier Contract
 
-As described in section 3, the verifier contract is a Soroban contract that validates secp256r1 signatures on-chain. When a user authenticates with a passkey, the smart account contract calls the verifier to check the signature.
+[Section 3](#3-how-passkeys-replace-secret-keys) covers how the smart account delegates on-chain signature verification to a verifier contract through `__check_auth`. This section adds the configuration details.
 
-The WebAuthn verifier and the Ed25519 verifier are typically separate contracts, each specialised for its signature scheme. The `webauthnVerifierAddress` configuration parameter sets the default verifier used by every passkey signer the kit registers. For Ed25519 signers, the verifier address is supplied per call to `addEd25519(verifierAddress:publicKey:)`.
-
-External signers (both passkey and Ed25519 types) store a reference to their verifier contract. `__check_auth` is a standard Soroban interface that all custom account contracts must implement. Soroban calls it automatically whenever the contract's address appears as an authorization source in a transaction. The smart account's implementation of `__check_auth` delegates signature verification to the appropriate verifier contract based on the signer's stored verifier address.
+The WebAuthn verifier and the Ed25519 verifier are typically separate contracts, each specialised for its signature scheme, and each external signer stores a reference to its own verifier. The `webauthnVerifierAddress` configuration parameter sets the default verifier used by every passkey signer the kit registers. For Ed25519 signers, the verifier address is supplied per call to `addEd25519(verifierAddress:publicKey:)`.
 
 The WebAuthn verifier contract address is a required configuration parameter:
 ```swift

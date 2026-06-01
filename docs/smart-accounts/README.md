@@ -308,33 +308,9 @@ For multi-signer ceremonies, every `SelectedSigner.passkey(...)` entry must carr
 
 Two custody models are available for each non-passkey kind:
 
-**Model 1 — adapter (key managed externally):** supply the adapter via config at kit construction.
+**Model 1 — in-memory keypair:** register the key at runtime via `kit.externalSigners`. Use the base config from the [Quick Start](#configure-and-create-the-kit) unchanged; no extra config fields are required.
 ```swift
-// Ed25519 with an external adapter (e.g. a hardware wallet).
-let config = try OZSmartAccountConfig(
-    rpcUrl: "https://soroban-testnet.stellar.org",
-    networkPassphrase: Network.testnet.passphrase,
-    accountWasmHash: "<64-char hex WASM hash>",
-    webauthnVerifierAddress: "<C-strkey of WebAuthn verifier>",
-    webauthnProvider: provider,
-    storage: KeychainStorageAdapter(),
-    externalWallet: myFreighterAdapter,          // wallet adapter (optional)
-    externalEd25519Adapter: myHardwareAdapter    // Ed25519 adapter (optional)
-)
-let kit = OZSmartAccountKit.create(config: config)
-```
-
-**Model 2 — in-memory keypair:** register the key at runtime via `kit.externalSigners`.
-```swift
-let config = try OZSmartAccountConfig(
-    rpcUrl: "https://soroban-testnet.stellar.org",
-    networkPassphrase: Network.testnet.passphrase,
-    accountWasmHash: "<64-char hex WASM hash>",
-    webauthnVerifierAddress: "<C-strkey of WebAuthn verifier>",
-    webauthnProvider: provider,
-    storage: KeychainStorageAdapter()
-)
-let kit = OZSmartAccountKit.create(config: config)
+let kit = OZSmartAccountKit.create(config: config)   // base config from Quick Start
 
 // Register a wallet G-address keypair in memory.
 let walletAddress = try await kit.externalSigners.addFromSecret(secretKey: "S...")
@@ -346,7 +322,20 @@ let ed25519PublicKey = try kit.externalSigners.addEd25519FromRawKey(
     secretKeyBytes: rawSecretKeyBytes,
     verifierAddress: ed25519VerifierAddress
 )
+```
 
+**Model 2 — adapter (key managed externally, e.g. a hardware wallet):** supply the adapter via config at kit construction. Take the base config from the [Quick Start](#configure-and-create-the-kit) and add only the two adapter fields; an adapter takes precedence over any in-memory keypair registered for the same key.
+```swift
+let config = try OZSmartAccountConfig(
+    // ...all fields from the Quick Start config...
+    externalWallet: myFreighterAdapter,          // wallet adapter (optional)
+    externalEd25519Adapter: myHardwareAdapter    // Ed25519 adapter (optional)
+)
+let kit = OZSmartAccountKit.create(config: config)
+```
+
+Once the signing sources are in place (either model), invoke the multi-signer method. The `walletAddress` and `ed25519PublicKey` values below come from the Model 1 registration; with adapters (Model 2) the same `(verifierAddress, publicKey)` and G-address identifiers are resolved through the adapter instead.
+```swift
 // All three signer kinds in a single call.
 let result = try await kit.multiSignerManager.multiSignerTransfer(
     tokenContract: "<C-strkey of token contract>",
@@ -524,7 +513,7 @@ The smart account WASM hash and the WebAuthn verifier contract address depend on
 | `webauthnVerifierAddress` | OpenZeppelin WebAuthn verifier deployment | C-strkey of the deployed verifier. |
 | `nativeTokenContract` | Network-specific native asset contract (XLM SAC) | Passed per call to `createWallet(autoFund:nativeTokenContract:)` and `transfer(...)`. |
 | Simple-threshold / weighted-threshold / spending-limit policy addresses | OpenZeppelin policy deployments | C-strkeys, passed to the corresponding `OZPolicyManager` methods. |
-| `indexerUrl` | Defaults to the per-network URL when `nil` | Testnet: `https://smart-account-indexer.sdf-ecosystem.workers.dev`. Mainnet: `https://smart-account-indexer-mainnet.sdf-ecosystem.workers.dev`. |
+| `indexerUrl` | Defaults to the per-network URL when `nil` | Testnet: `https://smart-account-indexer.sdf-ecosystem.workers.dev`. Mainnet: `https://smart-account-indexer-mainnet.sdf-ecosystem.workers.dev`. These default endpoints are operated externally and may change; set `indexerUrl` explicitly to pin your own. |
 | `relayerUrl` | No built-in default | Supply the URL of any compatible relayer; leave `nil` to make the connected wallet pay fees. |
 
 ### Uploading your own WASM
@@ -552,7 +541,7 @@ The deployer account pays the deployment fee. When a relayer is configured, the 
 
 ## Deterministic address derivation
 
-Contract address derivation is deterministic: given the same deployer keypair, credential ID, and network passphrase, `SmartAccountUtils.deriveContractAddress(credentialId:deployerPublicKey:networkPassphrase:)` always produces the same C-strkey. This follows from how Soroban computes contract addresses and is a correctness property of the chain, not a special feature.
+As noted in [How wallet deployment works](#how-wallet-deployment-works), the contract address is derived from the deployer public key, the credential-ID salt, and the network passphrase. `SmartAccountUtils.deriveContractAddress(credentialId:deployerPublicKey:networkPassphrase:)` exposes this derivation directly. It is a correctness property of how Soroban computes contract addresses, not a special feature.
 
 ### Default deployer
 
