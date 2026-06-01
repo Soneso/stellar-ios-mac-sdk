@@ -335,8 +335,7 @@ public final class OZContextRuleManager: OZContextRuleManagerProtocol, @unchecke
             try Task.checkCancellation()
             // why: stop as soon as the active rules have been collected — the
             // count fetched at the start of the scan is the authoritative
-            // termination signal. A "3-consecutive-miss" rule would behave
-            // incorrectly with sparse identifier layouts.
+            // termination signal.
             if UInt32(result.count) >= activeCount { break }
             do {
                 let ruleScVal = try await getContextRule(id: id)

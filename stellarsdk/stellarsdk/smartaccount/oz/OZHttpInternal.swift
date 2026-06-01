@@ -8,7 +8,7 @@
 import Foundation
 
 /// Truncates `body` to `maxChars` characters, appending `"..."` when truncation occurs.
-/// Defaults to 200 characters, matching the cap documented on both HTTP clients.
+/// Defaults to 200 characters.
 internal func ozTruncateBody(_ body: String, maxChars: Int = 200) -> String {
     if body.count > maxChars {
         let prefixIndex = body.index(body.startIndex, offsetBy: maxChars)
@@ -25,10 +25,8 @@ internal func ozTruncateBody(_ body: String, maxChars: Int = 200) -> String {
 /// The value is cached at the call site (`ozClientVersionValue`) because the
 /// version cannot change at runtime; the lookup happens once per process.
 internal func ozResolveClientVersion() -> String {
-    // why: `Bundle(for:)` requires a class type defined inside the framework
-    // module so it resolves to the framework bundle rather than the host app
-    // bundle. `OZHttpInternalBundleAnchor` exists only to serve as that
-    // anchor; it carries no state and is never instantiated.
+    // Anchored on `OZHttpInternalBundleAnchor` (declared below) so `Bundle(for:)`
+    // resolves to the framework bundle rather than the host-app bundle.
     let frameworkBundle = Bundle(for: OZHttpInternalBundleAnchor.self)
     if let version = frameworkBundle.infoDictionary?["CFBundleShortVersionString"] as? String,
        !version.isEmpty {

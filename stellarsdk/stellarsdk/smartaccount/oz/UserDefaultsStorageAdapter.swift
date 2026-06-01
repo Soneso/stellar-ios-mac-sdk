@@ -37,9 +37,9 @@ import Foundation
 ///   plaintext property-list file in the application container; on a
 ///   jailbroken device or via an unencrypted iTunes/Finder backup, the
 ///   contents are recoverable. The credentials persisted by this adapter
-///   contain only public-key material and non-secret metadata, but
-///   applications storing session data or anything that may become
-///   sensitive in aggregate should use `KeychainStorageAdapter` instead.
+///   contain only public-key material and non-secret metadata; applications
+///   storing session data or anything sensitive should use
+///   `KeychainStorageAdapter` instead.
 public final actor UserDefaultsStorageAdapter: StorageAdapter {
 
     // ========================================================================

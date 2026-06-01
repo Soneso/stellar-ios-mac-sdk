@@ -35,18 +35,14 @@ public enum OZRelayerErrorCodes {
 /// - `hash`: Stellar transaction hash returned by the relayer when available.
 /// - `status`: transaction status string (for example `"PENDING"`, `"SUCCESS"`,
 ///   `"ERROR"`).
-/// - `error`: human-readable error message when the request failed. Capped at
-///   200 characters with a trailing `"..."` ellipsis when the relayer
-///   returns a longer body, preventing a hostile server from forcing
-///   arbitrarily large strings into caller-side logs.
+/// - `error`: human-readable error message when the request failed. Stored
+///   verbatim as returned by the relayer; not individually truncated. Bounded
+///   only by the overall response-size limit (`OZConstants.maxRelayerResponseBytes`),
+///   which caps the entire response body before decoding.
 /// - `errorCode`: machine-readable error code; one of the `OZRelayerErrorCodes`
 ///   constants when populated.
 /// - `details`: additional details JSON forwarded from the relayer body's `data`
-///   field. When the relayer emits a JSON object under `data`, its keys appear
-///   verbatim. When the relayer emits a non-object value (string, number, array,
-///   bool, or `null`) under `data`, the value is wrapped as `["value": <wrapped>]`
-///   so callers always observe a `[String: OZJSONValue]` shape. `nil` when the
-///   relayer omits `data` entirely.
+///   field. See the property documentation below for the exact mapping.
 public struct OZRelayerResponse: Decodable, Equatable, Hashable, Sendable {
     public let success: Bool
     public let transactionId: String?
@@ -340,10 +336,10 @@ public class OZRelayerClient: @unchecked Sendable {
     /// Submits a transaction using a host function and authorization entries.
     ///
     /// The relayer constructs the full transaction from the supplied components,
-    /// wraps it with a fee bump, and submits it to the Stellar network. This method
-    /// does not throw network or HTTP errors; all failure modes are captured in the
-    /// returned `OZRelayerResponse`. Only XDR encoding failures (pre-request) surface
-    /// as `OZRelayerResponse(success: false, error: ...)` with no `errorCode`.
+    /// wraps it with a fee bump, and submits it to the Stellar network. As with all
+    /// submission methods on this client, every failure mode (including pre-request
+    /// XDR encoding errors) surfaces in the returned `OZRelayerResponse` rather than
+    /// being thrown — see the class documentation.
     ///
     /// - Parameters:
     ///   - hostFunction: The host function to execute.
@@ -387,9 +383,9 @@ public class OZRelayerClient: @unchecked Sendable {
     ///
     /// Use this when the transaction requires source-account authentication (for
     /// example, smart account contract deployments). The relayer fee-bumps the
-    /// signed envelope, preserving the inner signatures. This method does not throw
-    /// network or HTTP errors; all failure modes are captured in the returned
-    /// `OZRelayerResponse`.
+    /// signed envelope, preserving the inner signatures. Every failure mode surfaces
+    /// in the returned `OZRelayerResponse` rather than being thrown — see the class
+    /// documentation.
     ///
     /// - Parameters:
     ///   - transactionEnvelope: The signed `TransactionEnvelopeXDR` to submit.
@@ -451,9 +447,8 @@ public class OZRelayerClient: @unchecked Sendable {
     }
 
     /// Issues a POST request, decodes the JSON response body via `JSONDecoder`,
-    /// and maps every failure mode into a `OZRelayerResponse`. This method
-    /// never throws — network, HTTP, decoding, and oversize-body failures all
-    /// surface as `OZRelayerResponse(success: false, ...)`.
+    /// and maps every failure mode (network, HTTP, decoding, oversize-body) into a
+    /// `OZRelayerResponse` rather than throwing — see the class documentation.
     private func performRequest(
         payload: [String: Any],
         perRequestTimeoutMs: Int64?

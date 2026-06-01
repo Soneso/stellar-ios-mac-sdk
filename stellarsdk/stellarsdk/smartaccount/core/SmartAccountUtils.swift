@@ -278,7 +278,6 @@ public enum SmartAccountUtils {
     ) throws -> Data? {
         // Minimum size: 37 (rpIdHash + flags + signCount) + 16 (AAGUID) + 2 (credIdLen) =
         // 55, plus at least the COSE key prefix (10) + X (32) + separator (3) + Y (32) = 77.
-        // Total minimum: 132 bytes.
         if authenticatorData.count < 55 {
             return nil
         }

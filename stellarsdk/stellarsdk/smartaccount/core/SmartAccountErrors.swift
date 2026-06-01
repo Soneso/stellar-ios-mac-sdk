@@ -103,8 +103,7 @@ public enum SmartAccountErrorCode: Int, Sendable, CaseIterable {
 /// can rely on a single typed channel for error handling and can map errors back to a
 /// stable numeric `SmartAccountErrorCode`.
 ///
-/// Every concrete subclass exposes the same `init(message: String, cause: Error? = nil)`
-/// contract inherited from this base.
+/// Every concrete leaf subclass declares the same `init(message: String, cause: Error? = nil)`.
 ///
 /// Example:
 /// ```swift

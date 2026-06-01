@@ -20,10 +20,7 @@ import Security
 ///
 /// All items are written with `kSecAttrAccessibleAfterFirstUnlock` so they
 /// survive app restarts but become inaccessible until the device is unlocked
-/// after a reboot. The credentials persisted by this adapter are public-key
-/// material (no secrets), so additional biometric `SecAccessControl` flags are
-/// intentionally not configured — biometric gating would require a UI prompt
-/// on every read and add no security value for public data.
+/// after a reboot.
 ///
 /// Thread safety is provided by Swift Concurrency `actor` isolation, so all
 /// operations serialize even when invoked from multiple tasks. The actor
@@ -38,8 +35,6 @@ import Security
 ///
 /// - Important: On iOS Simulator and unsigned macOS test binaries, Keychain
 ///   access requires the `keychain-access-groups` entitlement to be configured.
-///   Tests should probe availability and skip when the host environment lacks
-///   the required entitlement.
 @available(iOS 13.0, macOS 10.15, *)
 public final actor KeychainStorageAdapter: StorageAdapter {
 

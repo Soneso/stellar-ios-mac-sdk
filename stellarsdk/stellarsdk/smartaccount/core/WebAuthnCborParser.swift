@@ -32,10 +32,7 @@ import Foundation
 /// - Bit 3 (0x08): BE — Backup Eligibility (multi-device credential)
 /// - Bit 4 (0x10): BS — Backup State (currently backed up)
 ///
-/// Visibility note: this enum has no `public` modifier and is therefore module-internal —
-/// external SDK consumers cannot import it. The unit-test target reaches in via
-/// `@testable import stellarsdk`. The higher-level smart-account public API exposes the
-/// pubkey-extraction and authenticator-flag primitives via dedicated public facade types.
+/// Module-internal; the public pubkey/flag primitives are re-exposed via dedicated facade types.
 enum WebAuthnCborParser {
 
     /// Minimum length of valid authenticator data (rpIdHash + flags + signCount).
@@ -65,17 +62,6 @@ enum WebAuthnCborParser {
 
     /// String constant for multi-device (cloud-synced) credential type.
     static let deviceTypeMulti: String = "multiDevice"
-
-    /// CBOR-encoded key for the `"authData"` field in a WebAuthn attestation object map.
-    ///
-    /// Encoding: `0x68` (text string, length 8) followed by ASCII bytes for `"authData"`.
-    /// Currently unused by this file's algorithm (the attestation iterator decodes keys via
-    /// `readCborTextString` rather than pattern-matching this constant) — preserved verbatim
-    /// so future pattern-matching strategies can reuse it without re-encoding.
-    private static let authDataCborKey: [UInt8] = [
-        0x68,
-        0x61, 0x75, 0x74, 0x68, 0x44, 0x61, 0x74, 0x61
-    ]
 
     /// 10-byte CBOR map prefix that begins an ES256 COSE key for secp256r1.
     ///
@@ -428,16 +414,14 @@ enum WebAuthnCborParser {
             dataStart = offset + 3
         } else if additionalInfo == 26 {
             if offset + 4 >= data.count { return nil }
-            // Compose a 32-bit big-endian unsigned value into a UInt32 first to model
-            // the on-the-wire encoding faithfully, then convert to Int with an explicit
-            // overflow guard: rejects negative integers because the host signed an unsigned length (per CBOR RFC 8949).
+            // Compose the 32-bit big-endian unsigned length into a UInt32 first to model
+            // the on-the-wire encoding faithfully, then reject any length above Int32.max
+            // so the unsigned 32-bit value cannot become a negative Int after conversion.
             let raw: UInt32 =
                 (UInt32(data[base + offset + 1]) << 24) |
                 (UInt32(data[base + offset + 2]) << 16) |
                 (UInt32(data[base + offset + 3]) << 8) |
                 UInt32(data[base + offset + 4])
-            // Only accept values that fit in a signed 32-bit positive range to reproduce
-            // the reference parser's "negative Int = overflow" guard.
             if raw > UInt32(Int32.max) { return nil }
             length = Int(raw)
             dataStart = offset + 5

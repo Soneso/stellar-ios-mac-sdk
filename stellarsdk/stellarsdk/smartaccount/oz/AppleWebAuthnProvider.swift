@@ -5,8 +5,6 @@
 //  Copyright (c) 2026 Soneso. All rights reserved.
 //
 
-// See docs/smart-accounts/webauthn-ios.md for entitlement setup.
-
 import Foundation
 import AuthenticationServices
 
@@ -68,12 +66,9 @@ public final class AppleWebAuthnProvider: NSObject, WebAuthnProvider, @unchecked
     /// the system handles presentation automatically and this property may
     /// remain `nil`.
     ///
-    /// The provider holds a strong reference; assign before invoking
-    /// `register` or `authenticate`. Set this property once before invoking
-    /// any flow. Mutating it concurrently with an in-flight `register` or
-    /// `authenticate` call is undefined behavior — the property is not
-    /// guarded by `delegateLock` because configuring the provider is
-    /// expected to happen during setup, not during an active request.
+    /// The provider holds a strong reference; assign before invoking `register`
+    /// or `authenticate`. This property is not guarded by `delegateLock`, so
+    /// mutating it concurrently with an in-flight call is undefined behavior.
     public var presentationContextProvider: ASAuthorizationControllerPresentationContextProviding?
 
     // ========================================================================
@@ -128,13 +123,7 @@ public final class AppleWebAuthnProvider: NSObject, WebAuthnProvider, @unchecked
         super.init()
     }
 
-    /// Convenience factory mirroring the explicit initializer.
-    ///
-    /// Provided as an ergonomic alternative for callers who prefer factory
-    /// invocation (`AppleWebAuthnProvider.create(...)`) over the throwing
-    /// initializer syntax. Both entry points perform identical validation
-    /// and produce identical instances; pick whichever reads better at the
-    /// call site.
+    /// Throwing convenience factory equivalent to `init(rpId:rpName:timeout:)`.
     ///
     /// - Parameters:
     ///   - rpId: WebAuthn Relying Party identifier.
@@ -550,12 +539,9 @@ private final class AuthorizationContinuationHolder: @unchecked Sendable {
 /// The provider stores instances of this class in `activeDelegate` and clears
 /// the reference once either callback fires.
 // why: `ASAuthorizationControllerDelegate` inherits `@MainActor` isolation on
-// Swift 6 toolchains. The delegate object itself does not touch any UI state —
-// the framework dispatches both completion methods on the main thread, but
-// constructing the delegate is harmless from any thread. Annotating the class
-// `@MainActor` keeps the delegate-method conformance compatible with the
-// protocol while the surrounding async code uses `MainActor.run` to perform
-// instantiation once it reaches main-actor isolation.
+// Swift 6 toolchains, so the class is annotated `@MainActor` to keep its
+// delegate-method conformance compatible; the surrounding async code uses
+// `MainActor.run` to instantiate it from main-actor isolation.
 @available(iOS 16.0, macOS 13.0, *)
 @MainActor
 internal final class AuthorizationDelegate: NSObject, ASAuthorizationControllerDelegate {

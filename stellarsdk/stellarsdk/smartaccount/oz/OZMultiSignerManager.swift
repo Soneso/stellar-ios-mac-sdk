@@ -63,7 +63,10 @@ public class OZMultiSignerManager: @unchecked Sendable {
     /// order; passkey entries trigger one OS WebAuthn prompt each, wallet
     /// entries trigger one external-wallet request each.
     ///
-    /// Validation order (tested explicitly in the unit suite):
+    /// Validation order:
+    /// Steps 1-4 run inline here; steps 5-6 are enforced downstream by
+    /// ``multiSignerContractCall(target:targetFn:targetArgs:selectedSigners:forceMethod:resolveContextRuleIds:)``
+    /// (via `validateContractCallArgs`), not in this method.
     /// 1. ``OZSmartAccountKitProtocol/requireConnected()`` — throws
     ///    ``WalletException/NotConnected`` when no wallet is connected.
     /// 2. `requireStellarAddress(_:fieldName:)` over `recipient`.
@@ -71,8 +74,7 @@ public class OZMultiSignerManager: @unchecked Sendable {
     ///    contract id).
     /// 4. Amount parsing via ``OZTransactionOperations/amountToStroops(_:)``.
     /// 5. `selectedSigners.isEmpty` — throws ``ValidationException/InvalidInput``.
-    /// 6. `tokenContract` validation (delegated to
-    ///    ``multiSignerContractCall(target:targetFn:targetArgs:selectedSigners:forceMethod:resolveContextRuleIds:)``).
+    /// 6. `tokenContract` validation.
     ///
     /// - Parameters:
     ///   - tokenContract: SEP-41 token contract address (`C…` strkey).
@@ -271,10 +273,8 @@ public class OZMultiSignerManager: @unchecked Sendable {
     /// with `resolveContextRuleIds = nil` so sibling managers do not need to
     /// know about the context-rule resolver override.
     ///
-    /// Declared in the main class body (rather than in an extension) so test
-    /// doubles can subclass ``OZMultiSignerManager`` and override this
-    /// overload to observe routing decisions without exercising the real
-    /// signing pipeline.
+    /// Declared in the main class body (not an extension) so test doubles can
+    /// override this overload.
     ///
     /// - Parameters:
     ///   - hostFunction: Host function being authorized.
@@ -443,7 +443,7 @@ public class OZMultiSignerManager: @unchecked Sendable {
                 contextRuleIds: resolvedContextRuleIds
             )
 
-            // Step 4d: sign with every passkey signer in declaration order.
+            // Sign with every passkey signer in declaration order.
             workingEntry = try await signEntryWithPasskeys(
                 workingEntry: workingEntry,
                 authDigest: authDigest,
@@ -452,7 +452,7 @@ public class OZMultiSignerManager: @unchecked Sendable {
                 selectedSigners: selectedSigners
             )
 
-            // Step 4d.5: sign with every Ed25519 signer in declaration order.
+            // Sign with every Ed25519 signer in declaration order.
             workingEntry = try await signEntryWithEd25519Signers(
                 workingEntry: workingEntry,
                 authDigest: authDigest,
@@ -956,10 +956,10 @@ public class OZMultiSignerManager: @unchecked Sendable {
 
     /// Produces one delegated-signer auth entry per wallet signer and
     /// appends it to `signedAuthEntries`. Each delegated entry is signed via
-    /// the kit's external-signer manager and contributes a
-    /// `{public_key: <empty>, signature: <empty>}` placeholder to the
-    /// smart-account signature map so the rule engine counts the delegated
-    /// signer when evaluating the active context rule.
+    /// the kit's external-signer manager and contributes a signature-map entry
+    /// keyed by the delegated signer with an empty-bytes signature value, so
+    /// the rule engine counts the delegated signer when evaluating the active
+    /// context rule.
     ///
     /// - Returns: The updated `workingEntry` after every delegated-signer
     ///   placeholder has been merged into its signature map.

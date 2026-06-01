@@ -190,9 +190,9 @@ public struct OZExternalSigner: OZSmartAccountSigner, Equatable, Hashable {
         "external:\(verifierAddress):\(keyData.base16EncodedString())"
     }
 
-    /// Uses constant-time byte comparison via `Data.constantTimeEquals` for `keyData` —
-    /// see that extension for the timing-attack rationale. Both fields are always evaluated
-    /// regardless of the address result (bitwise AND, not short-circuit).
+    /// Uses constant-time byte comparison via this type's private `constantTimeEquals`
+    /// helper for `keyData` — see that helper for the timing-attack rationale. Both fields
+    /// are always evaluated regardless of the address result (bitwise AND, not short-circuit).
     ///
     /// - Parameters:
     ///   - lhs: The first signer to compare.

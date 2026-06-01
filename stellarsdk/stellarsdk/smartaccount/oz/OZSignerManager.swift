@@ -49,25 +49,14 @@ public struct AddPasskeySignerResult: Sendable, Hashable {
         return AddPasskeySignerResult.constantTimeEquals(lhs.publicKey, rhs.publicKey)
     }
 
-    /// Hashes the value using content-based hashing of the `publicKey` bytes
-    /// so two values with byte-equal keys hash identically.
     public func hash(into hasher: inout Hasher) {
         hasher.combine(credentialId)
         hasher.combine(publicKey)
         hasher.combine(transactionResult)
     }
 
-    /// Constant-time byte comparison.
-    ///
-    /// Folds a length-difference flag with the XOR of every byte pair across
-    /// the common prefix into a single accumulator. The comparison cost does
-    /// not depend on where the first differing byte sits, which avoids leaking
-    /// information about cryptographic key contents through timing
-    /// measurements. The length-difference flag is a Boolean indicator (0 or
-    /// 1) rather than a narrowed XOR of the lengths, which both keeps the
-    /// helper trap-free for any input sizes and prevents two different-length
-    /// inputs from collapsing to a zero-difference accumulator through integer
-    /// overflow truncation.
+    /// Constant-time byte comparison that avoids leaking key contents via
+    /// timing: the cost does not depend on where the first differing byte sits.
     private static func constantTimeEquals(_ lhs: Data, _ rhs: Data) -> Bool {
         var diff: UInt8 = (lhs.count == rhs.count) ? 0 : 1
         let length = min(lhs.count, rhs.count)
@@ -241,17 +230,11 @@ public final class OZSignerManager: @unchecked Sendable {
 
         let credentialIdBase64url = registrationResult.credentialId.base64URLEncodedString()
 
-        // why: the wallet-creation flow runs registration output through
-        // `SmartAccountUtils.extractPublicKeyFromRegistration` because the
-        // platform WebAuthn API may return the public key in COSE or SPKI
-        // form. The signer-addition flow already requires the canonical
-        // uncompressed 65-byte form (the on-chain verifier signature
-        // contract rejects any other shape), and the caller may have driven
-        // the registration through an adapter that bypasses platform
-        // extraction. Pass the raw `publicKey` bytes through unchanged here.
-        // The length check in `createPendingCredential` rejects wrong-length
-        // keys before the credential is persisted; `addPasskey` then rejects
-        // wrong-prefix keys after the credential is persisted.
+        // why: the signer-addition flow requires the canonical uncompressed
+        // 65-byte public key (the on-chain verifier rejects any other shape),
+        // so the raw `publicKey` bytes pass through unchanged here.
+        // `createPendingCredential` rejects wrong-length keys before persisting;
+        // `addPasskey` then rejects wrong-prefix keys after persisting.
         let credentialManager = credentialManagerOverride ?? kit.credentialManager
         let credential: StoredCredential
         do {
@@ -462,8 +445,8 @@ public final class OZSignerManager: @unchecked Sendable {
     ///
     /// - Important: A context rule cannot have its last signer removed unless
     ///   the rule has policies that supply authorization. The smart-account
-    ///   contract returns error code 3004 if the last signer is removed with
-    ///   no policies configured.
+    ///   contract rejects the removal (contract error NoSignersAndPolicies,
+    ///   code 3004) if the last signer is removed with no policies configured.
     ///
     /// Contract call: `smart_account.remove_signer(context_rule_id, signer_id)`.
     ///

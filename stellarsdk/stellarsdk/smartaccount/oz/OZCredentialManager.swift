@@ -260,10 +260,9 @@ public final class OZCredentialManager: OZCredentialManagerProtocol, @unchecked 
     /// fails for any reason (transport error, parse error, RPC error), the
     /// method returns `false` without throwing.
     ///
-    /// The on-chain check is intentionally swallowing-of-errors: callers
-    /// invoking `sync` during a "pending credentials sweep" need a binary
-    /// answer, not a failure mode. The credential remains in storage in any
-    /// non-deployed outcome.
+    /// The on-chain check intentionally swallows errors: a pending-credentials
+    /// sweep needs a binary answer, not a failure mode. The credential remains
+    /// in storage in any non-deployed outcome.
     ///
     /// - Parameter credentialId: Identifier of the credential to sync.
     /// - Returns: `true` when the contract is deployed and the credential was
@@ -312,13 +311,9 @@ public final class OZCredentialManager: OZCredentialManagerProtocol, @unchecked 
             }
             return true
         case .failure(let rpcError):
-            // why: the on-chain check is intentionally non-fatal. A missing
-            // ledger entry, a transport failure, or a parse error all map to
-            // "not yet deployed" so the caller's sweep can continue across
-            // every credential without aborting on the first transient error.
-            // Emit the credentialSyncFailed event so listeners can react to
-            // the RPC failure (for example to show a warning in the UI or to
-            // schedule a retry) without needing to catch errors from sync().
+            // why: the on-chain check is non-fatal — any RPC failure maps to
+            // "not yet deployed" so a sweep continues across every credential.
+            // Emit credentialSyncFailed so listeners can react without catching.
             kit.events.emit(.credentialSyncFailed(credentialId: credentialId, error: rpcError))
             return false
         }
@@ -524,9 +519,9 @@ public final class OZCredentialManager: OZCredentialManagerProtocol, @unchecked 
 
     /// Updates the nickname of a stored credential.
     ///
-    /// Overwrites the nickname when `nickname` is non-nil. To clear an existing
-    /// nickname, call `StorageAdapter.save(...)` with a full `StoredCredential`
-    /// replacement (the partial-update path treats `nil` as "no change").
+    /// Overwrites the nickname when `nickname` is non-nil. Passing `nil` leaves
+    /// the existing nickname unchanged (the partial-update path treats `nil` as
+    /// a no-op).
     /// The credential must exist before the update; the manager does not create
     /// a new credential as a side effect.
     ///

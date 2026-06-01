@@ -7,9 +7,7 @@
 
 import Foundation
 
-// ============================================================================
-// Constant-time byte comparison (file-private; used by DTO equality below)
-// ============================================================================
+// MARK: - Constant-time byte comparison (file-private; used by DTO equality below)
 
 /// Constant-time byte equality for two `Data` values.
 ///
@@ -46,9 +44,7 @@ private func combineConstantTime(_ flags: Bool...) -> Bool {
     return acc == 1
 }
 
-// ============================================================================
-// WebAuthnAuthenticationResult
-// ============================================================================
+// MARK: - WebAuthnAuthenticationResult
 
 /// WebAuthn authentication result from a passkey ceremony.
 ///
@@ -101,9 +97,7 @@ public struct WebAuthnAuthenticationResult: Equatable, Hashable, Sendable {
     }
 }
 
-// ============================================================================
-// WebAuthnRegistrationResult
-// ============================================================================
+// MARK: - WebAuthnRegistrationResult
 
 /// WebAuthn registration result from a passkey creation ceremony.
 ///
@@ -182,9 +176,7 @@ public struct WebAuthnRegistrationResult: Equatable, Hashable, Sendable {
     }
 }
 
-// ============================================================================
-// WebAuthnProvider
-// ============================================================================
+// MARK: - WebAuthnProvider
 
 /// Platform-specific WebAuthn provider interface.
 ///

@@ -351,9 +351,7 @@ public final class OZWalletOperations: @unchecked Sendable {
             )
         }
 
-        // why: surface autoFund's `nativeTokenContract` requirement before any
-        // network or WebAuthn side effect so a misconfigured caller does not
-        // create an orphan credential.
+        // Validate autoFund's nativeTokenContract requirement before any side effect.
         if autoFund && nativeTokenContract == nil {
             throw ValidationException.invalidInput(
                 field: "nativeTokenContract",
@@ -461,9 +459,6 @@ public final class OZWalletOperations: @unchecked Sendable {
             contractId: contractId
         )
 
-        // why: the deploy transaction is built and signed regardless of the
-        // `autoSubmit` setting; the result always carries a usable
-        // `signedTransactionXdr` so an off-line submission flow can pick it up.
         let built = try await buildCreateContractTransaction(
             publicKey: publicKey,
             credentialId: registrationResult.credentialId,

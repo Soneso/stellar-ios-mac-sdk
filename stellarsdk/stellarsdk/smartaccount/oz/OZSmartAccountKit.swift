@@ -91,14 +91,7 @@ public final class OZSmartAccountKit: OZSmartAccountKitProtocol, @unchecked Send
     /// to the same kit.
     public let events: SmartAccountEventEmitter
 
-    /// Wallet-operations module bound to this kit.
-    ///
-    /// Backed by an implicitly-unwrapped optional set inside the initializer after every
-    /// other stored property has been initialized — required because Swift's two-phase
-    /// initialization forbids passing `self` to manager constructors before every stored
-    /// property exists. Externally the property behaves as a non-optional `let`.
-    ///
-    /// Traps if accessed after `close()`.
+    /// Wallet-operations module bound to this kit. Traps if accessed after `close()`.
     public var walletOperations: OZWalletOperations {
         return _walletOperations
     }
@@ -197,7 +190,7 @@ public final class OZSmartAccountKit: OZSmartAccountKitProtocol, @unchecked Send
     }
     private let _externalSigners: OZExternalSignerManager
 
-    // Sync lock keeps the non-async accessors (isConnected, credentialId, contractId) lock-free at the Swift-concurrency boundary.
+    // Guards the non-async accessors (isConnected, credentialId, contractId) without crossing an await.
     private let stateLock = NSLock()
 
     /// Currently connected credential identifier (Base64URL-encoded).

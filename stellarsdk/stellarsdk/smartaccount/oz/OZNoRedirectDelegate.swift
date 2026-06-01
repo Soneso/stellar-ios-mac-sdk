@@ -9,31 +9,19 @@ import Foundation
 
 // MARK: - No-Redirect URLSession Delegate
 
-/// `URLSessionTaskDelegate` that refuses every HTTP redirect.
+/// `URLSessionTaskDelegate` that refuses every HTTP redirect by answering the
+/// redirect completion handler with `nil`, surfacing the original 3xx response
+/// to the request site as a failure.
 ///
-/// The OZ HTTP clients (`OZIndexerClient`, `OZRelayerClient`) validate at
-/// construction that their configured endpoint uses `https://` (or
-/// `http://localhost` for development). Without this delegate, a 3xx response
-/// from the configured host could silently redirect outbound requests to a
-/// third-party `http://` URL — `URLSession` follows up to five redirects by
-/// default. Such a redirect would defeat the HTTPS-only check and forward
-/// security-sensitive material to an unintended host:
+/// Redirects are dangerous here because the OZ HTTP clients only validate the
+/// configured endpoint scheme at construction; a 3xx response could otherwise
+/// silently forward security-sensitive request payloads and identification
+/// headers to an unintended (possibly plain-`http://`) host, since `URLSession`
+/// follows up to five redirects by default.
 ///
-/// - Signed `SorobanAuthorizationEntryXDR` and `TransactionEnvelopeXDR`
-///   payloads (relayer `POST` bodies).
-/// - `X-Client-*` identification headers pinned at the session configuration
-///   level (both clients).
-///
-/// By implementing `urlSession(_:task:willPerformHTTPRedirection:newRequest:completionHandler:)`
-/// and invoking the completion handler with `nil`, every redirect is denied and
-/// the client surfaces the original 3xx response to the request site, where it
-/// is treated as a failure.
-///
-/// One instance is created and retained per owning client; the client
-/// constructs a `URLSession` with this delegate when no `URLSession` was
-/// injected by the caller. When a caller injects a `URLSession`, the redirect
-/// behavior of the injected session is the caller's responsibility — this
-/// delegate is not attached to injected sessions.
+/// Caveat: this delegate is attached only to sessions the client constructs
+/// itself. When a caller injects a `URLSession`, that session's redirect
+/// behavior is the caller's responsibility.
 internal final class OZNoRedirectDelegate: NSObject, URLSessionTaskDelegate {
 
     func urlSession(_ session: URLSession,

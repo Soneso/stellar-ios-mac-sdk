@@ -330,10 +330,6 @@ public enum PolicyInstallParams: Sendable {
     }
 
     /// Returns `true` when every character of `s` is `"0"`.
-    ///
-    /// Used by ``toScVal()`` to reject `"0"`, `"00"`, and similar leading-zero
-    /// representations of zero with a uniform error message after the strict
-    /// digit-shape regex validation has passed.
     private static func isAllZeroDigits(_ s: String) -> Bool {
         if s.isEmpty {
             return false
@@ -663,11 +659,9 @@ public final class OZPolicyManager: @unchecked Sendable {
     ///   ``TransactionException`` for submission failures.
     ///
     /// - Note: The Swift name differs from the underlying contract method to
-    ///   distinguish it at the call site from the id-based
+    ///   distinguish this overload at the call site from the id-based
     ///   ``removePolicy(contextRuleId:policyId:selectedSigners:forceMethod:)``.
-    ///   Swift's argument-label-based overload resolution would otherwise pick
-    ///   a single overload by parameter name; the explicit `byAddress` suffix
-    ///   keeps the API self-documenting at every call site.
+    ///   The `byAddress` suffix keeps the call site self-documenting.
     public func removePolicyByAddress(
         contextRuleId: UInt32,
         policyAddress: String,
@@ -913,13 +907,10 @@ public final class OZPolicyManager: @unchecked Sendable {
             return entries
         }
 
-        // why: precompute the XDR-encoded key bytes so the sort comparator
-        // does not encode the same key on every comparison (n log n sorts of
-        // a typical small map would otherwise re-encode the same key several
-        // times). The hex-string representation is monotone in the underlying
-        // byte sequence, so string lexicographic comparison agrees with raw
-        // byte comparison and avoids the ergonomics of comparing `[UInt8]`
-        // values pairwise.
+        // why: precompute each key's XDR bytes so the comparator does not
+        // re-encode the same key on every comparison. Hex strings are monotone
+        // in the byte sequence, so lexicographic comparison agrees with raw
+        // byte comparison.
         struct Keyed {
             let hex: String
             let entry: SCMapEntryXDR
@@ -950,13 +941,10 @@ public final class OZPolicyManager: @unchecked Sendable {
         do {
             return try XDREncoder.encode(scVal)
         } catch {
-            // why: every `SCValXDR` case is serializable by construction;
-            // `XDREncoder.encode` only fails when the encoder cannot
-            // serialize the supplied value, which signals a programmer error
-            // (a malformed `SCValXDR` produced upstream). Returning an empty
-            // byte sequence would silently corrupt the sort comparator by
-            // collapsing distinct values onto byte-equal sort keys; refuse
-            // outright so the defect is surfaced at the point of origin.
+            // why: every `SCValXDR` is serializable by construction, so a
+            // failure here signals a malformed value produced upstream. Trap
+            // rather than return empty bytes, which would collapse distinct
+            // values onto byte-equal sort keys.
             preconditionFailure("SCValXDR encoding must not fail: \(error)")
         }
     }

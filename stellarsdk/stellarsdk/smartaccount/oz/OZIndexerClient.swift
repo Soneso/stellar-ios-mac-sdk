@@ -14,7 +14,7 @@ import Foundation
 ///
 /// The OpenZeppelin Smart Account indexer serialises every numeric column
 /// (counts, ledger sequences, event totals) as a JSON string so values that
-/// exceed the 2^53 IEEE-754 double-precision safe-integer ceiling can round-trip without precision
+/// exceed the 2^53 JSON safe-integer ceiling can round-trip without precision
 /// loss. Test fixtures in this repository express the same fields as plain
 /// JSON numbers. These helpers bridge both representations at the single
 /// container-level decode site so each `Decodable` model below can stay a
@@ -525,9 +525,7 @@ public enum OZJSONValue: Decodable, Equatable, Hashable, Sendable {
 ///
 /// Subclassing contract: subclassable inside the SDK (and from `@testable`
 /// consumers); not designed for outside-module subclassing — inject a custom
-/// `URLSession` instead. SDK-internal subclasses that override ``close()`` MUST
-/// either call `super.close()` or invoke the internal teardown helper, otherwise
-/// the owned `URLSession` will leak.
+/// `URLSession` instead.
 public class OZIndexerClient: @unchecked Sendable {
 
     // MARK: - Configuration

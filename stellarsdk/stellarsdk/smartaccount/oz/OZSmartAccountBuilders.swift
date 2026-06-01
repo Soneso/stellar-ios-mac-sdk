@@ -287,10 +287,8 @@ public enum OZSmartAccountBuilders {
     /// Each signer has a weight; authorisation succeeds when the sum of weights of
     /// authenticated signers meets or exceeds `threshold`.
     ///
-    /// The `signerWeights` parameter is an ordered list of `OZSignerWeight` pairs rather
-    /// than a dictionary. Pass one `OZSignerWeight(signer:weight:)` value per signer;
-    /// duplicate signers are not merged by this builder — deduplication happens at the codec
-    /// layer via key-based upsert. Example:
+    /// Pass one `OZSignerWeight(signer:weight:)` value per signer; see `OZSignerWeight`
+    /// for why an ordered list is used instead of a dictionary. Example:
     /// ```swift
     /// let params = try OZSmartAccountBuilders.createWeightedThresholdParams(
     ///     threshold: 2,
