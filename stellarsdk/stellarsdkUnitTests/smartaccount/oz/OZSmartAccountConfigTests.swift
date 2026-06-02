@@ -579,30 +579,41 @@ final class OZSmartAccountConfigTests: XCTestCase {
         }
     }
 
-    /// `timeoutInSeconds` of zero must throw `ConfigurationException.InvalidConfig`.
-    func test_timeoutInSeconds_zeroThrows() {
-        XCTAssertThrowsError(
-            try OZSmartAccountConfig(
-                rpcUrl: validRpcUrl,
-                networkPassphrase: validPassphrase,
-                accountWasmHash: validWasmHash,
-                webauthnVerifierAddress: validVerifier,
-                timeoutInSeconds: 0
-            )
-        ) { error in
-            XCTAssertTrue(error is ConfigurationException.InvalidConfig)
-        }
+    /// `timeoutInSeconds` of zero must be accepted (0 means no expiry / infinite
+    /// validity window).
+    func test_timeoutInSeconds_zeroAccepted() throws {
+        let config = try OZSmartAccountConfig(
+            rpcUrl: validRpcUrl,
+            networkPassphrase: validPassphrase,
+            accountWasmHash: validWasmHash,
+            webauthnVerifierAddress: validVerifier,
+            timeoutInSeconds: 0
+        )
+        XCTAssertEqual(0, config.timeoutInSeconds)
     }
 
-    /// `timeoutInSeconds` above 600 must throw `ConfigurationException.InvalidConfig`.
-    func test_timeoutInSeconds_tooLargeThrows() {
+    /// `timeoutInSeconds` above the former 600 cap must be accepted now that the
+    /// upper bound has been removed.
+    func test_timeoutInSeconds_largeValueAccepted() throws {
+        let config = try OZSmartAccountConfig(
+            rpcUrl: validRpcUrl,
+            networkPassphrase: validPassphrase,
+            accountWasmHash: validWasmHash,
+            webauthnVerifierAddress: validVerifier,
+            timeoutInSeconds: 100_000
+        )
+        XCTAssertEqual(100_000, config.timeoutInSeconds)
+    }
+
+    /// A negative `timeoutInSeconds` must throw `ConfigurationException.InvalidConfig`.
+    func test_timeoutInSeconds_negativeThrows() {
         XCTAssertThrowsError(
             try OZSmartAccountConfig(
                 rpcUrl: validRpcUrl,
                 networkPassphrase: validPassphrase,
                 accountWasmHash: validWasmHash,
                 webauthnVerifierAddress: validVerifier,
-                timeoutInSeconds: 601
+                timeoutInSeconds: -1
             )
         ) { error in
             XCTAssertTrue(error is ConfigurationException.InvalidConfig)

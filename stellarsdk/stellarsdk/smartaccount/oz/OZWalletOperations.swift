@@ -1382,9 +1382,11 @@ public final class OZWalletOperations: @unchecked Sendable {
         }
 
         let nowSeconds = UInt64(Date().timeIntervalSince1970)
+        let timeoutSeconds = kit.config.timeoutInSeconds
+        let maxTime: UInt64 = timeoutSeconds <= 0 ? 0 : nowSeconds + UInt64(timeoutSeconds)
         let timeBounds = TimeBounds(
             minTime: 0,
-            maxTime: nowSeconds + UInt64(max(0, kit.config.timeoutInSeconds))
+            maxTime: maxTime
         )
         let preconditions = TransactionPreconditions(timeBounds: timeBounds)
         let transaction: Transaction

@@ -1254,9 +1254,10 @@ public class OZMultiSignerManager: @unchecked Sendable {
         timeoutSeconds: Int
     ) throws -> Transaction {
         let nowSeconds = UInt64(Date().timeIntervalSince1970)
+        let maxTime: UInt64 = timeoutSeconds <= 0 ? 0 : nowSeconds + UInt64(timeoutSeconds)
         let timeBounds = TimeBounds(
             minTime: 0,
-            maxTime: nowSeconds + UInt64(max(0, timeoutSeconds))
+            maxTime: maxTime
         )
         let preconditions = TransactionPreconditions(timeBounds: timeBounds)
         do {

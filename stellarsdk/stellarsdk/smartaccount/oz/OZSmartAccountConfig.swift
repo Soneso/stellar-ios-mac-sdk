@@ -99,7 +99,12 @@ public struct OZSmartAccountConfig: @unchecked Sendable {
     /// approximates one hour at five seconds per ledger.
     public let signatureExpirationLedgers: Int
 
-    /// Default timeout in seconds for network requests and transaction submission.
+    /// Transaction validity window in seconds.
+    ///
+    /// Sets each transaction's `TimeBounds` `max_time` to `now + timeoutInSeconds`,
+    /// bounding how long a signed transaction stays valid for submission. A value of
+    /// `0` means no expiry (infinite): `max_time` is set to `0`, the Stellar sentinel
+    /// for "no upper bound". Must be `>= 0`. Default is `30`.
     public let timeoutInSeconds: Int
 
     /// Optional relayer endpoint URL for fee sponsoring.
@@ -202,12 +207,13 @@ public struct OZSmartAccountConfig: @unchecked Sendable {
             )
         }
 
-        // why: cap `timeoutInSeconds` at 600 seconds so a misconfigured kit
-        // cannot freeze a UI ceremony beyond 10 minutes and reject zero so
-        // every Stellar transaction has a non-degenerate validity window.
-        if timeoutInSeconds < 1 || timeoutInSeconds > 600 {
+        // why: reject only negative values. Zero is a valid Stellar
+        // time-bound (`max_time = 0` means no upper bound, i.e. the
+        // transaction never expires by time); any positive value sets
+        // `max_time = now + timeoutInSeconds`.
+        if timeoutInSeconds < 0 {
             throw ConfigurationException.invalidConfig(
-                details: "timeoutInSeconds must be in [1, 600], got: \(timeoutInSeconds)"
+                details: "timeoutInSeconds must be >= 0 (0 means no expiry), got: \(timeoutInSeconds)"
             )
         }
 

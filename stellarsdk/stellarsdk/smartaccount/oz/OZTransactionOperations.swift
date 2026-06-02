@@ -854,16 +854,19 @@ public final class OZTransactionOperations: @unchecked Sendable {
     /// Constructs the unsigned transaction shape used by every simulate / submit
     /// path. Applies `MIN_BASE_FEE`, the operation list, a no-op memo, and a
     /// `TransactionPreconditions` carrying a time-bounds upper limit of
-    /// `now + timeoutSeconds`.
+    /// `now + timeoutSeconds`. A `timeoutSeconds` of `0` yields `max_time = 0`,
+    /// the Stellar sentinel for "no upper bound" (the transaction never expires
+    /// by time).
     private func buildTransaction(
         sourceAccount: TransactionAccount,
         operations: [Operation],
         timeoutSeconds: Int
     ) throws -> Transaction {
         let nowSeconds = UInt64(Date().timeIntervalSince1970)
+        let maxTime: UInt64 = timeoutSeconds <= 0 ? 0 : nowSeconds + UInt64(timeoutSeconds)
         let timeBounds = TimeBounds(
             minTime: 0,
-            maxTime: nowSeconds + UInt64(max(0, timeoutSeconds))
+            maxTime: maxTime
         )
         let preconditions = TransactionPreconditions(timeBounds: timeBounds)
         do {
