@@ -53,7 +53,7 @@ public final class OZSmartAccountKit: OZSmartAccountKitProtocol, @unchecked Send
     /// server directly. ``close()`` invalidates the dedicated
     /// ``URLSession`` the kit injected into the server so any in-flight RPC
     /// traffic is cancelled at teardown.
-    public let sorobanServer: SorobanServer
+    internal let sorobanServer: SorobanServer
 
     /// URL session injected into ``sorobanServer`` and owned by this kit.
     ///
@@ -398,6 +398,10 @@ public final class OZSmartAccountKit: OZSmartAccountKitProtocol, @unchecked Send
         indexerClient?.close()
         relayerClient?.close()
 
+        // Drop in-memory signing secrets (registered keypairs / Ed25519 keys). Persisted
+        // wallet connections and the external-wallet adapter are intentionally left intact.
+        await _externalSigners.clearInMemorySigners()
+
         // Break the kit ↔ manager ARC cycle so the kit can deallocate once the consumer
         // drops its own reference. Post-close manager access traps on the IUO backing store.
         releaseManagerReferences()
@@ -434,7 +438,7 @@ public final class OZSmartAccountKit: OZSmartAccountKitProtocol, @unchecked Send
     }
 
     /// Returns the storage adapter used by the kit.
-    public func getStorage() -> StorageAdapter {
+    internal func getStorage() -> StorageAdapter {
         return storage
     }
 

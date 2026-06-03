@@ -428,7 +428,7 @@ public final class OZTransactionOperations: @unchecked Sendable {
         // why: pre-fetch the active context rules ONCE so the signer pass
         // does not perform N additional RPC calls; the rule set is stable
         // throughout the signing pass.
-        let contextRules = try await kit.contextRuleManager.listContextRules()
+        let contextRules = try await kit.contextRuleManager.listContextRules(maxScanId: nil)
 
         var signedAuthEntries: [SorobanAuthorizationEntryXDR] = []
         signedAuthEntries.reserveCapacity(simulatedAuthEntries.count)
@@ -976,7 +976,7 @@ public final class OZTransactionOperations: @unchecked Sendable {
     private func findKeyDataFromContextRules(
         credentialIdBytes: Data
     ) async throws -> Data {
-        let allRules = try await kit.contextRuleManager.getAllContextRules()
+        let allRules = try await kit.contextRuleManager.getAllContextRules(maxScanId: nil)
         for ruleScVal in allRules {
             guard case .map(let mapEntries) = ruleScVal,
                   let mapEntries = mapEntries else {

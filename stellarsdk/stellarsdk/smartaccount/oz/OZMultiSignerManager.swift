@@ -364,7 +364,7 @@ public class OZMultiSignerManager: @unchecked Sendable {
 
         // Step 3a: pre-fetch the active context rules ONCE so the auth-entry
         // loop does not perform N additional RPC calls.
-        let contextRules = try await kit.contextRuleManager.listContextRules()
+        let contextRules = try await kit.contextRuleManager.listContextRules(maxScanId: nil)
 
         // Step 3b: build per-signer OZSmartAccountSigner instances. Hoisted
         // outside the auth-entry loop because the set is invariant across

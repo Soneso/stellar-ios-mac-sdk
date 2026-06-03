@@ -275,28 +275,6 @@ public final class OZContextRuleManager: OZContextRuleManagerProtocol, @unchecke
     }
 
     /// Retrieves every active context rule on the connected contract as raw
-    /// `SCValXDR` map payloads, observing the kit's configured scan upper
-    /// bound (``OZSmartAccountConfig/maxContextRuleScanId``).
-    ///
-    /// The contract assigns monotonically increasing identifiers; when a rule
-    /// is removed its slot becomes empty but the identifier is never reused,
-    /// creating gaps. This method iterates identifiers from zero upward,
-    /// skipping gaps reported as ``TransactionException/SimulationFailed`` by
-    /// the underlying simulation, until either the active rule count has been
-    /// collected or the configured scan upper bound is reached.
-    ///
-    /// - Returns: One raw `SCValXDR` per active context rule in ascending id
-    ///   order.
-    /// - Throws:
-    ///   - ``WalletException/NotConnected`` when no wallet is connected.
-    ///   - ``TransactionException`` for non-gap simulation failures.
-    ///   - ``ValidationException`` when ``getContextRulesCount()`` returns a
-    ///     non-`U32` value.
-    public func getAllContextRules() async throws -> [SCValXDR] {
-        try await getAllContextRules(maxScanId: nil)
-    }
-
-    /// Retrieves every active context rule on the connected contract as raw
     /// `SCValXDR` map payloads, with an optional per-call scan upper bound
     /// override.
     ///
@@ -347,22 +325,6 @@ public final class OZContextRuleManager: OZContextRuleManagerProtocol, @unchecke
         }
 
         return result
-    }
-
-    /// Returns the parsed view of every active context rule on the connected
-    /// smart account contract.
-    ///
-    /// Fetches the raw payloads through ``getAllContextRules()`` and parses
-    /// each via ``parseContextRule(scVal:)``.
-    ///
-    /// - Returns: Parsed context rules in ascending rule-id order.
-    /// - Throws:
-    ///   - ``WalletException/NotConnected`` when no wallet is connected.
-    ///   - ``TransactionException`` for simulation failures.
-    ///   - ``ValidationException`` when a payload cannot be parsed or the
-    ///     count is malformed.
-    public func listContextRules() async throws -> [ParsedContextRule] {
-        try await listContextRules(maxScanId: nil)
     }
 
     /// Returns the parsed view of every active context rule on the connected
@@ -441,7 +403,7 @@ public final class OZContextRuleManager: OZContextRuleManagerProtocol, @unchecke
     ///   - contextRules: Pre-fetched rule list.
     /// - Returns: One identifier per invocation context.
     /// - Throws: ``ValidationException`` for unresolvable or ambiguous cases.
-    public func resolveContextRuleIdsForEntry(
+    internal func resolveContextRuleIdsForEntry(
         entry: SorobanAuthorizationEntryXDR,
         signers: [any OZSmartAccountSigner],
         contextRules: [ParsedContextRule]

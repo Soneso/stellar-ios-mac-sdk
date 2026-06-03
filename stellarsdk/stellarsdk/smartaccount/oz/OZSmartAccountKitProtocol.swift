@@ -107,7 +107,7 @@ internal protocol OZContextRuleManagerProtocol: AnyObject, Sendable {
     /// - Returns: Parsed context rules in ascending rule-id order.
     /// - Throws: ``TransactionException`` on simulation failure, ``IndexerException``
     ///           when the indexer fallback fails.
-    func listContextRules() async throws -> [ParsedContextRule]
+    func listContextRules(maxScanId: UInt32?) async throws -> [ParsedContextRule]
 
     /// Resolves which context-rule identifiers should be bound into the signing
     /// digest for the supplied authorization entry.
@@ -129,7 +129,7 @@ internal protocol OZContextRuleManagerProtocol: AnyObject, Sendable {
     ///
     /// - Returns: Raw `Map` ScVal representation of each active rule.
     /// - Throws: ``TransactionException`` on simulation failure.
-    func getAllContextRules() async throws -> [SCValXDR]
+    func getAllContextRules(maxScanId: UInt32?) async throws -> [SCValXDR]
 
     /// Retrieves the raw `SCValXDR` payload of a single context rule by its
     /// numeric identifier.

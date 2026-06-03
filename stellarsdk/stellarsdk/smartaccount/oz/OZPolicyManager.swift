@@ -783,7 +783,7 @@ public final class OZPolicyManager: @unchecked Sendable {
             // a context-rule parser. Performs `N` RPC simulations because the
             // protocol does not expose a single-rule fetch helper outside the
             // parser surface.
-            let rules = try await kit.contextRuleManager.listContextRules()
+            let rules = try await kit.contextRuleManager.listContextRules(maxScanId: nil)
             guard let located = rules.first(where: { $0.id == contextRuleId }) else {
                 throw ValidationException.invalidInput(
                     field: "contextRuleId",

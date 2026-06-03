@@ -221,11 +221,10 @@ public actor OZExternalSignerManager {
     /// Storage key under which the manager persists wallet connections in the
     /// supplied ``WalletConnectionStorage``.
     ///
-    /// Exposed for diagnostic / migration tooling that needs to reach into the
-    /// persisted JSON directly. Production code should prefer the manager API.
+    /// Storage key for the persisted connected-wallet records.
     /// The namespaced prefix (`oz_smart_account.`) avoids collisions with other
     /// storage consumers sharing the same backing store.
-    public static let walletStorageKey: String = "oz_smart_account.connected_wallets"
+    static let walletStorageKey: String = "oz_smart_account.connected_wallets"
 
     private let addressLogPrefixCount = 8
 
@@ -609,6 +608,15 @@ public actor OZExternalSignerManager {
 
         try await walletAdapter?.disconnect()
         try await walletConnectionStorage?.removeItem(key: OZExternalSignerManager.walletStorageKey)
+    }
+
+    /// Drops in-memory keypair and Ed25519 signing secrets only. Unlike
+    /// `removeAll()`, this does NOT disconnect the external-wallet adapter and does
+    /// NOT remove persisted wallet connections from storage. Called by
+    /// `OZSmartAccountKit.close()` to release sensitive key material on teardown.
+    internal func clearInMemorySigners() {
+        keypairSigners.removeAll()
+        ed25519Signers.removeAll()
     }
 
     // MARK: - Ed25519 methods
