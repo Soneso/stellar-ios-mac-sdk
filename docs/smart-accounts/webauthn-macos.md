@@ -12,7 +12,7 @@ Platform-specific guide for configuring WebAuthn passkey authentication in macOS
 
 ## Configure the kit
 
-Construct `AppleWebAuthnProvider` with the same `rpId` and `rpName` you pass to `OZSmartAccountConfig`, assign a `presentationContextProvider` (required on macOS), then wire the provider through the builder.
+Construct `AppleWebAuthnProvider` with your relying-party `rpId` and `rpName`, assign a `presentationContextProvider` (required on macOS), then wire the provider into the config via `webauthnProvider`. The `rpId` and `rpName` are properties of `AppleWebAuthnProvider` — they are not fields on `OZSmartAccountConfig`.
 
 ```swift
 import stellarsdk
@@ -43,8 +43,6 @@ let config = try OZSmartAccountConfig.builder(
     accountWasmHash: "your-wasm-hash-hex",
     webauthnVerifierAddress: "CB26VN37RCVNTHJZDEPK6IRO2MMTS3Z2IEO5JD5BINY2OOJ5KKJG7NKY"
 )
-    .rpId("wallet.example.com")
-    .rpName("Example Smart Wallet")
     .webauthnProvider(webAuthn)
     .storage(KeychainStorageAdapter())
     .build()
@@ -53,8 +51,6 @@ let config = try OZSmartAccountConfig.builder(
 The provider initializer is `throws` and validates that `rpId` and `rpName` are non-blank and that `timeout` (default 60_000 ms) is strictly positive. A `create(rpId:rpName:timeout:)` static factory is provided as an ergonomic alternative.
 
 Set `presentationContextProvider` once at setup time and leave it assigned. The provider retains it strongly; you do not need to manage the lifetime explicitly. Mutating the property while a ceremony is in flight is not supported.
-
-The same `rpId` MUST be passed to both the provider and the config: the provider value is what the system passkey UI uses, the config value is stored for application reference (e.g. UI display, logging); the kit does not read it internally.
 
 ## Add the Associated Domains entitlement (Xcode)
 
@@ -218,8 +214,6 @@ let config = try OZSmartAccountConfig.builder(
     accountWasmHash: "<wasm-hash-hex>",
     webauthnVerifierAddress: "<verifier-c-address>"
 )
-.rpId("wallet.example.com")
-.rpName("My Stellar App")
 .webauthnProvider(webAuthnProvider)
 .storage(storage)
 .build()

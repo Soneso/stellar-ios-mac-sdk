@@ -13,7 +13,7 @@ Every smart-account operation runs in an `async` context and most are `throws`. 
 Related references:
 
 - [Context Rules, Policies, and Multi-Signer](./smart_accounts_policies.md) — signer management on context rules, context rules, policies, multi-signer ceremonies.
-- [WebAuthn Setup](./smart_accounts_webauthn.md) — `WebAuthnProvider` implementations on iOS / macOS, `StorageAdapter` (Keychain / UserDefaults), rpId configuration, allow-credential handling.
+- [WebAuthn Setup](./smart_accounts_webauthn.md) — `WebAuthnProvider` implementations on iOS / macOS, `StorageAdapter` (Keychain / UserDefaults), allow-credential handling.
 
 ## Table of Contents
 
@@ -122,11 +122,9 @@ Public types live under two source areas: a protocol-agnostic `core` layer (sign
 | Field | Type | Default | Notes |
 |-------|------|---------|-------|
 | `deployerKeypair` | `KeyPair?` | `nil` | `nil` means use the default deterministic deployer |
-| `rpId` | `String?` | `nil` | WebAuthn Relying Party ID (domain) |
-| `rpName` | `String` | `"Smart Account"` | Display name shown during WebAuthn prompts |
 | `sessionExpiryMs` | `Int64` | `604_800_000` (7 days) | Session duration for silent reconnect |
 | `signatureExpirationLedgers` | `Int` | `StellarProtocolConstants.ledgersPerHour` (~1 h) | Auth-entry expiration in ledgers. Replay-protection window — consider shortening for high-value transfers. Must be in `[1, 535_680]` |
-| `timeoutInSeconds` | `Int` | `30` | Network timeout for transaction ops. Must be in `[1, 600]` |
+| `timeoutInSeconds` | `Int` | `30` | Transaction TimeBounds window in seconds (`max_time = now + N`; `0` = no expiry). Must be `>= 0` |
 | `relayerUrl` | `String?` | `nil` | Enables a fee-bump relayer |
 | `indexerUrl` | `String?` | `nil` | Enables credential-to-contract discovery |
 | `webauthnProvider` | `WebAuthnProvider?` | `nil` | Platform passkey implementation |
@@ -175,7 +173,6 @@ let config = try OZSmartAccountConfig.builder(
     accountWasmHash: "86b49fe03f7df0ad1c2a28bd8361b923ab57096e09f397f92f0c00ae3bd06d28",
     webauthnVerifierAddress: "CB26VN37RCVNTHJZDEPK6IRO2MMTS3Z2IEO5JD5BINY2OOJ5KKJG7NKY"
 )
-    .rpName("My Wallet")
     .sessionExpiryMs(86_400_000)                 // 1 day
     .signatureExpirationLedgers(1440)            // ~2 hours
     .relayerUrl("https://relayer.example.com")

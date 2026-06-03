@@ -300,11 +300,9 @@ Immutable configuration value type passed to `OZSmartAccountKit.create(config:)`
 | Field | Type | Default | Description |
 |---|---|---|---|
 | `deployerKeypair` | `KeyPair?` | `nil` | Optional deployer keypair. When `nil`, the deterministic default deployer (derived from `SHA-256("openzeppelin-smart-account-kit")`) is used. |
-| `rpId` | `String?` | `nil` | Optional WebAuthn Relying Party identifier. Stored on the configuration only; not passed automatically to the WebAuthn provider — construct `AppleWebAuthnProvider(rpId:rpName:)` separately and supply it via `webauthnProvider`. |
-| `rpName` | `String` | `"Smart Account"` | WebAuthn Relying Party display name. Same caveat as `rpId`. |
 | `sessionExpiryMs` | `Int64` | `OZConstants.defaultSessionExpiryMs` (604 800 000 — seven days) | Session expiry in milliseconds. |
 | `signatureExpirationLedgers` | `Int` | `StellarProtocolConstants.ledgersPerHour` (720) | Signature expiration in ledgers. Validated to be in `[1, 535 680]` (one ledger to approximately one month at five-second ledgers). |
-| `timeoutInSeconds` | `Int` | `OZConstants.defaultTimeoutSeconds` (30) | Transaction validity window in seconds. Validated to be in `[1, 600]`. |
+| `timeoutInSeconds` | `Int` | `OZConstants.defaultTimeoutSeconds` (30) | Transaction validity window in seconds. Sets each transaction's TimeBounds `max_time = now + timeoutInSeconds`; `0` means no expiry (infinite). Must be `>= 0`. |
 | `relayerUrl` | `String?` | `nil` | Optional relayer endpoint URL. Must be `https://` or `http://localhost`. |
 | `indexerUrl` | `String?` | `nil` | Optional indexer endpoint URL. When `nil`, `effectiveIndexerUrl()` falls back to the built-in default for the configured network. |
 | `webauthnProvider` | `WebAuthnProvider?` | `nil` | WebAuthn provider used by `createWallet`, `connectWallet(prompt: true)`, `authenticatePasskey`, `addNewPasskeySigner`, and the per-entry signing pass. Required for every flow that prompts for biometric authentication. |
@@ -322,8 +320,6 @@ public init(
     accountWasmHash: String,
     webauthnVerifierAddress: String,
     deployerKeypair: KeyPair? = nil,
-    rpId: String? = nil,
-    rpName: String = "Smart Account",
     sessionExpiryMs: Int64 = OZConstants.defaultSessionExpiryMs,
     signatureExpirationLedgers: Int = StellarProtocolConstants.ledgersPerHour,
     timeoutInSeconds: Int = OZConstants.defaultTimeoutSeconds,
@@ -339,7 +335,7 @@ public init(
 
 Parameters match the fields documented above.
 
-**Throws**: `ConfigurationException.MissingConfig` (blank `rpcUrl`, `networkPassphrase`, or `accountWasmHash`); `ConfigurationException.InvalidConfig` (invalid `accountWasmHash` format, invalid `webauthnVerifierAddress` strkey, `signatureExpirationLedgers` outside `[1, 535 680]`, `timeoutInSeconds` outside `[1, 600]`).
+**Throws**: `ConfigurationException.MissingConfig` (blank `rpcUrl`, `networkPassphrase`, or `accountWasmHash`); `ConfigurationException.InvalidConfig` (invalid `accountWasmHash` format, invalid `webauthnVerifierAddress` strkey, `signatureExpirationLedgers` outside `[1, 535 680]`, `timeoutInSeconds` negative).
 
 ### Static Factories
 
@@ -410,8 +406,6 @@ public init(
 One setter per optional field, each `@discardableResult` and returning `Builder` for chaining. The label is the field name (note the lowercase `webauthn` / `externalEd25519` casing):
 
 - `deployerKeypair(_:)` — `KeyPair?`
-- `rpId(_:)` — `String?`
-- `rpName(_:)` — `String`
 - `sessionExpiryMs(_:)` — `Int64`
 - `signatureExpirationLedgers(_:)` — `Int`
 - `timeoutInSeconds(_:)` — `Int`

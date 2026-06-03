@@ -11,7 +11,7 @@ Platform-specific guide for configuring WebAuthn passkey authentication in iOS a
 
 ## Configure the kit
 
-Construct `AppleWebAuthnProvider` with the same `rpId` and `rpName` you pass to `OZSmartAccountConfig`, then wire the provider through the builder. The same `rpId` MUST be passed to both: the provider value is what the system passkey UI uses, the config value is stored for application reference (e.g. UI display, logging); the kit does not read it internally.
+Construct `AppleWebAuthnProvider` with your relying-party `rpId` and `rpName`, then wire it into the config via `webauthnProvider`. The `rpId` and `rpName` are properties of `AppleWebAuthnProvider` — they are not fields on `OZSmartAccountConfig`.
 
 ```swift
 import stellarsdk
@@ -27,8 +27,6 @@ let config = try OZSmartAccountConfig.builder(
     accountWasmHash: "your-wasm-hash-hex",
     webauthnVerifierAddress: "CB26VN37RCVNTHJZDEPK6IRO2MMTS3Z2IEO5JD5BINY2OOJ5KKJG7NKY"
 )
-    .rpId("wallet.example.com")
-    .rpName("Example Smart Wallet")
     .webauthnProvider(webAuthn)
     .storage(KeychainStorageAdapter())
     .build()
@@ -187,8 +185,6 @@ let config = try OZSmartAccountConfig.builder(
     accountWasmHash: "<wasm-hash-hex>",
     webauthnVerifierAddress: "<verifier-c-address>"
 )
-.rpId("wallet.example.com")
-.rpName("My Stellar App")
 .webauthnProvider(webAuthnProvider)
 .storage(storage)
 .build()

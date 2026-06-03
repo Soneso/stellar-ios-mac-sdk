@@ -47,8 +47,6 @@ let config = try OZSmartAccountConfig(
     networkPassphrase: Network.testnet.passphrase,
     accountWasmHash: "your-wasm-hash-hex",
     webauthnVerifierAddress: "your-verifier-c-address",
-    rpId: "wallet.example.com",
-    rpName: "Example Smart Wallet",
     webauthnProvider: webAuthn,   // a WebAuthnProvider
     storage: storage              // a StorageAdapter
 )
@@ -66,7 +64,7 @@ let config = try OZSmartAccountConfig(/* ... */)  // storage == InMemoryStorageA
 let config = try OZSmartAccountConfig(/* ... */, storage: KeychainStorageAdapter())
 ```
 
-`rpId` is passed to **both** the provider and the config. The provider's `rpId` is what the system passkey UI uses; the config's `rpId` is stored for the application's own reference (UI display, logging) — the kit does not read it internally. They must match.
+The relying-party identity (`rpId`, `rpName`) is set on `AppleWebAuthnProvider`, not on `OZSmartAccountConfig`. `OZSmartAccountConfig` has no `rpId` or `rpName` fields.
 
 ---
 
@@ -476,8 +474,6 @@ func buildKit() throws -> OZSmartAccountKit {
         networkPassphrase: Network.testnet.passphrase,
         accountWasmHash: "<wasm-hash-hex>",
         webauthnVerifierAddress: "<verifier-c-address>",
-        rpId: "wallet.example.com",
-        rpName: "My Stellar App",
         webauthnProvider: webAuthn,
         storage: storage
     )
@@ -668,8 +664,6 @@ func buildKit(anchorProvider: WindowPresentationProvider) throws -> OZSmartAccou
         networkPassphrase: Network.testnet.passphrase,
         accountWasmHash: "<wasm-hash-hex>",
         webauthnVerifierAddress: "<verifier-c-address>",
-        rpId: "wallet.example.com",
-        rpName: "My Stellar App",
         webauthnProvider: webAuthn,
         storage: storage
     )
