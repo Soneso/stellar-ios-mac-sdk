@@ -52,6 +52,8 @@ The provider initializer is `throws` and validates that `rpId` and `rpName` are 
 
 Set `presentationContextProvider` once at setup time and leave it assigned. The provider retains it strongly; you do not need to manage the lifetime explicitly. Mutating the property while a ceremony is in flight is not supported.
 
+The underlying `ASAuthorizationController` is dispatched to the main queue internally, so the kit itself imposes no `@MainActor` requirement on your calling code.
+
 ## Add the Associated Domains entitlement (Xcode)
 
 In Xcode:
@@ -160,7 +162,13 @@ Pass the conformance through `OZSmartAccountConfig.webauthnProvider` exactly as 
 
 ## Storage Adapters
 
-Use `KeychainStorageAdapter` for production; `UserDefaultsStorageAdapter` and `InMemoryStorageAdapter` are for non-sensitive or test-only use. See the [Storage trade-offs](README.md#storage-trade-offs) table in the kit guide for the full comparison.
+| Adapter | Persistence | Encryption | When to use |
+|---------|-------------|------------|-------------|
+| `InMemoryStorageAdapter` | None (lost on process exit) | None | Unit tests, ephemeral demos. The docstring explicitly warns it is not persistent and not secure. |
+| `KeychainStorageAdapter` | macOS Keychain Services with `kSecAttrAccessibleAfterFirstUnlock` | Yes (system-managed) | Recommended default for production. iOS Simulator and unsigned macOS test binaries require the `keychain-access-groups` entitlement. |
+| `UserDefaultsStorageAdapter` | Scoped `UserDefaults` suite | None (plaintext property list in the app container) | Lightweight, non-sensitive scenarios only. Apps storing anything with privacy implications should prefer Keychain. |
+
+Stored credentials contain only public-key material (public key, credential ID, contract address, nickname, metadata). No private keys ever leave the device's secure element, so Keychain entries are stored without biometric `SecAccessControl` flags.
 
 macOS specific: sandboxed apps may need `com.apple.security.keychain-access-groups` for Keychain access. Use `UserDefaultsStorageAdapter` if this is constrained.
 

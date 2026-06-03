@@ -348,29 +348,14 @@ do {
 | `relayerUrl` | `String?` | `nil` | Relayer endpoint for fee-sponsored transactions. When set, users do not pay gas fees. |
 | `indexerUrl` | `String?` | `nil` | Indexer endpoint for credential-to-contract discovery. When `nil`, falls back to the built-in per-network default (testnet/mainnet). |
 | `webauthnProvider` | `WebAuthnProvider?` | `nil` | Platform-specific WebAuthn implementation. Required for `createWallet`, `connectWallet(prompt: true)`, `authenticatePasskey`, and any passkey-signing flow. |
-| `storage` | `StorageAdapter` | `InMemoryStorageAdapter()` | Credential and session persistence. See [Storage trade-offs](#storage-trade-offs). |
+| `storage` | `StorageAdapter` | `InMemoryStorageAdapter()` | Credential and session persistence. Use `KeychainStorageAdapter` in production. Per-platform adapters and trade-offs are documented in the [iOS](webauthn-ios.md#storage-adapters) and [macOS](webauthn-macos.md#storage-adapters) setup pages. |
 | `externalWallet` | `ExternalWalletAdapter?` | `nil` | Wallet adapter (e.g., Freighter, Lobstr) backing the adapter custody model for `SelectedSigner.wallet` signers. The kit injects it into `kit.externalSigners`. |
 | `externalEd25519Adapter` | `OZExternalEd25519SignerAdapter?` | `nil` | Ed25519 adapter (hardware wallet, HSM, remote signing service) backing the adapter custody model for `SelectedSigner.ed25519` signers. The kit injects it into `kit.externalSigners`. |
 | `maxContextRuleScanId` | `UInt32` | `50` | Upper bound on the context-rule IDs scanned when listing rules without an explicit scan limit. |
 
-### Initializer or Builder
+### Builder Pattern
 
-Construct directly:
-
-```swift
-let config = try OZSmartAccountConfig(
-    rpcUrl: "https://soroban-testnet.stellar.org",
-    networkPassphrase: Network.testnet.passphrase,
-    accountWasmHash: "<64-char hex WASM hash>",
-    webauthnVerifierAddress: "<C-address of the WebAuthn verifier>",
-    sessionExpiryMs: 86_400_000,
-    relayerUrl: "https://relayer.example.com",
-    webauthnProvider: provider,
-    storage: KeychainStorageAdapter()
-)
-```
-
-or fluently with the builder:
+For configuration with many optional fields, use the builder:
 
 ```swift
 let config = try OZSmartAccountConfig.builder(
@@ -379,61 +364,28 @@ let config = try OZSmartAccountConfig.builder(
     accountWasmHash: "<64-char hex WASM hash>",
     webauthnVerifierAddress: "<C-address of the WebAuthn verifier>"
 )
-    .sessionExpiryMs(86_400_000)
-    .signatureExpirationLedgers(1_440)
+    .sessionExpiryMs(86_400_000)  // 1 day
     .relayerUrl("https://relayer.example.com")
     .indexerUrl("https://indexer.example.com")
-    .webauthnProvider(provider)
+    .signatureExpirationLedgers(1_440)  // ~2 hours
     .storage(KeychainStorageAdapter())
     .externalWallet(myExternalWallet)
     .build()
 ```
 
-Both paths throw `ConfigurationException` for invalid values.
-
-### Storage Trade-Offs
-
-| Adapter | Persistence | Encryption | When to use |
-|---------|-------------|------------|-------------|
-| `InMemoryStorageAdapter` | None (lost on process exit) | None | Unit tests, ephemeral demos. The docstring explicitly warns it is not persistent and not secure. |
-| `KeychainStorageAdapter` | iOS Keychain Services with `kSecAttrAccessibleAfterFirstUnlock` | Yes (system-managed) | Recommended default for production. iOS Simulator and unsigned macOS test binaries require the `keychain-access-groups` entitlement. |
-| `UserDefaultsStorageAdapter` | Scoped `UserDefaults` suite | None (plaintext property list in the app container) | Lightweight, non-sensitive scenarios only. Apps storing anything with privacy implications should prefer Keychain. |
-
-Stored credentials contain only public-key material (public key, credential ID, contract address, nickname, metadata). No private keys ever leave the device's secure element, so Keychain entries are stored without biometric `SecAccessControl` flags.
-
-### WebAuthn Provider Construction
-
-`AppleWebAuthnProvider` is the bundled implementation for iOS 16+ and macOS 13+. Construct it with the relying-party `rpId` and `rpName`, then pass it into the config via `webauthnProvider`:
-
-```swift
-let provider = try AppleWebAuthnProvider(
-    rpId: "wallet.example.com",
-    rpName: "Example Wallet"
-)
-```
-
-On macOS, set `provider.presentationContextProvider` before any `register` or `authenticate` call. The underlying `ASAuthorizationController` is dispatched to the main queue internally; the kit itself imposes no `@MainActor` requirement.
-
-The host app must declare the `com.apple.developer.associated-domains` entitlement with `webcredentials:<rpId>` and serve a matching `.well-known/apple-app-site-association` file under that domain.
-
 ## Testnet contract addresses
 
-The smart account WASM hash and the WebAuthn verifier contract address depend on the network and may change when contracts are upgraded, testnet is reset, or their TTL expires. They are not bundled with the SDK and must be supplied through `OZSmartAccountConfig`.
+The SDK needs two values that depend on the network: a WASM hash (`accountWasmHash`) for the uploaded smart account binary, and a verifier contract address (`webauthnVerifierAddress`). Both can change when contracts are upgraded, testnet is reset, or their TTL expires. They are not bundled with the SDK and must be supplied through `OZSmartAccountConfig`.
 
-| Setting | Source | Notes |
-|---------|--------|-------|
-| `rpcUrl` | `https://soroban-testnet.stellar.org` (testnet) | Public Stellar testnet RPC. |
-| `networkPassphrase` | `Network.testnet.passphrase` / `Network.public.passphrase` | Use `Network.testnet.passphrase` for testnet. |
-| `accountWasmHash` | OpenZeppelin smart account WASM upload | 64 hex characters; obtain by uploading the contract to the network. |
-| `webauthnVerifierAddress` | OpenZeppelin WebAuthn verifier deployment | C-address of the deployed verifier. |
-| `nativeTokenContract` | Network-specific native asset contract (XLM SAC) | Passed per call to `createWallet(autoFund:nativeTokenContract:)` and `transfer(...)`. |
-| Simple-threshold / weighted-threshold / spending-limit policy addresses | OpenZeppelin policy deployments | C-addresses, passed to the corresponding `OZPolicyManager` methods. |
-| `indexerUrl` | Defaults to the per-network URL when `nil` | Testnet: `https://smart-account-indexer.sdf-ecosystem.workers.dev`. Mainnet: `https://smart-account-indexer-mainnet.sdf-ecosystem.workers.dev`. These default endpoints are operated externally and may change; set `indexerUrl` explicitly to pin your own. |
-| `relayerUrl` | No built-in default | Supply the URL of any compatible relayer; leave `nil` to make the connected wallet pay fees. |
+Current testnet values are in `DemoConfig.swift` in the [demo app](https://github.com/Soneso/ios-oz-smartaccount-demo):
+
+```
+Sources/Config/DemoConfig.swift
+```
 
 ### Uploading your own WASM
 
-If the deployed testnet WASM has expired or you need a customised build, clone the OpenZeppelin Stellar contracts repository at `https://github.com/OpenZeppelin/stellar-contracts` and upload the binary:
+If the testnet hash has expired or you need a custom contract, clone the [OpenZeppelin stellar-contracts](https://github.com/OpenZeppelin/stellar-contracts) repository and build/upload:
 
 ```bash
 # Build the smart account WASM
@@ -446,72 +398,78 @@ stellar contract upload \
   --wasm target/wasm32v1-none/release/multisig_account_example.wasm
 ```
 
-The command prints a 64-character hex hash. Use it as `accountWasmHash` in `OZSmartAccountConfig`.
+The command prints a hex string. Use it as `accountWasmHash` in your `OZSmartAccountConfig`.
 
 ## How wallet deployment works
 
-`createWallet` deploys a Soroban smart account contract. The deployment involves two roles played by the deployer keypair: **address derivation** and **transaction signing**. The contract address is computed from `hash(deployer_public_key, salt, network_passphrase)` where `salt` is `SHA-256(credential_id)`, so the same credential and deployer always produce the same contract address. The deployer signs the deployment transaction as its source account; after deployment it has no privileges over the contract.
+When `createWallet` is called, the SDK deploys a Soroban smart account contract. The deployment involves two roles:
 
-The deployer account pays the deployment fee. When a relayer is configured, the relayer wraps the deployment in a fee-bump transaction and sponsors the fee instead, so the deployer only needs to exist on the network with the minimum XLM reserve. The smart account is initialised with a single default context rule (ID 0) whose only signer is the freshly registered passkey; further configuration (additional signers, policies, context rules) is driven through ordinary authorised calls into the contract.
+**Deployer keypair**: The deployer is the source account of the deployment transaction. It serves two purposes:
+
+1. **Address derivation**: The contract address is computed from `hash(deployer_public_key, salt, network_passphrase)` where `salt` is `SHA-256(credential_id)`. This makes the address deterministic — the same credential and deployer always produce the same contract address.
+2. **Transaction signing**: The deployer signs the deployment transaction as the source account.
+
+After deployment, the deployer has no privileges over the contract. Only the configured signers (passkeys, delegated accounts, Ed25519 keys) can authorize operations on the smart account.
+
+**Fee payment**: The deployer account pays the deployment transaction fee. When a relayer is configured, the relayer wraps the deployment in a fee-bump transaction and sponsors the fee instead, so the deployer only needs to exist on the network with the minimum XLM reserve. If you use the default deployer (derived from a well-known seed — see below), you need either a relayer for fee sponsoring or to fund the deployer account before deployment. You can also provide your own funded keypair via `deployerKeypair` in the config.
 
 ## Deterministic address derivation
 
-As noted in [How wallet deployment works](#how-wallet-deployment-works), the contract address is derived from the deployer public key, the credential-ID salt, and the network passphrase. `SmartAccountUtils.deriveContractAddress(credentialId:deployerPublicKey:networkPassphrase:)` exposes this derivation directly. It is a correctness property of how Soroban computes contract addresses, not a special feature.
+Contract address derivation is deterministic: given the same deployer keypair, credential ID, and network passphrase, the SDK always produces the same contract address. This is a correctness property, not a special feature — it follows from how Soroban computes contract addresses.
 
 ### Default deployer
 
-The SDK ships a default deployer derived from `SHA-256("openzeppelin-smart-account-kit")`, used as the Ed25519 seed for `KeyPair`. The seed string is fixed by the smart-account contract specification and never changes, so the default deployer address is identical for every consumer of the SDK.
+The SDK provides a default deployer derived from `SHA-256("openzeppelin-smart-account-kit")`. This default is suitable for testing and simple deployments. Other OpenZeppelin Smart Account SDK implementations use the same derivation, so all SDKs produce identical results from the same inputs.
 
 ```swift
 let deployer = try await OZSmartAccountConfig.createDefaultDeployer()
 ```
 
-Because the deployer has no privileges over the deployed contract, its publicly derivable secret is not a security concern. It only signs the deploy transaction and pays the deployment fee. Pair it with a relayer for fee sponsoring, or fund it externally.
+The default deployer's secret seed is publicly derivable. It is intended to be used with a relayer that sponsors transaction fees, or funded externally.
 
 ### Custom deployers
 
-Production wallet applications typically supply their own deployer through `OZSmartAccountConfig.deployerKeypair` for attribution and traceability. The deployer's public key appears on-chain, so a custom deployer lets a wallet provider distinguish its deployments from others. Address derivation still works the same way: the same custom deployer plus credential ID always produce the same contract address.
+Production wallet applications will typically use a custom deployer for attribution and traceability. The deployer signs the deployment transaction, so its public key is visible on-chain — a custom deployer gives the wallet provider identity and allows distinguishing deployments by different providers.
+
+Set `deployerKeypair` in the config to use your own deployer:
 
 ```swift
 let config = try OZSmartAccountConfig(
-    rpcUrl: "https://soroban-testnet.stellar.org",
-    networkPassphrase: Network.testnet.passphrase,
-    accountWasmHash: "<64-char hex WASM hash>",
-    webauthnVerifierAddress: "<C-address of the WebAuthn verifier>",
+    // ...required fields...
     deployerKeypair: myFundedKeypair
 )
 ```
 
-When a custom deployer is used, clients that do not know the deployer keypair cannot derive the contract address. An indexer (`indexerUrl`) is recommended in that case for wallet discovery.
+When using a custom deployer, address derivation still works the same way: the same deployer + credential ID always produces the same contract address. An indexer is recommended for wallet discovery with custom deployers, since clients that do not know the deployer keypair cannot derive the address independently.
+
+### Deterministic Contract Addresses
+
+Given the same credential ID and deployer, `SmartAccountUtils.deriveContractAddress(...)` computes the same C-address. This enables:
+
+- Wallet discovery without an indexer (derive the address, check if it exists on-chain)
+- Consistent address display across applications
+- Correctness verification (same inputs produce the same outputs regardless of SDK implementation)
 
 ### Signer format compatibility
 
 `OZDelegatedSigner` and `OZExternalSigner` encode to the standard Soroban `SCVal` shapes expected by the OpenZeppelin smart account contract. `OZExternalSigner.webAuthn(...)` packs the 65-byte secp256r1 public key together with the credential ID into the `keyData` blob that the WebAuthn verifier consumes. Signers registered through any compatible client are recognised on-chain.
 
-The cryptographic helpers in `SmartAccountUtils` enforce the on-chain format:
-
-- `extractPublicKeyFromRegistration(publicKey:authenticatorData:attestationObject:)` returns a 65-byte uncompressed SEC1 public key with the `0x04` prefix from a WebAuthn attestation.
-- `normalizeSignature(_:)` converts a DER-encoded ECDSA signature to a 64-byte compact representation with `s` normalised to its low-S form. Both are required by the on-chain verifier.
-- `getContractSalt(credentialId:)` returns `SHA-256(credentialId)`.
-- `deriveContractAddress(credentialId:deployerPublicKey:networkPassphrase:)` computes the deterministic C-address.
-
 ## Contract limits
 
 The OpenZeppelin smart account contract enforces these limits:
 
-| Limit | Value | Constant |
-|-------|-------|----------|
-| Maximum signers per context rule | 15 | `OZConstants.maxSigners` |
-| Maximum policies per context rule | 5 | `OZConstants.maxPolicies` |
-| Default signature expiration window | ~1 hour (720 ledgers) | Configurable via `signatureExpirationLedgers`; must be `>= 1`. No client-side upper bound — the host enforces the network `maxEntryTTL`. |
+| Limit | Value |
+|-------|-------|
+| Maximum signers per context rule | 15 |
+| Maximum policies per context rule | 5 |
 
-Signer and policy limits are validated client-side before submission inside `OZContextRuleManager.addContextRule`.
+These limits are defined in `OZConstants` and validated client-side before submitting transactions.
 
 ## Sub-pages
 
 | Guide | Description |
 |-------|-------------|
-| [Developer Onboarding](onboarding.md) | Smart account concepts, passkeys, the on-chain contract interface, end-to-end lifecycle, prerequisites |
-| [API Reference](api-reference.md) | Every public symbol with Swift signatures |
-| [WebAuthn Setup: iOS](webauthn-ios.md) | iOS Associated Domains and apple-app-site-association hosting |
-| [WebAuthn Setup: macOS](webauthn-macos.md) | macOS Associated Domains, apple-app-site-association, developer-mode setup |
+| [Onboarding Guide](onboarding.md) | Smart account concepts, passkeys, on-chain contract interface, end-to-end lifecycle |
+| [WebAuthn Setup: iOS](webauthn-ios.md) | iOS AuthenticationServices integration, apple-app-site-association setup |
+| [WebAuthn Setup: macOS](webauthn-macos.md) | macOS AuthenticationServices integration, associated domains setup |
+| [API Reference](api-reference.md) | Full API reference for all public classes and methods |

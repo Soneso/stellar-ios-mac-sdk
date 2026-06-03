@@ -138,7 +138,13 @@ Pass the conformance through `OZSmartAccountConfig.webauthnProvider` exactly as 
 
 ## Storage Adapters
 
-Use `KeychainStorageAdapter` for production; `UserDefaultsStorageAdapter` and `InMemoryStorageAdapter` are for non-sensitive or test-only use. See the [Storage trade-offs](README.md#storage-trade-offs) table in the kit guide for the full comparison.
+| Adapter | Persistence | Encryption | When to use |
+|---------|-------------|------------|-------------|
+| `InMemoryStorageAdapter` | None (lost on process exit) | None | Unit tests, ephemeral demos. The docstring explicitly warns it is not persistent and not secure. |
+| `KeychainStorageAdapter` | iOS Keychain Services with `kSecAttrAccessibleAfterFirstUnlock` | Yes (system-managed) | Recommended default for production. iOS Simulator and unsigned macOS test binaries require the `keychain-access-groups` entitlement. |
+| `UserDefaultsStorageAdapter` | Scoped `UserDefaults` suite | None (plaintext property list in the app container) | Lightweight, non-sensitive scenarios only. Apps storing anything with privacy implications should prefer Keychain. |
+
+Stored credentials contain only public-key material (public key, credential ID, contract address, nickname, metadata). No private keys ever leave the device's secure element, so Keychain entries are stored without biometric `SecAccessControl` flags.
 
 ## Common errors
 
