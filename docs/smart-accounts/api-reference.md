@@ -1,6 +1,10 @@
 # Smart Accounts API Reference
 
-> Canonical reference for every public symbol shipped under `stellarsdk/smartaccount/`. Conceptual material and walk-throughs live in `onboarding.md`; platform setup steps for the bundled WebAuthn provider live in `webauthn-ios.md` and `webauthn-macos.md`; the package-level overview lives in `README.md`. This file documents the API surface only; refer to the linked guides for ceremony narrative, entitlement plumbing, and end-to-end examples.
+OpenZeppelin Smart Account Kit for Stellar/Soroban. This reference documents all public APIs for creating, managing, and operating smart accounts with WebAuthn/passkey authentication.
+
+**Location**: `stellarsdk` module (`smartaccount/` namespace)
+
+**Platform Support**: iOS, macOS
 
 ## Table of Contents
 
@@ -20,68 +24,21 @@
 - [Constants](#constants)
 - [WebAuthn Provider](#webauthn-provider)
 - [Storage Adapter](#storage-adapter)
-- [Indexer and Relayer Clients](#indexer-and-relayer-clients)
+- [Indexer Client](#indexer-client)
+- [Relayer Client](#relayer-client)
 - [Auth Helpers](#auth-helpers)
 - [Builder Helpers](#builder-helpers)
+- [Utilities](#utilities)
 - [Signer Types](#signer-types)
 - [Signature Types](#signature-types)
+- [Quirks](#quirks)
+- [Error Handling Example](#error-handling-example)
 
 ---
 
 ## Quick Start
 
-```swift
-import stellarsdk
-
-// 1. Build the WebAuthn provider for Apple platforms.
-let webauthnProvider = try AppleWebAuthnProvider(
-    rpId: "example.com",
-    rpName: "Example Wallet"
-)
-
-// 2. Build the configuration.
-// Real testnet values; replace for mainnet or your own deployment.
-let config = try OZSmartAccountConfig(
-    rpcUrl: "https://soroban-testnet.stellar.org",
-    networkPassphrase: Network.testnet.passphrase,
-    accountWasmHash: "86b49fe03f7df0ad1c2a28bd8361b923ab57096e09f397f92f0c00ae3bd06d28",
-    webauthnVerifierAddress: "CB26VN37RCVNTHJZDEPK6IRO2MMTS3Z2IEO5JD5BINY2OOJ5KKJG7NKY",
-    webauthnProvider: webauthnProvider,
-    storage: KeychainStorageAdapter()
-)
-
-// 3. Create the kit (synchronous, no network I/O).
-let kit = OZSmartAccountKit.create(config: config)
-
-// 4. Subscribe to lifecycle events (optional).
-let unsubscribe = kit.events.on(.walletConnected) { event in
-    if case let .walletConnected(contractId, _) = event {
-        print("Connected: \(contractId)")
-    }
-}
-
-// 5. Register a passkey, deploy the contract, and fund the wallet.
-let wallet = try await kit.walletOperations.createWallet(
-    userName: "Alice",
-    autoSubmit: true,
-    autoFund: true,
-    nativeTokenContract: "CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC"
-)
-print("Created wallet: \(wallet.contractId)")
-
-// 6. Transfer tokens from the smart account.
-let result = try await kit.transactionOperations.transfer(
-    tokenContract: "CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC",
-    recipient: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ",
-    amount: "10"
-)
-print("Transfer success: \(result.success), hash: \(result.hash ?? "n/a")")
-
-// 7. Tear down when the kit is no longer needed.
-unsubscribe()
-try await kit.disconnect()
-await kit.close()
-```
+See the [Quick Start in the README](README.md#quick-start) for an end-to-end example covering kit configuration, wallet creation, token transfer, and the reconnection patterns. The sections below document each public symbol in detail.
 
 ---
 
@@ -116,30 +73,6 @@ public let config: OZSmartAccountConfig
 
 The immutable configuration the kit was constructed with.
 
-#### sorobanServer
-
-```swift
-public let sorobanServer: SorobanServer
-```
-
-The Soroban RPC client shared by every operations module and manager.
-
-#### indexerClient
-
-```swift
-public let indexerClient: OZIndexerClient?
-```
-
-Optional indexer client used for credential-to-contract discovery. `nil` when no explicit `indexerUrl` is set and the configured `networkPassphrase` has no built-in default in `OZIndexerClient.defaultIndexerUrls`.
-
-#### relayerClient
-
-```swift
-public let relayerClient: OZRelayerClient?
-```
-
-Optional relayer client used for fee-sponsored transaction submission. Present when `config.relayerUrl` is non-`nil` at construction time. When `nil`, automatic submission-method selection falls back to RPC.
-
 #### events
 
 ```swift
@@ -172,14 +105,6 @@ public var contractId: String? { get }
 
 The smart-account contract address (`C…` strkey, 56 characters) of the currently connected wallet, or `nil` when no wallet is connected.
 
-#### externalSigners
-
-```swift
-public var externalSigners: OZExternalSignerManager { get }
-```
-
-The kit-owned `OZExternalSignerManager`. Always non-`nil`; constructed at kit initialization from `config.externalWallet` and `config.externalEd25519Adapter`. Use this property to register in-memory keypairs at runtime (`addFromSecret(secretKey:)`, `addEd25519FromRawKey(secretKeyBytes:verifierAddress:)`) and to check signer availability (`hasWalletAdapter`, `canSignFor(address:)`, `canSignEd25519For(verifierAddress:publicKey:)`). The multi-signer pipeline resolves all external-signer calls through this property. See [External Signer Management](#external-signer-management) for the full manager API.
-
 ### Manager Properties
 
 #### walletOperations
@@ -206,14 +131,6 @@ public var signerManager: OZSignerManager { get }
 
 The [Signer Management](#signer-management) manager. Adds and removes WebAuthn, Ed25519, and delegated signers on a context rule.
 
-#### policyManager
-
-```swift
-public var policyManager: OZPolicyManager { get }
-```
-
-The [Policy Management](#policy-management) manager. Installs and removes the built-in policy types (Simple Threshold, Weighted Threshold, Spending Limit) and exposes a generic entry point for custom policy contracts.
-
 #### contextRuleManagerConcrete
 
 ```swift
@@ -221,6 +138,14 @@ public var contextRuleManagerConcrete: OZContextRuleManager { get }
 ```
 
 The concrete [Context Rule Management](#context-rule-management) manager. Use this accessor in code that needs the full public surface of the manager type (the alias `contextRuleManager` returns a protocol type that is internal to the SDK module and not accessible to consumers).
+
+#### policyManager
+
+```swift
+public var policyManager: OZPolicyManager { get }
+```
+
+The [Policy Management](#policy-management) manager. Installs and removes the built-in policy types (Simple Threshold, Weighted Threshold, Spending Limit) and exposes a generic entry point for custom policy contracts.
 
 #### credentialManagerConcrete
 
@@ -238,7 +163,33 @@ public var multiSignerManager: OZMultiSignerManager { get }
 
 The [Multi-Signer Operations](#multi-signer-operations) manager. Coordinates ceremonies that combine multiple passkeys, Ed25519 external signers, and external-wallet signers.
 
-### Lifecycle
+#### externalSigners
+
+```swift
+public var externalSigners: OZExternalSignerManager { get }
+```
+
+The kit-owned `OZExternalSignerManager`. Always non-`nil`; constructed at kit initialization from `config.externalWallet` and `config.externalEd25519Adapter`. Use this property to register in-memory keypairs at runtime (`addFromSecret(secretKey:)`, `addEd25519FromRawKey(secretKeyBytes:verifierAddress:)`) and to check signer availability (`hasWalletAdapter`, `canSignFor(address:)`, `canSignEd25519For(verifierAddress:publicKey:)`). The multi-signer pipeline resolves all external-signer calls through this property. See [External Signer Management](#external-signer-management) for the full manager API.
+
+### Client Properties
+
+#### indexerClient
+
+```swift
+public let indexerClient: OZIndexerClient?
+```
+
+Optional indexer client used for credential-to-contract discovery. `nil` when no explicit `indexerUrl` is set and the configured `networkPassphrase` has no built-in default in `OZIndexerClient.defaultIndexerUrls`.
+
+#### relayerClient
+
+```swift
+public let relayerClient: OZRelayerClient?
+```
+
+Optional relayer client used for fee-sponsored transaction submission. Present when `config.relayerUrl` is non-`nil` at construction time. When `nil`, automatic submission-method selection falls back to RPC.
+
+### Lifecycle Methods
 
 #### disconnect()
 
@@ -256,15 +207,7 @@ Ends the active session. Clears the in-memory connection state under the kit's i
 public func close() async
 ```
 
-Releases the HTTP-client, event-emitter, and manager resources the kit owns. Treat the kit as unusable after this call; manager and operations accessors trap after `close()` returns.
-
-#### getStorage()
-
-```swift
-public func getStorage() -> StorageAdapter
-```
-
-Returns the storage adapter resolved from `config.storage`. Thread-safe; the adapter reference is immutable for the kit's lifetime.
+Releases the kit's HTTP-client, event-emitter, and manager resources, and clears any in-memory external signers (registered keypairs and Ed25519 keys); persisted external-wallet connections are retained. The kit must not be used after `close()`; the manager and operations accessors trap once released.
 
 #### getDeployer()
 
@@ -286,30 +229,30 @@ public struct OZSmartAccountConfig: @unchecked Sendable, Equatable, Hashable { .
 
 Immutable configuration value type passed to `OZSmartAccountKit.create(config:)`. Construct directly through the throwing initializer below or through `OZSmartAccountConfig.builder(...)` for a fluent API. Both entry points perform identical validation and produce identical instances.
 
-### Required Fields
+**Required Fields**:
 
-| Field | Type | Description |
-|---|---|---|
-| `rpcUrl` | `String` | Soroban RPC endpoint URL. Must not be blank. |
-| `networkPassphrase` | `String` | Stellar network passphrase. Must not be blank. |
-| `accountWasmHash` | `String` | 64-character hex SHA-256 of the smart-account contract WASM. Must match `[0-9a-fA-F]{64}`. |
-| `webauthnVerifierAddress` | `String` | Contract address (`C…` strkey) of the WebAuthn verifier contract. Must be a valid `C…` strkey. |
+- `rpcUrl`: Soroban RPC endpoint URL. Must not be blank.
+- `networkPassphrase`: Stellar network passphrase. Must not be blank.
+- `accountWasmHash`: 64-character hex SHA-256 of the smart-account contract WASM. Must match `[0-9a-fA-F]{64}`.
+- `webauthnVerifierAddress`: Contract address (`C…` strkey) of the WebAuthn verifier contract. Must be a valid `C…` strkey.
 
-### Optional Fields
+**Optional Fields**:
 
-| Field | Type | Default | Description |
-|---|---|---|---|
-| `deployerKeypair` | `KeyPair?` | `nil` | Optional deployer keypair. When `nil`, the deterministic default deployer (derived from `SHA-256("openzeppelin-smart-account-kit")`) is used. |
-| `sessionExpiryMs` | `Int64` | `OZConstants.defaultSessionExpiryMs` (604 800 000 — seven days) | Session expiry in milliseconds. |
-| `signatureExpirationLedgers` | `Int` | `StellarProtocolConstants.ledgersPerHour` (720) | Signature expiration in ledgers. Must be `>= 1`. No client-side upper bound — the network's `maxEntryTTL` (CAP-0046-11) governs the maximum and is enforced by the host at submission. |
-| `timeoutInSeconds` | `Int` | `OZConstants.defaultTimeoutSeconds` (30) | Transaction validity window in seconds. Sets each transaction's TimeBounds `max_time = now + timeoutInSeconds`; `0` means no expiry (infinite). Must be `>= 0`. |
-| `relayerUrl` | `String?` | `nil` | Optional relayer endpoint URL. Must be `https://` or `http://localhost`. |
-| `indexerUrl` | `String?` | `nil` | Optional indexer endpoint URL. When `nil`, `effectiveIndexerUrl()` falls back to the built-in default for the configured network. |
-| `webauthnProvider` | `WebAuthnProvider?` | `nil` | WebAuthn provider used by `createWallet`, `connectWallet(prompt: true)`, `authenticatePasskey`, `addNewPasskeySigner`, and the per-entry signing pass. Required for every flow that prompts for biometric authentication. |
-| `storage` | `StorageAdapter` | `InMemoryStorageAdapter()` | Adapter for persisting credentials and sessions. Production apps pass `KeychainStorageAdapter()` or `UserDefaultsStorageAdapter()`. |
-| `externalWallet` | `ExternalWalletAdapter?` | `nil` | Optional external-wallet adapter injected into `kit.externalSigners` at construction. Required when `SelectedSigner.wallet(accountId:)` participates in a multi-signer ceremony and the wallet key is managed by an external service rather than an in-memory keypair. |
-| `externalEd25519Adapter` | `OZExternalEd25519SignerAdapter?` | `nil` | Optional Ed25519 adapter injected into `kit.externalSigners` at construction. Provides out-of-process Ed25519 signing (hardware wallets, remote signing services) as an alternative to in-memory keypairs registered via `kit.externalSigners.addEd25519FromRawKey(...)`. |
-| `maxContextRuleScanId` | `UInt32` | `50` | Maximum context-rule identifier to scan during `getAllContextRules()` / `listContextRules()`. Increase when the account has had many add / remove cycles. |
+- `deployerKeypair`: Optional deployer keypair. When `nil`, the deterministic default deployer (derived from `SHA-256("openzeppelin-smart-account-kit")`) is used.
+- `sessionExpiryMs`: Session expiry in milliseconds. Defaults to `OZConstants.defaultSessionExpiryMs` (604 800 000 — seven days).
+- `signatureExpirationLedgers`: Signature expiration in ledgers. Defaults to `StellarProtocolConstants.ledgersPerHour` (720). Must be `>= 1`. No client-side upper bound — the network's `maxEntryTTL` (CAP-0046-11) governs the maximum and is enforced by the host at submission.
+- `timeoutInSeconds`: Transaction validity window in seconds. Sets each transaction's TimeBounds `max_time = now + timeoutInSeconds`; `0` means no expiry (infinite). Defaults to `OZConstants.defaultTimeoutSeconds` (30). Must be `>= 0`.
+- `relayerUrl`: Optional relayer endpoint URL for fee-sponsored submission. Not validated at construction.
+- `indexerUrl`: Optional indexer endpoint URL. When `nil`, `effectiveIndexerUrl()` falls back to the built-in default for the configured network.
+- `webauthnProvider`: WebAuthn provider used by `createWallet`, `connectWallet(prompt: true)`, `authenticatePasskey`, `addNewPasskeySigner`, and the per-entry signing pass. Required for every flow that prompts for biometric authentication.
+- `storage`: Adapter for persisting credentials and sessions. Defaults to `InMemoryStorageAdapter()`. Production apps pass `KeychainStorageAdapter()` or `UserDefaultsStorageAdapter()`.
+- `externalWallet`: Optional external-wallet adapter injected into `kit.externalSigners` at construction. Required when `SelectedSigner.wallet(accountId:)` participates in a multi-signer ceremony and the wallet key is managed by an external service rather than an in-memory keypair.
+- `externalEd25519Adapter`: Optional Ed25519 adapter injected into `kit.externalSigners` at construction. Provides out-of-process Ed25519 signing (hardware wallets, remote signing services) as an alternative to in-memory keypairs registered via `kit.externalSigners.addEd25519FromRawKey(...)`.
+- `maxContextRuleScanId`: Maximum context-rule identifier to scan during `getAllContextRules()` / `listContextRules()`. Defaults to `50`. Increase when the account has had many add / remove cycles.
+
+### Platform-specific provider integration
+
+See [WebAuthn Provider](#webauthn-provider), [Storage Adapter](#storage-adapter), and [ExternalWalletAdapter](#externalwalletadapter-protocol) for the platform-specific implementations and the abstract contracts.
 
 ### Initialization
 
@@ -431,13 +374,15 @@ Constructs the configuration through the initializer; the same validation rules 
 
 ## Wallet Operations
 
+### OZWalletOperations
+
 ```swift
 public final class OZWalletOperations: @unchecked Sendable { ... }
 ```
 
 Accessed via `kit.walletOperations`. Handles wallet creation (WebAuthn registration plus deterministic contract derivation plus deploy-transaction build and submission), wallet connection (session restore, storage-to-derivation-to-indexer cascade, ambiguous multi-contract handling), standalone passkey authentication, and retry of a previously incomplete or failed deployment. Every state-changing method respects task cancellation at each `await` point.
 
-### createWallet(...)
+#### createWallet(...)
 
 ```swift
 public func createWallet(
@@ -464,7 +409,7 @@ When `autoFund == true`, the freshly deployed contract is funded through Friendb
 
 **Throws**: `WebAuthnException` (missing provider, ceremony failure), `ValidationException` (input validation), `TransactionException` (build, sign, submit failure), `CredentialException`, `StorageException`.
 
-### connectWallet(...)
+#### connectWallet(...)
 
 ```swift
 public func connectWallet(
@@ -483,7 +428,7 @@ The cascade for resolving the contract address is: stored credential lookup → 
 
 **Throws**: `WebAuthnException` (prompt path), `WalletException` (no contract resolved), `ValidationException` (options validation), `TransactionException` (RPC failure), `IndexerException` (indexer transport failure).
 
-### authenticatePasskey(...)
+#### authenticatePasskey(...)
 
 ```swift
 public func authenticatePasskey(
@@ -502,7 +447,7 @@ Runs a standalone WebAuthn authentication ceremony without setting the kit's con
 
 **Throws**: `WebAuthnException` (missing provider, ceremony failure), `ValidationException`.
 
-### deployPendingCredential(...)
+#### deployPendingCredential(...)
 
 ```swift
 public func deployPendingCredential(
@@ -514,7 +459,7 @@ public func deployPendingCredential(
 ) async throws -> DeployPendingResult
 ```
 
-Retries deployment for a credential whose previous deploy attempt was skipped or failed. The credential must already exist in storage with `deploymentStatus == .pending` or `.failed`. Behaves like `createWallet(...)` from the deploy-transaction step onward: builds and signs the deploy transaction, submits when `autoSubmit == true`, optionally funds the wallet when both `autoSubmit` and `nativeTokenContract` are supplied.
+Retries deployment for a credential whose previous deploy attempt was skipped or failed. The credential must already exist in storage (the method is intended for one whose `deploymentStatus` is `.pending` or `.failed`, but it does not itself reject other statuses). Behaves like `createWallet(...)` from the deploy-transaction step onward: builds and signs the deploy transaction, submits when `autoSubmit == true`, optionally funds the wallet when both `autoSubmit` and `nativeTokenContract` are supplied.
 
 **Parameters**:
 - `credentialId`: Base64URL-encoded credential identifier to retry.
@@ -553,24 +498,6 @@ public struct CreateWalletResult: Sendable, Hashable {
 
 Equality compares every field with a constant-time comparison on `publicKey` so byte-level timing inference is not possible from equality side channels. A `copy(...)` helper is provided for field-level immutable updates.
 
-#### DeployPendingResult
-
-```swift
-public struct DeployPendingResult: Sendable, Equatable, Hashable {
-    public let contractId: String
-    public let signedTransactionXdr: String
-    public let transactionHash: String?
-}
-```
-
-| Field | Type | Description |
-|---|---|---|
-| `contractId` | `String` | Smart-account contract address. |
-| `signedTransactionXdr` | `String` | Base64-encoded signed deploy envelope. |
-| `transactionHash` | `String?` | Transaction hash; `nil` when not submitted. |
-
-Includes a `copy(...)` helper.
-
 #### ConnectWalletResult
 
 ```swift
@@ -604,6 +531,24 @@ public struct ConnectWalletOptions: Sendable, Equatable, Hashable {
 
 Default-constructed options request a silent session-only restore. Supplying `credentialId` and/or `contractId` selects a direct connect that skips the session check. `fresh = true` skips the session and always triggers WebAuthn; `prompt = true` triggers WebAuthn when no valid session exists. When both `fresh` and `prompt` are true, `fresh` takes priority. A `copy(...)` helper is provided.
 
+#### DeployPendingResult
+
+```swift
+public struct DeployPendingResult: Sendable, Equatable, Hashable {
+    public let contractId: String
+    public let signedTransactionXdr: String
+    public let transactionHash: String?
+}
+```
+
+| Field | Type | Description |
+|---|---|---|
+| `contractId` | `String` | Smart-account contract address. |
+| `signedTransactionXdr` | `String` | Base64-encoded signed deploy envelope. |
+| `transactionHash` | `String?` | Transaction hash; `nil` when not submitted. |
+
+Includes a `copy(...)` helper.
+
 #### AuthenticatePasskeyResult
 
 ```swift
@@ -626,13 +571,15 @@ Equality uses constant-time comparison on `publicKey`.
 
 ## Transaction Operations
 
+### OZTransactionOperations
+
 ```swift
 public final class OZTransactionOperations: @unchecked Sendable { ... }
 ```
 
 Accessed via `kit.transactionOperations`. Builds, signs, and submits transactions on behalf of the connected smart-account wallet. Drives the full simulate / sign / re-simulate / submit pipeline, including WebAuthn-based auth-entry signing, automatic relayer-versus-RPC selection, and result polling.
 
-### transfer(...)
+#### transfer(...)
 
 ```swift
 public func transfer(
@@ -649,7 +596,7 @@ Delegates to `contractCall(target:targetFn:targetArgs:forceMethod:resolveContext
 
 **Throws**: `WalletException.NotConnected`, `ValidationException` (invalid address, invalid amount, self-transfer), `TransactionException`, `WebAuthnException`.
 
-### contractCall(...)
+#### contractCall(...)
 
 ```swift
 public func contractCall(
@@ -665,7 +612,7 @@ Calls a function on an external contract directly from the smart account. The sm
 
 **Throws**: `WalletException.NotConnected`, `ValidationException`, `TransactionException`, `WebAuthnException`, `CredentialException`.
 
-### executeAndSubmit(...)
+#### executeAndSubmit(...)
 
 ```swift
 public func executeAndSubmit(
@@ -681,7 +628,7 @@ Calls `execute(target, target_fn, target_args)` on the smart-account contract it
 
 **Throws**: `WalletException.NotConnected`, `ValidationException`, `TransactionException`, `WebAuthnException`, `CredentialException`.
 
-### submit(...)
+#### submit(...)
 
 ```swift
 public func submit(
@@ -696,7 +643,7 @@ Low-level escape hatch. Submits a manually constructed host function through the
 
 **Throws**: `WalletException.NotConnected`, `ValidationException`, `TransactionException`, `WebAuthnException`, `CredentialException`.
 
-### fundWallet(...)
+#### fundWallet(...)
 
 ```swift
 public func fundWallet(
@@ -744,9 +691,22 @@ public typealias ResolveContextRuleIds = @Sendable (
 
 Callback used to override the automatic context-rule resolution that runs during the signing loop. Invoked once per matching auth entry. The first argument carries the authorization entry being signed; the second is the entry's index in the simulation-supplied list. The returned identifiers replace the resolution that otherwise runs against the connected signer set. Errors thrown from the callback propagate to the caller of `submit(...)`.
 
+#### SubmissionMethod
+
+```swift
+public enum SubmissionMethod: Sendable {
+    case relayer
+    case rpc
+}
+```
+
+Overrides the default automatic submission-method selection for a single call. `relayer` fails if no relayer is configured on the kit; `rpc` is always available.
+
 ---
 
 ## Credential Management
+
+### OZCredentialManager
 
 ```swift
 public final class OZCredentialManager: @unchecked Sendable { ... }
@@ -754,11 +714,9 @@ public final class OZCredentialManager: @unchecked Sendable { ... }
 
 Accessed via `kit.credentialManagerConcrete`. Persists, queries, updates, and deletes stored credentials, and reconciles local credential state against on-chain deployment status.
 
-### Credential State Machine
-
 Stored credentials occupy two persistent states after creation: `pending` and `failed`. There is no `success` state — credentials are deleted from storage on successful deployment (or when a sync discovers the contract on-chain). Failed deployments can be retried by deleting the credential and re-creating one with the same identifier, or by calling `walletOperations.deployPendingCredential(...)`.
 
-### createPendingCredential(...)
+#### createPendingCredential(...)
 
 ```swift
 public func createPendingCredential(
@@ -780,7 +738,7 @@ Validation: `publicKey` must be exactly `SmartAccountConstants.secp256r1PublicKe
 
 **Throws**: `ValidationException.InvalidInput`, `CredentialException.AlreadyExists`, `StorageException.WriteFailed`.
 
-### saveCredential(...)
+#### saveCredential(...)
 
 ```swift
 public func saveCredential(
@@ -795,7 +753,7 @@ Saves a credential with looser validation than `createPendingCredential(...)`. D
 
 **Throws**: `ValidationException.InvalidInput`, `StorageException.WriteFailed`.
 
-### sync(...)
+#### sync(...)
 
 ```swift
 @discardableResult
@@ -804,7 +762,7 @@ public func sync(credentialId: String) async throws -> Bool
 
 Reconciles a single stored credential with on-chain state. Returns `true` when the credential's contract is now confirmed deployed on-chain (in which case the credential is removed from storage), `false` otherwise. RPC failures that prevent the on-chain check emit `SmartAccountEvent.credentialSyncFailed(credentialId:error:)` and leave the credential in storage for a subsequent retry.
 
-### syncAll()
+#### syncAll()
 
 ```swift
 public func syncAll() async throws -> SyncResult
@@ -812,15 +770,15 @@ public func syncAll() async throws -> SyncResult
 
 Reconciles every stored credential with on-chain state and returns a summary of how many were confirmed deployed (and removed), how many remain pending, and how many failed deployment.
 
-### deleteCredential(...)
+#### deleteCredential(...)
 
 ```swift
 public func deleteCredential(credentialId: String) async throws
 ```
 
-Removes the named credential from storage and emits `SmartAccountEvent.credentialDeleted(credentialId:)`. Throws `CredentialException.NotFound` if no such credential exists.
+Removes the named credential from storage and emits `SmartAccountEvent.credentialDeleted(credentialId:)`. Before deleting, the manager runs `sync(credentialId:)`; if the contract is already deployed on-chain the credential is reconciled out and the call throws `CredentialException.Invalid` (a deployed wallet cannot be deleted). Throws `CredentialException.NotFound` if no such credential exists, or `StorageException` on a storage read/write failure.
 
-### getCredential(...)
+#### getCredential(...)
 
 ```swift
 public func getCredential(credentialId: String) async throws -> StoredCredential?
@@ -828,7 +786,7 @@ public func getCredential(credentialId: String) async throws -> StoredCredential
 
 Returns the stored credential matching the supplied identifier, or `nil` when absent.
 
-### getCredentialsByContract(...)
+#### getCredentialsByContract(...)
 
 ```swift
 public func getCredentialsByContract(contractId: String) async throws -> [StoredCredential]
@@ -836,7 +794,7 @@ public func getCredentialsByContract(contractId: String) async throws -> [Stored
 
 Returns every stored credential whose `contractId` matches the supplied address.
 
-### getAllCredentials()
+#### getAllCredentials()
 
 ```swift
 public func getAllCredentials() async throws -> [StoredCredential]
@@ -844,7 +802,7 @@ public func getAllCredentials() async throws -> [StoredCredential]
 
 Returns every stored credential.
 
-### getForConnectedWallet()
+#### getForConnectedWallet()
 
 ```swift
 public func getForConnectedWallet() async throws -> [StoredCredential]
@@ -852,7 +810,7 @@ public func getForConnectedWallet() async throws -> [StoredCredential]
 
 Returns every stored credential whose `contractId` matches the kit's currently connected contract.
 
-### getPendingCredentials()
+#### getPendingCredentials()
 
 ```swift
 public func getPendingCredentials() async throws -> [StoredCredential]
@@ -860,7 +818,7 @@ public func getPendingCredentials() async throws -> [StoredCredential]
 
 Returns every stored credential whose `deploymentStatus` is `.pending` or `.failed`.
 
-### updateNickname(...)
+#### updateNickname(...)
 
 ```swift
 public func updateNickname(credentialId: String, nickname: String?) async throws
@@ -868,7 +826,7 @@ public func updateNickname(credentialId: String, nickname: String?) async throws
 
 Updates the nickname of the named credential. Throws `CredentialException.NotFound` if no such credential exists.
 
-### clearAll()
+#### clearAll()
 
 ```swift
 public func clearAll() async throws
@@ -942,6 +900,8 @@ Persisted session record consumed by the `StorageAdapter` session methods.
 
 ## Signer Management
 
+### OZSignerManager
+
 ```swift
 public final class OZSignerManager: @unchecked Sendable { ... }
 ```
@@ -954,7 +914,7 @@ Accessed via `kit.signerManager`. Adds and removes signers bound to a context ru
 
 Every state-changing method accepts an optional `selectedSigners: [SelectedSigner]` parameter. When empty (default), the operation uses single-signer authorization through the connected passkey credential. When non-empty, the operation routes through the multi-signer ceremony coordinator that collects signatures from every listed signer and assembles the final authorization payload.
 
-### addNewPasskeySigner(...)
+#### addNewPasskeySigner(...)
 
 ```swift
 public func addNewPasskeySigner(
@@ -969,7 +929,7 @@ Runs the full end-to-end "register a fresh passkey and add it as a signer" flow:
 
 **Throws**: `WalletException.NotConnected`, `WebAuthnException.NotSupported`, `WebAuthnException`, `CredentialException`, `TransactionException`.
 
-### addPasskey(...)
+#### addPasskey(...)
 
 ```swift
 public func addPasskey(
@@ -987,7 +947,7 @@ Adds a WebAuthn passkey signer to a context rule when the credential identifier 
 
 **Throws**: `WalletException.NotConnected`, `ValidationException`, `TransactionException`.
 
-### addDelegated(...)
+#### addDelegated(...)
 
 ```swift
 public func addDelegated(
@@ -1002,7 +962,7 @@ Adds a delegated signer (Stellar `G…` account or `C…` contract) to a context
 
 **Throws**: `WalletException.NotConnected`, `ValidationException.InvalidAddress`, `TransactionException`.
 
-### addEd25519(...)
+#### addEd25519(...)
 
 ```swift
 public func addEd25519(
@@ -1018,7 +978,7 @@ Adds an Ed25519 signer to a context rule. Constructs an `OZExternalSigner.ed2551
 
 **Throws**: `WalletException.NotConnected`, `ValidationException`, `TransactionException`.
 
-### removeSigner(...)
+#### removeSigner(...)
 
 ```swift
 public func removeSigner(
@@ -1033,7 +993,7 @@ Removes a signer from a context rule by its on-chain numeric identifier. The id 
 
 **Throws**: `WalletException.NotConnected`, `TransactionException`.
 
-### removeSignerBySigner(...)
+#### removeSignerBySigner(...)
 
 ```swift
 public func removeSignerBySigner(
@@ -1072,18 +1032,20 @@ Equality uses constant-time comparison on `publicKey`.
 
 ## Context Rule Management
 
+### OZContextRuleManager
+
 ```swift
 public final class OZContextRuleManager: @unchecked Sendable { ... }
 ```
 
-Accessed via `kit.contextRuleManagerConcrete`. Creates, lists, parses, updates, and removes context rules on the connected smart-account contract. Contract limits enforced before submission:
+Accessed via `kit.contextRuleManagerConcrete`. Creates, lists, updates, and removes context rules on the connected smart-account contract. Contract limits enforced before submission:
 
 - Maximum `OZConstants.maxSigners` (15) signers per rule.
 - Maximum `OZConstants.maxPolicies` (5) policies per rule.
 
 A context rule must have at least one signer or one policy.
 
-### addContextRule(...)
+#### addContextRule(...)
 
 ```swift
 public func addContextRule(
@@ -1101,7 +1063,7 @@ Adds a new context rule. `contextType` selects the matching policy (default rule
 
 **Throws**: `WalletException.NotConnected`, `ValidationException.InvalidInput`, `ValidationException.InvalidAddress`, `TransactionException`.
 
-### getContextRule(...)
+#### getContextRule(...)
 
 ```swift
 public func getContextRule(id: UInt32) async throws -> SCValXDR
@@ -1111,7 +1073,7 @@ Returns the raw `SCValXDR` payload for a single context rule. Callers that need 
 
 **Throws**: `WalletException.NotConnected`, `TransactionException.SimulationFailed` (commonly when the rule does not exist on chain).
 
-### getContextRulesCount()
+#### getContextRulesCount()
 
 ```swift
 public func getContextRulesCount() async throws -> UInt32
@@ -1121,21 +1083,19 @@ Returns the number of context rules currently configured on the connected smart 
 
 **Throws**: `WalletException.NotConnected`, `TransactionException`, `ValidationException.InvalidInput` (when the on-chain result is not a `U32`).
 
-### getAllContextRules()
+#### getAllContextRules(...)
 
 ```swift
-public func getAllContextRules() async throws -> [SCValXDR]
 public func getAllContextRules(maxScanId: UInt32? = nil) async throws -> [SCValXDR]
 ```
 
-Retrieves every active context rule as raw `SCValXDR` map payloads in ascending id order. The contract assigns monotonically increasing identifiers; removed rules leave numeric gaps. The method iterates identifiers from zero upward, skipping gaps reported as `TransactionException.SimulationFailed`, until either the active rule count has been collected or the effective scan upper bound is reached. The zero-argument overload uses `config.maxContextRuleScanId`; the override overload accepts a per-call upper bound (pass `nil` to use the kit default).
+Retrieves every active context rule as raw `SCValXDR` map payloads in ascending id order. The contract assigns monotonically increasing identifiers; removed rules leave numeric gaps. The method iterates identifiers from zero upward, skipping gaps reported as `TransactionException.SimulationFailed`, until either the active rule count has been collected or the effective scan upper bound is reached. Pass `maxScanId: nil` (the default) to use `config.maxContextRuleScanId`, or a per-call upper bound.
 
 **Throws**: `WalletException.NotConnected`, `TransactionException`, `ValidationException`.
 
-### listContextRules()
+#### listContextRules(...)
 
 ```swift
-public func listContextRules() async throws -> [ParsedContextRule]
 public func listContextRules(maxScanId: UInt32? = nil) async throws -> [ParsedContextRule]
 ```
 
@@ -1143,21 +1103,7 @@ Returns the parsed view of every active context rule. Internally calls `getAllCo
 
 **Throws**: Same as `getAllContextRules(...)`.
 
-### resolveContextRuleIdsForEntry(...)
-
-```swift
-public func resolveContextRuleIdsForEntry(
-    entry: SorobanAuthorizationEntryXDR,
-    signers: [any OZSmartAccountSigner],
-    contextRules: [ParsedContextRule]
-) async throws -> [UInt32]
-```
-
-Resolves the on-chain context-rule identifiers that bind into the auth digest for a single authorization entry. Consumed by the transaction-operations signing pass and by the multi-signer manager; available publicly for callers that build a custom signing pipeline.
-
-**Throws**: `ValidationException`, `TransactionException`.
-
-### updateName(...)
+#### updateName(...)
 
 ```swift
 public func updateName(
@@ -1172,7 +1118,7 @@ Updates the human-readable name of an existing rule. The `name` field is metadat
 
 **Throws**: `WalletException.NotConnected`, `ValidationException.InvalidInput`, `TransactionException`.
 
-### updateValidUntil(...)
+#### updateValidUntil(...)
 
 ```swift
 public func updateValidUntil(
@@ -1187,7 +1133,7 @@ Updates the expiration ledger of an existing rule. Pass `nil` to clear the expir
 
 **Throws**: `WalletException.NotConnected`, `TransactionException`.
 
-### removeContextRule(...)
+#### removeContextRule(...)
 
 ```swift
 public func removeContextRule(
@@ -1243,6 +1189,8 @@ public struct ParsedContextRule: Sendable, Hashable {
 
 ## Policy Management
 
+### OZPolicyManager
+
 ```swift
 public final class OZPolicyManager: @unchecked Sendable { ... }
 ```
@@ -1253,7 +1201,7 @@ Three built-in policy contracts ship with the OpenZeppelin suite. The manager ex
 
 All state-changing methods accept the same `selectedSigners` / `forceMethod` pair as the other managers.
 
-### addSimpleThreshold(...)
+#### addSimpleThreshold(...)
 
 ```swift
 public func addSimpleThreshold(
@@ -1269,7 +1217,7 @@ Installs a simple threshold policy requiring at least `threshold` of the context
 
 **Throws**: `WalletException.NotConnected`, `ValidationException`, `TransactionException`.
 
-### addWeightedThreshold(...)
+#### addWeightedThreshold(...)
 
 ```swift
 public func addWeightedThreshold(
@@ -1286,7 +1234,7 @@ Installs a weighted threshold policy. Authorization succeeds when the summed wei
 
 **Throws**: `WalletException.NotConnected`, `ValidationException`, `TransactionException`.
 
-### addSpendingLimit(...)
+#### addSpendingLimit(...)
 
 ```swift
 public func addSpendingLimit(
@@ -1305,7 +1253,7 @@ For amounts whose stroops value exceeds the `Int64` ceiling (approximately 9.2x1
 
 **Throws**: `WalletException.NotConnected`, `ValidationException`, `TransactionException`.
 
-### removePolicy(...)
+#### removePolicy(...)
 
 ```swift
 public func removePolicy(
@@ -1320,7 +1268,7 @@ Removes a policy from a context rule by its on-chain numeric id. The id surfaces
 
 **Throws**: `WalletException.NotConnected`, `TransactionException`.
 
-### removePolicyByAddress(...)
+#### removePolicyByAddress(...)
 
 ```swift
 public func removePolicyByAddress(
@@ -1335,7 +1283,7 @@ Removes a policy by matching the policy contract address. Resolves the numeric i
 
 **Throws**: `WalletException.NotConnected`, `ValidationException`, `TransactionException`.
 
-### addPolicy(...)
+#### addPolicy(...)
 
 ```swift
 public func addPolicy(
@@ -1394,17 +1342,17 @@ The SDK ships a parallel struct `OZSignerWeight` (with `Int` weight) used by `OZ
 
 ## Multi-Signer Operations
 
+### OZMultiSignerManager
+
 ```swift
 public class OZMultiSignerManager: @unchecked Sendable { ... }
 ```
 
 Accessed via `kit.multiSignerManager`. Collects signatures from a caller-supplied list of signers (passkeys, Ed25519 external signers, and external-wallet addresses) and submits the resulting transaction through the kit's transaction operations.
 
-### Signer Collection Semantics
-
 Signatures are collected sequentially in the order supplied via `selectedSigners`. Each `SelectedSigner.passkey(...)` triggers exactly one OS WebAuthn authentication prompt; each `SelectedSigner.wallet(...)` triggers exactly one external-wallet signing request; each `SelectedSigner.ed25519(...)` calls `OZExternalSignerManager.signEd25519AuthDigest(...)` using the signing source registered for that `(verifierAddress, publicKey)` pair. Sequential collection enables fail-fast behaviour on user cancellation. The connected passkey is NOT added implicitly — include it explicitly via `SelectedSigner.passkey(...)` when the connected passkey should sign.
 
-### multiSignerTransfer(...)
+#### multiSignerTransfer(...)
 
 ```swift
 public func multiSignerTransfer(
@@ -1421,7 +1369,7 @@ SEP-41 token transfer signed by an explicit list of signers. Validates the conne
 
 **Throws**: `WalletException.NotConnected`, `ValidationException`, `TransactionException`, `WebAuthnException`, `ConfigurationException` (when wallet signers are supplied but no external-wallet adapter is configured).
 
-### multiSignerContractCall(...)
+#### multiSignerContractCall(...)
 
 ```swift
 public func multiSignerContractCall(
@@ -1438,7 +1386,7 @@ Multi-signer counterpart to `OZTransactionOperations.contractCall(...)`. Builds 
 
 **Throws**: `WalletException`, `ValidationException`, `TransactionException`, `WebAuthnException`, `ConfigurationException`.
 
-### multiSignerExecuteAndSubmit(...)
+#### multiSignerExecuteAndSubmit(...)
 
 ```swift
 public func multiSignerExecuteAndSubmit(
@@ -1455,7 +1403,7 @@ Multi-signer counterpart to `OZTransactionOperations.executeAndSubmit(...)`. Rou
 
 **Throws**: `WalletException`, `ValidationException`, `TransactionException`, `WebAuthnException`, `ConfigurationException`.
 
-### submitWithMultipleSigners(...)
+#### submitWithMultipleSigners(...)
 
 ```swift
 public func submitWithMultipleSigners(
@@ -1524,6 +1472,8 @@ See [Onboarding — Signing](onboarding.md#signing) for registering each signing
 
 ## External Signer Management
 
+### OZExternalSignerManager
+
 ```swift
 public actor OZExternalSignerManager
 ```
@@ -1545,16 +1495,6 @@ The kit-owned instance (accessed via `kit.externalSigners`) is constructed with 
 
 All public methods are `async` (or `async throws`) due to actor isolation.
 
-### Static Constants
-
-```swift
-public static let walletStorageKey: String = "oz_smart_account.connected_wallets"
-```
-
-Storage key under which the manager persists wallet connections in the supplied `WalletConnectionStorage`. Exposed for diagnostic and migration tooling; production code should prefer the manager API.
-
-### Properties
-
 #### hasWalletAdapter
 
 ```swift
@@ -1562,8 +1502,6 @@ public var hasWalletAdapter: Bool { get }
 ```
 
 `true` when a non-`nil` `walletAdapter` was supplied at construction time.
-
-### Methods
 
 #### addFromSecret(secretKey:)
 
@@ -1877,6 +1815,8 @@ Options bag and result value used by `ExternalWalletAdapter.signAuthEntry(preima
 >
 > See the core SDK `SorobanServer.getEvents(...)` documentation for the full response shape; parse `topic` and `value` with the SDK's XDR utilities.
 
+### SmartAccountEventEmitter
+
 ```swift
 public final class SmartAccountEventEmitter: @unchecked Sendable { ... }
 ```
@@ -1885,7 +1825,7 @@ Accessed via `kit.events`. Manages event subscriptions and dispatches events to 
 
 The emitter's public API is synchronous on purpose — async listener registration would force an extra suspension that would lose ordering for self-unsubscribe operations performed from inside `emit`.
 
-### init()
+#### init()
 
 ```swift
 public init()
@@ -1893,7 +1833,7 @@ public init()
 
 Initializes an emitter with no listeners and no error handler. Production code obtains the kit-owned emitter through `kit.events`; direct construction is supported for advanced integrations and unit tests.
 
-### setErrorHandler(_:)
+#### setErrorHandler(_:)
 
 ```swift
 public func setErrorHandler(_ handler: SmartAccountEventErrorHandler?)
@@ -1901,7 +1841,7 @@ public func setErrorHandler(_ handler: SmartAccountEventErrorHandler?)
 
 Sets the error handler invoked when a listener throws. The error handler receives both the event being dispatched and the error thrown by the failing listener. Pass `nil` to disable error reporting (listener errors are then silently caught so a single failing listener cannot abort emission to the remaining listeners).
 
-### addListener(_:)
+#### addListener(_:)
 
 ```swift
 @discardableResult
@@ -1910,7 +1850,7 @@ public func addListener(_ listener: @escaping SmartAccountEventListener) -> Smar
 
 Subscribes a global listener that receives every emitted event regardless of type. Use this from call sites that dispatch with a `switch` over the event itself. Returns a closure that unsubscribes the listener when called; calling the returned closure more than once is a no-op.
 
-### on(_:listener:)
+#### on(_:listener:)
 
 ```swift
 @discardableResult
@@ -1922,7 +1862,7 @@ public func on(
 
 Subscribes to events of a specific type. The listener is invoked only when an event matching `eventType` is emitted.
 
-### once(_:listener:)
+#### once(_:listener:)
 
 ```swift
 @discardableResult
@@ -1934,7 +1874,7 @@ public func once(
 
 Subscribes to a single occurrence of an event type. The listener is automatically unsubscribed before its body runs, so even a throwing listener is still removed exactly once. The returned closure unsubscribes the listener before it ever fires; calling it after the event has already fired is a no-op.
 
-### removeAllListeners(eventType:)
+#### removeAllListeners(eventType:)
 
 ```swift
 public func removeAllListeners(eventType: String? = nil)
@@ -1943,7 +1883,7 @@ public func removeAllListeners()
 
 When `eventType` is non-`nil`, only type-specific listeners registered via `on(_:listener:)` for that event type are removed; global listeners registered via `addListener(_:)` are left intact. Passing `nil` (or calling the no-argument overload) removes every type-specific listener and every global listener.
 
-### listenerCount(eventType:)
+#### listenerCount(eventType:)
 
 ```swift
 public func listenerCount(eventType: String) -> Int
@@ -2083,38 +2023,9 @@ public class SmartAccountException: Error, CustomStringConvertible, @unchecked S
 
 The base class is not directly constructible by consumers (its initializer is `fileprivate`). `wrapError(_:defaultCode:)` maps any `Error` into the matching subclass; if the input is already a `SmartAccountException`, it is returned unchanged so typed information is preserved through pass-through layers.
 
-### Error Handling Example
+Every domain grouping below is `public class ... : SmartAccountException` with `public final class` arm subclasses. Construct arm instances through the factory methods on each grouping rather than the initializers.
 
-Catch the specific arms you care about first, then fall back to the base type. Arm subclasses are nested (`WebAuthnException.Cancelled`, `TransactionException.SimulationFailed`); the base `SmartAccountException` catches everything else.
-
-```swift
-do {
-    let result = try await kit.transactionOperations.transfer(
-        tokenContract: tokenContract,
-        recipient: recipient,
-        amount: "10"
-    )
-    print("hash: \(result.hash ?? "n/a")")
-} catch let error as WebAuthnException.Cancelled {
-    // User dismissed the passkey prompt.
-    print("Cancelled by user")
-} catch let error as WebAuthnException.NotSupported {
-    // No WebAuthn provider configured, or the platform cannot run the ceremony.
-    print("WebAuthn unavailable: \(error.message)")
-} catch let error as TransactionException.SimulationFailed {
-    // Simulation rejected the call (e.g. an on-chain contract error code in the message).
-    print("Simulation failed: \(error.message)")
-} catch let error as SmartAccountException {
-    // Any other kit error, mapped to a stable numeric code.
-    print("Smart account error \(error.code.code): \(error.message)")
-}
-```
-
-### Domain Subclasses
-
-Every grouping below is `public class ... : SmartAccountException` with `public final class` arm subclasses. Construct arm instances through the factory methods on each grouping rather than the initializers.
-
-#### ConfigurationException
+### ConfigurationException
 
 ```swift
 public class ConfigurationException: SmartAccountException {
@@ -2128,7 +2039,7 @@ public class ConfigurationException: SmartAccountException {
 
 Thrown by `OZSmartAccountConfig` validation, by URL validation in `OZIndexerClient` / `OZRelayerClient`, by `AppleWebAuthnProvider` initialization, and by managers when a required collaborator is missing.
 
-#### WalletException
+### WalletException
 
 ```swift
 public class WalletException: SmartAccountException {
@@ -2144,7 +2055,7 @@ public class WalletException: SmartAccountException {
 
 `NotConnected` is thrown by every state-changing manager method when the kit is not connected. `NotFound` is thrown by `connectWallet(...)` when no contract can be resolved for the credential.
 
-#### CredentialException
+### CredentialException
 
 ```swift
 public class CredentialException: SmartAccountException {
@@ -2162,7 +2073,7 @@ public class CredentialException: SmartAccountException {
 
 Thrown by `OZCredentialManager` and by the wallet-operations module during credential creation and lifecycle transitions.
 
-#### WebAuthnException
+### WebAuthnException
 
 ```swift
 public class WebAuthnException: SmartAccountException {
@@ -2180,7 +2091,7 @@ public class WebAuthnException: SmartAccountException {
 
 `NotSupported` is thrown when a flow requires a WebAuthn provider but none is configured. `Cancelled` is thrown when the user cancels a passkey prompt.
 
-#### TransactionException
+### TransactionException
 
 ```swift
 public class TransactionException: SmartAccountException {
@@ -2198,7 +2109,7 @@ public class TransactionException: SmartAccountException {
 
 `SimulationFailed` is the common arm thrown by every read-only context-rule method when the on-chain rule does not exist.
 
-#### SignerException
+### SignerException
 
 ```swift
 public class SignerException: SmartAccountException {
@@ -2210,7 +2121,7 @@ public class SignerException: SmartAccountException {
 }
 ```
 
-#### ValidationException
+### ValidationException
 
 ```swift
 public class ValidationException: SmartAccountException {
@@ -2224,7 +2135,7 @@ public class ValidationException: SmartAccountException {
 }
 ```
 
-#### StorageException
+### StorageException
 
 ```swift
 public class StorageException: SmartAccountException {
@@ -2236,7 +2147,7 @@ public class StorageException: SmartAccountException {
 }
 ```
 
-#### SessionException
+### SessionException
 
 ```swift
 public class SessionException: SmartAccountException {
@@ -2248,7 +2159,7 @@ public class SessionException: SmartAccountException {
 }
 ```
 
-#### IndexerException
+### IndexerException
 
 ```swift
 public class IndexerException: SmartAccountException {
@@ -2287,6 +2198,8 @@ These integers appear inside `TransactionException.SimulationFailed` / `Submissi
 ```swift
 public enum SmartAccountConstants {
     public static let ed25519PublicKeySize: Int = 32
+    public static let ed25519SecretSeedSize: Int = 32
+    public static let ed25519SignatureSize: Int = 64
     public static let secp256r1PublicKeySize: Int = 65
     public static let uncompressedPubkeyPrefix: UInt8 = 0x04
 }
@@ -2422,32 +2335,6 @@ The provider enforces `userVerificationPreference = .required` on assertion so t
 
 `init` and `create(...)` perform identical validation: both throw `ConfigurationException.InvalidConfig` for blank `rpId`/`rpName` or non-positive `timeout`.
 
-### SmartAccountUtils
-
-```swift
-public enum SmartAccountUtils {
-    public static func normalizeSignature(_ derSignature: Data) throws -> Data
-    public static func extractPublicKeyFromRegistration(
-        publicKey: Data? = nil,
-        authenticatorData: Data? = nil,
-        attestationObject: Data? = nil
-    ) throws -> Data
-    public static func getContractSalt(credentialId: Data) -> Data
-    public static func deriveContractAddress(
-        credentialId: Data,
-        deployerPublicKey: String,
-        networkPassphrase: String
-    ) throws -> String
-}
-```
-
-Cryptographic helpers shared by the kit and available for advanced integrations:
-
-- `normalizeSignature(_:)` — converts a DER-encoded ECDSA signature to the compact 64-byte form with low-S normalization required by the on-chain verifier.
-- `extractPublicKeyFromRegistration(publicKey:authenticatorData:attestationObject:)` — extracts the canonical uncompressed 65-byte secp256r1 public key from a WebAuthn registration response. Tries the supplied `publicKey` (SPKI), then `authenticatorData` (CBOR-encoded attested credential data), then `attestationObject` (full CBOR attestation).
-- `getContractSalt(credentialId:)` — returns the SHA-256 of the credential identifier, matching the salt the smart-account deployment uses.
-- `deriveContractAddress(credentialId:deployerPublicKey:networkPassphrase:)` — derives the deterministic smart-account contract address from the credential id, the deployer's `G…` account, and the network passphrase. Used by the wallet-creation flow to compute the contract address without an RPC round trip.
-
 ---
 
 ## Storage Adapter
@@ -2546,100 +2433,363 @@ The `signAuthEntry(preimageXdr:options:)` contract: the adapter receives the bas
 
 ---
 
-## Indexer and Relayer Clients
+## Indexer Client
 
-> Prefer the kit-owned accessors `kit.indexerClient` and `kit.relayerClient` as the entry point — the kit constructs, configures, and tears down these clients for you. Construct an `OZIndexerClient` / `OZRelayerClient` directly only for standalone use outside a kit.
+The SDK includes an indexer client for reverse lookups from signer credentials to smart account contracts. The indexer is auto-configured for testnet and mainnet when no explicit URL is provided. The kit owns the client and tears it down on `close()`.
 
-### OZIndexerClient
+### Using via OZSmartAccountKit (Recommended)
+
+`kit.indexerClient` is `nil` when no indexer URL is configured (no explicit URL and no built-in default for the network). Prefer this accessor over constructing a client directly; the kit constructs, configures, and closes it for you.
 
 ```swift
-public class OZIndexerClient: @unchecked Sendable {
-    public static let defaultIndexerUrls: [String: String]
+let kit = try await OZSmartAccountKit.create(config: config)
 
-    public init(
-        indexerUrl: String,
-        timeoutMs: Int64 = OZConstants.defaultIndexerTimeoutMs,
-        urlSession: URLSession? = nil
-    ) throws
+// Discover contracts by credential ID
+let contracts = try await kit.indexerClient?.lookupByCredentialId(credentialId: credentialId)
 
-    public static func getDefaultUrl(networkPassphrase: String) -> String?
-    public static func forNetwork(
-        networkPassphrase: String,
-        timeoutMs: Int64 = OZConstants.defaultIndexerTimeoutMs,
-        urlSession: URLSession? = nil
-    ) -> OZIndexerClient?
-}
+// Discover contracts by signer address
+let byAddress = try await kit.indexerClient?.lookupByAddress(address: "GABC...")
+
+// Get full contract details (rules, signers, policies)
+let details = try await kit.indexerClient?.getContract(contractId: "CABC...")
+
+// Health and stats
+let healthy = await kit.indexerClient?.isHealthy()
+let stats = try await kit.indexerClient?.getStats()
 ```
 
-HTTP client for the smart-account indexer service. `open`-able for test doubles. Subclasses overriding `close()` must call `super.close()` (or invoke `performCloseInternal()` directly) so the owned `URLSession` is invalidated; otherwise the underlying transport leaks. Consumer code typically injects a custom `urlSession` rather than subclassing.
+### Using OZIndexerClient Directly
 
-**URL validation**: `indexerUrl` must start with `https://` or `http://localhost` (with optional port and path). Throws `ConfigurationException.InvalidConfig` for malformed URLs.
+```swift
+// Create a client for a specific network (uses the default indexer URL)
+let indexer = OZIndexerClient.forNetwork(networkPassphrase: Network.testnet.passphrase)
 
-**Built-in defaults** (`defaultIndexerUrls`):
+// Or with a custom URL
+let indexer = try OZIndexerClient(
+    indexerUrl: "https://smart-account-indexer.sdf-ecosystem.workers.dev",
+    timeoutMs: 10000
+)
+```
+
+HTTP client for the smart-account indexer service. The class is `public` (not `open`), so consumer code customizes transport by injecting a custom `urlSession` rather than subclassing; the SDK's own in-module test doubles subclass it and override `close()` to call `super.close()` (or `performCloseInternal()`) so the owned `URLSession` is invalidated. When the client owns the `URLSession`, it builds an ephemeral session whose redirect handler denies all 3xx redirects to protect signed payloads and pinned identification headers (`X-Client-Name`, `X-Client-Version`).
+
+### Constructor
+
+```swift
+public init(
+    indexerUrl: String,
+    timeoutMs: Int64 = OZConstants.defaultIndexerTimeoutMs,
+    urlSession: URLSession? = nil
+) throws
+```
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `indexerUrl` | `String` | Indexer service URL. Must start with `https://`, or `http://localhost` for development. |
+| `timeoutMs` | `Int64` | Request timeout in milliseconds (default: `OZConstants.defaultIndexerTimeoutMs`, 10 seconds). |
+| `urlSession` | `URLSession?` | Optional injected session for testing or custom transport configuration. When `nil`, the client owns a freshly created session and invalidates it on `close()`. |
+
+**Throws**: `ConfigurationException.invalidConfig` if `indexerUrl` is blank, not HTTPS/localhost, or has no host.
+
+### Factory Methods
+
+```swift
+public static let defaultIndexerUrls: [String: String]
+```
+
+Built-in default indexer URLs keyed by network passphrase:
 - Testnet — `https://smart-account-indexer.sdf-ecosystem.workers.dev`
 - Mainnet — `https://smart-account-indexer-mainnet.sdf-ecosystem.workers.dev`
 
-`getDefaultUrl(networkPassphrase:)` returns the default URL for the supplied network passphrase, or `nil` for unknown networks. `forNetwork(networkPassphrase:timeoutMs:urlSession:)` is a convenience factory that resolves the URL and constructs the client; returns `nil` when no default is configured.
+#### forNetwork
 
-When the client owns the `URLSession`, it builds an ephemeral session whose redirect handler denies all 3xx redirects to protect signed payloads and pinned identification headers (`X-Client-Name`, `X-Client-Version`).
+```swift
+public static func forNetwork(
+    networkPassphrase: String,
+    timeoutMs: Int64 = OZConstants.defaultIndexerTimeoutMs,
+    urlSession: URLSession? = nil
+) -> OZIndexerClient?
+```
 
-#### Public methods
+Creates an `OZIndexerClient` using the default indexer URL for a known network. Returns `nil` if no default URL is configured for the network.
+
+#### getDefaultUrl
+
+```swift
+public static func getDefaultUrl(networkPassphrase: String) -> String?
+```
+
+Returns the default indexer URL for a given network passphrase, or `nil` if unknown.
+
+### Methods
+
+#### lookupByCredentialId
 
 ```swift
 public func lookupByCredentialId(credentialId: String) async throws -> OZCredentialLookupResponse
+```
+
+Finds all smart account contracts where the given credential is registered as a signer. The credential ID must be Base64URL-encoded (RFC 4648, no padding); the SDK converts it to hex internally before calling the indexer API.
+
+**Returns**: `OZCredentialLookupResponse`
+
+**Throws**: `ValidationException.invalidInput` if the credential ID is not valid base64url. `IndexerException.requestFailed` on network, non-2xx, or decoding errors. `IndexerException.timeout` on per-request timeout.
+
+---
+
+#### lookupByAddress
+
+```swift
 public func lookupByAddress(address: String) async throws -> OZAddressLookupResponse
+```
+
+Finds all smart account contracts where the given address is registered as a signer. Accepts both `G…` (Stellar accounts) and `C…` (contracts) addresses.
+
+**Returns**: `OZAddressLookupResponse`
+
+**Throws**: `ValidationException.invalidAddress` if the address format is invalid. `IndexerException.requestFailed` / `IndexerException.timeout` on transport failure.
+
+---
+
+#### getContract
+
+```swift
 public func getContract(contractId: String) async throws -> OZContractDetailsResponse
+```
+
+Retrieves full details for a smart account contract including all context rules, signers, and policies.
+
+**Returns**: `OZContractDetailsResponse`
+
+**Throws**: `ValidationException.invalidAddress` if the contract ID format is invalid. `IndexerException.requestFailed` / `IndexerException.timeout` on transport failure.
+
+---
+
+#### getStats
+
+```swift
 public func getStats() async throws -> OZIndexerStatsResponse
+```
+
+Returns indexer service statistics (total events, unique contracts, unique credentials, ledger range, event-type breakdown).
+
+**Returns**: `OZIndexerStatsResponse`
+
+**Throws**: `IndexerException.requestFailed` / `IndexerException.timeout` on transport failure.
+
+---
+
+#### isHealthy
+
+```swift
 public func isHealthy() async -> Bool
+```
+
+Returns `true` only when the server responds with HTTP 2xx, a `Content-Type` of `application/json`, a body within `OZConstants.maxIndexerResponseBytes`, and a decoded `OZIndexerHealthCheckResponse` whose `status` is `"ok"`. Does not throw — returns `false` for any error condition.
+
+---
+
+#### close
+
+```swift
 public func close()
-public final func performCloseInternal()
 ```
 
-- `lookupByCredentialId(credentialId:)` — looks up smart-account contracts by WebAuthn credential id (Base64URL, unpadded; converted to hex before the request). Throws `ValidationException.InvalidInput` for malformed input; `IndexerException.RequestFailed` for network or decoding errors; `IndexerException.Timeout` for per-request timeouts.
-- `lookupByAddress(address:)` — looks up smart-account contracts by signer address (`G…` or `C…`).
-- `getContract(contractId:)` — fetches detailed information about a smart-account contract.
-- `getStats()` — fetches aggregate statistics.
-- `isHealthy()` — lightweight probe. Returns `true` only when the server responds with HTTP 2xx, a `Content-Type` of `application/json`, a body within `OZConstants.maxIndexerResponseBytes`, and a decoded `OZIndexerHealthCheckResponse` whose `status` is `"ok"`. Never throws.
-- `close()` — invalidates the owned `URLSession` (when not injected) and marks the client closed.
+Invalidates the owned `URLSession` (when not injected) and marks the client closed. The client must not be used after calling this. When using via `kit.indexerClient`, the kit's `close()` handles this automatically. Subclasses overriding `close()` must call `super.close()` or `performCloseInternal()`.
 
-#### Public DTOs
+---
 
-```swift
-public struct OZCredentialLookupResponse
-public struct OZAddressLookupResponse
-public struct OZContractDetailsResponse
-public struct OZIndexedContractSummary
-public struct OZIndexedContextRule
-public struct OZIndexedSigner
-public struct OZIndexedPolicy
-public struct OZIndexerStatsResponse
-public struct OZIndexerStats
-public struct OZEventTypeCount
-public struct OZIndexerHealthCheckResponse
-public enum OZJSONValue
-```
+### Response Types
 
-Decoded JSON shapes consumed and returned by the indexer methods above. All types are `Codable` and `Sendable`.
+All response types are `Decodable`, `Equatable`, and `Sendable`.
 
-### OZRelayerClient
+#### OZCredentialLookupResponse
 
 ```swift
-public class OZRelayerClient: @unchecked Sendable {
-    public init(
-        relayerUrl: String,
-        timeoutMs: Int64 = OZConstants.defaultRelayerTimeoutMs,
-        urlSession: URLSession? = nil
-    ) throws
+public struct OZCredentialLookupResponse {
+    public let credentialId: String
+    public let contracts: [OZIndexedContractSummary]
+    public let count: Int
 }
 ```
 
-HTTP client for the smart-account relayer service used for fee-sponsored transaction submission. `open`-able for test doubles with the same subclass contract as `OZIndexerClient`.
+Contracts where a given credential is registered as a signer.
 
-**URL validation**: `relayerUrl` must start with `https://` or `http://localhost`. Throws `ConfigurationException.InvalidConfig` otherwise.
+#### OZAddressLookupResponse
 
-The relayer client never throws on submission. All failure modes — network errors, timeouts, XDR encoding failures, non-2xx responses — are captured in the returned `OZRelayerResponse`. Callers must always inspect `response.success` rather than relying on `try`. This is unusual relative to most async-throws APIs in the SDK and is documented on every submission method.
+```swift
+public struct OZAddressLookupResponse {
+    public let signerAddress: String
+    public let contracts: [OZIndexedContractSummary]
+    public let count: Int
+}
+```
 
-#### Public methods
+Contracts where a given address is registered as a signer.
+
+#### OZContractDetailsResponse
+
+```swift
+public struct OZContractDetailsResponse {
+    public let contractId: String
+    public let summary: OZIndexedContractSummary
+    public let contextRules: [OZIndexedContextRule]
+}
+```
+
+Full details for a single smart account contract.
+
+#### OZIndexedContractSummary
+
+```swift
+public struct OZIndexedContractSummary {
+    public let contractId: String
+    public let contextRuleCount: Int
+    public let externalSignerCount: Int
+    public let delegatedSignerCount: Int
+    public let nativeSignerCount: Int
+    public let firstSeenLedger: Int
+    public let lastSeenLedger: Int
+    public let contextRuleIds: [Int]
+}
+```
+
+Aggregate counts and ledger metadata for an indexed contract.
+
+#### OZIndexedContextRule
+
+```swift
+public struct OZIndexedContextRule {
+    public let contextRuleId: Int
+    public let signers: [OZIndexedSigner]
+    public let policies: [OZIndexedPolicy]
+}
+```
+
+A context rule with its signers and policies.
+
+#### OZIndexedSigner
+
+```swift
+public struct OZIndexedSigner {
+    public let signerType: String      // "External", "Delegated", or "Native"
+    public let signerAddress: String?  // G-/C-address (Delegated signers)
+    public let credentialId: String?   // Hex-encoded credential ID (External signers)
+}
+```
+
+A signer within a context rule. External signers carry `credentialId`; Delegated signers carry `signerAddress`; Native signers carry neither.
+
+#### OZIndexedPolicy
+
+```swift
+public struct OZIndexedPolicy {
+    public let policyAddress: String
+    public let installParams: [String: OZJSONValue]?  // Policy-specific parameters
+}
+```
+
+A policy attached to a context rule. `installParams` preserves the arbitrary JSON structure attached by the policy contract.
+
+#### OZIndexerStatsResponse
+
+```swift
+public struct OZIndexerStatsResponse {
+    public let stats: OZIndexerStats
+}
+
+public struct OZIndexerStats {
+    public let totalEvents: Int64
+    public let uniqueContracts: Int64
+    public let uniqueCredentials: Int64
+    public let firstLedger: Int64
+    public let lastLedger: Int64
+    public let eventTypes: [OZEventTypeCount]
+}
+
+public struct OZEventTypeCount {
+    public let eventType: String
+    public let count: Int64
+}
+```
+
+Aggregate indexer statistics with a per-event-type breakdown.
+
+#### OZIndexerHealthCheckResponse
+
+```swift
+public struct OZIndexerHealthCheckResponse {
+    public let status: String
+}
+```
+
+Response from the indexer health endpoint. `isHealthy()` compares `status` against `"ok"`.
+
+#### OZJSONValue
+
+```swift
+public enum OZJSONValue {
+    case string(String)
+    case integer(Int64)
+    case double(Double)
+    case bool(Bool)
+    case array([OZJSONValue])
+    case object([String: OZJSONValue])
+    case null
+}
+```
+
+Generic JSON value used to preserve arbitrary structures inside policy install parameters (and the relayer response `details` field). `Decodable`, `Equatable`, `Hashable`, and `Sendable`.
+
+---
+
+## Relayer Client
+
+The SDK includes a relayer client for fee-sponsored transaction submission. When configured, the SDK automatically routes transactions through the relayer so users don't need XLM to pay fees. The kit owns the client and tears it down on `close()`.
+
+### Using via OZSmartAccountKit (Recommended)
+
+When the relayer is configured, all transaction submissions use it automatically. `kit.relayerClient` is `nil` when no relayer URL is configured.
+
+```swift
+let config = OZSmartAccountConfig(
+    // ... other config
+    relayerUrl: "https://my-relayer-proxy.example.com"
+)
+let kit = try await OZSmartAccountKit.create(config: config)
+
+// Transactions automatically use the relayer
+try await kit.transactionOperations.transfer(tokenContract: tokenContract, to: recipient, amount: "10")
+
+// Access the relayer client directly
+let response = await kit.relayerClient?.sendXdr(transactionEnvelope: envelope)
+```
+
+### Constructor
+
+```swift
+public init(
+    relayerUrl: String,
+    timeoutMs: Int64 = OZConstants.defaultRelayerTimeoutMs,
+    urlSession: URLSession? = nil
+) throws
+```
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `relayerUrl` | `String` | Relayer endpoint URL. Must start with `https://`, or `http://localhost` for development. |
+| `timeoutMs` | `Int64` | Default request timeout in milliseconds (default: `OZConstants.defaultRelayerTimeoutMs`, 6 minutes to accommodate testnet submission retries). |
+| `urlSession` | `URLSession?` | Optional injected session for testing or custom transport configuration. When `nil`, the client owns a freshly created session and invalidates it on `close()`. |
+
+**Throws**: `ConfigurationException.invalidConfig` if `relayerUrl` is blank, not HTTPS/localhost, or has no host.
+
+`OZRelayerClient` is `public` (not `open`); like `OZIndexerClient`, consumer code injects a custom transport rather than subclassing, and the SDK's in-module test doubles subclass it overriding `close()` (calling `super.close()` or `performCloseInternal()` to invalidate the owned `URLSession`). When the client owns the `URLSession`, it builds an ephemeral session whose redirect handler denies all 3xx redirects to protect signed `SorobanAuthorizationEntryXDR` / `TransactionEnvelopeXDR` payloads and pinned identification headers.
+
+Whether a relayer is in use is determined by `kit.relayerClient` being non-`nil`, which the kit sets from the configured `relayerUrl`. A directly constructed `OZRelayerClient` is always configured, since `init` rejects invalid URLs.
+
+### Methods
+
+#### send
 
 ```swift
 public func send(
@@ -2647,21 +2797,81 @@ public func send(
     authEntries: [SorobanAuthorizationEntryXDR],
     perRequestTimeoutMs: Int64? = nil
 ) async -> OZRelayerResponse
+```
 
+Submits a host function with signed authorization entries for fee sponsoring. The relayer assembles the transaction and wraps it in a fee bump using its own channel account. Used when every signed auth entry uses `Address` credentials. XDR encoding to base64 is handled internally.
+
+This method does not throw. All error conditions — network errors, timeouts, XDR encoding failures, non-2xx responses — are returned in the `OZRelayerResponse`. Always inspect `response.success`.
+
+**Parameters**:
+- `hostFunction`: Host function XDR to execute
+- `authEntries`: Signed authorization entries
+- `perRequestTimeoutMs`: Optional per-request timeout override in milliseconds
+
+**Returns**: `OZRelayerResponse`
+
+---
+
+#### sendXdr
+
+```swift
 public func sendXdr(
     transactionEnvelope: TransactionEnvelopeXDR,
     perRequestTimeoutMs: Int64? = nil
 ) async -> OZRelayerResponse
-
-public func close()
-public final func performCloseInternal()
 ```
 
-- `send(hostFunction:authEntries:perRequestTimeoutMs:)` — submits a transaction by sending the host function and authorization entries; the relayer constructs the transaction and fee-bumps it. Used when every signed auth entry uses `Address` credentials.
-- `sendXdr(transactionEnvelope:perRequestTimeoutMs:)` — submits a pre-signed transaction envelope. Used when source-account authentication is required (for example smart-account contract deployments). The relayer fee-bumps the signed envelope, preserving the inner signatures.
-- `perRequestTimeoutMs` — overrides the constructor timeout for a single request.
+Submits a pre-signed transaction envelope for fee-bumping. Used when the transaction requires source-account authentication (for example smart-account contract deployments); the relayer fee-bumps the signed envelope, preserving the inner signatures. XDR encoding to base64 is handled internally.
 
-#### Public DTOs
+This method does not throw. All error conditions are returned in the `OZRelayerResponse`. Always inspect `response.success`.
+
+**Parameters**:
+- `transactionEnvelope`: Signed transaction envelope XDR
+- `perRequestTimeoutMs`: Optional per-request timeout override in milliseconds
+
+**Returns**: `OZRelayerResponse`
+
+---
+
+#### close
+
+```swift
+public func close()
+```
+
+Invalidates the owned `URLSession` (when not injected) and marks the client closed. The client must not be used afterwards. When using via `kit.relayerClient`, the kit's `close()` handles this automatically. Subclasses overriding `close()` must call `super.close()` or `performCloseInternal()`.
+
+---
+
+### Response and Error Types
+
+#### OZRelayerResponse
+
+```swift
+public struct OZRelayerResponse {
+    public let success: Bool
+    public let transactionId: String?
+    public let hash: String?
+    public let status: String?
+    public let error: String?
+    public let errorCode: String?
+    public let details: [String: OZJSONValue]?
+}
+```
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `success` | `Bool` | Whether the relayer accepted and successfully submitted the transaction. |
+| `transactionId` | `String?` | Relayer-assigned identifier when submission succeeded. |
+| `hash` | `String?` | Stellar transaction hash returned by the relayer when available. |
+| `status` | `String?` | Transaction status string (e.g. `"PENDING"`, `"SUCCESS"`, `"ERROR"`). |
+| `error` | `String?` | Human-readable error message when the request failed. |
+| `errorCode` | `String?` | Machine-readable error code; one of the `OZRelayerErrorCodes` constants when populated. |
+| `details` | `[String: OZJSONValue]?` | Additional details forwarded from the relayer body's `data` field; non-object payloads are wrapped under the key `"value"`. `nil` when omitted. |
+
+`Decodable`, `Equatable`, `Hashable`, and `Sendable`. Decodes both the wrapped (`{"success": ..., "data": {...}}`) and flat envelopes returned by the relayer.
+
+#### OZRelayerErrorCodes
 
 ```swift
 public enum OZRelayerErrorCodes {
@@ -2675,11 +2885,9 @@ public enum OZRelayerErrorCodes {
     public static let UNAUTHORIZED: String = "UNAUTHORIZED"
     public static let TIMEOUT: String = "TIMEOUT"
 }
-
-public struct OZRelayerResponse
 ```
 
-`OZRelayerErrorCodes` is a namespace exposing the relayer service's error-code identifiers. The string value of each constant equals the constant name so it can be compared directly against the `errorCode` field of an `OZRelayerResponse`. `OZRelayerResponse` carries `success`, optional transaction `hash`, optional `error` description, and optional `errorCode` mapped from the relayer's response payload.
+A namespace of the relayer service's error-code identifiers. The string value of each constant equals its name, so it can be compared directly against the `errorCode` field of an `OZRelayerResponse`.
 
 ---
 
@@ -2897,6 +3105,36 @@ For amounts whose stroops value exceeds the `Int64` ceiling, encode the spending
 
 ---
 
+## Utilities
+
+### SmartAccountUtils
+
+```swift
+public enum SmartAccountUtils {
+    public static func normalizeSignature(_ derSignature: Data) throws -> Data
+    public static func extractPublicKeyFromRegistration(
+        publicKey: Data? = nil,
+        authenticatorData: Data? = nil,
+        attestationObject: Data? = nil
+    ) throws -> Data
+    public static func getContractSalt(credentialId: Data) -> Data
+    public static func deriveContractAddress(
+        credentialId: Data,
+        deployerPublicKey: String,
+        networkPassphrase: String
+    ) throws -> String
+}
+```
+
+Cryptographic helpers shared by the kit and available for advanced integrations:
+
+- `normalizeSignature(_:)` — converts a DER-encoded ECDSA signature to the compact 64-byte form with low-S normalization required by the on-chain verifier.
+- `extractPublicKeyFromRegistration(publicKey:authenticatorData:attestationObject:)` — extracts the canonical uncompressed 65-byte secp256r1 public key from a WebAuthn registration response. Tries the supplied `publicKey` (SPKI), then `authenticatorData` (CBOR-encoded attested credential data), then `attestationObject` (full CBOR attestation).
+- `getContractSalt(credentialId:)` — returns the SHA-256 of the credential identifier, matching the salt the smart-account deployment uses.
+- `deriveContractAddress(credentialId:deployerPublicKey:networkPassphrase:)` — derives the deterministic smart-account contract address from the credential id, the deployer's `G…` account, and the network passphrase. Used by the wallet-creation flow to compute the contract address without an RPC round trip.
+
+---
+
 ## Signer Types
 
 ### OZSmartAccountSigner (protocol)
@@ -2957,17 +3195,6 @@ A signer that delegates signature verification to a custom verifier contract. `v
 `toScVal()` returns `SCValXDR.vec([Symbol("External"), Address(verifierAddress), Bytes(keyData)])`.
 
 Equality and hashing use constant-time comparison on `keyData` to avoid leaking information about the byte content through timing side channels.
-
-### SubmissionMethod
-
-```swift
-public enum SubmissionMethod: Sendable {
-    case relayer
-    case rpc
-}
-```
-
-Overrides the default automatic submission-method selection for a single call. `relayer` fails if no relayer is configured on the kit; `rpc` is always available.
 
 ---
 
@@ -3061,3 +3288,32 @@ Cross-cutting behavioral notes that affect multiple classes or are easy to miss.
 - **`autoFund: true` is testnet-only**: `fundWallet` calls the hardcoded Friendbot URL at `https://friendbot.stellar.org`. On mainnet, fund the deployer externally and omit `autoFund`.
 - **`webauthnProvider` requirement scope**: a `webauthnProvider` is required for `createWallet`, `connectWallet` with `prompt: true`, `authenticatePasskey`, and any passkey-signing flow. A `connectWallet()` call that finds a live unexpired session does NOT need `webauthnProvider`.
 - **C-address base32 alphabet**: C-strkeys use the RFC 4648 base32 alphabet (`A-Z` + `2-7`). The digits `0`, `1`, `8`, and `9` are not legal. Hand-constructed or modified C-address strings that include those digits are silently rejected by `isValidContractId()` and by `OZSmartAccountConfig.init`, surfacing as `ConfigurationException.InvalidConfig`.
+
+---
+
+## Error Handling Example
+
+Catch the specific arms you care about first, then fall back to the base type. Arm subclasses are nested (`WebAuthnException.Cancelled`, `TransactionException.SimulationFailed`); the base `SmartAccountException` catches everything else.
+
+```swift
+do {
+    let result = try await kit.transactionOperations.transfer(
+        tokenContract: tokenContract,
+        recipient: recipient,
+        amount: "10"
+    )
+    print("hash: \(result.hash ?? "n/a")")
+} catch let error as WebAuthnException.Cancelled {
+    // User dismissed the passkey prompt.
+    print("Cancelled by user")
+} catch let error as WebAuthnException.NotSupported {
+    // No WebAuthn provider configured, or the platform cannot run the ceremony.
+    print("WebAuthn unavailable: \(error.message)")
+} catch let error as TransactionException.SimulationFailed {
+    // Simulation rejected the call (e.g. an on-chain contract error code in the message).
+    print("Simulation failed: \(error.message)")
+} catch let error as SmartAccountException {
+    // Any other kit error, mapped to a stable numeric code.
+    print("Smart account error \(error.code.code): \(error.message)")
+}
+```
