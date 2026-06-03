@@ -343,7 +343,7 @@ do {
 |-------|------|---------|-------------|
 | `deployerKeypair` | `KeyPair?` | `nil` (uses default) | Keypair used for contract deployment. If `nil`, derived from `SHA-256("openzeppelin-smart-account-kit")`. See [How wallet deployment works](#how-wallet-deployment-works). |
 | `sessionExpiryMs` | `Int64` | `604_800_000` (7 days) | Session duration in milliseconds. Sessions enable reconnection without re-authentication. |
-| `signatureExpirationLedgers` | `Int` | `720` (~1 hour) | Auth entry expiration in ledgers (~5 seconds per ledger). Prevents replay attacks. Range `[1, 535_680]` (~31 days). |
+| `signatureExpirationLedgers` | `Int` | `720` (~1 hour) | Auth entry expiration in ledgers (~5 seconds per ledger). Prevents replay attacks. Must be `>= 1`. |
 | `timeoutInSeconds` | `Int` | `30` | Sets each transaction's TimeBounds (`max_time = now + timeoutInSeconds`; `0` = no expiry), bounding how long a signed transaction stays valid for submission. Must be `>= 0`. |
 | `relayerUrl` | `String?` | `nil` | Relayer endpoint for fee-sponsored transactions. When set, users do not pay gas fees. |
 | `indexerUrl` | `String?` | `nil` | Indexer endpoint for credential-to-contract discovery. When `nil`, falls back to the built-in per-network default (testnet/mainnet). |
@@ -503,7 +503,7 @@ The OpenZeppelin smart account contract enforces these limits:
 |-------|-------|----------|
 | Maximum signers per context rule | 15 | `OZConstants.maxSigners` |
 | Maximum policies per context rule | 5 | `OZConstants.maxPolicies` |
-| Default signature expiration window | ~1 hour (720 ledgers) | Configurable via `signatureExpirationLedgers`; range `[1, 535_680]` |
+| Default signature expiration window | ~1 hour (720 ledgers) | Configurable via `signatureExpirationLedgers`; must be `>= 1`. No client-side upper bound — the host enforces the network `maxEntryTTL`. |
 
 Signer and policy limits are validated client-side before submission inside `OZContextRuleManager.addContextRule`.
 

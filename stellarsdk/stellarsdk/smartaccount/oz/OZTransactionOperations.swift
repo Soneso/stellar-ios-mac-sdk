@@ -414,9 +414,9 @@ public final class OZTransactionOperations: @unchecked Sendable {
         let latestLedger = try await fetchLatestLedger()
         // why: compute expiration ledger in 64-bit arithmetic and clamp via
         // `UInt32(exactly:)` so a near-`UInt32.max` ledger sequence cannot
-        // wrap silently. Config validation guarantees the addend is in
-        // `[1, 535_680]`, so overflow would only manifest with an absurd
-        // ledger sequence — but we still refuse to ship a wrapped value.
+        // wrap silently. Config validation guarantees the addend is >= 1;
+        // overflow is unlikely in practice but we still refuse to ship a
+        // wrapped value.
         let expirationU64 = UInt64(latestLedger.sequence)
             + UInt64(kit.config.signatureExpirationLedgers)
         guard let expiration = UInt32(exactly: expirationU64) else {

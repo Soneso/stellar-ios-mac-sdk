@@ -86,7 +86,9 @@ public struct OZSmartAccountConfig: @unchecked Sendable {
     /// Signature expiration in ledgers for auth entries.
     ///
     /// Auth entries expire after this many ledgers to prevent replay attacks. Default
-    /// approximates one hour at five seconds per ledger.
+    /// approximates one hour at five seconds per ledger. Must be `>= 1`. There is no
+    /// client-side upper bound; the network's `maxEntryTTL` (CAP-0046-11) governs the
+    /// maximum and is enforced by the host at submission.
     public let signatureExpirationLedgers: Int
 
     /// Transaction validity window in seconds.
@@ -185,13 +187,15 @@ public struct OZSmartAccountConfig: @unchecked Sendable {
             )
         }
 
-        // why: cap `signatureExpirationLedgers` at 535_680 (the protocol-level
-        // ~one-month limit at 5 seconds per ledger) and reject zero / negative
-        // values so the signing pass cannot produce an immediately-expired or
-        // beyond-protocol-limit expiration ledger.
-        if signatureExpirationLedgers < 1 || signatureExpirationLedgers > 535_680 {
+        // why: reject zero and negative values — an expiration ledger of zero or
+        // below would produce an immediately-expired auth entry. No upper bound is
+        // enforced client-side: the true maximum is currentLedger + maxEntryTTL - 1,
+        // where maxEntryTTL is a network-configurable setting (CAP-0046-11). The host
+        // validates this at submission and reports an out-of-range ledger; a hardcoded
+        // client cap cannot track the network's value and would reject valid inputs.
+        if signatureExpirationLedgers < 1 {
             throw ConfigurationException.invalidConfig(
-                details: "signatureExpirationLedgers must be in [1, 535680] (one ledger to ~one month at 5s ledgers), got: \(signatureExpirationLedgers)"
+                details: "signatureExpirationLedgers must be >= 1, got: \(signatureExpirationLedgers)"
             )
         }
 

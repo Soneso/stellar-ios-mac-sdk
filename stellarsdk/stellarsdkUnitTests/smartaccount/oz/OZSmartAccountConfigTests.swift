@@ -544,19 +544,18 @@ final class OZSmartAccountConfigTests: XCTestCase {
         }
     }
 
-    /// `signatureExpirationLedgers` above the maximum (535_680) must throw.
-    func test_signatureExpirationLedgers_tooLargeThrows() {
-        XCTAssertThrowsError(
-            try OZSmartAccountConfig(
-                rpcUrl: validRpcUrl,
-                networkPassphrase: validPassphrase,
-                accountWasmHash: validWasmHash,
-                webauthnVerifierAddress: validVerifier,
-                signatureExpirationLedgers: 535_681
-            )
-        ) { error in
-            XCTAssertTrue(error is ConfigurationException.InvalidConfig)
-        }
+    /// Values above the former 535_680 cap must be accepted now that the client-side
+    /// upper bound has been removed. The network's `maxEntryTTL` (CAP-0046-11)
+    /// governs the real maximum and is enforced by the host at submission.
+    func test_signatureExpirationLedgers_largeValueAccepted() throws {
+        let config = try OZSmartAccountConfig(
+            rpcUrl: validRpcUrl,
+            networkPassphrase: validPassphrase,
+            accountWasmHash: validWasmHash,
+            webauthnVerifierAddress: validVerifier,
+            signatureExpirationLedgers: 1_000_000
+        )
+        XCTAssertEqual(1_000_000, config.signatureExpirationLedgers)
     }
 
     /// `timeoutInSeconds` of zero must be accepted (0 means no expiry / infinite

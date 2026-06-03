@@ -123,7 +123,7 @@ Public types live under two source areas: a protocol-agnostic `core` layer (sign
 |-------|------|---------|-------|
 | `deployerKeypair` | `KeyPair?` | `nil` | `nil` means use the default deterministic deployer |
 | `sessionExpiryMs` | `Int64` | `604_800_000` (7 days) | Session duration for silent reconnect |
-| `signatureExpirationLedgers` | `Int` | `StellarProtocolConstants.ledgersPerHour` (~1 h) | Auth-entry expiration in ledgers. Replay-protection window — consider shortening for high-value transfers. Must be in `[1, 535_680]` |
+| `signatureExpirationLedgers` | `Int` | `StellarProtocolConstants.ledgersPerHour` (~1 h) | Auth-entry expiration in ledgers. Replay-protection window — consider shortening for high-value transfers. Must be `>= 1`. No client-side upper bound; the host enforces the network `maxEntryTTL` (CAP-0046-11) at submission. |
 | `timeoutInSeconds` | `Int` | `30` | Transaction TimeBounds window in seconds (`max_time = now + N`; `0` = no expiry). Must be `>= 0` |
 | `relayerUrl` | `String?` | `nil` | Enables a fee-bump relayer |
 | `indexerUrl` | `String?` | `nil` | Enables credential-to-contract discovery |
