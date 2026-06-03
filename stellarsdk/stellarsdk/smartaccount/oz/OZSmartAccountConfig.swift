@@ -31,7 +31,6 @@ import Foundation
 ///     accountWasmHash: "abc123...",
 ///     webauthnVerifierAddress: "CBCD1234..."
 /// )
-///     .rpName("My Custom Wallet")
 ///     .sessionExpiryMs(86_400_000)
 ///     .relayerUrl("https://relayer.example.com")
 ///     .storage(myPersistentStorage)
@@ -78,15 +77,6 @@ public struct OZSmartAccountConfig: @unchecked Sendable {
     /// custom deployer for attribution and traceability. The deployer only pays for
     /// deployment transactions; it does not control user wallets.
     public let deployerKeypair: KeyPair?
-
-    /// The WebAuthn Relying Party ID (`rpId`).
-    ///
-    /// Should match the domain where WebAuthn credentials are created. When `nil`, the
-    /// browser uses the current domain.
-    public let rpId: String?
-
-    /// The WebAuthn Relying Party name displayed to users during authentication.
-    public let rpName: String
 
     /// Session expiry time in milliseconds.
     ///
@@ -164,8 +154,6 @@ public struct OZSmartAccountConfig: @unchecked Sendable {
         accountWasmHash: String,
         webauthnVerifierAddress: String,
         deployerKeypair: KeyPair? = nil,
-        rpId: String? = nil,
-        rpName: String = "Smart Account",
         sessionExpiryMs: Int64 = OZConstants.defaultSessionExpiryMs,
         signatureExpirationLedgers: Int = StellarProtocolConstants.ledgersPerHour,
         timeoutInSeconds: Int = OZConstants.defaultTimeoutSeconds,
@@ -222,8 +210,6 @@ public struct OZSmartAccountConfig: @unchecked Sendable {
         self.accountWasmHash = accountWasmHash
         self.webauthnVerifierAddress = webauthnVerifierAddress
         self.deployerKeypair = deployerKeypair
-        self.rpId = rpId
-        self.rpName = rpName
         self.sessionExpiryMs = sessionExpiryMs
         self.signatureExpirationLedgers = signatureExpirationLedgers
         self.timeoutInSeconds = timeoutInSeconds
@@ -350,7 +336,6 @@ public struct OZSmartAccountConfig: @unchecked Sendable {
     ///     accountWasmHash: "abc123...",
     ///     webauthnVerifierAddress: "CBCD1234..."
     /// )
-    ///     .rpName("My Wallet")
     ///     .sessionExpiryMs(86_400_000)
     ///     .relayerUrl("https://relayer.example.com")
     ///     .storage(myPersistentStorage)
@@ -365,8 +350,6 @@ public struct OZSmartAccountConfig: @unchecked Sendable {
         private let webauthnVerifierAddress: String
 
         private var _deployerKeypair: KeyPair? = nil
-        private var _rpId: String? = nil
-        private var _rpName: String = "Smart Account"
         private var _sessionExpiryMs: Int64 = OZConstants.defaultSessionExpiryMs
         private var _signatureExpirationLedgers: Int = StellarProtocolConstants.ledgersPerHour
         private var _timeoutInSeconds: Int = OZConstants.defaultTimeoutSeconds
@@ -404,26 +387,6 @@ public struct OZSmartAccountConfig: @unchecked Sendable {
         @discardableResult
         public func deployerKeypair(_ value: KeyPair?) -> Builder {
             _deployerKeypair = value
-            return self
-        }
-
-        /// Sets the WebAuthn Relying Party ID.
-        ///
-        /// - Parameter value: The `rpId` (`nil` to use the browser default).
-        /// - Returns: `self` for chaining.
-        @discardableResult
-        public func rpId(_ value: String?) -> Builder {
-            _rpId = value
-            return self
-        }
-
-        /// Sets the WebAuthn Relying Party name.
-        ///
-        /// - Parameter value: The `rpName`.
-        /// - Returns: `self` for chaining.
-        @discardableResult
-        public func rpName(_ value: String) -> Builder {
-            _rpName = value
             return self
         }
 
@@ -544,8 +507,6 @@ public struct OZSmartAccountConfig: @unchecked Sendable {
                 accountWasmHash: accountWasmHash,
                 webauthnVerifierAddress: webauthnVerifierAddress,
                 deployerKeypair: _deployerKeypair,
-                rpId: _rpId,
-                rpName: _rpName,
                 sessionExpiryMs: _sessionExpiryMs,
                 signatureExpirationLedgers: _signatureExpirationLedgers,
                 timeoutInSeconds: _timeoutInSeconds,
@@ -577,8 +538,6 @@ extension OZSmartAccountConfig: Equatable {
               lhs.networkPassphrase == rhs.networkPassphrase,
               lhs.accountWasmHash == rhs.accountWasmHash,
               lhs.webauthnVerifierAddress == rhs.webauthnVerifierAddress,
-              lhs.rpId == rhs.rpId,
-              lhs.rpName == rhs.rpName,
               lhs.sessionExpiryMs == rhs.sessionExpiryMs,
               lhs.signatureExpirationLedgers == rhs.signatureExpirationLedgers,
               lhs.timeoutInSeconds == rhs.timeoutInSeconds,
@@ -611,8 +570,6 @@ extension OZSmartAccountConfig: Equatable {
         hasher.combine(networkPassphrase)
         hasher.combine(accountWasmHash)
         hasher.combine(webauthnVerifierAddress)
-        hasher.combine(rpId)
-        hasher.combine(rpName)
         hasher.combine(sessionExpiryMs)
         hasher.combine(signatureExpirationLedgers)
         hasher.combine(timeoutInSeconds)

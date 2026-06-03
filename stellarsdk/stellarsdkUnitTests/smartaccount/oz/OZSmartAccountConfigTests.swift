@@ -37,8 +37,6 @@ final class OZSmartAccountConfigTests: XCTestCase {
         let config = try makeValidConfig()
 
         XCTAssertNil(config.deployerKeypair)
-        XCTAssertNil(config.rpId)
-        XCTAssertEqual("Smart Account", config.rpName)
         XCTAssertEqual(OZConstants.defaultSessionExpiryMs, config.sessionExpiryMs)
         XCTAssertEqual(StellarProtocolConstants.ledgersPerHour, config.signatureExpirationLedgers)
         XCTAssertEqual(OZConstants.defaultTimeoutSeconds, config.timeoutInSeconds)
@@ -192,8 +190,6 @@ final class OZSmartAccountConfigTests: XCTestCase {
             accountWasmHash: validWasmHash,
             webauthnVerifierAddress: validVerifier
         )
-            .rpName("My Custom Wallet")
-            .rpId("example.com")
             .sessionExpiryMs(86_400_000)
             .signatureExpirationLedgers(1440)
             .timeoutInSeconds(60)
@@ -201,8 +197,6 @@ final class OZSmartAccountConfigTests: XCTestCase {
             .indexerUrl("https://indexer.example.com")
             .build()
 
-        XCTAssertEqual("My Custom Wallet", config.rpName)
-        XCTAssertEqual("example.com", config.rpId)
         XCTAssertEqual(86_400_000, config.sessionExpiryMs)
         XCTAssertEqual(1440, config.signatureExpirationLedgers)
         XCTAssertEqual(60, config.timeoutInSeconds)
@@ -218,8 +212,6 @@ final class OZSmartAccountConfigTests: XCTestCase {
             webauthnVerifierAddress: validVerifier
         ).build()
 
-        XCTAssertEqual("Smart Account", config.rpName)
-        XCTAssertNil(config.rpId)
         XCTAssertEqual(OZConstants.defaultSessionExpiryMs, config.sessionExpiryMs)
         XCTAssertEqual(StellarProtocolConstants.ledgersPerHour, config.signatureExpirationLedgers)
         XCTAssertEqual(OZConstants.defaultTimeoutSeconds, config.timeoutInSeconds)
@@ -234,7 +226,6 @@ final class OZSmartAccountConfigTests: XCTestCase {
             networkPassphrase: validPassphrase,
             accountWasmHash: validWasmHash,
             webauthnVerifierAddress: validVerifier,
-            rpName: "Test",
             sessionExpiryMs: 100_000,
             relayerUrl: "https://relayer.test"
         )
@@ -245,7 +236,6 @@ final class OZSmartAccountConfigTests: XCTestCase {
             accountWasmHash: validWasmHash,
             webauthnVerifierAddress: validVerifier
         )
-            .rpName("Test")
             .sessionExpiryMs(100_000)
             .relayerUrl("https://relayer.test")
             .build()
@@ -260,13 +250,11 @@ final class OZSmartAccountConfigTests: XCTestCase {
             accountWasmHash: validWasmHash,
             webauthnVerifierAddress: validVerifier
         )
-            .rpId(nil)
             .relayerUrl(nil)
             .indexerUrl(nil)
             .deployerKeypair(nil)
             .build()
 
-        XCTAssertNil(config.rpId)
         XCTAssertNil(config.relayerUrl)
         XCTAssertNil(config.indexerUrl)
         XCTAssertNil(config.deployerKeypair)
@@ -281,8 +269,6 @@ final class OZSmartAccountConfigTests: XCTestCase {
         )
 
         let result = builder
-            .rpName("A")
-            .rpId("b.com")
             .sessionExpiryMs(1000)
             .signatureExpirationLedgers(100)
             .timeoutInSeconds(10)
@@ -291,8 +277,8 @@ final class OZSmartAccountConfigTests: XCTestCase {
             .deployerKeypair(nil)
 
         let config = try result.build()
-        XCTAssertEqual("A", config.rpName)
-        XCTAssertEqual("b.com", config.rpId)
+        XCTAssertEqual(1000, config.sessionExpiryMs)
+        XCTAssertEqual(100, config.signatureExpirationLedgers)
     }
 
     // MARK: - Config Data Class Properties
@@ -332,9 +318,7 @@ final class OZSmartAccountConfigTests: XCTestCase {
             accountWasmHash: original.accountWasmHash,
             webauthnVerifierAddress: original.webauthnVerifierAddress,
             deployerKeypair: original.deployerKeypair,
-            rpId: original.rpId,
-            rpName: "Modified Wallet",
-            sessionExpiryMs: original.sessionExpiryMs,
+            sessionExpiryMs: 86_400_000,
             signatureExpirationLedgers: original.signatureExpirationLedgers,
             timeoutInSeconds: original.timeoutInSeconds,
             relayerUrl: original.relayerUrl,
@@ -345,7 +329,7 @@ final class OZSmartAccountConfigTests: XCTestCase {
             maxContextRuleScanId: original.maxContextRuleScanId
         )
 
-        XCTAssertEqual("Modified Wallet", modified.rpName)
+        XCTAssertEqual(86_400_000, modified.sessionExpiryMs)
         XCTAssertEqual(original.rpcUrl, modified.rpcUrl)
         XCTAssertEqual(original.networkPassphrase, modified.networkPassphrase)
     }
@@ -499,8 +483,6 @@ final class OZSmartAccountConfigTests: XCTestCase {
             accountWasmHash: validWasmHash,
             webauthnVerifierAddress: validVerifier
         )
-        .rpId("wallet.example.com")
-        .rpName("Test Wallet")
         .sessionExpiryMs(86_400_000)
         .signatureExpirationLedgers(720)
         .timeoutInSeconds(60)
@@ -513,8 +495,6 @@ final class OZSmartAccountConfigTests: XCTestCase {
         .maxContextRuleScanId(customMaxScanId)
         .build()
 
-        XCTAssertEqual("wallet.example.com", config.rpId)
-        XCTAssertEqual("Test Wallet", config.rpName)
         XCTAssertEqual(86_400_000, config.sessionExpiryMs)
         XCTAssertEqual(720, config.signatureExpirationLedgers)
         XCTAssertEqual(60, config.timeoutInSeconds)
