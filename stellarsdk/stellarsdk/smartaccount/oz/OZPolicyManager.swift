@@ -405,11 +405,11 @@ public struct SignerWeightEntry: Sendable {
 ///     threshold: 2
 /// )
 /// ```
-public final class OZPolicyManager: @unchecked Sendable {
+public final class OZPolicyManager: OZManagerHelpers, @unchecked Sendable {
 
     // MARK: - Stored properties
 
-    private let kit: OZSmartAccountKitProtocol
+    let kit: OZSmartAccountKitProtocol
 
     /// Context-rule parser consulted by
     /// ``removePolicyByAddress(contextRuleId:policyAddress:selectedSigners:forceMethod:)``
@@ -731,26 +731,6 @@ public final class OZPolicyManager: @unchecked Sendable {
     }
 
     // MARK: - Private routing & helpers
-
-    // Single-signer path when selectedSigners is empty; multi-signer path otherwise.
-    private func routeSubmission(
-        hostFunction: HostFunctionXDR,
-        selectedSigners: [SelectedSigner],
-        forceMethod: SubmissionMethod?
-    ) async throws -> TransactionResult {
-        if selectedSigners.isEmpty {
-            return try await kit.transactionOperations.submit(
-                hostFunction: hostFunction,
-                auth: [],
-                forceMethod: forceMethod
-            )
-        }
-        return try await kit.multiSignerManager.submitWithMultipleSigners(
-            hostFunction: hostFunction,
-            selectedSigners: selectedSigners,
-            forceMethod: forceMethod
-        )
-    }
 
     /// Resolves a policy contract address to its on-chain numeric id by
     /// fetching the supplied context rule and locating the policy's index in

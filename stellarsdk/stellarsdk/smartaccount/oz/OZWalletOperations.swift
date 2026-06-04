@@ -301,7 +301,7 @@ public struct ConnectWalletOptions: Sendable, Equatable, Hashable {
 ///
 /// Instances are constructed by ``OZSmartAccountKit`` and accessed through
 /// `kit.walletOperations`.
-public final class OZWalletOperations: OZRpcHelpers, @unchecked Sendable {
+public final class OZWalletOperations: OZManagerHelpers, @unchecked Sendable {
 
     // MARK: - Stored properties
 

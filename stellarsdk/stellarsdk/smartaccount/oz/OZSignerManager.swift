@@ -78,11 +78,11 @@ public struct AddPasskeySignerResult: Sendable, Hashable {
 ///     address: "GA7QYNF7SOWQ..."
 /// )
 /// ```
-public final class OZSignerManager: @unchecked Sendable {
+public final class OZSignerManager: OZManagerHelpers, @unchecked Sendable {
 
     // MARK: - Stored properties
 
-    private let kit: OZSmartAccountKitProtocol
+    let kit: OZSmartAccountKitProtocol
 
     /// Context-rule parser consulted when ``removeSignerBySigner(contextRuleId:signer:selectedSigners:forceMethod:)``
     /// needs to resolve a signer value to its on-chain numeric identifier.
@@ -580,26 +580,6 @@ public final class OZSignerManager: @unchecked Sendable {
         )
 
         return try await routeSubmission(
-            hostFunction: hostFunction,
-            selectedSigners: selectedSigners,
-            forceMethod: forceMethod
-        )
-    }
-
-    // Single-signer path when selectedSigners is empty; multi-signer path otherwise.
-    private func routeSubmission(
-        hostFunction: HostFunctionXDR,
-        selectedSigners: [SelectedSigner],
-        forceMethod: SubmissionMethod?
-    ) async throws -> TransactionResult {
-        if selectedSigners.isEmpty {
-            return try await kit.transactionOperations.submit(
-                hostFunction: hostFunction,
-                auth: [],
-                forceMethod: forceMethod
-            )
-        }
-        return try await kit.multiSignerManager.submitWithMultipleSigners(
             hostFunction: hostFunction,
             selectedSigners: selectedSigners,
             forceMethod: forceMethod

@@ -69,11 +69,11 @@ private enum ContextRuleMethod {
 ///     policies: [policyAddress: installParamsScVal]
 /// )
 /// ```
-public final class OZContextRuleManager: OZContextRuleManagerProtocol, @unchecked Sendable {
+public final class OZContextRuleManager: OZContextRuleManagerProtocol, OZManagerHelpers, @unchecked Sendable {
 
     // MARK: - Stored properties
 
-    private let kit: OZSmartAccountKitProtocol
+    let kit: OZSmartAccountKitProtocol
 
     // MARK: - Initialization
 
@@ -727,23 +727,4 @@ public final class OZContextRuleManager: OZContextRuleManagerProtocol, @unchecke
         )
     }
 
-    // Single-signer path when selectedSigners is empty; multi-signer path otherwise.
-    private func routeSubmission(
-        hostFunction: HostFunctionXDR,
-        selectedSigners: [SelectedSigner],
-        forceMethod: SubmissionMethod?
-    ) async throws -> TransactionResult {
-        if selectedSigners.isEmpty {
-            return try await kit.transactionOperations.submit(
-                hostFunction: hostFunction,
-                auth: [],
-                forceMethod: forceMethod
-            )
-        }
-        return try await kit.multiSignerManager.submitWithMultipleSigners(
-            hostFunction: hostFunction,
-            selectedSigners: selectedSigners,
-            forceMethod: forceMethod
-        )
-    }
 }

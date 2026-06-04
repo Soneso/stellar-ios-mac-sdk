@@ -1,5 +1,5 @@
 //
-//  OZRpcHelpers.swift
+//  OZManagerHelpers.swift
 //  stellarsdk
 //
 //  Copyright (c) 2026 Soneso. All rights reserved.
@@ -7,17 +7,18 @@
 
 import Foundation
 
-/// Shared Soroban RPC and transaction helpers used by the OZ smart-account managers.
+/// Shared helpers used across the OZ smart-account managers and operations.
 ///
-/// Each manager holds a reference to the kit and routes RPC traffic (account fetch,
-/// ledger fetch, simulation) and transaction assembly through these helpers so the
-/// error-mapping and resource-fee envelopes line up across the single- and
-/// multi-signer flows.
-protocol OZRpcHelpers {
+/// Each conformer holds a reference to the kit and routes its RPC traffic
+/// (account / ledger fetch, simulation), transaction assembly, credential
+/// lookup, and submission routing through these helpers so error-mapping,
+/// resource-fee envelopes, and the relayer-vs-direct submission decision line
+/// up across the single- and multi-signer flows.
+protocol OZManagerHelpers {
     var kit: OZSmartAccountKitProtocol { get }
 }
 
-extension OZRpcHelpers {
+extension OZManagerHelpers {
 
     /// Maps a Soroban RPC transport error into a human-readable message.
     func rpcErrorMessage(_ error: SorobanRpcRequestError) -> String {
@@ -133,5 +134,27 @@ extension OZRpcHelpers {
         } catch {
             return nil
         }
+    }
+
+    /// Routes a host-function submission to the appropriate path: direct
+    /// transaction submission when there are no selected signers, otherwise the
+    /// multi-signer submission flow.
+    func routeSubmission(
+        hostFunction: HostFunctionXDR,
+        selectedSigners: [SelectedSigner],
+        forceMethod: SubmissionMethod?
+    ) async throws -> TransactionResult {
+        if selectedSigners.isEmpty {
+            return try await kit.transactionOperations.submit(
+                hostFunction: hostFunction,
+                auth: [],
+                forceMethod: forceMethod
+            )
+        }
+        return try await kit.multiSignerManager.submitWithMultipleSigners(
+            hostFunction: hostFunction,
+            selectedSigners: selectedSigners,
+            forceMethod: forceMethod
+        )
     }
 }

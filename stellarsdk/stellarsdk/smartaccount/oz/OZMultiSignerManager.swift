@@ -37,7 +37,7 @@ import Security
 /// )
 /// ```
 // non-final to allow internal test subclassing in the unit-test target.
-public class OZMultiSignerManager: OZRpcHelpers, @unchecked Sendable {
+public class OZMultiSignerManager: OZManagerHelpers, @unchecked Sendable {
 
     // MARK: - Stored properties
 

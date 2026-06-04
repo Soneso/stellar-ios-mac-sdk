@@ -122,7 +122,7 @@ public typealias ResolveContextRuleIds = @Sendable (
 ///
 /// Instances are constructed by ``OZSmartAccountKit`` and accessed through
 /// `kit.transactionOperations`.
-public final class OZTransactionOperations: OZRpcHelpers, @unchecked Sendable {
+public final class OZTransactionOperations: OZManagerHelpers, @unchecked Sendable {
 
     // MARK: - Stored properties
 
