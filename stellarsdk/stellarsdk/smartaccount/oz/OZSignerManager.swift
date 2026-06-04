@@ -46,26 +46,13 @@ public struct AddPasskeySignerResult: Sendable, Hashable {
     public static func == (lhs: AddPasskeySignerResult, rhs: AddPasskeySignerResult) -> Bool {
         if lhs.credentialId != rhs.credentialId { return false }
         if lhs.transactionResult != rhs.transactionResult { return false }
-        return AddPasskeySignerResult.constantTimeEquals(lhs.publicKey, rhs.publicKey)
+        return lhs.publicKey.constantTimeEquals(rhs.publicKey)
     }
 
     public func hash(into hasher: inout Hasher) {
         hasher.combine(credentialId)
         hasher.combine(publicKey)
         hasher.combine(transactionResult)
-    }
-
-    /// Constant-time byte comparison that avoids leaking key contents via
-    /// timing: the cost does not depend on where the first differing byte sits.
-    private static func constantTimeEquals(_ lhs: Data, _ rhs: Data) -> Bool {
-        var diff: UInt8 = (lhs.count == rhs.count) ? 0 : 1
-        let length = min(lhs.count, rhs.count)
-        let lhsStart = lhs.startIndex
-        let rhsStart = rhs.startIndex
-        for i in 0 ..< length {
-            diff |= lhs[lhsStart + i] ^ rhs[rhsStart + i]
-        }
-        return diff == 0
     }
 }
 

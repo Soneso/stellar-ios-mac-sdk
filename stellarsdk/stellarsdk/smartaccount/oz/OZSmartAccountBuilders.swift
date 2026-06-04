@@ -230,7 +230,7 @@ public enum OZSmartAccountBuilders {
         }
         if let lhs = a as? OZExternalSigner, let rhs = b as? OZExternalSigner {
             if lhs.verifierAddress != rhs.verifierAddress { return false }
-            return lhs.keyData == rhs.keyData
+            return lhs.keyData.constantTimeEquals(rhs.keyData)
         }
         return false
     }

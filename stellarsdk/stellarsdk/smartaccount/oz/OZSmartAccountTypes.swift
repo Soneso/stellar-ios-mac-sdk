@@ -190,9 +190,9 @@ public struct OZExternalSigner: OZSmartAccountSigner, Equatable, Hashable {
         "external:\(verifierAddress):\(keyData.base16EncodedString())"
     }
 
-    /// Uses constant-time byte comparison via this type's private `constantTimeEquals`
-    /// helper for `keyData` — see that helper for the timing-attack rationale. Both fields
-    /// are always evaluated regardless of the address result (bitwise AND, not short-circuit).
+    /// Uses constant-time byte comparison via `Data.constantTimeEquals` for `keyData` —
+    /// see that extension for the timing-attack rationale. Both fields are always evaluated
+    /// regardless of the address result (bitwise AND, not short-circuit).
     ///
     /// - Parameters:
     ///   - lhs: The first signer to compare.
@@ -200,7 +200,7 @@ public struct OZExternalSigner: OZSmartAccountSigner, Equatable, Hashable {
     /// - Returns: `true` when both `verifierAddress` and `keyData` match.
     public static func == (lhs: OZExternalSigner, rhs: OZExternalSigner) -> Bool {
         let addressMatch = lhs.verifierAddress == rhs.verifierAddress
-        let keyMatch = OZExternalSigner.constantTimeEquals(lhs.keyData, rhs.keyData)
+        let keyMatch = lhs.keyData.constantTimeEquals(rhs.keyData)
         return (addressMatch ? 1 : 0) & (keyMatch ? 1 : 0) == 1
     }
 
@@ -271,18 +271,6 @@ public struct OZExternalSigner: OZSmartAccountSigner, Equatable, Hashable {
             )
         }
         return try OZExternalSigner(verifierAddress: verifierAddress, keyData: publicKey)
-    }
-
-    /// Private constant-time comparison for `keyData` fields on this type.
-    private static func constantTimeEquals(_ lhs: Data, _ rhs: Data) -> Bool {
-        var diff: UInt8 = (lhs.count == rhs.count) ? 0 : 1
-        let length = min(lhs.count, rhs.count)
-        let lhsStart = lhs.startIndex
-        let rhsStart = rhs.startIndex
-        for i in 0..<length {
-            diff |= lhs[lhsStart + i] ^ rhs[rhsStart + i]
-        }
-        return diff == 0
     }
 }
 

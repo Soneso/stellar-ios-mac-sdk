@@ -7,35 +7,13 @@
 
 import Foundation
 
-// MARK: - Constant-time byte comparison (file-private; used by DTO equality below)
-
-/// Constant-time byte equality for two `Data` values.
-///
-/// Length comparison short-circuits (length is not a secret in the WebAuthn DTO threat model),
-/// then a fixed-time XOR-OR loop accumulates per-byte differences so the runtime does not
-/// reveal which byte index differs.
-///
-/// - Parameters:
-///   - a: First byte buffer.
-///   - b: Second byte buffer.
-/// - Returns: `true` when `a` and `b` are byte-identical; `false` otherwise.
-private func constantTimeEquals(_ a: Data, _ b: Data) -> Bool {
-    if a.count != b.count { return false }
-
-    var acc: UInt8 = 0
-    let aBase = a.startIndex
-    let bBase = b.startIndex
-    for i in 0..<a.count {
-        acc |= a[aBase + i] ^ b[bBase + i]
-    }
-    return acc == 0
-}
+// MARK: - Constant-time flag combination (file-private; used by DTO equality below)
 
 /// Combines per-field constant-time comparison results without short-circuiting at the
 /// boolean-AND layer.
 ///
-/// Built on bitwise `&` over `UInt8` so all four flags are evaluated unconditionally,
-/// matching the constant-time guarantee at the per-field byte comparison.
+/// Built on bitwise `&` over `UInt8` so all flags are evaluated unconditionally,
+/// matching the constant-time guarantee of the per-field `Data.constantTimeEquals` comparisons.
 private func combineConstantTime(_ flags: Bool...) -> Bool {
     var acc: UInt8 = 1
     for f in flags {
@@ -78,13 +56,13 @@ public struct WebAuthnAuthenticationResult: Equatable, Hashable, Sendable {
         self.signature = signature
     }
 
-    /// All four `Data` fields use constant-time byte comparison via `constantTimeEquals`;
-    /// see `Data.constantTimeEquals` for the timing-attack rationale.
+    /// All four `Data` fields use constant-time byte comparison via `Data.constantTimeEquals`;
+    /// see that extension for the timing-attack rationale.
     public static func == (lhs: WebAuthnAuthenticationResult, rhs: WebAuthnAuthenticationResult) -> Bool {
-        let a = constantTimeEquals(lhs.credentialId, rhs.credentialId)
-        let b = constantTimeEquals(lhs.authenticatorData, rhs.authenticatorData)
-        let c = constantTimeEquals(lhs.clientDataJSON, rhs.clientDataJSON)
-        let d = constantTimeEquals(lhs.signature, rhs.signature)
+        let a = lhs.credentialId.constantTimeEquals(rhs.credentialId)
+        let b = lhs.authenticatorData.constantTimeEquals(rhs.authenticatorData)
+        let c = lhs.clientDataJSON.constantTimeEquals(rhs.clientDataJSON)
+        let d = lhs.signature.constantTimeEquals(rhs.signature)
         return combineConstantTime(a, b, c, d)
     }
 
@@ -152,12 +130,12 @@ public struct WebAuthnRegistrationResult: Equatable, Hashable, Sendable {
     }
 
     /// The three `Data` fields (`credentialId`, `publicKey`, `attestationObject`) use
-    /// constant-time comparison via `constantTimeEquals`; optional scalar/list fields use
-    /// ordinary value equality. See `Data.constantTimeEquals` for the timing-attack rationale.
+    /// constant-time comparison via `Data.constantTimeEquals`; optional scalar/list fields use
+    /// ordinary value equality. See that extension for the timing-attack rationale.
     public static func == (lhs: WebAuthnRegistrationResult, rhs: WebAuthnRegistrationResult) -> Bool {
-        let a = constantTimeEquals(lhs.credentialId, rhs.credentialId)
-        let b = constantTimeEquals(lhs.publicKey, rhs.publicKey)
-        let c = constantTimeEquals(lhs.attestationObject, rhs.attestationObject)
+        let a = lhs.credentialId.constantTimeEquals(rhs.credentialId)
+        let b = lhs.publicKey.constantTimeEquals(rhs.publicKey)
+        let c = lhs.attestationObject.constantTimeEquals(rhs.attestationObject)
         let bytesEqual = combineConstantTime(a, b, c)
         return bytesEqual
             && lhs.transports == rhs.transports
