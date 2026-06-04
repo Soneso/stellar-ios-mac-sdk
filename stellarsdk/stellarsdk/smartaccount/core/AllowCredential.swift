@@ -15,7 +15,7 @@ import Foundation
 /// authentication flows such as QR-code scanning.
 ///
 /// When `transports` is `nil`, the authenticator uses its default transport selection.
-/// Unknown transport strings are passed through without validation — the browser or OS
+/// Unknown transport strings are passed through without validation — the OS
 /// ignores values it does not recognize.
 ///
 /// Equality compares the `id` byte content (not reference identity) so two descriptors built

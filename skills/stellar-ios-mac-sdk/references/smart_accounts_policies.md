@@ -1414,7 +1414,7 @@ do {
     default:   hint = "Contract error \(code!) — see Contract Error Codes below"
     }
     print("transfer rejected: \(hint)")
-    if code == ContractErrorCodes.unauthorizedSigner {   // 3016
+    if code == OZContractErrorCodes.unauthorizedSigner {   // 3016
         // re-resolve rule ids or adjust the selected-signer set
     }
 }
@@ -1428,7 +1428,7 @@ do {
 // CORRECT: extract the contract code from e.message via the "Error(Contract, #NNNN)" regex
 ```
 
-`ContractErrorCodes` exposes only the five codes the SDK interprets directly — `mathOverflow` (3012), `keyDataTooLarge` (3013), `contextRuleIdsLengthMismatch` (3014), `nameTooLong` (3015), `unauthorizedSigner` (3016). Every other code in the 3000 / 3200 / 3210 / 3220 ranges is parsed from the message and mapped via the tables below.
+`OZContractErrorCodes` exposes only the five codes the SDK interprets directly — `mathOverflow` (3012), `keyDataTooLarge` (3013), `contextRuleIdsLengthMismatch` (3014), `nameTooLong` (3015), `unauthorizedSigner` (3016). Every other code in the 3000 / 3200 / 3210 / 3220 ranges is parsed from the message and mapped via the tables below.
 
 ---
 

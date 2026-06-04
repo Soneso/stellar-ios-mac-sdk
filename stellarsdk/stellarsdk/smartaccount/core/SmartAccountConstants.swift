@@ -18,9 +18,7 @@ public enum SmartAccountConstants {
     /// Size in bytes of an Ed25519 public key as defined by RFC 8032.
     public static let ed25519PublicKeySize: Int = 32
 
-    /// Size in bytes of an Ed25519 secret seed (deterministic key material from
-    /// which the keypair is derived). Required by
-    /// ``OZExternalSignerManager/addEd25519FromRawKey(secretKeyBytes:verifierAddress:)``.
+    /// Size in bytes of an Ed25519 secret seed as defined by RFC 8032.
     public static let ed25519SecretSeedSize: Int = 32
 
     /// Size in bytes of a raw Ed25519 signature (the on-wire `BytesN<64>` payload

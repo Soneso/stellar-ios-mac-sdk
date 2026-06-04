@@ -1965,7 +1965,7 @@ Every error path in the kit funnels into a `SmartAccountException` subclass so c
 > | 3002 | `.credentialAlreadyExists` | `UnvalidatedContext` |
 > | 3003 | `.credentialInvalid` | `ExternalVerificationFailed` |
 >
-> The table above shows only the two codes the SDK enum reuses. On chain, the smart-account contract's `SmartAccountError` spans `3000` and `3002`-`3016`; the WebAuthn verifier's `WebAuthnError` occupies `3110`-`3119`; and the built-in policy contracts occupy `3200`-`3227`. When inspecting an error code, first check the exception type to determine which namespace it belongs to. SDK-defined contract codes that the SDK interprets directly are declared in [`ContractErrorCodes`](#contracterrorcodes); see the [OpenZeppelin contracts source](https://github.com/OpenZeppelin/stellar-contracts/blob/main/packages/accounts/src/smart_account/mod.rs) for the full on-chain `SmartAccountError` enum, along with the `WebAuthnError` and policy error enums.
+> The table above shows only the two codes the SDK enum reuses. On chain, the smart-account contract's `SmartAccountError` spans `3000` and `3002`-`3016`; the WebAuthn verifier's `WebAuthnError` occupies `3110`-`3119`; and the built-in policy contracts occupy `3200`-`3227`. When inspecting an error code, first check the exception type to determine which namespace it belongs to. SDK-defined contract codes that the SDK interprets directly are declared in [`OZContractErrorCodes`](#ozcontracterrorcodes); see the [OpenZeppelin contracts source](https://github.com/OpenZeppelin/stellar-contracts/blob/main/packages/accounts/src/smart_account/mod.rs) for the full on-chain `SmartAccountError` enum, along with the `WebAuthnError` and policy error enums.
 
 
 ```swift
@@ -2171,10 +2171,10 @@ public class IndexerException: SmartAccountException {
 }
 ```
 
-### ContractErrorCodes
+### OZContractErrorCodes
 
 ```swift
-public enum ContractErrorCodes { ... }
+public enum OZContractErrorCodes { ... }
 ```
 
 Namespace exposing the on-chain error codes the smart-account contract may surface during simulation or submission:

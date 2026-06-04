@@ -75,11 +75,11 @@ public struct StoredCredential: Sendable {
     /// The primary credential is used as the default for signing operations.
     public let isPrimary: Bool
 
-    /// Authenticator transport hints indicating how the browser can communicate with
+    /// Authenticator transport hints indicating how the platform can communicate with
     /// the authenticator (for example `"usb"`, `"nfc"`, `"ble"`, `"internal"`).
     ///
     /// Used when constructing `allowCredentials` for future authentication ceremonies,
-    /// which helps the browser select the correct authenticator more efficiently.
+    /// which helps the platform select the correct authenticator more efficiently.
     public let transports: [String]?
 
     /// Authenticator device type.

@@ -9,8 +9,8 @@ import Foundation
 
 /// Pure-Swift CBOR parsing utilities for WebAuthn attestation and authenticator data.
 ///
-/// Consolidates byte-level CBOR parsing logic used by every WebAuthn provider implementation
-/// (Apple, Android, browser). Has no platform dependencies.
+/// Consolidates byte-level CBOR parsing logic used by the WebAuthn provider implementation.
+/// Has no platform dependencies.
 ///
 /// Every method is resilient to malformed or truncated input — methods return `nil` instead of
 /// throwing when data cannot be parsed, allowing callers to implement graceful fallback

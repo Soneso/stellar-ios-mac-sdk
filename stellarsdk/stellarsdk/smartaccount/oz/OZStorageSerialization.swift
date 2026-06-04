@@ -78,7 +78,7 @@ internal struct SerializableSession: Codable, Equatable, Hashable {
 
 /// JSON-serializable index of credential IDs for enumeration.
 ///
-/// Persistent storage backends like Keychain or browser local storage do not
+/// Persistent storage backends like Keychain or UserDefaults do not
 /// uniformly support prefix-scan key enumeration. The credential IDs are mirrored
 /// into a single index entry that the storage adapter loads to discover what
 /// credentials exist.
