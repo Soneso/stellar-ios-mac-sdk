@@ -78,3 +78,29 @@ internal func isLocalhostUrl(_ url: String) -> Bool {
     }
     return true
 }
+
+// MARK: - Address conversion
+
+/// Internal helpers for translating Soroban `SCAddressXDR` values into canonical
+/// Stellar strkey strings.
+///
+/// The smart-account managers compare auth-entry addresses against user-supplied
+/// wallet account addresses (`G…`) and contract addresses (`C…`). This helper unifies
+/// both shapes into the canonical strkey form so downstream comparisons can use plain
+/// string equality.
+enum OZAddressStrKey {
+
+    /// Returns the canonical strkey representation of `scAddress`: an account address
+    /// (`G…`/`M…`) for account variants or a contract address (`C…`) for contract
+    /// variants. Returns `nil` for unsupported variants, or if contract-id encoding
+    /// fails (unreachable for a well-formed `.contract` payload).
+    static func fromXdr(_ scAddress: SCAddressXDR) -> String? {
+        if let accountId = scAddress.accountId {
+            return accountId
+        }
+        if case .contract(let wrapped) = scAddress {
+            return try? wrapped.wrapped.encodeContractId()
+        }
+        return nil
+    }
+}

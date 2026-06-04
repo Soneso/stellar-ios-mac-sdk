@@ -387,28 +387,13 @@ extension OZContextRuleManager {
                 reason: "Expected Address ScVal, got: \(scVal)"
             )
         }
-        if case .contract(let wrapped) = scAddress {
-            do {
-                return try wrapped.wrapped.encodeContractId()
-            } catch {
-                throw ValidationException.invalidInput(
-                    field: "address",
-                    reason: "Failed to encode contract address: \(error.localizedDescription)",
-                    cause: error
-                )
-            }
+        guard let address = OZAddressStrKey.fromXdr(scAddress) else {
+            throw ValidationException.invalidInput(
+                field: "address",
+                reason: "Unsupported SCAddressXDR variant: \(scAddress)"
+            )
         }
-        if let accountId = scAddress.accountId {
-            // Accept account addresses too — context type / target addresses
-            // are nominally contract-only in the contract ABI but the
-            // underlying arm is generic Address; honour both kinds here and
-            // let the caller assert constraints when needed.
-            return accountId
-        }
-        throw ValidationException.invalidInput(
-            field: "address",
-            reason: "Unsupported SCAddressXDR variant: \(scAddress)"
-        )
+        return address
     }
 
     /// Decodes an `SCValXDR.address` value as a strict contract (`C…`)
@@ -455,23 +440,12 @@ extension OZContextRuleManager {
                 reason: "Expected Address ScVal, got: \(scVal)"
             )
         }
-        if let accountId = scAddress.accountId {
-            return accountId
+        guard let address = OZAddressStrKey.fromXdr(scAddress) else {
+            throw ValidationException.invalidInput(
+                field: "address",
+                reason: "Unsupported SCAddressXDR variant: \(scAddress)"
+            )
         }
-        if case .contract(let wrapped) = scAddress {
-            do {
-                return try wrapped.wrapped.encodeContractId()
-            } catch {
-                throw ValidationException.invalidInput(
-                    field: "address",
-                    reason: "Failed to encode contract address: \(error.localizedDescription)",
-                    cause: error
-                )
-            }
-        }
-        throw ValidationException.invalidInput(
-            field: "address",
-            reason: "Unsupported SCAddressXDR variant: \(scAddress)"
-        )
+        return address
     }
 }

@@ -232,7 +232,7 @@ public enum OZSmartAccountAuthPayloadCodec {
         signer: any OZSmartAccountSigner,
         signatureBytes: Data
     ) {
-        if let index = payload.signers.firstIndex(where: { signersEqual($0.signer, signer) }) {
+        if let index = payload.signers.firstIndex(where: { OZSmartAccountBuilders.signersEqual($0.signer, signer) }) {
             payload.signers.remove(at: index)
         }
         payload.signers.append(
@@ -323,39 +323,14 @@ public enum OZSmartAccountAuthPayloadCodec {
     // Internal helpers
     // ========================================================================
 
-    /// Compares two signers by type and field values.
-    private static func signersEqual(
-        _ a: any OZSmartAccountSigner,
-        _ b: any OZSmartAccountSigner
-    ) -> Bool {
-        if let lhs = a as? OZDelegatedSigner, let rhs = b as? OZDelegatedSigner {
-            return lhs.address == rhs.address
-        }
-        if let lhs = a as? OZExternalSigner, let rhs = b as? OZExternalSigner {
-            if lhs.verifierAddress != rhs.verifierAddress { return false }
-            return lhs.keyData.constantTimeEquals(rhs.keyData)
-        }
-        return false
-    }
-
     /// Converts an `SCAddressXDR` back to its strkey representation. Supports `G…` accounts
     /// and `C…` contracts (decoded from the 32-byte contract id).
     private static func addressString(from scAddress: SCAddressXDR) throws -> String {
-        if let accountId = scAddress.accountId {
-            return accountId
+        guard let address = OZAddressStrKey.fromXdr(scAddress) else {
+            throw TransactionException.signingFailed(
+                reason: "Unsupported signer address type"
+            )
         }
-        if case .contract(let wrapped) = scAddress {
-            do {
-                return try wrapped.wrapped.encodeContractId()
-            } catch {
-                throw TransactionException.signingFailed(
-                    reason: "Failed to encode contract address: \(error.localizedDescription)",
-                    cause: error
-                )
-            }
-        }
-        throw TransactionException.signingFailed(
-            reason: "Unsupported signer address type"
-        )
+        return address
     }
 }

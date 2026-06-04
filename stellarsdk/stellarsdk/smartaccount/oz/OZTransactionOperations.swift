@@ -439,7 +439,7 @@ public final class OZTransactionOperations: @unchecked Sendable {
                 continue
             }
 
-            let entryAddress = addressString(from: addressCreds.address)
+            let entryAddress = OZAddressStrKey.fromXdr(addressCreds.address)
             if entryAddress != connected.contractId {
                 signedAuthEntries.append(entry)
                 continue
@@ -1281,18 +1281,6 @@ public final class OZTransactionOperations: @unchecked Sendable {
                 error: "Polling failed: \(rpcErrorMessage(error))"
             )
         }
-    }
-
-    /// Returns the strkey representation of an `SCAddressXDR`, or `nil` when the
-    /// address is not one of the smart-account-relevant arms (account / contract).
-    private func addressString(from scAddress: SCAddressXDR) -> String? {
-        if let accountId = scAddress.accountId {
-            return accountId
-        }
-        if case .contract(let wrapped) = scAddress {
-            return try? wrapped.wrapped.encodeContractId()
-        }
-        return nil
     }
 
     private func rpcErrorMessage(_ error: SorobanRpcRequestError) -> String {

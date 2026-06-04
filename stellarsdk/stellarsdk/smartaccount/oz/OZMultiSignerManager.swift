@@ -384,7 +384,7 @@ public class OZMultiSignerManager: @unchecked Sendable {
                 continue
             }
 
-            let entryAddressString = addressString(from: addressCreds.address)
+            let entryAddressString = OZAddressStrKey.fromXdr(addressCreds.address)
             if entryAddressString != connected.contractId {
                 // The auth entry references some address other than the
                 // connected smart-account contract. Either it matches one
@@ -1331,20 +1331,6 @@ public class OZMultiSignerManager: @unchecked Sendable {
                 cause: error
             )
         }
-    }
-
-    /// Decodes a Soroban `SCAddressXDR` value back into its canonical strkey
-    /// representation. Returns the `G…` strkey for account-typed addresses
-    /// and the `C…` strkey for contract-typed addresses; returns `nil` when
-    /// the address cannot be encoded into either form.
-    private func addressString(from scAddress: SCAddressXDR) -> String? {
-        if let accountId = scAddress.accountId {
-            return accountId
-        }
-        if case .contract(let wrapped) = scAddress {
-            return try? wrapped.wrapped.encodeContractId()
-        }
-        return nil
     }
 
     private func rpcErrorMessage(_ error: SorobanRpcRequestError) -> String {

@@ -582,16 +582,13 @@ public final class OZContextRuleManager: OZContextRuleManagerProtocol, @unchecke
     }
 
     private func addressString(from scAddress: SCAddressXDR) throws -> String {
-        if let accountId = scAddress.accountId {
-            return accountId
+        guard let address = OZAddressStrKey.fromXdr(scAddress) else {
+            throw ValidationException.invalidInput(
+                field: "address",
+                reason: "Unsupported SCAddressXDR variant: \(scAddress)"
+            )
         }
-        if case .contract(let wrapped) = scAddress {
-            return try wrapped.wrapped.encodeContractId()
-        }
-        throw ValidationException.invalidInput(
-            field: "address",
-            reason: "Unsupported SCAddressXDR variant: \(scAddress)"
-        )
+        return address
     }
 
     /// Returns `true` when the rule's context type matches the required
