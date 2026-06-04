@@ -193,7 +193,7 @@ public enum OZSmartAccountBuilders {
     ///
     /// The SDK encoder always emits unpadded output; this helper normalises caller-supplied
     /// strings so padded and unpadded spellings compare and key equal.
-    fileprivate static func strippedBase64URLPadding(_ value: String) -> String {
+    static func strippedBase64URLPadding(_ value: String) -> String {
         var index = value.endIndex
         while index > value.startIndex {
             let previous = value.index(before: index)
