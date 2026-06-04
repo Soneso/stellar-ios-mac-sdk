@@ -1280,7 +1280,7 @@ static let clientVersionHeader: String
 static let clientName: String
 static let maxIndexerResponseBytes: Int
 static let maxRelayerResponseBytes: Int
-## class OZContextRuleManager: OZContextRuleManagerProtocol, @unchecked Sendable
+## class OZContextRuleManager: OZContextRuleManagerProtocol, OZManagerHelpers, @unchecked Sendable
 func addContextRule(contextType: ContextRuleType, name: String, validUntil: UInt32? = nil, signers: [any OZSmartAccountSigner], policies: [String: SCValXDR] = [:], selectedSigners: [SelectedSigner] = [], forceMethod: SubmissionMethod? = nil) async throws -> TransactionResult
 func getContextRule(id: UInt32) async throws -> SCValXDR
 func getContextRulesCount() async throws -> UInt32
@@ -1430,12 +1430,12 @@ case object([String: OZJSONValue])
 case null
 init(from decoder: Decoder) throws
 func hash(into hasher: inout Hasher)
-## class OZMultiSignerManager: @unchecked Sendable
+## class OZMultiSignerManager: OZManagerHelpers, @unchecked Sendable
 func multiSignerTransfer(tokenContract: String, recipient: String, amount: String, selectedSigners: [SelectedSigner], forceMethod: SubmissionMethod? = nil, resolveContextRuleIds: ResolveContextRuleIds? = nil) async throws -> TransactionResult
 func multiSignerContractCall(target: String, targetFn: String, targetArgs: [SCValXDR] = [], selectedSigners: [SelectedSigner], forceMethod: SubmissionMethod? = nil, resolveContextRuleIds: ResolveContextRuleIds? = nil) async throws -> TransactionResult
 func multiSignerExecuteAndSubmit(target: String, targetFn: String, targetArgs: [SCValXDR] = [], selectedSigners: [SelectedSigner], forceMethod: SubmissionMethod? = nil, resolveContextRuleIds: ResolveContextRuleIds? = nil) async throws -> TransactionResult
 func submitWithMultipleSigners(hostFunction: HostFunctionXDR, selectedSigners: [SelectedSigner], forceMethod: SubmissionMethod? = nil, resolveContextRuleIds: ResolveContextRuleIds? = nil) async throws -> TransactionResult
-## class OZPolicyManager: @unchecked Sendable
+## class OZPolicyManager: OZManagerHelpers, @unchecked Sendable
 func addSimpleThreshold(contextRuleId: UInt32, policyAddress: String, threshold: UInt32, selectedSigners: [SelectedSigner] = [], forceMethod: SubmissionMethod? = nil) async throws -> TransactionResult
 func addWeightedThreshold(contextRuleId: UInt32, policyAddress: String, signerWeights: [SignerWeightEntry], threshold: UInt32, selectedSigners: [SelectedSigner] = [], forceMethod: SubmissionMethod? = nil) async throws -> TransactionResult
 func addSpendingLimit(contextRuleId: UInt32, policyAddress: String, spendingLimit: String, periodLedgers: UInt32, selectedSigners: [SelectedSigner] = [], forceMethod: SubmissionMethod? = nil) async throws -> TransactionResult
@@ -1473,7 +1473,7 @@ var errorCode: String?
 var details: [String: OZJSONValue]?
 init(success: Bool, transactionId: String? = nil, hash: String? = nil, status: String? = nil, error: String? = nil, errorCode: String? = nil, details: [String: OZJSONValue]? = nil)
 init(from decoder: Decoder) throws
-## class OZSignerManager: @unchecked Sendable
+## class OZSignerManager: OZManagerHelpers, @unchecked Sendable
 func addNewPasskeySigner(contextRuleId: UInt32, userName: String, selectedSigners: [SelectedSigner] = [], forceMethod: SubmissionMethod? = nil) async throws -> AddPasskeySignerResult
 func addPasskey(contextRuleId: UInt32, publicKey: Data, credentialId: Data, selectedSigners: [SelectedSigner] = [], forceMethod: SubmissionMethod? = nil) async throws -> TransactionResult
 func addDelegated(contextRuleId: UInt32, address: String, selectedSigners: [SelectedSigner] = [], forceMethod: SubmissionMethod? = nil) async throws -> TransactionResult
@@ -1576,13 +1576,13 @@ func toScVal() throws -> SCValXDR
 ## struct OZSpendingLimitParams: Sendable, Hashable
 var spendingLimit: Int64
 var periodLedgers: Int
-## class OZTransactionOperations: @unchecked Sendable
+## class OZTransactionOperations: OZManagerHelpers, @unchecked Sendable
 func transfer(tokenContract: String, recipient: String, amount: String, forceMethod: SubmissionMethod? = nil) async throws -> TransactionResult
 func contractCall(target: String, targetFn: String, targetArgs: [SCValXDR] = [], forceMethod: SubmissionMethod? = nil, resolveContextRuleIds: ResolveContextRuleIds? = nil) async throws -> TransactionResult
 func executeAndSubmit(target: String, targetFn: String, targetArgs: [SCValXDR] = [], forceMethod: SubmissionMethod? = nil, resolveContextRuleIds: ResolveContextRuleIds? = nil) async throws -> TransactionResult
 func submit(hostFunction: HostFunctionXDR, auth: [SorobanAuthorizationEntryXDR], forceMethod: SubmissionMethod? = nil, resolveContextRuleIds: ResolveContextRuleIds? = nil) async throws -> TransactionResult
 func fundWallet(nativeTokenContract: String, forceMethod: SubmissionMethod? = nil) async throws -> String
-## class OZWalletOperations: @unchecked Sendable
+## class OZWalletOperations: OZManagerHelpers, @unchecked Sendable
 func createWallet(userName: String = "Smart Account User", autoSubmit: Bool = false, autoFund: Bool = false, nativeTokenContract: String? = nil, forceMethod: SubmissionMethod? = nil) async throws -> CreateWalletResult
 func connectWallet(options: ConnectWalletOptions = ConnectWalletOptions()) async throws -> ConnectWalletResult?
 func authenticatePasskey(challenge: Data? = nil, credentialIds: [String]? = nil) async throws -> AuthenticatePasskeyResult
