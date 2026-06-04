@@ -374,7 +374,7 @@ final class StubContextRuleManager: OZContextRuleManagerProtocol, @unchecked Sen
     var throwOnResolveContextRuleIdsForEntry: SmartAccountException?
     var throwOnGetAllContextRules: SmartAccountException?
 
-    func listContextRules() async throws -> [ParsedContextRule] {
+    func listContextRules(maxScanId: UInt32? = nil) async throws -> [ParsedContextRule] {
         if let hook = throwOnListContextRules { throw hook }
         return listRulesResult
     }
@@ -388,7 +388,7 @@ final class StubContextRuleManager: OZContextRuleManagerProtocol, @unchecked Sen
         return resolveContextRuleIdsResult
     }
 
-    func getAllContextRules() async throws -> [SCValXDR] {
+    func getAllContextRules(maxScanId: UInt32? = nil) async throws -> [SCValXDR] {
         if let hook = throwOnGetAllContextRules { throw hook }
         return getAllContextRulesResult
     }
