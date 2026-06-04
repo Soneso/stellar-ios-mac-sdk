@@ -1689,7 +1689,7 @@ Wraps a non-SDK error into the appropriate `SmartAccountException` subclass; an 
 
 ## Contract Limits
 
-OZ smart-account limits, enforced client-side in `OZConstants` and on-chain:
+OZ smart-account limits and defaults, enforced client-side and on-chain:
 
 | Constant | Value |
 |----------|-------|
@@ -1699,7 +1699,7 @@ OZ smart-account limits, enforced client-side in `OZConstants` and on-chain:
 | `OZConstants.defaultTimeoutSeconds` | 30 |
 | `OZConstants.defaultRelayerTimeoutMs` | 360_000 (6 min) |
 | `OZConstants.defaultIndexerTimeoutMs` | 10_000 |
-| `OZConstants.webAuthnTimeoutMs` | 60_000 |
 | `OZConstants.friendbotReserveXlm` | 5 |
+| `AppleWebAuthnProvider.defaultTimeoutMs` | 60_000 |
 
 See [smart_accounts_policies.md](./smart_accounts_policies.md) for adding signers and policies under these limits.

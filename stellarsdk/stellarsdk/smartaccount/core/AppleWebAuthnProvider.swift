@@ -44,6 +44,10 @@ public final class AppleWebAuthnProvider: NSObject, WebAuthnProvider, @unchecked
     // Public Properties
     // ========================================================================
 
+    /// Default operation timeout in milliseconds (60 seconds), used when no
+    /// explicit `timeout` is supplied to the initializer or factory.
+    public static let defaultTimeoutMs: Int64 = 60_000
+
     /// WebAuthn Relying Party identifier. Must match an `Associated Domains`
     /// entitlement entry in the host application.
     public let rpId: String
@@ -100,13 +104,13 @@ public final class AppleWebAuthnProvider: NSObject, WebAuthnProvider, @unchecked
     ///   - rpName: Human-readable RP name shown during passkey prompts. Must
     ///     be non-blank.
     ///   - timeout: Operation timeout in milliseconds. Must be strictly
-    ///     positive. Defaults to `OZConstants.webAuthnTimeoutMs` (60000).
+    ///     positive. Defaults to `defaultTimeoutMs` (60000).
     /// - Throws: `ConfigurationException.InvalidConfig` when any input fails
     ///   validation.
     public init(
         rpId: String,
         rpName: String,
-        timeout: Int64 = OZConstants.webAuthnTimeoutMs
+        timeout: Int64 = AppleWebAuthnProvider.defaultTimeoutMs
     ) throws {
         if rpId.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             throw ConfigurationException.invalidConfig(details: "rpId must not be blank")
@@ -129,13 +133,13 @@ public final class AppleWebAuthnProvider: NSObject, WebAuthnProvider, @unchecked
     ///   - rpId: WebAuthn Relying Party identifier.
     ///   - rpName: Human-readable RP name.
     ///   - timeout: Operation timeout in milliseconds. Defaults to
-    ///     `OZConstants.webAuthnTimeoutMs`.
+    ///     `defaultTimeoutMs`.
     /// - Returns: A new configured `AppleWebAuthnProvider`.
     /// - Throws: `ConfigurationException.InvalidConfig` for invalid inputs.
     public static func create(
         rpId: String,
         rpName: String,
-        timeout: Int64 = OZConstants.webAuthnTimeoutMs
+        timeout: Int64 = AppleWebAuthnProvider.defaultTimeoutMs
     ) throws -> AppleWebAuthnProvider {
         return try AppleWebAuthnProvider(rpId: rpId, rpName: rpName, timeout: timeout)
     }
@@ -219,11 +223,11 @@ public final class AppleWebAuthnProvider: NSObject, WebAuthnProvider, @unchecked
         )
         let request = provider.createCredentialAssertionRequest(challenge: challenge)
 
-        // why: the OZ WebAuthn verifier contract checks UV=true (error #3117
-        // VerifiedBitNotSet); a "preferred" preference can return UV=false on
-        // macOS even after Touch ID succeeds, so the assertion would be
-        // rejected on-chain. Forcing "required" makes the authenticator set
-        // the UV bit unconditionally.
+        // why: on-chain WebAuthn verifier contracts require the User
+        // Verification bit to be set and reject assertions with UV=false; a
+        // "preferred" preference can return UV=false on macOS even after Touch
+        // ID succeeds, so the assertion would be rejected on-chain. Forcing
+        // "required" makes the authenticator set the UV bit unconditionally.
         request.userVerificationPreference = .required
 
         // Restrict the authenticator picker to the supplied credential IDs

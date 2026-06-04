@@ -76,7 +76,8 @@ final class AppleWebAuthnProviderTests: XCTestCase {
         let provider = try AppleWebAuthnProvider(rpId: "example.com", rpName: "My Wallet")
         XCTAssertEqual(provider.rpId, "example.com")
         XCTAssertEqual(provider.rpName, "My Wallet")
-        XCTAssertEqual(provider.timeout, OZConstants.webAuthnTimeoutMs)
+        XCTAssertEqual(provider.timeout, AppleWebAuthnProvider.defaultTimeoutMs)
+        XCTAssertEqual(AppleWebAuthnProvider.defaultTimeoutMs, 60_000)
     }
 
     func test_valid_construction_with_explicit_timeout() throws {
@@ -94,10 +95,10 @@ final class AppleWebAuthnProviderTests: XCTestCase {
         let provider = try AppleWebAuthnProvider.create(
             rpId: "example.com",
             rpName: "My Wallet",
-            timeout: OZConstants.webAuthnTimeoutMs
+            timeout: AppleWebAuthnProvider.defaultTimeoutMs
         )
         XCTAssertEqual(provider.rpId, "example.com")
-        XCTAssertEqual(provider.timeout, OZConstants.webAuthnTimeoutMs)
+        XCTAssertEqual(provider.timeout, AppleWebAuthnProvider.defaultTimeoutMs)
     }
 
     // ========================================================================

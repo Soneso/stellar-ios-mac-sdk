@@ -22,10 +22,6 @@ final class OZConstantsTests: XCTestCase {
         XCTAssertEqual(OZConstants.defaultRelayerTimeoutMs, 360_000)
     }
 
-    func test_WEBAUTHN_TIMEOUT_MS_equals_60000() {
-        XCTAssertEqual(OZConstants.webAuthnTimeoutMs, 60_000)
-    }
-
     func test_FRIENDBOT_RESERVE_XLM_equals_5() {
         XCTAssertEqual(OZConstants.friendbotReserveXlm, 5)
     }
@@ -54,14 +50,13 @@ final class OZConstantsTests: XCTestCase {
         XCTAssertEqual(OZConstants.clientName, "ios-stellar-sdk")
     }
 
-    func test_OZConstants_exposes_exactly_11_public_constants() {
+    func test_OZConstants_exposes_exactly_10_public_constants() {
         // Each named constant must be reachable; reading every one and ensuring the
-        // collection size is exactly 11 catches accidental additions or removals.
+        // collection size is exactly 10 catches accidental additions or removals.
         let values: [Any] = [
             OZConstants.defaultSessionExpiryMs,
             OZConstants.defaultIndexerTimeoutMs,
             OZConstants.defaultRelayerTimeoutMs,
-            OZConstants.webAuthnTimeoutMs,
             OZConstants.friendbotReserveXlm,
             OZConstants.defaultTimeoutSeconds,
             OZConstants.maxSigners,
@@ -70,6 +65,6 @@ final class OZConstantsTests: XCTestCase {
             OZConstants.clientVersionHeader,
             OZConstants.clientName,
         ]
-        XCTAssertEqual(values.count, 11)
+        XCTAssertEqual(values.count, 10)
     }
 }

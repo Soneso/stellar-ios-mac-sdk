@@ -19,9 +19,6 @@ public enum OZConstants {
     /// Default HTTP timeout for relayer requests in milliseconds (6 minutes).
     public static let defaultRelayerTimeoutMs: Int64 = 360_000
 
-    /// Timeout for WebAuthn credential operations in milliseconds (60 seconds).
-    public static let webAuthnTimeoutMs: Int64 = 60_000
-
     /// XLM amount retained in the temporary account as minimum balance reserve when
     /// transferring Friendbot funds to a smart account wallet.
     public static let friendbotReserveXlm: Int = 5

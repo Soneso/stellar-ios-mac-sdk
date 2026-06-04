@@ -2214,7 +2214,6 @@ public enum OZConstants {
     public static let defaultSessionExpiryMs: Int64 = 604_800_000  // 7 days
     public static let defaultIndexerTimeoutMs: Int64 = 10_000      // 10 seconds
     public static let defaultRelayerTimeoutMs: Int64 = 360_000     // 6 minutes
-    public static let webAuthnTimeoutMs: Int64 = 60_000            // 60 seconds
     public static let friendbotReserveXlm: Int = 5
     public static let defaultTimeoutSeconds: Int = 30
     public static let maxSigners: Int = 15
@@ -2227,7 +2226,7 @@ public enum OZConstants {
 }
 ```
 
-Timeouts and budgets used by the kit, the WebAuthn provider, and the HTTP clients. `maxSigners` and `maxPolicies` are the contract limits enforced at validation time inside `OZContextRuleManager.addContextRule(...)`. `friendbotReserveXlm` is the protocol minimum-balance reserve retained on the funded temporary account during `OZTransactionOperations.fundWallet(...)`. The HTTP identification headers are pinned at the `URLSession` configuration layer by both `OZIndexerClient` and `OZRelayerClient`.
+Timeouts and budgets used by the kit and the HTTP clients. `maxSigners` and `maxPolicies` are the contract limits enforced at validation time inside `OZContextRuleManager.addContextRule(...)`. `friendbotReserveXlm` is the protocol minimum-balance reserve retained on the funded temporary account during `OZTransactionOperations.fundWallet(...)`. The HTTP identification headers are pinned at the `URLSession` configuration layer by both `OZIndexerClient` and `OZRelayerClient`.
 
 Stroop and ledger conversions live on the core SDK `StellarProtocolConstants` — for example `StellarProtocolConstants.stroopsPerXlm` (10,000,000), `.ledgersPerHour` (720), and `.ledgersPerDay` (17,280) — and are the defaults behind `signatureExpirationLedgers` and the spending-limit period conversions.
 
@@ -2306,6 +2305,8 @@ Credential descriptor passed to `WebAuthnProvider.authenticate(challenge:allowCr
 ```swift
 @available(iOS 16.0, macOS 13.0, *)
 public final class AppleWebAuthnProvider: NSObject, WebAuthnProvider, @unchecked Sendable {
+    public static let defaultTimeoutMs: Int64 = 60_000
+
     public let rpId: String
     public let rpName: String
     public let timeout: Int64
@@ -2314,13 +2315,13 @@ public final class AppleWebAuthnProvider: NSObject, WebAuthnProvider, @unchecked
     public init(
         rpId: String,
         rpName: String,
-        timeout: Int64 = OZConstants.webAuthnTimeoutMs
+        timeout: Int64 = AppleWebAuthnProvider.defaultTimeoutMs
     ) throws
 
     public static func create(
         rpId: String,
         rpName: String,
-        timeout: Int64 = OZConstants.webAuthnTimeoutMs
+        timeout: Int64 = AppleWebAuthnProvider.defaultTimeoutMs
     ) throws -> AppleWebAuthnProvider
 }
 ```

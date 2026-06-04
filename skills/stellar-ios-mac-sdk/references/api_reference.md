@@ -207,12 +207,13 @@ init(from decoder: Decoder) throws
 case success(response: AnchorTransactionsResponse)
 case failure(error: TransferServerError)
 ## class AppleWebAuthnProvider: NSObject, WebAuthnProvider, @unchecked Sendable
+static let defaultTimeoutMs: Int64
 var rpId: String
 var rpName: String
 var timeout: Int64
 var presentationContextProvider: ASAuthorizationControllerPresentationContextProviding?
-init(rpId: String, rpName: String, timeout: Int64 = OZConstants.webAuthnTimeoutMs) throws
-static func create(rpId: String, rpName: String, timeout: Int64 = OZConstants.webAuthnTimeoutMs) throws -> AppleWebAuthnProvider
+init(rpId: String, rpName: String, timeout: Int64 = AppleWebAuthnProvider.defaultTimeoutMs) throws
+static func create(rpId: String, rpName: String, timeout: Int64 = AppleWebAuthnProvider.defaultTimeoutMs) throws -> AppleWebAuthnProvider
 func register(challenge: Data, userId: Data, userName: String) async throws -> WebAuthnRegistrationResult
 func authenticate(challenge: Data, allowCredentials: [AllowCredential]?) async throws -> WebAuthnAuthenticationResult
 ## extension Array
@@ -1270,7 +1271,6 @@ static func collectUniqueSignersFromRules(rules: [ParsedContextRule]) -> [any OZ
 static let defaultSessionExpiryMs: Int64
 static let defaultIndexerTimeoutMs: Int64
 static let defaultRelayerTimeoutMs: Int64
-static let webAuthnTimeoutMs: Int64
 static let friendbotReserveXlm: Int
 static let defaultTimeoutSeconds: Int
 static let maxSigners: Int

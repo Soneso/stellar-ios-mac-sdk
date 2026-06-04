@@ -334,13 +334,15 @@ let storage = InMemoryStorageAdapter()  // the OZSmartAccountConfig default
 ```swift
 @available(iOS 16.0, macOS 13.0, *)
 public final class AppleWebAuthnProvider: NSObject, WebAuthnProvider, @unchecked Sendable {
+    public static let defaultTimeoutMs: Int64 = 60_000
+
     public let rpId: String
     public let rpName: String
-    public let timeout: Int64    // ms; default OZConstants.webAuthnTimeoutMs == 60000
+    public let timeout: Int64    // ms; default AppleWebAuthnProvider.defaultTimeoutMs == 60000
     public var presentationContextProvider: ASAuthorizationControllerPresentationContextProviding?  // macOS-only
 
-    public init(rpId: String, rpName: String, timeout: Int64 = OZConstants.webAuthnTimeoutMs) throws
-    public static func create(rpId: String, rpName: String, timeout: Int64 = OZConstants.webAuthnTimeoutMs) throws -> AppleWebAuthnProvider
+    public init(rpId: String, rpName: String, timeout: Int64 = AppleWebAuthnProvider.defaultTimeoutMs) throws
+    public static func create(rpId: String, rpName: String, timeout: Int64 = AppleWebAuthnProvider.defaultTimeoutMs) throws -> AppleWebAuthnProvider
 }
 ```
 
