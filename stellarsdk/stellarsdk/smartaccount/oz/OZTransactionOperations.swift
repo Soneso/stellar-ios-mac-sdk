@@ -220,12 +220,7 @@ public final class OZTransactionOperations: OZManagerHelpers, @unchecked Sendabl
         _ = try kit.requireConnected()
 
         try requireContractAddress(target, fieldName: "target")
-        if targetFn.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            throw ValidationException.invalidInput(
-                field: "targetFn",
-                reason: "Function name cannot be empty"
-            )
-        }
+        try requireNonBlankFunctionName(targetFn)
 
         let invokeArgs = InvokeContractArgsXDR(
             contractAddress: try SCAddressXDR(contractId: target),
@@ -268,12 +263,7 @@ public final class OZTransactionOperations: OZManagerHelpers, @unchecked Sendabl
         let connected = try kit.requireConnected()
 
         try requireContractAddress(target, fieldName: "target")
-        if targetFn.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            throw ValidationException.invalidInput(
-                field: "targetFn",
-                reason: "Function name cannot be empty"
-            )
-        }
+        try requireNonBlankFunctionName(targetFn)
 
         let targetSCAddress = try SCAddressXDR(contractId: target)
         let functionArgs: [SCValXDR] = [
@@ -372,7 +362,7 @@ public final class OZTransactionOperations: OZManagerHelpers, @unchecked Sendabl
             signedAuthEntries: signedAuthEntries
         )
 
-        let useRelayer = getSubmissionMethod(forceMethod: forceMethod) == .relayer
+        let useRelayer = resolveSubmissionMethod(forceMethod: forceMethod) == .relayer
         return try await submitOrRelay(
             transaction: signedTransaction,
             hostFunction: hostFunction,
@@ -474,22 +464,22 @@ public final class OZTransactionOperations: OZManagerHelpers, @unchecked Sendabl
             let stored: StoredCredential? = await safeGetCredential(
                 credentialId: connected.credentialId
             )
-            let keyData: Data
+            let signer: OZExternalSigner
             if let stored = stored {
-                var combined = Data(capacity: stored.publicKey.count + credIdBytes.count)
-                combined.append(stored.publicKey)
-                combined.append(credIdBytes)
-                keyData = combined
+                signer = try OZExternalSigner.webAuthn(
+                    verifierAddress: kit.config.webauthnVerifierAddress,
+                    publicKey: stored.publicKey,
+                    credentialId: credIdBytes
+                )
             } else {
-                keyData = try await findKeyDataFromContextRules(
+                let keyData = try await findKeyDataFromContextRules(
                     credentialIdBytes: credIdBytes
                 )
+                signer = try OZExternalSigner(
+                    verifierAddress: kit.config.webauthnVerifierAddress,
+                    keyData: keyData
+                )
             }
-
-            let signer = try OZExternalSigner(
-                verifierAddress: kit.config.webauthnVerifierAddress,
-                keyData: keyData
-            )
 
             let resolvedContextRuleIds: [UInt32]
             if let resolveContextRuleIds = resolveContextRuleIds {
@@ -615,7 +605,7 @@ public final class OZTransactionOperations: OZManagerHelpers, @unchecked Sendabl
         forceMethod: SubmissionMethod? = nil
     ) async throws -> TransactionResult {
         let deployer = try await kit.getDeployer()
-        let useRelayer = getSubmissionMethod(forceMethod: forceMethod) == .relayer
+        let useRelayer = resolveSubmissionMethod(forceMethod: forceMethod) == .relayer
 
         try OZTransactionOperations.applySimulation(
             simulation: simulation,
@@ -787,7 +777,7 @@ public final class OZTransactionOperations: OZManagerHelpers, @unchecked Sendabl
         // why: the funding flow does not emit `transactionSigned` /
         // `transactionSubmitted` events because it is an internal helper, not
         // a user-initiated transaction.
-        let useRelayer = getSubmissionMethod(forceMethod: forceMethod) == .relayer
+        let useRelayer = resolveSubmissionMethod(forceMethod: forceMethod) == .relayer
         let result = try await submitOrRelay(
             transaction: signedTransaction,
             hostFunction: hostFunction,
@@ -851,19 +841,6 @@ public final class OZTransactionOperations: OZManagerHelpers, @unchecked Sendabl
 
     // MARK: - Private helpers
 
-    /// Resolves the submission method given the optional forced override.
-    ///
-    /// Priority:
-    /// 1. If `forceMethod != nil`, return it directly.
-    /// 2. Else if `kit.relayerClient != nil`, return `.relayer`.
-    /// 3. Otherwise return `.rpc`.
-    private func getSubmissionMethod(forceMethod: SubmissionMethod?) -> SubmissionMethod {
-        if let forceMethod = forceMethod {
-            return forceMethod
-        }
-        return kit.relayerClient != nil ? .relayer : .rpc
-    }
-
     /// Returns `true` when any auth entry uses source-account credentials. The
     /// relayer Mode 2 (signed-envelope) path is engaged when this returns
     /// `true`; otherwise Mode 1 (host function + auth entries) is used.
@@ -889,7 +866,7 @@ public final class OZTransactionOperations: OZManagerHelpers, @unchecked Sendabl
                 continue
             }
             for field in mapEntries {
-                guard case .symbol(let key) = field.key, key == "signers" else {
+                guard case .symbol(let key) = field.key, key == ContextRuleField.signers else {
                     continue
                 }
                 guard case .vec(let signerEntries) = field.val,

@@ -136,6 +136,16 @@ extension OZManagerHelpers {
         }
     }
 
+    /// Resolves the submission method given an optional forced override.
+    ///
+    /// Priority: forced override > relayer (when configured) > RPC.
+    func resolveSubmissionMethod(forceMethod: SubmissionMethod?) -> SubmissionMethod {
+        if let forceMethod = forceMethod {
+            return forceMethod
+        }
+        return kit.relayerClient != nil ? .relayer : .rpc
+    }
+
     /// Routes a host-function submission to the appropriate path: direct
     /// transaction submission when there are no selected signers, otherwise the
     /// multi-signer submission flow.

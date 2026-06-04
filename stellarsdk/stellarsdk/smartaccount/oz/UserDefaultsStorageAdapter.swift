@@ -53,15 +53,6 @@ public final actor UserDefaultsStorageAdapter: StorageAdapter {
     /// within the same process.
     public static let defaultSuiteName: String = "com.soneso.stellar.smartaccount"
 
-    /// Key prefix for individual credential entries.
-    private static let credentialKeyPrefix: String = "cred_"
-
-    /// Fixed key for the credential ID index entry.
-    private static let credentialIndexKey: String = "credential_index"
-
-    /// Fixed key for the active session entry.
-    private static let sessionKey: String = "session_current"
-
     // ========================================================================
     // State
     // ========================================================================
@@ -99,7 +90,7 @@ public final actor UserDefaultsStorageAdapter: StorageAdapter {
         do {
             let serializable = credential.toSerializable()
             let jsonString = try encodeToString(serializable)
-            let key = Self.credentialKeyPrefix + credential.credentialId
+            let key = OZStorageKeys.credentialKeyPrefix + credential.credentialId
 
             defaults.set(jsonString, forKey: key)
 
@@ -176,7 +167,7 @@ public final actor UserDefaultsStorageAdapter: StorageAdapter {
 
     public func delete(credentialId: String) async throws {
         do {
-            let key = Self.credentialKeyPrefix + credentialId
+            let key = OZStorageKeys.credentialKeyPrefix + credentialId
             defaults.removeObject(forKey: key)
 
             // Shrink the index even when the credential entry was already
@@ -203,7 +194,7 @@ public final actor UserDefaultsStorageAdapter: StorageAdapter {
 
             let serializable = updated.toSerializable()
             let jsonString = try encodeToString(serializable)
-            let key = Self.credentialKeyPrefix + credentialId
+            let key = OZStorageKeys.credentialKeyPrefix + credentialId
 
             defaults.set(jsonString, forKey: key)
         } catch let error as CredentialException {
@@ -222,10 +213,10 @@ public final actor UserDefaultsStorageAdapter: StorageAdapter {
         do {
             let index = try readIndex()
             for id in index.ids {
-                defaults.removeObject(forKey: Self.credentialKeyPrefix + id)
+                defaults.removeObject(forKey: OZStorageKeys.credentialKeyPrefix + id)
             }
-            defaults.removeObject(forKey: Self.credentialIndexKey)
-            defaults.removeObject(forKey: Self.sessionKey)
+            defaults.removeObject(forKey: OZStorageKeys.credentialIndexKey)
+            defaults.removeObject(forKey: OZStorageKeys.sessionKey)
         } catch let error as StorageException {
             throw error
         } catch {
@@ -244,7 +235,7 @@ public final actor UserDefaultsStorageAdapter: StorageAdapter {
         do {
             let serializable = session.toSerializable()
             let jsonString = try encodeToString(serializable)
-            defaults.set(jsonString, forKey: Self.sessionKey)
+            defaults.set(jsonString, forKey: OZStorageKeys.sessionKey)
         } catch let error as StorageException {
             throw error
         } catch {
@@ -257,7 +248,7 @@ public final actor UserDefaultsStorageAdapter: StorageAdapter {
 
     public func getSession() async throws -> StoredSession? {
         do {
-            guard let jsonString = defaults.string(forKey: Self.sessionKey) else {
+            guard let jsonString = defaults.string(forKey: OZStorageKeys.sessionKey) else {
                 return nil
             }
             let serializable = try decodeFromString(SerializableSession.self, jsonString)
@@ -268,7 +259,7 @@ public final actor UserDefaultsStorageAdapter: StorageAdapter {
             // need to re-evaluate expiry against the same stale entry. Callers
             // receive the simple "valid session OR nil" contract.
             if session.isExpired {
-                defaults.removeObject(forKey: Self.sessionKey)
+                defaults.removeObject(forKey: OZStorageKeys.sessionKey)
                 return nil
             }
             return session
@@ -283,7 +274,7 @@ public final actor UserDefaultsStorageAdapter: StorageAdapter {
     }
 
     public func clearSession() async throws {
-        defaults.removeObject(forKey: Self.sessionKey)
+        defaults.removeObject(forKey: OZStorageKeys.sessionKey)
     }
 
     // ========================================================================
@@ -294,7 +285,7 @@ public final actor UserDefaultsStorageAdapter: StorageAdapter {
     /// underlying entry does not exist. Must be called from within the actor's
     /// serialized context.
     private func readCredential(_ credentialId: String) throws -> StoredCredential? {
-        let key = Self.credentialKeyPrefix + credentialId
+        let key = OZStorageKeys.credentialKeyPrefix + credentialId
         guard let jsonString = defaults.string(forKey: key) else {
             return nil
         }
@@ -305,7 +296,7 @@ public final actor UserDefaultsStorageAdapter: StorageAdapter {
     /// Reads the credential ID index, returning an empty index when absent.
     /// Must be called from within the actor's serialized context.
     private func readIndex() throws -> CredentialIndex {
-        guard let jsonString = defaults.string(forKey: Self.credentialIndexKey) else {
+        guard let jsonString = defaults.string(forKey: OZStorageKeys.credentialIndexKey) else {
             return CredentialIndex(ids: [])
         }
         return try decodeFromString(CredentialIndex.self, jsonString)
@@ -315,6 +306,6 @@ public final actor UserDefaultsStorageAdapter: StorageAdapter {
     /// serialized context.
     private func writeIndex(_ index: CredentialIndex) throws {
         let jsonString = try encodeToString(index)
-        defaults.set(jsonString, forKey: Self.credentialIndexKey)
+        defaults.set(jsonString, forKey: OZStorageKeys.credentialIndexKey)
     }
 }

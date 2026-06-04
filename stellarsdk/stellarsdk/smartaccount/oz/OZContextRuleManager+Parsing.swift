@@ -148,7 +148,7 @@ extension OZContextRuleManager {
             var addresses: [String] = []
             addresses.reserveCapacity(policiesVec.count)
             for entry in policiesVec {
-                addresses.append(try parseAddressAcceptingAccount(scVal: entry))
+                addresses.append(try parseAccountOrContractAddress(scVal: entry))
             }
             policies = addresses
         } else {
@@ -252,7 +252,7 @@ extension OZContextRuleManager {
             }
             let address: String
             do {
-                address = try parseAddressAcceptingAccount(scVal: vec[1])
+                address = try parseAccountOrContractAddress(scVal: vec[1])
             } catch {
                 throw ValidationException.invalidInput(
                     field: ContextRuleField.contextType,
@@ -371,31 +371,6 @@ extension OZContextRuleManager {
         }
     }
 
-    /// Decodes an `SCValXDR.address` value, accepting both contract (`C…`)
-    /// and account (`G…`) strkey forms.
-    ///
-    /// Used at parse sites where the contract ABI nominally expects a
-    /// contract address (policy / call-contract target) but where account
-    /// addresses are tolerated for forward compatibility with contract
-    /// revisions that broaden the accepted address kind. The caller is
-    /// responsible for asserting stricter constraints when the downstream
-    /// consumer requires a contract-only address — see ``parseContractAddress(scVal:)``.
-    fileprivate func parseAddressAcceptingAccount(scVal: SCValXDR) throws -> String {
-        guard case .address(let scAddress) = scVal else {
-            throw ValidationException.invalidInput(
-                field: "address",
-                reason: "Expected Address ScVal, got: \(scVal)"
-            )
-        }
-        guard let address = OZAddressStrKey.fromXdr(scAddress) else {
-            throw ValidationException.invalidInput(
-                field: "address",
-                reason: "Unsupported SCAddressXDR variant: \(scAddress)"
-            )
-        }
-        return address
-    }
-
     /// Decodes an `SCValXDR.address` value as a strict contract (`C…`)
     /// strkey. G-addresses produce ``ValidationException/InvalidInput``.
     ///
@@ -432,7 +407,8 @@ extension OZContextRuleManager {
 
     /// Decodes a generic `SCValXDR.address` into either its `G…` account
     /// strkey or `C…` contract strkey representation. Used by delegated
-    /// signer parsing, where both kinds are valid.
+    /// signer parsing, where both kinds are valid, and at parse sites that
+    /// tolerate account addresses for forward compatibility.
     fileprivate func parseAccountOrContractAddress(scVal: SCValXDR) throws -> String {
         guard case .address(let scAddress) = scVal else {
             throw ValidationException.invalidInput(
@@ -440,12 +416,6 @@ extension OZContextRuleManager {
                 reason: "Expected Address ScVal, got: \(scVal)"
             )
         }
-        guard let address = OZAddressStrKey.fromXdr(scAddress) else {
-            throw ValidationException.invalidInput(
-                field: "address",
-                reason: "Unsupported SCAddressXDR variant: \(scAddress)"
-            )
-        }
-        return address
+        return try addressString(from: scAddress)
     }
 }

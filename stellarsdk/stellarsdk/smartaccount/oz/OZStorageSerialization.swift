@@ -8,6 +8,26 @@
 import Foundation
 
 // ============================================================================
+// Storage key constants
+// ============================================================================
+
+/// Canonical storage-key constants shared by all platform storage adapters.
+///
+/// Both `KeychainStorageAdapter` and `UserDefaultsStorageAdapter` use this
+/// single source of truth so a key rename is a one-line change here and
+/// automatically propagates to both adapters.
+internal enum OZStorageKeys {
+    /// Key prefix for individual credential entries (`cred_<credentialId>`).
+    static let credentialKeyPrefix: String = "cred_"
+
+    /// Fixed key for the credential ID index entry.
+    static let credentialIndexKey: String = "credential_index"
+
+    /// Fixed key for the active session entry.
+    static let sessionKey: String = "session_current"
+}
+
+// ============================================================================
 // Internal Serializable Data Transfer Objects
 // ============================================================================
 

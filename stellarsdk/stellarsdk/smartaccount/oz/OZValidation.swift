@@ -79,6 +79,62 @@ internal func isLocalhostUrl(_ url: String) -> Bool {
     return true
 }
 
+// MARK: - Function name validation
+
+/// Validates that `targetFn` is non-blank after trimming whitespace.
+///
+/// - Parameter targetFn: The function name to validate.
+/// - Throws: `ValidationException.invalidInput` when `targetFn` is empty or whitespace-only.
+internal func requireNonBlankFunctionName(_ targetFn: String) throws {
+    if targetFn.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+        throw ValidationException.invalidInput(
+            field: "targetFn",
+            reason: "Function name cannot be empty"
+        )
+    }
+}
+
+// MARK: - Endpoint validation/normalization
+
+/// Validates and normalises a service endpoint URL for use by the OZ clients.
+///
+/// Trims whitespace, rejects empty strings, requires `https://` or localhost,
+/// strips trailing slashes, then re-parses to confirm a non-empty host is present.
+/// The normalised URL (no trailing slashes) is returned on success.
+///
+/// - Parameters:
+///   - url: The raw URL string supplied by the caller.
+///   - label: Human-readable label used in error messages (e.g. `"Indexer"`, `"Relayer"`).
+/// - Returns: Normalised URL string with no trailing slashes.
+/// - Throws: `ConfigurationException.invalidConfig` when the URL is empty, does not
+///   satisfy the HTTPS / localhost constraint, or has no host component.
+internal func ozValidateAndNormalizeEndpoint(_ url: String, label: String) throws -> String {
+    let trimmedUrl = url.trimmingCharacters(in: .whitespacesAndNewlines)
+    if trimmedUrl.isEmpty {
+        throw ConfigurationException.invalidConfig(details: "\(label) URL is required")
+    }
+    if !trimmedUrl.hasPrefix("https://") && !isLocalhostUrl(trimmedUrl) {
+        throw ConfigurationException.invalidConfig(
+            details: "\(label) URL must use HTTPS (or http://localhost for development): \(trimmedUrl)"
+        )
+    }
+    var stripped = trimmedUrl
+    while stripped.hasSuffix("/") {
+        stripped.removeLast()
+    }
+    // why: stripping trailing slashes can leave a scheme-only string (for
+    // example "https://" → "https:") that the prefix check still treats as
+    // valid; reject any result without a non-empty host so request-time
+    // failures don't surface as opaque URL errors.
+    guard let components = URLComponents(string: stripped),
+          let host = components.host, !host.isEmpty else {
+        throw ConfigurationException.invalidConfig(
+            details: "\(label) URL must include a host: \(trimmedUrl)"
+        )
+    }
+    return stripped
+}
+
 // MARK: - Address conversion
 
 /// Internal helpers for translating Soroban `SCAddressXDR` values into canonical

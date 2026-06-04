@@ -1061,12 +1061,7 @@ public class OZMultiSignerManager: OZManagerHelpers, @unchecked Sendable {
     ) throws {
         try requireContractAddress(target, fieldName: "target")
 
-        if targetFn.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            throw ValidationException.invalidInput(
-                field: "targetFn",
-                reason: "Function name cannot be empty"
-            )
-        }
+        try requireNonBlankFunctionName(targetFn)
 
         if selectedSigners.isEmpty {
             throw ValidationException.invalidInput(

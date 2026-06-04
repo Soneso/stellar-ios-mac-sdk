@@ -49,15 +49,6 @@ public final actor KeychainStorageAdapter: StorageAdapter {
     /// per-tenant scoping).
     public static let defaultServiceName: String = "com.soneso.stellar.smartaccount"
 
-    /// Account-name prefix for individual credential entries.
-    private static let credentialKeyPrefix: String = "cred_"
-
-    /// Fixed account name for the credential ID index entry.
-    private static let credentialIndexKey: String = "credential_index"
-
-    /// Fixed account name for the active session entry.
-    private static let sessionKey: String = "session_current"
-
     // ========================================================================
     // State
     // ========================================================================
@@ -100,7 +91,7 @@ public final actor KeychainStorageAdapter: StorageAdapter {
         do {
             let serializable = credential.toSerializable()
             let jsonString = try encodeToString(serializable)
-            let account = Self.credentialKeyPrefix + credential.credentialId
+            let account = OZStorageKeys.credentialKeyPrefix + credential.credentialId
 
             try keychainUpsert(account: account, data: jsonString)
 
@@ -176,7 +167,7 @@ public final actor KeychainStorageAdapter: StorageAdapter {
 
     public func delete(credentialId: String) async throws {
         do {
-            let account = Self.credentialKeyPrefix + credentialId
+            let account = OZStorageKeys.credentialKeyPrefix + credentialId
             try keychainDelete(account: account)
 
             // Shrink the index even when the credential entry was already
@@ -203,7 +194,7 @@ public final actor KeychainStorageAdapter: StorageAdapter {
 
             let serializable = updated.toSerializable()
             let jsonString = try encodeToString(serializable)
-            let account = Self.credentialKeyPrefix + credentialId
+            let account = OZStorageKeys.credentialKeyPrefix + credentialId
 
             try keychainUpsert(account: account, data: jsonString)
         } catch let error as CredentialException {
@@ -222,10 +213,10 @@ public final actor KeychainStorageAdapter: StorageAdapter {
         do {
             let index = try readIndex()
             for id in index.ids {
-                try keychainDelete(account: Self.credentialKeyPrefix + id)
+                try keychainDelete(account: OZStorageKeys.credentialKeyPrefix + id)
             }
-            try keychainDelete(account: Self.credentialIndexKey)
-            try keychainDelete(account: Self.sessionKey)
+            try keychainDelete(account: OZStorageKeys.credentialIndexKey)
+            try keychainDelete(account: OZStorageKeys.sessionKey)
         } catch let error as StorageException {
             throw error
         } catch {
@@ -244,7 +235,7 @@ public final actor KeychainStorageAdapter: StorageAdapter {
         do {
             let serializable = session.toSerializable()
             let jsonString = try encodeToString(serializable)
-            try keychainUpsert(account: Self.sessionKey, data: jsonString)
+            try keychainUpsert(account: OZStorageKeys.sessionKey, data: jsonString)
         } catch let error as StorageException {
             throw error
         } catch {
@@ -257,7 +248,7 @@ public final actor KeychainStorageAdapter: StorageAdapter {
 
     public func getSession() async throws -> StoredSession? {
         do {
-            guard let jsonString = try keychainRead(account: Self.sessionKey) else {
+            guard let jsonString = try keychainRead(account: OZStorageKeys.sessionKey) else {
                 return nil
             }
             let serializable = try decodeFromString(SerializableSession.self, jsonString)
@@ -268,7 +259,7 @@ public final actor KeychainStorageAdapter: StorageAdapter {
             // need to re-evaluate expiry against the same stale entry. Callers
             // receive the simple "valid session OR nil" contract.
             if session.isExpired {
-                try keychainDelete(account: Self.sessionKey)
+                try keychainDelete(account: OZStorageKeys.sessionKey)
                 return nil
             }
             return session
@@ -284,7 +275,7 @@ public final actor KeychainStorageAdapter: StorageAdapter {
 
     public func clearSession() async throws {
         do {
-            try keychainDelete(account: Self.sessionKey)
+            try keychainDelete(account: OZStorageKeys.sessionKey)
         } catch let error as StorageException {
             throw error
         } catch {
@@ -303,7 +294,7 @@ public final actor KeychainStorageAdapter: StorageAdapter {
     /// underlying Keychain entry does not exist. Must be called from within
     /// the actor's serialized context.
     private func readCredential(_ credentialId: String) throws -> StoredCredential? {
-        let account = Self.credentialKeyPrefix + credentialId
+        let account = OZStorageKeys.credentialKeyPrefix + credentialId
         guard let jsonString = try keychainRead(account: account) else {
             return nil
         }
@@ -314,7 +305,7 @@ public final actor KeychainStorageAdapter: StorageAdapter {
     /// Reads the credential ID index, returning an empty index when absent.
     /// Must be called from within the actor's serialized context.
     private func readIndex() throws -> CredentialIndex {
-        guard let jsonString = try keychainRead(account: Self.credentialIndexKey) else {
+        guard let jsonString = try keychainRead(account: OZStorageKeys.credentialIndexKey) else {
             return CredentialIndex(ids: [])
         }
         return try decodeFromString(CredentialIndex.self, jsonString)
@@ -324,7 +315,7 @@ public final actor KeychainStorageAdapter: StorageAdapter {
     /// serialized context.
     private func writeIndex(_ index: CredentialIndex) throws {
         let jsonString = try encodeToString(index)
-        try keychainUpsert(account: Self.credentialIndexKey, data: jsonString)
+        try keychainUpsert(account: OZStorageKeys.credentialIndexKey, data: jsonString)
     }
 
     // ========================================================================

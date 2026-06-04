@@ -276,31 +276,7 @@ public class OZRelayerClient: @unchecked Sendable {
         timeoutMs: Int64 = OZConstants.defaultRelayerTimeoutMs,
         urlSession: URLSession? = nil
     ) throws {
-        let trimmedUrl = relayerUrl.trimmingCharacters(in: .whitespacesAndNewlines)
-        if trimmedUrl.isEmpty {
-            throw ConfigurationException.invalidConfig(details: "Relayer URL is required")
-        }
-        if !trimmedUrl.hasPrefix("https://") && !isLocalhostUrl(trimmedUrl) {
-            throw ConfigurationException.invalidConfig(
-                details: "Relayer URL must use HTTPS (or http://localhost for development): \(trimmedUrl)"
-            )
-        }
-
-        var stripped = trimmedUrl
-        while stripped.hasSuffix("/") {
-            stripped.removeLast()
-        }
-        // why: stripping trailing slashes can leave a scheme-only string (for
-        // example "https://" → "https:") that the prefix check still treats as
-        // valid; reject any result without a non-empty host so request-time
-        // failures don't surface as opaque URL errors.
-        guard let components = URLComponents(string: stripped),
-              let host = components.host, !host.isEmpty else {
-            throw ConfigurationException.invalidConfig(
-                details: "Relayer URL must include a host: \(trimmedUrl)"
-            )
-        }
-        self.normalizedUrl = stripped
+        self.normalizedUrl = try ozValidateAndNormalizeEndpoint(relayerUrl, label: "Relayer")
 
         let timeoutSeconds = TimeInterval(timeoutMs) / 1000.0
         self.defaultTimeoutInterval = timeoutSeconds

@@ -581,7 +581,7 @@ public final class OZContextRuleManager: OZContextRuleManagerProtocol, OZManager
         }
     }
 
-    private func addressString(from scAddress: SCAddressXDR) throws -> String {
+    internal func addressString(from scAddress: SCAddressXDR) throws -> String {
         guard let address = OZAddressStrKey.fromXdr(scAddress) else {
             throw ValidationException.invalidInput(
                 field: "address",

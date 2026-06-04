@@ -634,31 +634,7 @@ public class OZIndexerClient: @unchecked Sendable {
         timeoutMs: Int64 = OZConstants.defaultIndexerTimeoutMs,
         urlSession: URLSession? = nil
     ) throws {
-        let trimmedUrl = indexerUrl.trimmingCharacters(in: .whitespacesAndNewlines)
-        if trimmedUrl.isEmpty {
-            throw ConfigurationException.invalidConfig(details: "Indexer URL is required")
-        }
-        if !trimmedUrl.hasPrefix("https://") && !isLocalhostUrl(trimmedUrl) {
-            throw ConfigurationException.invalidConfig(
-                details: "Indexer URL must use HTTPS (or http://localhost for development): \(trimmedUrl)"
-            )
-        }
-
-        var stripped = trimmedUrl
-        while stripped.hasSuffix("/") {
-            stripped.removeLast()
-        }
-        // why: stripping trailing slashes can leave a scheme-only string (for
-        // example "https://" → "https:") that the prefix check still treats as
-        // valid; reject any result without a non-empty host so request-time
-        // failures don't surface as opaque URL errors.
-        guard let components = URLComponents(string: stripped),
-              let host = components.host, !host.isEmpty else {
-            throw ConfigurationException.invalidConfig(
-                details: "Indexer URL must include a host: \(trimmedUrl)"
-            )
-        }
-        self.baseUrl = stripped
+        self.baseUrl = try ozValidateAndNormalizeEndpoint(indexerUrl, label: "Indexer")
 
         let timeoutSeconds = TimeInterval(timeoutMs) / 1000.0
         self.timeoutInterval = timeoutSeconds

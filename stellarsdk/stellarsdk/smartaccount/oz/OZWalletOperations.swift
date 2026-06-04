@@ -1420,7 +1420,7 @@ public final class OZWalletOperations: OZManagerHelpers, @unchecked Sendable {
             )
         }
 
-        let useRelayer = resolveDeploySubmissionMethod(forceMethod: forceMethod) == .relayer
+        let useRelayer = resolveSubmissionMethod(forceMethod: forceMethod) == .relayer
 
         do {
             try OZTransactionOperations.applySimulation(
@@ -1458,7 +1458,7 @@ public final class OZWalletOperations: OZManagerHelpers, @unchecked Sendable {
         credentialIdBase64url: String,
         forceMethod: SubmissionMethod?
     ) async throws -> String {
-        let useRelayer = resolveDeploySubmissionMethod(forceMethod: forceMethod) == .relayer
+        let useRelayer = resolveSubmissionMethod(forceMethod: forceMethod) == .relayer
 
         let transactionHash: String
 
@@ -1577,18 +1577,6 @@ public final class OZWalletOperations: OZManagerHelpers, @unchecked Sendable {
         }
 
         return transactionHash
-    }
-
-    /// Resolves the deploy-submission method.
-    ///
-    /// Priority: forced override > relayer (if configured) > RPC.
-    private func resolveDeploySubmissionMethod(
-        forceMethod: SubmissionMethod?
-    ) -> SubmissionMethod {
-        if let forceMethod = forceMethod {
-            return forceMethod
-        }
-        return kit.relayerClient != nil ? .relayer : .rpc
     }
 
     private func safeGetSession() async -> StoredSession? {

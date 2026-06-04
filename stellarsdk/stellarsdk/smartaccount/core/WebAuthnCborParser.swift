@@ -293,7 +293,7 @@ enum WebAuthnCborParser {
     ///   is insufficient data following it.
     private static func extractPublicKeyByPattern(_ data: Data) -> Data? {
         let prefix = Data(Self.coseEs256KeyPrefix)
-        let prefixIndex = findSubrange(haystack: data, needle: prefix)
+        let prefixIndex = SmartAccountUtils.findSubarray(array: data, subarray: prefix)
         if prefixIndex < 0 { return nil }
 
         let xStart = prefixIndex + prefix.count
@@ -646,33 +646,5 @@ enum WebAuthnCborParser {
         publicKey.replaceSubrange(1..<33, with: x)
         publicKey.replaceSubrange(33..<65, with: y)
         return publicKey
-    }
-
-    /// Searches for the first occurrence of `needle` within `haystack`.
-    ///
-    /// Naive linear scan. WebAuthn attestation objects are small (typically a few hundred
-    /// bytes), so the performance of a naive scan is acceptable.
-    ///
-    /// - Parameters:
-    ///   - haystack: The byte array to search within.
-    ///   - needle: The byte array to search for.
-    /// - Returns: Index of the first occurrence of `needle` in `haystack`, or `-1` if not
-    ///   found or `needle` is longer than `haystack`.
-    private static func findSubrange(haystack: Data, needle: Data) -> Int {
-        if needle.isEmpty || needle.count > haystack.count { return -1 }
-
-        let hayBase = haystack.startIndex
-        let needleBase = needle.startIndex
-        let limit = haystack.count - needle.count
-
-        outer: for i in 0...limit {
-            for j in 0..<needle.count {
-                if haystack[hayBase + i + j] != needle[needleBase + j] {
-                    continue outer
-                }
-            }
-            return i
-        }
-        return -1
     }
 }

@@ -185,7 +185,7 @@ internal protocol OZSmartAccountKitProtocol: AnyObject, Sendable {
     var indexerClient: OZIndexerClient? { get }
 
     /// Optional relayer client used for fee-sponsored submission. Auto-detection
-    /// in `getSubmissionMethod(_:)` falls back to RPC when this is `nil`.
+    /// in `resolveSubmissionMethod(forceMethod:)` falls back to RPC when this is `nil`.
     var relayerClient: OZRelayerClient? { get }
 
     /// Event emitter for the kit; receives lifecycle events emitted by wallet
