@@ -183,3 +183,27 @@ internal extension SerializableSession {
         )
     }
 }
+
+// MARK: - JSON string serialization
+
+/// Encodes an `Encodable` value to a UTF-8 JSON string for persistence by the
+/// storage adapters.
+func encodeToString<T: Encodable>(_ value: T) throws -> String {
+    let data = try JSONEncoder().encode(value)
+    guard let string = String(data: data, encoding: .utf8) else {
+        throw StorageException.WriteFailed(
+            message: "Failed to encode JSON payload as UTF-8 string"
+        )
+    }
+    return string
+}
+
+/// Decodes a `Decodable` value from a UTF-8 JSON string produced by ``encodeToString(_:)``.
+func decodeFromString<T: Decodable>(_ type: T.Type, _ jsonString: String) throws -> T {
+    guard let data = jsonString.data(using: .utf8) else {
+        throw StorageException.ReadFailed(
+            message: "Failed to decode UTF-8 bytes from stored JSON payload"
+        )
+    }
+    return try JSONDecoder().decode(type, from: data)
+}

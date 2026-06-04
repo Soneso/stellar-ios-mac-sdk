@@ -69,12 +69,6 @@ public final actor UserDefaultsStorageAdapter: StorageAdapter {
     /// `UserDefaults` instance scoped to the configured suite name.
     private let defaults: UserDefaults
 
-    /// Cached JSON encoder used for every persisted payload.
-    private let encoder: JSONEncoder
-
-    /// Cached JSON decoder used for every read payload.
-    private let decoder: JSONDecoder
-
     // ========================================================================
     // Initialization
     // ========================================================================
@@ -95,8 +89,6 @@ public final actor UserDefaultsStorageAdapter: StorageAdapter {
             )
         }
         self.defaults = defaults
-        self.encoder = JSONEncoder()
-        self.decoder = JSONDecoder()
     }
 
     // ========================================================================
@@ -324,28 +316,5 @@ public final actor UserDefaultsStorageAdapter: StorageAdapter {
     private func writeIndex(_ index: CredentialIndex) throws {
         let jsonString = try encodeToString(index)
         defaults.set(jsonString, forKey: Self.credentialIndexKey)
-    }
-
-    // ========================================================================
-    // Internal Helpers — JSON
-    // ========================================================================
-
-    private func encodeToString<T: Encodable>(_ value: T) throws -> String {
-        let data = try encoder.encode(value)
-        guard let string = String(data: data, encoding: .utf8) else {
-            throw StorageException.WriteFailed(
-                message: "Failed to encode JSON payload as UTF-8 string"
-            )
-        }
-        return string
-    }
-
-    private func decodeFromString<T: Decodable>(_ type: T.Type, _ jsonString: String) throws -> T {
-        guard let data = jsonString.data(using: .utf8) else {
-            throw StorageException.ReadFailed(
-                message: "Failed to decode UTF-8 bytes from stored JSON payload"
-            )
-        }
-        return try decoder.decode(type, from: data)
     }
 }

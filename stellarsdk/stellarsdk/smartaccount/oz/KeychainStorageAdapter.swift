@@ -23,8 +23,7 @@ import Security
 /// after a reboot.
 ///
 /// Thread safety is provided by Swift Concurrency `actor` isolation, so all
-/// operations serialize even when invoked from multiple tasks. The actor
-/// holds JSON encoder / decoder instances configured once at init.
+/// operations serialize even when invoked from multiple tasks.
 ///
 /// Example:
 /// ```swift
@@ -72,12 +71,6 @@ public final actor KeychainStorageAdapter: StorageAdapter {
     /// simulate failure-mode `OSStatus` values without needing a real Keychain.
     private let shim: SecItemShim
 
-    /// Cached JSON encoder used for every persisted payload.
-    private let encoder: JSONEncoder
-
-    /// Cached JSON decoder used for every read payload.
-    private let decoder: JSONDecoder
-
     // ========================================================================
     // Initialization
     // ========================================================================
@@ -97,8 +90,6 @@ public final actor KeychainStorageAdapter: StorageAdapter {
     ) {
         self.serviceName = serviceName
         self.shim = shim
-        self.encoder = JSONEncoder()
-        self.decoder = JSONDecoder()
     }
 
     // ========================================================================
@@ -334,29 +325,6 @@ public final actor KeychainStorageAdapter: StorageAdapter {
     private func writeIndex(_ index: CredentialIndex) throws {
         let jsonString = try encodeToString(index)
         try keychainUpsert(account: Self.credentialIndexKey, data: jsonString)
-    }
-
-    // ========================================================================
-    // Internal Helpers — JSON
-    // ========================================================================
-
-    private func encodeToString<T: Encodable>(_ value: T) throws -> String {
-        let data = try encoder.encode(value)
-        guard let string = String(data: data, encoding: .utf8) else {
-            throw StorageException.WriteFailed(
-                message: "Failed to encode JSON payload as UTF-8 string"
-            )
-        }
-        return string
-    }
-
-    private func decodeFromString<T: Decodable>(_ type: T.Type, _ jsonString: String) throws -> T {
-        guard let data = jsonString.data(using: .utf8) else {
-            throw StorageException.ReadFailed(
-                message: "Failed to decode UTF-8 bytes from stored JSON payload"
-            )
-        }
-        return try decoder.decode(type, from: data)
     }
 
     // ========================================================================
