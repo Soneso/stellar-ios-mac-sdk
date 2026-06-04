@@ -202,17 +202,17 @@ public enum SmartAccountUtils {
                 candidate = publicKey
             }
 
-            if candidate.count == SmartAccountConstants.secp256r1PublicKeySize
-                && candidate[candidate.startIndex] == SmartAccountConstants.uncompressedPubkeyPrefix
-            {
-                let xRange = (candidate.startIndex + 1)..<(candidate.startIndex + 33)
-                let yRange = (candidate.startIndex + 33)..<(candidate.startIndex + 65)
+            // Route the 0x04-prefixed case through extractPublicKeyFromSpki, which checks
+            // that the last 65 bytes start with 0x04 — identical to the previous
+            // suffix(65)-plus-0x04-check, making extractPublicKeyFromSpki live.
+            if let spkiKey = WebAuthnCborParser.extractPublicKeyFromSpki(publicKey) {
+                let xRange = (spkiKey.startIndex + 1)..<(spkiKey.startIndex + 33)
+                let yRange = (spkiKey.startIndex + 33)..<(spkiKey.startIndex + 65)
                 try validatePointOnCurve(
-                    x: candidate.subdata(in: xRange),
-                    y: candidate.subdata(in: yRange)
+                    x: spkiKey.subdata(in: xRange),
+                    y: spkiKey.subdata(in: yRange)
                 )
-                // Return a fresh contiguous copy regardless of slicing.
-                return Data(candidate)
+                return Data(spkiKey)
             }
 
             // Compressed point formats (0x02 even-Y, 0x03 odd-Y) are not supported. Soroban
@@ -251,7 +251,9 @@ public enum SmartAccountUtils {
     /// Extracts the secp256r1 public key from WebAuthn authenticator data.
     ///
     /// Parses the attested credential data structure defined by the WebAuthn specification
-    /// to locate and extract the COSE public key.
+    /// to locate and extract the COSE public key. Structural decisions (prefix presence,
+    /// buffer length) are made here; X/Y parsing is delegated to `WebAuthnCborParser`
+    /// and curve validation is applied to the result.
     ///
     /// Authenticator data layout:
     /// ```
@@ -264,27 +266,25 @@ public enum SmartAccountUtils {
     /// [55+N..]  COSE public key   (variable) -- if AT flag set
     /// ```
     ///
-    /// The COSE ES256 key prefix is `[0xA5, 0x01, 0x02, 0x03, 0x26, 0x20, 0x01, 0x21,
-    /// 0x58, 0x20]`, followed by 32 bytes of `X`, then `[0x22, 0x58, 0x20]`, then 32 bytes
-    /// of `Y`.
-    ///
-    /// - Parameter authenticatorData: Raw authenticator data bytes.
-    /// - Returns: 65-byte uncompressed public key, or `nil` when the data is too short,
-    ///            when the AT flag is not set, or when the COSE prefix does not match.
-    /// - Throws: `ValidationException.InvalidInput` when the Y marker is malformed or the
-    ///           extracted point is not on the secp256r1 curve.
+    /// Disposition:
+    /// - Returns `nil` when the data is too short, the AT flag is absent, the COSE prefix
+    ///   does not match, or the buffer is too short for a complete key (allowing the caller
+    ///   to fall through to the next source).
+    /// - Throws `ValidationException.InvalidInput` when the COSE prefix is present, the
+    ///   buffer is long enough for a complete key, but the parsed structure is malformed
+    ///   (e.g. corrupted Y-coordinate separator) or the extracted point is not on the
+    ///   secp256r1 curve.
     internal static func extractPublicKeyFromAuthenticatorData(
         _ authenticatorData: Data
     ) throws -> Data? {
-        // Minimum size: 37 (rpIdHash + flags + signCount) + 16 (AAGUID) + 2 (credIdLen) =
-        // 55, plus at least the COSE key prefix (10) + X (32) + separator (3) + Y (32) = 77.
+        // Gate 1: minimum fixed header size (rpIdHash + flags + signCount + aaguid + credIdLen).
         if authenticatorData.count < 55 {
             return nil
         }
 
         let start = authenticatorData.startIndex
 
-        // Check the AT (attested credential data) flag (bit 6 of the flags byte).
+        // Gate 2: check the AT (attested credential data) flag (bit 6 of the flags byte).
         let flags = Int(authenticatorData[start + 32]) & 0xFF
         if flags & 0x40 == 0 {
             return nil
@@ -298,15 +298,17 @@ public enum SmartAccountUtils {
         // COSE key starts at offset 55 + credentialIdLength.
         let coseKeyStart = 55 + credentialIdLength
 
-        // Validate the 10-byte ES256 COSE key prefix before reading X and Y. The prefix
+        // Gate 3: ensure the 10-byte COSE prefix is in range before inspecting it.
+        if authenticatorData.count < coseKeyStart + 10 {
+            return nil
+        }
+
+        // Gate 4: verify the 10-byte ES256 COSE prefix. The prefix
         // [0xA5, 0x01, 0x02, 0x03, 0x26, 0x20, 0x01, 0x21, 0x58, 0x20] encodes the CBOR
         // map header and the kty, alg, and crv parameters for an ES256 P-256 key.
         let expectedCosePrefix: [UInt8] = [
             0xA5, 0x01, 0x02, 0x03, 0x26, 0x20, 0x01, 0x21, 0x58, 0x20
         ]
-        if authenticatorData.count < coseKeyStart + 10 {
-            return nil
-        }
         let actualPrefix = authenticatorData.subdata(
             in: (start + coseKeyStart)..<(start + coseKeyStart + 10)
         )
@@ -314,47 +316,44 @@ public enum SmartAccountUtils {
             return nil
         }
 
-        let xStart = coseKeyStart + 10
-        let separatorStart = xStart + 32
-        let yStart = separatorStart + 3
-        let requiredLength = yStart + 32
-
-        if authenticatorData.count < requiredLength {
+        // Gate 5: full-key length check. Returns nil (not throw) so the public method falls
+        // through to the attestation-object strategy when the buffer is truncated after the
+        // prefix but before the complete key.
+        let fullKeyRequiredLength = coseKeyStart + 10 + 32 + 3 + 32
+        if authenticatorData.count < fullKeyRequiredLength {
             return nil
         }
 
-        // Validate the Y-coordinate marker bytes [0x22, 0x58, 0x20] at the expected
-        // position. Validating the separator confirms the X-coordinate starts at the
-        // correct offset and guards against coincidental prefix matches.
-        try validateCoseYMarker(
-            data: authenticatorData,
-            offset: separatorStart,
-            sourceName: "authenticatorData"
-        )
+        // All structural gates passed — delegate parsing to WebAuthnCborParser. The parser
+        // handles both CBOR map-iteration (order-tolerant) and pattern-matching fallback
+        // (strict: validates the [0x22, 0x58, 0x20] Y-coordinate separator).
+        let coseKeySlice = authenticatorData.subdata(in: (start + coseKeyStart)..<authenticatorData.endIndex)
+        guard let key = WebAuthnCborParser.extractPublicKeyFromCoseKey(coseKeySlice) else {
+            // Prefix and length are both valid, but the parser could not extract coordinates
+            // (e.g. corrupted separator). Treat as malformed rather than falling through.
+            throw ValidationException.invalidInput(
+                field: "authenticatorData",
+                reason: "COSE key structure is invalid: could not extract secp256r1 coordinates from authenticator data"
+            )
+        }
 
-        let x = authenticatorData.subdata(in: (start + xStart)..<(start + xStart + 32))
-        let y = authenticatorData.subdata(in: (start + yStart)..<(start + yStart + 32))
-
+        let x = key.subdata(in: (key.startIndex + 1)..<(key.startIndex + 33))
+        let y = key.subdata(in: (key.startIndex + 33)..<(key.startIndex + 65))
         try validatePointOnCurve(x: x, y: y)
-
-        var publicKey = Data(count: SmartAccountConstants.secp256r1PublicKeySize)
-        publicKey[0] = SmartAccountConstants.uncompressedPubkeyPrefix
-        publicKey.replaceSubrange(1..<33, with: x)
-        publicKey.replaceSubrange(33..<65, with: y)
-        return publicKey
+        return key
     }
 
     /// Extracts the secp256r1 public key from a raw WebAuthn attestation object.
     ///
-    /// Pattern-matches the 10-byte COSE key prefix in raw attestation data and extracts
-    /// the `X`/`Y` coordinates of the public key. Returns the 65-byte uncompressed public
-    /// key (`0x04` prefix + `X` + `Y`).
+    /// Probes for the 10-byte ES256 COSE prefix to confirm the key is present, then
+    /// delegates parsing to `WebAuthnCborParser` and applies curve validation to the
+    /// result.
     ///
     /// - Parameter attestationObject: Raw attestation object bytes.
     /// - Returns: 65-byte uncompressed public key.
     /// - Throws: `ValidationException.InvalidInput` when the COSE prefix is not found,
-    ///           there is insufficient data after the prefix, the Y marker does not match
-    ///           `[0x22, 0x58, 0x20]`, or the extracted point is not on the secp256r1 curve.
+    ///           the parsed structure is malformed, or the extracted point is not on the
+    ///           secp256r1 curve.
     internal static func extractPublicKeyFromAttestationObject(
         _ attestationObject: Data
     ) throws -> Data {
@@ -367,35 +366,20 @@ public enum SmartAccountUtils {
             )
         }
 
-        let xStart = prefixIndex + prefix.count
-        let separatorStart = xStart + 32
-        let yStart = separatorStart + 3
-        let requiredLength = yStart + 32
-
-        if attestationObject.count < requiredLength {
+        // Prefix is present; delegate full parsing to WebAuthnCborParser. The parser's
+        // pattern-matching fallback locates the prefix and strictly validates the
+        // [0x22, 0x58, 0x20] Y-coordinate separator.
+        guard let key = WebAuthnCborParser.extractPublicKeyFromCoseKey(attestationObject) else {
             throw ValidationException.invalidInput(
                 field: "attestationObject",
-                reason: "Insufficient data after COSE key prefix"
+                reason: "COSE key structure is malformed: could not extract secp256r1 coordinates from attestation object"
             )
         }
 
-        try validateCoseYMarker(
-            data: attestationObject,
-            offset: separatorStart,
-            sourceName: "attestationObject"
-        )
-
-        let start = attestationObject.startIndex
-        let x = attestationObject.subdata(in: (start + xStart)..<(start + xStart + 32))
-        let y = attestationObject.subdata(in: (start + yStart)..<(start + yStart + 32))
-
+        let x = key.subdata(in: (key.startIndex + 1)..<(key.startIndex + 33))
+        let y = key.subdata(in: (key.startIndex + 33)..<(key.startIndex + 65))
         try validatePointOnCurve(x: x, y: y)
-
-        var publicKey = Data(count: SmartAccountConstants.secp256r1PublicKeySize)
-        publicKey[0] = SmartAccountConstants.uncompressedPubkeyPrefix
-        publicKey.replaceSubrange(1..<33, with: x)
-        publicKey.replaceSubrange(33..<65, with: y)
-        return publicKey
+        return key
     }
 
     /// Computes the contract salt from a WebAuthn credential ID.
@@ -567,32 +551,6 @@ public enum SmartAccountUtils {
         0x65, 0x1D, 0x06, 0xB0, 0xCC, 0x53, 0xB0, 0xF6,
         0x3B, 0xCE, 0x3C, 0x3E, 0x27, 0xD2, 0x60, 0x4B
     ])
-
-    /// Validates the 3-byte COSE Y-coordinate separator at the given offset.
-    ///
-    /// The separator bytes [0x22, 0x58, 0x20] are the CBOR encoding of map key -3 (Y), a
-    /// byte string of length 32. Their presence at the exact offset after the X coordinate
-    /// confirms the surrounding structure is a valid ES256 COSE key and not a coincidental
-    /// byte match elsewhere.
-    fileprivate static func validateCoseYMarker(
-        data: Data,
-        offset: Int,
-        sourceName: String
-    ) throws {
-        let start = data.startIndex
-        let sep0 = Int(data[start + offset]) & 0xFF
-        let sep1 = Int(data[start + offset + 1]) & 0xFF
-        let sep2 = Int(data[start + offset + 2]) & 0xFF
-        if sep0 != 0x22 || sep1 != 0x58 || sep2 != 0x20 {
-            let hex0 = String(format: "%02x", sep0)
-            let hex1 = String(format: "%02x", sep1)
-            let hex2 = String(format: "%02x", sep2)
-            throw ValidationException.invalidInput(
-                field: sourceName,
-                reason: "COSE key structure is invalid: Y-coordinate marker [0x22, 0x58, 0x20] not found at expected offset \(offset) (found [0x\(hex0), 0x\(hex1), 0x\(hex2)])"
-            )
-        }
-    }
 
     /// Validates that the point `(x, y)` lies on the secp256r1 curve.
     ///

@@ -512,7 +512,7 @@ final class SmartAccountUtilsTests: XCTestCase {
         XCTAssertEqual(try SmartAccountUtils.extractPublicKeyFromRegistration(publicKey: pk), pk)
     }
 
-    func extractPublicKey_directKeyZeroCoordinatesThrows() {
+    func testExtractPublicKey_directKeyZeroCoordinatesThrows() {
         var pk = Data(count: 65)
         pk[0] = 0x04
         // Zero coordinates trigger the "zero component" rejection branch.
@@ -600,9 +600,10 @@ final class SmartAccountUtilsTests: XCTestCase {
         XCTAssertNil(try SmartAccountUtils.extractPublicKeyFromAuthenticatorData(auth))
     }
 
-    func testExtractPublicKeyFromAuthData_invalidYMarkerThrows() {
+    func testExtractPublicKeyFromAuthData_invalidYMarkerThirdByteThrows() {
         let pk = generatorPoint()
         var auth = makeAuthenticatorData(publicKey: pk, credentialId: Data())
+        // Corrupt the third byte of the Y separator [0x22, 0x58, 0x20] at offset 55+10+32+2=99.
         let yMarkerOffset = 55 + 0 + 10 + 32 + 2
         auth[yMarkerOffset] = 0x00
         XCTAssertThrowsError(try SmartAccountUtils.extractPublicKeyFromAuthenticatorData(auth))
@@ -663,24 +664,62 @@ final class SmartAccountUtilsTests: XCTestCase {
         XCTAssertThrowsError(try SmartAccountUtils.extractPublicKeyFromAttestationObject(attest))
     }
 
-    func extractPublicKeyFromAttestation_truncatedAfterPrefixThrows() {
-        let prefix = Data([0xA5, 0x01, 0x02, 0x03, 0x26, 0x20, 0x01, 0x21, 0x58, 0x20])
-        XCTAssertThrowsError(try SmartAccountUtils.extractPublicKeyFromAttestationObject(prefix))
-    }
-
-    func extractPublicKeyFromAttestation_invalidYMarkerThrows() {
+    /// Feeds a real-attestation-shaped CBOR map through `extractPublicKeyFromAttestationObject`.
+    ///
+    /// The outer CBOR map (text keys: fmt / authData) causes `extractPublicKeyFromCoseKey`'s
+    /// map-iteration path to return nil at the top level (it finds text-string keys, not COSE
+    /// integer labels -2/-3). The pattern-matching fallback then locates the embedded COSE key
+    /// prefix and extracts the coordinates. This covers the map-iteration-returns-nil ->
+    /// pattern-fallback path inside `WebAuthnCborParser.extractPublicKeyFromCoseKey`.
+    func testExtractPublicKeyFromAttestationObject_realCborMapFallbackToPatternMatch() throws {
         let pk = generatorPoint()
-        var attest = makeAttestationObject(publicKey: pk)
-        attest[10 + 32] = 0x00
-        XCTAssertThrowsError(try SmartAccountUtils.extractPublicKeyFromAttestationObject(attest))
+        // Build raw bytes that contain the COSE key structure, matching what `makeAttestationObject`
+        // produces (prefix + X + separator + Y). Embed these as the value of the "authData" key
+        // inside a proper CBOR attestation map so the top-level input is a CBOR map.
+        let coseRawBytes = makeAttestationObject(publicKey: pk)
+
+        // Build a CBOR map: { "fmt": "none", "authData": <coseRawBytes as bstr> }.
+        // CBOR map(2): header + text "fmt" + text "none" + text "authData" + bstr(coseRawBytes).
+        let fmtKey = buildCborTextString("fmt")
+        let fmtVal = buildCborTextString("none")
+        let authDataKey = buildCborTextString("authData")
+        let authDataVal = buildCborByteString(coseRawBytes)
+        var attestation = buildCborHead(majorType: 5, length: 2)
+        attestation.append(fmtKey)
+        attestation.append(fmtVal)
+        attestation.append(authDataKey)
+        attestation.append(authDataVal)
+
+        // extractPublicKeyFromAttestationObject probes for the COSE prefix anywhere in the
+        // raw bytes. The prefix is embedded inside the bstr, so findSubarray finds it.
+        // Then extractPublicKeyFromCoseKey sees the outer CBOR map header at byte 0 and
+        // tries map-iteration, which finds text keys (not integer COSE labels) and returns
+        // nil. The pattern-matching fallback then locates the prefix and extracts the key.
+        let extracted = try SmartAccountUtils.extractPublicKeyFromAttestationObject(attestation)
+        XCTAssertEqual(extracted, pk)
     }
 
-    func extractPublicKeyFromAttestation_offCurveThrows() {
-        var bogus = Data(count: 65)
-        bogus[0] = 0x04
-        for i in 1..<65 { bogus[i] = UInt8((i * 31) & 0xFF) }
-        let attest = makeAttestationObject(publicKey: bogus)
-        XCTAssertThrowsError(try SmartAccountUtils.extractPublicKeyFromAttestationObject(attest))
+    /// Negative counterpart of the real-CBOR-map fallback test: a corrupted Y-coordinate
+    /// separator inside a text-keyed CBOR attestation map. The outer map iteration returns nil
+    /// (text keys), so the pattern-matching fallback is the SOLE rejecter — its strict
+    /// `[0x22, 0x58, 0x20]` check must fail, yielding no key, so the extractor throws.
+    func testExtractPublicKeyFromAttestationObject_realCborMapCorruptedSeparatorThrows() {
+        let pk = generatorPoint()
+        var coseRawBytes = makeAttestationObject(publicKey: pk)
+        // Corrupt the first separator byte (0x22) at offset prefix(10) + X(32) = 42.
+        coseRawBytes[coseRawBytes.startIndex + 42] = 0x00
+
+        let fmtKey = buildCborTextString("fmt")
+        let fmtVal = buildCborTextString("none")
+        let authDataKey = buildCborTextString("authData")
+        let authDataVal = buildCborByteString(coseRawBytes)
+        var attestation = buildCborHead(majorType: 5, length: 2)
+        attestation.append(fmtKey)
+        attestation.append(fmtVal)
+        attestation.append(authDataKey)
+        attestation.append(authDataVal)
+
+        XCTAssertThrowsError(try SmartAccountUtils.extractPublicKeyFromAttestationObject(attestation))
     }
 
     // MARK: - On-curve validation
@@ -928,6 +967,41 @@ final class SmartAccountUtilsTests: XCTestCase {
 
     // MARK: - Helpers
 
+    /// Encodes a CBOR text string (major type 3).
+    private func buildCborTextString(_ text: String) -> Data {
+        let utf8 = Data(text.utf8)
+        return buildCborHead(majorType: 3, length: utf8.count) + utf8
+    }
+
+    /// Encodes a CBOR byte string (major type 2).
+    private func buildCborByteString(_ data: Data) -> Data {
+        return buildCborHead(majorType: 2, length: data.count) + data
+    }
+
+    /// Builds a CBOR head byte (and any extended length bytes) for the given major type and length.
+    private func buildCborHead(majorType: Int, length: Int) -> Data {
+        let major = majorType << 5
+        if length < 24 {
+            return Data([UInt8(major | length)])
+        } else if length < 256 {
+            return Data([UInt8(major | 24), UInt8(length)])
+        } else if length < 65536 {
+            return Data([
+                UInt8(major | 25),
+                UInt8((length >> 8) & 0xFF),
+                UInt8(length & 0xFF)
+            ])
+        } else {
+            return Data([
+                UInt8(major | 26),
+                UInt8((length >> 24) & 0xFF),
+                UInt8((length >> 16) & 0xFF),
+                UInt8((length >> 8) & 0xFF),
+                UInt8(length & 0xFF)
+            ])
+        }
+    }
+
     /// secp256r1 generator point G in uncompressed form (0x04 || X || Y).
     private func generatorPoint() -> Data {
         let x = Data([
@@ -995,6 +1069,7 @@ final class SmartAccountUtilsTests: XCTestCase {
         attest.append(publicKey.subdata(in: (xStart + 32)..<(xStart + 64)))
         return attest
     }
+
 }
 
 // MARK: - Seeded RNG

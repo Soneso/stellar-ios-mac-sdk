@@ -32,7 +32,9 @@ import Foundation
 /// - Bit 3 (0x08): BE — Backup Eligibility (multi-device credential)
 /// - Bit 4 (0x10): BS — Backup State (currently backed up)
 ///
-/// Module-internal; the public pubkey/flag primitives are re-exposed via dedicated facade types.
+/// Module-internal; pubkey extraction methods are used by `SmartAccountUtils`, which owns
+/// curve validation and the throw-vs-nil source-selection contract. Flag and authenticator-data
+/// parsing methods are used directly by the platform WebAuthn provider.
 enum WebAuthnCborParser {
 
     /// Minimum length of valid authenticator data (rpIdHash + flags + signCount).
@@ -285,24 +287,39 @@ enum WebAuthnCborParser {
     ///
     /// Searches for the `coseEs256KeyPrefix` (10 bytes) anywhere in `data`. If found:
     /// - X is the 32 bytes immediately after the prefix.
-    /// - Y is the 32 bytes starting 3 bytes after X (the 3 bytes are the CBOR-encoded
-    ///   map key -3 followed by a 32-byte bstr header: `0x22 0x58 0x20`).
+    /// - The 3 bytes at `xStart + 32` must equal `[0x22, 0x58, 0x20]` (CBOR key -3 followed
+    ///   by a 32-byte bstr header). A mismatch indicates a corrupted or coincidental prefix
+    ///   match and causes this method to return `nil`.
+    /// - Y is the 32 bytes starting 3 bytes after X.
     ///
     /// - Parameter data: Byte array to search within.
-    /// - Returns: Uncompressed 65-byte public key, or `nil` if the prefix is absent or there
-    ///   is insufficient data following it.
+    /// - Returns: Uncompressed 65-byte public key, or `nil` if the prefix is absent,
+    ///   there is insufficient data following it, or the Y-coordinate separator bytes do
+    ///   not equal `[0x22, 0x58, 0x20]`.
     private static func extractPublicKeyByPattern(_ data: Data) -> Data? {
         let prefix = Data(Self.coseEs256KeyPrefix)
         let prefixIndex = SmartAccountUtils.findSubarray(array: data, subarray: prefix)
         if prefixIndex < 0 { return nil }
 
         let xStart = prefixIndex + prefix.count
-        let yStart = xStart + 32 + 3 // 3 bytes: CBOR key -3 (0x22) + bstr header (0x58 0x20).
+        let separatorStart = xStart + 32
+        let yStart = separatorStart + 3 // 3 bytes: CBOR key -3 (0x22) + bstr header (0x58 0x20).
         let requiredLength = yStart + 32
 
         if data.count < requiredLength { return nil }
 
+        // Validate the 3-byte Y-coordinate separator [0x22, 0x58, 0x20] at the fixed offset.
+        // This confirms the X coordinate occupies exactly the 32 bytes preceding this position
+        // and that the surrounding structure is a valid ES256 COSE key, not a coincidental
+        // prefix match. A mismatch means the key data is structurally malformed.
         let base = data.startIndex
+        if data[base + separatorStart] != 0x22
+            || data[base + separatorStart + 1] != 0x58
+            || data[base + separatorStart + 2] != 0x20
+        {
+            return nil
+        }
+
         let x = data.subdata(in: (base + xStart)..<(base + xStart + 32))
         let y = data.subdata(in: (base + yStart)..<(base + yStart + 32))
 

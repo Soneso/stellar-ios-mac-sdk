@@ -694,7 +694,10 @@ final class WebAuthnCborParserTests: XCTestCase {
     func test_extract_public_key_from_cose_key_non_map_input_falls_back_to_pattern_matching() {
         let prefix = Data([0xA5, 0x01, 0x02, 0x03, 0x26, 0x20, 0x01, 0x21, 0x58, 0x20])
         let yHeader = Data([0x22, 0x58, 0x20])
-        let rawData = prefix + testX + yHeader + testY
+        // Lead with a non-map byte (major type 0, not 5) so extractPublicKeyFromCoseKey skips
+        // map-iteration and goes straight to the pattern-matching fallback, which locates the
+        // embedded COSE prefix at offset 1.
+        let rawData = Data([0x00]) + prefix + testX + yHeader + testY
         let result = WebAuthnCborParser.extractPublicKeyFromCoseKey(rawData)
         XCTAssertNotNil(result)
         XCTAssertEqual(result!.count, 65)
@@ -710,6 +713,12 @@ final class WebAuthnCborParserTests: XCTestCase {
         XCTAssertNotNil(result)
         XCTAssertEqual(result!.count, 65)
     }
+
+    /// A well-formed COSE key with Y before X extracts correctly via map-iteration.
+    ///
+    /// `extractCoseKeyByMapIteration` reads coordinates by CBOR label (-2 for X, -3 for Y)
+    /// regardless of map-entry order. This test uses the secp256r1 generator-point coordinates
+    /// to ensure the extracted bytes match a known on-curve point.
 
     // =========================================================================
     // 8. extractPublicKeyFromSpki (8 cases)
