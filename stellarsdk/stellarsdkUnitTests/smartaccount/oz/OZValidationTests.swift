@@ -24,8 +24,8 @@ final class OZValidationTests: XCTestCase {
     func test_requireContractAddress_invalidAddress_throwsInvalidAddress7001() {
         do {
             try requireContractAddress("not-a-valid-address", fieldName: "policyAddress")
-            XCTFail("expected ValidationException.InvalidAddress to be thrown")
-        } catch let error as ValidationException.InvalidAddress {
+            XCTFail("expected SmartAccountValidationException.InvalidAddress to be thrown")
+        } catch let error as SmartAccountValidationException.InvalidAddress {
             XCTAssertEqual(error.code, .invalidAddress)
             XCTAssertEqual(error.code.rawValue, 7001)
             XCTAssertEqual(
@@ -51,8 +51,8 @@ final class OZValidationTests: XCTestCase {
     func test_requireStellarAddress_muxedM_address_throwsInvalidAddress7001() {
         do {
             try requireStellarAddress(validMuxedM, fieldName: "recipient")
-            XCTFail("expected ValidationException.InvalidAddress to be thrown for M-address")
-        } catch let error as ValidationException.InvalidAddress {
+            XCTFail("expected SmartAccountValidationException.InvalidAddress to be thrown for M-address")
+        } catch let error as SmartAccountValidationException.InvalidAddress {
             XCTAssertEqual(error.code, .invalidAddress)
             XCTAssertEqual(error.code.rawValue, 7001)
             XCTAssertEqual(
@@ -132,7 +132,7 @@ final class OZValidationTests: XCTestCase {
         XCTAssertThrowsError(
             try OZIndexerClient(indexerUrl: "http://user:pass@localhost:8080")
         ) { error in
-            XCTAssertTrue(error is ConfigurationException.InvalidConfig)
+            XCTAssertTrue(error is SmartAccountConfigurationException.InvalidConfig)
         }
     }
 }

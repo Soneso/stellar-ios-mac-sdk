@@ -14,7 +14,7 @@ import XCTest
 ///
 /// These tests cover input-validation paths that do not require a live
 /// Soroban server. Each manager method is exercised in two scenarios:
-/// - Not connected: throws ``WalletException/NotConnected`` regardless of
+/// - Not connected: throws ``SmartAccountWalletException/NotConnected`` regardless of
 ///   whether `selectedSigners` is supplied or empty.
 /// - Connected with invalid input: throws the appropriate validation error,
 ///   confirming the method accepted the `selectedSigners` parameter and
@@ -49,7 +49,7 @@ final class OZManagerSelectedSignersTests: XCTestCase {
     }
 
     /// Builds a disconnected mock kit. Every method invocation under test
-    /// should throw ``WalletException/NotConnected`` against this kit.
+    /// should throw ``SmartAccountWalletException/NotConnected`` against this kit.
     private func disconnectedKit(
         contextRuleParser: OZContextRuleParser? = nil
     ) throws -> MockOZSmartAccountKit {
@@ -90,10 +90,10 @@ final class OZManagerSelectedSignersTests: XCTestCase {
         return OZContextRuleManager(kit: kit)
     }
 
-    /// A `SelectedSigner.passkey` stub with empty bytes. Sufficient to drive
+    /// An `OZSelectedSigner.passkey` stub with empty bytes. Sufficient to drive
     /// the selectedSigners parameter without triggering keyData validation
     /// because every test in this file fails at an earlier validation stage.
-    private func passkeySignerStub() -> SelectedSigner {
+    private func passkeySignerStub() -> OZSelectedSigner {
         return .passkey(
             credentialId: "test",
             credentialIdBytes: Data([0x01]),
@@ -101,65 +101,65 @@ final class OZManagerSelectedSignersTests: XCTestCase {
         )
     }
 
-    /// A `SelectedSigner.wallet` stub for the canonical test G-address.
-    private func walletSignerStub() -> SelectedSigner {
+    /// An `OZSelectedSigner.wallet` stub for the canonical test G-address.
+    private func walletSignerStub() -> OZSelectedSigner {
         return .wallet(accountId: validAccountAddress)
     }
 
     /// Two-signer mix used across most cases: a passkey plus a wallet signer.
-    private var multiSigners: [SelectedSigner] {
+    private var multiSigners: [OZSelectedSigner] {
         return [passkeySignerStub(), walletSignerStub()]
     }
 
-    /// Asserts the supplied closure throws ``WalletException/NotConnected``.
+    /// Asserts the supplied closure throws ``SmartAccountWalletException/NotConnected``.
     private func assertNotConnected(
         _ block: () async throws -> Any,
         line: UInt = #line
     ) async {
         do {
             _ = try await block()
-            XCTFail("expected WalletException.NotConnected", line: line)
-        } catch is WalletException.NotConnected {
+            XCTFail("expected SmartAccountWalletException.NotConnected", line: line)
+        } catch is SmartAccountWalletException.NotConnected {
             // pass
         } catch {
             XCTFail(
-                "expected WalletException.NotConnected, got: \(error)",
+                "expected SmartAccountWalletException.NotConnected, got: \(error)",
                 line: line
             )
         }
     }
 
-    /// Asserts the supplied closure throws ``ValidationException/InvalidInput``.
+    /// Asserts the supplied closure throws ``SmartAccountValidationException/InvalidInput``.
     private func assertInvalidInput(
         _ block: () async throws -> Any,
         line: UInt = #line
     ) async {
         do {
             _ = try await block()
-            XCTFail("expected ValidationException.InvalidInput", line: line)
-        } catch is ValidationException.InvalidInput {
+            XCTFail("expected SmartAccountValidationException.InvalidInput", line: line)
+        } catch is SmartAccountValidationException.InvalidInput {
             // pass
         } catch {
             XCTFail(
-                "expected ValidationException.InvalidInput, got: \(error)",
+                "expected SmartAccountValidationException.InvalidInput, got: \(error)",
                 line: line
             )
         }
     }
 
-    /// Asserts the supplied closure throws ``ValidationException/InvalidAddress``.
+    /// Asserts the supplied closure throws ``SmartAccountValidationException/InvalidAddress``.
     private func assertInvalidAddress(
         _ block: () async throws -> Any,
         line: UInt = #line
     ) async {
         do {
             _ = try await block()
-            XCTFail("expected ValidationException.InvalidAddress", line: line)
-        } catch is ValidationException.InvalidAddress {
+            XCTFail("expected SmartAccountValidationException.InvalidAddress", line: line)
+        } catch is SmartAccountValidationException.InvalidAddress {
             // pass
         } catch {
             XCTFail(
-                "expected ValidationException.InvalidAddress, got: \(error)",
+                "expected SmartAccountValidationException.InvalidAddress, got: \(error)",
                 line: line
             )
         }
@@ -169,7 +169,7 @@ final class OZManagerSelectedSignersTests: XCTestCase {
     // MARK: - OZSignerManager.addDelegated — selectedSigners
     // ========================================================================
 
-    /// Disconnected kit must surface ``WalletException/NotConnected`` even
+    /// Disconnected kit must surface ``SmartAccountWalletException/NotConnected`` even
     /// when `selectedSigners` is populated.
     func test_addDelegated_notConnected_withSelectedSigners_throwsNotConnected() async throws {
         let kit = try disconnectedKit()
@@ -183,7 +183,7 @@ final class OZManagerSelectedSignersTests: XCTestCase {
     }
 
     /// Connected kit with a malformed address must reach the address
-    /// validation stage and surface ``ValidationException/InvalidAddress``.
+    /// validation stage and surface ``SmartAccountValidationException/InvalidAddress``.
     func test_addDelegated_connected_withSelectedSigners_reachesAddressValidation() async throws {
         let kit = try connectedKit()
         await assertInvalidAddress {
@@ -199,7 +199,7 @@ final class OZManagerSelectedSignersTests: XCTestCase {
     // MARK: - OZSignerManager.addEd25519 — selectedSigners
     // ========================================================================
 
-    /// Disconnected kit must surface ``WalletException/NotConnected``.
+    /// Disconnected kit must surface ``SmartAccountWalletException/NotConnected``.
     func test_addEd25519_notConnected_withSelectedSigners_throwsNotConnected() async throws {
         let kit = try disconnectedKit()
         await assertNotConnected {
@@ -230,7 +230,7 @@ final class OZManagerSelectedSignersTests: XCTestCase {
     // MARK: - OZSignerManager.addPasskey — selectedSigners
     // ========================================================================
 
-    /// Disconnected kit must surface ``WalletException/NotConnected`` from
+    /// Disconnected kit must surface ``SmartAccountWalletException/NotConnected`` from
     /// `addPasskey` regardless of the public-key shape.
     func test_addPasskey_notConnected_withSelectedSigners_throwsNotConnected() async throws {
         let kit = try disconnectedKit()
@@ -262,7 +262,7 @@ final class OZManagerSelectedSignersTests: XCTestCase {
     // MARK: - OZSignerManager.removeSigner — selectedSigners
     // ========================================================================
 
-    /// Disconnected kit must surface ``WalletException/NotConnected``.
+    /// Disconnected kit must surface ``SmartAccountWalletException/NotConnected``.
     func test_removeSigner_byId_notConnected_withSelectedSigners_throwsNotConnected() async throws {
         let kit = try disconnectedKit()
         await assertNotConnected {
@@ -274,7 +274,7 @@ final class OZManagerSelectedSignersTests: XCTestCase {
         }
     }
 
-    /// Disconnected kit must surface ``WalletException/NotConnected`` from
+    /// Disconnected kit must surface ``SmartAccountWalletException/NotConnected`` from
     /// the value-based remove overload.
     func test_removeSignerBySigner_notConnected_throwsNotConnected() async throws {
         let kit = try disconnectedKit()
@@ -292,7 +292,7 @@ final class OZManagerSelectedSignersTests: XCTestCase {
     // MARK: - OZPolicyManager.addPolicy — selectedSigners
     // ========================================================================
 
-    /// Disconnected kit must surface ``WalletException/NotConnected``.
+    /// Disconnected kit must surface ``SmartAccountWalletException/NotConnected``.
     func test_addPolicy_notConnected_withSelectedSigners_throwsNotConnected() async throws {
         let kit = try disconnectedKit()
         await assertNotConnected {
@@ -323,7 +323,7 @@ final class OZManagerSelectedSignersTests: XCTestCase {
     // MARK: - OZPolicyManager.removePolicy — selectedSigners
     // ========================================================================
 
-    /// Disconnected kit must surface ``WalletException/NotConnected``.
+    /// Disconnected kit must surface ``SmartAccountWalletException/NotConnected``.
     func test_removePolicy_byId_notConnected_withSelectedSigners_throwsNotConnected() async throws {
         let kit = try disconnectedKit()
         await assertNotConnected {
@@ -336,7 +336,7 @@ final class OZManagerSelectedSignersTests: XCTestCase {
     }
 
     /// Address-based remove overload accepts the `selectedSigners` parameter
-    /// and surfaces a ``ValidationException/InvalidInput`` from the address
+    /// and surfaces a ``SmartAccountValidationException/InvalidInput`` from the address
     /// resolution stage when the rule cannot be located against the disconnected
     /// kit's empty stub context-rule manager. The iOS pipeline performs the
     /// rule-id resolution before the connected-state check, so the surfaced
@@ -356,7 +356,7 @@ final class OZManagerSelectedSignersTests: XCTestCase {
     // MARK: - OZContextRuleManager.updateName — selectedSigners
     // ========================================================================
 
-    /// Disconnected kit must surface ``WalletException/NotConnected``.
+    /// Disconnected kit must surface ``SmartAccountWalletException/NotConnected``.
     func test_updateName_notConnected_withSelectedSigners_throwsNotConnected() async throws {
         let kit = try disconnectedKit()
         let manager = contextRuleManager(for: kit)
@@ -386,7 +386,7 @@ final class OZManagerSelectedSignersTests: XCTestCase {
     // MARK: - OZContextRuleManager.updateValidUntil — selectedSigners
     // ========================================================================
 
-    /// Disconnected kit must surface ``WalletException/NotConnected``.
+    /// Disconnected kit must surface ``SmartAccountWalletException/NotConnected``.
     func test_updateValidUntil_notConnected_withSelectedSigners_throwsNotConnected() async throws {
         let kit = try disconnectedKit()
         let manager = contextRuleManager(for: kit)
@@ -403,7 +403,7 @@ final class OZManagerSelectedSignersTests: XCTestCase {
     // MARK: - OZSignerManager.addNewPasskeySigner — selectedSigners
     // ========================================================================
 
-    /// Disconnected kit must surface ``WalletException/NotConnected`` from the
+    /// Disconnected kit must surface ``SmartAccountWalletException/NotConnected`` from the
     /// composite `addNewPasskeySigner` flow before any WebAuthn ceremony runs.
     func test_addNewPasskeySigner_notConnected_withSelectedSigners_throwsNotConnected() async throws {
         let kit = try disconnectedKit()
@@ -493,7 +493,7 @@ final class OZManagerSelectedSignersTests: XCTestCase {
     // MARK: - OZContextRuleManager.addContextRule — selectedSigners
     // ========================================================================
 
-    /// Disconnected kit must surface ``WalletException/NotConnected`` from
+    /// Disconnected kit must surface ``SmartAccountWalletException/NotConnected`` from
     /// `addContextRule` regardless of `selectedSigners`.
     func test_addContextRule_withSelectedSigners_notConnected() async throws {
         let kit = try disconnectedKit()
@@ -526,7 +526,7 @@ final class OZManagerSelectedSignersTests: XCTestCase {
     // MARK: - OZContextRuleManager.removeContextRule — selectedSigners
     // ========================================================================
 
-    /// Disconnected kit must surface ``WalletException/NotConnected`` from
+    /// Disconnected kit must surface ``SmartAccountWalletException/NotConnected`` from
     /// `removeContextRule` regardless of `selectedSigners`.
     func test_removeContextRule_withSelectedSigners_notConnected() async throws {
         let kit = try disconnectedKit()
@@ -554,7 +554,7 @@ final class OZManagerSelectedSignersTests: XCTestCase {
     // ========================================================================
 
     /// `addDelegated` accepts `forceMethod` and routes correctly while still
-    /// surfacing ``WalletException/NotConnected`` from the disconnected kit.
+    /// surfacing ``SmartAccountWalletException/NotConnected`` from the disconnected kit.
     func test_addDelegated_withForceMethod_notConnected() async throws {
         let kit = try disconnectedKit()
         await assertNotConnected {
@@ -665,18 +665,18 @@ final class OZManagerSelectedSignersTests: XCTestCase {
         let recordingSubmitter = MockOZMultiSignerManager(kit: kit)
         kit.multiSignerManagerOverride = recordingSubmitter
 
-        let firstPasskey = SelectedSigner.passkey(
+        let firstPasskey = OZSelectedSigner.passkey(
             credentialId: "cred-A",
             credentialIdBytes: Data([0x0A, 0x0A]),
             keyData: Data(repeating: 0xAA, count: 65)
         )
-        let walletEntry = SelectedSigner.wallet(accountId: validAccountAddress)
-        let secondPasskey = SelectedSigner.passkey(
+        let walletEntry = OZSelectedSigner.wallet(accountId: validAccountAddress)
+        let secondPasskey = OZSelectedSigner.passkey(
             credentialId: "cred-B",
             credentialIdBytes: Data([0x0B, 0x0B]),
             keyData: Data(repeating: 0xBB, count: 65)
         )
-        let signers: [SelectedSigner] = [firstPasskey, walletEntry, secondPasskey]
+        let signers: [OZSelectedSigner] = [firstPasskey, walletEntry, secondPasskey]
 
         let result = try await kit.signerManager.addDelegated(
             contextRuleId: 0,
@@ -699,7 +699,7 @@ final class OZManagerSelectedSignersTests: XCTestCase {
         let recordingSubmitter = MockOZMultiSignerManager(kit: kit)
         kit.multiSignerManagerOverride = recordingSubmitter
 
-        let signers: [SelectedSigner] = [
+        let signers: [OZSelectedSigner] = [
             .passkey(
                 credentialId: "cred-A",
                 credentialIdBytes: Data([0x01]),
@@ -742,7 +742,7 @@ final class OZManagerSelectedSignersTests: XCTestCase {
         )
         kit.multiSignerManagerOverride = recordingSubmitter
 
-        let signers: [SelectedSigner] = [
+        let signers: [OZSelectedSigner] = [
             passkeySignerStub(),
             walletSignerStub(),
             passkeySignerStub()
@@ -764,7 +764,7 @@ final class OZManagerSelectedSignersTests: XCTestCase {
     }
 
     // ========================================================================
-    // SelectedSigner.passkey transport propagation
+    // OZSelectedSigner.passkey transport propagation
     // ========================================================================
 
     // ========================================================================
@@ -779,11 +779,11 @@ final class OZManagerSelectedSignersTests: XCTestCase {
         let recordingSubmitter = MockOZMultiSignerManager(kit: kit)
         kit.multiSignerManagerOverride = recordingSubmitter
 
-        let ed25519Signer = SelectedSigner.ed25519(
+        let ed25519Signer = OZSelectedSigner.ed25519(
             verifierAddress: validVerifierAddress,
             publicKey: Data(repeating: 0x11, count: 32)
         )
-        let signers: [SelectedSigner] = [passkeySignerStub(), ed25519Signer]
+        let signers: [OZSelectedSigner] = [passkeySignerStub(), ed25519Signer]
 
         // addContextRule validates that at least one context-rule signer (OZSmartAccountSigner) is
         // present. Supply a delegated signer so the validation passes before the routing hop.
@@ -812,11 +812,11 @@ final class OZManagerSelectedSignersTests: XCTestCase {
         let recordingSubmitter = MockOZMultiSignerManager(kit: kit)
         kit.multiSignerManagerOverride = recordingSubmitter
 
-        let ed25519Signer = SelectedSigner.ed25519(
+        let ed25519Signer = OZSelectedSigner.ed25519(
             verifierAddress: validVerifierAddress,
             publicKey: Data(repeating: 0x22, count: 32)
         )
-        let signers: [SelectedSigner] = [ed25519Signer]
+        let signers: [OZSelectedSigner] = [ed25519Signer]
 
         // addPasskey validates that publicKey starts with 0x04 (uncompressed secp256r1).
         var rawKey = Data(count: 65)
@@ -846,11 +846,11 @@ final class OZManagerSelectedSignersTests: XCTestCase {
         let recordingSubmitter = MockOZMultiSignerManager(kit: kit)
         kit.multiSignerManagerOverride = recordingSubmitter
 
-        let ed25519Signer = SelectedSigner.ed25519(
+        let ed25519Signer = OZSelectedSigner.ed25519(
             verifierAddress: validVerifierAddress,
             publicKey: Data(repeating: 0x33, count: 32)
         )
-        let signers: [SelectedSigner] = [
+        let signers: [OZSelectedSigner] = [
             .passkey(
                 credentialId: "cred-A",
                 credentialIdBytes: Data([0x0A]),
@@ -888,20 +888,20 @@ final class OZManagerSelectedSignersTests: XCTestCase {
         XCTAssertEqual(key, Data(repeating: 0x33, count: 32))
     }
 
-    /// `SelectedSigner.passkey` carries optional `transports` hints that must
+    /// `OZSelectedSigner.passkey` carries optional `transports` hints that must
     /// flow through the multi-signer pipeline unchanged. The recording
     /// submitter captures the signer set received by the manager so we can
     /// confirm that the transport list is preserved across the routing hop.
-    /// The downstream `AllowCredential` propagation is verified at the
+    /// The downstream `WebAuthnAllowCredential` propagation is verified at the
     /// signing-pipeline integration layer; here we lock down the routing
-    /// fidelity that the public `SelectedSigner` shape promises.
+    /// fidelity that the public `OZSelectedSigner` shape promises.
     func test_selectedSigner_passkey_transports_propagatesThroughRouting() async throws {
         let kit = try connectedKit()
         let recordingSubmitter = MockOZMultiSignerManager(kit: kit)
         kit.multiSignerManagerOverride = recordingSubmitter
 
         let transports: [String] = ["internal", "hybrid"]
-        let signers: [SelectedSigner] = [
+        let signers: [OZSelectedSigner] = [
             .passkey(
                 credentialId: "cred-with-transports",
                 credentialIdBytes: Data([0x01, 0x02]),

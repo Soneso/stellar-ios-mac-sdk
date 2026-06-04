@@ -115,7 +115,7 @@ final class OZSmartAccountKitCloseOrderingTests: XCTestCase {
             webauthnVerifierAddress: validVerifier,
             relayerUrl: relayerUrl,
             indexerUrl: indexerUrl,
-            storage: InMemoryStorageAdapter()
+            storage: OZInMemoryStorageAdapter()
         )
     }
 
@@ -155,7 +155,7 @@ final class OZSmartAccountKitCloseOrderingTests: XCTestCase {
             networkPassphrase: customPassphrase,
             accountWasmHash: validWasmHash,
             webauthnVerifierAddress: validVerifier,
-            storage: InMemoryStorageAdapter()
+            storage: OZInMemoryStorageAdapter()
         )
         let recordingServer = RecordingSorobanServer(
             endpoint: config.rpcUrl, orderTracker: tracker

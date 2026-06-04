@@ -223,6 +223,6 @@ public protocol WebAuthnProvider: Sendable {
     ///   `WebAuthnException.NotSupported`.
     func authenticate(
         challenge: Data,
-        allowCredentials: [AllowCredential]?
+        allowCredentials: [WebAuthnAllowCredential]?
     ) async throws -> WebAuthnAuthenticationResult
 }

@@ -90,8 +90,8 @@ final class OZCrossManagerFlowTests: XCTestCase {
         let recordingSubmitter = MockOZMultiSignerManager(kit: kit)
         kit.multiSignerManagerOverride = recordingSubmitter
 
-        let walletParticipant = SelectedSigner.wallet(accountId: validAccountAddress)
-        let participants: [SelectedSigner] = [walletParticipant]
+        let walletParticipant = OZSelectedSigner.wallet(accountId: validAccountAddress)
+        let participants: [OZSelectedSigner] = [walletParticipant]
 
         // Step 1: add a passkey signer to the default rule.
         let addResult = try await kit.signerManager.addPasskey(
@@ -145,7 +145,7 @@ final class OZCrossManagerFlowTests: XCTestCase {
         let recordingSubmitter = MockOZMultiSignerManager(kit: kit)
         kit.multiSignerManagerOverride = recordingSubmitter
 
-        let participants: [SelectedSigner] = [
+        let participants: [OZSelectedSigner] = [
             .wallet(accountId: validAccountAddress)
         ]
 
@@ -270,11 +270,11 @@ final class OZCrossManagerFlowTests: XCTestCase {
                 signers: [try OZDelegatedSigner(address: validAccountAddress)],
                 policies: ["INVALID-ADDRESS": .void]
             )
-            XCTFail("expected ValidationException.InvalidAddress")
-        } catch is ValidationException.InvalidAddress {
+            XCTFail("expected SmartAccountValidationException.InvalidAddress")
+        } catch is SmartAccountValidationException.InvalidAddress {
             // pass — the validation surface fires before any host function is built
         } catch {
-            XCTFail("expected ValidationException.InvalidAddress, got: \(error)")
+            XCTFail("expected SmartAccountValidationException.InvalidAddress, got: \(error)")
         }
     }
 
@@ -308,7 +308,7 @@ final class OZCrossManagerFlowTests: XCTestCase {
         // algorithm cannot match it on signer identity. The specific
         // `CallContract` rule carries the active signer so it wins Tier 1
         // exact-match arbitration.
-        let defaultRule = ParsedContextRule(
+        let defaultRule = OZParsedContextRule(
             id: 0,
             contextType: .defaultRule,
             name: "Default",
@@ -318,7 +318,7 @@ final class OZCrossManagerFlowTests: XCTestCase {
             policyIds: [],
             validUntil: nil
         )
-        let specificRule = ParsedContextRule(
+        let specificRule = OZParsedContextRule(
             id: 9,
             contextType: .callContract(contractAddress: secondaryContractId),
             name: "Specific",

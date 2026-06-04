@@ -111,7 +111,7 @@ public enum SmartAccountErrorCode: Int, Sendable, CaseIterable {
 ///     try await kit.createWallet(name: "My Wallet")
 /// } catch let error as WebAuthnException.Cancelled {
 ///     print("User cancelled authentication")
-/// } catch let error as CredentialException.DeploymentFailed {
+/// } catch let error as SmartAccountCredentialException.DeploymentFailed {
 ///     print("Deployment failed: \(error.message)")
 /// } catch let error as SmartAccountException {
 ///     print("Smart account error \(error.code.code): \(error.message)")
@@ -172,23 +172,23 @@ public class SmartAccountException: Error, CustomStringConvertible, @unchecked S
         let message = SmartAccountException.message(of: err) ?? String(describing: err)
         switch defaultCode {
         case .invalidConfig:
-            return ConfigurationException.InvalidConfig(message: message, cause: err)
+            return SmartAccountConfigurationException.InvalidConfig(message: message, cause: err)
         case .missingConfig:
-            return ConfigurationException.MissingConfig(message: message, cause: err)
+            return SmartAccountConfigurationException.MissingConfig(message: message, cause: err)
         case .walletNotConnected:
-            return WalletException.NotConnected(message: message, cause: err)
+            return SmartAccountWalletException.NotConnected(message: message, cause: err)
         case .walletAlreadyExists:
-            return WalletException.AlreadyExists(message: message, cause: err)
+            return SmartAccountWalletException.AlreadyExists(message: message, cause: err)
         case .walletNotFound:
-            return WalletException.NotFound(message: message, cause: err)
+            return SmartAccountWalletException.NotFound(message: message, cause: err)
         case .credentialNotFound:
-            return CredentialException.NotFound(message: message, cause: err)
+            return SmartAccountCredentialException.NotFound(message: message, cause: err)
         case .credentialAlreadyExists:
-            return CredentialException.AlreadyExists(message: message, cause: err)
+            return SmartAccountCredentialException.AlreadyExists(message: message, cause: err)
         case .credentialInvalid:
-            return CredentialException.Invalid(message: message, cause: err)
+            return SmartAccountCredentialException.Invalid(message: message, cause: err)
         case .credentialDeploymentFailed:
-            return CredentialException.DeploymentFailed(message: message, cause: err)
+            return SmartAccountCredentialException.DeploymentFailed(message: message, cause: err)
         case .webAuthnRegistrationFailed:
             return WebAuthnException.RegistrationFailed(message: message, cause: err)
         case .webAuthnAuthenticationFailed:
@@ -198,35 +198,35 @@ public class SmartAccountException: Error, CustomStringConvertible, @unchecked S
         case .webAuthnCancelled:
             return WebAuthnException.Cancelled(message: message, cause: err)
         case .transactionSimulationFailed:
-            return TransactionException.SimulationFailed(message: message, cause: err)
+            return SmartAccountTransactionException.SimulationFailed(message: message, cause: err)
         case .transactionSigningFailed:
-            return TransactionException.SigningFailed(message: message, cause: err)
+            return SmartAccountTransactionException.SigningFailed(message: message, cause: err)
         case .transactionSubmissionFailed:
-            return TransactionException.SubmissionFailed(message: message, cause: err)
+            return SmartAccountTransactionException.SubmissionFailed(message: message, cause: err)
         case .transactionTimeout:
-            return TransactionException.Timeout(message: message, cause: err)
+            return SmartAccountTransactionException.Timeout(message: message, cause: err)
         case .signerNotFound:
-            return SignerException.NotFound(message: message, cause: err)
+            return SmartAccountSignerException.NotFound(message: message, cause: err)
         case .signerInvalid:
-            return SignerException.Invalid(message: message, cause: err)
+            return SmartAccountSignerException.Invalid(message: message, cause: err)
         case .invalidAddress:
-            return ValidationException.InvalidAddress(message: message, cause: err)
+            return SmartAccountValidationException.InvalidAddress(message: message, cause: err)
         case .invalidAmount:
-            return ValidationException.InvalidAmount(message: message, cause: err)
+            return SmartAccountValidationException.InvalidAmount(message: message, cause: err)
         case .invalidInput:
-            return ValidationException.InvalidInput(message: message, cause: err)
+            return SmartAccountValidationException.InvalidInput(message: message, cause: err)
         case .storageReadFailed:
-            return StorageException.ReadFailed(message: message, cause: err)
+            return SmartAccountStorageException.ReadFailed(message: message, cause: err)
         case .storageWriteFailed:
-            return StorageException.WriteFailed(message: message, cause: err)
+            return SmartAccountStorageException.WriteFailed(message: message, cause: err)
         case .sessionExpired:
-            return SessionException.Expired(message: message, cause: err)
+            return SmartAccountSessionException.Expired(message: message, cause: err)
         case .sessionInvalid:
-            return SessionException.Invalid(message: message, cause: err)
+            return SmartAccountSessionException.Invalid(message: message, cause: err)
         case .indexerRequestFailed:
-            return IndexerException.RequestFailed(message: message, cause: err)
+            return SmartAccountIndexerException.RequestFailed(message: message, cause: err)
         case .indexerTimeout:
-            return IndexerException.Timeout(message: message, cause: err)
+            return SmartAccountIndexerException.Timeout(message: message, cause: err)
         }
     }
 
@@ -246,10 +246,10 @@ public class SmartAccountException: Error, CustomStringConvertible, @unchecked S
 }
 
 /// Configuration-related errors (1xxx range).
-public class ConfigurationException: SmartAccountException, @unchecked Sendable {
+public class SmartAccountConfigurationException: SmartAccountException, @unchecked Sendable {
 
     /// Indicates that a supplied configuration value is malformed or rejected.
-    public final class InvalidConfig: ConfigurationException, @unchecked Sendable {
+    public final class InvalidConfig: SmartAccountConfigurationException, @unchecked Sendable {
 
         public init(message: String, cause: Error? = nil) {
             super.init(code: .invalidConfig, message: message, cause: cause)
@@ -257,7 +257,7 @@ public class ConfigurationException: SmartAccountException, @unchecked Sendable 
     }
 
     /// Indicates that a required configuration parameter is missing.
-    public final class MissingConfig: ConfigurationException, @unchecked Sendable {
+    public final class MissingConfig: SmartAccountConfigurationException, @unchecked Sendable {
 
         public init(message: String, cause: Error? = nil) {
             super.init(code: .missingConfig, message: message, cause: cause)
@@ -274,10 +274,10 @@ public class ConfigurationException: SmartAccountException, @unchecked Sendable 
 }
 
 /// Wallet state-related errors (2xxx range).
-public class WalletException: SmartAccountException, @unchecked Sendable {
+public class SmartAccountWalletException: SmartAccountException, @unchecked Sendable {
 
     /// Indicates that no wallet is currently connected.
-    public final class NotConnected: WalletException, @unchecked Sendable {
+    public final class NotConnected: SmartAccountWalletException, @unchecked Sendable {
 
         public init(message: String = "Wallet is not connected", cause: Error? = nil) {
             super.init(code: .walletNotConnected, message: message, cause: cause)
@@ -285,7 +285,7 @@ public class WalletException: SmartAccountException, @unchecked Sendable {
     }
 
     /// Indicates that a wallet with the same identifier already exists.
-    public final class AlreadyExists: WalletException, @unchecked Sendable {
+    public final class AlreadyExists: SmartAccountWalletException, @unchecked Sendable {
 
         public init(message: String, cause: Error? = nil) {
             super.init(code: .walletAlreadyExists, message: message, cause: cause)
@@ -293,7 +293,7 @@ public class WalletException: SmartAccountException, @unchecked Sendable {
     }
 
     /// Indicates that the requested wallet was not found.
-    public final class NotFound: WalletException, @unchecked Sendable {
+    public final class NotFound: SmartAccountWalletException, @unchecked Sendable {
 
         public init(message: String, cause: Error? = nil) {
             super.init(code: .walletNotFound, message: message, cause: cause)
@@ -314,10 +314,10 @@ public class WalletException: SmartAccountException, @unchecked Sendable {
 }
 
 /// Credential-related errors (3xxx range).
-public class CredentialException: SmartAccountException, @unchecked Sendable {
+public class SmartAccountCredentialException: SmartAccountException, @unchecked Sendable {
 
     /// Indicates that the requested credential was not found.
-    public final class NotFound: CredentialException, @unchecked Sendable {
+    public final class NotFound: SmartAccountCredentialException, @unchecked Sendable {
 
         public init(message: String, cause: Error? = nil) {
             super.init(code: .credentialNotFound, message: message, cause: cause)
@@ -325,7 +325,7 @@ public class CredentialException: SmartAccountException, @unchecked Sendable {
     }
 
     /// Indicates that a credential with the same identifier already exists.
-    public final class AlreadyExists: CredentialException, @unchecked Sendable {
+    public final class AlreadyExists: SmartAccountCredentialException, @unchecked Sendable {
 
         public init(message: String, cause: Error? = nil) {
             super.init(code: .credentialAlreadyExists, message: message, cause: cause)
@@ -333,7 +333,7 @@ public class CredentialException: SmartAccountException, @unchecked Sendable {
     }
 
     /// Indicates that the credential is malformed or rejected during validation.
-    public final class Invalid: CredentialException, @unchecked Sendable {
+    public final class Invalid: SmartAccountCredentialException, @unchecked Sendable {
 
         public init(message: String, cause: Error? = nil) {
             super.init(code: .credentialInvalid, message: message, cause: cause)
@@ -341,7 +341,7 @@ public class CredentialException: SmartAccountException, @unchecked Sendable {
     }
 
     /// Indicates that deploying a credential-backed wallet contract failed.
-    public final class DeploymentFailed: CredentialException, @unchecked Sendable {
+    public final class DeploymentFailed: SmartAccountCredentialException, @unchecked Sendable {
 
         public init(message: String, cause: Error? = nil) {
             super.init(code: .credentialDeploymentFailed, message: message, cause: cause)
@@ -418,10 +418,10 @@ public class WebAuthnException: SmartAccountException, @unchecked Sendable {
 }
 
 /// Transaction-related errors (5xxx range).
-public class TransactionException: SmartAccountException, @unchecked Sendable {
+public class SmartAccountTransactionException: SmartAccountException, @unchecked Sendable {
 
     /// Indicates that transaction simulation against the RPC failed.
-    public final class SimulationFailed: TransactionException, @unchecked Sendable {
+    public final class SimulationFailed: SmartAccountTransactionException, @unchecked Sendable {
 
         public init(message: String, cause: Error? = nil) {
             super.init(code: .transactionSimulationFailed, message: message, cause: cause)
@@ -429,7 +429,7 @@ public class TransactionException: SmartAccountException, @unchecked Sendable {
     }
 
     /// Indicates that producing or attaching a signature failed.
-    public final class SigningFailed: TransactionException, @unchecked Sendable {
+    public final class SigningFailed: SmartAccountTransactionException, @unchecked Sendable {
 
         public init(message: String, cause: Error? = nil) {
             super.init(code: .transactionSigningFailed, message: message, cause: cause)
@@ -437,7 +437,7 @@ public class TransactionException: SmartAccountException, @unchecked Sendable {
     }
 
     /// Indicates that submitting the signed transaction failed.
-    public final class SubmissionFailed: TransactionException, @unchecked Sendable {
+    public final class SubmissionFailed: SmartAccountTransactionException, @unchecked Sendable {
 
         public init(message: String, cause: Error? = nil) {
             super.init(code: .transactionSubmissionFailed, message: message, cause: cause)
@@ -445,7 +445,7 @@ public class TransactionException: SmartAccountException, @unchecked Sendable {
     }
 
     /// Indicates that polling for transaction completion timed out.
-    public final class Timeout: TransactionException, @unchecked Sendable {
+    public final class Timeout: SmartAccountTransactionException, @unchecked Sendable {
 
         public init(message: String = "Transaction timed out", cause: Error? = nil) {
             super.init(code: .transactionTimeout, message: message, cause: cause)
@@ -470,10 +470,10 @@ public class TransactionException: SmartAccountException, @unchecked Sendable {
 }
 
 /// Signer-related errors (6xxx range).
-public class SignerException: SmartAccountException, @unchecked Sendable {
+public class SmartAccountSignerException: SmartAccountException, @unchecked Sendable {
 
     /// Indicates that the requested signer is not registered on the wallet.
-    public final class NotFound: SignerException, @unchecked Sendable {
+    public final class NotFound: SmartAccountSignerException, @unchecked Sendable {
 
         public init(message: String, cause: Error? = nil) {
             super.init(code: .signerNotFound, message: message, cause: cause)
@@ -481,7 +481,7 @@ public class SignerException: SmartAccountException, @unchecked Sendable {
     }
 
     /// Indicates that the signer is malformed or rejected during validation.
-    public final class Invalid: SignerException, @unchecked Sendable {
+    public final class Invalid: SmartAccountSignerException, @unchecked Sendable {
 
         public init(message: String, cause: Error? = nil) {
             super.init(code: .signerInvalid, message: message, cause: cause)
@@ -498,10 +498,10 @@ public class SignerException: SmartAccountException, @unchecked Sendable {
 }
 
 /// Validation-related errors (7xxx range).
-public class ValidationException: SmartAccountException, @unchecked Sendable {
+public class SmartAccountValidationException: SmartAccountException, @unchecked Sendable {
 
     /// Indicates that the supplied address is not a valid Stellar `G…` or `C…` strkey.
-    public final class InvalidAddress: ValidationException, @unchecked Sendable {
+    public final class InvalidAddress: SmartAccountValidationException, @unchecked Sendable {
 
         public init(message: String, cause: Error? = nil) {
             super.init(code: .invalidAddress, message: message, cause: cause)
@@ -509,7 +509,7 @@ public class ValidationException: SmartAccountException, @unchecked Sendable {
     }
 
     /// Indicates that the supplied amount is malformed or out of range.
-    public final class InvalidAmount: ValidationException, @unchecked Sendable {
+    public final class InvalidAmount: SmartAccountValidationException, @unchecked Sendable {
 
         public init(message: String, cause: Error? = nil) {
             super.init(code: .invalidAmount, message: message, cause: cause)
@@ -517,7 +517,7 @@ public class ValidationException: SmartAccountException, @unchecked Sendable {
     }
 
     /// Indicates that a user-supplied input failed validation.
-    public final class InvalidInput: ValidationException, @unchecked Sendable {
+    public final class InvalidInput: SmartAccountValidationException, @unchecked Sendable {
 
         public init(message: String, cause: Error? = nil) {
             super.init(code: .invalidInput, message: message, cause: cause)
@@ -549,10 +549,10 @@ public class ValidationException: SmartAccountException, @unchecked Sendable {
 }
 
 /// Storage-related errors (8xxx range).
-public class StorageException: SmartAccountException, @unchecked Sendable {
+public class SmartAccountStorageException: SmartAccountException, @unchecked Sendable {
 
     /// Indicates that reading from the storage backend failed.
-    public final class ReadFailed: StorageException, @unchecked Sendable {
+    public final class ReadFailed: SmartAccountStorageException, @unchecked Sendable {
 
         public init(message: String, cause: Error? = nil) {
             super.init(code: .storageReadFailed, message: message, cause: cause)
@@ -560,7 +560,7 @@ public class StorageException: SmartAccountException, @unchecked Sendable {
     }
 
     /// Indicates that writing to the storage backend failed.
-    public final class WriteFailed: StorageException, @unchecked Sendable {
+    public final class WriteFailed: SmartAccountStorageException, @unchecked Sendable {
 
         public init(message: String, cause: Error? = nil) {
             super.init(code: .storageWriteFailed, message: message, cause: cause)
@@ -577,10 +577,10 @@ public class StorageException: SmartAccountException, @unchecked Sendable {
 }
 
 /// Session-related errors (9xxx range).
-public class SessionException: SmartAccountException, @unchecked Sendable {
+public class SmartAccountSessionException: SmartAccountException, @unchecked Sendable {
 
     /// Indicates that the session has expired.
-    public final class Expired: SessionException, @unchecked Sendable {
+    public final class Expired: SmartAccountSessionException, @unchecked Sendable {
 
         public init(message: String = "Session has expired", cause: Error? = nil) {
             super.init(code: .sessionExpired, message: message, cause: cause)
@@ -588,7 +588,7 @@ public class SessionException: SmartAccountException, @unchecked Sendable {
     }
 
     /// Indicates that the session is malformed or rejected during validation.
-    public final class Invalid: SessionException, @unchecked Sendable {
+    public final class Invalid: SmartAccountSessionException, @unchecked Sendable {
 
         public init(message: String, cause: Error? = nil) {
             super.init(code: .sessionInvalid, message: message, cause: cause)
@@ -610,10 +610,10 @@ public class SessionException: SmartAccountException, @unchecked Sendable {
 }
 
 /// Indexer-related errors (10xxx range).
-public class IndexerException: SmartAccountException, @unchecked Sendable {
+public class SmartAccountIndexerException: SmartAccountException, @unchecked Sendable {
 
     /// Indicates that an indexer request failed (network error or non-success HTTP status).
-    public final class RequestFailed: IndexerException, @unchecked Sendable {
+    public final class RequestFailed: SmartAccountIndexerException, @unchecked Sendable {
 
         public init(message: String, cause: Error? = nil) {
             super.init(code: .indexerRequestFailed, message: message, cause: cause)
@@ -621,7 +621,7 @@ public class IndexerException: SmartAccountException, @unchecked Sendable {
     }
 
     /// Indicates that an indexer request timed out.
-    public final class Timeout: IndexerException, @unchecked Sendable {
+    public final class Timeout: SmartAccountIndexerException, @unchecked Sendable {
 
         public init(message: String, cause: Error? = nil) {
             super.init(code: .indexerTimeout, message: message, cause: cause)

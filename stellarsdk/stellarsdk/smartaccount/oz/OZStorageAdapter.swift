@@ -9,7 +9,7 @@ import Foundation
 
 
 /// The deployment status of a smart account credential.
-public enum CredentialDeploymentStatus: String, Sendable, CaseIterable {
+public enum OZCredentialDeploymentStatus: String, Sendable, CaseIterable {
 
     case pending = "PENDING"
 
@@ -28,7 +28,7 @@ public enum CredentialDeploymentStatus: String, Sendable, CaseIterable {
 ///
 /// Example:
 /// ```swift
-/// let credential = StoredCredential(
+/// let credential = OZStoredCredential(
 ///     credentialId: "base64url-encoded-id",
 ///     publicKey: secp256r1PublicKeyData,
 ///     contractId: "CBCD1234...",
@@ -36,7 +36,7 @@ public enum CredentialDeploymentStatus: String, Sendable, CaseIterable {
 ///     isPrimary: true
 /// )
 /// ```
-public struct StoredCredential: Sendable {
+public struct OZStoredCredential: Sendable {
 
     /// The WebAuthn credential ID (Base64URL encoded).
     public let credentialId: String
@@ -51,7 +51,7 @@ public struct StoredCredential: Sendable {
     public let contractId: String?
 
     /// The current deployment status of the smart account contract.
-    public let deploymentStatus: CredentialDeploymentStatus
+    public let deploymentStatus: OZCredentialDeploymentStatus
 
     /// Error message if deployment failed.
     public let deploymentError: String?
@@ -102,7 +102,7 @@ public struct StoredCredential: Sendable {
         credentialId: String,
         publicKey: Data,
         contractId: String? = nil,
-        deploymentStatus: CredentialDeploymentStatus = .pending,
+        deploymentStatus: OZCredentialDeploymentStatus = .pending,
         deploymentError: String? = nil,
         createdAt: Int64 = Int64(Date().timeIntervalSince1970 * 1000),
         lastUsedAt: Int64? = nil,
@@ -129,13 +129,13 @@ public struct StoredCredential: Sendable {
     /// Returns a copy of this credential with the supplied fields replaced.
     ///
     /// Each parameter that is `nil` leaves the corresponding field unchanged. To
-    /// reset a value to `nil`, construct a new `StoredCredential` directly rather
+    /// reset a value to `nil`, construct a new `OZStoredCredential` directly rather
     /// than using `copyWith`.
     public func copyWith(
         credentialId: String? = nil,
         publicKey: Data? = nil,
         contractId: String? = nil,
-        deploymentStatus: CredentialDeploymentStatus? = nil,
+        deploymentStatus: OZCredentialDeploymentStatus? = nil,
         deploymentError: String? = nil,
         createdAt: Int64? = nil,
         lastUsedAt: Int64? = nil,
@@ -144,8 +144,8 @@ public struct StoredCredential: Sendable {
         transports: [String]? = nil,
         deviceType: String? = nil,
         backedUp: Bool? = nil
-    ) -> StoredCredential {
-        return StoredCredential(
+    ) -> OZStoredCredential {
+        return OZStoredCredential(
             credentialId: credentialId ?? self.credentialId,
             publicKey: publicKey ?? self.publicKey,
             contractId: contractId ?? self.contractId,
@@ -165,9 +165,9 @@ public struct StoredCredential: Sendable {
     /// credential.
     ///
     /// Fields in `updates` that are `nil` are left unchanged. This is the partial-update
-    /// semantic that `StorageAdapter.update` uses internally.
-    public func applyUpdate(_ updates: StoredCredentialUpdate) -> StoredCredential {
-        return StoredCredential(
+    /// semantic that `OZStorageAdapter.update` uses internally.
+    public func applyUpdate(_ updates: OZStoredCredentialUpdate) -> OZStoredCredential {
+        return OZStoredCredential(
             credentialId: credentialId,
             publicKey: publicKey,
             contractId: updates.contractId ?? contractId,
@@ -184,14 +184,14 @@ public struct StoredCredential: Sendable {
     }
 }
 
-extension StoredCredential: Equatable {
+extension OZStoredCredential: Equatable {
 
     /// Two stored credentials are equal when every field matches.
     ///
     /// The `publicKey` field is compared in constant time so timing measurements do
     /// not leak how many leading bytes of two compared keys agree, which protects
     /// secret-bearing byte sequences from side-channel inference.
-    public static func == (lhs: StoredCredential, rhs: StoredCredential) -> Bool {
+    public static func == (lhs: OZStoredCredential, rhs: OZStoredCredential) -> Bool {
         guard lhs.credentialId == rhs.credentialId else { return false }
         guard lhs.publicKey.constantTimeEquals(rhs.publicKey) else { return false }
         guard lhs.contractId == rhs.contractId else { return false }
@@ -208,7 +208,7 @@ extension StoredCredential: Equatable {
     }
 }
 
-extension StoredCredential: Hashable {
+extension OZStoredCredential: Hashable {
 
     public func hash(into hasher: inout Hasher) {
         hasher.combine(credentialId)
@@ -235,7 +235,7 @@ extension StoredCredential: Hashable {
 /// Example:
 /// ```swift
 /// let now = Int64(Date().timeIntervalSince1970 * 1000)
-/// let session = StoredSession(
+/// let session = OZStoredSession(
 ///     credentialId: "base64url-encoded-id",
 ///     contractId: "CBCD1234...",
 ///     connectedAt: now,
@@ -246,7 +246,7 @@ extension StoredCredential: Hashable {
 ///     // Silently reconnect.
 /// }
 /// ```
-public struct StoredSession: Sendable, Equatable, Hashable {
+public struct OZStoredSession: Sendable, Equatable, Hashable {
 
     public let credentialId: String
     public let contractId: String
@@ -279,20 +279,20 @@ public struct StoredSession: Sendable, Equatable, Hashable {
 /// Only non-nil fields are applied during an update operation. A `nil` value means
 /// "no change" — it does **not** clear the field to nil. This is a deliberate design
 /// choice: there is no way to set a previously non-nil field back to nil via
-/// `StorageAdapter.update`. To reset a field, call `StorageAdapter.save` with a full
-/// `StoredCredential` replacement.
+/// `OZStorageAdapter.update`. To reset a field, call `OZStorageAdapter.save` with a full
+/// `OZStoredCredential` replacement.
 ///
 /// Example:
 /// ```swift
-/// let update = StoredCredentialUpdate(
+/// let update = OZStoredCredentialUpdate(
 ///     deploymentStatus: .failed,
 ///     deploymentError: "Transaction failed: insufficient balance"
 /// )
 /// try await storage.update(credentialId: "abc123", updates: update)
 /// ```
-public struct StoredCredentialUpdate: Sendable, Equatable, Hashable {
+public struct OZStoredCredentialUpdate: Sendable, Equatable, Hashable {
 
-    public let deploymentStatus: CredentialDeploymentStatus?
+    public let deploymentStatus: OZCredentialDeploymentStatus?
     public let deploymentError: String?
     public let contractId: String?
     public let lastUsedAt: Int64?
@@ -303,7 +303,7 @@ public struct StoredCredentialUpdate: Sendable, Equatable, Hashable {
     public let backedUp: Bool?
 
     public init(
-        deploymentStatus: CredentialDeploymentStatus? = nil,
+        deploymentStatus: OZCredentialDeploymentStatus? = nil,
         deploymentError: String? = nil,
         contractId: String? = nil,
         lastUsedAt: Int64? = nil,
@@ -331,42 +331,42 @@ public struct StoredCredentialUpdate: Sendable, Equatable, Hashable {
 /// Storage adapters provide a pluggable persistence layer for credentials and sessions.
 /// Implementations must be thread-safe and support concurrent access.
 ///
-/// The default implementation is `InMemoryStorageAdapter`, which stores data in memory
+/// The default implementation is `OZInMemoryStorageAdapter`, which stores data in memory
 /// only. Platform-specific implementations can provide persistent storage.
-public protocol StorageAdapter: AnyObject, Sendable {
+public protocol OZStorageAdapter: AnyObject, Sendable {
 
     /// Saves a credential to storage using upsert semantics.
     ///
     /// If a credential with the same ID already exists, it is overwritten.
     ///
     /// - Parameter credential: The credential to save.
-    /// - Throws: `StorageException.WriteFailed` if saving fails.
-    func save(credential: StoredCredential) async throws
+    /// - Throws: `SmartAccountStorageException.WriteFailed` if saving fails.
+    func save(credential: OZStoredCredential) async throws
 
     /// Retrieves a credential by its ID.
     ///
     /// - Parameter credentialId: The credential ID.
     /// - Returns: The credential, or `nil` if not found.
-    /// - Throws: `StorageException.ReadFailed` if reading fails.
-    func get(credentialId: String) async throws -> StoredCredential?
+    /// - Throws: `SmartAccountStorageException.ReadFailed` if reading fails.
+    func get(credentialId: String) async throws -> OZStoredCredential?
 
     /// Retrieves all credentials associated with a contract address.
     ///
     /// - Parameter contractId: The contract address.
     /// - Returns: List of credentials (empty if none found).
-    /// - Throws: `StorageException.ReadFailed` if reading fails.
-    func getByContract(contractId: String) async throws -> [StoredCredential]
+    /// - Throws: `SmartAccountStorageException.ReadFailed` if reading fails.
+    func getByContract(contractId: String) async throws -> [OZStoredCredential]
 
     /// Retrieves all stored credentials.
     ///
     /// - Returns: List of all credentials.
-    /// - Throws: `StorageException.ReadFailed` if reading fails.
-    func getAll() async throws -> [StoredCredential]
+    /// - Throws: `SmartAccountStorageException.ReadFailed` if reading fails.
+    func getAll() async throws -> [OZStoredCredential]
 
     /// Deletes a credential by its ID. Does nothing if the credential does not exist.
     ///
     /// - Parameter credentialId: The credential ID to delete.
-    /// - Throws: `StorageException.WriteFailed` if deletion fails.
+    /// - Throws: `SmartAccountStorageException.WriteFailed` if deletion fails.
     func delete(credentialId: String) async throws
 
     /// Updates a credential with partial changes. Only non-nil fields in the update
@@ -375,32 +375,32 @@ public protocol StorageAdapter: AnyObject, Sendable {
     /// - Parameters:
     ///   - credentialId: The credential ID to update.
     ///   - updates: The partial updates to apply.
-    /// - Throws: `CredentialException.NotFound` if the credential is not found;
-    ///           `StorageException.WriteFailed` if updating fails.
-    func update(credentialId: String, updates: StoredCredentialUpdate) async throws
+    /// - Throws: `SmartAccountCredentialException.NotFound` if the credential is not found;
+    ///           `SmartAccountStorageException.WriteFailed` if updating fails.
+    func update(credentialId: String, updates: OZStoredCredentialUpdate) async throws
 
     /// Clears all credentials AND the stored session from storage. Equivalent
     /// to a hard reset of the adapter's contents.
     ///
-    /// - Throws: `StorageException.WriteFailed` if clearing fails.
+    /// - Throws: `SmartAccountStorageException.WriteFailed` if clearing fails.
     func clear() async throws
 
     /// Saves a session to storage. Overwrites any previously stored session.
     ///
     /// - Parameter session: The session to save.
-    /// - Throws: `StorageException.WriteFailed` if saving fails.
-    func saveSession(_ session: StoredSession) async throws
+    /// - Throws: `SmartAccountStorageException.WriteFailed` if saving fails.
+    func saveSession(_ session: OZStoredSession) async throws
 
     /// Retrieves the current session, returning `nil` when no session exists or when
     /// the stored session has expired. Expired sessions are auto-cleared on read.
     ///
     /// - Returns: The session, or `nil` if no session exists or the session is expired.
-    /// - Throws: `StorageException.ReadFailed` if reading fails.
-    func getSession() async throws -> StoredSession?
+    /// - Throws: `SmartAccountStorageException.ReadFailed` if reading fails.
+    func getSession() async throws -> OZStoredSession?
 
     /// Clears the current session.
     ///
-    /// - Throws: `StorageException.WriteFailed` if clearing fails.
+    /// - Throws: `SmartAccountStorageException.WriteFailed` if clearing fails.
     func clearSession() async throws
 }
 
@@ -410,17 +410,17 @@ public protocol StorageAdapter: AnyObject, Sendable {
 /// Stores all data in memory and does not persist across application restarts.
 /// Thread-safe via Swift Concurrency actor isolation.
 ///
-/// Use `KeychainStorageAdapter` for persistent encrypted storage on Apple platforms
-/// (Keychain Services), or `UserDefaultsStorageAdapter` for non-sensitive metadata.
+/// Use `OZKeychainStorageAdapter` for persistent encrypted storage on Apple platforms
+/// (Keychain Services), or `OZUserDefaultsStorageAdapter` for non-sensitive metadata.
 ///
-/// All `InMemoryStorageAdapter` instances are considered equal because two
+/// All `OZInMemoryStorageAdapter` instances are considered equal because two
 /// freshly-created instances are functionally identical (both empty), so they are
 /// interchangeable as default values in configuration data structures.
 ///
 /// Example:
 /// ```swift
-/// let storage = InMemoryStorageAdapter()
-/// let credential = StoredCredential(...)
+/// let storage = OZInMemoryStorageAdapter()
+/// let credential = OZStoredCredential(...)
 /// try await storage.save(credential: credential)
 /// ```
 ///
@@ -429,31 +429,31 @@ public protocol StorageAdapter: AnyObject, Sendable {
 ///   tests and ephemeral demos. Production applications must supply a persistent,
 ///   encrypted storage adapter (for example a Keychain-backed implementation on
 ///   Apple platforms).
-public final actor InMemoryStorageAdapter: StorageAdapter {
+public final actor OZInMemoryStorageAdapter: OZStorageAdapter {
 
     /// Type-level hash tag used by `Hashable` consumers that want a stable hash for
-    /// any `InMemoryStorageAdapter` instance regardless of identity.
-    nonisolated internal static let sharedTypeHashTag: String = "InMemoryStorageAdapter"
+    /// any `OZInMemoryStorageAdapter` instance regardless of identity.
+    nonisolated internal static let sharedTypeHashTag: String = "OZInMemoryStorageAdapter"
 
-    private var credentials: [String: StoredCredential] = [:]
-    private var session: StoredSession? = nil
+    private var credentials: [String: OZStoredCredential] = [:]
+    private var session: OZStoredSession? = nil
 
     /// Initializes a new empty in-memory storage adapter.
     public init() {}
 
-    public func save(credential: StoredCredential) async throws {
+    public func save(credential: OZStoredCredential) async throws {
         credentials[credential.credentialId] = credential
     }
 
-    public func get(credentialId: String) async throws -> StoredCredential? {
+    public func get(credentialId: String) async throws -> OZStoredCredential? {
         return credentials[credentialId]
     }
 
-    public func getByContract(contractId: String) async throws -> [StoredCredential] {
+    public func getByContract(contractId: String) async throws -> [OZStoredCredential] {
         return credentials.values.filter { $0.contractId == contractId }
     }
 
-    public func getAll() async throws -> [StoredCredential] {
+    public func getAll() async throws -> [OZStoredCredential] {
         return Array(credentials.values)
     }
 
@@ -461,9 +461,9 @@ public final actor InMemoryStorageAdapter: StorageAdapter {
         credentials.removeValue(forKey: credentialId)
     }
 
-    public func update(credentialId: String, updates: StoredCredentialUpdate) async throws {
+    public func update(credentialId: String, updates: OZStoredCredentialUpdate) async throws {
         guard let existing = credentials[credentialId] else {
-            throw CredentialException.notFound(credentialId: credentialId)
+            throw SmartAccountCredentialException.notFound(credentialId: credentialId)
         }
         credentials[credentialId] = existing.applyUpdate(updates)
     }
@@ -472,11 +472,11 @@ public final actor InMemoryStorageAdapter: StorageAdapter {
         credentials.removeAll()
     }
 
-    public func saveSession(_ session: StoredSession) async throws {
+    public func saveSession(_ session: OZStoredSession) async throws {
         self.session = session
     }
 
-    public func getSession() async throws -> StoredSession? {
+    public func getSession() async throws -> OZStoredSession? {
         // why: an expired session is treated as if no session exists; it is also
         // dropped from storage on read so a subsequent read does not need to
         // re-evaluate expiry against the same stale entry. Callers receive the
@@ -493,55 +493,55 @@ public final actor InMemoryStorageAdapter: StorageAdapter {
     }
 }
 
-extension InMemoryStorageAdapter: Equatable {
+extension OZInMemoryStorageAdapter: Equatable {
 
-    /// All `InMemoryStorageAdapter` instances compare equal.
+    /// All `OZInMemoryStorageAdapter` instances compare equal.
     ///
     /// Two freshly-constructed instances are functionally indistinguishable (both
     /// empty), and this equivalence is what makes structural equality on
     /// configuration types behave intuitively when the default in-memory adapter is
     /// used in two configurations that are otherwise equal.
-    public nonisolated static func == (lhs: InMemoryStorageAdapter, rhs: InMemoryStorageAdapter) -> Bool {
+    public nonisolated static func == (lhs: OZInMemoryStorageAdapter, rhs: OZInMemoryStorageAdapter) -> Bool {
         return true
     }
 }
 
-extension InMemoryStorageAdapter: Hashable {
+extension OZInMemoryStorageAdapter: Hashable {
 
     public nonisolated func hash(into hasher: inout Hasher) {
-        hasher.combine(InMemoryStorageAdapter.sharedTypeHashTag)
+        hasher.combine(OZInMemoryStorageAdapter.sharedTypeHashTag)
     }
 }
 
 
 /// Information about an externally connected wallet.
 ///
-/// Returned by `ExternalWalletAdapter.connect` and
-/// `ExternalWalletAdapter.getConnectedWallets` to identify which wallet is connected
+/// Returned by `OZExternalWalletAdapter.connect` and
+/// `OZExternalWalletAdapter.getConnectedWallets` to identify which wallet is connected
 /// and its signing address.
 ///
 /// Example:
 /// ```swift
-/// let wallet = ConnectedWallet(
+/// let wallet = OZConnectedWallet(
 ///     address: "GABC123...",
 ///     walletId: "freighter",
 ///     walletName: "Freighter"
 /// )
 /// ```
-public struct ConnectedWallet: Sendable, Equatable, Hashable {
+public struct OZConnectedWallet: Sendable, Equatable, Hashable {
 
     /// The Stellar G-address of the connected wallet.
     public let address: String
 
     /// Unique wallet identifier (for example `"freighter"`, `"lobstr"`). Used for
-    /// reconnection via `ExternalWalletAdapter.reconnect`.
+    /// reconnection via `OZExternalWalletAdapter.reconnect`.
     public let walletId: String
 
     /// Human-readable display name for the wallet (for example `"Freighter"`,
     /// `"LOBSTR"`).
     public let walletName: String
 
-    /// Initializes a new `ConnectedWallet`.
+    /// Initializes a new `OZConnectedWallet`.
     public init(address: String, walletId: String, walletName: String) {
         self.address = address
         self.walletId = walletId
@@ -554,7 +554,7 @@ public struct ConnectedWallet: Sendable, Equatable, Hashable {
 ///
 /// Allows specifying a network passphrase and a particular address when multiple
 /// wallets are connected.
-public struct SignAuthEntryOptions: Sendable, Equatable, Hashable {
+public struct OZSignAuthEntryOptions: Sendable, Equatable, Hashable {
 
     /// Network passphrase for signing context.
     public let networkPassphrase: String?
@@ -562,7 +562,7 @@ public struct SignAuthEntryOptions: Sendable, Equatable, Hashable {
     /// Specific address to sign with, when multiple wallets are connected.
     public let address: String?
 
-    /// Initializes a new `SignAuthEntryOptions`.
+    /// Initializes a new `OZSignAuthEntryOptions`.
     public init(networkPassphrase: String? = nil, address: String? = nil) {
         self.networkPassphrase = networkPassphrase
         self.address = address
@@ -573,7 +573,7 @@ public struct SignAuthEntryOptions: Sendable, Equatable, Hashable {
 ///
 /// Contains the raw Ed25519 signature and optionally the signer address, which may
 /// differ from the requested address in some wallet implementations.
-public struct SignAuthEntryResult: Sendable, Equatable, Hashable {
+public struct OZSignAuthEntryResult: Sendable, Equatable, Hashable {
 
     /// The base64-encoded raw Ed25519 signature (64 bytes).
     ///
@@ -585,7 +585,7 @@ public struct SignAuthEntryResult: Sendable, Equatable, Hashable {
     /// does not report a signer address.
     public let signerAddress: String?
 
-    /// Initializes a new `SignAuthEntryResult`.
+    /// Initializes a new `OZSignAuthEntryResult`.
     public init(signedAuthEntry: String, signerAddress: String? = nil) {
         self.signedAuthEntry = signedAuthEntry
         self.signerAddress = signerAddress
@@ -601,31 +601,31 @@ public struct SignAuthEntryResult: Sendable, Equatable, Hashable {
 ///
 /// Example implementation:
 /// ```swift
-/// final class FreighterAdapter: ExternalWalletAdapter {
-///     func connect() async throws -> ConnectedWallet? {
-///         return ConnectedWallet(address: "G...", walletId: "freighter", walletName: "Freighter")
+/// final class FreighterAdapter: OZExternalWalletAdapter {
+///     func connect() async throws -> OZConnectedWallet? {
+///         return OZConnectedWallet(address: "G...", walletId: "freighter", walletName: "Freighter")
 ///     }
 ///     func signAuthEntry(
 ///         preimageXdr: String,
-///         options: SignAuthEntryOptions?
-///     ) async throws -> SignAuthEntryResult {
+///         options: OZSignAuthEntryOptions?
+///     ) async throws -> OZSignAuthEntryResult {
 ///         // Decode preimage, hash with SHA-256, sign with Ed25519, return result.
 ///     }
 ///     // ... remaining members ...
 /// }
 /// ```
-public protocol ExternalWalletAdapter: AnyObject, Sendable {
+public protocol OZExternalWalletAdapter: AnyObject, Sendable {
 
     /// Connects to the external wallet, prompting the user to authorize via the
     /// wallet's UI (for example a wallet selection modal).
     ///
     /// - Returns: The connected wallet info, or `nil` if the user cancelled.
-    /// - Throws: `WalletException` if connection fails.
-    func connect() async throws -> ConnectedWallet?
+    /// - Throws: `SmartAccountWalletException` if connection fails.
+    func connect() async throws -> OZConnectedWallet?
 
     /// Disconnects all external wallets.
     ///
-    /// - Throws: `WalletException` if disconnection fails.
+    /// - Throws: `SmartAccountWalletException` if disconnection fails.
     func disconnect() async throws
 
     /// Disconnects a specific wallet by address. The default implementation is a no-op
@@ -650,14 +650,14 @@ public protocol ExternalWalletAdapter: AnyObject, Sendable {
     ///   - options: Optional signing options (network passphrase, specific address).
     /// - Returns: The signing result with base64-encoded raw Ed25519 signature
     ///            (64 bytes).
-    /// - Throws: `TransactionException.SigningFailed` if signing fails or is rejected.
+    /// - Throws: `SmartAccountTransactionException.SigningFailed` if signing fails or is rejected.
     func signAuthEntry(
         preimageXdr: String,
-        options: SignAuthEntryOptions?
-    ) async throws -> SignAuthEntryResult
+        options: OZSignAuthEntryOptions?
+    ) async throws -> OZSignAuthEntryResult
 
     /// Returns all currently connected wallets with their addresses and identifiers.
-    func getConnectedWallets() -> [ConnectedWallet]
+    func getConnectedWallets() -> [OZConnectedWallet]
 
     /// Returns whether a specific address has a connected wallet that can sign for it.
     func canSignFor(address: String) -> Bool
@@ -665,16 +665,16 @@ public protocol ExternalWalletAdapter: AnyObject, Sendable {
     /// Returns wallet info for a specific address, or `nil` when not found.
     ///
     /// The default implementation returns `nil`.
-    func getWalletForAddress(address: String) -> ConnectedWallet?
+    func getWalletForAddress(address: String) -> OZConnectedWallet?
 
     /// Reconnects to a previously connected wallet by its wallet ID, returning the
     /// reconnected wallet info, or `nil` if reconnection failed or is not supported.
     ///
     /// The default implementation returns `nil`.
-    func reconnect(walletId: String) async throws -> ConnectedWallet?
+    func reconnect(walletId: String) async throws -> OZConnectedWallet?
 }
 
-public extension ExternalWalletAdapter {
+public extension OZExternalWalletAdapter {
 
     func disconnectByAddress(address: String) async throws {
         // why: most adapters do not maintain per-address runtime state, so the
@@ -682,11 +682,11 @@ public extension ExternalWalletAdapter {
         // per-signer state override this method to free that state.
     }
 
-    func getWalletForAddress(address: String) -> ConnectedWallet? {
+    func getWalletForAddress(address: String) -> OZConnectedWallet? {
         return nil
     }
 
-    func reconnect(walletId: String) async throws -> ConnectedWallet? {
+    func reconnect(walletId: String) async throws -> OZConnectedWallet? {
         return nil
     }
 }

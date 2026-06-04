@@ -44,7 +44,7 @@ let config = try OZSmartAccountConfig.builder(
     webauthnVerifierAddress: "CB26VN37RCVNTHJZDEPK6IRO2MMTS3Z2IEO5JD5BINY2OOJ5KKJG7NKY"
 )
     .webauthnProvider(webAuthn)
-    .storage(KeychainStorageAdapter())
+    .storage(OZKeychainStorageAdapter())
     .build()
 ```
 
@@ -148,7 +148,7 @@ public protocol WebAuthnProvider: Sendable {
 
     func authenticate(
         challenge: Data,
-        allowCredentials: [AllowCredential]?
+        allowCredentials: [WebAuthnAllowCredential]?
     ) async throws -> WebAuthnAuthenticationResult
 }
 ```
@@ -164,13 +164,13 @@ Pass the conformance through `OZSmartAccountConfig.webauthnProvider` exactly as 
 
 | Adapter | Persistence | Encryption | When to use |
 |---------|-------------|------------|-------------|
-| `InMemoryStorageAdapter` | None (lost on process exit) | None | Unit tests, ephemeral demos. The docstring explicitly warns it is not persistent and not secure. |
-| `KeychainStorageAdapter` | macOS Keychain Services with `kSecAttrAccessibleAfterFirstUnlock` | Yes (system-managed) | Recommended default for production. iOS Simulator and unsigned macOS test binaries require the `keychain-access-groups` entitlement. |
-| `UserDefaultsStorageAdapter` | Scoped `UserDefaults` suite | None (plaintext property list in the app container) | Lightweight, non-sensitive scenarios only. Apps storing anything with privacy implications should prefer Keychain. |
+| `OZInMemoryStorageAdapter` | None (lost on process exit) | None | Unit tests, ephemeral demos. The docstring explicitly warns it is not persistent and not secure. |
+| `OZKeychainStorageAdapter` | macOS Keychain Services with `kSecAttrAccessibleAfterFirstUnlock` | Yes (system-managed) | Recommended default for production. iOS Simulator and unsigned macOS test binaries require the `keychain-access-groups` entitlement. |
+| `OZUserDefaultsStorageAdapter` | Scoped `UserDefaults` suite | None (plaintext property list in the app container) | Lightweight, non-sensitive scenarios only. Apps storing anything with privacy implications should prefer Keychain. |
 
 Stored credentials contain only public-key material (public key, credential ID, contract address, nickname, metadata). No private keys ever leave the device's secure element, so Keychain entries are stored without biometric `SecAccessControl` flags.
 
-macOS specific: sandboxed apps may need `com.apple.security.keychain-access-groups` for Keychain access. Use `UserDefaultsStorageAdapter` if this is constrained.
+macOS specific: sandboxed apps may need `com.apple.security.keychain-access-groups` for Keychain access. Use `OZUserDefaultsStorageAdapter` if this is constrained.
 
 ## Common errors
 
@@ -209,7 +209,7 @@ Credentials sync via iCloud Keychain when the user is signed in to iCloud and ha
 ```swift
 import stellarsdk
 
-let storage = KeychainStorageAdapter()
+let storage = OZKeychainStorageAdapter()
 let webAuthnProvider = try AppleWebAuthnProvider(
     rpId: "wallet.example.com",
     rpName: "My Stellar App"

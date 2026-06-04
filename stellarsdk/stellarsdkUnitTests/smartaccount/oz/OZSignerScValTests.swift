@@ -81,13 +81,13 @@ final class OZSignerScValTests: XCTestCase {
 
     func testDelegatedSigner_invalidAddress_throws() {
         XCTAssertThrowsError(try OZDelegatedSigner(address: "invalid")) { error in
-            XCTAssertTrue(error is ValidationException.InvalidAddress)
+            XCTAssertTrue(error is SmartAccountValidationException.InvalidAddress)
         }
     }
 
     func testDelegatedSigner_emptyAddress_throws() {
         XCTAssertThrowsError(try OZDelegatedSigner(address: "")) { error in
-            XCTAssertTrue(error is ValidationException.InvalidAddress)
+            XCTAssertTrue(error is SmartAccountValidationException.InvalidAddress)
         }
     }
 
@@ -145,7 +145,7 @@ final class OZSignerScValTests: XCTestCase {
         XCTAssertThrowsError(
             try OZExternalSigner(verifierAddress: "invalid", keyData: Data([0x01]))
         ) { error in
-            XCTAssertTrue(error is ValidationException.InvalidAddress)
+            XCTAssertTrue(error is SmartAccountValidationException.InvalidAddress)
         }
     }
 
@@ -153,7 +153,7 @@ final class OZSignerScValTests: XCTestCase {
         XCTAssertThrowsError(
             try OZExternalSigner(verifierAddress: validContractC, keyData: Data())
         ) { error in
-            XCTAssertTrue(error is ValidationException.InvalidInput)
+            XCTAssertTrue(error is SmartAccountValidationException.InvalidInput)
         }
     }
 
@@ -165,7 +165,7 @@ final class OZSignerScValTests: XCTestCase {
                 credentialId: Data([0x01])
             )
         ) { error in
-            XCTAssertTrue(error is ValidationException.InvalidInput)
+            XCTAssertTrue(error is SmartAccountValidationException.InvalidInput)
         }
     }
 
@@ -179,7 +179,7 @@ final class OZSignerScValTests: XCTestCase {
                 credentialId: Data([0x01])
             )
         ) { error in
-            XCTAssertTrue(error is ValidationException.InvalidInput)
+            XCTAssertTrue(error is SmartAccountValidationException.InvalidInput)
         }
     }
 
@@ -193,7 +193,7 @@ final class OZSignerScValTests: XCTestCase {
                 credentialId: Data()
             )
         ) { error in
-            XCTAssertTrue(error is ValidationException.InvalidInput)
+            XCTAssertTrue(error is SmartAccountValidationException.InvalidInput)
         }
     }
 
@@ -204,21 +204,21 @@ final class OZSignerScValTests: XCTestCase {
                 publicKey: Data(repeating: 0x01, count: 31)
             )
         ) { error in
-            XCTAssertTrue(error is ValidationException.InvalidInput)
+            XCTAssertTrue(error is SmartAccountValidationException.InvalidInput)
         }
     }
 
-    // MARK: - SubmissionMethod
+    // MARK: - OZSubmissionMethod
 
     func testSubmissionMethod_hasTwoCases() {
-        let cases: [SubmissionMethod] = [.relayer, .rpc]
+        let cases: [OZSubmissionMethod] = [.relayer, .rpc]
         XCTAssertEqual(cases.count, 2)
     }
 
     func testSubmissionMethod_relayerCaseDistinctFromRpc() {
         XCTAssertNotEqual(
-            String(describing: SubmissionMethod.relayer),
-            String(describing: SubmissionMethod.rpc)
+            String(describing: OZSubmissionMethod.relayer),
+            String(describing: OZSubmissionMethod.rpc)
         )
     }
 

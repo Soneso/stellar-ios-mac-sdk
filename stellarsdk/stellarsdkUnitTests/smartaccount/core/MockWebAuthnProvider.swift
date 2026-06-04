@@ -59,7 +59,7 @@ final class MockWebAuthnProvider: WebAuthnProvider, @unchecked Sendable {
     private(set) var lastAuthenticateChallenge: Data?
 
     /// Most recent `allowCredentials` passed to `authenticate`, or `nil` if never called.
-    private(set) var lastAuthenticateAllowCredentials: [AllowCredential]?
+    private(set) var lastAuthenticateAllowCredentials: [WebAuthnAllowCredential]?
 
     // MARK: - Initialization
 
@@ -90,7 +90,7 @@ final class MockWebAuthnProvider: WebAuthnProvider, @unchecked Sendable {
 
     func authenticate(
         challenge: Data,
-        allowCredentials: [AllowCredential]?
+        allowCredentials: [WebAuthnAllowCredential]?
     ) async throws -> WebAuthnAuthenticationResult {
         authenticateCallCount += 1
         lastAuthenticateChallenge = Data(challenge)

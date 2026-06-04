@@ -1,5 +1,5 @@
 //
-//  UserDefaultsStorageAdapterTests.swift
+//  OZUserDefaultsStorageAdapterTests.swift
 //  stellarsdkUnitTests
 //
 //  Copyright (c) 2026 Soneso. All rights reserved.
@@ -8,7 +8,7 @@
 import XCTest
 @testable import stellarsdk
 
-final class UserDefaultsStorageAdapterTests: XCTestCase {
+final class OZUserDefaultsStorageAdapterTests: XCTestCase {
 
     // ========================================================================
     // Test Data Helpers
@@ -27,8 +27,8 @@ final class UserDefaultsStorageAdapterTests: XCTestCase {
         id: String = "cred-full-001",
         contractId: String? = "CBCD1234EFGH5678IJKL9012MNOP3456QRST7890UVWX1234YZAB5678",
         seed: Int = 1
-    ) -> StoredCredential {
-        return StoredCredential(
+    ) -> OZStoredCredential {
+        return OZStoredCredential(
             credentialId: id,
             publicKey: testPublicKey(seed: seed),
             contractId: contractId,
@@ -44,8 +44,8 @@ final class UserDefaultsStorageAdapterTests: XCTestCase {
         )
     }
 
-    private func minimalCredential(id: String = "cred-minimal-001") -> StoredCredential {
-        return StoredCredential(
+    private func minimalCredential(id: String = "cred-minimal-001") -> OZStoredCredential {
+        return OZStoredCredential(
             credentialId: id,
             publicKey: testPublicKey(seed: 2),
             createdAt: 1_700_000_000_000
@@ -71,8 +71,8 @@ final class UserDefaultsStorageAdapterTests: XCTestCase {
         super.tearDown()
     }
 
-    private func newAdapter() throws -> UserDefaultsStorageAdapter {
-        return try UserDefaultsStorageAdapter(suiteName: uniqueSuiteName())
+    private func newAdapter() throws -> OZUserDefaultsStorageAdapter {
+        return try OZUserDefaultsStorageAdapter(suiteName: uniqueSuiteName())
     }
 
     // ========================================================================
@@ -148,7 +148,7 @@ final class UserDefaultsStorageAdapterTests: XCTestCase {
 
         try await adapter.update(
             credentialId: credential.credentialId,
-            updates: StoredCredentialUpdate(deploymentStatus: .failed)
+            updates: OZStoredCredentialUpdate(deploymentStatus: .failed)
         )
 
         let loaded = try await adapter.get(credentialId: credential.credentialId)
@@ -162,7 +162,7 @@ final class UserDefaultsStorageAdapterTests: XCTestCase {
 
         try await adapter.update(
             credentialId: credential.credentialId,
-            updates: StoredCredentialUpdate(nickname: "New nickname")
+            updates: OZStoredCredentialUpdate(nickname: "New nickname")
         )
 
         let loaded = try await adapter.get(credentialId: credential.credentialId)
@@ -176,7 +176,7 @@ final class UserDefaultsStorageAdapterTests: XCTestCase {
 
         try await adapter.update(
             credentialId: credential.credentialId,
-            updates: StoredCredentialUpdate(contractId: "CXYZ123")
+            updates: OZStoredCredentialUpdate(contractId: "CXYZ123")
         )
 
         let loaded = try await adapter.get(credentialId: credential.credentialId)
@@ -190,7 +190,7 @@ final class UserDefaultsStorageAdapterTests: XCTestCase {
 
         try await adapter.update(
             credentialId: credential.credentialId,
-            updates: StoredCredentialUpdate(isPrimary: true)
+            updates: OZStoredCredentialUpdate(isPrimary: true)
         )
 
         let loaded = try await adapter.get(credentialId: credential.credentialId)
@@ -204,7 +204,7 @@ final class UserDefaultsStorageAdapterTests: XCTestCase {
 
         try await adapter.update(
             credentialId: credential.credentialId,
-            updates: StoredCredentialUpdate(
+            updates: OZStoredCredentialUpdate(
                 deploymentStatus: .failed,
                 deploymentError: "txn rejected",
                 nickname: "Updated"
@@ -222,10 +222,10 @@ final class UserDefaultsStorageAdapterTests: XCTestCase {
         do {
             try await adapter.update(
                 credentialId: "missing",
-                updates: StoredCredentialUpdate(nickname: "X")
+                updates: OZStoredCredentialUpdate(nickname: "X")
             )
-            XCTFail("expected CredentialException.NotFound")
-        } catch let error as CredentialException.NotFound {
+            XCTFail("expected SmartAccountCredentialException.NotFound")
+        } catch let error as SmartAccountCredentialException.NotFound {
             XCTAssertEqual(error.code, .credentialNotFound)
         }
     }
@@ -346,7 +346,7 @@ final class UserDefaultsStorageAdapterTests: XCTestCase {
 
     func test_clear_removes_session_too() async throws {
         let adapter = try newAdapter()
-        let session = StoredSession(
+        let session = OZStoredSession(
             credentialId: "c1",
             contractId: "CTARGET",
             connectedAt: 1_700_000_000_000,
@@ -365,7 +365,7 @@ final class UserDefaultsStorageAdapterTests: XCTestCase {
 
     func test_save_and_retrieve_session() async throws {
         let adapter = try newAdapter()
-        let session = StoredSession(
+        let session = OZStoredSession(
             credentialId: "c1",
             contractId: "CTARGET",
             connectedAt: 1_700_000_000_000,
@@ -385,13 +385,13 @@ final class UserDefaultsStorageAdapterTests: XCTestCase {
 
     func test_save_session_overwrites_previous_session() async throws {
         let adapter = try newAdapter()
-        let first = StoredSession(
+        let first = OZStoredSession(
             credentialId: "c1",
             contractId: "CT1",
             connectedAt: 1_700_000_000_000,
             expiresAt: 1_900_000_000_000
         )
-        let second = StoredSession(
+        let second = OZStoredSession(
             credentialId: "c2",
             contractId: "CT2",
             connectedAt: 1_700_000_000_000,
@@ -412,7 +412,7 @@ final class UserDefaultsStorageAdapterTests: XCTestCase {
     func test_expired_session_auto_cleared_on_get_session() async throws {
         let adapter = try newAdapter()
         let pastMs = Int64(Date().timeIntervalSince1970 * 1000) - 1000
-        let expired = StoredSession(
+        let expired = OZStoredSession(
             credentialId: "c1",
             contractId: "CT",
             connectedAt: pastMs - 10_000,
@@ -430,7 +430,7 @@ final class UserDefaultsStorageAdapterTests: XCTestCase {
     func test_non_expired_session_is_returned() async throws {
         let adapter = try newAdapter()
         let nowMs = Int64(Date().timeIntervalSince1970 * 1000)
-        let session = StoredSession(
+        let session = OZStoredSession(
             credentialId: "c1",
             contractId: "CT",
             connectedAt: nowMs,
@@ -444,7 +444,7 @@ final class UserDefaultsStorageAdapterTests: XCTestCase {
 
     func test_clear_session() async throws {
         let adapter = try newAdapter()
-        let session = StoredSession(
+        let session = OZStoredSession(
             credentialId: "c1",
             contractId: "CT",
             connectedAt: 1_700_000_000_000,
@@ -466,7 +466,7 @@ final class UserDefaultsStorageAdapterTests: XCTestCase {
         let adapter = try newAdapter()
         let credential = fullCredential()
         try await adapter.save(credential: credential)
-        try await adapter.saveSession(StoredSession(
+        try await adapter.saveSession(OZStoredSession(
             credentialId: credential.credentialId,
             contractId: "CT",
             connectedAt: 1_700_000_000_000,
@@ -484,8 +484,8 @@ final class UserDefaultsStorageAdapterTests: XCTestCase {
     // ========================================================================
 
     func test_custom_suite_name_isolates_user_defaults_data() async throws {
-        let adapterA = try UserDefaultsStorageAdapter(suiteName: uniqueSuiteName("A"))
-        let adapterB = try UserDefaultsStorageAdapter(suiteName: uniqueSuiteName("B"))
+        let adapterA = try OZUserDefaultsStorageAdapter(suiteName: uniqueSuiteName("A"))
+        let adapterB = try OZUserDefaultsStorageAdapter(suiteName: uniqueSuiteName("B"))
 
         try await adapterA.save(credential: fullCredential(id: "in-A", seed: 1))
         try await adapterB.save(credential: fullCredential(id: "in-B", seed: 2))
@@ -499,7 +499,7 @@ final class UserDefaultsStorageAdapterTests: XCTestCase {
 
     func test_default_suite_name_is_used() async throws {
         XCTAssertEqual(
-            UserDefaultsStorageAdapter.defaultSuiteName,
+            OZUserDefaultsStorageAdapter.defaultSuiteName,
             "com.soneso.stellar.smartaccount"
         )
     }
@@ -510,7 +510,7 @@ final class UserDefaultsStorageAdapterTests: XCTestCase {
 
     func test_user_defaults_adapter_conforms_to_storage_adapter_protocol() async throws {
         let adapter = try newAdapter()
-        let asProtocol: any StorageAdapter = adapter
+        let asProtocol: any OZStorageAdapter = adapter
         try await asProtocol.save(credential: fullCredential())
         let all = try await asProtocol.getAll()
         XCTAssertEqual(all.count, 1)
@@ -541,10 +541,10 @@ final class UserDefaultsStorageAdapterTests: XCTestCase {
         do {
             try await adapter.update(
                 credentialId: credential.credentialId,
-                updates: StoredCredentialUpdate(nickname: "X")
+                updates: OZStoredCredentialUpdate(nickname: "X")
             )
-            XCTFail("expected CredentialException.NotFound")
-        } catch is CredentialException.NotFound {
+            XCTFail("expected SmartAccountCredentialException.NotFound")
+        } catch is SmartAccountCredentialException.NotFound {
             // expected
         }
     }
@@ -557,16 +557,16 @@ final class UserDefaultsStorageAdapterTests: XCTestCase {
         // Apple documents `NSGlobalDomain` as the one suite name guaranteed
         // to be rejected by `UserDefaults(suiteName:)` (it is reserved for
         // system-wide defaults). Constructing the adapter with that name
-        // must surface a typed `StorageException.WriteFailed` rather than
+        // must surface a typed `SmartAccountStorageException.WriteFailed` rather than
         // crashing or silently returning a no-op adapter.
         do {
-            _ = try UserDefaultsStorageAdapter(suiteName: "NSGlobalDomain")
-            XCTFail("expected StorageException.WriteFailed for reserved suite name")
-        } catch let error as StorageException.WriteFailed {
+            _ = try OZUserDefaultsStorageAdapter(suiteName: "NSGlobalDomain")
+            XCTFail("expected SmartAccountStorageException.WriteFailed for reserved suite name")
+        } catch let error as SmartAccountStorageException.WriteFailed {
             XCTAssertEqual(error.code, .storageWriteFailed)
             XCTAssertTrue(error.message.contains("UserDefaults"))
         } catch {
-            XCTFail("expected StorageException.WriteFailed, got \(error)")
+            XCTFail("expected SmartAccountStorageException.WriteFailed, got \(error)")
         }
     }
 
@@ -577,7 +577,7 @@ final class UserDefaultsStorageAdapterTests: XCTestCase {
         await withTaskGroup(of: Void.self) { group in
             for i in 0..<total {
                 group.addTask {
-                    let credential = StoredCredential(
+                    let credential = OZStoredCredential(
                         credentialId: "concurrent-\(i)",
                         publicKey: Data(repeating: UInt8(i % 256), count: 65),
                         createdAt: 1_700_000_000_000
@@ -594,11 +594,11 @@ final class UserDefaultsStorageAdapterTests: XCTestCase {
     func test_corrupted_payload_throws_read_failed() async throws {
         // Write a non-JSON UTF-8 string into the suite's credential entry
         // bypassing the adapter's encoder, then verify the adapter surfaces
-        // the JSON decoding failure as `StorageException.ReadFailed`. This
+        // the JSON decoding failure as `SmartAccountStorageException.ReadFailed`. This
         // covers the catch-all arm in `get(credentialId:)` that maps any
         // decoder error into a typed read failure for the caller.
         let suiteName = uniqueSuiteName()
-        let adapter = try UserDefaultsStorageAdapter(suiteName: suiteName)
+        let adapter = try OZUserDefaultsStorageAdapter(suiteName: suiteName)
         let credentialId = "corrupted-id"
         let credentialKey = "cred_" + credentialId
 
@@ -611,8 +611,8 @@ final class UserDefaultsStorageAdapterTests: XCTestCase {
 
         do {
             _ = try await adapter.get(credentialId: credentialId)
-            XCTFail("expected StorageException.ReadFailed for corrupted payload")
-        } catch let error as StorageException.ReadFailed {
+            XCTFail("expected SmartAccountStorageException.ReadFailed for corrupted payload")
+        } catch let error as SmartAccountStorageException.ReadFailed {
             XCTAssertEqual(error.code, .storageReadFailed)
             XCTAssertTrue(error.message.contains(credentialId))
         }
@@ -621,7 +621,7 @@ final class UserDefaultsStorageAdapterTests: XCTestCase {
     func test_oversized_payload_round_trip() async throws {
         let adapter = try newAdapter()
         let bigPayload = Data(repeating: 0x42, count: 200 * 1024)
-        let credential = StoredCredential(
+        let credential = OZStoredCredential(
             credentialId: "big",
             publicKey: bigPayload,
             createdAt: 1_700_000_000_000

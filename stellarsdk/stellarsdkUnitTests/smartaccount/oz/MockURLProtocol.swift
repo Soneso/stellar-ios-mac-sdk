@@ -17,7 +17,7 @@ import Foundation
 /// return a `Result.failure(error)` to surface a URL-loading error in the same way
 /// the platform networking stack would, and the static `timeoutError` constant
 /// returns a `URLError(.timedOut)` that the production code converts into an
-/// `IndexerException.Timeout` / `OZRelayerErrorCodes.TIMEOUT`.
+/// `SmartAccountIndexerException.Timeout` / `OZRelayerErrorCodes.TIMEOUT`.
 ///
 /// Usage:
 /// ```swift

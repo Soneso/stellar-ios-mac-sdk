@@ -33,10 +33,10 @@ final class MockOZMultiSignerManager: OZMultiSignerManager, @unchecked Sendable 
         let hostFunction: HostFunctionXDR
 
         /// Selected signers passed by the caller.
-        let selectedSigners: [SelectedSigner]
+        let selectedSigners: [OZSelectedSigner]
 
         /// Submission-method override, if any.
-        let forceMethod: SubmissionMethod?
+        let forceMethod: OZSubmissionMethod?
     }
 
     private let queue = DispatchQueue(label: "MockOZMultiSignerManager.state")
@@ -49,7 +49,7 @@ final class MockOZMultiSignerManager: OZMultiSignerManager, @unchecked Sendable 
 
     /// Canned result returned from every `submitWithMultipleSigners` call when
     /// no per-call override is enqueued.
-    var defaultResult: TransactionResult = TransactionResult(
+    var defaultResult: OZTransactionResult = OZTransactionResult(
         success: true,
         hash: "deadbeef"
     )
@@ -57,7 +57,7 @@ final class MockOZMultiSignerManager: OZMultiSignerManager, @unchecked Sendable 
     /// Optional FIFO queue of canned results consulted before
     /// ``defaultResult``. Tests use this to script multiple sequential
     /// outcomes in cross-manager flow scenarios.
-    var queuedResults: [TransactionResult] = []
+    var queuedResults: [OZTransactionResult] = []
 
     /// Optional thrown error for `submitWithMultipleSigners`. Lets tests
     /// exercise error-propagation paths without staging a real transaction
@@ -73,15 +73,15 @@ final class MockOZMultiSignerManager: OZMultiSignerManager, @unchecked Sendable 
     /// multi-signer pipeline are not affected by this fixture.
     override func submitWithMultipleSigners(
         hostFunction: HostFunctionXDR,
-        selectedSigners: [SelectedSigner],
-        forceMethod: SubmissionMethod?
-    ) async throws -> TransactionResult {
+        selectedSigners: [OZSelectedSigner],
+        forceMethod: OZSubmissionMethod?
+    ) async throws -> OZTransactionResult {
         let invocation = Invocation(
             hostFunction: hostFunction,
             selectedSigners: selectedSigners,
             forceMethod: forceMethod
         )
-        return try queue.sync { () -> TransactionResult in
+        return try queue.sync { () -> OZTransactionResult in
             _invocations.append(invocation)
             if let error = throwOnSubmit { throw error }
             if !queuedResults.isEmpty {

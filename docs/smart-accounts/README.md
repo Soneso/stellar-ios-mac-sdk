@@ -37,23 +37,23 @@ The kit is split into two layers: a protocol-agnostic `core/` layer (signer type
 |  | walletOperations      |  | transactionOperations      |            |
 |  | (OZWalletOperations)  |  | (OZTransactionOperations)  |            |
 |  +-----------------------+  +----------------------------+            |
-|  +-----------------------+  +----------------------------+            |
-|  | signerManager         |  | contextRuleManager         |            |
-|  | (OZSignerManager)     |  | (OZContextRuleManager)     |            |
-|  +-----------------------+  +----------------------------+            |
-|  +-----------------------+  +----------------------------+            |
-|  | policyManager         |  | multiSignerManager         |            |
-|  | (OZPolicyManager)     |  | (OZMultiSignerManager)     |            |
-|  +-----------------------+  +----------------------------+            |
-|  +-----------------------+  +----------------------------+            |
-|  | credentialManager     |  | events                     |            |
-|  | (OZCredentialManager) |  | (SmartAccountEventEmitter) |            |
-|  +-----------------------+  +----------------------------+            |
+|  +-----------------------+  +------------------------------+          |
+|  | signerManager         |  | contextRuleManager           |          |
+|  | (OZSignerManager)     |  | (OZContextRuleManager)       |          |
+|  +-----------------------+  +------------------------------+          |
+|  +-----------------------+  +------------------------------+          |
+|  | policyManager         |  | multiSignerManager           |          |
+|  | (OZPolicyManager)     |  | (OZMultiSignerManager)       |          |
+|  +-----------------------+  +------------------------------+          |
+|  +-----------------------+  +------------------------------+          |
+|  | credentialManager     |  | events                       |          |
+|  | (OZCredentialManager) |  | (OZSmartAccountEventEmitter) |          |
+|  +-----------------------+  +------------------------------+          |
 +-----------------------------------------------------------------------+
         |                    |                      |
         v                    v                      v
 +------------------+  +------------------+  +-----------------------+
-| WebAuthnProvider |  | StorageAdapter   |  | ExternalWalletAdapter |
+| WebAuthnProvider |  | OZStorageAdapter   |  | OZExternalWalletAdapter |
 | (platform impl)  |  | (platform impl)  |  | (optional)            |
 +------------------+  +------------------+  +-----------------------+
 
@@ -69,7 +69,7 @@ The kit is split into two layers: a protocol-agnostic `core/` layer (signer type
 
 **WebAuthnProvider** is a platform-specific protocol you implement, or use the provided implementation. It triggers the OS-level biometric prompt and returns raw WebAuthn attestation/assertion data.
 
-**StorageAdapter** persists credentials and sessions. The SDK includes an in-memory adapter for testing and platform-storage adapters for production (see the Configuration Reference).
+**OZStorageAdapter** persists credentials and sessions. The SDK includes an in-memory adapter for testing and platform-storage adapters for production (see the Configuration Reference).
 
 **External signing** flows through one kit-owned `OZExternalSignerManager`, exposed as `kit.externalSigners` — the single front door for all external (non-passkey) signers. Supply adapters for external wallet signers (e.g. Freighter or WalletConnect) and for raw Ed25519 signers (e.g. an HSM or remote signing service) via configuration, or register in-memory keypairs at runtime. See the [demo app](https://github.com/Soneso/ios-oz-smartaccount-demo) for examples.
 
@@ -105,7 +105,7 @@ let config = try OZSmartAccountConfig(
     relayerUrl: "https://relayer.example.com",   // optional: enables fee sponsoring
     indexerUrl: nil,                             // optional: defaults to a per-network URL
     webauthnProvider: provider,
-    storage: KeychainStorageAdapter()           // optional: defaults to InMemoryStorageAdapter
+    storage: OZKeychainStorageAdapter()           // optional: defaults to OZInMemoryStorageAdapter
 )
 
 // Step 2: Create the kit
@@ -175,7 +175,7 @@ if let connection = try await kit.walletOperations.connectWallet() {
 
 // Phase 2: User taps "Connect" -- triggers WebAuthn if no session
 if let connection = try await kit.walletOperations.connectWallet(
-    options: ConnectWalletOptions(prompt: true)
+    options: OZConnectWalletOptions(prompt: true)
 ) {
     switch connection {
     case let .connected(_, contractId, _):
@@ -186,7 +186,7 @@ if let connection = try await kit.walletOperations.connectWallet(
         // `showContractPicker` is your own picker UI -- not provided by the SDK.
         let chosen = await showContractPicker(candidates)
         _ = try await kit.walletOperations.connectWallet(
-            options: ConnectWalletOptions(credentialId: credentialId, contractId: chosen)
+            options: OZConnectWalletOptions(credentialId: credentialId, contractId: chosen)
         )
     }
 }
@@ -196,7 +196,7 @@ Force fresh authentication when needed (e.g., before sensitive operations):
 
 ```swift
 let connection = try await kit.walletOperations.connectWallet(
-    options: ConnectWalletOptions(fresh: true)
+    options: OZConnectWalletOptions(fresh: true)
 )
 ```
 
@@ -204,7 +204,7 @@ Connect directly with known credentials (skips WebAuthn and session check; the c
 
 ```swift
 let connection = try await kit.walletOperations.connectWallet(
-    options: ConnectWalletOptions(
+    options: OZConnectWalletOptions(
         credentialId: "<base64url credential id>",
         contractId: "<C-address>"
     )
@@ -213,7 +213,7 @@ let connection = try await kit.walletOperations.connectWallet(
 
 ### Retrying Failed Deployments
 
-When `createWallet(autoSubmit: false)` is used, or if a deployment fails after the credential is created, use `deployPendingCredential` to submit the deploy transaction later. The credential must exist in local storage. The `signedTransactionXdr` field on `CreateWalletResult` is always populated regardless of `autoSubmit`, so it can also be submitted externally.
+When `createWallet(autoSubmit: false)` is used, or if a deployment fails after the credential is created, use `deployPendingCredential` to submit the deploy transaction later. The credential must exist in local storage. The `signedTransactionXdr` field on `OZCreateWalletResult` is always populated regardless of `autoSubmit`, so it can also be submitted externally.
 
 ```swift
 let result = try await kit.walletOperations.deployPendingCredential(
@@ -298,9 +298,9 @@ let result = try await kit.policyManager.addPolicy(
 
 When a context rule requires multiple signers, use `kit.multiSignerManager` to coordinate signatures. `multiSignerTransfer()` handles token transfers; `multiSignerContractCall()` handles arbitrary external contract calls (e.g., governance votes, multisig swaps), authorized through the matching call-contract context rule; and `multiSignerExecuteAndSubmit()` routes a call through the smart account's `execute` entry point.
 
-All three signer kinds — passkey (`SelectedSigner.passkey`), delegated wallet (`SelectedSigner.wallet`), and Ed25519 external (`SelectedSigner.ed25519`) — may be mixed in the same `selectedSigners` list. Wallet and Ed25519 signers resolve through the kit-owned `kit.externalSigners` manager: register an in-memory key at runtime (`kit.externalSigners.addFromSecret(...)` / `kit.externalSigners.addEd25519FromRawKey(...)`) or supply an adapter at kit construction (`externalWallet` / `externalEd25519Adapter`).
+All three signer kinds — passkey (`OZSelectedSigner.passkey`), delegated wallet (`OZSelectedSigner.wallet`), and Ed25519 external (`OZSelectedSigner.ed25519`) — may be mixed in the same `selectedSigners` list. Wallet and Ed25519 signers resolve through the kit-owned `kit.externalSigners` manager: register an in-memory key at runtime (`kit.externalSigners.addFromSecret(...)` / `kit.externalSigners.addEd25519FromRawKey(...)`) or supply an adapter at kit construction (`externalWallet` / `externalEd25519Adapter`).
 
-See the [API Reference](api-reference.md#multi-signer-operations) for `SelectedSigner` types, custody models, and registration examples.
+See the [API Reference](api-reference.md#multi-signer-operations) for `OZSelectedSigner` types, custody models, and registration examples.
 
 ### Error Handling
 
@@ -313,11 +313,11 @@ do {
     print("User cancelled the biometric prompt")
 } catch let error as WebAuthnException.NotSupported {
     print("WebAuthn not configured: \(error.message)")
-} catch let error as TransactionException.SimulationFailed {
+} catch let error as SmartAccountTransactionException.SimulationFailed {
     print("Contract simulation failed: \(error.message)")
-} catch let error as TransactionException.SubmissionFailed {
+} catch let error as SmartAccountTransactionException.SubmissionFailed {
     print("Transaction submission failed: \(error.message)")
-} catch is WalletException.NotFound {
+} catch is SmartAccountWalletException.NotFound {
     print("Wallet not found on-chain")
 } catch let error as SmartAccountException {
     print("Error [\(error.code.rawValue)]: \(error.message)")
@@ -326,7 +326,7 @@ do {
 
 ## Configuration Reference
 
-`OZSmartAccountConfig` holds all parameters. Four fields are required; the rest have defaults. The constructor validates inputs and throws `ConfigurationException` on invalid values.
+`OZSmartAccountConfig` holds all parameters. Four fields are required; the rest have defaults. The constructor validates inputs and throws `SmartAccountConfigurationException` on invalid values.
 
 ### Required Fields
 
@@ -348,9 +348,9 @@ do {
 | `relayerUrl` | `String?` | `nil` | Relayer endpoint for fee-sponsored transactions. When set, users do not pay gas fees. |
 | `indexerUrl` | `String?` | `nil` | Indexer endpoint for credential-to-contract discovery. When `nil`, falls back to the built-in per-network default (testnet/mainnet). |
 | `webauthnProvider` | `WebAuthnProvider?` | `nil` | Platform-specific WebAuthn implementation. Required for `createWallet`, `connectWallet(prompt: true)`, `authenticatePasskey`, and any passkey-signing flow. |
-| `storage` | `StorageAdapter` | `InMemoryStorageAdapter()` | Credential and session persistence. Use `KeychainStorageAdapter` in production. Per-platform adapters and trade-offs are documented in the [iOS](webauthn-ios.md#storage-adapters) and [macOS](webauthn-macos.md#storage-adapters) setup pages. |
-| `externalWallet` | `ExternalWalletAdapter?` | `nil` | Wallet adapter (e.g., Freighter, Lobstr) backing the adapter custody model for `SelectedSigner.wallet` signers. The kit injects it into `kit.externalSigners`. |
-| `externalEd25519Adapter` | `OZExternalEd25519SignerAdapter?` | `nil` | Ed25519 adapter (hardware wallet, HSM, remote signing service) backing the adapter custody model for `SelectedSigner.ed25519` signers. The kit injects it into `kit.externalSigners`. |
+| `storage` | `OZStorageAdapter` | `OZInMemoryStorageAdapter()` | Credential and session persistence. Use `OZKeychainStorageAdapter` in production. Per-platform adapters and trade-offs are documented in the [iOS](webauthn-ios.md#storage-adapters) and [macOS](webauthn-macos.md#storage-adapters) setup pages. |
+| `externalWallet` | `OZExternalWalletAdapter?` | `nil` | Wallet adapter (e.g., Freighter, Lobstr) backing the adapter custody model for `OZSelectedSigner.wallet` signers. The kit injects it into `kit.externalSigners`. |
+| `externalEd25519Adapter` | `OZExternalEd25519SignerAdapter?` | `nil` | Ed25519 adapter (hardware wallet, HSM, remote signing service) backing the adapter custody model for `OZSelectedSigner.ed25519` signers. The kit injects it into `kit.externalSigners`. |
 | `maxContextRuleScanId` | `UInt32` | `50` | Upper bound on the context-rule IDs scanned when listing rules without an explicit scan limit. |
 
 ### Builder Pattern
@@ -368,7 +368,7 @@ let config = try OZSmartAccountConfig.builder(
     .relayerUrl("https://relayer.example.com")
     .indexerUrl("https://indexer.example.com")
     .signatureExpirationLedgers(1_440)  // ~2 hours
-    .storage(KeychainStorageAdapter())
+    .storage(OZKeychainStorageAdapter())
     .externalWallet(myExternalWallet)
     .build()
 ```

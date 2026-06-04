@@ -133,7 +133,7 @@ final class OZWalletOperationsTests: XCTestCase {
     func test_connectWallet_promptFalse_noSession_returnsNull() async throws {
         let (_, walletOps) = try createKit()
         let result = try await walletOps.connectWallet(
-            options: ConnectWalletOptions(prompt: false)
+            options: OZConnectWalletOptions(prompt: false)
         )
         XCTAssertNil(result)
     }
@@ -142,7 +142,7 @@ final class OZWalletOperationsTests: XCTestCase {
         let (_, walletOps) = try createKit()
         do {
             _ = try await walletOps.connectWallet(
-                options: ConnectWalletOptions(fresh: true)
+                options: OZConnectWalletOptions(fresh: true)
             )
             XCTFail("expected WebAuthnException.NotSupported")
         } catch is WebAuthnException.NotSupported {
@@ -154,7 +154,7 @@ final class OZWalletOperationsTests: XCTestCase {
         let (_, walletOps) = try createKit()
         do {
             _ = try await walletOps.connectWallet(
-                options: ConnectWalletOptions(prompt: true)
+                options: OZConnectWalletOptions(prompt: true)
             )
             XCTFail("expected WebAuthnException.NotSupported")
         } catch is WebAuthnException.NotSupported {
@@ -166,20 +166,20 @@ final class OZWalletOperationsTests: XCTestCase {
         let (_, walletOps) = try createKit()
         do {
             _ = try await walletOps.connectWallet(
-                options: ConnectWalletOptions(contractId: validContractAddress)
+                options: OZConnectWalletOptions(contractId: validContractAddress)
             )
-            XCTFail("expected ValidationException.InvalidInput")
-        } catch is ValidationException.InvalidInput {
+            XCTFail("expected SmartAccountValidationException.InvalidInput")
+        } catch is SmartAccountValidationException.InvalidInput {
             // expected
         }
     }
 
     // ========================================================================
-    // MARK: - ConnectWalletOptions data-class behavior
+    // MARK: - OZConnectWalletOptions data-class behavior
     // ========================================================================
 
     func test_connectWalletOptions_defaultValues() {
-        let options = ConnectWalletOptions()
+        let options = OZConnectWalletOptions()
         XCTAssertNil(options.credentialId)
         XCTAssertNil(options.contractId)
         XCTAssertFalse(options.fresh)
@@ -187,7 +187,7 @@ final class OZWalletOperationsTests: XCTestCase {
     }
 
     func test_connectWalletOptions_withPrompt() {
-        let options = ConnectWalletOptions(prompt: true)
+        let options = OZConnectWalletOptions(prompt: true)
         XCTAssertNil(options.credentialId)
         XCTAssertNil(options.contractId)
         XCTAssertFalse(options.fresh)
@@ -195,7 +195,7 @@ final class OZWalletOperationsTests: XCTestCase {
     }
 
     func test_connectWalletOptions_withFresh() {
-        let options = ConnectWalletOptions(fresh: true)
+        let options = OZConnectWalletOptions(fresh: true)
         XCTAssertNil(options.credentialId)
         XCTAssertNil(options.contractId)
         XCTAssertTrue(options.fresh)
@@ -203,7 +203,7 @@ final class OZWalletOperationsTests: XCTestCase {
     }
 
     func test_connectWalletOptions_withCredentialIdAndContractId() {
-        let options = ConnectWalletOptions(
+        let options = OZConnectWalletOptions(
             credentialId: "cred-abc",
             contractId: validContractAddress
         )
@@ -214,7 +214,7 @@ final class OZWalletOperationsTests: XCTestCase {
     }
 
     func test_connectWalletOptions_withAllFields() {
-        let options = ConnectWalletOptions(
+        let options = OZConnectWalletOptions(
             credentialId: "cred-abc",
             contractId: validContractAddress,
             fresh: true,
@@ -227,16 +227,16 @@ final class OZWalletOperationsTests: XCTestCase {
     }
 
     func test_connectWalletOptions_equality() {
-        let a = ConnectWalletOptions(credentialId: "x", prompt: true)
-        let b = ConnectWalletOptions(credentialId: "x", prompt: true)
-        let c = ConnectWalletOptions(credentialId: "y", prompt: true)
+        let a = OZConnectWalletOptions(credentialId: "x", prompt: true)
+        let b = OZConnectWalletOptions(credentialId: "x", prompt: true)
+        let c = OZConnectWalletOptions(credentialId: "y", prompt: true)
         XCTAssertEqual(a, b)
         XCTAssertEqual(a.hashValue, b.hashValue)
         XCTAssertNotEqual(a, c)
     }
 
     func test_connectWalletOptions_copy() {
-        let original = ConnectWalletOptions(fresh: true)
+        let original = OZConnectWalletOptions(fresh: true)
         let copied = original.copy(prompt: true)
         XCTAssertTrue(copied.fresh)
         XCTAssertTrue(copied.prompt)
@@ -244,12 +244,12 @@ final class OZWalletOperationsTests: XCTestCase {
     }
 
     // ========================================================================
-    // MARK: - CreateWalletResult data-class behavior
+    // MARK: - OZCreateWalletResult data-class behavior
     // ========================================================================
 
     func test_createWalletResult_construction_defaultOptionalFields() {
         let pk = testPublicKey()
-        let result = CreateWalletResult(
+        let result = OZCreateWalletResult(
             credentialId: "cred-1",
             contractId: validContractAddress,
             publicKey: pk,
@@ -265,7 +265,7 @@ final class OZWalletOperationsTests: XCTestCase {
 
     func test_createWalletResult_constructionWithAllFields() {
         let pk = testPublicKey()
-        let result = CreateWalletResult(
+        let result = OZCreateWalletResult(
             credentialId: "cred-2",
             contractId: validContractAddress,
             publicKey: pk,
@@ -280,13 +280,13 @@ final class OZWalletOperationsTests: XCTestCase {
 
     func test_createWalletResult_equality_sameData() {
         let pk = testPublicKey()
-        let a = CreateWalletResult(
+        let a = OZCreateWalletResult(
             credentialId: "cred-1",
             contractId: validContractAddress,
             publicKey: pk,
             signedTransactionXdr: "XDR"
         )
-        let b = CreateWalletResult(
+        let b = OZCreateWalletResult(
             credentialId: "cred-1",
             contractId: validContractAddress,
             publicKey: pk,
@@ -297,13 +297,13 @@ final class OZWalletOperationsTests: XCTestCase {
     }
 
     func test_createWalletResult_equality_differentPublicKey() {
-        let a = CreateWalletResult(
+        let a = OZCreateWalletResult(
             credentialId: "cred-1",
             contractId: validContractAddress,
             publicKey: testPublicKey(fill: 0x01),
             signedTransactionXdr: "XDR"
         )
-        let b = CreateWalletResult(
+        let b = OZCreateWalletResult(
             credentialId: "cred-1",
             contractId: validContractAddress,
             publicKey: testPublicKey(fill: 0x02),
@@ -314,13 +314,13 @@ final class OZWalletOperationsTests: XCTestCase {
 
     func test_createWalletResult_equality_differentCredentialId() {
         let pk = testPublicKey()
-        let a = CreateWalletResult(
+        let a = OZCreateWalletResult(
             credentialId: "a",
             contractId: validContractAddress,
             publicKey: pk,
             signedTransactionXdr: "XDR"
         )
-        let b = CreateWalletResult(
+        let b = OZCreateWalletResult(
             credentialId: "b",
             contractId: validContractAddress,
             publicKey: pk,
@@ -331,14 +331,14 @@ final class OZWalletOperationsTests: XCTestCase {
 
     func test_createWalletResult_equality_differentTransactionHash() {
         let pk = testPublicKey()
-        let a = CreateWalletResult(
+        let a = OZCreateWalletResult(
             credentialId: "c",
             contractId: validContractAddress,
             publicKey: pk,
             signedTransactionXdr: "XDR",
             transactionHash: "h1"
         )
-        let b = CreateWalletResult(
+        let b = OZCreateWalletResult(
             credentialId: "c",
             contractId: validContractAddress,
             publicKey: pk,
@@ -350,14 +350,14 @@ final class OZWalletOperationsTests: XCTestCase {
 
     func test_createWalletResult_equality_differentNickname() {
         let pk = testPublicKey()
-        let a = CreateWalletResult(
+        let a = OZCreateWalletResult(
             credentialId: "c",
             contractId: validContractAddress,
             publicKey: pk,
             signedTransactionXdr: "XDR",
             nickname: "Alice"
         )
-        let b = CreateWalletResult(
+        let b = OZCreateWalletResult(
             credentialId: "c",
             contractId: validContractAddress,
             publicKey: pk,
@@ -369,7 +369,7 @@ final class OZWalletOperationsTests: XCTestCase {
 
     func test_createWalletResult_copy() {
         let pk = testPublicKey()
-        let original = CreateWalletResult(
+        let original = OZCreateWalletResult(
             credentialId: "cred-1",
             contractId: validContractAddress,
             publicKey: pk,
@@ -382,13 +382,13 @@ final class OZWalletOperationsTests: XCTestCase {
     }
 
     func test_createWalletResult_equality_notEqualToOtherInstance() {
-        let a = CreateWalletResult(
+        let a = OZCreateWalletResult(
             credentialId: "c",
             contractId: validContractAddress,
             publicKey: testPublicKey(fill: 0x01),
             signedTransactionXdr: "XDR"
         )
-        let b = CreateWalletResult(
+        let b = OZCreateWalletResult(
             credentialId: "c",
             contractId: validContractAddress,
             publicKey: testPublicKey(fill: 0x02),
@@ -398,7 +398,7 @@ final class OZWalletOperationsTests: XCTestCase {
     }
 
     func test_createWalletResult_equality_sameInstance() {
-        let result = CreateWalletResult(
+        let result = OZCreateWalletResult(
             credentialId: "c",
             contractId: validContractAddress,
             publicKey: testPublicKey(),
@@ -408,11 +408,11 @@ final class OZWalletOperationsTests: XCTestCase {
     }
 
     // ========================================================================
-    // MARK: - ConnectWalletResult sealed-type behavior
+    // MARK: - OZConnectWalletResult sealed-type behavior
     // ========================================================================
 
     func test_connectWalletResult_connected_construction() {
-        let result = ConnectWalletResult.connected(
+        let result = OZConnectWalletResult.connected(
             credentialId: "cred-abc",
             contractId: validContractAddress,
             restoredFromSession: false
@@ -427,7 +427,7 @@ final class OZWalletOperationsTests: XCTestCase {
     }
 
     func test_connectWalletResult_connected_restoredFromSession() {
-        let result = ConnectWalletResult.connected(
+        let result = OZConnectWalletResult.connected(
             credentialId: "cred-abc",
             contractId: validContractAddress,
             restoredFromSession: true
@@ -440,17 +440,17 @@ final class OZWalletOperationsTests: XCTestCase {
     }
 
     func test_connectWalletResult_connected_equality() {
-        let a = ConnectWalletResult.connected(
+        let a = OZConnectWalletResult.connected(
             credentialId: "c",
             contractId: validContractAddress,
             restoredFromSession: false
         )
-        let b = ConnectWalletResult.connected(
+        let b = OZConnectWalletResult.connected(
             credentialId: "c",
             contractId: validContractAddress,
             restoredFromSession: false
         )
-        let c = ConnectWalletResult.connected(
+        let c = OZConnectWalletResult.connected(
             credentialId: "c",
             contractId: validContractAddress,
             restoredFromSession: true
@@ -465,13 +465,13 @@ final class OZWalletOperationsTests: XCTestCase {
         // operation rebuilds the case with a new associated value. This test
         // documents the pattern and asserts the rebuilt value carries the
         // updated `restoredFromSession` flag.
-        let original = ConnectWalletResult.connected(
+        let original = OZConnectWalletResult.connected(
             credentialId: "c",
             contractId: validContractAddress,
             restoredFromSession: false
         )
         if case .connected(let credentialId, let contractId, _) = original {
-            let copied = ConnectWalletResult.connected(
+            let copied = OZConnectWalletResult.connected(
                 credentialId: credentialId,
                 contractId: contractId,
                 restoredFromSession: true
@@ -491,7 +491,7 @@ final class OZWalletOperationsTests: XCTestCase {
             "CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC",
             "CCMK6CYUEFEWKCPP6JL4EYYWTQGVPLG4F2KHE2H6DQOMXKBTHSDIH3JB"
         ]
-        let result = ConnectWalletResult.ambiguous(
+        let result = OZConnectWalletResult.ambiguous(
             credentialId: "cred-abc",
             candidates: candidates
         )
@@ -505,7 +505,7 @@ final class OZWalletOperationsTests: XCTestCase {
     }
 
     func test_connectWalletResult_sealed_when_exhaustive() {
-        let results: [ConnectWalletResult] = [
+        let results: [OZConnectWalletResult] = [
             .connected(credentialId: "c", contractId: validContractAddress, restoredFromSession: false),
             .ambiguous(credentialId: "c", candidates: [validContractAddress])
         ]
@@ -522,11 +522,11 @@ final class OZWalletOperationsTests: XCTestCase {
     }
 
     // ========================================================================
-    // MARK: - DeployPendingResult data-class behavior
+    // MARK: - OZDeployPendingResult data-class behavior
     // ========================================================================
 
     func test_deployPendingResult_construction_defaultOptionalFields() {
-        let result = DeployPendingResult(
+        let result = OZDeployPendingResult(
             contractId: validContractAddress,
             signedTransactionXdr: "signed-xdr"
         )
@@ -536,7 +536,7 @@ final class OZWalletOperationsTests: XCTestCase {
     }
 
     func test_deployPendingResult_withTransactionHash() {
-        let result = DeployPendingResult(
+        let result = OZDeployPendingResult(
             contractId: validContractAddress,
             signedTransactionXdr: "signed-xdr",
             transactionHash: "hash-123"
@@ -545,23 +545,23 @@ final class OZWalletOperationsTests: XCTestCase {
     }
 
     func test_deployPendingResult_equality() {
-        let a = DeployPendingResult(contractId: validContractAddress, signedTransactionXdr: "xdr-1")
-        let b = DeployPendingResult(contractId: validContractAddress, signedTransactionXdr: "xdr-1")
-        let c = DeployPendingResult(contractId: validContractAddress, signedTransactionXdr: "xdr-2")
+        let a = OZDeployPendingResult(contractId: validContractAddress, signedTransactionXdr: "xdr-1")
+        let b = OZDeployPendingResult(contractId: validContractAddress, signedTransactionXdr: "xdr-1")
+        let c = OZDeployPendingResult(contractId: validContractAddress, signedTransactionXdr: "xdr-2")
         XCTAssertEqual(a, b)
         XCTAssertEqual(a.hashValue, b.hashValue)
         XCTAssertNotEqual(a, c)
     }
 
     func test_deployPendingResult_copy() {
-        let original = DeployPendingResult(contractId: validContractAddress, signedTransactionXdr: "xdr")
+        let original = OZDeployPendingResult(contractId: validContractAddress, signedTransactionXdr: "xdr")
         let copied = original.copy(transactionHash: "h")
         XCTAssertEqual(copied.transactionHash, "h")
         XCTAssertEqual(copied.signedTransactionXdr, "xdr")
     }
 
     // ========================================================================
-    // MARK: - AuthenticatePasskeyResult data-class behavior
+    // MARK: - OZAuthenticatePasskeyResult data-class behavior
     // ========================================================================
 
     private func buildSignature() throws -> OZWebAuthnSignature {
@@ -575,20 +575,20 @@ final class OZWalletOperationsTests: XCTestCase {
     func test_authenticatePasskeyResult_equality_sameData() throws {
         let sig = try buildSignature()
         let pk = testPublicKey()
-        let a = AuthenticatePasskeyResult(credentialId: "cred", signature: sig, publicKey: pk)
-        let b = AuthenticatePasskeyResult(credentialId: "cred", signature: sig, publicKey: pk)
+        let a = OZAuthenticatePasskeyResult(credentialId: "cred", signature: sig, publicKey: pk)
+        let b = OZAuthenticatePasskeyResult(credentialId: "cred", signature: sig, publicKey: pk)
         XCTAssertEqual(a, b)
         XCTAssertEqual(a.hashValue, b.hashValue)
     }
 
     func test_authenticatePasskeyResult_equality_differentPublicKey() throws {
         let sig = try buildSignature()
-        let a = AuthenticatePasskeyResult(
+        let a = OZAuthenticatePasskeyResult(
             credentialId: "cred",
             signature: sig,
             publicKey: testPublicKey(fill: 0x01)
         )
-        let b = AuthenticatePasskeyResult(
+        let b = OZAuthenticatePasskeyResult(
             credentialId: "cred",
             signature: sig,
             publicKey: testPublicKey(fill: 0x02)
@@ -599,13 +599,13 @@ final class OZWalletOperationsTests: XCTestCase {
     func test_authenticatePasskeyResult_equality_differentCredentialId() throws {
         let sig = try buildSignature()
         let pk = testPublicKey()
-        let a = AuthenticatePasskeyResult(credentialId: "cred-1", signature: sig, publicKey: pk)
-        let b = AuthenticatePasskeyResult(credentialId: "cred-2", signature: sig, publicKey: pk)
+        let a = OZAuthenticatePasskeyResult(credentialId: "cred-1", signature: sig, publicKey: pk)
+        let b = OZAuthenticatePasskeyResult(credentialId: "cred-2", signature: sig, publicKey: pk)
         XCTAssertNotEqual(a, b)
     }
 
     func test_authenticatePasskeyResult_equality_differentSignature() throws {
-        let a = AuthenticatePasskeyResult(
+        let a = OZAuthenticatePasskeyResult(
             credentialId: "cred",
             signature: try OZWebAuthnSignature(
                 authenticatorData: Data(repeating: 0x01, count: 37),
@@ -614,7 +614,7 @@ final class OZWalletOperationsTests: XCTestCase {
             ),
             publicKey: testPublicKey()
         )
-        let b = AuthenticatePasskeyResult(
+        let b = OZAuthenticatePasskeyResult(
             credentialId: "cred",
             signature: try OZWebAuthnSignature(
                 authenticatorData: Data(repeating: 0x01, count: 37),
@@ -627,7 +627,7 @@ final class OZWalletOperationsTests: XCTestCase {
     }
 
     func test_authenticatePasskeyResult_equality_sameInstance() throws {
-        let result = AuthenticatePasskeyResult(
+        let result = OZAuthenticatePasskeyResult(
             credentialId: "cred",
             signature: try buildSignature(),
             publicKey: testPublicKey()
@@ -645,7 +645,7 @@ final class OZWalletOperationsTests: XCTestCase {
             signature: sigBytes
         )
         let pk = testPublicKey(fill: 0x77)
-        let result = AuthenticatePasskeyResult(
+        let result = OZAuthenticatePasskeyResult(
             credentialId: "my-cred",
             signature: sig,
             publicKey: pk
@@ -720,7 +720,7 @@ final class OZWalletOperationsTests: XCTestCase {
         let kit = MockOZSmartAccountKit(config: try buildConfig())
         kit.setConnectedState(credentialId: "cred-x", contractId: validContractAddress)
         let state = try kit.requireConnected()
-        let event = SmartAccountEvent.walletDisconnected(contractId: state.contractId)
+        let event = OZSmartAccountEvent.walletDisconnected(contractId: state.contractId)
         if case .walletDisconnected(let contractId) = event {
             XCTAssertEqual(contractId, validContractAddress)
         } else {
@@ -746,12 +746,12 @@ final class OZWalletOperationsTests: XCTestCase {
     /// to mutate a captured local variable (which conflicts with Sendable).
     private final class WalletDisconnectedRecorder: @unchecked Sendable {
         private let stateLock = NSLock()
-        private var _last: SmartAccountEvent?
-        var last: SmartAccountEvent? {
+        private var _last: OZSmartAccountEvent?
+        var last: OZSmartAccountEvent? {
             stateLock.lock(); defer { stateLock.unlock() }
             return _last
         }
-        func record(_ event: SmartAccountEvent) {
+        func record(_ event: OZSmartAccountEvent) {
             stateLock.lock(); defer { stateLock.unlock() }
             _last = event
         }
@@ -777,8 +777,8 @@ final class OZWalletOperationsTests: XCTestCase {
         let kit = MockOZSmartAccountKit(config: try buildConfig())
         do {
             _ = try kit.requireConnected()
-            XCTFail("expected WalletException.NotConnected")
-        } catch let error as WalletException.NotConnected {
+            XCTFail("expected SmartAccountWalletException.NotConnected")
+        } catch let error as SmartAccountWalletException.NotConnected {
             XCTAssertTrue(error.message.contains("No wallet connected"))
         }
     }
@@ -796,7 +796,7 @@ final class OZWalletOperationsTests: XCTestCase {
         kit.setConnectedState(credentialId: "cred-abc", contractId: validContractAddress)
         kit.clearConnectedState()
         XCTAssertThrowsError(try kit.requireConnected()) { error in
-            XCTAssertTrue(error is WalletException.NotConnected)
+            XCTAssertTrue(error is SmartAccountWalletException.NotConnected)
         }
     }
 
@@ -812,8 +812,8 @@ final class OZWalletOperationsTests: XCTestCase {
                 autoFund: true,
                 nativeTokenContract: nil
             )
-            XCTFail("expected ValidationException.InvalidInput")
-        } catch is ValidationException.InvalidInput {
+            XCTFail("expected SmartAccountValidationException.InvalidInput")
+        } catch is SmartAccountValidationException.InvalidInput {
             // expected
         }
     }
@@ -825,15 +825,15 @@ final class OZWalletOperationsTests: XCTestCase {
                 credentialId: "nonexistent-cred",
                 autoSubmit: false
             )
-            XCTFail("expected CredentialException.NotFound")
-        } catch is CredentialException.NotFound {
+            XCTFail("expected SmartAccountCredentialException.NotFound")
+        } catch is SmartAccountCredentialException.NotFound {
             // expected
         }
     }
 
     func test_deployPendingCredential_credentialMissingPublicKey_throwsInvalid() async throws {
         let (kit, walletOps) = try createKit()
-        let stored = StoredCredential(
+        let stored = OZStoredCredential(
             credentialId: "cred-empty-pk",
             publicKey: Data(),
             contractId: validContractAddress
@@ -844,15 +844,15 @@ final class OZWalletOperationsTests: XCTestCase {
                 credentialId: "cred-empty-pk",
                 autoSubmit: false
             )
-            XCTFail("expected CredentialException.Invalid")
-        } catch is CredentialException.Invalid {
+            XCTFail("expected SmartAccountCredentialException.Invalid")
+        } catch is SmartAccountCredentialException.Invalid {
             // expected
         }
     }
 
     func test_deployPendingCredential_credentialMissingContractId_throwsInvalid() async throws {
         let (kit, walletOps) = try createKit()
-        let stored = StoredCredential(
+        let stored = OZStoredCredential(
             credentialId: "cred-no-contract",
             publicKey: testPublicKey(),
             contractId: nil
@@ -863,15 +863,15 @@ final class OZWalletOperationsTests: XCTestCase {
                 credentialId: "cred-no-contract",
                 autoSubmit: false
             )
-            XCTFail("expected CredentialException.Invalid")
-        } catch is CredentialException.Invalid {
+            XCTFail("expected SmartAccountCredentialException.Invalid")
+        } catch is SmartAccountCredentialException.Invalid {
             // expected
         }
     }
 
     func test_deployPendingCredential_credentialEmptyContractId_throwsInvalid() async throws {
         let (kit, walletOps) = try createKit()
-        let stored = StoredCredential(
+        let stored = OZStoredCredential(
             credentialId: "cred-empty-contract",
             publicKey: testPublicKey(),
             contractId: ""
@@ -882,8 +882,8 @@ final class OZWalletOperationsTests: XCTestCase {
                 credentialId: "cred-empty-contract",
                 autoSubmit: false
             )
-            XCTFail("expected CredentialException.Invalid")
-        } catch is CredentialException.Invalid {
+            XCTFail("expected SmartAccountCredentialException.Invalid")
+        } catch is SmartAccountCredentialException.Invalid {
             // expected
         }
     }
@@ -896,8 +896,8 @@ final class OZWalletOperationsTests: XCTestCase {
                 autoFund: true,
                 nativeTokenContract: nil
             )
-            XCTFail("expected ValidationException.InvalidInput")
-        } catch is ValidationException.InvalidInput {
+            XCTFail("expected SmartAccountValidationException.InvalidInput")
+        } catch is SmartAccountValidationException.InvalidInput {
             // expected
         }
     }
@@ -911,17 +911,17 @@ final class OZWalletOperationsTests: XCTestCase {
         let (_, walletOps) = try createKit()
         do {
             _ = try await walletOps.connectWallet(
-                options: ConnectWalletOptions(contractId: validContractAddress)
+                options: OZConnectWalletOptions(contractId: validContractAddress)
             )
-            XCTFail("expected ValidationException.InvalidInput")
-        } catch is ValidationException.InvalidInput {
+            XCTFail("expected SmartAccountValidationException.InvalidInput")
+        } catch is SmartAccountValidationException.InvalidInput {
             // expected
         }
     }
 
     func test_connectWallet_storageHit_failedCredential_throwsNotFound() async throws {
         let (kit, walletOps) = try createKit()
-        let failed = StoredCredential(
+        let failed = OZStoredCredential(
             credentialId: "cred-failed",
             publicKey: testPublicKey(),
             contractId: validContractAddress,
@@ -931,10 +931,10 @@ final class OZWalletOperationsTests: XCTestCase {
         try await kit.storage.save(credential: failed)
         do {
             _ = try await walletOps.connectWallet(
-                options: ConnectWalletOptions(credentialId: "cred-failed")
+                options: OZConnectWalletOptions(credentialId: "cred-failed")
             )
-            XCTFail("expected WalletException.NotFound")
-        } catch let error as WalletException.NotFound {
+            XCTFail("expected SmartAccountWalletException.NotFound")
+        } catch let error as SmartAccountWalletException.NotFound {
             XCTAssertTrue(error.message.contains("deploymentPreviouslyFailed") ||
                           error.message.contains("deployment previously failed") ||
                           error.message.contains("deployPendingCredential"))
@@ -952,12 +952,12 @@ final class OZWalletOperationsTests: XCTestCase {
                 autoFund: true,
                 nativeTokenContract: nil
             )
-            XCTFail("expected WebAuthnException.NotSupported or ValidationException.InvalidInput")
+            XCTFail("expected WebAuthnException.NotSupported or SmartAccountValidationException.InvalidInput")
         } catch is WebAuthnException.NotSupported {
             // The WebAuthn-provider presence check fires before the
             // `autoFund -> nativeTokenContract` validation. This is the
             // documented order-of-validation contract for `createWallet`.
-        } catch is ValidationException.InvalidInput {
+        } catch is SmartAccountValidationException.InvalidInput {
             // expected when a provider is configured
         }
     }

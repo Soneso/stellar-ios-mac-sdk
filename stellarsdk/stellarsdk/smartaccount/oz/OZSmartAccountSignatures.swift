@@ -33,7 +33,7 @@ public protocol OZSmartAccountSignature: Sendable {
 
     /// Converts this signature to its on-chain `SCValXDR` representation.
     ///
-    /// Construction-time validation may throw `ValidationException.InvalidInput`;
+    /// Construction-time validation may throw `SmartAccountValidationException.InvalidInput`;
     /// this conversion is total (non-throwing).
     ///
     /// - Returns: The signature encoded as an `SCValXDR` value. The concrete type
@@ -52,7 +52,7 @@ public protocol OZSmartAccountSignature: Sendable {
     ///   which the coercion rejects with `InvalidAction`.
     /// - **Policy**: XDR-encoded empty map (same byte sequence as `toScVal()` encoded).
     ///
-    /// - Throws: `TransactionException.SigningFailed` if XDR encoding fails (WebAuthn/Policy).
+    /// - Throws: `SmartAccountTransactionException.SigningFailed` if XDR encoding fails (WebAuthn/Policy).
     func toAuthPayloadBytes() throws -> Data
 }
 
@@ -80,10 +80,10 @@ public struct OZWebAuthnSignature: OZSmartAccountSignature, Hashable {
     /// ECDSA signature in compact 64-byte format (r || s), low-S normalised.
     public let signature: Data
 
-    /// - Throws: `ValidationException.InvalidInput` when `signature` is not exactly 64 bytes.
+    /// - Throws: `SmartAccountValidationException.InvalidInput` when `signature` is not exactly 64 bytes.
     public init(authenticatorData: Data, clientData: Data, signature: Data) throws {
         if signature.count != 64 {
-            throw ValidationException.invalidInput(
+            throw SmartAccountValidationException.invalidInput(
                 field: "signature",
                 reason: "WebAuthn signature must be exactly 64 bytes, got \(signature.count)"
             )
@@ -108,12 +108,12 @@ public struct OZWebAuthnSignature: OZSmartAccountSignature, Hashable {
 
     /// See ``OZSmartAccountSignature/toAuthPayloadBytes()`` for the per-variant byte format.
     ///
-    /// - Throws: `TransactionException.SigningFailed` if XDR encoding fails.
+    /// - Throws: `SmartAccountTransactionException.SigningFailed` if XDR encoding fails.
     public func toAuthPayloadBytes() throws -> Data {
         do {
             return Data(try XDREncoder.encode(toScVal()))
         } catch {
-            throw TransactionException.signingFailed(
+            throw SmartAccountTransactionException.signingFailed(
                 reason: "Failed to XDR encode WebAuthn signature for auth payload",
                 cause: error
             )
@@ -161,17 +161,17 @@ public struct OZEd25519Signature: OZSmartAccountSignature, Hashable {
     /// - Parameters:
     ///   - publicKey: 32-byte Ed25519 public key (used for local verification only).
     ///   - signature: 64-byte Ed25519 signature.
-    /// - Throws: `ValidationException.InvalidInput` when `publicKey` is not 32 bytes or
+    /// - Throws: `SmartAccountValidationException.InvalidInput` when `publicKey` is not 32 bytes or
     ///           `signature` is not 64 bytes.
     public init(publicKey: Data, signature: Data) throws {
         if publicKey.count != SmartAccountConstants.ed25519PublicKeySize {
-            throw ValidationException.invalidInput(
+            throw SmartAccountValidationException.invalidInput(
                 field: "publicKey",
                 reason: "Ed25519 public key must be exactly \(SmartAccountConstants.ed25519PublicKeySize) bytes, got \(publicKey.count)"
             )
         }
         if signature.count != 64 {
-            throw ValidationException.invalidInput(
+            throw SmartAccountValidationException.invalidInput(
                 field: "signature",
                 reason: "Ed25519 signature must be exactly 64 bytes, got \(signature.count)"
             )
@@ -233,12 +233,12 @@ public struct OZPolicySignature: OZSmartAccountSignature, Hashable {
 
     /// See ``OZSmartAccountSignature/toAuthPayloadBytes()`` for the per-variant byte format.
     ///
-    /// - Throws: `TransactionException.SigningFailed` if XDR encoding fails.
+    /// - Throws: `SmartAccountTransactionException.SigningFailed` if XDR encoding fails.
     public func toAuthPayloadBytes() throws -> Data {
         do {
             return Data(try XDREncoder.encode(toScVal()))
         } catch {
-            throw TransactionException.signingFailed(
+            throw SmartAccountTransactionException.signingFailed(
                 reason: "Failed to XDR encode policy signature for auth payload",
                 cause: error
             )

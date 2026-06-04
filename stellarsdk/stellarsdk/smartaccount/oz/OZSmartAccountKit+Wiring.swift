@@ -18,7 +18,7 @@ extension OZContextRuleManager: OZContextRuleParser {
         return try await self.getContextRule(id: contextRuleId)
     }
 
-    internal func parseContextRule(_ scVal: SCValXDR) throws -> ParsedContextRule {
+    internal func parseContextRule(_ scVal: SCValXDR) throws -> OZParsedContextRule {
         return try self.parseContextRule(scVal: scVal)
     }
 }

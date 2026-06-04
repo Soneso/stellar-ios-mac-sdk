@@ -1,5 +1,5 @@
 //
-//  KeychainStorageAdapterTests.swift
+//  OZKeychainStorageAdapterTests.swift
 //  stellarsdkUnitTests
 //
 //  Copyright (c) 2026 Soneso. All rights reserved.
@@ -10,7 +10,7 @@ import Security
 @testable import stellarsdk
 
 @available(iOS 13.0, macOS 10.15, *)
-final class KeychainStorageAdapterTests: XCTestCase {
+final class OZKeychainStorageAdapterTests: XCTestCase {
 
     // ========================================================================
     // Test Data Helpers
@@ -32,8 +32,8 @@ final class KeychainStorageAdapterTests: XCTestCase {
         id: String = "cred-full-001",
         contractId: String? = "CBCD1234EFGH5678IJKL9012MNOP3456QRST7890UVWX1234YZAB5678",
         seed: Int = 1
-    ) -> StoredCredential {
-        return StoredCredential(
+    ) -> OZStoredCredential {
+        return OZStoredCredential(
             credentialId: id,
             publicKey: testPublicKey(seed: seed),
             contractId: contractId,
@@ -49,8 +49,8 @@ final class KeychainStorageAdapterTests: XCTestCase {
         )
     }
 
-    private func minimalCredential(id: String = "cred-minimal-001") -> StoredCredential {
-        return StoredCredential(
+    private func minimalCredential(id: String = "cred-minimal-001") -> OZStoredCredential {
+        return OZStoredCredential(
             credentialId: id,
             publicKey: testPublicKey(seed: 2),
             createdAt: 1_700_000_000_000
@@ -69,9 +69,9 @@ final class KeychainStorageAdapterTests: XCTestCase {
     /// binaries that lack Keychain entitlements.
     private func newAdapter(
         serviceName: String? = nil
-    ) -> (KeychainStorageAdapter, InMemoryKeychain) {
+    ) -> (OZKeychainStorageAdapter, InMemoryKeychain) {
         let store = InMemoryKeychain()
-        let adapter = KeychainStorageAdapter(
+        let adapter = OZKeychainStorageAdapter(
             serviceName: serviceName ?? uniqueServiceName(),
             shim: store.makeShim()
         )
@@ -152,7 +152,7 @@ final class KeychainStorageAdapterTests: XCTestCase {
 
         try await adapter.update(
             credentialId: credential.credentialId,
-            updates: StoredCredentialUpdate(deploymentStatus: .failed)
+            updates: OZStoredCredentialUpdate(deploymentStatus: .failed)
         )
 
         let loaded = try await adapter.get(credentialId: credential.credentialId)
@@ -166,7 +166,7 @@ final class KeychainStorageAdapterTests: XCTestCase {
 
         try await adapter.update(
             credentialId: credential.credentialId,
-            updates: StoredCredentialUpdate(nickname: "New nickname")
+            updates: OZStoredCredentialUpdate(nickname: "New nickname")
         )
 
         let loaded = try await adapter.get(credentialId: credential.credentialId)
@@ -180,7 +180,7 @@ final class KeychainStorageAdapterTests: XCTestCase {
 
         try await adapter.update(
             credentialId: credential.credentialId,
-            updates: StoredCredentialUpdate(contractId: "CXYZ123")
+            updates: OZStoredCredentialUpdate(contractId: "CXYZ123")
         )
 
         let loaded = try await adapter.get(credentialId: credential.credentialId)
@@ -194,7 +194,7 @@ final class KeychainStorageAdapterTests: XCTestCase {
 
         try await adapter.update(
             credentialId: credential.credentialId,
-            updates: StoredCredentialUpdate(isPrimary: true)
+            updates: OZStoredCredentialUpdate(isPrimary: true)
         )
 
         let loaded = try await adapter.get(credentialId: credential.credentialId)
@@ -208,7 +208,7 @@ final class KeychainStorageAdapterTests: XCTestCase {
 
         try await adapter.update(
             credentialId: credential.credentialId,
-            updates: StoredCredentialUpdate(
+            updates: OZStoredCredentialUpdate(
                 deploymentStatus: .failed,
                 deploymentError: "txn rejected",
                 nickname: "Updated"
@@ -226,10 +226,10 @@ final class KeychainStorageAdapterTests: XCTestCase {
         do {
             try await adapter.update(
                 credentialId: "missing",
-                updates: StoredCredentialUpdate(nickname: "X")
+                updates: OZStoredCredentialUpdate(nickname: "X")
             )
-            XCTFail("expected CredentialException.NotFound")
-        } catch let error as CredentialException.NotFound {
+            XCTFail("expected SmartAccountCredentialException.NotFound")
+        } catch let error as SmartAccountCredentialException.NotFound {
             XCTAssertEqual(error.code, .credentialNotFound)
         }
     }
@@ -350,7 +350,7 @@ final class KeychainStorageAdapterTests: XCTestCase {
 
     func test_clear_removes_session_too() async throws {
         let (adapter, _) = newAdapter()
-        let session = StoredSession(
+        let session = OZStoredSession(
             credentialId: "c1",
             contractId: "CTARGET",
             connectedAt: 1_700_000_000_000,
@@ -369,7 +369,7 @@ final class KeychainStorageAdapterTests: XCTestCase {
 
     func test_save_and_retrieve_session() async throws {
         let (adapter, _) = newAdapter()
-        let session = StoredSession(
+        let session = OZStoredSession(
             credentialId: "c1",
             contractId: "CTARGET",
             connectedAt: 1_700_000_000_000,
@@ -389,13 +389,13 @@ final class KeychainStorageAdapterTests: XCTestCase {
 
     func test_save_session_overwrites_previous_session() async throws {
         let (adapter, _) = newAdapter()
-        let first = StoredSession(
+        let first = OZStoredSession(
             credentialId: "c1",
             contractId: "CT1",
             connectedAt: 1_700_000_000_000,
             expiresAt: 1_900_000_000_000
         )
-        let second = StoredSession(
+        let second = OZStoredSession(
             credentialId: "c2",
             contractId: "CT2",
             connectedAt: 1_700_000_000_000,
@@ -416,7 +416,7 @@ final class KeychainStorageAdapterTests: XCTestCase {
     func test_expired_session_auto_cleared_on_get_session() async throws {
         let (adapter, _) = newAdapter()
         let pastMs = Int64(Date().timeIntervalSince1970 * 1000) - 1000
-        let expired = StoredSession(
+        let expired = OZStoredSession(
             credentialId: "c1",
             contractId: "CT",
             connectedAt: pastMs - 10_000,
@@ -436,7 +436,7 @@ final class KeychainStorageAdapterTests: XCTestCase {
     func test_non_expired_session_is_returned() async throws {
         let (adapter, _) = newAdapter()
         let nowMs = Int64(Date().timeIntervalSince1970 * 1000)
-        let session = StoredSession(
+        let session = OZStoredSession(
             credentialId: "c1",
             contractId: "CT",
             connectedAt: nowMs,
@@ -450,7 +450,7 @@ final class KeychainStorageAdapterTests: XCTestCase {
 
     func test_clear_session() async throws {
         let (adapter, _) = newAdapter()
-        let session = StoredSession(
+        let session = OZStoredSession(
             credentialId: "c1",
             contractId: "CT",
             connectedAt: 1_700_000_000_000,
@@ -472,7 +472,7 @@ final class KeychainStorageAdapterTests: XCTestCase {
         let (adapter, _) = newAdapter()
         let credential = fullCredential()
         try await adapter.save(credential: credential)
-        try await adapter.saveSession(StoredSession(
+        try await adapter.saveSession(OZStoredSession(
             credentialId: credential.credentialId,
             contractId: "CT",
             connectedAt: 1_700_000_000_000,
@@ -494,11 +494,11 @@ final class KeychainStorageAdapterTests: XCTestCase {
         // adapter's index entries / credential entries are scoped by service
         // name so they must not see each other's data.
         let store = InMemoryKeychain()
-        let adapterA = KeychainStorageAdapter(
+        let adapterA = OZKeychainStorageAdapter(
             serviceName: uniqueServiceName("A"),
             shim: store.makeShim()
         )
-        let adapterB = KeychainStorageAdapter(
+        let adapterB = OZKeychainStorageAdapter(
             serviceName: uniqueServiceName("B"),
             shim: store.makeShim()
         )
@@ -515,7 +515,7 @@ final class KeychainStorageAdapterTests: XCTestCase {
 
     func test_default_service_name_is_used() async throws {
         XCTAssertEqual(
-            KeychainStorageAdapter.defaultServiceName,
+            OZKeychainStorageAdapter.defaultServiceName,
             "com.soneso.stellar.smartaccount"
         )
     }
@@ -526,7 +526,7 @@ final class KeychainStorageAdapterTests: XCTestCase {
 
     func test_keychain_adapter_conforms_to_storage_adapter_protocol() async throws {
         let (adapter, _) = newAdapter()
-        let asProtocol: any StorageAdapter = adapter
+        let asProtocol: any OZStorageAdapter = adapter
         try await asProtocol.save(credential: fullCredential())
         let all = try await asProtocol.getAll()
         XCTAssertEqual(all.count, 1)
@@ -557,10 +557,10 @@ final class KeychainStorageAdapterTests: XCTestCase {
         do {
             try await adapter.update(
                 credentialId: credential.credentialId,
-                updates: StoredCredentialUpdate(nickname: "X")
+                updates: OZStoredCredentialUpdate(nickname: "X")
             )
-            XCTFail("expected CredentialException.NotFound")
-        } catch is CredentialException.NotFound {
+            XCTFail("expected SmartAccountCredentialException.NotFound")
+        } catch is SmartAccountCredentialException.NotFound {
             // expected
         }
     }
@@ -576,7 +576,7 @@ final class KeychainStorageAdapterTests: XCTestCase {
         await withTaskGroup(of: Void.self) { group in
             for i in 0..<total {
                 group.addTask {
-                    let credential = StoredCredential(
+                    let credential = OZStoredCredential(
                         credentialId: "concurrent-\(i)",
                         publicKey: Data(repeating: UInt8(i % 256), count: 65),
                         createdAt: 1_700_000_000_000
@@ -593,16 +593,16 @@ final class KeychainStorageAdapterTests: XCTestCase {
     func test_keychain_device_locked_throws_storage_exception() async throws {
         // Inject a shim that always reports `errSecInteractionNotAllowed`
         // (-25308) on read, simulating a locked device. The adapter must
-        // propagate the failure as `StorageException.ReadFailed`.
+        // propagate the failure as `SmartAccountStorageException.ReadFailed`.
         let shim = FakeSecItemShim(
             copyMatchingHandler: { _, _ in errSecInteractionNotAllowed }
         )
-        let adapter = KeychainStorageAdapter(serviceName: uniqueServiceName(), shim: shim)
+        let adapter = OZKeychainStorageAdapter(serviceName: uniqueServiceName(), shim: shim)
 
         do {
             _ = try await adapter.get(credentialId: "anything")
-            XCTFail("expected StorageException.ReadFailed when device is locked")
-        } catch let error as StorageException.ReadFailed {
+            XCTFail("expected SmartAccountStorageException.ReadFailed when device is locked")
+        } catch let error as SmartAccountStorageException.ReadFailed {
             XCTAssertEqual(error.code, .storageReadFailed)
             XCTAssertTrue(error.message.contains("\(errSecInteractionNotAllowed)"))
         }
@@ -611,7 +611,7 @@ final class KeychainStorageAdapterTests: XCTestCase {
     func test_corrupted_payload_throws_read_failed() async throws {
         // Inject a `FakeSecItemShim` whose `copyMatching` returns bytes that
         // are not valid JSON for the credential payload. The adapter wraps
-        // the JSON decoding failure into `StorageException.ReadFailed` via
+        // the JSON decoding failure into `SmartAccountStorageException.ReadFailed` via
         // its catch-all arm; that mapping is otherwise uncovered by the
         // suite and is required to surface keychain corruption to callers.
         let serviceName = uniqueServiceName()
@@ -624,12 +624,12 @@ final class KeychainStorageAdapterTests: XCTestCase {
                 return errSecSuccess
             }
         )
-        let adapter = KeychainStorageAdapter(serviceName: serviceName, shim: shim)
+        let adapter = OZKeychainStorageAdapter(serviceName: serviceName, shim: shim)
 
         do {
             _ = try await adapter.get(credentialId: "any-credential-id")
-            XCTFail("expected StorageException.ReadFailed for corrupted payload")
-        } catch let error as StorageException.ReadFailed {
+            XCTFail("expected SmartAccountStorageException.ReadFailed for corrupted payload")
+        } catch let error as SmartAccountStorageException.ReadFailed {
             XCTAssertEqual(error.code, .storageReadFailed)
             XCTAssertTrue(error.message.contains("any-credential-id"))
         }
@@ -643,7 +643,7 @@ final class KeychainStorageAdapterTests: XCTestCase {
         // and round-trips successfully.
         let (adapter, _) = newAdapter()
         let bigPayload = Data(repeating: 0x42, count: 200 * 1024)
-        let credential = StoredCredential(
+        let credential = OZStoredCredential(
             credentialId: "big",
             publicKey: bigPayload,
             createdAt: 1_700_000_000_000
@@ -661,7 +661,7 @@ final class KeychainStorageAdapterTests: XCTestCase {
 
 /// Backing store used by the test suite to simulate the iOS Keychain in-memory
 /// without requiring entitlements. Each instance maintains a dictionary of
-/// `(service, account) → payload bytes` and provides a `SecItemShim`
+/// `(service, account) → payload bytes` and provides an `OZSecItemShim`
 /// conformance that operates against that dictionary using the same
 /// `OSStatus` semantics as the real Keychain.
 @available(iOS 13.0, macOS 10.15, *)
@@ -675,7 +675,7 @@ final class InMemoryKeychain: @unchecked Sendable {
     private let lock = NSLock()
     private var storage: [Key: Data] = [:]
 
-    func makeShim() -> SecItemShim {
+    func makeShim() -> OZSecItemShim {
         let store = self
         return FakeSecItemShim(
             addHandler: { query, _ in store.add(query: query) },

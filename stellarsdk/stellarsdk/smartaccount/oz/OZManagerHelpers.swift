@@ -62,7 +62,7 @@ extension OZManagerHelpers {
                 maxOperationFee: StellarProtocolConstants.MIN_BASE_FEE
             )
         } catch {
-            throw TransactionException.signingFailed(
+            throw SmartAccountTransactionException.signingFailed(
                 reason: "Failed to build transaction: \(SmartAccountException.messageOf(error) ?? "unknown")",
                 cause: error
             )
@@ -70,7 +70,7 @@ extension OZManagerHelpers {
     }
 
     /// Wraps the kit's RPC `simulateTransaction` and lifts transport-level and
-    /// simulation-error responses into `TransactionException.SimulationFailed`.
+    /// simulation-error responses into `SmartAccountTransactionException.SimulationFailed`.
     func simulate(
         transaction: Transaction,
         failureMessagePrefix: String
@@ -82,13 +82,13 @@ extension OZManagerHelpers {
         switch response {
         case .success(let simulation):
             if let error = simulation.error {
-                throw TransactionException.simulationFailed(
+                throw SmartAccountTransactionException.simulationFailed(
                     reason: "\(failureMessagePrefix)\(error)"
                 )
             }
             return simulation
         case .failure(let error):
-            throw TransactionException.simulationFailed(
+            throw SmartAccountTransactionException.simulationFailed(
                 reason: "\(failureMessagePrefix)\(rpcErrorMessage(error))",
                 cause: error
             )
@@ -96,14 +96,14 @@ extension OZManagerHelpers {
     }
 
     /// Wraps `SorobanServer.getAccount(accountId:)` and lifts transport-level
-    /// failures into `TransactionException.SubmissionFailed`.
+    /// failures into `SmartAccountTransactionException.SubmissionFailed`.
     func fetchAccount(accountId: String) async throws -> Account {
         let response = await kit.sorobanServer.getAccount(accountId: accountId)
         switch response {
         case .success(let account):
             return account
         case .failure(let error):
-            throw TransactionException.submissionFailed(
+            throw SmartAccountTransactionException.submissionFailed(
                 reason: "Failed to fetch account \(accountId): \(rpcErrorMessage(error))",
                 cause: error
             )
@@ -111,14 +111,14 @@ extension OZManagerHelpers {
     }
 
     /// Wraps `SorobanServer.getLatestLedger()` and lifts transport-level
-    /// failures into `TransactionException.SubmissionFailed`.
+    /// failures into `SmartAccountTransactionException.SubmissionFailed`.
     func fetchLatestLedger() async throws -> GetLatestLedgerResponse {
         let response = await kit.sorobanServer.getLatestLedger()
         switch response {
         case .success(let ledger):
             return ledger
         case .failure(let error):
-            throw TransactionException.submissionFailed(
+            throw SmartAccountTransactionException.submissionFailed(
                 reason: "Failed to fetch latest ledger: \(rpcErrorMessage(error))",
                 cause: error
             )
@@ -126,7 +126,7 @@ extension OZManagerHelpers {
     }
 
     /// Best-effort credential lookup that returns `nil` instead of throwing.
-    func safeGetCredential(credentialId: String) async -> StoredCredential? {
+    func safeGetCredential(credentialId: String) async -> OZStoredCredential? {
         do {
             return try await kit.credentialManager.getCredential(
                 credentialId: credentialId
@@ -139,7 +139,7 @@ extension OZManagerHelpers {
     /// Resolves the submission method given an optional forced override.
     ///
     /// Priority: forced override > relayer (when configured) > RPC.
-    func resolveSubmissionMethod(forceMethod: SubmissionMethod?) -> SubmissionMethod {
+    func resolveSubmissionMethod(forceMethod: OZSubmissionMethod?) -> OZSubmissionMethod {
         if let forceMethod = forceMethod {
             return forceMethod
         }
@@ -151,9 +151,9 @@ extension OZManagerHelpers {
     /// multi-signer submission flow.
     func routeSubmission(
         hostFunction: HostFunctionXDR,
-        selectedSigners: [SelectedSigner],
-        forceMethod: SubmissionMethod?
-    ) async throws -> TransactionResult {
+        selectedSigners: [OZSelectedSigner],
+        forceMethod: OZSubmissionMethod?
+    ) async throws -> OZTransactionResult {
         if selectedSigners.isEmpty {
             return try await kit.transactionOperations.submit(
                 hostFunction: hostFunction,

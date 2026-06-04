@@ -93,7 +93,7 @@ public enum OZSmartAccountAuthPayloadCodec {
     /// - Parameter signatureScVal: The ScVal stored in the authorization entry credentials
     ///                             signature field.
     /// - Returns: The decoded `OZSmartAccountAuthPayload`.
-    /// - Throws: `TransactionException.SigningFailed` when the input shape is wrong.
+    /// - Throws: `SmartAccountTransactionException.SigningFailed` when the input shape is wrong.
     public static func read(_ signatureScVal: SCValXDR) throws -> OZSmartAccountAuthPayload {
         switch signatureScVal {
         case .void:
@@ -125,7 +125,7 @@ public enum OZSmartAccountAuthPayloadCodec {
                         for signerEntry in signerEntries {
                             let signer = try signerFromScVal(signerEntry.key)
                             guard case .bytes(let sigBytes) = signerEntry.val else {
-                                throw TransactionException.signingFailed(
+                                throw SmartAccountTransactionException.signingFailed(
                                     reason: "Signer signature value is not encoded as Bytes in AuthPayload"
                                 )
                             }
@@ -144,7 +144,7 @@ public enum OZSmartAccountAuthPayloadCodec {
             }
             return OZSmartAccountAuthPayload(signers: signers, contextRuleIds: contextRuleIds)
         default:
-            throw TransactionException.signingFailed(
+            throw SmartAccountTransactionException.signingFailed(
                 reason: "Smart account auth signature is not encoded as AuthPayload"
             )
         }
@@ -160,7 +160,7 @@ public enum OZSmartAccountAuthPayloadCodec {
     ///
     /// - Parameter payload: Payload to encode.
     /// - Returns: The `SCValXDR` representation of the payload.
-    /// - Throws: `TransactionException.SigningFailed` when XDR encoding of a signer key fails.
+    /// - Throws: `SmartAccountTransactionException.SigningFailed` when XDR encoding of a signer key fails.
     public static func write(_ payload: OZSmartAccountAuthPayload) throws -> SCValXDR {
         // Build signer map entries, wrapping each raw signature byte array in an
         // `SCValXDR.bytes` value before sorting.
@@ -171,7 +171,7 @@ public enum OZSmartAccountAuthPayloadCodec {
             do {
                 key = try entry.signer.toScVal()
             } catch {
-                throw TransactionException.signingFailed(
+                throw SmartAccountTransactionException.signingFailed(
                     reason: "Failed to convert signer to SCVal",
                     cause: error
                 )
@@ -196,7 +196,7 @@ public enum OZSmartAccountAuthPayloadCodec {
             keyed.sort { $0.hex < $1.hex }
             sortedSignerEntries = keyed.map { $0.entry }
         } catch {
-            throw TransactionException.signingFailed(
+            throw SmartAccountTransactionException.signingFailed(
                 reason: "Failed to XDR-encode signer key for sorting: \(error.localizedDescription)",
                 cause: error
             )
@@ -248,20 +248,20 @@ public enum OZSmartAccountAuthPayloadCodec {
     ///
     /// - Parameter scVal: The ScVal to parse.
     /// - Returns: The parsed signer.
-    /// - Throws: `TransactionException.SigningFailed` when the shape is unrecognised.
+    /// - Throws: `SmartAccountTransactionException.SigningFailed` when the shape is unrecognised.
     public static func signerFromScVal(_ scVal: SCValXDR) throws -> any OZSmartAccountSigner {
         guard case .vec(let optionalElements) = scVal else {
-            throw TransactionException.signingFailed(reason: "Signer ScVal is not a Vec")
+            throw SmartAccountTransactionException.signingFailed(reason: "Signer ScVal is not a Vec")
         }
         guard let elements = optionalElements else {
-            throw TransactionException.signingFailed(reason: "Signer ScVal Vec is null or empty")
+            throw SmartAccountTransactionException.signingFailed(reason: "Signer ScVal Vec is null or empty")
         }
         if elements.isEmpty {
-            throw TransactionException.signingFailed(reason: "Signer ScVal Vec is empty")
+            throw SmartAccountTransactionException.signingFailed(reason: "Signer ScVal Vec is empty")
         }
 
         guard case .symbol(let tag) = elements[0] else {
-            throw TransactionException.signingFailed(
+            throw SmartAccountTransactionException.signingFailed(
                 reason: "First element of signer Vec is not a Symbol"
             )
         }
@@ -269,12 +269,12 @@ public enum OZSmartAccountAuthPayloadCodec {
         switch tag {
         case "Delegated":
             if elements.count < 2 {
-                throw TransactionException.signingFailed(
+                throw SmartAccountTransactionException.signingFailed(
                     reason: "Delegated signer Vec must have at least 2 elements"
                 )
             }
             guard case .address(let scAddress) = elements[1] else {
-                throw TransactionException.signingFailed(
+                throw SmartAccountTransactionException.signingFailed(
                     reason: "Delegated signer second element is not an Address"
                 )
             }
@@ -282,24 +282,24 @@ public enum OZSmartAccountAuthPayloadCodec {
             do {
                 return try OZDelegatedSigner(address: addressStr)
             } catch {
-                throw TransactionException.signingFailed(
+                throw SmartAccountTransactionException.signingFailed(
                     reason: "Delegated signer address is not a valid Stellar address: \(error.localizedDescription)",
                     cause: error
                 )
             }
         case "External":
             if elements.count < 3 {
-                throw TransactionException.signingFailed(
+                throw SmartAccountTransactionException.signingFailed(
                     reason: "External signer Vec must have at least 3 elements"
                 )
             }
             guard case .address(let scAddress) = elements[1] else {
-                throw TransactionException.signingFailed(
+                throw SmartAccountTransactionException.signingFailed(
                     reason: "External signer second element is not an Address"
                 )
             }
             guard case .bytes(let keyData) = elements[2] else {
-                throw TransactionException.signingFailed(
+                throw SmartAccountTransactionException.signingFailed(
                     reason: "External signer third element is not Bytes"
                 )
             }
@@ -307,13 +307,13 @@ public enum OZSmartAccountAuthPayloadCodec {
             do {
                 return try OZExternalSigner(verifierAddress: verifierAddress, keyData: keyData)
             } catch {
-                throw TransactionException.signingFailed(
+                throw SmartAccountTransactionException.signingFailed(
                     reason: "External signer construction failed: \(error.localizedDescription)",
                     cause: error
                 )
             }
         default:
-            throw TransactionException.signingFailed(
+            throw SmartAccountTransactionException.signingFailed(
                 reason: "Unknown signer type tag: '\(tag)'"
             )
         }
@@ -327,7 +327,7 @@ public enum OZSmartAccountAuthPayloadCodec {
     /// and `C…` contracts (decoded from the 32-byte contract id).
     private static func addressString(from scAddress: SCAddressXDR) throws -> String {
         guard let address = OZAddressStrKey.fromXdr(scAddress) else {
-            throw TransactionException.signingFailed(
+            throw SmartAccountTransactionException.signingFailed(
                 reason: "Unsupported signer address type"
             )
         }

@@ -13,7 +13,7 @@ import Foundation
 
 /// Canonical storage-key constants shared by all platform storage adapters.
 ///
-/// Both `KeychainStorageAdapter` and `UserDefaultsStorageAdapter` use this
+/// Both `OZKeychainStorageAdapter` and `OZUserDefaultsStorageAdapter` use this
 /// single source of truth so a key rename is a one-line change here and
 /// automatically propagates to both adapters.
 internal enum OZStorageKeys {
@@ -31,9 +31,9 @@ internal enum OZStorageKeys {
 // Internal Serializable Data Transfer Objects
 // ============================================================================
 
-/// JSON-serializable representation of a `StoredCredential`.
+/// JSON-serializable representation of an `OZStoredCredential`.
 ///
-/// `StoredCredential` carries a `Data` field (`publicKey`) which JSON cannot encode
+/// `OZStoredCredential` carries a `Data` field (`publicKey`) which JSON cannot encode
 /// directly; this DTO converts the bytes to a hex string for storage. Used by
 /// platform-specific persistent storage adapters that serialize credentials to JSON.
 internal struct SerializableCredential: Codable, Equatable, Hashable {
@@ -55,7 +55,7 @@ internal struct SerializableCredential: Codable, Equatable, Hashable {
         credentialId: String,
         publicKeyHex: String,
         contractId: String? = nil,
-        deploymentStatus: String = CredentialDeploymentStatus.pending.rawValue,
+        deploymentStatus: String = OZCredentialDeploymentStatus.pending.rawValue,
         deploymentError: String? = nil,
         createdAt: Int64,
         lastUsedAt: Int64? = nil,
@@ -80,7 +80,7 @@ internal struct SerializableCredential: Codable, Equatable, Hashable {
     }
 }
 
-/// JSON-serializable representation of a `StoredSession`.
+/// JSON-serializable representation of an `OZStoredSession`.
 internal struct SerializableSession: Codable, Equatable, Hashable {
 
     let credentialId: String
@@ -115,7 +115,7 @@ internal struct CredentialIndex: Codable, Equatable, Hashable {
 // Conversion Helpers
 // ============================================================================
 
-internal extension StoredCredential {
+internal extension OZStoredCredential {
 
     /// Converts this credential to its JSON-serializable form. The `publicKey` bytes
     /// are encoded as a lowercase hex string.
@@ -139,29 +139,29 @@ internal extension StoredCredential {
 
 internal extension SerializableCredential {
 
-    /// Converts this DTO back into a `StoredCredential`.
+    /// Converts this DTO back into an `OZStoredCredential`.
     ///
-    /// - Throws: `ValidationException.InvalidInput` when `publicKeyHex` is malformed
+    /// - Throws: `SmartAccountValidationException.InvalidInput` when `publicKeyHex` is malformed
     ///           or when `deploymentStatus` is not one of the recognised
-    ///           `CredentialDeploymentStatus` raw values.
-    func toStoredCredential() throws -> StoredCredential {
+    ///           `OZCredentialDeploymentStatus` raw values.
+    func toStoredCredential() throws -> OZStoredCredential {
         let publicKey: Data
         do {
             publicKey = try Data(base16Encoded: publicKeyHex)
         } catch {
-            throw ValidationException.invalidInput(
+            throw SmartAccountValidationException.invalidInput(
                 field: "publicKeyHex",
                 reason: "publicKeyHex is not a valid hex string",
                 cause: error
             )
         }
-        guard let status = CredentialDeploymentStatus(rawValue: deploymentStatus) else {
-            throw ValidationException.invalidInput(
+        guard let status = OZCredentialDeploymentStatus(rawValue: deploymentStatus) else {
+            throw SmartAccountValidationException.invalidInput(
                 field: "deploymentStatus",
                 reason: "Unknown deployment status: \(deploymentStatus)"
             )
         }
-        return StoredCredential(
+        return OZStoredCredential(
             credentialId: credentialId,
             publicKey: publicKey,
             contractId: contractId,
@@ -178,7 +178,7 @@ internal extension SerializableCredential {
     }
 }
 
-internal extension StoredSession {
+internal extension OZStoredSession {
 
     /// Converts this session to its JSON-serializable form.
     func toSerializable() -> SerializableSession {
@@ -193,9 +193,9 @@ internal extension StoredSession {
 
 internal extension SerializableSession {
 
-    /// Converts this DTO back into a `StoredSession`.
-    func toStoredSession() -> StoredSession {
-        return StoredSession(
+    /// Converts this DTO back into an `OZStoredSession`.
+    func toStoredSession() -> OZStoredSession {
+        return OZStoredSession(
             credentialId: credentialId,
             contractId: contractId,
             connectedAt: connectedAt,
@@ -211,7 +211,7 @@ internal extension SerializableSession {
 func encodeToString<T: Encodable>(_ value: T) throws -> String {
     let data = try JSONEncoder().encode(value)
     guard let string = String(data: data, encoding: .utf8) else {
-        throw StorageException.WriteFailed(
+        throw SmartAccountStorageException.WriteFailed(
             message: "Failed to encode JSON payload as UTF-8 string"
         )
     }
@@ -221,7 +221,7 @@ func encodeToString<T: Encodable>(_ value: T) throws -> String {
 /// Decodes a `Decodable` value from a UTF-8 JSON string produced by ``encodeToString(_:)``.
 func decodeFromString<T: Decodable>(_ type: T.Type, _ jsonString: String) throws -> T {
     guard let data = jsonString.data(using: .utf8) else {
-        throw StorageException.ReadFailed(
+        throw SmartAccountStorageException.ReadFailed(
             message: "Failed to decode UTF-8 bytes from stored JSON payload"
         )
     }

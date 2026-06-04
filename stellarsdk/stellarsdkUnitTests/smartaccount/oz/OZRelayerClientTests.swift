@@ -131,19 +131,19 @@ final class OZRelayerClientTests: XCTestCase {
 
     func testConstructor_blankUrl_throwsConfigurationException() {
         XCTAssertThrowsError(try OZRelayerClient(relayerUrl: "")) { error in
-            XCTAssertTrue(error is ConfigurationException.InvalidConfig)
+            XCTAssertTrue(error is SmartAccountConfigurationException.InvalidConfig)
         }
     }
 
     func testConstructor_whitespaceUrl_throwsConfigurationException() {
         XCTAssertThrowsError(try OZRelayerClient(relayerUrl: "   ")) { error in
-            XCTAssertTrue(error is ConfigurationException.InvalidConfig)
+            XCTAssertTrue(error is SmartAccountConfigurationException.InvalidConfig)
         }
     }
 
     func testConstructor_httpUrl_throwsConfigurationException() {
         XCTAssertThrowsError(try OZRelayerClient(relayerUrl: "http://relayer.example.com")) { error in
-            XCTAssertTrue(error is ConfigurationException.InvalidConfig)
+            XCTAssertTrue(error is SmartAccountConfigurationException.InvalidConfig)
         }
     }
 
@@ -197,13 +197,13 @@ final class OZRelayerClientTests: XCTestCase {
 
     func testConstructor_ftpSchemeThrows() {
         XCTAssertThrowsError(try OZRelayerClient(relayerUrl: "ftp://relayer.example.com")) { error in
-            XCTAssertTrue(error is ConfigurationException.InvalidConfig)
+            XCTAssertTrue(error is SmartAccountConfigurationException.InvalidConfig)
         }
     }
 
     func testConstructor_noSchemeThrows() {
         XCTAssertThrowsError(try OZRelayerClient(relayerUrl: "relayer.example.com")) { error in
-            XCTAssertTrue(error is ConfigurationException.InvalidConfig)
+            XCTAssertTrue(error is SmartAccountConfigurationException.InvalidConfig)
         }
     }
 
@@ -227,7 +227,7 @@ final class OZRelayerClientTests: XCTestCase {
 
     func testConstructor_schemeOnlyUrl_throwsConfigurationException() {
         XCTAssertThrowsError(try OZRelayerClient(relayerUrl: "https://")) { error in
-            XCTAssertTrue(error is ConfigurationException.InvalidConfig)
+            XCTAssertTrue(error is SmartAccountConfigurationException.InvalidConfig)
         }
     }
 

@@ -27,7 +27,7 @@ import Security
 ///     print("Failed: \(result.error ?? "unknown")")
 /// }
 /// ```
-public struct TransactionResult: Sendable, Equatable, Hashable {
+public struct OZTransactionResult: Sendable, Equatable, Hashable {
 
     /// `true` when the transaction was accepted by the network and confirmed
     /// successfully on-chain; `false` for every other outcome (simulation failure,
@@ -64,7 +64,7 @@ public struct TransactionResult: Sendable, Equatable, Hashable {
         hash: String?? = .none,
         ledger: UInt32?? = .none,
         error: String?? = .none
-    ) -> TransactionResult {
+    ) -> OZTransactionResult {
         let resolvedHash: String?
         switch hash {
         case .none: resolvedHash = self.hash
@@ -80,7 +80,7 @@ public struct TransactionResult: Sendable, Equatable, Hashable {
         case .none: resolvedError = self.error
         case .some(let value): resolvedError = value
         }
-        return TransactionResult(
+        return OZTransactionResult(
             success: success ?? self.success,
             hash: resolvedHash,
             ledger: resolvedLedger,
@@ -99,7 +99,7 @@ public struct TransactionResult: Sendable, Equatable, Hashable {
 /// signer set.
 ///
 /// Errors thrown from the callback propagate to the caller of ``OZTransactionOperations/submit(hostFunction:auth:forceMethod:resolveContextRuleIds:)``.
-public typealias ResolveContextRuleIds = @Sendable (
+public typealias OZResolveContextRuleIds = @Sendable (
     _ entry: SorobanAuthorizationEntryXDR,
     _ index: Int
 ) async throws -> [UInt32]
@@ -148,21 +148,21 @@ public final class OZTransactionOperations: OZManagerHelpers, @unchecked Sendabl
     ///   - recipient: Recipient address (`G…` account or `C…` contract).
     ///   - amount: Decimal XLM-style string (for example `"10"` or `"100.5"`).
     ///   - forceMethod: Optional submission-method override.
-    /// - Returns: ``TransactionResult`` describing the on-chain outcome.
-    /// - Throws: ``WalletException/NotConnected`` when no wallet is connected;
-    ///   ``ValidationException`` for invalid inputs or self-transfer;
-    ///   ``TransactionException`` for simulation, signing, or submission failures;
+    /// - Returns: ``OZTransactionResult`` describing the on-chain outcome.
+    /// - Throws: ``SmartAccountWalletException/NotConnected`` when no wallet is connected;
+    ///   ``SmartAccountValidationException`` for invalid inputs or self-transfer;
+    ///   ``SmartAccountTransactionException`` for simulation, signing, or submission failures;
     ///   ``WebAuthnException`` for biometric-authentication failures.
     public func transfer(
         tokenContract: String,
         recipient: String,
         amount: String,
-        forceMethod: SubmissionMethod? = nil
-    ) async throws -> TransactionResult {
+        forceMethod: OZSubmissionMethod? = nil
+    ) async throws -> OZTransactionResult {
         let connected = try kit.requireConnected()
         try requireStellarAddress(recipient, fieldName: "recipient")
         if recipient == connected.contractId {
-            throw ValidationException.invalidInput(
+            throw SmartAccountValidationException.invalidInput(
                 field: "recipient",
                 reason: "Cannot transfer to self"
             )
@@ -207,16 +207,16 @@ public final class OZTransactionOperations: OZManagerHelpers, @unchecked Sendabl
     ///   - forceMethod: Optional submission-method override.
     ///   - resolveContextRuleIds: Optional override of the automatic
     ///     context-rule resolution performed during the signing loop.
-    /// - Returns: ``TransactionResult`` describing the on-chain outcome.
-    /// - Throws: ``WalletException/NotConnected``, ``ValidationException``,
-    ///   ``TransactionException``, ``WebAuthnException``, ``CredentialException``.
+    /// - Returns: ``OZTransactionResult`` describing the on-chain outcome.
+    /// - Throws: ``SmartAccountWalletException/NotConnected``, ``SmartAccountValidationException``,
+    ///   ``SmartAccountTransactionException``, ``WebAuthnException``, ``SmartAccountCredentialException``.
     public func contractCall(
         target: String,
         targetFn: String,
         targetArgs: [SCValXDR] = [],
-        forceMethod: SubmissionMethod? = nil,
-        resolveContextRuleIds: ResolveContextRuleIds? = nil
-    ) async throws -> TransactionResult {
+        forceMethod: OZSubmissionMethod? = nil,
+        resolveContextRuleIds: OZResolveContextRuleIds? = nil
+    ) async throws -> OZTransactionResult {
         _ = try kit.requireConnected()
 
         try requireContractAddress(target, fieldName: "target")
@@ -250,16 +250,16 @@ public final class OZTransactionOperations: OZManagerHelpers, @unchecked Sendabl
     ///   - targetArgs: Pre-encoded SCVal arguments forwarded to the inner call.
     ///   - forceMethod: Optional submission-method override.
     ///   - resolveContextRuleIds: Optional context-rule resolver override.
-    /// - Returns: ``TransactionResult`` describing the on-chain outcome.
-    /// - Throws: ``WalletException/NotConnected``, ``ValidationException``,
-    ///   ``TransactionException``, ``WebAuthnException``, ``CredentialException``.
+    /// - Returns: ``OZTransactionResult`` describing the on-chain outcome.
+    /// - Throws: ``SmartAccountWalletException/NotConnected``, ``SmartAccountValidationException``,
+    ///   ``SmartAccountTransactionException``, ``WebAuthnException``, ``SmartAccountCredentialException``.
     public func executeAndSubmit(
         target: String,
         targetFn: String,
         targetArgs: [SCValXDR] = [],
-        forceMethod: SubmissionMethod? = nil,
-        resolveContextRuleIds: ResolveContextRuleIds? = nil
-    ) async throws -> TransactionResult {
+        forceMethod: OZSubmissionMethod? = nil,
+        resolveContextRuleIds: OZResolveContextRuleIds? = nil
+    ) async throws -> OZTransactionResult {
         let connected = try kit.requireConnected()
 
         try requireContractAddress(target, fieldName: "target")
@@ -305,15 +305,15 @@ public final class OZTransactionOperations: OZManagerHelpers, @unchecked Sendabl
     ///     (typically empty — the simulation discovers them).
     ///   - forceMethod: Optional submission-method override.
     ///   - resolveContextRuleIds: Optional context-rule resolver override.
-    /// - Returns: ``TransactionResult`` describing the on-chain outcome.
-    /// - Throws: ``WalletException/NotConnected``, ``ValidationException``,
-    ///   ``TransactionException``, ``WebAuthnException``, ``CredentialException``.
+    /// - Returns: ``OZTransactionResult`` describing the on-chain outcome.
+    /// - Throws: ``SmartAccountWalletException/NotConnected``, ``SmartAccountValidationException``,
+    ///   ``SmartAccountTransactionException``, ``WebAuthnException``, ``SmartAccountCredentialException``.
     public func submit(
         hostFunction: HostFunctionXDR,
         auth: [SorobanAuthorizationEntryXDR],
-        forceMethod: SubmissionMethod? = nil,
-        resolveContextRuleIds: ResolveContextRuleIds? = nil
-    ) async throws -> TransactionResult {
+        forceMethod: OZSubmissionMethod? = nil,
+        resolveContextRuleIds: OZResolveContextRuleIds? = nil
+    ) async throws -> OZTransactionResult {
         let connected = try kit.requireConnected()
         let deployer = try await kit.getDeployer()
         let deployerAccount = try await fetchAccount(accountId: deployer.accountId)
@@ -387,12 +387,12 @@ public final class OZTransactionOperations: OZManagerHelpers, @unchecked Sendabl
     ///     resolution.
     /// - Returns: Authorization entries with the OZ AuthPayload Map wired into
     ///   the `signature` field of every matching entry.
-    /// - Throws: ``ValidationException``, ``CredentialException``,
-    ///   ``WebAuthnException``, ``TransactionException``.
+    /// - Throws: ``SmartAccountValidationException``, ``SmartAccountCredentialException``,
+    ///   ``WebAuthnException``, ``SmartAccountTransactionException``.
     private func signAuthEntriesPass(
         simulatedAuthEntries: [SorobanAuthorizationEntryXDR],
         connected: ConnectedState,
-        resolveContextRuleIds: ResolveContextRuleIds?
+        resolveContextRuleIds: OZResolveContextRuleIds?
     ) async throws -> [SorobanAuthorizationEntryXDR] {
         if simulatedAuthEntries.isEmpty {
             return []
@@ -410,7 +410,7 @@ public final class OZTransactionOperations: OZManagerHelpers, @unchecked Sendabl
         let expirationU64 = UInt64(latestLedger.sequence)
             + UInt64(kit.config.signatureExpirationLedgers)
         guard let expiration = UInt32(exactly: expirationU64) else {
-            throw TransactionException.simulationFailed(
+            throw SmartAccountTransactionException.simulationFailed(
                 reason: "Computed expirationLedger \(expirationU64) overflows UInt32"
             )
         }
@@ -442,7 +442,7 @@ public final class OZTransactionOperations: OZManagerHelpers, @unchecked Sendabl
             )
 
             guard let webauthnProvider = kit.config.webauthnProvider else {
-                throw ValidationException.invalidInput(
+                throw SmartAccountValidationException.invalidInput(
                     field: "webauthnProvider",
                     reason: "WebAuthn provider is required for signing auth entries but is not configured"
                 )
@@ -452,7 +452,7 @@ public final class OZTransactionOperations: OZManagerHelpers, @unchecked Sendabl
             do {
                 credIdBytes = try Data(base64URLEncoded: connected.credentialId)
             } catch {
-                throw CredentialException.invalid(
+                throw SmartAccountCredentialException.invalid(
                     reason: "Failed to decode credentialId from Base64URL: \(connected.credentialId)",
                     cause: error
                 )
@@ -461,7 +461,7 @@ public final class OZTransactionOperations: OZManagerHelpers, @unchecked Sendabl
             // why: storage hit short-circuits the on-chain lookup; otherwise
             // the active context rules are scanned for an External signer whose
             // key suffix matches the decoded credential id.
-            let stored: StoredCredential? = await safeGetCredential(
+            let stored: OZStoredCredential? = await safeGetCredential(
                 credentialId: connected.credentialId
             )
             let signer: OZExternalSigner
@@ -497,7 +497,7 @@ public final class OZTransactionOperations: OZManagerHelpers, @unchecked Sendabl
                 contextRuleIds: resolvedContextRuleIds
             )
 
-            let allowCredential = AllowCredential(
+            let allowCredential = WebAuthnAllowCredential(
                 id: credIdBytes,
                 transports: stored?.transports
             )
@@ -550,7 +550,7 @@ public final class OZTransactionOperations: OZManagerHelpers, @unchecked Sendabl
     ///   - signedAuthEntries: Auth entries with the OZ AuthPayload Map wired
     ///     into every matching entry's `signature` field.
     /// - Returns: A re-simulated transaction with the fresh resource-fee envelope.
-    /// - Throws: ``TransactionException`` on re-simulation failure or rebuild
+    /// - Throws: ``SmartAccountTransactionException`` on re-simulation failure or rebuild
     ///   error.
     private func rebuildAndReSimulate(
         deployer: KeyPair,
@@ -595,15 +595,15 @@ public final class OZTransactionOperations: OZManagerHelpers, @unchecked Sendabl
     ///     prior to envelope assembly.
     ///   - simulation: The re-simulation response that informs resource fees.
     ///   - forceMethod: Optional submission-method override.
-    /// - Returns: ``TransactionResult`` describing the on-chain outcome.
-    /// - Throws: ``TransactionException`` for any submission or polling failure.
+    /// - Returns: ``OZTransactionResult`` describing the on-chain outcome.
+    /// - Throws: ``SmartAccountTransactionException`` for any submission or polling failure.
     internal func submitMultiSignerTransaction(
         hostFunction: HostFunctionXDR,
         signedAuthEntries: [SorobanAuthorizationEntryXDR],
         signedTransaction: Transaction,
         simulation: SimulateTransactionResponse,
-        forceMethod: SubmissionMethod? = nil
-    ) async throws -> TransactionResult {
+        forceMethod: OZSubmissionMethod? = nil
+    ) async throws -> OZTransactionResult {
         let deployer = try await kit.getDeployer()
         let useRelayer = resolveSubmissionMethod(forceMethod: forceMethod) == .relayer
 
@@ -643,11 +643,11 @@ public final class OZTransactionOperations: OZManagerHelpers, @unchecked Sendabl
     ///   - forceMethod: Optional submission-method override.
     /// - Returns: Funded amount as a decimal XLM string (for example `"100"` or
     ///   `"12.34567"`). Trailing zeroes in the fractional component are trimmed.
-    /// - Throws: ``WalletException/NotConnected``, ``ValidationException``,
-    ///   ``TransactionException``.
+    /// - Throws: ``SmartAccountWalletException/NotConnected``, ``SmartAccountValidationException``,
+    ///   ``SmartAccountTransactionException``.
     public func fundWallet(
         nativeTokenContract: String,
-        forceMethod: SubmissionMethod? = nil
+        forceMethod: OZSubmissionMethod? = nil
     ) async throws -> String {
         let connected = try kit.requireConnected()
         try requireContractAddress(
@@ -661,7 +661,7 @@ public final class OZTransactionOperations: OZManagerHelpers, @unchecked Sendabl
             accountId: tempKeypair.accountId
         )
         if !funded {
-            throw TransactionException.submissionFailed(
+            throw SmartAccountTransactionException.submissionFailed(
                 reason: "Friendbot funding failed"
             )
         }
@@ -691,12 +691,12 @@ public final class OZTransactionOperations: OZManagerHelpers, @unchecked Sendabl
         )
 
         guard let balanceStroops = OZTransactionOperations.scValToInt64(balanceResult) else {
-            throw TransactionException.submissionFailed(
+            throw SmartAccountTransactionException.submissionFailed(
                 reason: "Failed to query temp account balance"
             )
         }
         if balanceStroops <= reserveStroopsInt64 {
-            throw TransactionException.submissionFailed(
+            throw SmartAccountTransactionException.submissionFailed(
                 reason: "Insufficient balance after Friendbot funding"
             )
         }
@@ -738,7 +738,7 @@ public final class OZTransactionOperations: OZManagerHelpers, @unchecked Sendabl
         let expirationU64 = UInt64(latestLedger.sequence)
             + UInt64(StellarProtocolConstants.ledgersPerHour)
         guard let expirationLedger = UInt32(exactly: expirationU64) else {
-            throw TransactionException.simulationFailed(
+            throw SmartAccountTransactionException.simulationFailed(
                 reason: "Computed expirationLedger \(expirationU64) overflows UInt32"
             )
         }
@@ -788,7 +788,7 @@ public final class OZTransactionOperations: OZManagerHelpers, @unchecked Sendabl
         )
 
         if !result.success {
-            throw TransactionException.submissionFailed(
+            throw SmartAccountTransactionException.submissionFailed(
                 reason: "Funding transaction failed: \(result.error ?? "unknown error")"
             )
         }
@@ -806,7 +806,7 @@ public final class OZTransactionOperations: OZManagerHelpers, @unchecked Sendabl
     ///
     /// - Parameter hostFunction: Host function to simulate.
     /// - Returns: The parsed `SCValXDR` returned by the simulation.
-    /// - Throws: ``TransactionException`` on simulation failure or when the
+    /// - Throws: ``SmartAccountTransactionException`` on simulation failure or when the
     ///   simulation produced no result.
     internal func simulateAndExtractResult(
         hostFunction: HostFunctionXDR
@@ -827,12 +827,12 @@ public final class OZTransactionOperations: OZManagerHelpers, @unchecked Sendabl
         )
 
         guard let firstResult = simulation.results?.first else {
-            throw TransactionException.simulationFailed(
+            throw SmartAccountTransactionException.simulationFailed(
                 reason: "No results returned from simulation"
             )
         }
         guard let parsedValue = firstResult.value else {
-            throw TransactionException.simulationFailed(
+            throw SmartAccountTransactionException.simulationFailed(
                 reason: "No return value in simulation result"
             )
         }
@@ -889,7 +889,7 @@ public final class OZTransactionOperations: OZManagerHelpers, @unchecked Sendabl
             }
         }
 
-        throw CredentialException.notFound(
+        throw SmartAccountCredentialException.notFound(
             credentialId: credentialIdBytes.base64URLEncodedString()
         )
     }
@@ -1010,7 +1010,7 @@ public final class OZTransactionOperations: OZManagerHelpers, @unchecked Sendabl
         signer: KeyPair,
         useRelayer: Bool,
         emitEvents: Bool
-    ) async throws -> TransactionResult {
+    ) async throws -> OZTransactionResult {
         let hasSourceAuth = shouldUseRelayerMode2(authEntries: signedAuthEntries)
 
         // Sign the envelope unless we're forwarding to the relayer in Mode 1.
@@ -1022,7 +1022,7 @@ public final class OZTransactionOperations: OZManagerHelpers, @unchecked Sendabl
                     network: .custom(passphrase: kit.config.networkPassphrase)
                 )
             } catch {
-                throw TransactionException.signingFailed(
+                throw SmartAccountTransactionException.signingFailed(
                     reason: "Failed to sign transaction envelope: \(SmartAccountException.messageOf(error) ?? "unknown")",
                     cause: error
                 )
@@ -1031,7 +1031,7 @@ public final class OZTransactionOperations: OZManagerHelpers, @unchecked Sendabl
 
         if useRelayer {
             guard let relayer = kit.relayerClient else {
-                throw TransactionException.submissionFailed(
+                throw SmartAccountTransactionException.submissionFailed(
                     reason: "Relayer is not configured"
                 )
             }
@@ -1041,7 +1041,7 @@ public final class OZTransactionOperations: OZManagerHelpers, @unchecked Sendabl
                 do {
                     envelope = try transaction.transactionXDR.toEnvelopeXDR()
                 } catch {
-                    throw TransactionException.submissionFailed(
+                    throw SmartAccountTransactionException.submissionFailed(
                         reason: "Failed to build signed envelope: \(SmartAccountException.messageOf(error) ?? "unknown")",
                         cause: error
                     )
@@ -1066,7 +1066,7 @@ public final class OZTransactionOperations: OZManagerHelpers, @unchecked Sendabl
             if relayerResponse.success, let hash = relayerResponse.hash {
                 return try await pollForConfirmation(hash: hash)
             }
-            return TransactionResult(
+            return OZTransactionResult(
                 success: false,
                 error: relayerResponse.error ?? "Relayer submission failed"
             )
@@ -1080,13 +1080,13 @@ public final class OZTransactionOperations: OZManagerHelpers, @unchecked Sendabl
         case .success(let sendResult):
             switch sendResult.status {
             case SendTransactionResponse.STATUS_ERROR:
-                return TransactionResult(
+                return OZTransactionResult(
                     success: false,
                     hash: sendResult.transactionId,
                     error: sendResult.errorResultXdr ?? "Transaction rejected by network"
                 )
             case SendTransactionResponse.STATUS_TRY_AGAIN_LATER:
-                return TransactionResult(
+                return OZTransactionResult(
                     success: false,
                     hash: sendResult.transactionId,
                     error: "Network is congested. Try again later."
@@ -1114,7 +1114,7 @@ public final class OZTransactionOperations: OZManagerHelpers, @unchecked Sendabl
                 return try await pollForConfirmation(hash: sendResult.transactionId)
             }
         case .failure(let error):
-            throw TransactionException.submissionFailed(
+            throw SmartAccountTransactionException.submissionFailed(
                 reason: "Failed to send transaction: \(rpcErrorMessage(error))",
                 cause: error
             )
@@ -1124,7 +1124,7 @@ public final class OZTransactionOperations: OZManagerHelpers, @unchecked Sendabl
     /// Polls Soroban RPC for confirmation using a 30-attempt, 3-second cadence
     /// (90-second wall-clock budget) that accommodates ledger close times and
     /// brief congestion windows.
-    private func pollForConfirmation(hash: String) async throws -> TransactionResult {
+    private func pollForConfirmation(hash: String) async throws -> OZTransactionResult {
         let response = await kit.sorobanServer.pollTransaction(
             hash: hash,
             maxAttempts: 30,
@@ -1135,30 +1135,30 @@ public final class OZTransactionOperations: OZManagerHelpers, @unchecked Sendabl
             switch txResponse.status {
             case GetTransactionResponse.STATUS_SUCCESS:
                 let ledger: UInt32? = txResponse.ledger.map { UInt32($0) }
-                return TransactionResult(success: true, hash: hash, ledger: ledger)
+                return OZTransactionResult(success: true, hash: hash, ledger: ledger)
             case GetTransactionResponse.STATUS_FAILED:
                 let ledger: UInt32? = txResponse.ledger.map { UInt32($0) }
-                return TransactionResult(
+                return OZTransactionResult(
                     success: false,
                     hash: hash,
                     ledger: ledger,
                     error: txResponse.resultXdr ?? "Transaction failed on-chain"
                 )
             case GetTransactionResponse.STATUS_NOT_FOUND:
-                return TransactionResult(
+                return OZTransactionResult(
                     success: false,
                     hash: hash,
                     error: "Transaction not confirmed after 30 polling attempts"
                 )
             default:
-                return TransactionResult(
+                return OZTransactionResult(
                     success: false,
                     hash: hash,
                     error: "Unexpected transaction status: \(txResponse.status)"
                 )
             }
         case .failure(let error):
-            return TransactionResult(
+            return OZTransactionResult(
                 success: false,
                 hash: hash,
                 error: "Polling failed: \(rpcErrorMessage(error))"
@@ -1179,7 +1179,7 @@ public final class OZTransactionOperations: OZManagerHelpers, @unchecked Sendabl
     internal static func amountToStroops(_ amount: String) throws -> Int64 {
         let trimmed = amount.trimmingCharacters(in: .whitespacesAndNewlines)
         if trimmed.isEmpty {
-            throw ValidationException.invalidAmount(
+            throw SmartAccountValidationException.invalidAmount(
                 amount: amount,
                 reason: "Amount must not be empty"
             )
@@ -1190,14 +1190,14 @@ public final class OZTransactionOperations: OZManagerHelpers, @unchecked Sendabl
         // `1e5`-style inputs are not accepted.
         let pattern = "^-?[0-9]+(\\.[0-9]+)?$"
         guard let regex = try? NSRegularExpression(pattern: pattern, options: []) else {
-            throw ValidationException.invalidAmount(
+            throw SmartAccountValidationException.invalidAmount(
                 amount: amount,
                 reason: "Internal amount validator error"
             )
         }
         let range = NSRange(trimmed.startIndex..<trimmed.endIndex, in: trimmed)
         if regex.firstMatch(in: trimmed, options: [], range: range) == nil {
-            throw ValidationException.invalidAmount(
+            throw SmartAccountValidationException.invalidAmount(
                 amount: amount,
                 reason: "Amount must be a positive decimal number"
             )
@@ -1205,7 +1205,7 @@ public final class OZTransactionOperations: OZManagerHelpers, @unchecked Sendabl
 
         // Reject negative values.
         if trimmed.hasPrefix("-") {
-            throw ValidationException.invalidAmount(
+            throw SmartAccountValidationException.invalidAmount(
                 amount: amount,
                 reason: "Amount must be positive"
             )
@@ -1217,7 +1217,7 @@ public final class OZTransactionOperations: OZManagerHelpers, @unchecked Sendabl
         let fractionPart: String = parts.count > 1 ? String(parts[1]) : ""
 
         if fractionPart.count > 7 {
-            throw ValidationException.invalidAmount(
+            throw SmartAccountValidationException.invalidAmount(
                 amount: amount,
                 reason: "Amount has more than 7 fractional digits"
             )
@@ -1230,13 +1230,13 @@ public final class OZTransactionOperations: OZManagerHelpers, @unchecked Sendabl
         )
         let combined = wholePart + paddedFraction
         guard let stroops = Int64(combined) else {
-            throw ValidationException.invalidAmount(
+            throw SmartAccountValidationException.invalidAmount(
                 amount: amount,
                 reason: "Amount exceeds Int64 range"
             )
         }
         if stroops <= 0 {
-            throw ValidationException.invalidAmount(
+            throw SmartAccountValidationException.invalidAmount(
                 amount: amount,
                 reason: "Amount must be greater than zero"
             )
@@ -1248,13 +1248,13 @@ public final class OZTransactionOperations: OZManagerHelpers, @unchecked Sendabl
     /// Apple's `SecRandomCopyBytes` and interprets them as a signed Int64 (big
     /// endian).
     ///
-    /// - Throws: ``TransactionException/SigningFailed`` when the system CSPRNG
+    /// - Throws: ``SmartAccountTransactionException/SigningFailed`` when the system CSPRNG
     ///   returns a non-success status; throws rather than returning zero bytes.
     internal static func generateNonce() throws -> Int64 {
         var bytes = [UInt8](repeating: 0, count: 8)
         let status = SecRandomCopyBytes(kSecRandomDefault, bytes.count, &bytes)
         guard status == errSecSuccess else {
-            throw TransactionException.signingFailed(
+            throw SmartAccountTransactionException.signingFailed(
                 reason: "SecRandomCopyBytes failed with OSStatus \(status); refusing to produce a non-random nonce"
             )
         }
@@ -1289,7 +1289,7 @@ public final class OZTransactionOperations: OZManagerHelpers, @unchecked Sendabl
         do {
             encoded = try XDREncoder.encode(entry)
         } catch {
-            throw TransactionException.signingFailed(
+            throw SmartAccountTransactionException.signingFailed(
                 reason: "Failed to clone auth entry (encode): \(SmartAccountException.messageOf(error) ?? "unknown")",
                 cause: error
             )
@@ -1297,7 +1297,7 @@ public final class OZTransactionOperations: OZManagerHelpers, @unchecked Sendabl
         do {
             return try XDRDecoder.decode(SorobanAuthorizationEntryXDR.self, data: encoded)
         } catch {
-            throw TransactionException.signingFailed(
+            throw SmartAccountTransactionException.signingFailed(
                 reason: "Failed to clone auth entry (decode): \(SmartAccountException.messageOf(error) ?? "unknown")",
                 cause: error
             )
@@ -1393,7 +1393,7 @@ public final class OZTransactionOperations: OZManagerHelpers, @unchecked Sendabl
                 transaction.addResourceFee(resourceFee: minResourceFee)
             }
         } else if relayerMode {
-            throw TransactionException.submissionFailed(
+            throw SmartAccountTransactionException.submissionFailed(
                 reason: "Failed to get min resource fee from simulation"
             )
         }

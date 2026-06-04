@@ -39,7 +39,7 @@ final class SmartAccountUtilsTests: XCTestCase {
 
     func testParseDerSignature_tooShort() {
         XCTAssertThrowsError(try SmartAccountUtils.parseDerSignature(Data([0x30, 0x02, 0x02, 0x01]))) { error in
-            XCTAssertTrue(error is ValidationException.InvalidInput)
+            XCTAssertTrue(error is SmartAccountValidationException.InvalidInput)
         }
     }
 
@@ -49,7 +49,7 @@ final class SmartAccountUtilsTests: XCTestCase {
                 Data([0x31, 0x06, 0x02, 0x01, 0x01, 0x02, 0x01, 0x01])
             )
         ) { error in
-            XCTAssertTrue(error is ValidationException.InvalidInput)
+            XCTAssertTrue(error is SmartAccountValidationException.InvalidInput)
         }
     }
 
@@ -59,7 +59,7 @@ final class SmartAccountUtilsTests: XCTestCase {
                 Data([0x30, 0x07, 0x02, 0x01, 0x01, 0x02, 0x01, 0x01])
             )
         ) { error in
-            XCTAssertTrue(error is ValidationException.InvalidInput)
+            XCTAssertTrue(error is SmartAccountValidationException.InvalidInput)
         }
     }
 
@@ -69,7 +69,7 @@ final class SmartAccountUtilsTests: XCTestCase {
                 Data([0x30, 0x06, 0x03, 0x01, 0x01, 0x02, 0x01, 0x01])
             )
         ) { error in
-            XCTAssertTrue(error is ValidationException.InvalidInput)
+            XCTAssertTrue(error is SmartAccountValidationException.InvalidInput)
         }
     }
 
@@ -79,7 +79,7 @@ final class SmartAccountUtilsTests: XCTestCase {
                 Data([0x30, 0x06, 0x02, 0x00, 0x01, 0x02, 0x01, 0x01])
             )
         ) { error in
-            XCTAssertTrue(error is ValidationException.InvalidInput)
+            XCTAssertTrue(error is SmartAccountValidationException.InvalidInput)
         }
     }
 
@@ -89,7 +89,7 @@ final class SmartAccountUtilsTests: XCTestCase {
                 Data([0x30, 0x06, 0x02, 0x05, 0x01, 0x02, 0x01, 0x01])
             )
         ) { error in
-            XCTAssertTrue(error is ValidationException.InvalidInput)
+            XCTAssertTrue(error is SmartAccountValidationException.InvalidInput)
         }
     }
 
@@ -99,7 +99,7 @@ final class SmartAccountUtilsTests: XCTestCase {
                 Data([0x30, 0x06, 0x02, 0x01, 0x01, 0x03, 0x01, 0x01])
             )
         ) { error in
-            XCTAssertTrue(error is ValidationException.InvalidInput)
+            XCTAssertTrue(error is SmartAccountValidationException.InvalidInput)
         }
     }
 
@@ -109,7 +109,7 @@ final class SmartAccountUtilsTests: XCTestCase {
                 Data([0x30, 0x06, 0x02, 0x01, 0x01, 0x02, 0x00, 0x01])
             )
         ) { error in
-            XCTAssertTrue(error is ValidationException.InvalidInput)
+            XCTAssertTrue(error is SmartAccountValidationException.InvalidInput)
         }
     }
 
@@ -120,7 +120,7 @@ final class SmartAccountUtilsTests: XCTestCase {
                 Data([0x30, 0x06, 0x02, 0x01, 0x01, 0x02, 0x05, 0x01])
             )
         ) { error in
-            XCTAssertTrue(error is ValidationException.InvalidInput)
+            XCTAssertTrue(error is SmartAccountValidationException.InvalidInput)
         }
     }
 
@@ -128,7 +128,7 @@ final class SmartAccountUtilsTests: XCTestCase {
         // Total length declares 8 (so total 10), but R+S consumes 6 with 2 trailing bytes.
         let der = Data([0x30, 0x08, 0x02, 0x01, 0x01, 0x02, 0x01, 0x01, 0xAA, 0xBB])
         XCTAssertThrowsError(try SmartAccountUtils.parseDerSignature(der)) { error in
-            XCTAssertTrue(error is ValidationException.InvalidInput)
+            XCTAssertTrue(error is SmartAccountValidationException.InvalidInput)
         }
     }
 
@@ -136,21 +136,21 @@ final class SmartAccountUtilsTests: XCTestCase {
         // Envelope length matches buffer (10 bytes total), but consumed bytes leave a trailing pad.
         let der = Data([0x30, 0x08, 0x02, 0x01, 0x01, 0x02, 0x01, 0x01, 0xAA, 0xBB])
         XCTAssertThrowsError(try SmartAccountUtils.parseDerSignature(der)) { error in
-            XCTAssertTrue(error is ValidationException.InvalidInput)
+            XCTAssertTrue(error is SmartAccountValidationException.InvalidInput)
         }
     }
 
     func testParseDerSignature_rIsZero() {
         let der = Data([0x30, 0x06, 0x02, 0x01, 0x00, 0x02, 0x01, 0x01])
         XCTAssertThrowsError(try SmartAccountUtils.parseDerSignature(der)) { error in
-            XCTAssertTrue(error is ValidationException.InvalidInput)
+            XCTAssertTrue(error is SmartAccountValidationException.InvalidInput)
         }
     }
 
     func testParseDerSignature_sIsZero() {
         let der = Data([0x30, 0x06, 0x02, 0x01, 0x01, 0x02, 0x01, 0x00])
         XCTAssertThrowsError(try SmartAccountUtils.parseDerSignature(der)) { error in
-            XCTAssertTrue(error is ValidationException.InvalidInput)
+            XCTAssertTrue(error is SmartAccountValidationException.InvalidInput)
         }
     }
 
@@ -173,7 +173,7 @@ final class SmartAccountUtilsTests: XCTestCase {
         der.append(rContent)
         der.append(contentsOf: [0x02, 0x01, 0x01])
         XCTAssertThrowsError(try SmartAccountUtils.parseDerSignature(der)) { error in
-            XCTAssertTrue(error is ValidationException.InvalidInput)
+            XCTAssertTrue(error is SmartAccountValidationException.InvalidInput)
         }
     }
 
@@ -193,7 +193,7 @@ final class SmartAccountUtilsTests: XCTestCase {
         der.append(UInt8(sContent.count))
         der.append(sContent)
         XCTAssertThrowsError(try SmartAccountUtils.parseDerSignature(der)) { error in
-            XCTAssertTrue(error is ValidationException.InvalidInput)
+            XCTAssertTrue(error is SmartAccountValidationException.InvalidInput)
         }
     }
 
@@ -264,7 +264,7 @@ final class SmartAccountUtilsTests: XCTestCase {
 
     func test_normalize_der_truncated_rejected() {
         XCTAssertThrowsError(try SmartAccountUtils.normalizeSignature(Data([0x30, 0x02]))) { error in
-            XCTAssertTrue(error is ValidationException.InvalidInput)
+            XCTAssertTrue(error is SmartAccountValidationException.InvalidInput)
         }
     }
 
@@ -278,7 +278,7 @@ final class SmartAccountUtilsTests: XCTestCase {
 
     func test_normalize_signature_length_zero_rejected() {
         XCTAssertThrowsError(try SmartAccountUtils.normalizeSignature(Data())) { error in
-            XCTAssertTrue(error is ValidationException.InvalidInput)
+            XCTAssertTrue(error is SmartAccountValidationException.InvalidInput)
         }
     }
 
@@ -289,7 +289,7 @@ final class SmartAccountUtilsTests: XCTestCase {
         malformed.append(contentsOf: [0x02, 0x21, 0x00])
         malformed.append(Data(repeating: 0xFF, count: 32))
         XCTAssertThrowsError(try SmartAccountUtils.normalizeSignature(malformed)) { error in
-            XCTAssertTrue(error is ValidationException.InvalidInput)
+            XCTAssertTrue(error is SmartAccountValidationException.InvalidInput)
         }
     }
 
@@ -312,7 +312,7 @@ final class SmartAccountUtilsTests: XCTestCase {
             }
             do {
                 _ = try SmartAccountUtils.normalizeSignature(buffer)
-            } catch is ValidationException.InvalidInput {
+            } catch is SmartAccountValidationException.InvalidInput {
                 // expected for malformed inputs.
             } catch {
                 XCTFail("Unexpected error: \(error)")
@@ -354,7 +354,7 @@ final class SmartAccountUtilsTests: XCTestCase {
 
     func test_extract_cose_key_missing_rejected() {
         XCTAssertThrowsError(try SmartAccountUtils.extractPublicKeyFromRegistration()) { error in
-            XCTAssertTrue(error is ValidationException.InvalidInput)
+            XCTAssertTrue(error is SmartAccountValidationException.InvalidInput)
         }
     }
 
@@ -365,7 +365,7 @@ final class SmartAccountUtilsTests: XCTestCase {
                 attestationObject: Data(repeating: 0x00, count: 200)
             )
         ) { error in
-            XCTAssertTrue(error is ValidationException.InvalidInput)
+            XCTAssertTrue(error is SmartAccountValidationException.InvalidInput)
         }
     }
 
@@ -375,7 +375,7 @@ final class SmartAccountUtilsTests: XCTestCase {
         XCTAssertThrowsError(
             try SmartAccountUtils.extractPublicKeyFromRegistration(publicKey: compressed)
         ) { error in
-            XCTAssertTrue(error is ValidationException.InvalidInput)
+            XCTAssertTrue(error is SmartAccountValidationException.InvalidInput)
         }
     }
 
@@ -387,7 +387,7 @@ final class SmartAccountUtilsTests: XCTestCase {
         XCTAssertThrowsError(
             try SmartAccountUtils.extractPublicKeyFromRegistration(publicKey: pk)
         ) { error in
-            XCTAssertTrue(error is ValidationException.InvalidInput)
+            XCTAssertTrue(error is SmartAccountValidationException.InvalidInput)
         }
     }
 
@@ -416,7 +416,7 @@ final class SmartAccountUtilsTests: XCTestCase {
                 publicKey: compressed, authenticatorData: auth
             )
         ) { error in
-            XCTAssertTrue(error is ValidationException.InvalidInput)
+            XCTAssertTrue(error is SmartAccountValidationException.InvalidInput)
         }
     }
 
@@ -457,7 +457,7 @@ final class SmartAccountUtilsTests: XCTestCase {
                 attestationObject: Data(repeating: 0x00, count: 100)
             )
         ) { error in
-            XCTAssertTrue(error is ValidationException.InvalidInput)
+            XCTAssertTrue(error is SmartAccountValidationException.InvalidInput)
         }
     }
 
@@ -582,7 +582,7 @@ final class SmartAccountUtilsTests: XCTestCase {
         let yMarkerOffset = 55 + 0 + 10 + 32
         auth[yMarkerOffset] = 0x00
         XCTAssertThrowsError(try SmartAccountUtils.extractPublicKeyFromAuthenticatorData(auth)) { error in
-            XCTAssertTrue(error is ValidationException.InvalidInput)
+            XCTAssertTrue(error is SmartAccountValidationException.InvalidInput)
         }
     }
 
@@ -872,7 +872,7 @@ final class SmartAccountUtilsTests: XCTestCase {
                 networkPassphrase: testNetwork
             )
             XCTFail("Expected throw")
-        } catch is ValidationException.InvalidAddress {
+        } catch is SmartAccountValidationException.InvalidAddress {
             // expected
         } catch {
             XCTFail("Unexpected: \(error)")

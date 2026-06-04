@@ -31,7 +31,7 @@ public protocol OZSmartAccountSigner: Sendable {
     /// Converts this signer to its on-chain `SCValXDR` representation for contract calls.
     ///
     /// - Returns: An `SCValXDR` describing the signer in the format the wallet contract expects.
-    /// - Throws: `ValidationException.InvalidInput` if conversion fails (for example, when
+    /// - Throws: `SmartAccountValidationException.InvalidInput` if conversion fails (for example, when
     ///   address strkey decoding fails).
     func toScVal() throws -> SCValXDR
 
@@ -61,11 +61,11 @@ public struct OZDelegatedSigner: OZSmartAccountSigner, Equatable, Hashable {
     ///
     /// - Parameter address: The Stellar address of the signer; must be a valid `G…` strkey
     ///   or `C…` strkey.
-    /// - Throws: `ValidationException.InvalidAddress` when `address` is neither a valid
+    /// - Throws: `SmartAccountValidationException.InvalidAddress` when `address` is neither a valid
     ///   Ed25519 public key strkey nor a valid contract id strkey.
     public init(address: String) throws {
         if !address.isValidEd25519PublicKey() && !address.isValidContractId() {
-            throw ValidationException.invalidAddress(
+            throw SmartAccountValidationException.invalidAddress(
                 address: "Address must be a valid Stellar address (G... or C...), got: \(address)"
             )
         }
@@ -77,7 +77,7 @@ public struct OZDelegatedSigner: OZSmartAccountSigner, Equatable, Hashable {
     /// Returns an `SCValXDR.vec([Symbol("Delegated"), Address(address)])`.
     ///
     /// - Returns: The `SCValXDR` representation of this signer.
-    /// - Throws: `ValidationException.InvalidInput` if the address cannot be encoded into
+    /// - Throws: `SmartAccountValidationException.InvalidInput` if the address cannot be encoded into
     ///   an `SCAddressXDR`.
     public func toScVal() throws -> SCValXDR {
         do {
@@ -93,7 +93,7 @@ public struct OZDelegatedSigner: OZSmartAccountSigner, Equatable, Hashable {
             ]
             return .vec(elements)
         } catch {
-            throw ValidationException.InvalidInput(
+            throw SmartAccountValidationException.InvalidInput(
                 message: "Failed to convert OZDelegatedSigner to ScVal: \(error.localizedDescription)",
                 cause: error
             )
@@ -142,8 +142,8 @@ public struct OZExternalSigner: OZSmartAccountSigner, Equatable, Hashable {
     /// - Parameters:
     ///   - verifierAddress: Contract address (`C…` strkey) of the signature verifier.
     ///   - keyData: Public-key bytes plus any auxiliary authentication data; must not be empty.
-    /// - Throws: `ValidationException.InvalidAddress` if `verifierAddress` is not a valid
-    ///   contract strkey; `ValidationException.InvalidInput` if `keyData` is empty.
+    /// - Throws: `SmartAccountValidationException.InvalidAddress` if `verifierAddress` is not a valid
+    ///   contract strkey; `SmartAccountValidationException.InvalidInput` if `keyData` is empty.
     public init(verifierAddress: String, keyData: Data) throws {
         // Verifier address is also validated at registration time
         // (OZExternalSignerManager.addEd25519FromRawKey) and at pre-signing time
@@ -151,12 +151,12 @@ public struct OZExternalSigner: OZSmartAccountSigner, Equatable, Hashable {
         // guarantees the invariant for any caller that constructs OZExternalSigner
         // directly without going through those paths.
         if !verifierAddress.isValidContractId() {
-            throw ValidationException.invalidAddress(
+            throw SmartAccountValidationException.invalidAddress(
                 address: "Verifier address must be a valid contract address (C...), got: \(verifierAddress)"
             )
         }
         if keyData.isEmpty {
-            throw ValidationException.invalidInput(field: "keyData", reason: "Key data cannot be empty")
+            throw SmartAccountValidationException.invalidInput(field: "keyData", reason: "Key data cannot be empty")
         }
         self.verifierAddress = verifierAddress
         self.keyData = keyData
@@ -167,7 +167,7 @@ public struct OZExternalSigner: OZSmartAccountSigner, Equatable, Hashable {
     /// Returns an `SCValXDR.vec([Symbol("External"), Address(verifierAddress), Bytes(keyData)])`.
     ///
     /// - Returns: The `SCValXDR` representation of this signer.
-    /// - Throws: `ValidationException.InvalidInput` if the verifier address cannot be encoded
+    /// - Throws: `SmartAccountValidationException.InvalidInput` if the verifier address cannot be encoded
     ///   into an `SCAddressXDR`.
     public func toScVal() throws -> SCValXDR {
         do {
@@ -179,7 +179,7 @@ public struct OZExternalSigner: OZSmartAccountSigner, Equatable, Hashable {
             ]
             return .vec(elements)
         } catch {
-            throw ValidationException.InvalidInput(
+            throw SmartAccountValidationException.InvalidInput(
                 message: "Failed to convert OZExternalSigner to ScVal: \(error.localizedDescription)",
                 cause: error
             )
@@ -221,29 +221,29 @@ public struct OZExternalSigner: OZSmartAccountSigner, Equatable, Hashable {
     ///   - credentialId: WebAuthn credential identifier; must not be empty.
     /// - Returns: An `OZExternalSigner` configured for WebAuthn signature verification.
     /// - Throws:
-    ///   - `ValidationException.InvalidInput` if `publicKey` is the wrong size, has the
+    ///   - `SmartAccountValidationException.InvalidInput` if `publicKey` is the wrong size, has the
     ///     wrong leading byte, or `credentialId` is empty.
-    ///   - `ValidationException.InvalidAddress` if `verifierAddress` is not a valid `C…` strkey.
+    ///   - `SmartAccountValidationException.InvalidAddress` if `verifierAddress` is not a valid `C…` strkey.
     public static func webAuthn(
         verifierAddress: String,
         publicKey: Data,
         credentialId: Data
     ) throws -> OZExternalSigner {
         if publicKey.count != SmartAccountConstants.secp256r1PublicKeySize {
-            throw ValidationException.invalidInput(
+            throw SmartAccountValidationException.invalidInput(
                 field: "publicKey",
                 reason: "WebAuthn public key must be \(SmartAccountConstants.secp256r1PublicKeySize) bytes (uncompressed secp256r1), got: \(publicKey.count)"
             )
         }
         if publicKey[publicKey.startIndex] != SmartAccountConstants.uncompressedPubkeyPrefix {
             let firstByteHex = String(format: "%02x", publicKey[publicKey.startIndex])
-            throw ValidationException.invalidInput(
+            throw SmartAccountValidationException.invalidInput(
                 field: "publicKey",
                 reason: "WebAuthn public key must start with 0x04 (uncompressed format), got: 0x\(firstByteHex)"
             )
         }
         if credentialId.isEmpty {
-            throw ValidationException.invalidInput(field: "credentialId", reason: "WebAuthn credential ID cannot be empty")
+            throw SmartAccountValidationException.invalidInput(field: "credentialId", reason: "WebAuthn credential ID cannot be empty")
         }
         var keyData = Data()
         keyData.append(publicKey)
@@ -258,14 +258,14 @@ public struct OZExternalSigner: OZSmartAccountSigner, Equatable, Hashable {
     ///   - publicKey: Ed25519 public key (`SmartAccountConstants.ed25519PublicKeySize` bytes).
     /// - Returns: An `OZExternalSigner` configured for Ed25519 signature verification.
     /// - Throws:
-    ///   - `ValidationException.InvalidInput` if `publicKey` is not 32 bytes long.
-    ///   - `ValidationException.InvalidAddress` if `verifierAddress` is not a valid `C…` strkey.
+    ///   - `SmartAccountValidationException.InvalidInput` if `publicKey` is not 32 bytes long.
+    ///   - `SmartAccountValidationException.InvalidAddress` if `verifierAddress` is not a valid `C…` strkey.
     public static func ed25519(
         verifierAddress: String,
         publicKey: Data
     ) throws -> OZExternalSigner {
         if publicKey.count != SmartAccountConstants.ed25519PublicKeySize {
-            throw ValidationException.invalidInput(
+            throw SmartAccountValidationException.invalidInput(
                 field: "publicKey",
                 reason: "Ed25519 public key must be \(SmartAccountConstants.ed25519PublicKeySize) bytes, got: \(publicKey.count)"
             )
@@ -277,7 +277,7 @@ public struct OZExternalSigner: OZSmartAccountSigner, Equatable, Hashable {
 /// Determines how a Smart Account transaction is submitted to the network.
 ///
 /// By default, the SDK submits via the relayer when one is configured and falls back to
-/// direct RPC submission otherwise. Pass an explicit `SubmissionMethod` to a transaction
+/// direct RPC submission otherwise. Pass an explicit `OZSubmissionMethod` to a transaction
 /// method's `forceMethod` parameter to override this default for a single call.
 ///
 /// Example:
@@ -289,7 +289,7 @@ public struct OZExternalSigner: OZSmartAccountSigner, Equatable, Hashable {
 ///     forceMethod: .rpc
 /// )
 /// ```
-public enum SubmissionMethod: Sendable {
+public enum OZSubmissionMethod: Sendable {
     case relayer
     case rpc
 }

@@ -1,5 +1,5 @@
 //
-//  SecItemShim.swift
+//  OZSecItemShim.swift
 //  stellarsdk
 //
 //  Copyright (c) 2026 Soneso. All rights reserved.
@@ -10,12 +10,12 @@ import Security
 
 /// Indirection layer over the Security framework's `SecItem*` C functions.
 ///
-/// `KeychainStorageAdapter` calls this protocol instead of `SecItemAdd` /
+/// `OZKeychainStorageAdapter` calls this protocol instead of `SecItemAdd` /
 /// `SecItemCopyMatching` / `SecItemUpdate` / `SecItemDelete` directly so unit
 /// tests can substitute a fake that returns deterministic `OSStatus` values
 /// (e.g. `errSecDuplicateItem` to drive the upsert fallback) without a real
 /// Keychain. `Sendable` so it can be held by the actor-isolated adapter.
-public protocol SecItemShim: Sendable {
+public protocol OZSecItemShim: Sendable {
 
     func add(query: CFDictionary, result: UnsafeMutablePointer<CFTypeRef?>?) -> OSStatus
     func copyMatching(query: CFDictionary, result: UnsafeMutablePointer<CFTypeRef?>?) -> OSStatus
@@ -23,9 +23,9 @@ public protocol SecItemShim: Sendable {
     func delete(query: CFDictionary) -> OSStatus
 }
 
-/// Default `SecItemShim` conformance that forwards every call to the
+/// Default `OZSecItemShim` conformance that forwards every call to the
 /// Security framework's C functions unchanged.
-public struct RealSecItemShim: SecItemShim {
+public struct OZRealSecItemShim: OZSecItemShim {
 
     public init() {}
 

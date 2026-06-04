@@ -88,11 +88,11 @@ final class OZSmartAccountKitTests: XCTestCase {
         networkPassphrase: String? = nil,
         accountWasmHash: String? = nil,
         webauthnVerifierAddress: String? = nil,
-        storage: StorageAdapter? = nil,
+        storage: OZStorageAdapter? = nil,
         relayerUrl: String? = nil,
         indexerUrl: String? = nil,
         deployerKeypair: KeyPair? = nil,
-        externalWallet: ExternalWalletAdapter? = nil
+        externalWallet: OZExternalWalletAdapter? = nil
     ) throws -> OZSmartAccountConfig {
         return try OZSmartAccountConfig(
             rpcUrl: rpcUrl ?? validRpcUrl,
@@ -102,7 +102,7 @@ final class OZSmartAccountKitTests: XCTestCase {
             deployerKeypair: deployerKeypair,
             relayerUrl: relayerUrl,
             indexerUrl: indexerUrl,
-            storage: storage ?? InMemoryStorageAdapter(),
+            storage: storage ?? OZInMemoryStorageAdapter(),
             externalWallet: externalWallet
         )
     }
@@ -162,7 +162,7 @@ final class OZSmartAccountKitTests: XCTestCase {
                 webauthnVerifierAddress: validVerifier
             )
         ) { error in
-            XCTAssertTrue(error is ConfigurationException.MissingConfig)
+            XCTAssertTrue(error is SmartAccountConfigurationException.MissingConfig)
         }
     }
 
@@ -175,7 +175,7 @@ final class OZSmartAccountKitTests: XCTestCase {
                 webauthnVerifierAddress: validVerifier
             )
         ) { error in
-            XCTAssertTrue(error is ConfigurationException.MissingConfig)
+            XCTAssertTrue(error is SmartAccountConfigurationException.MissingConfig)
         }
     }
 
@@ -188,7 +188,7 @@ final class OZSmartAccountKitTests: XCTestCase {
                 webauthnVerifierAddress: validVerifier
             )
         ) { error in
-            XCTAssertTrue(error is ConfigurationException.MissingConfig)
+            XCTAssertTrue(error is SmartAccountConfigurationException.MissingConfig)
         }
     }
 
@@ -202,7 +202,7 @@ final class OZSmartAccountKitTests: XCTestCase {
                 webauthnVerifierAddress: badAddress
             )
         ) { error in
-            XCTAssertTrue(error is ConfigurationException.InvalidConfig)
+            XCTAssertTrue(error is SmartAccountConfigurationException.InvalidConfig)
         }
     }
 
@@ -216,12 +216,12 @@ final class OZSmartAccountKitTests: XCTestCase {
                 webauthnVerifierAddress: badAddress
             )
         ) { error in
-            XCTAssertTrue(error is ConfigurationException.InvalidConfig)
+            XCTAssertTrue(error is SmartAccountConfigurationException.InvalidConfig)
         }
     }
 
     func testKitInitialization_customStorageAdapter() throws {
-        let customStorage = InMemoryStorageAdapter()
+        let customStorage = OZInMemoryStorageAdapter()
         let config = try makeConfig(storage: customStorage)
         let kit = OZSmartAccountKit.create(config: config)
 
@@ -311,11 +311,11 @@ final class OZSmartAccountKitTests: XCTestCase {
     // ========================================================================
 
     func testKitDisconnect() async throws {
-        let storage = InMemoryStorageAdapter()
+        let storage = OZInMemoryStorageAdapter()
         let config = try makeConfig(storage: storage)
         let kit = OZSmartAccountKit.create(config: config)
 
-        let session = StoredSession(
+        let session = OZStoredSession(
             credentialId: testCredentialId,
             contractId: testContractId,
             connectedAt: 1_700_000_000_000,
@@ -326,7 +326,7 @@ final class OZSmartAccountKitTests: XCTestCase {
         kit.setConnectedState(credentialId: testCredentialId, contractId: testContractId)
         XCTAssertTrue(kit.isConnected)
 
-        let recorder = TestRecorder<SmartAccountEvent>()
+        let recorder = TestRecorder<OZSmartAccountEvent>()
         kit.events.on(.walletDisconnected) { event in
             recorder.append(event)
         }
@@ -350,7 +350,7 @@ final class OZSmartAccountKitTests: XCTestCase {
         let config = try makeConfig()
         let kit = OZSmartAccountKit.create(config: config)
 
-        let recorder = TestRecorder<SmartAccountEvent>()
+        let recorder = TestRecorder<OZSmartAccountEvent>()
         kit.events.on(.walletDisconnected) { event in
             recorder.append(event)
         }
@@ -366,8 +366,8 @@ final class OZSmartAccountKitTests: XCTestCase {
         let kit = OZSmartAccountKit.create(config: config)
 
         XCTAssertThrowsError(try kit.requireConnected()) { error in
-            XCTAssertTrue(error is WalletException.NotConnected)
-            let walletError = error as? WalletException.NotConnected
+            XCTAssertTrue(error is SmartAccountWalletException.NotConnected)
+            let walletError = error as? SmartAccountWalletException.NotConnected
             XCTAssertEqual(
                 walletError?.message,
                 "No wallet connected. Call createWallet() or connectWallet() first."
@@ -646,7 +646,7 @@ final class OZSmartAccountKitTests: XCTestCase {
             let mockRelayer = try MockOZRelayerClient()
             let kit = OZSmartAccountKit(
                 config: config,
-                storage: InMemoryStorageAdapter(),
+                storage: OZInMemoryStorageAdapter(),
                 sorobanServer: SorobanServer(endpoint: config.rpcUrl),
                 relayerClient: mockRelayer,
                 indexerClient: mockIndexer

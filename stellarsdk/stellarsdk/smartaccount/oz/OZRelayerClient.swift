@@ -269,7 +269,7 @@ public class OZRelayerClient: @unchecked Sendable {
     ///     invalidated on `close()`. When an injected session is supplied,
     ///     the redirect-handling policy of that session is the caller's
     ///     responsibility.
-    /// - Throws: `ConfigurationException.InvalidConfig` when the URL is blank or
+    /// - Throws: `SmartAccountConfigurationException.InvalidConfig` when the URL is blank or
     ///   does not satisfy the HTTPS / localhost constraint.
     public init(
         relayerUrl: String,

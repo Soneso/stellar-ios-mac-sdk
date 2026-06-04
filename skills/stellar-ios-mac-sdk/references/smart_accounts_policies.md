@@ -51,7 +51,7 @@ Smart Account (C-address)
 
 When a transaction runs, the contract picks the rules whose context type matches the invocation: specific-type rules (`callContract`, `createContract`) are evaluated first, and the `defaultRule` is the fallback. A rule passes when its signers have signed and every one of its policies returns success.
 
-**Single-passkey vs multi-signer.** Every state-changing manager method takes an optional `selectedSigners: [SelectedSigner]` parameter (default `[]`):
+**Single-passkey vs multi-signer.** Every state-changing manager method takes an optional `selectedSigners: [OZSelectedSigner]` parameter (default `[]`):
 
 - `selectedSigners: []` (default) — single-signer mode. The operation is authorized by the connected passkey alone (one biometric prompt). Requires a `webauthnProvider` in config.
 - `selectedSigners: [...]` (non-empty) — multi-signer mode. The operation routes through the multi-signer ceremony coordinator, collecting a signature from every listed signer. Used when a rule needs a threshold `> 1`, or when collecting signatures from separate devices/users. The connected passkey is NOT added implicitly — include it explicitly if it should sign. See [Multi-Signer Operations](#multi-signer-operations).
@@ -101,24 +101,24 @@ Rule limits: `OZConstants.maxSigners` (15) signers, `OZConstants.maxPolicies` (5
 - Delegated signers (Stellar `G…` accounts or `C…` contracts, authorized through the host's built-in `require_auth`).
 - Ed25519 signers (32-byte Ed25519 keys, verified through a verifier contract).
 
-Every state-changing method below takes `selectedSigners: [SelectedSigner] = []` and `forceMethod: SubmissionMethod? = nil`.
+Every state-changing method below takes `selectedSigners: [OZSelectedSigner] = []` and `forceMethod: OZSubmissionMethod? = nil`.
 
 ### addNewPasskeySigner — register and add in one step
 
-Runs a WebAuthn registration ceremony, persists the new credential as `pending` in storage, emits `SmartAccountEvent.credentialCreated`, then submits the on-chain `add_signer` call by delegating to `addPasskey(...)`. Requires `webauthnProvider` in config.
+Runs a WebAuthn registration ceremony, persists the new credential as `pending` in storage, emits `OZSmartAccountEvent.credentialCreated`, then submits the on-chain `add_signer` call by delegating to `addPasskey(...)`. Requires `webauthnProvider` in config.
 
 ```swift
 public func addNewPasskeySigner(
     contextRuleId: UInt32,
     userName: String,
-    selectedSigners: [SelectedSigner] = [],
-    forceMethod: SubmissionMethod? = nil
-) async throws -> AddPasskeySignerResult
+    selectedSigners: [OZSelectedSigner] = [],
+    forceMethod: OZSubmissionMethod? = nil
+) async throws -> OZAddPasskeySignerResult
 
-public struct AddPasskeySignerResult: Sendable, Hashable {
+public struct OZAddPasskeySignerResult: Sendable, Hashable {
     public let credentialId: String          // Base64URL, unpadded
     public let publicKey: Data               // 65-byte uncompressed secp256r1
-    public let transactionResult: TransactionResult
+    public let transactionResult: OZTransactionResult
 }
 ```
 
@@ -150,9 +150,9 @@ public func addPasskey(
     contextRuleId: UInt32,
     publicKey: Data,            // 65 bytes, first byte 0x04
     credentialId: Data,         // raw bytes, NOT Base64URL
-    selectedSigners: [SelectedSigner] = [],
-    forceMethod: SubmissionMethod? = nil
-) async throws -> TransactionResult
+    selectedSigners: [OZSelectedSigner] = [],
+    forceMethod: OZSubmissionMethod? = nil
+) async throws -> OZTransactionResult
 ```
 
 ```swift
@@ -180,9 +180,9 @@ if !result.success { print("Failed: \(result.error ?? "")") }
 public func addDelegated(
     contextRuleId: UInt32,
     address: String,            // G-address (account) or C-address (contract)
-    selectedSigners: [SelectedSigner] = [],
-    forceMethod: SubmissionMethod? = nil
-) async throws -> TransactionResult
+    selectedSigners: [OZSelectedSigner] = [],
+    forceMethod: OZSubmissionMethod? = nil
+) async throws -> OZTransactionResult
 ```
 
 ```swift
@@ -199,7 +199,7 @@ let contractRes = try await kit.signerManager.addDelegated(
 )
 ```
 
-The signer authorizes through the host's built-in `require_auth`; no verifier contract is needed. An address that is neither a valid `G…` strkey nor a valid `C…` strkey throws `ValidationException.InvalidAddress`.
+The signer authorizes through the host's built-in `require_auth`; no verifier contract is needed. An address that is neither a valid `G…` strkey nor a valid `C…` strkey throws `SmartAccountValidationException.InvalidAddress`.
 
 ### addEd25519 — add an Ed25519 external signer
 
@@ -210,9 +210,9 @@ public func addEd25519(
     contextRuleId: UInt32,
     verifierAddress: String,    // C-address of the Ed25519 verifier
     publicKey: Data,            // 32 bytes
-    selectedSigners: [SelectedSigner] = [],
-    forceMethod: SubmissionMethod? = nil
-) async throws -> TransactionResult
+    selectedSigners: [OZSelectedSigner] = [],
+    forceMethod: OZSubmissionMethod? = nil
+) async throws -> OZTransactionResult
 ```
 
 ```swift
@@ -230,15 +230,15 @@ let result = try await kit.signerManager.addEd25519(
 
 ### removeSigner — by on-chain id
 
-Signer ids are assigned by the contract on insertion and surface on `ParsedContextRule.signerIds`, positionally aligned with `ParsedContextRule.signers`.
+Signer ids are assigned by the contract on insertion and surface on `OZParsedContextRule.signerIds`, positionally aligned with `OZParsedContextRule.signers`.
 
 ```swift
 public func removeSigner(
     contextRuleId: UInt32,
     signerId: UInt32,
-    selectedSigners: [SelectedSigner] = [],
-    forceMethod: SubmissionMethod? = nil
-) async throws -> TransactionResult
+    selectedSigners: [OZSelectedSigner] = [],
+    forceMethod: OZSubmissionMethod? = nil
+) async throws -> OZTransactionResult
 ```
 
 ```swift
@@ -272,9 +272,9 @@ Distinct method name (Swift cannot cleanly overload `removeSigner` by argument t
 public func removeSignerBySigner(
     contextRuleId: UInt32,
     signer: any OZSmartAccountSigner,
-    selectedSigners: [SelectedSigner] = [],
-    forceMethod: SubmissionMethod? = nil
-) async throws -> TransactionResult
+    selectedSigners: [OZSelectedSigner] = [],
+    forceMethod: OZSubmissionMethod? = nil
+) async throws -> OZTransactionResult
 ```
 
 ```swift
@@ -286,7 +286,7 @@ _ = try await kit.signerManager.removeSignerBySigner(
 )
 ```
 
-Throws `ValidationException.InvalidInput` when the signer is not on the rule, or `ConfigurationException.InvalidConfig` when the manager was constructed without a context-rule parser (a non-default kit composition).
+Throws `SmartAccountValidationException.InvalidInput` when the signer is not on the rule, or `SmartAccountConfigurationException.InvalidConfig` when the manager was constructed without a context-rule parser (a non-default kit composition).
 
 ### Removing the last signer
 
@@ -348,7 +348,7 @@ let unique = OZSmartAccountBuilders.collectUniqueSigners(
 To also track which rules each unique signer belongs to, scan and key a dictionary by `OZSmartAccountBuilders.getSignerKey(signer:)`:
 
 ```swift
-var rulesByKey: [String: [ParsedContextRule]] = [:]
+var rulesByKey: [String: [OZParsedContextRule]] = [:]
 for rule in rules {
     for signer in rule.signers {
         let key = OZSmartAccountBuilders.getSignerKey(signer: signer)
@@ -376,10 +376,10 @@ for rule in rules {
 
 Every smart account deploys with one rule at `id = 0`: `contextType = .defaultRule`, signers `[initial passkey]`, no policies. The Default rule is the fallback — any operation that does not match a more specific rule goes through it. Add signers/policies to it freely, but do not remove it unless you have replaced it with a rule of equal or greater coverage; otherwise the account becomes unusable.
 
-### ContextRuleType
+### OZContextRuleType
 
 ```swift
-public enum ContextRuleType: Sendable, Hashable {
+public enum OZContextRuleType: Sendable, Hashable {
     case defaultRule
     case callContract(contractAddress: String)
     case createContract(wasmHash: Data)
@@ -397,12 +397,12 @@ createContract  ->  vec([Symbol("CreateContract"), Bytes(wasmHash)])
 ```
 
 ```swift
-// WRONG: ContextRuleType.callContract("CBCD...")
+// WRONG: OZContextRuleType.callContract("CBCD...")
 //   — the case has a labeled associated value
-// CORRECT: ContextRuleType.callContract(contractAddress: "CBCD...")
+// CORRECT: OZContextRuleType.callContract(contractAddress: "CBCD...")
 
-// WRONG: ContextRuleType.createContract(wasmHash: "abcd...")   — that is a String, not Data
-// CORRECT: ContextRuleType.createContract(wasmHash: wasmHashData)   // raw 32-byte Data
+// WRONG: OZContextRuleType.createContract(wasmHash: "abcd...")   — that is a String, not Data
+// CORRECT: OZContextRuleType.createContract(wasmHash: wasmHashData)   // raw 32-byte Data
 //   or use OZBuilders.createCreateContractContext(wasmHashHex:) to convert hex.
 ```
 
@@ -419,14 +419,14 @@ let createCtx2 = try OZBuilders.createCreateContractContext(wasmHash: wasmHash32
 
 ```swift
 public func addContextRule(
-    contextType: ContextRuleType,
+    contextType: OZContextRuleType,
     name: String,                          // metadata; non-empty
     validUntil: UInt32? = nil,             // Option<u32> ledger sequence; nil = non-expiring
     signers: [any OZSmartAccountSigner],
     policies: [String: SCValXDR] = [:],    // C-address -> install params
-    selectedSigners: [SelectedSigner] = [],
-    forceMethod: SubmissionMethod? = nil
-) async throws -> TransactionResult
+    selectedSigners: [OZSelectedSigner] = [],
+    forceMethod: OZSubmissionMethod? = nil
+) async throws -> OZTransactionResult
 ```
 
 The `policies` map key is the policy contract address (`C…`); the value is the install-param `SCValXDR`. The SDK sorts the top-level `policies` map by XDR-byte key order before submission to satisfy Soroban's `ScMap` ordering invariant. This map is the ONLY way to create a rule WITH a policy in one submission — the convenience methods on `kit.policyManager` cannot create a rule. See [Which install path to use](#which-install-path-to-use) for the install-param map shapes.
@@ -458,7 +458,7 @@ if result.success { print("Rule added, tx \(result.hash ?? "n/a")") }
 
 ```swift
 // WRONG: addContextRule(signers: [], policies: [:])
-//   -> ValidationException: a rule must have >= 1 signer OR >= 1 policy
+//   -> SmartAccountValidationException: a rule must have >= 1 signer OR >= 1 policy
 // CORRECT: supply at least one signer or one policy
 // WRONG: name longer than 20 UTF-8 bytes  -> contract error 3015 NameTooLong
 // CORRECT: name <= 20 UTF-8 bytes
@@ -466,12 +466,12 @@ if result.success { print("Rule added, tx \(result.hash ?? "n/a")") }
 // CORRECT: validUntil is a future ledger, or nil
 ```
 
-### ParsedContextRule
+### OZParsedContextRule
 
 ```swift
-public struct ParsedContextRule: Sendable, Hashable {
+public struct OZParsedContextRule: Sendable, Hashable {
     public let id: UInt32
-    public let contextType: ContextRuleType
+    public let contextType: OZContextRuleType
     public let name: String
     public let signers: [any OZSmartAccountSigner]   // positionally aligned with signerIds
     public let signerIds: [UInt32]
@@ -484,8 +484,8 @@ public struct ParsedContextRule: Sendable, Hashable {
 ### Listing and reading rules
 
 ```swift
-public func listContextRules() async throws -> [ParsedContextRule]
-public func listContextRules(maxScanId: UInt32? = nil) async throws -> [ParsedContextRule]
+public func listContextRules() async throws -> [OZParsedContextRule]
+public func listContextRules(maxScanId: UInt32? = nil) async throws -> [OZParsedContextRule]
 public func getAllContextRules() async throws -> [SCValXDR]
 public func getAllContextRules(maxScanId: UInt32? = nil) async throws -> [SCValXDR]
 public func getContextRule(id: UInt32) async throws -> SCValXDR
@@ -511,9 +511,9 @@ Changes a rule's display name only; names do not affect matching or enforcement.
 public func updateName(
     id: UInt32,
     name: String,                          // non-empty
-    selectedSigners: [SelectedSigner] = [],
-    forceMethod: SubmissionMethod? = nil
-) async throws -> TransactionResult
+    selectedSigners: [OZSelectedSigner] = [],
+    forceMethod: OZSubmissionMethod? = nil
+) async throws -> OZTransactionResult
 ```
 
 ```swift
@@ -528,16 +528,16 @@ Sets or clears a rule's expiration ledger. Pass `nil` to remove expiration. On c
 public func updateValidUntil(
     id: UInt32,
     validUntil: UInt32?,
-    selectedSigners: [SelectedSigner] = [],
-    forceMethod: SubmissionMethod? = nil
-) async throws -> TransactionResult
+    selectedSigners: [OZSelectedSigner] = [],
+    forceMethod: OZSubmissionMethod? = nil
+) async throws -> OZTransactionResult
 ```
 
 ```swift
 // Expire a rule in roughly one week. Read the current ledger from the kit-owned
 // server; getLatestLedger() returns a Result-style enum, not a thrown value.
 guard case .success(let latest) = await kit.sorobanServer.getLatestLedger() else {
-    throw TransactionException.simulationFailed(reason: "could not read latest ledger")
+    throw SmartAccountTransactionException.simulationFailed(reason: "could not read latest ledger")
 }
 let inAWeek = latest.sequence + UInt32(7 * StellarProtocolConstants.ledgersPerDay)
 _ = try await kit.contextRuleManagerConcrete.updateValidUntil(id: 1, validUntil: inAWeek)
@@ -553,9 +553,9 @@ The contract skips a rule once its `validUntil` is past; evaluation falls back t
 ```swift
 public func removeContextRule(
     id: UInt32,
-    selectedSigners: [SelectedSigner] = [],
-    forceMethod: SubmissionMethod? = nil
-) async throws -> TransactionResult
+    selectedSigners: [OZSelectedSigner] = [],
+    forceMethod: OZSubmissionMethod? = nil
+) async throws -> OZTransactionResult
 ```
 
 ```swift
@@ -601,7 +601,7 @@ For signer ROTATION specifically, the ordering is add-new THEN remove-old (never
 
 `kit.policyManager` (`OZPolicyManager`) installs and removes policies on a context rule. A policy is a separate, already-deployed Soroban contract; one deployment serves every smart account on the network. You supply the policy `C-address` and per-account install parameters. A rule may carry up to `OZConstants.maxPolicies` (5) policies, and every attached policy must be satisfied.
 
-All state-changing methods take `selectedSigners: [SelectedSigner] = []` and `forceMethod: SubmissionMethod? = nil`.
+All state-changing methods take `selectedSigners: [OZSelectedSigner] = []` and `forceMethod: OZSubmissionMethod? = nil`.
 
 ### Which install path to use
 
@@ -617,13 +617,13 @@ All state-changing methods take `selectedSigners: [SelectedSigner] = []` and `fo
 // WRONG: trying to create a rule with a policy via a convenience method
 //   — addSimpleThreshold/addWeightedThreshold/addSpendingLimit only attach to an
 //     existing rule; they cannot create the rule. There is no addContextRule
-//     variant that takes a PolicyInstallParams.
+//     variant that takes an OZPolicyInstallParams.
 // CORRECT: build the install-param SCVal yourself and pass it in the
 //   addContextRule(policies:) map (one submission), OR addContextRule first then
 //   a convenience method (two submissions).
 ```
 
-The `addContextRule(policies:)` value and `addPolicy(installParams:)` argument are both a raw install-param `SCValXDR`. `PolicyInstallParams.toScVal()` is `internal` (see [PolicyInstallParams](#policyinstallparams-encoder-is-internal)), so for `addContextRule` you build the `SCValXDR` directly. The install-param map shapes (inner keys ascending by symbol, see source `OZPolicyManager.swift` `PolicyInstallParams.toScVal()` ~line 171):
+The `addContextRule(policies:)` value and `addPolicy(installParams:)` argument are both a raw install-param `SCValXDR`. `OZPolicyInstallParams.toScVal()` is `internal` (see [OZPolicyInstallParams](#ozpolicyinstallparams-encoder-is-internal)), so for `addContextRule` you build the `SCValXDR` directly. The install-param map shapes (inner keys ascending by symbol, see source `OZPolicyManager.swift` `OZPolicyInstallParams.toScVal()` ~line 171):
 
 ```
 SimpleThreshold     ->  map{ Symbol("threshold"): U32 }
@@ -684,7 +684,7 @@ Cross-reference the address against the network you target: using a testnet addr
 //   "C...0..." / "C...1..." / "C...8..." / "C...9..."
 //   — contract addresses use base32 alphabet A-Z + 2-7 only; 0/1/8/9 are NOT
 //     in the alphabet, so the strkey fails to decode and the call throws
-//     ValidationException.InvalidAddress (or a silent contract-not-found).
+//     SmartAccountValidationException.InvalidAddress (or a silent contract-not-found).
 // CORRECT: use a real deployed policy C-address, or synthesise placeholders
 //   from the legal alphabet A-Z and 2-7 only.
 ```
@@ -698,9 +698,9 @@ public func addSimpleThreshold(
     contextRuleId: UInt32,
     policyAddress: String,                 // C-address of the SimpleThreshold policy
     threshold: UInt32,                     // > 0
-    selectedSigners: [SelectedSigner] = [],
-    forceMethod: SubmissionMethod? = nil
-) async throws -> TransactionResult
+    selectedSigners: [OZSelectedSigner] = [],
+    forceMethod: OZSubmissionMethod? = nil
+) async throws -> OZTransactionResult
 ```
 
 ```swift
@@ -719,19 +719,19 @@ let result = try await kit.policyManager.addSimpleThreshold(
 
 ### addWeightedThreshold — weighted voting
 
-Each signer has a weight; the sum of approving weights must be `>= threshold`. Signer identity is compared by SCVal bytes, so each `SignerWeightEntry.signer` must match exactly what is stored on the rule.
+Each signer has a weight; the sum of approving weights must be `>= threshold`. Signer identity is compared by SCVal bytes, so each `OZSignerWeightEntry.signer` must match exactly what is stored on the rule.
 
 ```swift
 public func addWeightedThreshold(
     contextRuleId: UInt32,
     policyAddress: String,
-    signerWeights: [SignerWeightEntry],    // non-empty
+    signerWeights: [OZSignerWeightEntry],    // non-empty
     threshold: UInt32,
-    selectedSigners: [SelectedSigner] = [],
-    forceMethod: SubmissionMethod? = nil
-) async throws -> TransactionResult
+    selectedSigners: [OZSelectedSigner] = [],
+    forceMethod: OZSubmissionMethod? = nil
+) async throws -> OZTransactionResult
 
-public struct SignerWeightEntry: Sendable {
+public struct OZSignerWeightEntry: Sendable {
     public let signer: any OZSmartAccountSigner
     public let weight: UInt32               // > 0
     public init(signer: any OZSmartAccountSigner, weight: UInt32)
@@ -747,16 +747,16 @@ let result = try await kit.policyManager.addWeightedThreshold(
     contextRuleId: 1,
     policyAddress: "CWEIGHTEDTHRESHOLDPOLICYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
     signerWeights: [
-        SignerWeightEntry(signer: admin, weight: 50),
-        SignerWeightEntry(signer: lead,  weight: 30),
-        SignerWeightEntry(signer: dev,   weight: 20)
+        OZSignerWeightEntry(signer: admin, weight: 50),
+        OZSignerWeightEntry(signer: lead,  weight: 30),
+        OZSignerWeightEntry(signer: dev,   weight: 20)
     ],
     threshold: 80    // admin+lead passes; admin+dev passes; lead+dev does NOT
 )
 ```
 
 ```swift
-// WRONG: a SignerWeightEntry.signer that is not also on the rule's signers list
+// WRONG: an OZSignerWeightEntry.signer that is not also on the rule's signers list
 //   — even if weights sum to threshold, that signer cannot sign and the policy
 //     cannot pass. Add the signer to the rule first (addDelegated / addPasskey),
 //     or include it in the rule's signers at creation time.
@@ -777,9 +777,9 @@ public func addSpendingLimit(
     policyAddress: String,
     spendingLimit: String,                 // decimal XLM-style string, e.g. "1000" or "10.5"
     periodLedgers: UInt32,                  // window in ledgers (~5 s each)
-    selectedSigners: [SelectedSigner] = [],
-    forceMethod: SubmissionMethod? = nil
-) async throws -> TransactionResult
+    selectedSigners: [OZSelectedSigner] = [],
+    forceMethod: OZSubmissionMethod? = nil
+) async throws -> OZTransactionResult
 ```
 
 Ledger-count constants (no week constant — compute it):
@@ -826,7 +826,7 @@ _ = try await kit.policyManager.addSpendingLimit(
 // CORRECT: install on a callContract(target-token-SAC) rule
 ```
 
-For an amount whose stroops value exceeds `Int64.max`, build the params directly through `PolicyInstallParams.spendingLimit(spendingLimit:periodLedgers:)` with a stroops-denominated decimal-integer string — but note its `toScVal()` is internal, so route it through the generic `addPolicy(...)` instead (see below).
+For an amount whose stroops value exceeds `Int64.max`, build the params directly through `OZPolicyInstallParams.spendingLimit(spendingLimit:periodLedgers:)` with a stroops-denominated decimal-integer string — but note its `toScVal()` is internal, so route it through the generic `addPolicy(...)` instead (see below).
 
 ### addPolicy — generic
 
@@ -837,9 +837,9 @@ public func addPolicy(
     contextRuleId: UInt32,
     policyAddress: String,
     installParams: SCValXDR,               // policy-specific SCVal map
-    selectedSigners: [SelectedSigner] = [],
-    forceMethod: SubmissionMethod? = nil
-) async throws -> TransactionResult
+    selectedSigners: [OZSelectedSigner] = [],
+    forceMethod: OZSubmissionMethod? = nil
+) async throws -> OZTransactionResult
 ```
 
 ```swift
@@ -868,21 +868,21 @@ Inner map keys must be ordered by their XDR-byte encoding (lexicographic by symb
 public static func sortMapByKeyXdr(_ entries: [SCMapEntryXDR]) -> [SCMapEntryXDR]
 ```
 
-### PolicyInstallParams (encoder is internal)
+### OZPolicyInstallParams (encoder is internal)
 
-`PolicyInstallParams` is a public enum, but its `toScVal()` encoder is `internal` — consumers cannot call it. The three convenience methods (`addSimpleThreshold`, `addWeightedThreshold`, `addSpendingLimit`) build and encode the matching `PolicyInstallParams` value for you.
+`OZPolicyInstallParams` is a public enum, but its `toScVal()` encoder is `internal` — consumers cannot call it. The three convenience methods (`addSimpleThreshold`, `addWeightedThreshold`, `addSpendingLimit`) build and encode the matching `OZPolicyInstallParams` value for you.
 
 ```swift
-public enum PolicyInstallParams: Sendable {
+public enum OZPolicyInstallParams: Sendable {
     case simpleThreshold(threshold: UInt32)
-    case weightedThreshold(signerWeights: [SignerWeightEntry], threshold: UInt32)
+    case weightedThreshold(signerWeights: [OZSignerWeightEntry], threshold: UInt32)
     case spendingLimit(spendingLimit: String, periodLedgers: UInt32)
 }
 ```
 
 ```swift
-// WRONG: kit.policyManager.addPolicy(installParams: PolicyInstallParams.simpleThreshold(threshold: 2))
-//   — addPolicy takes an SCValXDR, not a PolicyInstallParams; toScVal() is internal.
+// WRONG: kit.policyManager.addPolicy(installParams: OZPolicyInstallParams.simpleThreshold(threshold: 2))
+//   — addPolicy takes an SCValXDR, not an OZPolicyInstallParams; toScVal() is internal.
 // CORRECT: kit.policyManager.addSimpleThreshold(contextRuleId: 0, policyAddress: "...", threshold: 2)
 //   or build the SCValXDR yourself and call addPolicy(installParams:).
 ```
@@ -891,15 +891,15 @@ public enum PolicyInstallParams: Sendable {
 
 ### removePolicy — by id
 
-Policy ids are assigned by the contract on install and align positionally with `ParsedContextRule.policies`.
+Policy ids are assigned by the contract on install and align positionally with `OZParsedContextRule.policies`.
 
 ```swift
 public func removePolicy(
     contextRuleId: UInt32,
     policyId: UInt32,
-    selectedSigners: [SelectedSigner] = [],
-    forceMethod: SubmissionMethod? = nil
-) async throws -> TransactionResult
+    selectedSigners: [OZSelectedSigner] = [],
+    forceMethod: OZSubmissionMethod? = nil
+) async throws -> OZTransactionResult
 ```
 
 ```swift
@@ -917,9 +917,9 @@ Distinct method name (same overload-resolution reason as `removeSignerBySigner`)
 public func removePolicyByAddress(
     contextRuleId: UInt32,
     policyAddress: String,
-    selectedSigners: [SelectedSigner] = [],
-    forceMethod: SubmissionMethod? = nil
-) async throws -> TransactionResult
+    selectedSigners: [OZSelectedSigner] = [],
+    forceMethod: OZSubmissionMethod? = nil
+) async throws -> OZTransactionResult
 ```
 
 ```swift
@@ -929,7 +929,7 @@ _ = try await kit.policyManager.removePolicyByAddress(
 )
 ```
 
-Throws `ValidationException` when the policy is not on the rule.
+Throws `SmartAccountValidationException` when the policy is not on the rule.
 
 ### Changing only a threshold — set_threshold fast path
 
@@ -986,15 +986,15 @@ _ = try await kit.multiSignerManager.multiSignerExecuteAndSubmit(
 - **`multiSignerContractCall`** — arbitrary contract call authorized directly under a `callContract(target)` rule.
 - **`multiSignerExecuteAndSubmit`** — arbitrary contract call routed through the smart account's own `execute(target, target_fn, target_args)` entry point; the target contract sees the smart account as the invoker.
 
-### SelectedSigner
+### OZSelectedSigner
 
-Explicitly list every signer that will sign. There is no implicit "connected passkey" — include it if it should sign. `SelectedSigner` is declared alongside `PolicyInstallParams`.
+Explicitly list every signer that will sign. There is no implicit "connected passkey" — include it if it should sign. `OZSelectedSigner` is declared alongside `OZPolicyInstallParams`.
 
 ```swift
-public enum SelectedSigner: Sendable, Hashable {
+public enum OZSelectedSigner: Sendable, Hashable {
     case passkey(
         credentialId: String,             // Base64URL credential id
-        credentialIdBytes: Data? = nil,   // raw bytes -> AllowCredential hint
+        credentialIdBytes: Data? = nil,   // raw bytes -> WebAuthnAllowCredential hint
         keyData: Data? = nil,             // 65-byte pubkey || credentialId
         transports: [String]? = nil       // e.g. ["internal", "hybrid"]
     )
@@ -1011,43 +1011,43 @@ Collection semantics: signatures are collected sequentially in the order supplie
 
 ```swift
 // WRONG: a passkey selector with no keyData in a multi-signer call
-let bad = SelectedSigner.passkey(credentialId: savedCredId)   // keyData == nil
+let bad = OZSelectedSigner.passkey(credentialId: savedCredId)   // keyData == nil
 // -> fails at runtime: external signers are reconstructed outside the per-entry loop.
 
 // CORRECT: always supply keyData from the on-chain signer record
-let good = SelectedSigner.passkey(
+let good = OZSelectedSigner.passkey(
     credentialId: savedCredId,                            // Base64URL
     credentialIdBytes: try Data(base64URLEncoded: savedCredId),  // optional routing hint (throwing init)
-    keyData: onChainPasskeySigner.keyData,                // from ParsedContextRule signer
+    keyData: onChainPasskeySigner.keyData,                // from OZParsedContextRule signer
     transports: savedCredential.transports                // nil is fine
 )
 ```
 
 ```swift
-// WRONG: SelectedSigner.wallet(accountId: "CBCD...")   — wallet signers are G-addresses
-// CORRECT: SelectedSigner.wallet(accountId: "GA7Q...")
+// WRONG: OZSelectedSigner.wallet(accountId: "CBCD...")   — wallet signers are G-addresses
+// CORRECT: OZSelectedSigner.wallet(accountId: "GA7Q...")
 ```
 
 > **Empty list = single-passkey fast path.** Routing is by emptiness only: `selectedSigners: []` runs the single-signer path (connected passkey, one prompt); any NON-empty list routes through the multi-signer pipeline. A list containing ONLY the connected passkey still routes to multi-signer and requires `keyData` per entry — it does not collapse back to the fast path.
 
 ```swift
 // WRONG: selecting just the connected passkey as a one-element list
-let bad: [SelectedSigner] = [.passkey(credentialId: kit.credentialId!)]   // routes to multi-signer; keyData nil -> fails
+let bad: [OZSelectedSigner] = [.passkey(credentialId: kit.credentialId!)]   // routes to multi-signer; keyData nil -> fails
 _ = try await kit.signerManager.addDelegated(contextRuleId: 0, address: g, selectedSigners: bad)
 // CORRECT: for a connected-passkey-only operation, pass the empty default.
 _ = try await kit.signerManager.addDelegated(contextRuleId: 0, address: g)   // selectedSigners: [] (default)
 ```
 
-### Building SelectedSigner lists from on-chain rules
+### Building OZSelectedSigner lists from on-chain rules
 
-Read `ParsedContextRule.signers` and map each on-chain signer to the matching `SelectedSigner` case. Discriminate by concrete type and, for `OZExternalSigner`, by `keyData.count` against the live constants (never hard-code 65/32): `> secp256r1PublicKeySize` (65) is a passkey (keyData is `pubkey || credentialId`); `== ed25519PublicKeySize` (32) is an Ed25519 key. A passkey's `keyData` MUST be passed non-nil; recover its credential id with `OZSmartAccountBuilders.getCredentialIdStringFromSigner` / `getCredentialIdFromSigner` and its `transports` via `kit.credentialManagerConcrete.getCredential(credentialId:)?.transports`.
+Read `OZParsedContextRule.signers` and map each on-chain signer to the matching `OZSelectedSigner` case. Discriminate by concrete type and, for `OZExternalSigner`, by `keyData.count` against the live constants (never hard-code 65/32): `> secp256r1PublicKeySize` (65) is a passkey (keyData is `pubkey || credentialId`); `== ed25519PublicKeySize` (32) is an Ed25519 key. A passkey's `keyData` MUST be passed non-nil; recover its credential id with `OZSmartAccountBuilders.getCredentialIdStringFromSigner` / `getCredentialIdFromSigner` and its `transports` via `kit.credentialManagerConcrete.getCredential(credentialId:)?.transports`.
 
 ```swift
 let rule = try await kit.contextRuleManagerConcrete
     .listContextRules()
     .first { $0.id == contextRuleId }!
 
-var selected: [SelectedSigner] = []
+var selected: [OZSelectedSigner] = []
 for signer in rule.signers {
     if let ext = signer as? OZExternalSigner {
         if ext.keyData.count == SmartAccountConstants.ed25519PublicKeySize {
@@ -1088,20 +1088,20 @@ public func multiSignerTransfer(
     tokenContract: String,
     recipient: String,
     amount: String,                       // decimal string, NOT stroops
-    selectedSigners: [SelectedSigner],
-    forceMethod: SubmissionMethod? = nil,
-    resolveContextRuleIds: ResolveContextRuleIds? = nil
-) async throws -> TransactionResult
+    selectedSigners: [OZSelectedSigner],
+    forceMethod: OZSubmissionMethod? = nil,
+    resolveContextRuleIds: OZResolveContextRuleIds? = nil
+) async throws -> OZTransactionResult
 ```
 
 Example — a 2-of-2 transfer with the connected passkey plus an external wallet:
 
 ```swift
-let passkey = SelectedSigner.passkey(
+let passkey = OZSelectedSigner.passkey(
     credentialId: kit.credentialId!,
     keyData: onChainPasskeySigner.keyData       // non-nil
 )
-let wallet = SelectedSigner.wallet(accountId: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ")
+let wallet = OZSelectedSigner.wallet(accountId: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ")
 
 let result = try await kit.multiSignerManager.multiSignerTransfer(
     tokenContract: "CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC",
@@ -1121,10 +1121,10 @@ public func multiSignerContractCall(
     target: String,                       // C-address
     targetFn: String,
     targetArgs: [SCValXDR] = [],
-    selectedSigners: [SelectedSigner],
-    forceMethod: SubmissionMethod? = nil,
-    resolveContextRuleIds: ResolveContextRuleIds? = nil
-) async throws -> TransactionResult
+    selectedSigners: [OZSelectedSigner],
+    forceMethod: OZSubmissionMethod? = nil,
+    resolveContextRuleIds: OZResolveContextRuleIds? = nil
+) async throws -> OZTransactionResult
 ```
 
 ```swift
@@ -1153,10 +1153,10 @@ public func multiSignerExecuteAndSubmit(
     target: String,
     targetFn: String,
     targetArgs: [SCValXDR] = [],
-    selectedSigners: [SelectedSigner],
-    forceMethod: SubmissionMethod? = nil,
-    resolveContextRuleIds: ResolveContextRuleIds? = nil
-) async throws -> TransactionResult
+    selectedSigners: [OZSelectedSigner],
+    forceMethod: OZSubmissionMethod? = nil,
+    resolveContextRuleIds: OZResolveContextRuleIds? = nil
+) async throws -> OZTransactionResult
 ```
 
 ```swift
@@ -1179,16 +1179,16 @@ Shared signing pipeline behind the three entry points. Validates the signer set 
 ```swift
 public func submitWithMultipleSigners(
     hostFunction: HostFunctionXDR,
-    selectedSigners: [SelectedSigner],
-    forceMethod: SubmissionMethod? = nil,
-    resolveContextRuleIds: ResolveContextRuleIds? = nil
-) async throws -> TransactionResult
+    selectedSigners: [OZSelectedSigner],
+    forceMethod: OZSubmissionMethod? = nil,
+    resolveContextRuleIds: OZResolveContextRuleIds? = nil
+) async throws -> OZTransactionResult
 ```
 
-### ResolveContextRuleIds (advanced)
+### OZResolveContextRuleIds (advanced)
 
 ```swift
-public typealias ResolveContextRuleIds = @Sendable (
+public typealias OZResolveContextRuleIds = @Sendable (
     _ entry: SorobanAuthorizationEntryXDR,
     _ index: Int
 ) async throws -> [UInt32]
@@ -1198,7 +1198,7 @@ The pipeline picks which rule ids each auth entry should invoke automatically, u
 
 ```swift
 // Force every auth entry to use rule 2
-let forceRule2: ResolveContextRuleIds = { _, _ in [2] }
+let forceRule2: OZResolveContextRuleIds = { _, _ in [2] }
 _ = try await kit.multiSignerManager.multiSignerTransfer(
     tokenContract: tokenSac,
     recipient: recipient,
@@ -1208,15 +1208,15 @@ _ = try await kit.multiSignerManager.multiSignerTransfer(
 )
 ```
 
-When auto-resolution cannot find a unique rule it throws `ValidationException.InvalidInput`, typically with one of: no rule matches the context type (add a matching rule or a Default), the selected signers match multiple rules (disambiguate with `resolveContextRuleIds`), or no single rule contains every selected signer (restrict the selection to one rule's signers or pass `resolveContextRuleIds`).
+When auto-resolution cannot find a unique rule it throws `SmartAccountValidationException.InvalidInput`, typically with one of: no rule matches the context type (add a matching rule or a Default), the selected signers match multiple rules (disambiguate with `resolveContextRuleIds`), or no single rule contains every selected signer (restrict the selection to one rule's signers or pass `resolveContextRuleIds`).
 
 ### External wallet and custody requirements
 
-`SelectedSigner.wallet` and `SelectedSigner.ed25519` signers resolve through the kit-owned `kit.externalSigners` (`OZExternalSignerManager`, a non-optional actor). Two custody models per signer kind:
+`OZSelectedSigner.wallet` and `OZSelectedSigner.ed25519` signers resolve through the kit-owned `kit.externalSigners` (`OZExternalSignerManager`, a non-optional actor). Two custody models per signer kind:
 
 | Signer | In-memory (runtime) | Adapter (kit construction) |
 |--------|---------------------|----------------------------|
-| Wallet (`G…`) | `await kit.externalSigners.addFromSecret(secretKey: "S...")` | `config.externalWallet: ExternalWalletAdapter` |
+| Wallet (`G…`) | `await kit.externalSigners.addFromSecret(secretKey: "S...")` | `config.externalWallet: OZExternalWalletAdapter` |
 | Ed25519 | `try kit.externalSigners.addEd25519FromRawKey(secretKeyBytes:verifierAddress:)` (sync, returns the 32-byte public key) | `config.externalEd25519Adapter: OZExternalEd25519SignerAdapter` |
 
 ```swift
@@ -1229,7 +1229,7 @@ let edPublicKey = try kit.externalSigners.addEd25519FromRawKey(
     secretKeyBytes: rawSeed32,            // exactly 32 bytes
     verifierAddress: ed25519Verifier
 )
-let edSigner = SelectedSigner.ed25519(verifierAddress: ed25519Verifier, publicKey: edPublicKey)
+let edSigner = OZSelectedSigner.ed25519(verifierAddress: ed25519Verifier, publicKey: edPublicKey)
 ```
 
 A wallet adapter (`config.externalWallet`) receives the Base64-encoded `HashIDPreimage::SorobanAuthorization` XDR, SHA-256-hashes it, Ed25519-signs it, and returns the 64-byte signature; the SDK assembles the signed auth entry.
@@ -1287,17 +1287,17 @@ let newCredBytes = reg.credentialId
 //    indexer) BEFORE this step — a fake contractId adds the fresh passkey to an
 //    attacker's contract.
 let connected = try await kit.walletOperations.connectWallet(
-    options: ConnectWalletOptions(
+    options: OZConnectWalletOptions(
         credentialId: reg.credentialId.base64URLEncodedString(),
         contractId: knownContractId
     )
 )
 guard case .connected = connected else {
-    throw WalletException.notFound(identifier: knownContractId)
+    throw SmartAccountWalletException.notFound(identifier: knownContractId)
 }
 
 // 3. The backup signer (delegated G-address held by the user's external wallet).
-let backup = SelectedSigner.wallet(accountId: "GBACKUPAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+let backup = OZSelectedSigner.wallet(accountId: "GBACKUPAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
 
 // 4. Add the new passkey on-chain, authorized by the backup signer. The
 //    non-empty selectedSigners is load-bearing: with [] the kit would try to
@@ -1309,7 +1309,7 @@ let addResult = try await kit.signerManager.addPasskey(
     selectedSigners: [backup]
 )
 guard addResult.success else {
-    throw TransactionException.submissionFailed(reason: addResult.error ?? "add_signer failed")
+    throw SmartAccountTransactionException.submissionFailed(reason: addResult.error ?? "add_signer failed")
 }
 
 // 5. Remove the old passkey, also authorized by the backup signer.
@@ -1332,7 +1332,7 @@ if let oldIdx = rule.signers.firstIndex(where: { signer in
 //   auth to the backup signer through kit.externalSigners.
 ```
 
-A raw-Ed25519 backup added via `addEd25519` uses the external-signer pipeline and is expressed as `SelectedSigner.ed25519(...)`, not `.wallet(...)`. To use the wallet path shown above, register the backup as a delegated `G-address`.
+A raw-Ed25519 backup added via `addEd25519` uses the external-signer pipeline and is expressed as `OZSelectedSigner.ed25519(...)`, not `.wallet(...)`. To use the wallet path shown above, register the backup as a delegated `G-address`.
 
 ### Signer rotation (add new, then remove old)
 
@@ -1345,20 +1345,20 @@ let added = try await kit.signerManager.addNewPasskeySigner(
     userName: "User name on new device"
 )
 guard added.transactionResult.success else {
-    throw TransactionException.submissionFailed(reason: added.transactionResult.error ?? "add_signer failed")
+    throw SmartAccountTransactionException.submissionFailed(reason: added.transactionResult.error ?? "add_signer failed")
 }
 let newCredentialId = added.credentialId
 
 // 2. Remember the old credential id BEFORE reconnecting.
 guard let oldCredentialId = kit.credentialId else {
-    throw WalletException.notConnected(details: "old session already lost")
+    throw SmartAccountWalletException.notConnected(details: "old session already lost")
 }
 
 // 3. Reconnect using the new passkey. addNewPasskeySigner already persisted the
 //    new credential with the contract id, so connectWallet resolves it from
 //    storage with no WebAuthn prompt.
 _ = try await kit.walletOperations.connectWallet(
-    options: ConnectWalletOptions(credentialId: newCredentialId)
+    options: OZConnectWalletOptions(credentialId: newCredentialId)
 )
 
 // 4. Remove the old passkey (the new passkey authorizes, selectedSigners []).
@@ -1366,7 +1366,7 @@ let rule = try await kit.contextRuleManagerConcrete.listContextRules().first { $
 guard let oldIdx = rule.signers.firstIndex(where: { signer in
     OZSmartAccountBuilders.getCredentialIdStringFromSigner(signer: signer) == oldCredentialId
 }) else {
-    throw ValidationException.invalidInput(field: "signer", reason: "Old passkey not found on Default rule")
+    throw SmartAccountValidationException.invalidInput(field: "signer", reason: "Old passkey not found on Default rule")
 }
 _ = try await kit.signerManager.removeSigner(contextRuleId: 0, signerId: rule.signerIds[oldIdx])
 ```
@@ -1380,7 +1380,7 @@ _ = try await kit.signerManager.removeSigner(contextRuleId: 0, signerId: rule.si
 
 ### Debugging failed `__check_auth` via contract error codes
 
-When a kit method throws `TransactionException.SimulationFailed`, the message wraps the RPC simulation error, which carries the host error code as `Error(Contract, #<code>)`. There is no typed contract-error exception — parse the code from the message and map it to an action.
+When a kit method throws `SmartAccountTransactionException.SimulationFailed`, the message wraps the RPC simulation error, which carries the host error code as `Error(Contract, #<code>)`. There is no typed contract-error exception — parse the code from the message and map it to an action.
 
 ```swift
 private let contractErrorRegex = try! NSRegularExpression(
@@ -1403,7 +1403,7 @@ do {
         recipient: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ",
         amount: "10"
     )
-} catch let e as TransactionException.SimulationFailed {
+} catch let e as SmartAccountTransactionException.SimulationFailed {
     let code = parseContractErrorCode(e)
     let hint: String
     switch code {
@@ -1422,7 +1422,7 @@ do {
 
 ```swift
 // WRONG: catch a typed ContractException and switch on .code  — no such class exists
-// CORRECT: catch TransactionException.SimulationFailed and parse the message
+// CORRECT: catch SmartAccountTransactionException.SimulationFailed and parse the message
 // WRONG: matching on e.code (== SmartAccountErrorCode.transactionSimulationFailed)
 //   — that is the SDK error kind, not the on-chain contract code
 // CORRECT: extract the contract code from e.message via the "Error(Contract, #NNNN)" regex
@@ -1434,7 +1434,7 @@ do {
 
 ## Events
 
-Signer, policy, and context-rule changes do not emit dedicated kit events; they surface as `SmartAccountEvent.transactionSubmitted(hash:success:)`. The kit-level event catalogue and subscription mechanics are documented in [smart_accounts.md — Events](./smart_accounts.md#events).
+Signer, policy, and context-rule changes do not emit dedicated kit events; they surface as `OZSmartAccountEvent.transactionSubmitted(hash:success:)`. The kit-level event catalogue and subscription mechanics are documented in [smart_accounts.md — Events](./smart_accounts.md#events).
 
 For on-chain contract events (`signer_added`, `policy_added`, etc.), query the kit-owned server with the account's contract id as the filter:
 
@@ -1455,9 +1455,9 @@ case .failure(let error):
 
 ## Contract Error Codes
 
-When the smart-account contract rejects a call, the on-chain error code is surfaced inside `TransactionException.SimulationFailed` (simulation) or `TransactionException.SubmissionFailed` (submit/poll). Look for `Error(Contract, #<code>)` in the message.
+When the smart-account contract rejects a call, the on-chain error code is surfaced inside `SmartAccountTransactionException.SimulationFailed` (simulation) or `SmartAccountTransactionException.SubmissionFailed` (submit/poll). Look for `Error(Contract, #<code>)` in the message.
 
-> These on-chain contract codes overlap numerically with the SDK's `SmartAccountErrorCode` enum but are a different channel: an on-chain code arrives inside a `TransactionException` message, whereas an SDK code is the `code` property of a `SmartAccountException`. Check the exception type first.
+> These on-chain contract codes overlap numerically with the SDK's `SmartAccountErrorCode` enum but are a different channel: an on-chain code arrives inside a `SmartAccountTransactionException` message, whereas an SDK code is the `code` property of a `SmartAccountException`. Check the exception type first.
 
 ### Smart account errors (3000 range)
 
@@ -1468,9 +1468,9 @@ When the smart-account contract rejects a call, the on-chain error code is surfa
 | 3003 | ExternalVerificationFailed | Verifier contract rejected the signature | Signature or key data is wrong, or the verifier was upgraded. |
 | 3004 | NoSignersAndPolicies | Tried to create or reduce a rule to 0 signers and 0 policies | Supply at least one signer or one policy. |
 | 3005 | PastValidUntil | `validUntil` is `<=` current ledger | Compute `validUntil` from a future ledger sequence. |
-| 3006 | SignerNotFound | `signerId` not present on the rule | Use `ParsedContextRule.signerIds`. |
+| 3006 | SignerNotFound | `signerId` not present on the rule | Use `OZParsedContextRule.signerIds`. |
 | 3007 | DuplicateSigner | Signer already on the rule | Each signer (by `uniqueKey`) appears at most once per rule. |
-| 3008 | PolicyNotFound | `policyId` not present on the rule | Use `ParsedContextRule.policyIds`. |
+| 3008 | PolicyNotFound | `policyId` not present on the rule | Use `OZParsedContextRule.policyIds`. |
 | 3009 | DuplicatePolicy | Policy contract already installed on the rule | Remove the existing install first, or target a different rule. |
 | 3010 | TooManySigners | More than 15 signers on a rule | Limit to `OZConstants.maxSigners` (15). |
 | 3011 | TooManyPolicies | More than 5 policies on a rule | Limit to `OZConstants.maxPolicies` (5). |
@@ -1522,11 +1522,11 @@ do {
         threshold: 2
     )
     if !res.success { print("submit failed: \(res.error ?? "")") }
-} catch let e as TransactionException.SimulationFailed {
+} catch let e as SmartAccountTransactionException.SimulationFailed {
     print("simulation failed (contract code in message): \(e.message)")
-} catch let e as ValidationException.InvalidInput {
+} catch let e as SmartAccountValidationException.InvalidInput {
     print("client-side validation: \(e.message)")
-} catch let e as WalletException.NotConnected {
+} catch let e as SmartAccountWalletException.NotConnected {
     print("call connectWallet() first: \(e.message)")
 }
 ```

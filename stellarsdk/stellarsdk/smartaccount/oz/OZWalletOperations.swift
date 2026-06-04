@@ -14,7 +14,7 @@ import Security
 /// uncompressed secp256r1 public key, the signed deploy transaction envelope
 /// (always populated — the deploy transaction is built and signed regardless of
 /// `autoSubmit`), and the transaction hash when auto-submitted.
-public struct CreateWalletResult: Sendable, Hashable {
+public struct OZCreateWalletResult: Sendable, Hashable {
 
     /// Base64URL-encoded WebAuthn credential identifier.
     public let credentialId: String
@@ -54,7 +54,7 @@ public struct CreateWalletResult: Sendable, Hashable {
     /// Equality compares every field. The `publicKey` field is compared in
     /// constant time so byte-level timing inference is not possible from
     /// equality side channels.
-    public static func == (lhs: CreateWalletResult, rhs: CreateWalletResult) -> Bool {
+    public static func == (lhs: OZCreateWalletResult, rhs: OZCreateWalletResult) -> Bool {
         guard lhs.credentialId == rhs.credentialId else { return false }
         guard lhs.contractId == rhs.contractId else { return false }
         guard lhs.publicKey.constantTimeEquals(rhs.publicKey) else { return false }
@@ -83,7 +83,7 @@ public struct CreateWalletResult: Sendable, Hashable {
         signedTransactionXdr: String? = nil,
         transactionHash: String?? = .none,
         nickname: String?? = .none
-    ) -> CreateWalletResult {
+    ) -> OZCreateWalletResult {
         let resolvedHash: String?
         switch transactionHash {
         case .none: resolvedHash = self.transactionHash
@@ -94,7 +94,7 @@ public struct CreateWalletResult: Sendable, Hashable {
         case .none: resolvedNickname = self.nickname
         case .some(let value): resolvedNickname = value
         }
-        return CreateWalletResult(
+        return OZCreateWalletResult(
             credentialId: credentialId ?? self.credentialId,
             contractId: contractId ?? self.contractId,
             publicKey: publicKey ?? self.publicKey,
@@ -106,7 +106,7 @@ public struct CreateWalletResult: Sendable, Hashable {
 }
 
 /// Result of deploying a pending credential when retrying a failed or deferred wallet deployment.
-public struct DeployPendingResult: Sendable, Equatable, Hashable {
+public struct OZDeployPendingResult: Sendable, Equatable, Hashable {
 
     /// Smart account contract address (`C…` strkey).
     public let contractId: String
@@ -132,13 +132,13 @@ public struct DeployPendingResult: Sendable, Equatable, Hashable {
         contractId: String? = nil,
         signedTransactionXdr: String? = nil,
         transactionHash: String?? = .none
-    ) -> DeployPendingResult {
+    ) -> OZDeployPendingResult {
         let resolvedHash: String?
         switch transactionHash {
         case .none: resolvedHash = self.transactionHash
         case .some(let value): resolvedHash = value
         }
-        return DeployPendingResult(
+        return OZDeployPendingResult(
             contractId: contractId ?? self.contractId,
             signedTransactionXdr: signedTransactionXdr ?? self.signedTransactionXdr,
             transactionHash: resolvedHash
@@ -151,14 +151,14 @@ public struct DeployPendingResult: Sendable, Equatable, Hashable {
 /// `connectWallet(options:)` returns one of three results:
 /// - `nil` — no valid session and `prompt` was `false`. The caller should show
 ///   a login UI.
-/// - ``ConnectWalletResult/connected(credentialId:contractId:restoredFromSession:)``
+/// - ``OZConnectWalletResult/connected(credentialId:contractId:restoredFromSession:)``
 ///   — a single contract was resolved for the credential. The kit's connected
 ///   state has been set and the session has been saved.
-/// - ``ConnectWalletResult/ambiguous(credentialId:candidates:)`` — the indexer
+/// - ``OZConnectWalletResult/ambiguous(credentialId:candidates:)`` — the indexer
 ///   reported multiple contracts where the passkey is registered. The kit's
 ///   connected state has NOT been set; the caller must let the user pick a
 ///   candidate and re-call `connectWallet(options:)` with the chosen contract id.
-public enum ConnectWalletResult: Sendable, Equatable, Hashable {
+public enum OZConnectWalletResult: Sendable, Equatable, Hashable {
 
     /// A single contract was resolved for the credential.
     case connected(credentialId: String, contractId: String, restoredFromSession: Bool)
@@ -178,7 +178,7 @@ public enum ConnectWalletResult: Sendable, Equatable, Hashable {
 
 /// Result of standalone passkey authentication, typically used with the indexer to
 /// discover deployed contracts before calling `connectWallet(options:)`.
-public struct AuthenticatePasskeyResult: Sendable, Hashable {
+public struct OZAuthenticatePasskeyResult: Sendable, Hashable {
 
     /// Base64URL-encoded credential identifier.
     public let credentialId: String
@@ -203,7 +203,7 @@ public struct AuthenticatePasskeyResult: Sendable, Hashable {
 
     /// Equality compares every field. The `publicKey` field is compared in
     /// constant time.
-    public static func == (lhs: AuthenticatePasskeyResult, rhs: AuthenticatePasskeyResult) -> Bool {
+    public static func == (lhs: OZAuthenticatePasskeyResult, rhs: OZAuthenticatePasskeyResult) -> Bool {
         guard lhs.credentialId == rhs.credentialId else { return false }
         guard lhs.signature == rhs.signature else { return false }
         guard lhs.publicKey.constantTimeEquals(rhs.publicKey) else { return false }
@@ -232,7 +232,7 @@ public struct AuthenticatePasskeyResult: Sendable, Hashable {
 /// | `fresh = true` | Skip the session, always trigger WebAuthn. |
 /// | `prompt = true` | Restore session if valid, trigger WebAuthn otherwise. |
 /// | `fresh = true, prompt = true` | `fresh` takes priority; always WebAuthn. |
-public struct ConnectWalletOptions: Sendable, Equatable, Hashable {
+public struct OZConnectWalletOptions: Sendable, Equatable, Hashable {
 
     /// Connect directly using this credential identifier (Base64URL-encoded).
     /// When provided alone, the contract address is resolved via the
@@ -271,7 +271,7 @@ public struct ConnectWalletOptions: Sendable, Equatable, Hashable {
         contractId: String?? = .none,
         fresh: Bool? = nil,
         prompt: Bool? = nil
-    ) -> ConnectWalletOptions {
+    ) -> OZConnectWalletOptions {
         let resolvedCred: String?
         switch credentialId {
         case .none: resolvedCred = self.credentialId
@@ -282,7 +282,7 @@ public struct ConnectWalletOptions: Sendable, Equatable, Hashable {
         case .none: resolvedContract = self.contractId
         case .some(let value): resolvedContract = value
         }
-        return ConnectWalletOptions(
+        return OZConnectWalletOptions(
             credentialId: resolvedCred,
             contractId: resolvedContract,
             fresh: fresh ?? self.fresh,
@@ -335,16 +335,16 @@ public final class OZWalletOperations: OZManagerHelpers, @unchecked Sendable {
     ///   - nativeTokenContract: Native token (XLM SAC) contract address used
     ///     when `autoFund = true`.
     ///   - forceMethod: Optional submission-method override.
-    /// - Returns: ``CreateWalletResult`` describing the new wallet.
-    /// - Throws: ``WebAuthnException``, ``ValidationException``,
-    ///   ``TransactionException``, ``CredentialException``, ``StorageException``.
+    /// - Returns: ``OZCreateWalletResult`` describing the new wallet.
+    /// - Throws: ``WebAuthnException``, ``SmartAccountValidationException``,
+    ///   ``SmartAccountTransactionException``, ``SmartAccountCredentialException``, ``SmartAccountStorageException``.
     public func createWallet(
         userName: String = "Smart Account User",
         autoSubmit: Bool = false,
         autoFund: Bool = false,
         nativeTokenContract: String? = nil,
-        forceMethod: SubmissionMethod? = nil
-    ) async throws -> CreateWalletResult {
+        forceMethod: OZSubmissionMethod? = nil
+    ) async throws -> OZCreateWalletResult {
         guard let webauthnProvider = kit.config.webauthnProvider else {
             throw WebAuthnException.notSupported(
                 details: "No WebAuthnProvider configured. Set webauthnProvider in config before calling createWallet()."
@@ -353,7 +353,7 @@ public final class OZWalletOperations: OZManagerHelpers, @unchecked Sendable {
 
         // Validate autoFund's nativeTokenContract requirement before any side effect.
         if autoFund && nativeTokenContract == nil {
-            throw ValidationException.invalidInput(
+            throw SmartAccountValidationException.invalidInput(
                 field: "nativeTokenContract",
                 reason: "nativeTokenContract is required when autoFund is true"
             )
@@ -384,10 +384,10 @@ public final class OZWalletOperations: OZManagerHelpers, @unchecked Sendable {
                 publicKey: registrationResult.publicKey,
                 attestationObject: registrationResult.attestationObject
             )
-        } catch let error as ValidationException {
+        } catch let error as SmartAccountValidationException {
             throw error
         } catch {
-            throw ValidationException.invalidInput(
+            throw SmartAccountValidationException.invalidInput(
                 field: "publicKey",
                 reason: "Failed to extract public key from registration: \(SmartAccountException.messageOf(error) ?? "unknown")",
                 cause: error
@@ -402,12 +402,12 @@ public final class OZWalletOperations: OZManagerHelpers, @unchecked Sendable {
                 deployerPublicKey: deployer.accountId,
                 networkPassphrase: kit.config.networkPassphrase
             )
-        } catch let error as ValidationException {
+        } catch let error as SmartAccountValidationException {
             throw error
-        } catch let error as TransactionException {
+        } catch let error as SmartAccountTransactionException {
             throw error
         } catch {
-            throw TransactionException.signingFailed(
+            throw SmartAccountTransactionException.signingFailed(
                 reason: "Failed to derive contract address: \(SmartAccountException.messageOf(error) ?? "unknown")",
                 cause: error
             )
@@ -415,7 +415,7 @@ public final class OZWalletOperations: OZManagerHelpers, @unchecked Sendable {
 
         let credentialIdBase64url = registrationResult.credentialId.base64URLEncodedString()
 
-        let credential: StoredCredential
+        let credential: OZStoredCredential
         do {
             credential = try await credentialManager.createPendingCredential(
                 credentialId: credentialIdBase64url,
@@ -426,12 +426,12 @@ public final class OZWalletOperations: OZManagerHelpers, @unchecked Sendable {
                 deviceType: registrationResult.deviceType,
                 backedUp: registrationResult.backedUp
             )
-        } catch let error as CredentialException {
+        } catch let error as SmartAccountCredentialException {
             throw error
-        } catch let error as StorageException {
+        } catch let error as SmartAccountStorageException {
             throw error
         } catch {
-            throw StorageException.writeFailed(
+            throw SmartAccountStorageException.writeFailed(
                 key: credentialIdBase64url,
                 cause: error
             )
@@ -477,7 +477,7 @@ public final class OZWalletOperations: OZManagerHelpers, @unchecked Sendable {
             )
         }
 
-        return CreateWalletResult(
+        return OZCreateWalletResult(
             credentialId: credentialIdBase64url,
             contractId: contractId,
             publicKey: publicKey,
@@ -508,13 +508,13 @@ public final class OZWalletOperations: OZManagerHelpers, @unchecked Sendable {
     ///     underlying build helper.
     /// - Returns: ``BuiltDeploy`` carrying both the built `Transaction` and its
     ///   serialised envelope XDR.
-    /// - Throws: ``TransactionException``, ``WebAuthnException``,
-    ///   ``ValidationException``.
+    /// - Throws: ``SmartAccountTransactionException``, ``WebAuthnException``,
+    ///   ``SmartAccountValidationException``.
     private func buildCreateContractTransaction(
         publicKey: Data,
         credentialId: Data,
         credentialIdBase64url: String,
-        forceMethod: SubmissionMethod?
+        forceMethod: OZSubmissionMethod?
     ) async throws -> BuiltDeploy {
         let deployTransaction: Transaction
         do {
@@ -531,7 +531,7 @@ public final class OZWalletOperations: OZManagerHelpers, @unchecked Sendable {
             if let smartError = error as? SmartAccountException {
                 throw smartError
             }
-            throw TransactionException.submissionFailed(
+            throw SmartAccountTransactionException.submissionFailed(
                 reason: "Failed to build deploy transaction: \(SmartAccountException.messageOf(error) ?? "unknown")",
                 cause: error
             )
@@ -540,7 +540,7 @@ public final class OZWalletOperations: OZManagerHelpers, @unchecked Sendable {
         do {
             envelopeXdr = try deployTransaction.encodedEnvelope()
         } catch {
-            throw TransactionException.signingFailed(
+            throw SmartAccountTransactionException.signingFailed(
                 reason: "Failed to encode envelope: \(SmartAccountException.messageOf(error) ?? "unknown")",
                 cause: error
             )
@@ -561,14 +561,14 @@ public final class OZWalletOperations: OZManagerHelpers, @unchecked Sendable {
     ///   - nativeTokenContract: SAC contract used by the funding flow.
     ///   - forceMethod: Optional submission-method override.
     /// - Returns: Stellar transaction hash returned by the submission path.
-    /// - Throws: ``TransactionException``, ``ValidationException``,
+    /// - Throws: ``SmartAccountTransactionException``, ``SmartAccountValidationException``,
     ///   ``WebAuthnException``.
     private func signAndSubmitDeploy(
         deployTransaction: Transaction,
         credentialIdBase64url: String,
         autoFund: Bool,
         nativeTokenContract: String?,
-        forceMethod: SubmissionMethod?
+        forceMethod: OZSubmissionMethod?
     ) async throws -> String {
         let transactionHash = try await submitDeployTransaction(
             transaction: deployTransaction,
@@ -578,7 +578,7 @@ public final class OZWalletOperations: OZManagerHelpers, @unchecked Sendable {
 
         if autoFund {
             guard let tokenContract = nativeTokenContract else {
-                throw ValidationException.invalidInput(
+                throw SmartAccountValidationException.invalidInput(
                     field: "nativeTokenContract",
                     reason: "nativeTokenContract is required when autoFund is true"
                 )
@@ -606,24 +606,24 @@ public final class OZWalletOperations: OZManagerHelpers, @unchecked Sendable {
 
     /// Connects to an existing smart-account wallet.
     ///
-    /// Returns ``ConnectWalletResult`` on success, or `nil` when no valid
+    /// Returns ``OZConnectWalletResult`` on success, or `nil` when no valid
     /// session exists and `options.prompt == false`. The non-`nil` result is
-    /// either a ``ConnectWalletResult/connected(credentialId:contractId:restoredFromSession:)``
+    /// either an ``OZConnectWalletResult/connected(credentialId:contractId:restoredFromSession:)``
     /// arm (single contract resolved, kit state set, session saved) or a
-    /// ``ConnectWalletResult/ambiguous(credentialId:candidates:)`` arm (indexer
+    /// ``OZConnectWalletResult/ambiguous(credentialId:candidates:)`` arm (indexer
     /// reported multiple contracts — kit state NOT set, caller must let the
     /// user pick).
     ///
     /// - Parameter options: Connect-wallet options. Defaults to a silent
     ///   session-only restore.
-    /// - Returns: ``ConnectWalletResult`` or `nil`.
-    /// - Throws: ``WebAuthnException`` (prompt path), ``WalletException`` (no
-    ///   contract resolved), ``ValidationException`` (options validation),
-    ///   ``TransactionException`` (RPC failure), ``IndexerException`` (indexer
+    /// - Returns: ``OZConnectWalletResult`` or `nil`.
+    /// - Throws: ``WebAuthnException`` (prompt path), ``SmartAccountWalletException`` (no
+    ///   contract resolved), ``SmartAccountValidationException`` (options validation),
+    ///   ``SmartAccountTransactionException`` (RPC failure), ``SmartAccountIndexerException`` (indexer
     ///   transport failure).
     public func connectWallet(
-        options: ConnectWalletOptions = ConnectWalletOptions()
-    ) async throws -> ConnectWalletResult? {
+        options: OZConnectWalletOptions = OZConnectWalletOptions()
+    ) async throws -> OZConnectWalletResult? {
         if options.credentialId != nil || options.contractId != nil {
             return try await connectWithCredentials(
                 credentialId: options.credentialId,
@@ -632,7 +632,7 @@ public final class OZWalletOperations: OZManagerHelpers, @unchecked Sendable {
         }
 
         if !options.fresh {
-            let session: StoredSession? = await safeGetSession()
+            let session: OZStoredSession? = await safeGetSession()
 
             if let session = session, !session.isExpired {
                 do {
@@ -652,11 +652,11 @@ public final class OZWalletOperations: OZManagerHelpers, @unchecked Sendable {
                     case .ambiguous:
                         // unreachable per the explicit-contractId branch of
                         // connectWithCredentials; surface as a defensive error
-                        throw WalletException.notFound(
+                        throw SmartAccountWalletException.notFound(
                             identifier: session.contractId
                         )
                     }
-                } catch let error as WalletException.NotFound {
+                } catch let error as SmartAccountWalletException.NotFound {
                     _ = error
                     await safeClearSession()
                     // fall through
@@ -708,12 +708,12 @@ public final class OZWalletOperations: OZManagerHelpers, @unchecked Sendable {
         // a last-resort lookup for cross-device discovery.
         var contractId: String? = nil
 
-        let stored: StoredCredential? = await safeGetCredential(
+        let stored: OZStoredCredential? = await safeGetCredential(
             credentialId: credentialIdBase64url
         )
         if let stored = stored {
             if stored.deploymentStatus == .failed {
-                throw WalletException.notFound(
+                throw SmartAccountWalletException.notFound(
                     identifier: credentialIdBase64url +
                         " (smart account deployment previously failed; call deployPendingCredential() to retry or deleteCredential() to start over)"
                 )
@@ -731,7 +731,7 @@ public final class OZWalletOperations: OZManagerHelpers, @unchecked Sendable {
             do {
                 try await verifyContractExists(contractId: derivedContractId)
                 contractId = derivedContractId
-            } catch let error as WalletException.NotFound {
+            } catch let error as SmartAccountWalletException.NotFound {
                 _ = error
                 // Address well-formed but no contract on-chain — fall through.
             }
@@ -739,7 +739,7 @@ public final class OZWalletOperations: OZManagerHelpers, @unchecked Sendable {
 
         if contractId == nil {
             guard let indexer = kit.indexerClient else {
-                throw WalletException.notFound(
+                throw SmartAccountWalletException.notFound(
                     identifier: credentialIdBase64url +
                         " (no contract was found at the derived address and no indexer is configured)"
                 )
@@ -750,12 +750,12 @@ public final class OZWalletOperations: OZManagerHelpers, @unchecked Sendable {
             let candidates = lookup.contracts
             switch candidates.count {
             case 0:
-                throw WalletException.notFound(
+                throw SmartAccountWalletException.notFound(
                     identifier: credentialIdBase64url
                 )
             case 1:
                 guard let candidate = candidates.first?.contractId else {
-                    throw WalletException.notFound(
+                    throw SmartAccountWalletException.notFound(
                         identifier: credentialIdBase64url
                     )
                 }
@@ -770,7 +770,7 @@ public final class OZWalletOperations: OZManagerHelpers, @unchecked Sendable {
         }
 
         guard let finalContractId = contractId else {
-            throw WalletException.notFound(
+            throw SmartAccountWalletException.notFound(
                 identifier: "Could not determine contract ID for credential \(credentialIdBase64url)"
             )
         }
@@ -820,14 +820,14 @@ public final class OZWalletOperations: OZManagerHelpers, @unchecked Sendable {
     ///   - credentialIds: Optional list of allowed credential ids
     ///     (Base64URL-encoded). When provided, only those credentials may be
     ///     used by the authenticator.
-    /// - Returns: ``AuthenticatePasskeyResult`` carrying the credential id,
+    /// - Returns: ``OZAuthenticatePasskeyResult`` carrying the credential id,
     ///   normalised signature, and stored public key (when available).
     /// - Throws: ``WebAuthnException`` (authentication failure / no provider),
-    ///   ``ValidationException`` (signature normalisation failure).
+    ///   ``SmartAccountValidationException`` (signature normalisation failure).
     public func authenticatePasskey(
         challenge: Data? = nil,
         credentialIds: [String]? = nil
-    ) async throws -> AuthenticatePasskeyResult {
+    ) async throws -> OZAuthenticatePasskeyResult {
         guard let webauthnProvider = kit.config.webauthnProvider else {
             throw WebAuthnException.notSupported(
                 details: "No WebAuthnProvider configured. Set webauthnProvider in config before calling authenticatePasskey()."
@@ -836,9 +836,9 @@ public final class OZWalletOperations: OZManagerHelpers, @unchecked Sendable {
 
         let challengeData = try challenge ?? OZWalletOperations.secureRandomData(count: 32)
 
-        var allowCredentials: [AllowCredential]? = nil
+        var allowCredentials: [WebAuthnAllowCredential]? = nil
         if let credentialIds = credentialIds {
-            var built: [AllowCredential] = []
+            var built: [WebAuthnAllowCredential] = []
             built.reserveCapacity(credentialIds.count)
             for rawCredIdStr in credentialIds {
                 // Storage entries are written under the canonical unpadded
@@ -850,14 +850,14 @@ public final class OZWalletOperations: OZManagerHelpers, @unchecked Sendable {
                 do {
                     idBytes = try Data(base64URLEncoded: credIdStr)
                 } catch {
-                    throw ValidationException.invalidInput(
+                    throw SmartAccountValidationException.invalidInput(
                         field: "credentialIds",
                         reason: "Invalid Base64URL-encoded credential ID: \(credIdStr)",
                         cause: error
                     )
                 }
                 let stored = await safeGetCredential(credentialId: credIdStr)
-                built.append(AllowCredential(id: idBytes, transports: stored?.transports))
+                built.append(WebAuthnAllowCredential(id: idBytes, transports: stored?.transports))
             }
             allowCredentials = built
         }
@@ -884,10 +884,10 @@ public final class OZWalletOperations: OZManagerHelpers, @unchecked Sendable {
             normalizedSignature = try SmartAccountUtils.normalizeSignature(
                 authenticationResult.signature
             )
-        } catch let error as ValidationException {
+        } catch let error as SmartAccountValidationException {
             throw error
         } catch {
-            throw ValidationException.invalidInput(
+            throw SmartAccountValidationException.invalidInput(
                 field: "signature",
                 reason: "Failed to normalize WebAuthn signature: \(SmartAccountException.messageOf(error) ?? "unknown")",
                 cause: error
@@ -901,10 +901,10 @@ public final class OZWalletOperations: OZManagerHelpers, @unchecked Sendable {
                 clientData: authenticationResult.clientDataJSON,
                 signature: normalizedSignature
             )
-        } catch let error as ValidationException {
+        } catch let error as SmartAccountValidationException {
             throw error
         } catch {
-            throw ValidationException.invalidInput(
+            throw SmartAccountValidationException.invalidInput(
                 field: "signature",
                 reason: "Failed to build WebAuthn signature: \(SmartAccountException.messageOf(error) ?? "unknown")",
                 cause: error
@@ -917,7 +917,7 @@ public final class OZWalletOperations: OZManagerHelpers, @unchecked Sendable {
             publicKey = stored.publicKey
         }
 
-        return AuthenticatePasskeyResult(
+        return OZAuthenticatePasskeyResult(
             credentialId: credentialIdBase64url,
             signature: webAuthnSignature,
             publicKey: publicKey
@@ -941,20 +941,20 @@ public final class OZWalletOperations: OZManagerHelpers, @unchecked Sendable {
     ///   - nativeTokenContract: Native token contract address used when
     ///     `autoFund = true`.
     ///   - forceMethod: Optional submission-method override.
-    /// - Returns: ``DeployPendingResult`` describing the deployment.
-    /// - Throws: ``CredentialException``, ``ValidationException``,
-    ///   ``TransactionException``.
+    /// - Returns: ``OZDeployPendingResult`` describing the deployment.
+    /// - Throws: ``SmartAccountCredentialException``, ``SmartAccountValidationException``,
+    ///   ``SmartAccountTransactionException``.
     public func deployPendingCredential(
         credentialId: String,
         autoSubmit: Bool = true,
         autoFund: Bool = false,
         nativeTokenContract: String? = nil,
-        forceMethod: SubmissionMethod? = nil
-    ) async throws -> DeployPendingResult {
+        forceMethod: OZSubmissionMethod? = nil
+    ) async throws -> OZDeployPendingResult {
         // Validate autoFund requirements early so the failure occurs before
         // any storage / network calls.
         if autoFund && nativeTokenContract == nil {
-            throw ValidationException.invalidInput(
+            throw SmartAccountValidationException.invalidInput(
                 field: "nativeTokenContract",
                 reason: "nativeTokenContract is required when autoFund is true"
             )
@@ -970,17 +970,17 @@ public final class OZWalletOperations: OZManagerHelpers, @unchecked Sendable {
             credentialId: credentialId
         )
         guard let credential = credential else {
-            throw CredentialException.notFound(credentialId: credentialId)
+            throw SmartAccountCredentialException.notFound(credentialId: credentialId)
         }
 
         let publicKey = credential.publicKey
         if publicKey.isEmpty {
-            throw CredentialException.invalid(
+            throw SmartAccountCredentialException.invalid(
                 reason: "Credential '\(credentialId)' is missing publicKey"
             )
         }
         guard let contractId = credential.contractId, !contractId.isEmpty else {
-            throw CredentialException.invalid(
+            throw SmartAccountCredentialException.invalid(
                 reason: "Credential '\(credentialId)' is missing contractId"
             )
         }
@@ -989,7 +989,7 @@ public final class OZWalletOperations: OZManagerHelpers, @unchecked Sendable {
         do {
             credentialIdBytes = try Data(base64URLEncoded: credentialId)
         } catch {
-            throw CredentialException.invalid(
+            throw SmartAccountCredentialException.invalid(
                 reason: "Invalid Base64URL-encoded credential ID: \(credentialId)",
                 cause: error
             )
@@ -1007,7 +1007,7 @@ public final class OZWalletOperations: OZManagerHelpers, @unchecked Sendable {
             networkPassphrase: kit.config.networkPassphrase
         )
         if derivedContractId != contractId {
-            throw CredentialException.invalid(
+            throw SmartAccountCredentialException.invalid(
                 reason: "Stored credential '\(credentialId)' contractId (\(contractId)) does not match deterministically derived contractId (\(derivedContractId)); refusing to deploy against a divergent address."
             )
         }
@@ -1039,7 +1039,7 @@ public final class OZWalletOperations: OZManagerHelpers, @unchecked Sendable {
             if let smartError = error as? SmartAccountException {
                 throw smartError
             }
-            throw TransactionException.submissionFailed(
+            throw SmartAccountTransactionException.submissionFailed(
                 reason: "Failed to build deploy transaction: \(SmartAccountException.messageOf(error) ?? "unknown")",
                 cause: error
             )
@@ -1048,14 +1048,14 @@ public final class OZWalletOperations: OZManagerHelpers, @unchecked Sendable {
         do {
             signedTxXdr = try deployTransaction.encodedEnvelope()
         } catch {
-            throw TransactionException.signingFailed(
+            throw SmartAccountTransactionException.signingFailed(
                 reason: "Failed to encode envelope: \(SmartAccountException.messageOf(error) ?? "unknown")",
                 cause: error
             )
         }
 
         if !autoSubmit {
-            return DeployPendingResult(
+            return OZDeployPendingResult(
                 contractId: contractId,
                 signedTransactionXdr: signedTxXdr
             )
@@ -1069,7 +1069,7 @@ public final class OZWalletOperations: OZManagerHelpers, @unchecked Sendable {
 
         if autoFund {
             guard let tokenContract = nativeTokenContract else {
-                throw ValidationException.invalidInput(
+                throw SmartAccountValidationException.invalidInput(
                     field: "nativeTokenContract",
                     reason: "nativeTokenContract is required when autoFund is true"
                 )
@@ -1087,7 +1087,7 @@ public final class OZWalletOperations: OZManagerHelpers, @unchecked Sendable {
             // best-effort
         }
 
-        return DeployPendingResult(
+        return OZDeployPendingResult(
             contractId: contractId,
             signedTransactionXdr: signedTxXdr,
             transactionHash: hash
@@ -1108,10 +1108,10 @@ public final class OZWalletOperations: OZManagerHelpers, @unchecked Sendable {
     private func connectWithCredentials(
         credentialId: String?,
         contractId: String?
-    ) async throws -> ConnectWalletResult {
+    ) async throws -> OZConnectWalletResult {
         // contractId requires credentialId
         if contractId != nil && credentialId == nil {
-            throw ValidationException.invalidInput(
+            throw SmartAccountValidationException.invalidInput(
                 field: "contractId",
                 reason: "contractId option requires credentialId to be provided"
             )
@@ -1127,12 +1127,12 @@ public final class OZWalletOperations: OZManagerHelpers, @unchecked Sendable {
 
         if let credentialId = credentialId, finalContractId == nil {
             // Stage A: storage
-            let stored: StoredCredential? = await safeGetCredential(
+            let stored: OZStoredCredential? = await safeGetCredential(
                 credentialId: credentialId
             )
             if let stored = stored {
                 if stored.deploymentStatus == .failed {
-                    throw WalletException.notFound(
+                    throw SmartAccountWalletException.notFound(
                         identifier: credentialId +
                             " (smart account deployment previously failed; call deployPendingCredential() to retry or deleteCredential() to start over)"
                     )
@@ -1147,7 +1147,7 @@ public final class OZWalletOperations: OZManagerHelpers, @unchecked Sendable {
                 do {
                     credentialIdBytes = try Data(base64URLEncoded: credentialId)
                 } catch {
-                    throw ValidationException.invalidInput(
+                    throw SmartAccountValidationException.invalidInput(
                         field: "credentialId",
                         reason: "Invalid Base64URL-encoded credential ID",
                         cause: error
@@ -1161,7 +1161,7 @@ public final class OZWalletOperations: OZManagerHelpers, @unchecked Sendable {
                 do {
                     try await verifyContractExists(contractId: derivedContractId)
                     finalContractId = derivedContractId
-                } catch let error as WalletException.NotFound {
+                } catch let error as SmartAccountWalletException.NotFound {
                     _ = error
                     // fall through to indexer
                 }
@@ -1170,7 +1170,7 @@ public final class OZWalletOperations: OZManagerHelpers, @unchecked Sendable {
             // Stage C: indexer
             if finalContractId == nil {
                 guard let indexer = kit.indexerClient else {
-                    throw WalletException.notFound(
+                    throw SmartAccountWalletException.notFound(
                         identifier: credentialId +
                             " (no contract was found at the derived address and no indexer is configured)"
                     )
@@ -1181,12 +1181,12 @@ public final class OZWalletOperations: OZManagerHelpers, @unchecked Sendable {
                 let candidates = lookup.contracts
                 switch candidates.count {
                 case 0:
-                    throw WalletException.notFound(
+                    throw SmartAccountWalletException.notFound(
                         identifier: credentialId
                     )
                 case 1:
                     guard let candidate = candidates.first?.contractId else {
-                        throw WalletException.notFound(
+                        throw SmartAccountWalletException.notFound(
                             identifier: credentialId
                         )
                     }
@@ -1203,7 +1203,7 @@ public final class OZWalletOperations: OZManagerHelpers, @unchecked Sendable {
 
         guard let credentialId = credentialId,
               let finalContractId = finalContractId else {
-            throw WalletException.notFound(
+            throw SmartAccountWalletException.notFound(
                 identifier: "Could not determine credential ID or contract ID"
             )
         }
@@ -1243,9 +1243,9 @@ public final class OZWalletOperations: OZManagerHelpers, @unchecked Sendable {
     ///   live or archived; archived entries are returned by Soroban RPC as
     ///   regular entries with an archive marker).
     /// - The address is malformed or RPC reports "not found": throws
-    ///   ``WalletException/NotFound``.
+    ///   ``SmartAccountWalletException/NotFound``.
     /// - The RPC call fails for transport reasons: the original
-    ///   ``TransactionException`` is re-thrown so the caller knows the lookup
+    ///   ``SmartAccountTransactionException`` is re-thrown so the caller knows the lookup
     ///   was inconclusive.
     private func verifyContractExists(contractId: String) async throws {
         let response = await kit.sorobanServer.getContractData(
@@ -1265,11 +1265,11 @@ public final class OZWalletOperations: OZManagerHelpers, @unchecked Sendable {
             // failures can be distinguished from authoritative not-found.
             switch error {
             case .requestFailed:
-                throw WalletException.notFound(
+                throw SmartAccountWalletException.notFound(
                     identifier: contractId
                 )
             case .errorResponse, .parsingResponseFailed:
-                throw TransactionException.submissionFailed(
+                throw SmartAccountTransactionException.submissionFailed(
                     reason: "Contract lookup failed for \(contractId): \(rpcErrorMessage(error))",
                     cause: error
                 )
@@ -1281,7 +1281,7 @@ public final class OZWalletOperations: OZManagerHelpers, @unchecked Sendable {
     /// `now + kit.config.sessionExpiryMs`.
     private func saveSession(credentialId: String, contractId: String) async throws {
         let now = Int64(Date().timeIntervalSince1970 * 1000)
-        let session = StoredSession(
+        let session = OZStoredSession(
             credentialId: credentialId,
             contractId: contractId,
             connectedAt: now,
@@ -1289,10 +1289,10 @@ public final class OZWalletOperations: OZManagerHelpers, @unchecked Sendable {
         )
         do {
             try await kit.getStorage().saveSession(session)
-        } catch let error as StorageException {
+        } catch let error as SmartAccountStorageException {
             throw error
         } catch {
-            throw StorageException.writeFailed(
+            throw SmartAccountStorageException.writeFailed(
                 key: "session:\(credentialId)",
                 cause: error
             )
@@ -1305,7 +1305,7 @@ public final class OZWalletOperations: OZManagerHelpers, @unchecked Sendable {
     private func buildDeployTransaction(
         publicKey: Data,
         credentialId: Data,
-        forceMethod: SubmissionMethod?
+        forceMethod: OZSubmissionMethod?
     ) async throws -> Transaction {
         // key_data = publicKey || credentialId
         var keyData = Data(capacity: publicKey.count + credentialId.count)
@@ -1319,7 +1319,7 @@ public final class OZWalletOperations: OZManagerHelpers, @unchecked Sendable {
                 keyData: keyData
             )
         } catch {
-            throw TransactionException.signingFailed(
+            throw SmartAccountTransactionException.signingFailed(
                 reason: "Failed to create WebAuthn signer: \(SmartAccountException.messageOf(error) ?? "unknown")",
                 cause: error
             )
@@ -1329,7 +1329,7 @@ public final class OZWalletOperations: OZManagerHelpers, @unchecked Sendable {
         do {
             signersScVal = .vec([try webauthnSigner.toScVal()])
         } catch {
-            throw TransactionException.signingFailed(
+            throw SmartAccountTransactionException.signingFailed(
                 reason: "Failed to convert signer to ScVal: \(SmartAccountException.messageOf(error) ?? "unknown")",
                 cause: error
             )
@@ -1352,7 +1352,7 @@ public final class OZWalletOperations: OZManagerHelpers, @unchecked Sendable {
         // WASM hash: convert hex string to 32 bytes
         guard let wasmHashData = kit.config.accountWasmHash.data(using: .hexadecimal),
               wasmHashData.count == 32 else {
-            throw TransactionException.signingFailed(
+            throw SmartAccountTransactionException.signingFailed(
                 reason: "Invalid accountWasmHash: must be 64 hex chars decoding to 32 bytes"
             )
         }
@@ -1375,7 +1375,7 @@ public final class OZWalletOperations: OZManagerHelpers, @unchecked Sendable {
         do {
             deployerAccount = try await fetchAccount(accountId: deployer.accountId)
         } catch {
-            throw TransactionException.submissionFailed(
+            throw SmartAccountTransactionException.submissionFailed(
                 reason: "Failed to fetch deployer account: \(SmartAccountException.messageOf(error) ?? "unknown")",
                 cause: error
             )
@@ -1399,7 +1399,7 @@ public final class OZWalletOperations: OZManagerHelpers, @unchecked Sendable {
                 maxOperationFee: StellarProtocolConstants.MIN_BASE_FEE
             )
         } catch {
-            throw TransactionException.signingFailed(
+            throw SmartAccountTransactionException.signingFailed(
                 reason: "Failed to build transaction: \(SmartAccountException.messageOf(error) ?? "unknown")",
                 cause: error
             )
@@ -1411,10 +1411,10 @@ public final class OZWalletOperations: OZManagerHelpers, @unchecked Sendable {
                 transaction: transaction,
                 failureMessagePrefix: "Simulation error: "
             )
-        } catch let error as TransactionException {
+        } catch let error as SmartAccountTransactionException {
             throw error
         } catch {
-            throw TransactionException.simulationFailed(
+            throw SmartAccountTransactionException.simulationFailed(
                 reason: "Failed to simulate deployment transaction: \(SmartAccountException.messageOf(error) ?? "unknown")",
                 cause: error
             )
@@ -1430,7 +1430,7 @@ public final class OZWalletOperations: OZManagerHelpers, @unchecked Sendable {
                 relayerMode: useRelayer
             )
         } catch {
-            throw TransactionException.signingFailed(
+            throw SmartAccountTransactionException.signingFailed(
                 reason: "Failed to assemble transaction: \(SmartAccountException.messageOf(error) ?? "unknown")",
                 cause: error
             )
@@ -1442,7 +1442,7 @@ public final class OZWalletOperations: OZManagerHelpers, @unchecked Sendable {
                 network: .custom(passphrase: kit.config.networkPassphrase)
             )
         } catch {
-            throw TransactionException.signingFailed(
+            throw SmartAccountTransactionException.signingFailed(
                 reason: "Failed to sign transaction: \(SmartAccountException.messageOf(error) ?? "unknown")",
                 cause: error
             )
@@ -1456,7 +1456,7 @@ public final class OZWalletOperations: OZManagerHelpers, @unchecked Sendable {
     private func submitDeployTransaction(
         transaction: Transaction,
         credentialIdBase64url: String,
-        forceMethod: SubmissionMethod?
+        forceMethod: OZSubmissionMethod?
     ) async throws -> String {
         let useRelayer = resolveSubmissionMethod(forceMethod: forceMethod) == .relayer
 
@@ -1464,7 +1464,7 @@ public final class OZWalletOperations: OZManagerHelpers, @unchecked Sendable {
 
         if useRelayer {
             guard let relayer = kit.relayerClient else {
-                throw TransactionException.submissionFailed(
+                throw SmartAccountTransactionException.submissionFailed(
                     reason: "Relayer was selected but no relayer is configured"
                 )
             }
@@ -1476,7 +1476,7 @@ public final class OZWalletOperations: OZManagerHelpers, @unchecked Sendable {
                     credentialId: credentialIdBase64url,
                     error: "Failed to build signed envelope: \(SmartAccountException.messageOf(error) ?? "unknown")"
                 )
-                throw TransactionException.submissionFailed(
+                throw SmartAccountTransactionException.submissionFailed(
                     reason: "Failed to build signed envelope: \(SmartAccountException.messageOf(error) ?? "unknown")",
                     cause: error
                 )
@@ -1488,7 +1488,7 @@ public final class OZWalletOperations: OZManagerHelpers, @unchecked Sendable {
                     credentialId: credentialIdBase64url,
                     error: "Relayer error: \(errorMsg)"
                 )
-                throw TransactionException.submissionFailed(
+                throw SmartAccountTransactionException.submissionFailed(
                     reason: "Deployment relayer error: \(errorMsg)"
                 )
             }
@@ -1497,7 +1497,7 @@ public final class OZWalletOperations: OZManagerHelpers, @unchecked Sendable {
                     credentialId: credentialIdBase64url,
                     error: "No transaction hash returned from relayer"
                 )
-                throw TransactionException.submissionFailed(
+                throw SmartAccountTransactionException.submissionFailed(
                     reason: "No transaction hash returned from relayer"
                 )
             }
@@ -1511,7 +1511,7 @@ public final class OZWalletOperations: OZManagerHelpers, @unchecked Sendable {
                         credentialId: credentialIdBase64url,
                         error: "Transaction error: \(errorResultXdr)"
                     )
-                    throw TransactionException.submissionFailed(
+                    throw SmartAccountTransactionException.submissionFailed(
                         reason: "Deployment transaction error: \(errorResultXdr)"
                     )
                 }
@@ -1521,7 +1521,7 @@ public final class OZWalletOperations: OZManagerHelpers, @unchecked Sendable {
                     credentialId: credentialIdBase64url,
                     error: "Failed to send transaction: \(rpcErrorMessage(error))"
                 )
-                throw TransactionException.submissionFailed(
+                throw SmartAccountTransactionException.submissionFailed(
                     reason: "Failed to send deployment transaction: \(rpcErrorMessage(error))",
                     cause: error
                 )
@@ -1545,7 +1545,7 @@ public final class OZWalletOperations: OZManagerHelpers, @unchecked Sendable {
                         credentialId: credentialIdBase64url,
                         error: txStatus.resultXdr ?? "Deployment failed on-chain"
                     )
-                    throw TransactionException.submissionFailed(
+                    throw SmartAccountTransactionException.submissionFailed(
                         reason: "Deployment failed: \(txStatus.resultXdr ?? "unknown")"
                     )
                 default:
@@ -1559,7 +1559,7 @@ public final class OZWalletOperations: OZManagerHelpers, @unchecked Sendable {
                     credentialId: credentialIdBase64url,
                     error: "Deployment confirmation timed out"
                 )
-                throw TransactionException.timeout(
+                throw SmartAccountTransactionException.timeout(
                     details: "Deployment confirmation timed out"
                 )
             }
@@ -1571,7 +1571,7 @@ public final class OZWalletOperations: OZManagerHelpers, @unchecked Sendable {
                 credentialId: credentialIdBase64url,
                 error: "Deployment confirmation timed out"
             )
-            throw TransactionException.timeout(
+            throw SmartAccountTransactionException.timeout(
                 details: "Deployment confirmation timed out"
             )
         }
@@ -1579,7 +1579,7 @@ public final class OZWalletOperations: OZManagerHelpers, @unchecked Sendable {
         return transactionHash
     }
 
-    private func safeGetSession() async -> StoredSession? {
+    private func safeGetSession() async -> OZStoredSession? {
         do {
             return try await kit.getStorage().getSession()
         } catch {

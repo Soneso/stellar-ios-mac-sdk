@@ -460,13 +460,13 @@ final class OZSignerTypesTests: XCTestCase {
         XCTAssertNotNil(OZSmartAccountBuilders.getCredentialIdStringFromSigner(signer: s))
     }
     func test_signer_filler_af() throws {
-        XCTAssertEqual(SubmissionMethod.relayer, SubmissionMethod.relayer)
+        XCTAssertEqual(OZSubmissionMethod.relayer, OZSubmissionMethod.relayer)
     }
     func test_signer_filler_ag() throws {
-        XCTAssertEqual(SubmissionMethod.rpc, SubmissionMethod.rpc)
+        XCTAssertEqual(OZSubmissionMethod.rpc, OZSubmissionMethod.rpc)
     }
     func test_signer_filler_ah() throws {
-        let cases: [SubmissionMethod] = [.relayer, .rpc]
+        let cases: [OZSubmissionMethod] = [.relayer, .rpc]
         XCTAssertEqual(cases.count, 2)
     }
     func test_signer_filler_ai() throws {

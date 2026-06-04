@@ -14,14 +14,14 @@ final class OZSessionLifecycleTests: XCTestCase {
 
     private let testContractId = "CBCD1234" + String(repeating: "A", count: 48)
 
-    private func newAdapter() -> InMemoryStorageAdapter {
-        return InMemoryStorageAdapter()
+    private func newAdapter() -> OZInMemoryStorageAdapter {
+        return OZInMemoryStorageAdapter()
     }
 
-    // MARK: - StoredSession.isExpired Edge Cases
+    // MARK: - OZStoredSession.isExpired Edge Cases
 
     func testStoredSession_expiresAtZero_isExpired() {
-        let session = StoredSession(
+        let session = OZStoredSession(
             credentialId: "cred",
             contractId: testContractId,
             connectedAt: 0,
@@ -31,7 +31,7 @@ final class OZSessionLifecycleTests: XCTestCase {
     }
 
     func testStoredSession_expiresAtMaxValue_notExpired() {
-        let session = StoredSession(
+        let session = OZStoredSession(
             credentialId: "cred",
             contractId: testContractId,
             connectedAt: 1_700_000_000_000,
@@ -41,7 +41,7 @@ final class OZSessionLifecycleTests: XCTestCase {
     }
 
     func testStoredSession_expiresAtInPast_isExpired() {
-        let session = StoredSession(
+        let session = OZStoredSession(
             credentialId: "cred",
             contractId: testContractId,
             connectedAt: 1000,
@@ -50,10 +50,10 @@ final class OZSessionLifecycleTests: XCTestCase {
         XCTAssertTrue(session.isExpired)
     }
 
-    // MARK: - StoredSession Data Class Properties
+    // MARK: - OZStoredSession Data Class Properties
 
     func testStoredSession_allFieldsAccessible() {
-        let session = StoredSession(
+        let session = OZStoredSession(
             credentialId: "cred-abc",
             contractId: "CONTRACT-XYZ",
             connectedAt: 1_700_000_000_000,
@@ -67,13 +67,13 @@ final class OZSessionLifecycleTests: XCTestCase {
     }
 
     func testStoredSession_equalityCheck() {
-        let session1 = StoredSession(
+        let session1 = OZStoredSession(
             credentialId: "cred",
             contractId: "CONTRACT",
             connectedAt: 1000,
             expiresAt: 2000
         )
-        let session2 = StoredSession(
+        let session2 = OZStoredSession(
             credentialId: "cred",
             contractId: "CONTRACT",
             connectedAt: 1000,
@@ -89,7 +89,7 @@ final class OZSessionLifecycleTests: XCTestCase {
     func testSaveSession_thenRetrieve() async throws {
         let storage = newAdapter()
 
-        let session = StoredSession(
+        let session = OZStoredSession(
             credentialId: "cred-session",
             contractId: testContractId,
             connectedAt: 1_700_000_000_000,
@@ -115,7 +115,7 @@ final class OZSessionLifecycleTests: XCTestCase {
     func testSaveSession_overwritesPreviousSession() async throws {
         let storage = newAdapter()
 
-        let session1 = StoredSession(
+        let session1 = OZStoredSession(
             credentialId: "cred-1",
             contractId: "CONTRACT_1",
             connectedAt: 1_700_000_000_000,
@@ -123,7 +123,7 @@ final class OZSessionLifecycleTests: XCTestCase {
         )
         try await storage.saveSession(session1)
 
-        let session2 = StoredSession(
+        let session2 = OZStoredSession(
             credentialId: "cred-2",
             contractId: "CONTRACT_2",
             connectedAt: 1_700_001_000_000,
@@ -141,7 +141,7 @@ final class OZSessionLifecycleTests: XCTestCase {
     func testClearSession_removesSession() async throws {
         let storage = newAdapter()
 
-        try await storage.saveSession(StoredSession(
+        try await storage.saveSession(OZStoredSession(
             credentialId: "cred",
             contractId: testContractId,
             connectedAt: 1_700_000_000_000,
@@ -167,7 +167,7 @@ final class OZSessionLifecycleTests: XCTestCase {
     func testExpiredSession_autoClearedOnGet() async throws {
         let storage = newAdapter()
 
-        let expiredSession = StoredSession(
+        let expiredSession = OZStoredSession(
             credentialId: "expired-cred",
             contractId: testContractId,
             connectedAt: 1000,
@@ -221,9 +221,9 @@ final class OZSessionLifecycleTests: XCTestCase {
     private let validWasmHash = "a" + String(repeating: "0", count: 63)
 
     private func makeKit(
-        storage: StorageAdapter? = nil
-    ) throws -> (kit: OZSmartAccountKit, storage: StorageAdapter) {
-        let resolvedStorage: StorageAdapter = storage ?? InMemoryStorageAdapter()
+        storage: OZStorageAdapter? = nil
+    ) throws -> (kit: OZSmartAccountKit, storage: OZStorageAdapter) {
+        let resolvedStorage: OZStorageAdapter = storage ?? OZInMemoryStorageAdapter()
         let config = try OZSmartAccountConfig(
             rpcUrl: validRpcUrl,
             networkPassphrase: Network.testnet.passphrase,
@@ -244,7 +244,7 @@ final class OZSessionLifecycleTests: XCTestCase {
         return Data(bytes)
     }
 
-    /// Disconnect must remove the persisted `StoredSession` from storage even
+    /// Disconnect must remove the persisted `OZStoredSession` from storage even
     /// when the in-memory connection state has already been pre-seeded with a
     /// matching credential / contract pair. Asserts the storage-side effect
     /// in isolation: after `kit.disconnect()` the storage adapter's
@@ -252,7 +252,7 @@ final class OZSessionLifecycleTests: XCTestCase {
     func testKitDisconnect_clearsSession() async throws {
         let (kit, storage) = try makeKit()
 
-        let session = StoredSession(
+        let session = OZStoredSession(
             credentialId: "session-cred",
             contractId: testContractId,
             connectedAt: 1_700_000_000_000,
@@ -277,10 +277,10 @@ final class OZSessionLifecycleTests: XCTestCase {
     /// orthogonality contract that the OZ smart account relies on for
     /// credential persistence across disconnect/reconnect cycles.
     func testSessionIndependentFromCredentials() async throws {
-        let storage = InMemoryStorageAdapter()
+        let storage = OZInMemoryStorageAdapter()
         let (_, _) = try makeKit(storage: storage)
 
-        let credential = StoredCredential(
+        let credential = OZStoredCredential(
             credentialId: "cred-shared",
             publicKey: testPublicKey(),
             contractId: testContractId,
@@ -291,7 +291,7 @@ final class OZSessionLifecycleTests: XCTestCase {
         )
         try await storage.save(credential: credential)
 
-        let session = StoredSession(
+        let session = OZStoredSession(
             credentialId: "cred-shared",
             contractId: testContractId,
             connectedAt: 1_700_000_000_000,
@@ -323,7 +323,7 @@ final class OZSessionLifecycleTests: XCTestCase {
     func testClearSessionDoesNotAffectCredentials_kitLevel() async throws {
         let (kit, storage) = try makeKit()
 
-        let primaryCredential = StoredCredential(
+        let primaryCredential = OZStoredCredential(
             credentialId: "cred-primary",
             publicKey: testPublicKey(),
             contractId: testContractId,
@@ -332,7 +332,7 @@ final class OZSessionLifecycleTests: XCTestCase {
             nickname: "primary",
             isPrimary: true
         )
-        let secondaryCredential = StoredCredential(
+        let secondaryCredential = OZStoredCredential(
             credentialId: "cred-secondary",
             publicKey: testPublicKey(),
             contractId: testContractId,
@@ -344,7 +344,7 @@ final class OZSessionLifecycleTests: XCTestCase {
         try await storage.save(credential: primaryCredential)
         try await storage.save(credential: secondaryCredential)
 
-        let session = StoredSession(
+        let session = OZStoredSession(
             credentialId: "cred-primary",
             contractId: testContractId,
             connectedAt: 1_700_000_000_000,
@@ -384,7 +384,7 @@ final class OZSessionLifecycleTests: XCTestCase {
         XCTAssertNil(kit.credentialId, "Fresh kit must expose nil credentialId")
         XCTAssertNil(kit.contractId, "Fresh kit must expose nil contractId")
         XCTAssertThrowsError(try kit.requireConnected()) { error in
-            XCTAssertTrue(error is WalletException.NotConnected)
+            XCTAssertTrue(error is SmartAccountWalletException.NotConnected)
         }
     }
 
@@ -453,7 +453,7 @@ final class OZSessionLifecycleTests: XCTestCase {
         XCTAssertEqual(recorder.count, 0)
     }
 
-    /// `requireConnected` throws `WalletException.NotConnected` whenever the
+    /// `requireConnected` throws `SmartAccountWalletException.NotConnected` whenever the
     /// kit's in-memory state has no credential / contract pair. The message
     /// must be the kit-level guidance pointing the caller at
     /// `createWallet()` / `connectWallet()`. Also asserts the post-disconnect
@@ -464,8 +464,8 @@ final class OZSessionLifecycleTests: XCTestCase {
 
         // Initial state — never connected.
         XCTAssertThrowsError(try kit.requireConnected()) { error in
-            XCTAssertTrue(error is WalletException.NotConnected)
-            let typed = error as? WalletException.NotConnected
+            XCTAssertTrue(error is SmartAccountWalletException.NotConnected)
+            let typed = error as? SmartAccountWalletException.NotConnected
             XCTAssertEqual(
                 typed?.message,
                 "No wallet connected. Call createWallet() or connectWallet() first."
@@ -478,8 +478,8 @@ final class OZSessionLifecycleTests: XCTestCase {
 
         try await kit.disconnect()
         XCTAssertThrowsError(try kit.requireConnected()) { error in
-            XCTAssertTrue(error is WalletException.NotConnected)
-            let typed = error as? WalletException.NotConnected
+            XCTAssertTrue(error is SmartAccountWalletException.NotConnected)
+            let typed = error as? SmartAccountWalletException.NotConnected
             XCTAssertEqual(
                 typed?.message,
                 "No wallet connected. Call createWallet() or connectWallet() first."
@@ -494,9 +494,9 @@ final class OZSessionLifecycleTests: XCTestCase {
 /// pair against concurrent writers.
 private final class SessionDisconnectEventRecorder: @unchecked Sendable {
     private let recorderLock = NSLock()
-    private var _events: [SmartAccountEvent] = []
+    private var _events: [OZSmartAccountEvent] = []
 
-    func record(_ event: SmartAccountEvent) {
+    func record(_ event: OZSmartAccountEvent) {
         recorderLock.lock()
         _events.append(event)
         recorderLock.unlock()
@@ -508,7 +508,7 @@ private final class SessionDisconnectEventRecorder: @unchecked Sendable {
         return _events.count
     }
 
-    var events: [SmartAccountEvent] {
+    var events: [OZSmartAccountEvent] {
         recorderLock.lock()
         defer { recorderLock.unlock() }
         return _events

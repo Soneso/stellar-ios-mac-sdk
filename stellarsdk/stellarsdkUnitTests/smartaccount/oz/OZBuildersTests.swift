@@ -15,7 +15,7 @@ final class OZBuildersTests: XCTestCase {
     func testCreateDefaultContext_returnsDefault() {
         let result = OZBuilders.createDefaultContext()
         if case .defaultRule = result {} else {
-            XCTFail("expected ContextRuleType.defaultRule, got \(result)")
+            XCTFail("expected OZContextRuleType.defaultRule, got \(result)")
         }
     }
 
@@ -25,7 +25,7 @@ final class OZBuildersTests: XCTestCase {
         let address = "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM"
         let result = try OZBuilders.createCallContractContext(contractAddress: address)
         guard case let .callContract(contractAddress) = result else {
-            return XCTFail("expected ContextRuleType.callContract, got \(result)")
+            return XCTFail("expected OZContextRuleType.callContract, got \(result)")
         }
         XCTAssertEqual(contractAddress, address)
     }
@@ -34,7 +34,7 @@ final class OZBuildersTests: XCTestCase {
         XCTAssertThrowsError(
             try OZBuilders.createCallContractContext(contractAddress: "GABC...")
         ) { error in
-            XCTAssertTrue(error is ValidationException, "expected ValidationException, got \(type(of: error))")
+            XCTAssertTrue(error is SmartAccountValidationException, "expected SmartAccountValidationException, got \(type(of: error))")
         }
     }
 
@@ -42,7 +42,7 @@ final class OZBuildersTests: XCTestCase {
         XCTAssertThrowsError(
             try OZBuilders.createCallContractContext(contractAddress: "")
         ) { error in
-            XCTAssertTrue(error is ValidationException, "expected ValidationException, got \(type(of: error))")
+            XCTAssertTrue(error is SmartAccountValidationException, "expected SmartAccountValidationException, got \(type(of: error))")
         }
     }
 
@@ -52,7 +52,7 @@ final class OZBuildersTests: XCTestCase {
         let hex = String(repeating: "a", count: 64)
         let result = try OZBuilders.createCreateContractContext(wasmHashHex: hex)
         guard case let .createContract(wasmHash) = result else {
-            return XCTFail("expected ContextRuleType.createContract, got \(result)")
+            return XCTFail("expected OZContextRuleType.createContract, got \(result)")
         }
         XCTAssertEqual(wasmHash.count, 32)
     }
@@ -61,7 +61,7 @@ final class OZBuildersTests: XCTestCase {
         let hex = "0x" + String(repeating: "b", count: 64)
         let result = try OZBuilders.createCreateContractContext(wasmHashHex: hex)
         guard case let .createContract(wasmHash) = result else {
-            return XCTFail("expected ContextRuleType.createContract, got \(result)")
+            return XCTFail("expected OZContextRuleType.createContract, got \(result)")
         }
         XCTAssertEqual(wasmHash.count, 32)
     }
@@ -70,7 +70,7 @@ final class OZBuildersTests: XCTestCase {
         XCTAssertThrowsError(
             try OZBuilders.createCreateContractContext(wasmHashHex: "abc123")
         ) { error in
-            XCTAssertTrue(error is ValidationException, "expected ValidationException, got \(type(of: error))")
+            XCTAssertTrue(error is SmartAccountValidationException, "expected SmartAccountValidationException, got \(type(of: error))")
         }
     }
 
@@ -78,7 +78,7 @@ final class OZBuildersTests: XCTestCase {
         XCTAssertThrowsError(
             try OZBuilders.createCreateContractContext(wasmHashHex: String(repeating: "a", count: 66))
         ) { error in
-            XCTAssertTrue(error is ValidationException, "expected ValidationException, got \(type(of: error))")
+            XCTAssertTrue(error is SmartAccountValidationException, "expected SmartAccountValidationException, got \(type(of: error))")
         }
     }
 
@@ -91,7 +91,7 @@ final class OZBuildersTests: XCTestCase {
         }
         let result = try OZBuilders.createCreateContractContext(wasmHash: bytes)
         guard case let .createContract(wasmHash) = result else {
-            return XCTFail("expected ContextRuleType.createContract, got \(result)")
+            return XCTFail("expected OZContextRuleType.createContract, got \(result)")
         }
         XCTAssertEqual(wasmHash, bytes)
     }
@@ -100,7 +100,7 @@ final class OZBuildersTests: XCTestCase {
         XCTAssertThrowsError(
             try OZBuilders.createCreateContractContext(wasmHash: Data(count: 16))
         ) { error in
-            XCTAssertTrue(error is ValidationException, "expected ValidationException, got \(type(of: error))")
+            XCTAssertTrue(error is SmartAccountValidationException, "expected SmartAccountValidationException, got \(type(of: error))")
         }
     }
 
@@ -119,7 +119,7 @@ final class OZBuildersTests: XCTestCase {
         let signer3 = try OZDelegatedSigner(address: KeyPair.generateRandomKeyPair().accountId)
         let signer4 = try OZDelegatedSigner(address: KeyPair.generateRandomKeyPair().accountId)
 
-        let ruleA = ParsedContextRule(
+        let ruleA = OZParsedContextRule(
             id: 1,
             contextType: .defaultRule,
             name: "rule-A",
@@ -129,7 +129,7 @@ final class OZBuildersTests: XCTestCase {
             policyIds: [],
             validUntil: nil
         )
-        let ruleB = ParsedContextRule(
+        let ruleB = OZParsedContextRule(
             id: 2,
             contextType: .defaultRule,
             name: "rule-B",
@@ -139,7 +139,7 @@ final class OZBuildersTests: XCTestCase {
             policyIds: [],
             validUntil: nil
         )
-        let ruleC = ParsedContextRule(
+        let ruleC = OZParsedContextRule(
             id: 3,
             contextType: .defaultRule,
             name: "rule-C",
@@ -159,31 +159,31 @@ final class OZBuildersTests: XCTestCase {
         XCTAssertEqual(result[3].uniqueKey, signer4.uniqueKey)
     }
 
-    // MARK: - ContextRuleType equality (default: return false branch)
+    // MARK: - OZContextRuleType equality (default: return false branch)
 
     /// Comparing a `callContract` type against a `createContract` type must
-    /// return `false` (the `default:` branch in `ContextRuleType.==`).
+    /// return `false` (the `default:` branch in `OZContextRuleType.==`).
     func test_contextRuleTypeEquality_callContractVsCreateContract_returnsFalse() {
-        let a = ContextRuleType.callContract(contractAddress: "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM")
-        let b = ContextRuleType.createContract(wasmHash: Data(repeating: 0xAB, count: 32))
+        let a = OZContextRuleType.callContract(contractAddress: "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM")
+        let b = OZContextRuleType.createContract(wasmHash: Data(repeating: 0xAB, count: 32))
         XCTAssertNotEqual(a, b)
     }
 
     /// Comparing `defaultRule` against `callContract` must return `false`.
     func test_contextRuleTypeEquality_defaultVsCallContract_returnsFalse() {
-        let a = ContextRuleType.defaultRule
-        let b = ContextRuleType.callContract(contractAddress: "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM")
+        let a = OZContextRuleType.defaultRule
+        let b = OZContextRuleType.callContract(contractAddress: "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM")
         XCTAssertNotEqual(a, b)
     }
 
-    // MARK: - ParsedContextRule equality
+    // MARK: - OZParsedContextRule equality
 
     /// Two rules that differ in name must not be equal (exercises the
-    /// guard-condition early-exit path in `ParsedContextRule.==`).
+    /// guard-condition early-exit path in `OZParsedContextRule.==`).
     func test_parsedContextRule_equality_differentName_notEqual() throws {
         let address = "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ"
         let signer = try OZDelegatedSigner(address: address)
-        let ruleA = ParsedContextRule(
+        let ruleA = OZParsedContextRule(
             id: 1,
             contextType: .defaultRule,
             name: "Alpha",
@@ -193,7 +193,7 @@ final class OZBuildersTests: XCTestCase {
             policyIds: [],
             validUntil: nil
         )
-        let ruleB = ParsedContextRule(
+        let ruleB = OZParsedContextRule(
             id: 1,
             contextType: .defaultRule,
             name: "Beta",
@@ -207,11 +207,11 @@ final class OZBuildersTests: XCTestCase {
     }
 
     /// Two identical rules must compare equal (exercises the `return true`
-    /// branch at the end of `ParsedContextRule.==`).
+    /// branch at the end of `OZParsedContextRule.==`).
     func test_parsedContextRule_equality_identicalRules_equal() throws {
         let address = "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ"
         let signer = try OZDelegatedSigner(address: address)
-        let rule = ParsedContextRule(
+        let rule = OZParsedContextRule(
             id: 2,
             contextType: .defaultRule,
             name: "Same",
@@ -221,7 +221,7 @@ final class OZBuildersTests: XCTestCase {
             policyIds: [],
             validUntil: nil
         )
-        let ruleCopy = ParsedContextRule(
+        let ruleCopy = OZParsedContextRule(
             id: 2,
             contextType: .defaultRule,
             name: "Same",
@@ -237,14 +237,14 @@ final class OZBuildersTests: XCTestCase {
     // MARK: - createCreateContractContext invalid hex characters
 
     /// `createCreateContractContext(wasmHashHex:)` with a 64-character string
-    /// that contains non-hex characters must throw `ValidationException.InvalidInput`.
+    /// that contains non-hex characters must throw `SmartAccountValidationException.InvalidInput`.
     func test_createCreateContractContext_invalidHexChars_throws() {
         XCTAssertThrowsError(
             try OZBuilders.createCreateContractContext(
                 wasmHashHex: String(repeating: "g", count: 64)
             )
         ) { error in
-            XCTAssertTrue(error is ValidationException.InvalidInput)
+            XCTAssertTrue(error is SmartAccountValidationException.InvalidInput)
         }
     }
 }

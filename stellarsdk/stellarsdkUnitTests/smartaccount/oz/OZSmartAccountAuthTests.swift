@@ -94,7 +94,7 @@ final class OZSmartAccountAuthTests: XCTestCase {
                 entry: entry, expirationLedger: 100, networkPassphrase: testNetwork
             )
             XCTFail("Expected throw")
-        } catch is TransactionException.SigningFailed {
+        } catch is SmartAccountTransactionException.SigningFailed {
             // expected
         } catch {
             XCTFail("Unexpected error: \(error)")
@@ -197,7 +197,7 @@ final class OZSmartAccountAuthTests: XCTestCase {
                 entry: entry, signerKey: try signer.toScVal(), signatureValue: .bytes(Data())
             )
         ) { error in
-            XCTAssertTrue(error is TransactionException.SigningFailed)
+            XCTAssertTrue(error is SmartAccountTransactionException.SigningFailed)
         }
     }
 
@@ -214,7 +214,7 @@ final class OZSmartAccountAuthTests: XCTestCase {
                 expirationLedger: 100
             )
             XCTFail("Expected throw")
-        } catch is TransactionException.SigningFailed {
+        } catch is SmartAccountTransactionException.SigningFailed {
             // expected
         } catch {
             XCTFail("Unexpected error: \(error)")
@@ -522,7 +522,7 @@ final class OZSmartAccountAuthTests: XCTestCase {
 
     func testCodecRead_nonMapThrows() {
         XCTAssertThrowsError(try OZSmartAccountAuthPayloadCodec.read(.bool(true))) { error in
-            XCTAssertTrue(error is TransactionException.SigningFailed)
+            XCTAssertTrue(error is SmartAccountTransactionException.SigningFailed)
         }
     }
 

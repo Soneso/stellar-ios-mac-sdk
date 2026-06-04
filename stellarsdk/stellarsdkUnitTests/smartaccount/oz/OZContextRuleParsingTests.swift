@@ -9,7 +9,7 @@ import XCTest
 @testable import stellarsdk
 
 /// Unit tests for ``OZContextRuleManager/parseContextRule(scVal:)``,
-/// ``ContextRuleType/toScVal()``, the ``ParsedContextRule`` data shape, and
+/// ``OZContextRuleType/toScVal()``, the ``OZParsedContextRule`` data shape, and
 /// ``OZContextRuleManager/addContextRule(contextType:name:validUntil:signers:policies:selectedSigners:forceMethod:)``
 /// input validation.
 ///
@@ -306,8 +306,8 @@ final class OZContextRuleParsingTests: XCTestCase {
             ("context_type", defaultContextTypeScVal())
         ])
         XCTAssertThrowsError(try manager.parseContextRule(scVal: ruleMap)) { error in
-            guard let validation = error as? ValidationException else {
-                return XCTFail("expected ValidationException, got: \(error)")
+            guard let validation = error as? SmartAccountValidationException else {
+                return XCTFail("expected SmartAccountValidationException, got: \(error)")
             }
             XCTAssertTrue(validation.message.contains("id"),
                           "Exception message should mention 'id'")
@@ -321,8 +321,8 @@ final class OZContextRuleParsingTests: XCTestCase {
             ("context_type", defaultContextTypeScVal())
         ])
         XCTAssertThrowsError(try manager.parseContextRule(scVal: ruleMap)) { error in
-            guard let validation = error as? ValidationException else {
-                return XCTFail("expected ValidationException, got: \(error)")
+            guard let validation = error as? SmartAccountValidationException else {
+                return XCTFail("expected SmartAccountValidationException, got: \(error)")
             }
             XCTAssertTrue(validation.message.contains("name"),
                           "Exception message should mention 'name'")
@@ -336,8 +336,8 @@ final class OZContextRuleParsingTests: XCTestCase {
             ("name", .string("TestRule"))
         ])
         XCTAssertThrowsError(try manager.parseContextRule(scVal: ruleMap)) { error in
-            guard let validation = error as? ValidationException else {
-                return XCTFail("expected ValidationException, got: \(error)")
+            guard let validation = error as? SmartAccountValidationException else {
+                return XCTFail("expected SmartAccountValidationException, got: \(error)")
             }
             XCTAssertTrue(validation.message.contains("context_type"),
                           "Exception message should mention 'context_type'")
@@ -356,8 +356,8 @@ final class OZContextRuleParsingTests: XCTestCase {
             ("context_type", defaultContextTypeScVal())
         ])
         XCTAssertThrowsError(try manager.parseContextRule(scVal: ruleMap)) { error in
-            guard let validation = error as? ValidationException else {
-                return XCTFail("expected ValidationException")
+            guard let validation = error as? SmartAccountValidationException else {
+                return XCTFail("expected SmartAccountValidationException")
             }
             XCTAssertTrue(validation.message.contains("id"))
         }
@@ -371,8 +371,8 @@ final class OZContextRuleParsingTests: XCTestCase {
             ("context_type", defaultContextTypeScVal())
         ])
         XCTAssertThrowsError(try manager.parseContextRule(scVal: ruleMap)) { error in
-            guard let validation = error as? ValidationException else {
-                return XCTFail("expected ValidationException")
+            guard let validation = error as? SmartAccountValidationException else {
+                return XCTFail("expected SmartAccountValidationException")
             }
             XCTAssertTrue(validation.message.contains("name"))
         }
@@ -386,8 +386,8 @@ final class OZContextRuleParsingTests: XCTestCase {
             ("context_type", .string("Default"))
         ])
         XCTAssertThrowsError(try manager.parseContextRule(scVal: ruleMap)) { error in
-            guard let validation = error as? ValidationException else {
-                return XCTFail("expected ValidationException")
+            guard let validation = error as? SmartAccountValidationException else {
+                return XCTFail("expected SmartAccountValidationException")
             }
             XCTAssertTrue(validation.message.contains("context_type"))
         }
@@ -402,8 +402,8 @@ final class OZContextRuleParsingTests: XCTestCase {
             ("signers", .string("not-a-vec"))
         ])
         XCTAssertThrowsError(try manager.parseContextRule(scVal: ruleMap)) { error in
-            guard let validation = error as? ValidationException else {
-                return XCTFail("expected ValidationException")
+            guard let validation = error as? SmartAccountValidationException else {
+                return XCTFail("expected SmartAccountValidationException")
             }
             XCTAssertTrue(validation.message.contains("signers"))
         }
@@ -418,8 +418,8 @@ final class OZContextRuleParsingTests: XCTestCase {
             ("signer_ids", .vec([.string("not-a-u32")]))
         ])
         XCTAssertThrowsError(try manager.parseContextRule(scVal: ruleMap)) { error in
-            guard let validation = error as? ValidationException else {
-                return XCTFail("expected ValidationException")
+            guard let validation = error as? SmartAccountValidationException else {
+                return XCTFail("expected SmartAccountValidationException")
             }
             XCTAssertTrue(validation.message.contains("signer_ids"))
         }
@@ -429,8 +429,8 @@ final class OZContextRuleParsingTests: XCTestCase {
         let manager = try disconnectedManager()
         let ruleMap = buildFullRuleMap(validUntil: .string("not-a-u32"))
         XCTAssertThrowsError(try manager.parseContextRule(scVal: ruleMap)) { error in
-            guard let validation = error as? ValidationException else {
-                return XCTFail("expected ValidationException")
+            guard let validation = error as? SmartAccountValidationException else {
+                return XCTFail("expected SmartAccountValidationException")
             }
             XCTAssertTrue(validation.message.contains("valid_until"))
         }
@@ -443,8 +443,8 @@ final class OZContextRuleParsingTests: XCTestCase {
     func testParseContextRule_nonMapInput_throwsValidationException() throws {
         let manager = try disconnectedManager()
         XCTAssertThrowsError(try manager.parseContextRule(scVal: .vec([]))) { error in
-            guard let validation = error as? ValidationException else {
-                return XCTFail("expected ValidationException")
+            guard let validation = error as? SmartAccountValidationException else {
+                return XCTFail("expected SmartAccountValidationException")
             }
             XCTAssertTrue(validation.message.contains("Map"),
                           "Exception message should mention 'Map'")
@@ -454,14 +454,14 @@ final class OZContextRuleParsingTests: XCTestCase {
     func testParseContextRule_voidInput_throwsValidationException() throws {
         let manager = try disconnectedManager()
         XCTAssertThrowsError(try manager.parseContextRule(scVal: .void)) { error in
-            XCTAssertTrue(error is ValidationException)
+            XCTAssertTrue(error is SmartAccountValidationException)
         }
     }
 
     func testParseContextRule_stringInput_throwsValidationException() throws {
         let manager = try disconnectedManager()
         XCTAssertThrowsError(try manager.parseContextRule(scVal: .string("not-a-map"))) { error in
-            XCTAssertTrue(error is ValidationException)
+            XCTAssertTrue(error is SmartAccountValidationException)
         }
     }
 
@@ -473,8 +473,8 @@ final class OZContextRuleParsingTests: XCTestCase {
         let manager = try disconnectedManager()
         let ruleMap = buildFullRuleMap(contextType: .vec([]))
         XCTAssertThrowsError(try manager.parseContextRule(scVal: ruleMap)) { error in
-            guard let validation = error as? ValidationException else {
-                return XCTFail("expected ValidationException")
+            guard let validation = error as? SmartAccountValidationException else {
+                return XCTFail("expected SmartAccountValidationException")
             }
             XCTAssertTrue(validation.message.contains("context_type"))
         }
@@ -485,8 +485,8 @@ final class OZContextRuleParsingTests: XCTestCase {
         let unknownType: SCValXDR = .vec([.symbol("Unknown")])
         let ruleMap = buildFullRuleMap(contextType: unknownType)
         XCTAssertThrowsError(try manager.parseContextRule(scVal: ruleMap)) { error in
-            guard let validation = error as? ValidationException else {
-                return XCTFail("expected ValidationException")
+            guard let validation = error as? SmartAccountValidationException else {
+                return XCTFail("expected SmartAccountValidationException")
             }
             XCTAssertTrue(validation.message.contains("Unknown"),
                           "Exception message should contain the unknown discriminant")
@@ -498,8 +498,8 @@ final class OZContextRuleParsingTests: XCTestCase {
         let badCallContract: SCValXDR = .vec([.symbol("CallContract")])
         let ruleMap = buildFullRuleMap(contextType: badCallContract)
         XCTAssertThrowsError(try manager.parseContextRule(scVal: ruleMap)) { error in
-            guard let validation = error as? ValidationException else {
-                return XCTFail("expected ValidationException")
+            guard let validation = error as? SmartAccountValidationException else {
+                return XCTFail("expected SmartAccountValidationException")
             }
             XCTAssertTrue(validation.message.contains("CallContract"),
                           "Exception message should mention 'CallContract'")
@@ -511,8 +511,8 @@ final class OZContextRuleParsingTests: XCTestCase {
         let badCreateContract: SCValXDR = .vec([.symbol("CreateContract")])
         let ruleMap = buildFullRuleMap(contextType: badCreateContract)
         XCTAssertThrowsError(try manager.parseContextRule(scVal: ruleMap)) { error in
-            guard let validation = error as? ValidationException else {
-                return XCTFail("expected ValidationException")
+            guard let validation = error as? SmartAccountValidationException else {
+                return XCTFail("expected SmartAccountValidationException")
             }
             XCTAssertTrue(validation.message.contains("CreateContract"),
                           "Exception message should mention 'CreateContract'")
@@ -531,8 +531,8 @@ final class OZContextRuleParsingTests: XCTestCase {
             signerIds: [1]
         )
         XCTAssertThrowsError(try manager.parseContextRule(scVal: ruleMap)) { error in
-            guard let validation = error as? ValidationException else {
-                return XCTFail("expected ValidationException")
+            guard let validation = error as? SmartAccountValidationException else {
+                return XCTFail("expected SmartAccountValidationException")
             }
             XCTAssertTrue(validation.message.contains("UnknownType"),
                           "Exception message should contain the unknown discriminant")
@@ -547,8 +547,8 @@ final class OZContextRuleParsingTests: XCTestCase {
             signerIds: [1]
         )
         XCTAssertThrowsError(try manager.parseContextRule(scVal: ruleMap)) { error in
-            guard let validation = error as? ValidationException else {
-                return XCTFail("expected ValidationException")
+            guard let validation = error as? SmartAccountValidationException else {
+                return XCTFail("expected SmartAccountValidationException")
             }
             XCTAssertTrue(validation.message.contains("signer"),
                           "Exception message should mention 'signer'")
@@ -563,8 +563,8 @@ final class OZContextRuleParsingTests: XCTestCase {
             signerIds: [1]
         )
         XCTAssertThrowsError(try manager.parseContextRule(scVal: ruleMap)) { error in
-            guard let validation = error as? ValidationException else {
-                return XCTFail("expected ValidationException")
+            guard let validation = error as? SmartAccountValidationException else {
+                return XCTFail("expected SmartAccountValidationException")
             }
             XCTAssertTrue(validation.message.contains("Delegated"),
                           "Exception message should mention 'Delegated'")
@@ -582,8 +582,8 @@ final class OZContextRuleParsingTests: XCTestCase {
             signerIds: [1]
         )
         XCTAssertThrowsError(try manager.parseContextRule(scVal: ruleMap)) { error in
-            guard let validation = error as? ValidationException else {
-                return XCTFail("expected ValidationException")
+            guard let validation = error as? SmartAccountValidationException else {
+                return XCTFail("expected SmartAccountValidationException")
             }
             XCTAssertTrue(validation.message.contains("External"),
                           "Exception message should mention 'External'")
@@ -591,11 +591,11 @@ final class OZContextRuleParsingTests: XCTestCase {
     }
 
     // ========================================================================
-    // ContextRuleType.toScVal() (4 cases)
+    // OZContextRuleType.toScVal() (4 cases)
     // ========================================================================
 
     func testContextRuleType_defaultToScVal() throws {
-        let scVal = try ContextRuleType.defaultRule.toScVal()
+        let scVal = try OZContextRuleType.defaultRule.toScVal()
         guard case .vec(let elements) = scVal, let elements = elements else {
             return XCTFail("expected vec")
         }
@@ -607,7 +607,7 @@ final class OZContextRuleParsingTests: XCTestCase {
     }
 
     func testContextRuleType_callContractToScVal() throws {
-        let scVal = try ContextRuleType.callContract(contractAddress: validContractAddress2).toScVal()
+        let scVal = try OZContextRuleType.callContract(contractAddress: validContractAddress2).toScVal()
         guard case .vec(let elements) = scVal, let elements = elements else {
             return XCTFail("expected vec")
         }
@@ -630,7 +630,7 @@ final class OZContextRuleParsingTests: XCTestCase {
 
     func testContextRuleType_createContractToScVal() throws {
         let wasmHash = Data((0..<32).map { UInt8(($0 * 3) % 256) })
-        let scVal = try ContextRuleType.createContract(wasmHash: wasmHash).toScVal()
+        let scVal = try OZContextRuleType.createContract(wasmHash: wasmHash).toScVal()
         guard case .vec(let elements) = scVal, let elements = elements else {
             return XCTFail("expected vec")
         }
@@ -647,42 +647,42 @@ final class OZContextRuleParsingTests: XCTestCase {
 
     func testContextRuleType_callContractInvalidAddress_throws() throws {
         XCTAssertThrowsError(
-            try ContextRuleType.callContract(contractAddress: "INVALID_ADDRESS").toScVal()
+            try OZContextRuleType.callContract(contractAddress: "INVALID_ADDRESS").toScVal()
         ) { error in
-            XCTAssertTrue(error is ValidationException)
+            XCTAssertTrue(error is SmartAccountValidationException)
         }
     }
 
     // ========================================================================
-    // ContextRuleType equality and hashCode (3 cases)
+    // OZContextRuleType equality and hashCode (3 cases)
     // ========================================================================
 
     func testContextRuleType_defaultEquality() {
-        XCTAssertEqual(ContextRuleType.defaultRule, ContextRuleType.defaultRule)
+        XCTAssertEqual(OZContextRuleType.defaultRule, OZContextRuleType.defaultRule)
     }
 
     func testContextRuleType_callContractEquality() {
-        let a = ContextRuleType.callContract(contractAddress: validContractAddress)
-        let b = ContextRuleType.callContract(contractAddress: validContractAddress)
+        let a = OZContextRuleType.callContract(contractAddress: validContractAddress)
+        let b = OZContextRuleType.callContract(contractAddress: validContractAddress)
         XCTAssertEqual(a, b)
         XCTAssertEqual(a.hashValue, b.hashValue)
     }
 
     func testContextRuleType_createContractEquality() {
         let hash = Data((0..<32).map { UInt8($0) })
-        let a = ContextRuleType.createContract(wasmHash: hash)
-        let b = ContextRuleType.createContract(wasmHash: hash)
+        let a = OZContextRuleType.createContract(wasmHash: hash)
+        let b = OZContextRuleType.createContract(wasmHash: hash)
         XCTAssertEqual(a, b)
         XCTAssertEqual(a.hashValue, b.hashValue)
     }
 
     // ========================================================================
-    // ParsedContextRule data shape (3 cases)
+    // OZParsedContextRule data shape (3 cases)
     // ========================================================================
 
     func testParsedContextRule_constructionAndFieldAccess() throws {
         let signer = try OZDelegatedSigner(address: validAccountAddress)
-        let rule = ParsedContextRule(
+        let rule = OZParsedContextRule(
             id: 5,
             contextType: .defaultRule,
             name: "TestRule",
@@ -703,7 +703,7 @@ final class OZContextRuleParsingTests: XCTestCase {
     }
 
     func testParsedContextRule_nullValidUntil() {
-        let rule = ParsedContextRule(
+        let rule = OZParsedContextRule(
             id: 0,
             contextType: .defaultRule,
             name: "NoExpiry",
@@ -719,7 +719,7 @@ final class OZContextRuleParsingTests: XCTestCase {
     func testParsedContextRule_equalityAndHashing() throws {
         let signerA = try OZDelegatedSigner(address: validAccountAddress)
         let signerB = try OZDelegatedSigner(address: validAccountAddress)
-        let a = ParsedContextRule(
+        let a = OZParsedContextRule(
             id: 1,
             contextType: .defaultRule,
             name: "X",
@@ -729,7 +729,7 @@ final class OZContextRuleParsingTests: XCTestCase {
             policyIds: [],
             validUntil: nil
         )
-        let b = ParsedContextRule(
+        let b = OZParsedContextRule(
             id: 1,
             contextType: .defaultRule,
             name: "X",
@@ -755,8 +755,8 @@ final class OZContextRuleParsingTests: XCTestCase {
                 name: "Rule",
                 signers: [try OZDelegatedSigner(address: validAccountAddress)]
             )
-            XCTFail("expected WalletException.NotConnected")
-        } catch is WalletException.NotConnected {
+            XCTFail("expected SmartAccountWalletException.NotConnected")
+        } catch is SmartAccountWalletException.NotConnected {
             // expected
         }
     }
@@ -769,8 +769,8 @@ final class OZContextRuleParsingTests: XCTestCase {
                 name: "",
                 signers: [try OZDelegatedSigner(address: validAccountAddress)]
             )
-            XCTFail("expected ValidationException.InvalidInput")
-        } catch let error as ValidationException.InvalidInput {
+            XCTFail("expected SmartAccountValidationException.InvalidInput")
+        } catch let error as SmartAccountValidationException.InvalidInput {
             XCTAssertTrue(error.message.contains("name"))
         }
     }
@@ -784,8 +784,8 @@ final class OZContextRuleParsingTests: XCTestCase {
                 signers: [],
                 policies: [:]
             )
-            XCTFail("expected ValidationException.InvalidInput")
-        } catch let error as ValidationException.InvalidInput {
+            XCTFail("expected SmartAccountValidationException.InvalidInput")
+        } catch let error as SmartAccountValidationException.InvalidInput {
             let msg = error.message
             XCTAssertTrue(msg.contains("signer") || msg.contains("policy") || msg.contains("policies"))
         }
@@ -802,8 +802,8 @@ final class OZContextRuleParsingTests: XCTestCase {
                 name: "TooManySigners",
                 signers: signers
             )
-            XCTFail("expected ValidationException.InvalidInput")
-        } catch let error as ValidationException.InvalidInput {
+            XCTFail("expected SmartAccountValidationException.InvalidInput")
+        } catch let error as SmartAccountValidationException.InvalidInput {
             let msg = error.message
             XCTAssertTrue(msg.contains("15") || msg.contains("signers"))
         }
@@ -825,8 +825,8 @@ final class OZContextRuleParsingTests: XCTestCase {
                 signers: [try OZDelegatedSigner(address: validAccountAddress)],
                 policies: policies
             )
-            XCTFail("expected ValidationException.InvalidInput")
-        } catch let error as ValidationException.InvalidInput {
+            XCTFail("expected SmartAccountValidationException.InvalidInput")
+        } catch let error as SmartAccountValidationException.InvalidInput {
             let msg = error.message
             XCTAssertTrue(msg.contains("5") || msg.contains("policies"))
         }
@@ -841,8 +841,8 @@ final class OZContextRuleParsingTests: XCTestCase {
                 signers: [try OZDelegatedSigner(address: validAccountAddress)],
                 policies: ["INVALID_ADDRESS": .void]
             )
-            XCTFail("expected ValidationException")
-        } catch let error as ValidationException {
+            XCTFail("expected SmartAccountValidationException")
+        } catch let error as SmartAccountValidationException {
             let msg = error.message
             XCTAssertTrue(msg.lowercased().contains("address"),
                           "Expected message to mention address validation, got: \(msg)")
@@ -859,8 +859,8 @@ final class OZContextRuleParsingTests: XCTestCase {
                 signers: [try OZDelegatedSigner(address: validAccountAddress)],
                 policies: [validAccountAddress: .void]
             )
-            XCTFail("expected ValidationException")
-        } catch let error as ValidationException {
+            XCTFail("expected SmartAccountValidationException")
+        } catch let error as SmartAccountValidationException {
             XCTAssertNotNil(error.message)
         }
     }
@@ -871,7 +871,7 @@ final class OZContextRuleParsingTests: XCTestCase {
 
     func testRoundTrip_defaultContextType() throws {
         let manager = try disconnectedManager()
-        let originalType = ContextRuleType.defaultRule
+        let originalType = OZContextRuleType.defaultRule
         let scVal = try originalType.toScVal()
         let ruleMap = buildFullRuleMap(contextType: scVal)
         let parsed = try manager.parseContextRule(scVal: ruleMap)
@@ -880,7 +880,7 @@ final class OZContextRuleParsingTests: XCTestCase {
 
     func testRoundTrip_callContractContextType() throws {
         let manager = try disconnectedManager()
-        let originalType = ContextRuleType.callContract(contractAddress: validContractAddress2)
+        let originalType = OZContextRuleType.callContract(contractAddress: validContractAddress2)
         let scVal = try originalType.toScVal()
         let ruleMap = buildFullRuleMap(contextType: scVal)
         let parsed = try manager.parseContextRule(scVal: ruleMap)
@@ -890,7 +890,7 @@ final class OZContextRuleParsingTests: XCTestCase {
     func testRoundTrip_createContractContextType() throws {
         let manager = try disconnectedManager()
         let wasmHash = Data((0..<32).map { UInt8(($0 * 7) % 256) })
-        let originalType = ContextRuleType.createContract(wasmHash: wasmHash)
+        let originalType = OZContextRuleType.createContract(wasmHash: wasmHash)
         let scVal = try originalType.toScVal()
         let ruleMap = buildFullRuleMap(contextType: scVal)
         let parsed = try manager.parseContextRule(scVal: ruleMap)
@@ -954,8 +954,8 @@ final class OZContextRuleParsingTests: XCTestCase {
             ("policies", .vec([.string("not-an-address")]))
         ])
         XCTAssertThrowsError(try manager.parseContextRule(scVal: ruleMap)) { error in
-            guard let validation = error as? ValidationException else {
-                return XCTFail("expected ValidationException")
+            guard let validation = error as? SmartAccountValidationException else {
+                return XCTFail("expected SmartAccountValidationException")
             }
             // Inner failure tagged with "address"; let the implementation be
             // free to choose whether the outer field is reported too.
@@ -974,8 +974,8 @@ final class OZContextRuleParsingTests: XCTestCase {
             ("policy_ids", .string("not-a-vec"))
         ])
         XCTAssertThrowsError(try manager.parseContextRule(scVal: ruleMap)) { error in
-            guard let validation = error as? ValidationException else {
-                return XCTFail("expected ValidationException")
+            guard let validation = error as? SmartAccountValidationException else {
+                return XCTFail("expected SmartAccountValidationException")
             }
             XCTAssertTrue(validation.message.contains("policy_ids"))
         }
@@ -990,8 +990,8 @@ final class OZContextRuleParsingTests: XCTestCase {
             ("policy_ids", .vec([.string("not-a-u32")]))
         ])
         XCTAssertThrowsError(try manager.parseContextRule(scVal: ruleMap)) { error in
-            guard let validation = error as? ValidationException else {
-                return XCTFail("expected ValidationException")
+            guard let validation = error as? SmartAccountValidationException else {
+                return XCTFail("expected SmartAccountValidationException")
             }
             XCTAssertTrue(validation.message.contains("policy_ids"))
         }
@@ -1010,8 +1010,8 @@ final class OZContextRuleParsingTests: XCTestCase {
             ("signers", .vec([.string("not-a-signer-vec")]))
         ])
         XCTAssertThrowsError(try manager.parseContextRule(scVal: ruleMap)) { error in
-            guard let validation = error as? ValidationException else {
-                return XCTFail("expected ValidationException")
+            guard let validation = error as? SmartAccountValidationException else {
+                return XCTFail("expected SmartAccountValidationException")
             }
             XCTAssertTrue(validation.message.contains("signer"))
         }
@@ -1026,8 +1026,8 @@ final class OZContextRuleParsingTests: XCTestCase {
         let badType: SCValXDR = .vec([.u32(42)])
         let ruleMap = buildFullRuleMap(contextType: badType)
         XCTAssertThrowsError(try manager.parseContextRule(scVal: ruleMap)) { error in
-            guard let validation = error as? ValidationException else {
-                return XCTFail("expected ValidationException")
+            guard let validation = error as? SmartAccountValidationException else {
+                return XCTFail("expected SmartAccountValidationException")
             }
             XCTAssertTrue(validation.message.contains("context_type"))
         }
@@ -1058,8 +1058,8 @@ final class OZContextRuleParsingTests: XCTestCase {
         )
 
         XCTAssertThrowsError(try manager.parseContextRule(scVal: ruleMap)) { error in
-            guard let validation = error as? ValidationException else {
-                return XCTFail("expected ValidationException, got \(error)")
+            guard let validation = error as? SmartAccountValidationException else {
+                return XCTFail("expected SmartAccountValidationException, got \(error)")
             }
             // The error message must clearly identify the problem so callers
             // can diagnose a malformed on-chain record without inspecting the
@@ -1077,7 +1077,7 @@ final class OZContextRuleParsingTests: XCTestCase {
     // ========================================================================
 
     /// When `signers` is a non-Vec ScVal (e.g. a U32), the parser must throw
-    /// `ValidationException.InvalidInput` naming the `signers` field.
+    /// `SmartAccountValidationException.InvalidInput` naming the `signers` field.
     func test_parseContextRule_malformedSignerIds_throwsValidationException() throws {
         let manager = try disconnectedManager()
         let ruleMap = buildMapScVal([
@@ -1091,8 +1091,8 @@ final class OZContextRuleParsingTests: XCTestCase {
             ("valid_until", .void)
         ])
         XCTAssertThrowsError(try manager.parseContextRule(scVal: ruleMap)) { error in
-            guard let validation = error as? ValidationException.InvalidInput else {
-                return XCTFail("expected ValidationException.InvalidInput, got \(error)")
+            guard let validation = error as? SmartAccountValidationException.InvalidInput else {
+                return XCTFail("expected SmartAccountValidationException.InvalidInput, got \(error)")
             }
             XCTAssertTrue(
                 validation.message.contains("signers"),
@@ -1102,7 +1102,7 @@ final class OZContextRuleParsingTests: XCTestCase {
     }
 
     /// When `policies` is a non-Vec ScVal (e.g. a Bytes), the parser must
-    /// throw `ValidationException.InvalidInput` naming the `policies` field.
+    /// throw `SmartAccountValidationException.InvalidInput` naming the `policies` field.
     func test_parseContextRule_malformedPolicies_throwsValidationException() throws {
         let manager = try disconnectedManager()
         let ruleMap = buildMapScVal([
@@ -1116,8 +1116,8 @@ final class OZContextRuleParsingTests: XCTestCase {
             ("valid_until", .void)
         ])
         XCTAssertThrowsError(try manager.parseContextRule(scVal: ruleMap)) { error in
-            guard let validation = error as? ValidationException.InvalidInput else {
-                return XCTFail("expected ValidationException.InvalidInput, got \(error)")
+            guard let validation = error as? SmartAccountValidationException.InvalidInput else {
+                return XCTFail("expected SmartAccountValidationException.InvalidInput, got \(error)")
             }
             XCTAssertTrue(
                 validation.message.contains("policies"),
@@ -1127,7 +1127,7 @@ final class OZContextRuleParsingTests: XCTestCase {
     }
 
     /// When `policy_ids` is a non-Vec ScVal (e.g. a String), the parser must
-    /// throw `ValidationException.InvalidInput` naming the `policy_ids` field.
+    /// throw `SmartAccountValidationException.InvalidInput` naming the `policy_ids` field.
     func test_parseContextRule_malformedPolicyIds_throwsValidationException() throws {
         let manager = try disconnectedManager()
         let ruleMap = buildMapScVal([
@@ -1141,8 +1141,8 @@ final class OZContextRuleParsingTests: XCTestCase {
             ("valid_until", .void)
         ])
         XCTAssertThrowsError(try manager.parseContextRule(scVal: ruleMap)) { error in
-            guard let validation = error as? ValidationException.InvalidInput else {
-                return XCTFail("expected ValidationException.InvalidInput, got \(error)")
+            guard let validation = error as? SmartAccountValidationException.InvalidInput else {
+                return XCTFail("expected SmartAccountValidationException.InvalidInput, got \(error)")
             }
             XCTAssertTrue(
                 validation.message.contains("policy_ids"),
@@ -1152,7 +1152,7 @@ final class OZContextRuleParsingTests: XCTestCase {
     }
 
     /// When `valid_until` is not `Void` or `U32` (e.g. a String), the parser
-    /// must throw `ValidationException.InvalidInput` naming the `valid_until`
+    /// must throw `SmartAccountValidationException.InvalidInput` naming the `valid_until`
     /// field.
     func test_parseContextRule_malformedValidUntil_throwsValidationException() throws {
         let manager = try disconnectedManager()
@@ -1167,8 +1167,8 @@ final class OZContextRuleParsingTests: XCTestCase {
             ("valid_until", .string("not-a-u32"))
         ])
         XCTAssertThrowsError(try manager.parseContextRule(scVal: ruleMap)) { error in
-            guard let validation = error as? ValidationException.InvalidInput else {
-                return XCTFail("expected ValidationException.InvalidInput, got \(error)")
+            guard let validation = error as? SmartAccountValidationException.InvalidInput else {
+                return XCTFail("expected SmartAccountValidationException.InvalidInput, got \(error)")
             }
             XCTAssertTrue(
                 validation.message.contains("valid_until"),
@@ -1182,7 +1182,7 @@ final class OZContextRuleParsingTests: XCTestCase {
     // ========================================================================
 
     /// When `signer_ids` is a non-Vec ScVal (e.g. a String), the parser must
-    /// throw `ValidationException.InvalidInput` naming the `signer_ids` field.
+    /// throw `SmartAccountValidationException.InvalidInput` naming the `signer_ids` field.
     func test_parseContextRule_malformedSignerIdsVec_throwsValidationException() throws {
         let manager = try disconnectedManager()
         let ruleMap = buildMapScVal([
@@ -1196,8 +1196,8 @@ final class OZContextRuleParsingTests: XCTestCase {
             ("valid_until", .void)
         ])
         XCTAssertThrowsError(try manager.parseContextRule(scVal: ruleMap)) { error in
-            guard let validation = error as? ValidationException.InvalidInput else {
-                return XCTFail("expected ValidationException.InvalidInput, got \(error)")
+            guard let validation = error as? SmartAccountValidationException.InvalidInput else {
+                return XCTFail("expected SmartAccountValidationException.InvalidInput, got \(error)")
             }
             XCTAssertTrue(
                 validation.message.contains("signer_ids"),
@@ -1207,7 +1207,7 @@ final class OZContextRuleParsingTests: XCTestCase {
     }
 
     /// A Delegated signer whose second element is not an Address but a U32
-    /// must throw `ValidationException.InvalidInput`.
+    /// must throw `SmartAccountValidationException.InvalidInput`.
     func test_parseContextRule_delegatedSignerNonAddressElement_throwsValidationException() throws {
         let manager = try disconnectedManager()
         let badDelegatedSigner: SCValXDR = .vec([
@@ -1219,12 +1219,12 @@ final class OZContextRuleParsingTests: XCTestCase {
             signerIds: [0]
         )
         XCTAssertThrowsError(try manager.parseContextRule(scVal: ruleMap)) { error in
-            XCTAssertTrue(error is ValidationException.InvalidInput)
+            XCTAssertTrue(error is SmartAccountValidationException.InvalidInput)
         }
     }
 
     /// An External signer whose second element is not an Address but a U32
-    /// must throw `ValidationException.InvalidInput`.
+    /// must throw `SmartAccountValidationException.InvalidInput`.
     func test_parseContextRule_externalSignerNonAddressVerifier_throwsValidationException() throws {
         let manager = try disconnectedManager()
         let badExternalSigner: SCValXDR = .vec([
@@ -1237,12 +1237,12 @@ final class OZContextRuleParsingTests: XCTestCase {
             signerIds: [0]
         )
         XCTAssertThrowsError(try manager.parseContextRule(scVal: ruleMap)) { error in
-            XCTAssertTrue(error is ValidationException.InvalidInput)
+            XCTAssertTrue(error is SmartAccountValidationException.InvalidInput)
         }
     }
 
     /// A Delegated signer whose address element is a non-address type
-    /// (e.g. Bytes instead of Address ScVal) must throw `ValidationException`.
+    /// (e.g. Bytes instead of Address ScVal) must throw `SmartAccountValidationException`.
     func test_parseContextRule_delegatedSignerNonAddressScVal_throwsValidationException() throws {
         let manager = try disconnectedManager()
         let badDelegated: SCValXDR = .vec([
@@ -1254,12 +1254,12 @@ final class OZContextRuleParsingTests: XCTestCase {
             signerIds: [0]
         )
         XCTAssertThrowsError(try manager.parseContextRule(scVal: ruleMap)) { error in
-            XCTAssertTrue(error is ValidationException.InvalidInput)
+            XCTAssertTrue(error is SmartAccountValidationException.InvalidInput)
         }
     }
 
     /// A CallContract context type whose second element is a non-address
-    /// (e.g. U32) must throw `ValidationException.InvalidInput`.
+    /// (e.g. U32) must throw `SmartAccountValidationException.InvalidInput`.
     func test_parseContextRule_callContractNonAddressElement_throwsValidationException() throws {
         let manager = try disconnectedManager()
         let badContextType: SCValXDR = .vec([
@@ -1268,12 +1268,12 @@ final class OZContextRuleParsingTests: XCTestCase {
         ])
         let ruleMap = buildFullRuleMap(contextType: badContextType)
         XCTAssertThrowsError(try manager.parseContextRule(scVal: ruleMap)) { error in
-            XCTAssertTrue(error is ValidationException.InvalidInput)
+            XCTAssertTrue(error is SmartAccountValidationException.InvalidInput)
         }
     }
 
     /// A CreateContract context type whose second element is not Bytes
-    /// (e.g. a U32) must throw `ValidationException.InvalidInput`.
+    /// (e.g. a U32) must throw `SmartAccountValidationException.InvalidInput`.
     func test_parseContextRule_createContractNonBytesElement_throwsValidationException() throws {
         let manager = try disconnectedManager()
         let badContextType: SCValXDR = .vec([
@@ -1282,12 +1282,12 @@ final class OZContextRuleParsingTests: XCTestCase {
         ])
         let ruleMap = buildFullRuleMap(contextType: badContextType)
         XCTAssertThrowsError(try manager.parseContextRule(scVal: ruleMap)) { error in
-            XCTAssertTrue(error is ValidationException.InvalidInput)
+            XCTAssertTrue(error is SmartAccountValidationException.InvalidInput)
         }
     }
 
     /// A signer Vec whose first element is not a Symbol must throw
-    /// `ValidationException.InvalidInput` naming the signer field.
+    /// `SmartAccountValidationException.InvalidInput` naming the signer field.
     func test_parseContextRule_signerNonSymbolDiscriminant_throwsValidationException() throws {
         let manager = try disconnectedManager()
         let badSigner: SCValXDR = .vec([
@@ -1298,12 +1298,12 @@ final class OZContextRuleParsingTests: XCTestCase {
             signerIds: [0]
         )
         XCTAssertThrowsError(try manager.parseContextRule(scVal: ruleMap)) { error in
-            XCTAssertTrue(error is ValidationException.InvalidInput)
+            XCTAssertTrue(error is SmartAccountValidationException.InvalidInput)
         }
     }
 
     /// An External signer whose `keyData` slot is not Bytes (e.g. a U32)
-    /// must throw `ValidationException.InvalidInput`.
+    /// must throw `SmartAccountValidationException.InvalidInput`.
     func test_parseContextRule_externalSignerNonBytesKeyData_throwsValidationException() throws {
         let manager = try disconnectedManager()
         let badExternal: SCValXDR = .vec([
@@ -1316,7 +1316,7 @@ final class OZContextRuleParsingTests: XCTestCase {
             signerIds: [0]
         )
         XCTAssertThrowsError(try manager.parseContextRule(scVal: ruleMap)) { error in
-            XCTAssertTrue(error is ValidationException.InvalidInput)
+            XCTAssertTrue(error is SmartAccountValidationException.InvalidInput)
         }
     }
 }

@@ -73,7 +73,7 @@ final class OZContextRuleManagerTests: XCTestCase {
     // J.3 — addContextRule validation (4 mandatory cases)
     // ========================================================================
 
-    /// J.3-1: empty `name` is rejected with ``ValidationException/InvalidInput``
+    /// J.3-1: empty `name` is rejected with ``SmartAccountValidationException/InvalidInput``
     /// before any submission attempt is made.
     func test_addContextRule_emptyName_throws() async throws {
         let (_, manager) = try connectedKit()
@@ -83,8 +83,8 @@ final class OZContextRuleManagerTests: XCTestCase {
                 name: "",
                 signers: [try OZDelegatedSigner(address: validAccountAddress)]
             )
-            XCTFail("expected ValidationException.InvalidInput")
-        } catch let error as ValidationException.InvalidInput {
+            XCTFail("expected SmartAccountValidationException.InvalidInput")
+        } catch let error as SmartAccountValidationException.InvalidInput {
             XCTAssertEqual(error.code, .invalidInput)
             XCTAssertTrue(error.message.contains("name"),
                           "expected 'name' in message, got: \(error.message)")
@@ -102,8 +102,8 @@ final class OZContextRuleManagerTests: XCTestCase {
                 signers: [],
                 policies: [:]
             )
-            XCTFail("expected ValidationException.InvalidInput")
-        } catch let error as ValidationException.InvalidInput {
+            XCTFail("expected SmartAccountValidationException.InvalidInput")
+        } catch let error as SmartAccountValidationException.InvalidInput {
             XCTAssertEqual(error.code, .invalidInput)
             let msg = error.message
             XCTAssertTrue(msg.contains("signer") || msg.contains("policy") || msg.contains("policies"),
@@ -126,8 +126,8 @@ final class OZContextRuleManagerTests: XCTestCase {
                 name: "TooManySigners",
                 signers: signers
             )
-            XCTFail("expected ValidationException.InvalidInput")
-        } catch let error as ValidationException.InvalidInput {
+            XCTFail("expected SmartAccountValidationException.InvalidInput")
+        } catch let error as SmartAccountValidationException.InvalidInput {
             XCTAssertEqual(error.code, .invalidInput)
             let msg = error.message
             XCTAssertTrue(msg.contains("\(OZConstants.maxSigners)") || msg.contains("signers"),
@@ -153,8 +153,8 @@ final class OZContextRuleManagerTests: XCTestCase {
                 signers: [try OZDelegatedSigner(address: validAccountAddress)],
                 policies: policies
             )
-            XCTFail("expected ValidationException.InvalidInput")
-        } catch let error as ValidationException.InvalidInput {
+            XCTFail("expected SmartAccountValidationException.InvalidInput")
+        } catch let error as SmartAccountValidationException.InvalidInput {
             XCTAssertEqual(error.code, .invalidInput)
             let msg = error.message
             XCTAssertTrue(msg.contains("\(OZConstants.maxPolicies)") || msg.contains("policies"),
@@ -166,7 +166,7 @@ final class OZContextRuleManagerTests: XCTestCase {
     // addContextRule — additional pre-submission contract checks
     // ========================================================================
 
-    /// Disconnected kit + addContextRule must throw `WalletException.NotConnected`
+    /// Disconnected kit + addContextRule must throw `SmartAccountWalletException.NotConnected`
     /// before any submission attempt.
     func test_addContextRule_notConnected_throws() async throws {
         let (_, manager) = try disconnectedKit()
@@ -176,14 +176,14 @@ final class OZContextRuleManagerTests: XCTestCase {
                 name: "Rule",
                 signers: [try OZDelegatedSigner(address: validAccountAddress)]
             )
-            XCTFail("expected WalletException.NotConnected")
-        } catch let error as WalletException.NotConnected {
+            XCTFail("expected SmartAccountWalletException.NotConnected")
+        } catch let error as SmartAccountWalletException.NotConnected {
             XCTAssertEqual(error.code, .walletNotConnected)
         }
     }
 
     /// Connected kit + addContextRule with a malformed policy address (non-C)
-    /// must throw `ValidationException.InvalidAddress` before submission.
+    /// must throw `SmartAccountValidationException.InvalidAddress` before submission.
     func test_addContextRule_invalidPolicyAddress_throws() async throws {
         let (_, manager) = try connectedKit()
         do {
@@ -193,11 +193,11 @@ final class OZContextRuleManagerTests: XCTestCase {
                 signers: [try OZDelegatedSigner(address: validAccountAddress)],
                 policies: ["NOT-A-VALID-ADDRESS": .void]
             )
-            XCTFail("expected ValidationException.InvalidAddress")
-        } catch is ValidationException.InvalidAddress {
+            XCTFail("expected SmartAccountValidationException.InvalidAddress")
+        } catch is SmartAccountValidationException.InvalidAddress {
             // expected
         } catch let error {
-            XCTFail("expected ValidationException.InvalidAddress, got: \(error)")
+            XCTFail("expected SmartAccountValidationException.InvalidAddress, got: \(error)")
         }
     }
 
@@ -205,26 +205,26 @@ final class OZContextRuleManagerTests: XCTestCase {
     // updateName — validation
     // ========================================================================
 
-    /// Disconnected kit + updateName must throw `WalletException.NotConnected`
+    /// Disconnected kit + updateName must throw `SmartAccountWalletException.NotConnected`
     /// before any submission attempt.
     func test_updateName_notConnected_throws() async throws {
         let (_, manager) = try disconnectedKit()
         do {
             _ = try await manager.updateName(id: 1, name: "x")
-            XCTFail("expected WalletException.NotConnected")
-        } catch is WalletException.NotConnected {
+            XCTFail("expected SmartAccountWalletException.NotConnected")
+        } catch is SmartAccountWalletException.NotConnected {
             // expected
         }
     }
 
     /// Connected kit + updateName with empty name must throw
-    /// `ValidationException.InvalidInput` before any submission attempt.
+    /// `SmartAccountValidationException.InvalidInput` before any submission attempt.
     func test_updateName_emptyName_throws() async throws {
         let (_, manager) = try connectedKit()
         do {
             _ = try await manager.updateName(id: 1, name: "")
-            XCTFail("expected ValidationException.InvalidInput")
-        } catch let error as ValidationException.InvalidInput {
+            XCTFail("expected SmartAccountValidationException.InvalidInput")
+        } catch let error as SmartAccountValidationException.InvalidInput {
             XCTAssertTrue(error.message.contains("name"))
         }
     }
@@ -234,13 +234,13 @@ final class OZContextRuleManagerTests: XCTestCase {
     // ========================================================================
 
     /// Disconnected kit + updateValidUntil must throw
-    /// `WalletException.NotConnected` before any submission attempt.
+    /// `SmartAccountWalletException.NotConnected` before any submission attempt.
     func test_updateValidUntil_notConnected_throws() async throws {
         let (_, manager) = try disconnectedKit()
         do {
             _ = try await manager.updateValidUntil(id: 1, validUntil: nil)
-            XCTFail("expected WalletException.NotConnected")
-        } catch is WalletException.NotConnected {
+            XCTFail("expected SmartAccountWalletException.NotConnected")
+        } catch is SmartAccountWalletException.NotConnected {
             // expected
         }
     }
@@ -250,13 +250,13 @@ final class OZContextRuleManagerTests: XCTestCase {
     // ========================================================================
 
     /// Disconnected kit + removeContextRule must throw
-    /// `WalletException.NotConnected` before any submission attempt.
+    /// `SmartAccountWalletException.NotConnected` before any submission attempt.
     func test_removeContextRule_notConnected_throws() async throws {
         let (_, manager) = try disconnectedKit()
         do {
             _ = try await manager.removeContextRule(id: 1)
-            XCTFail("expected WalletException.NotConnected")
-        } catch is WalletException.NotConnected {
+            XCTFail("expected SmartAccountWalletException.NotConnected")
+        } catch is SmartAccountWalletException.NotConnected {
             // expected
         }
     }
@@ -269,7 +269,7 @@ final class OZContextRuleManagerTests: XCTestCase {
     /// through the kit's multi-signer manager, whose initial validation
     /// rejects wallet-kind signers when the kit's config does not declare an
     /// external wallet adapter. The check surfaces as
-    /// ``ValidationException/InvalidInput`` naming the `selectedSigners`
+    /// ``SmartAccountValidationException/InvalidInput`` naming the `selectedSigners`
     /// field so callers can correct the kit configuration before retrying.
     func test_addContextRule_walletSigner_withoutExternalWalletAdapter_throwsValidation() async throws {
         let (_, manager) = try connectedKit()
@@ -280,8 +280,8 @@ final class OZContextRuleManagerTests: XCTestCase {
                 signers: [try OZDelegatedSigner(address: validAccountAddress)],
                 selectedSigners: [.wallet(accountId: validAccountAddress)]
             )
-            XCTFail("expected ValidationException.InvalidInput")
-        } catch let error as ValidationException.InvalidInput {
+            XCTFail("expected SmartAccountValidationException.InvalidInput")
+        } catch let error as SmartAccountValidationException.InvalidInput {
             XCTAssertEqual(error.code, .invalidInput)
             XCTAssertTrue(
                 error.message.contains("selectedSigners"),
@@ -424,15 +424,15 @@ final class OZContextRuleManagerTests: XCTestCase {
         XCTAssertEqual(value, 0xDEADBEEF)
     }
 
-    /// `getContextRule(id:)` must surface `WalletException.NotConnected` when
+    /// `getContextRule(id:)` must surface `SmartAccountWalletException.NotConnected` when
     /// the kit holds no connected smart account, before any RPC traffic is
     /// issued.
     func test_getContextRule_notConnected_throws() async throws {
         let (_, manager) = try disconnectedKit()
         do {
             _ = try await manager.getContextRule(id: 1)
-            XCTFail("expected WalletException.NotConnected")
-        } catch is WalletException.NotConnected {
+            XCTFail("expected SmartAccountWalletException.NotConnected")
+        } catch is SmartAccountWalletException.NotConnected {
             // expected
         }
     }
@@ -456,14 +456,14 @@ final class OZContextRuleManagerTests: XCTestCase {
         XCTAssertEqual(count, 42)
     }
 
-    /// `getContextRulesCount()` must surface `WalletException.NotConnected`
+    /// `getContextRulesCount()` must surface `SmartAccountWalletException.NotConnected`
     /// before any RPC traffic when the kit is disconnected.
     func test_getContextRulesCount_notConnected_throws() async throws {
         let (_, manager) = try disconnectedKit()
         do {
             _ = try await manager.getContextRulesCount()
-            XCTFail("expected WalletException.NotConnected")
-        } catch is WalletException.NotConnected {
+            XCTFail("expected SmartAccountWalletException.NotConnected")
+        } catch is SmartAccountWalletException.NotConnected {
             // expected
         }
     }
@@ -489,14 +489,14 @@ final class OZContextRuleManagerTests: XCTestCase {
         XCTAssertEqual(rules.count, 0)
     }
 
-    /// `listContextRules()` must surface `WalletException.NotConnected` before
+    /// `listContextRules()` must surface `SmartAccountWalletException.NotConnected` before
     /// any RPC traffic when the kit is disconnected.
     func test_listContextRules_notConnected_throws() async throws {
         let (_, manager) = try disconnectedKit()
         do {
             _ = try await manager.listContextRules()
-            XCTFail("expected WalletException.NotConnected")
-        } catch is WalletException.NotConnected {
+            XCTFail("expected SmartAccountWalletException.NotConnected")
+        } catch is SmartAccountWalletException.NotConnected {
             // expected
         }
     }
@@ -543,10 +543,10 @@ final class OZContextRuleManagerTests: XCTestCase {
                 signers: [try OZDelegatedSigner(address: validAccountAddress)]
             )
             XCTFail("expected network error from non-routable RPC")
-        } catch is WalletException {
-            XCTFail("unexpected WalletException — kit is connected")
-        } catch is ValidationException {
-            XCTFail("unexpected ValidationException — input is valid")
+        } catch is SmartAccountWalletException {
+            XCTFail("unexpected SmartAccountWalletException — kit is connected")
+        } catch is SmartAccountValidationException {
+            XCTFail("unexpected SmartAccountValidationException — input is valid")
         } catch {
             // Any non-validation error means the host function was built
             // (including the valid_until U32 ScVal) and submission was attempted.
@@ -565,10 +565,10 @@ final class OZContextRuleManagerTests: XCTestCase {
                 policies: [validContractAddress: .void]
             )
             XCTFail("expected network error from non-routable RPC")
-        } catch is WalletException {
-            XCTFail("unexpected WalletException — kit is connected")
-        } catch is ValidationException {
-            XCTFail("unexpected ValidationException — policy address is valid")
+        } catch is SmartAccountWalletException {
+            XCTFail("unexpected SmartAccountWalletException — kit is connected")
+        } catch is SmartAccountValidationException {
+            XCTFail("unexpected SmartAccountValidationException — policy address is valid")
         } catch {
             // Policy encoding executed; RPC error confirms submission was attempted.
         }
@@ -582,10 +582,10 @@ final class OZContextRuleManagerTests: XCTestCase {
         do {
             _ = try await manager.updateName(id: 0, name: "NewName")
             XCTFail("expected network or transaction error from non-routable RPC")
-        } catch is WalletException {
-            XCTFail("unexpected WalletException — kit is connected")
-        } catch is ValidationException {
-            XCTFail("unexpected ValidationException — name is valid")
+        } catch is SmartAccountWalletException {
+            XCTFail("unexpected SmartAccountWalletException — kit is connected")
+        } catch is SmartAccountValidationException {
+            XCTFail("unexpected SmartAccountValidationException — name is valid")
         } catch {
             // Any non-validation error means validation passed and the
             // manager attempted to reach the RPC endpoint.
@@ -593,13 +593,13 @@ final class OZContextRuleManagerTests: XCTestCase {
     }
 
     /// `updateName` with an empty string must throw
-    /// `ValidationException.InvalidInput` before any network access.
+    /// `SmartAccountValidationException.InvalidInput` before any network access.
     func test_updateContextRuleName_emptyName_throwsValidationException() async throws {
         let (_, manager) = try connectedKit()
         do {
             _ = try await manager.updateName(id: 0, name: "")
-            XCTFail("expected ValidationException.InvalidInput")
-        } catch let error as ValidationException.InvalidInput {
+            XCTFail("expected SmartAccountValidationException.InvalidInput")
+        } catch let error as SmartAccountValidationException.InvalidInput {
             XCTAssertTrue(
                 error.message.contains("name"),
                 "error must mention the name field, got: \(error.message)"
@@ -614,8 +614,8 @@ final class OZContextRuleManagerTests: XCTestCase {
         do {
             _ = try await manager.updateValidUntil(id: 1, validUntil: 500_000)
             XCTFail("expected network or transaction error from non-routable RPC")
-        } catch is WalletException {
-            XCTFail("unexpected WalletException — kit is connected")
+        } catch is SmartAccountWalletException {
+            XCTFail("unexpected SmartAccountWalletException — kit is connected")
         } catch {
             // Any non-wallet error means validation passed and the build succeeded.
         }
@@ -628,8 +628,8 @@ final class OZContextRuleManagerTests: XCTestCase {
         do {
             _ = try await manager.updateValidUntil(id: 2, validUntil: nil)
             XCTFail("expected network or transaction error from non-routable RPC")
-        } catch is WalletException {
-            XCTFail("unexpected WalletException — kit is connected")
+        } catch is SmartAccountWalletException {
+            XCTFail("unexpected SmartAccountWalletException — kit is connected")
         } catch {
             // Any non-wallet error means build succeeded and submission was attempted.
         }
@@ -642,8 +642,8 @@ final class OZContextRuleManagerTests: XCTestCase {
         do {
             _ = try await manager.removeContextRule(id: 3)
             XCTFail("expected network or transaction error from non-routable RPC")
-        } catch is WalletException {
-            XCTFail("unexpected WalletException — kit is connected")
+        } catch is SmartAccountWalletException {
+            XCTFail("unexpected SmartAccountWalletException — kit is connected")
         } catch {
             // Any non-wallet error means the host function was built and
             // submission was attempted.
@@ -661,7 +661,7 @@ final class OZContextRuleManagerTests: XCTestCase {
         let signerA = try OZDelegatedSigner(address: validAccountAddress)
         let signerB = try OZDelegatedSigner(address: "GBGWONUYEPTSADFMLRQSPRAPTWMGX5PMQXXHGSBVRF2KLUNVZT57SLVW")
 
-        let ruleExact = ParsedContextRule(
+        let ruleExact = OZParsedContextRule(
             id: 10,
             contextType: .defaultRule,
             name: "RuleExact",
@@ -671,7 +671,7 @@ final class OZContextRuleManagerTests: XCTestCase {
             policyIds: [],
             validUntil: nil
         )
-        let ruleOther = ParsedContextRule(
+        let ruleOther = OZParsedContextRule(
             id: 20,
             contextType: .defaultRule,
             name: "RuleOther",
@@ -698,13 +698,13 @@ final class OZContextRuleManagerTests: XCTestCase {
     }
 
     /// When no candidate rule's signer set contains all selected signers,
-    /// the resolver must throw `ValidationException.InvalidInput`.
+    /// the resolver must throw `SmartAccountValidationException.InvalidInput`.
     func test_resolveContextRuleIds_multipleCandidates_noMatch_throws() async throws {
         let signerA = try OZDelegatedSigner(address: validAccountAddress)
         let signerB = try OZDelegatedSigner(address: "GBGWONUYEPTSADFMLRQSPRAPTWMGX5PMQXXHGSBVRF2KLUNVZT57SLVW")
         let signerC = try OZDelegatedSigner(address: "GB33CUURS5XLLECMLSE2EMMDJBMZSVF27BW6PLS53OFTJMP46CZH3CVG")
 
-        let ruleOne = ParsedContextRule(
+        let ruleOne = OZParsedContextRule(
             id: 1,
             contextType: .defaultRule,
             name: "RuleOne",
@@ -714,7 +714,7 @@ final class OZContextRuleManagerTests: XCTestCase {
             policyIds: [],
             validUntil: nil
         )
-        let ruleTwo = ParsedContextRule(
+        let ruleTwo = OZParsedContextRule(
             id: 2,
             contextType: .defaultRule,
             name: "RuleTwo",
@@ -737,19 +737,19 @@ final class OZContextRuleManagerTests: XCTestCase {
                 signers: [signerC],
                 contextRules: [ruleOne, ruleTwo]
             )
-            XCTFail("expected ValidationException.InvalidInput")
-        } catch is ValidationException.InvalidInput {
+            XCTFail("expected SmartAccountValidationException.InvalidInput")
+        } catch is SmartAccountValidationException.InvalidInput {
             // expected
         }
     }
 
     /// When multiple candidate rules all contain the selected signers,
-    /// the resolver must throw `ValidationException.InvalidInput` naming the
+    /// the resolver must throw `SmartAccountValidationException.InvalidInput` naming the
     /// ambiguous rule ids.
     func test_resolveContextRuleIds_multipleCandidates_multipleMatching_throws() async throws {
         let signerA = try OZDelegatedSigner(address: validAccountAddress)
 
-        let ruleOne = ParsedContextRule(
+        let ruleOne = OZParsedContextRule(
             id: 1,
             contextType: .defaultRule,
             name: "RuleOne",
@@ -759,7 +759,7 @@ final class OZContextRuleManagerTests: XCTestCase {
             policyIds: [],
             validUntil: nil
         )
-        let ruleTwo = ParsedContextRule(
+        let ruleTwo = OZParsedContextRule(
             id: 2,
             contextType: .defaultRule,
             name: "RuleTwo",
@@ -782,8 +782,8 @@ final class OZContextRuleManagerTests: XCTestCase {
                 signers: [signerA],
                 contextRules: [ruleOne, ruleTwo]
             )
-            XCTFail("expected ValidationException.InvalidInput for ambiguous match")
-        } catch is ValidationException.InvalidInput {
+            XCTFail("expected SmartAccountValidationException.InvalidInput for ambiguous match")
+        } catch is SmartAccountValidationException.InvalidInput {
             // expected
         }
     }
@@ -793,7 +793,7 @@ final class OZContextRuleManagerTests: XCTestCase {
     // ========================================================================
 
     /// `createContractV2HostFn` root invocation produces a
-    /// `ContextRuleType.createContract(wasmHash:)` with the WASM hash from
+    /// `OZContextRuleType.createContract(wasmHash:)` with the WASM hash from
     /// the executable.
     func test_collectInvocationContextTypes_createContractV2_returnsCreateContract() async throws {
         let wasmHashBytes = Data(repeating: 0xAB, count: 32)
@@ -829,7 +829,7 @@ final class OZContextRuleManagerTests: XCTestCase {
             entry: entry,
             signers: [],
             contextRules: [
-                ParsedContextRule(
+                OZParsedContextRule(
                     id: 99,
                     contextType: .createContract(wasmHash: wasmHashBytes),
                     name: "CreateRule",
@@ -846,7 +846,7 @@ final class OZContextRuleManagerTests: XCTestCase {
 
     /// A `createContractHostFn` / `createContractV2HostFn` whose executable
     /// is `.token` (Stellar Asset Contract) must throw
-    /// `ValidationException.InvalidInput` when the rule-resolution pipeline
+    /// `SmartAccountValidationException.InvalidInput` when the rule-resolution pipeline
     /// tries to extract the WASM hash.
     func test_extractWasmHash_sacToken_throwsValidationException() async throws {
         let executable = ContractExecutableXDR.token
@@ -881,8 +881,8 @@ final class OZContextRuleManagerTests: XCTestCase {
                 signers: [],
                 contextRules: []
             )
-            XCTFail("expected ValidationException.InvalidInput for SAC token executable")
-        } catch is ValidationException.InvalidInput {
+            XCTFail("expected SmartAccountValidationException.InvalidInput for SAC token executable")
+        } catch is SmartAccountValidationException.InvalidInput {
             // expected
         }
     }
@@ -932,8 +932,8 @@ final class OZContextRuleManagerTests: XCTestCase {
         do {
             _ = try await parser.getContextRule(contextRuleId: 0)
             XCTFail("expected network error from non-routable RPC")
-        } catch is WalletException {
-            XCTFail("unexpected WalletException — kit is connected")
+        } catch is SmartAccountWalletException {
+            XCTFail("unexpected SmartAccountWalletException — kit is connected")
         } catch {
             // Any non-wallet error means the wiring forwarding lines executed
             // and the call reached the underlying network stack.
@@ -944,7 +944,7 @@ final class OZContextRuleManagerTests: XCTestCase {
     // getContextRulesCount — non-U32 result path
     // ========================================================================
 
-    /// `getContextRulesCount` must throw `ValidationException.InvalidInput`
+    /// `getContextRulesCount` must throw `SmartAccountValidationException.InvalidInput`
     /// when simulation returns a non-U32 ScVal.
     func test_getContextRulesCount_nonU32Result_throwsValidationException() async throws {
         let script = MockSorobanServerScript()
@@ -962,8 +962,8 @@ final class OZContextRuleManagerTests: XCTestCase {
 
         do {
             _ = try await manager.getContextRulesCount()
-            XCTFail("expected ValidationException.InvalidInput")
-        } catch is ValidationException.InvalidInput {
+            XCTFail("expected SmartAccountValidationException.InvalidInput")
+        } catch is SmartAccountValidationException.InvalidInput {
             // expected
         } catch {
             XCTFail("Unexpected error type: \(error)")
@@ -986,7 +986,7 @@ final class OZContextRuleManagerTests: XCTestCase {
         let signerC = try OZDelegatedSigner(address: "GB33CUURS5XLLECMLSE2EMMDJBMZSVF27BW6PLS53OFTJMP46CZH3CVG")
 
         // rule1 has only A (strict subset of [A,B,C]) and no policies — Tier 2 candidate.
-        let rule1 = ParsedContextRule(
+        let rule1 = OZParsedContextRule(
             id: 5,
             contextType: .defaultRule,
             name: "RuleA",
@@ -997,7 +997,7 @@ final class OZContextRuleManagerTests: XCTestCase {
             validUntil: nil
         )
         // rule2 has [B, C] but with a policy — excluded from Tier 2.
-        let rule2 = ParsedContextRule(
+        let rule2 = OZParsedContextRule(
             id: 6,
             contextType: .defaultRule,
             name: "RuleBC",
@@ -1031,7 +1031,7 @@ final class OZContextRuleManagerTests: XCTestCase {
         let signerB = try OZDelegatedSigner(address: "GBGWONUYEPTSADFMLRQSPRAPTWMGX5PMQXXHGSBVRF2KLUNVZT57SLVW")
         let signerC = try OZDelegatedSigner(address: "GB33CUURS5XLLECMLSE2EMMDJBMZSVF27BW6PLS53OFTJMP46CZH3CVG")
 
-        let rule = ParsedContextRule(
+        let rule = OZParsedContextRule(
             id: 7,
             contextType: .defaultRule,
             name: "BigRule",
@@ -1058,11 +1058,11 @@ final class OZContextRuleManagerTests: XCTestCase {
     }
 
     /// When no context rule matches the required context type, the resolver
-    /// must throw `ValidationException.InvalidInput` advising the caller to
+    /// must throw `SmartAccountValidationException.InvalidInput` advising the caller to
     /// add a Default rule.
     func test_resolveContextRuleIds_noCandidates_throwsValidationException() async throws {
         let signerA = try OZDelegatedSigner(address: validAccountAddress)
-        let callContractRule = ParsedContextRule(
+        let callContractRule = OZParsedContextRule(
             id: 1,
             contextType: .callContract(contractAddress: validContractAddress),
             name: "CallContractRule",
@@ -1087,8 +1087,8 @@ final class OZContextRuleManagerTests: XCTestCase {
                 signers: [signerA],
                 contextRules: [callContractRule]
             )
-            XCTFail("expected ValidationException.InvalidInput when no candidates match")
-        } catch is ValidationException.InvalidInput {
+            XCTFail("expected SmartAccountValidationException.InvalidInput when no candidates match")
+        } catch is SmartAccountValidationException.InvalidInput {
             // expected
         }
     }
@@ -1098,7 +1098,7 @@ final class OZContextRuleManagerTests: XCTestCase {
     // ========================================================================
 
     /// `createContractHostFn` (non-V2) root invocation produces a
-    /// `ContextRuleType.createContract(wasmHash:)`.
+    /// `OZContextRuleType.createContract(wasmHash:)`.
     func test_collectInvocationContextTypes_createContractHostFn_returnsCreateContract() async throws {
         let wasmHashBytes = Data(repeating: 0xAA, count: 32)
         let wasmHash = HashXDR(wasmHashBytes)
@@ -1132,7 +1132,7 @@ final class OZContextRuleManagerTests: XCTestCase {
             entry: entry,
             signers: [],
             contextRules: [
-                ParsedContextRule(
+                OZParsedContextRule(
                     id: 88,
                     contextType: .createContract(wasmHash: wasmHashBytes),
                     name: "CreateV1Rule",
@@ -1175,7 +1175,7 @@ final class OZContextRuleManagerTests: XCTestCase {
             entry: entry,
             signers: [],
             contextRules: [
-                ParsedContextRule(
+                OZParsedContextRule(
                     id: 77,
                     contextType: .defaultRule,
                     name: "DefaultForGAddr",
@@ -1229,7 +1229,7 @@ final class OZContextRuleManagerTests: XCTestCase {
             entry: entry,
             signers: [],
             contextRules: [
-                ParsedContextRule(
+                OZParsedContextRule(
                     id: 66,
                     contextType: .defaultRule,
                     name: "DefaultForSubInvoc",

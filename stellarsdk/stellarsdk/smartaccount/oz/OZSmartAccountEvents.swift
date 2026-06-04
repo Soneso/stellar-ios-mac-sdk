@@ -8,7 +8,7 @@
 import Foundation
 
 // ============================================================================
-// SmartAccountEvent
+// OZSmartAccountEvent
 // ============================================================================
 
 /// Events emitted by the Smart Account Kit during wallet lifecycle operations.
@@ -26,7 +26,7 @@ import Foundation
 ///     }
 /// }
 /// ```
-public enum SmartAccountEvent: Sendable, Equatable, Hashable {
+public enum OZSmartAccountEvent: Sendable, Equatable, Hashable {
 
     /// Emitted when a wallet is connected.
     ///
@@ -53,7 +53,7 @@ public enum SmartAccountEvent: Sendable, Equatable, Hashable {
     /// Note that the wallet may not be deployed yet.
     ///
     /// - Parameter credential: The stored credential data.
-    case credentialCreated(credential: StoredCredential)
+    case credentialCreated(credential: OZStoredCredential)
 
     /// Emitted when a credential is deleted from storage.
     ///
@@ -116,26 +116,26 @@ public enum SmartAccountEvent: Sendable, Equatable, Hashable {
     /// Stable type tag used for type-keyed listener registration and lookup.
     ///
     /// The tag is the un-namespaced arm name (`"WalletConnected"`, `"WalletDisconnected"`, etc.)
-    /// and matches the strings consumed by ``SmartAccountEventEmitter/removeAllListeners(eventType:)``
-    /// and ``SmartAccountEventEmitter/listenerCount(eventType:)``.
+    /// and matches the strings consumed by ``OZSmartAccountEventEmitter/removeAllListeners(eventType:)``
+    /// and ``OZSmartAccountEventEmitter/listenerCount(eventType:)``.
     public var eventTypeTag: String {
         switch self {
         case .walletConnected:
-            return SmartAccountEventType.walletConnected.tag
+            return OZSmartAccountEventType.walletConnected.tag
         case .walletDisconnected:
-            return SmartAccountEventType.walletDisconnected.tag
+            return OZSmartAccountEventType.walletDisconnected.tag
         case .credentialCreated:
-            return SmartAccountEventType.credentialCreated.tag
+            return OZSmartAccountEventType.credentialCreated.tag
         case .credentialDeleted:
-            return SmartAccountEventType.credentialDeleted.tag
+            return OZSmartAccountEventType.credentialDeleted.tag
         case .sessionExpired:
-            return SmartAccountEventType.sessionExpired.tag
+            return OZSmartAccountEventType.sessionExpired.tag
         case .transactionSigned:
-            return SmartAccountEventType.transactionSigned.tag
+            return OZSmartAccountEventType.transactionSigned.tag
         case .transactionSubmitted:
-            return SmartAccountEventType.transactionSubmitted.tag
+            return OZSmartAccountEventType.transactionSubmitted.tag
         case .credentialSyncFailed:
-            return SmartAccountEventType.credentialSyncFailed.tag
+            return OZSmartAccountEventType.credentialSyncFailed.tag
         }
     }
 
@@ -145,7 +145,7 @@ public enum SmartAccountEvent: Sendable, Equatable, Hashable {
     /// values. For the ``credentialSyncFailed(credentialId:error:)`` arm the
     /// `error` comparison is best-effort: the `localizedDescription` strings
     /// are compared because `Error` does not conform to `Equatable`.
-    public static func == (lhs: SmartAccountEvent, rhs: SmartAccountEvent) -> Bool {
+    public static func == (lhs: OZSmartAccountEvent, rhs: OZSmartAccountEvent) -> Bool {
         switch (lhs, rhs) {
         case let (.walletConnected(lc, li), .walletConnected(rc, ri)):
             return lc == rc && li == ri
@@ -203,17 +203,17 @@ public enum SmartAccountEvent: Sendable, Equatable, Hashable {
 }
 
 // ============================================================================
-// SmartAccountEventType
+// OZSmartAccountEventType
 // ============================================================================
 
 /// Type-tag enumeration used to register typed subscriptions on
-/// ``SmartAccountEventEmitter``.
+/// ``OZSmartAccountEventEmitter``.
 ///
 /// Swift enum cases do not have nested types, so a parallel enum carries the
-/// per-arm type tag used by ``SmartAccountEventEmitter/on(_:listener:)`` and
-/// ``SmartAccountEventEmitter/once(_:listener:)``. The raw value is the stable
-/// string key consumed by ``SmartAccountEventEmitter/removeAllListeners(eventType:)``
-/// and ``SmartAccountEventEmitter/listenerCount(eventType:)``.
+/// per-arm type tag used by ``OZSmartAccountEventEmitter/on(_:listener:)`` and
+/// ``OZSmartAccountEventEmitter/once(_:listener:)``. The raw value is the stable
+/// string key consumed by ``OZSmartAccountEventEmitter/removeAllListeners(eventType:)``
+/// and ``OZSmartAccountEventEmitter/listenerCount(eventType:)``.
 ///
 /// Example:
 /// ```swift
@@ -223,7 +223,7 @@ public enum SmartAccountEvent: Sendable, Equatable, Hashable {
 ///     }
 /// }
 /// ```
-public enum SmartAccountEventType: String, Sendable, CaseIterable {
+public enum OZSmartAccountEventType: String, Sendable, CaseIterable {
     case walletConnected = "WalletConnected"
     case walletDisconnected = "WalletDisconnected"
     case credentialCreated = "CredentialCreated"
@@ -238,7 +238,7 @@ public enum SmartAccountEventType: String, Sendable, CaseIterable {
 }
 
 // ============================================================================
-// SmartAccountEventListener
+// OZSmartAccountEventListener
 // ============================================================================
 
 /// Listener invoked for each emitted Smart Account event.
@@ -247,30 +247,30 @@ public enum SmartAccountEventType: String, Sendable, CaseIterable {
 /// routes it to the configured error handler so a failing listener never aborts
 /// dispatch to its siblings.
 ///
-/// Closures of this type are registered with ``SmartAccountEventEmitter/addListener(_:)``,
-/// ``SmartAccountEventEmitter/on(_:listener:)`` and
-/// ``SmartAccountEventEmitter/once(_:listener:)``.
+/// Closures of this type are registered with ``OZSmartAccountEventEmitter/addListener(_:)``,
+/// ``OZSmartAccountEventEmitter/on(_:listener:)`` and
+/// ``OZSmartAccountEventEmitter/once(_:listener:)``.
 ///
 /// Example:
 /// ```swift
-/// let listener: SmartAccountEventListener = { event in
+/// let listener: OZSmartAccountEventListener = { event in
 ///     print("Received event: \(event)")
 /// }
 /// kit.events.addListener(listener)
 /// ```
-public typealias SmartAccountEventListener = @Sendable (SmartAccountEvent) throws -> Void
+public typealias OZSmartAccountEventListener = @Sendable (OZSmartAccountEvent) throws -> Void
 
 /// Closure invoked when a registered listener throws while handling an event.
 ///
 /// Receives the event that was being dispatched and the error thrown by the
 /// failing listener.
-public typealias SmartAccountEventErrorHandler = @Sendable (SmartAccountEvent, Error) -> Void
+public typealias OZSmartAccountEventErrorHandler = @Sendable (OZSmartAccountEvent, Error) -> Void
 
 /// Closure returned by listener registration; invoke to unsubscribe.
-public typealias SmartAccountEventUnsubscribe = @Sendable () -> Void
+public typealias OZSmartAccountEventUnsubscribe = @Sendable () -> Void
 
 // ============================================================================
-// SmartAccountEventEmitter
+// OZSmartAccountEventEmitter
 // ============================================================================
 
 /// Event emitter for Smart Account lifecycle events.
@@ -292,9 +292,9 @@ public typealias SmartAccountEventUnsubscribe = @Sendable () -> Void
 ///
 /// Example:
 /// ```swift
-/// let emitter = SmartAccountEventEmitter()
+/// let emitter = OZSmartAccountEventEmitter()
 ///
-/// // Typed subscription via a SmartAccountEventType tag
+/// // Typed subscription via an OZSmartAccountEventType tag
 /// let unsubscribe = emitter.on(.walletConnected) { event in
 ///     if case let .walletConnected(contractId, _) = event {
 ///         print("Connected to \(contractId)")
@@ -315,7 +315,7 @@ public typealias SmartAccountEventUnsubscribe = @Sendable () -> Void
 ///
 /// unsubscribe()
 /// ```
-public final class SmartAccountEventEmitter: @unchecked Sendable {
+public final class OZSmartAccountEventEmitter: @unchecked Sendable {
 
     // why: a synchronous `NSLock` keeps the public surface non-async, which is
     // required for the listener-self-unsubscribe contract. An `actor` would
@@ -329,8 +329,8 @@ public final class SmartAccountEventEmitter: @unchecked Sendable {
     /// identity (Swift closures are not equatable).
     private final class ListenerHandle: @unchecked Sendable {
         let id: UUID
-        let callback: SmartAccountEventListener
-        init(id: UUID = UUID(), callback: @escaping SmartAccountEventListener) {
+        let callback: OZSmartAccountEventListener
+        init(id: UUID = UUID(), callback: @escaping OZSmartAccountEventListener) {
             self.id = id
             self.callback = callback
         }
@@ -338,7 +338,7 @@ public final class SmartAccountEventEmitter: @unchecked Sendable {
 
     private var typeListeners: [String: [ListenerHandle]] = [:]
     private var globalListeners: [ListenerHandle] = []
-    private var errorHandler: SmartAccountEventErrorHandler? = nil
+    private var errorHandler: OZSmartAccountEventErrorHandler? = nil
 
     /// Initializes a new emitter with no listeners and no error handler.
     public init() {}
@@ -354,7 +354,7 @@ public final class SmartAccountEventEmitter: @unchecked Sendable {
     /// cannot abort emission to its siblings.
     ///
     /// - Parameter handler: Error handler closure, or `nil` to disable.
-    public func setErrorHandler(_ handler: SmartAccountEventErrorHandler?) {
+    public func setErrorHandler(_ handler: OZSmartAccountEventErrorHandler?) {
         stateLock.lock()
         errorHandler = handler
         stateLock.unlock()
@@ -372,7 +372,7 @@ public final class SmartAccountEventEmitter: @unchecked Sendable {
     /// - Returns: A closure that unsubscribes the listener when called. Calling
     ///   the returned closure more than once is a no-op.
     @discardableResult
-    public func addListener(_ listener: @escaping SmartAccountEventListener) -> SmartAccountEventUnsubscribe {
+    public func addListener(_ listener: @escaping OZSmartAccountEventListener) -> OZSmartAccountEventUnsubscribe {
         let handle = ListenerHandle(callback: listener)
         stateLock.lock()
         globalListeners.append(handle)
@@ -393,15 +393,15 @@ public final class SmartAccountEventEmitter: @unchecked Sendable {
     /// The returned closure unsubscribes the listener when called.
     ///
     /// - Parameters:
-    ///   - eventType: The ``SmartAccountEventType`` tag identifying which event
+    ///   - eventType: The ``OZSmartAccountEventType`` tag identifying which event
     ///     arm to subscribe to.
     ///   - listener: The closure invoked for each matching event.
     /// - Returns: A closure that unsubscribes the listener when called.
     @discardableResult
     public func on(
-        _ eventType: SmartAccountEventType,
-        listener: @escaping SmartAccountEventListener
-    ) -> SmartAccountEventUnsubscribe {
+        _ eventType: OZSmartAccountEventType,
+        listener: @escaping OZSmartAccountEventListener
+    ) -> OZSmartAccountEventUnsubscribe {
         let tag = eventType.tag
         let handle = ListenerHandle(callback: listener)
         stateLock.lock()
@@ -432,16 +432,16 @@ public final class SmartAccountEventEmitter: @unchecked Sendable {
     /// it after the event has already fired is a no-op.
     ///
     /// - Parameters:
-    ///   - eventType: The ``SmartAccountEventType`` tag identifying which event
+    ///   - eventType: The ``OZSmartAccountEventType`` tag identifying which event
     ///     arm to subscribe to.
     ///   - listener: The closure invoked for the first matching event.
     /// - Returns: A closure that unsubscribes the listener if called before the
     ///   first matching event.
     @discardableResult
     public func once(
-        _ eventType: SmartAccountEventType,
-        listener: @escaping SmartAccountEventListener
-    ) -> SmartAccountEventUnsubscribe {
+        _ eventType: OZSmartAccountEventType,
+        listener: @escaping OZSmartAccountEventListener
+    ) -> OZSmartAccountEventUnsubscribe {
         // why: the wrapper invokes the unsubscribe closure BEFORE the user
         // listener body so that a throwing listener still gets removed exactly
         // once. Calling unsubscribe afterwards would leak the listener whenever
@@ -459,10 +459,10 @@ public final class SmartAccountEventEmitter: @unchecked Sendable {
     /// once, regardless of how many times callers fire it.
     private final class UnsubscribeBox: @unchecked Sendable {
         private let lock = NSLock()
-        private var unsubscribe: SmartAccountEventUnsubscribe? = nil
+        private var unsubscribe: OZSmartAccountEventUnsubscribe? = nil
         private var fired: Bool = false
 
-        func set(_ unsubscribe: @escaping SmartAccountEventUnsubscribe) {
+        func set(_ unsubscribe: @escaping OZSmartAccountEventUnsubscribe) {
             lock.lock()
             if fired {
                 lock.unlock()
@@ -550,7 +550,7 @@ public final class SmartAccountEventEmitter: @unchecked Sendable {
     /// event.
     ///
     /// - Parameter event: The event to emit.
-    internal func emit(_ event: SmartAccountEvent) {
+    internal func emit(_ event: OZSmartAccountEvent) {
         let tag = event.eventTypeTag
         stateLock.lock()
         let typed = typeListeners[tag] ?? []

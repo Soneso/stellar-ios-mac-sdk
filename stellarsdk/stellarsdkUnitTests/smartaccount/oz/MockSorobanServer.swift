@@ -128,7 +128,7 @@ final class MockSorobanServerScript: @unchecked Sendable {
     }
 
     /// Enqueues a simulate-transaction response carrying an `error` field.
-    /// Production code lifts this into `TransactionException.SimulationFailed`.
+    /// Production code lifts this into `SmartAccountTransactionException.SimulationFailed`.
     func enqueueSimulateError(_ message: String, latestLedger: Int = 1000) {
         scriptLock.lock(); defer { scriptLock.unlock() }
         let payload: [String: Any] = [

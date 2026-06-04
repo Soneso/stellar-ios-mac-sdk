@@ -25,8 +25,8 @@ final class OZStorageAdapterTests: XCTestCase {
     private func fullCredential(
         id: String = "cred-full-001",
         contractId: String = "CBCD1234EFGH5678IJKL9012MNOP3456QRST7890UVWX1234YZAB5678"
-    ) -> StoredCredential {
-        return StoredCredential(
+    ) -> OZStoredCredential {
+        return OZStoredCredential(
             credentialId: id,
             publicKey: testPublicKey(seed: 1),
             contractId: contractId,
@@ -44,8 +44,8 @@ final class OZStorageAdapterTests: XCTestCase {
 
     private func minimalCredential(
         id: String = "cred-minimal-001"
-    ) -> StoredCredential {
-        return StoredCredential(
+    ) -> OZStoredCredential {
+        return OZStoredCredential(
             credentialId: id,
             publicKey: testPublicKey(seed: 2),
             contractId: nil,
@@ -61,8 +61,8 @@ final class OZStorageAdapterTests: XCTestCase {
         )
     }
 
-    private func newAdapter() -> InMemoryStorageAdapter {
-        return InMemoryStorageAdapter()
+    private func newAdapter() -> OZInMemoryStorageAdapter {
+        return OZInMemoryStorageAdapter()
     }
 
     // MARK: - Credential: Save and Retrieve
@@ -139,7 +139,7 @@ final class OZStorageAdapterTests: XCTestCase {
 
     func testSaveExistingCredentialOverwrites() async throws {
         let adapter = newAdapter()
-        let original = StoredCredential(
+        let original = OZStoredCredential(
             credentialId: "cred-upsert",
             publicKey: testPublicKey(seed: 10),
             contractId: "CONTRACT_A",
@@ -149,7 +149,7 @@ final class OZStorageAdapterTests: XCTestCase {
         )
         try await adapter.save(credential: original)
 
-        let replacement = StoredCredential(
+        let replacement = OZStoredCredential(
             credentialId: "cred-upsert",
             publicKey: testPublicKey(seed: 20),
             contractId: "CONTRACT_B",
@@ -180,7 +180,7 @@ final class OZStorageAdapterTests: XCTestCase {
 
         try await adapter.update(
             credentialId: "cred-full-001",
-            updates: StoredCredentialUpdate(
+            updates: OZStoredCredentialUpdate(
                 deploymentStatus: .failed,
                 deploymentError: "Transaction failed: insufficient balance"
             )
@@ -201,7 +201,7 @@ final class OZStorageAdapterTests: XCTestCase {
         let newTimestamp: Int64 = 1_700_099_000_000
         try await adapter.update(
             credentialId: "cred-full-001",
-            updates: StoredCredentialUpdate(lastUsedAt: newTimestamp)
+            updates: OZStoredCredentialUpdate(lastUsedAt: newTimestamp)
         )
 
         let updated = try await adapter.get(credentialId: "cred-full-001")
@@ -215,7 +215,7 @@ final class OZStorageAdapterTests: XCTestCase {
 
         try await adapter.update(
             credentialId: "cred-full-001",
-            updates: StoredCredentialUpdate(nickname: "YubiKey 5")
+            updates: OZStoredCredentialUpdate(nickname: "YubiKey 5")
         )
 
         let updated = try await adapter.get(credentialId: "cred-full-001")
@@ -230,7 +230,7 @@ final class OZStorageAdapterTests: XCTestCase {
 
         try await adapter.update(
             credentialId: "cred-full-001",
-            updates: StoredCredentialUpdate(isPrimary: false)
+            updates: OZStoredCredentialUpdate(isPrimary: false)
         )
 
         let updated = try await adapter.get(credentialId: "cred-full-001")
@@ -243,7 +243,7 @@ final class OZStorageAdapterTests: XCTestCase {
 
         try await adapter.update(
             credentialId: "cred-full-001",
-            updates: StoredCredentialUpdate(transports: ["ble", "nfc"])
+            updates: OZStoredCredentialUpdate(transports: ["ble", "nfc"])
         )
 
         let updated = try await adapter.get(credentialId: "cred-full-001")
@@ -256,7 +256,7 @@ final class OZStorageAdapterTests: XCTestCase {
 
         try await adapter.update(
             credentialId: "cred-full-001",
-            updates: StoredCredentialUpdate(deviceType: "singleDevice", backedUp: false)
+            updates: OZStoredCredentialUpdate(deviceType: "singleDevice", backedUp: false)
         )
 
         let updated = try await adapter.get(credentialId: "cred-full-001")
@@ -271,7 +271,7 @@ final class OZStorageAdapterTests: XCTestCase {
         let newContractId = "CNEW1234CONT5678RACT9012ADDR3456GOES7890HERE1234ABCD5678"
         try await adapter.update(
             credentialId: "cred-minimal-001",
-            updates: StoredCredentialUpdate(contractId: newContractId)
+            updates: OZStoredCredentialUpdate(contractId: newContractId)
         )
 
         let updated = try await adapter.get(credentialId: "cred-minimal-001")
@@ -285,7 +285,7 @@ final class OZStorageAdapterTests: XCTestCase {
 
         try await adapter.update(
             credentialId: "cred-full-001",
-            updates: StoredCredentialUpdate(nickname: "Updated Name")
+            updates: OZStoredCredentialUpdate(nickname: "Updated Name")
         )
 
         let updated = try await adapter.get(credentialId: "cred-full-001")
@@ -306,13 +306,13 @@ final class OZStorageAdapterTests: XCTestCase {
         do {
             try await adapter.update(
                 credentialId: "nonexistent-id",
-                updates: StoredCredentialUpdate(nickname: "Should fail")
+                updates: OZStoredCredentialUpdate(nickname: "Should fail")
             )
-            XCTFail("Expected CredentialException.NotFound")
-        } catch let error as CredentialException.NotFound {
+            XCTFail("Expected SmartAccountCredentialException.NotFound")
+        } catch let error as SmartAccountCredentialException.NotFound {
             XCTAssertEqual(SmartAccountErrorCode.credentialNotFound.code, error.code.code)
         } catch {
-            XCTFail("Expected CredentialException.NotFound, got \(error)")
+            XCTFail("Expected SmartAccountCredentialException.NotFound, got \(error)")
         }
     }
 
@@ -322,7 +322,7 @@ final class OZStorageAdapterTests: XCTestCase {
 
         try await adapter.update(
             credentialId: "cred-full-001",
-            updates: StoredCredentialUpdate(
+            updates: OZStoredCredentialUpdate(
                 deploymentStatus: .failed,
                 deploymentError: "Network timeout",
                 lastUsedAt: 1_700_099_000_000,
@@ -473,7 +473,7 @@ final class OZStorageAdapterTests: XCTestCase {
         let adapter = newAdapter()
         let now: Int64 = 1_700_000_000_000
         let expiresAt: Int64 = .max
-        let session = StoredSession(
+        let session = OZStoredSession(
             credentialId: "cred-session-001",
             contractId: "CSESS1234CONT5678RACT9012ADDR3456GOES7890HERE1234ABCD5678",
             connectedAt: now,
@@ -503,7 +503,7 @@ final class OZStorageAdapterTests: XCTestCase {
         let adapter = newAdapter()
         let now: Int64 = 1_700_000_000_000
 
-        let session1 = StoredSession(
+        let session1 = OZStoredSession(
             credentialId: "cred-session-1",
             contractId: "CONTRACT_1",
             connectedAt: now,
@@ -511,7 +511,7 @@ final class OZStorageAdapterTests: XCTestCase {
         )
         try await adapter.saveSession(session1)
 
-        let session2 = StoredSession(
+        let session2 = OZStoredSession(
             credentialId: "cred-session-2",
             contractId: "CONTRACT_2",
             connectedAt: now + 1000,
@@ -529,7 +529,7 @@ final class OZStorageAdapterTests: XCTestCase {
     func testClearSession() async throws {
         let adapter = newAdapter()
         let now: Int64 = 1_700_000_000_000
-        try await adapter.saveSession(StoredSession(
+        try await adapter.saveSession(OZStoredSession(
             credentialId: "cred-session",
             contractId: "CONTRACT",
             connectedAt: now,
@@ -553,7 +553,7 @@ final class OZStorageAdapterTests: XCTestCase {
 
     func testExpiredSessionAutoClearedOnGetSession() async throws {
         let adapter = newAdapter()
-        let session = StoredSession(
+        let session = OZStoredSession(
             credentialId: "cred-expired",
             contractId: "CONTRACT_EXPIRED",
             connectedAt: 1000,
@@ -570,7 +570,7 @@ final class OZStorageAdapterTests: XCTestCase {
 
     func testNonExpiredSessionIsReturned() async throws {
         let adapter = newAdapter()
-        let session = StoredSession(
+        let session = OZStoredSession(
             credentialId: "cred-valid",
             contractId: "CONTRACT_VALID",
             connectedAt: 1_700_000_000_000,
@@ -588,7 +588,7 @@ final class OZStorageAdapterTests: XCTestCase {
     func testClearCredentialsDoesNotAffectSession() async throws {
         let adapter = newAdapter()
         try await adapter.save(credential: fullCredential())
-        try await adapter.saveSession(StoredSession(
+        try await adapter.saveSession(OZStoredSession(
             credentialId: "cred-full-001",
             contractId: "CONTRACT",
             connectedAt: 1_700_000_000_000,
@@ -606,7 +606,7 @@ final class OZStorageAdapterTests: XCTestCase {
     func testClearSessionDoesNotAffectCredentials() async throws {
         let adapter = newAdapter()
         try await adapter.save(credential: fullCredential())
-        try await adapter.saveSession(StoredSession(
+        try await adapter.saveSession(OZStoredSession(
             credentialId: "cred-full-001",
             contractId: "CONTRACT",
             connectedAt: 1_700_000_000_000,
@@ -639,7 +639,7 @@ final class OZStorageAdapterTests: XCTestCase {
         ]
 
         for id in specialIds {
-            try await adapter.save(credential: StoredCredential(
+            try await adapter.save(credential: OZStoredCredential(
                 credentialId: id,
                 publicKey: testPublicKey(seed: 0),
                 createdAt: 1_700_000_000_000
@@ -658,7 +658,7 @@ final class OZStorageAdapterTests: XCTestCase {
 
     func testCredentialIdWithEmptyString() async throws {
         let adapter = newAdapter()
-        let credential = StoredCredential(
+        let credential = OZStoredCredential(
             credentialId: "",
             publicKey: testPublicKey(seed: 0),
             createdAt: 1_700_000_000_000
@@ -679,7 +679,7 @@ final class OZStorageAdapterTests: XCTestCase {
         for i in 0..<1024 {
             largeKey[i] = UInt8(i % 256)
         }
-        let credential = StoredCredential(
+        let credential = OZStoredCredential(
             credentialId: "cred-large-key",
             publicKey: largeKey,
             createdAt: 1_700_000_000_000
@@ -695,7 +695,7 @@ final class OZStorageAdapterTests: XCTestCase {
     func testLargeNickname() async throws {
         let adapter = newAdapter()
         let longNickname = String(repeating: "A", count: 10_000)
-        let credential = StoredCredential(
+        let credential = OZStoredCredential(
             credentialId: "cred-long-name",
             publicKey: testPublicKey(seed: 0),
             createdAt: 1_700_000_000_000,
@@ -711,7 +711,7 @@ final class OZStorageAdapterTests: XCTestCase {
     func testLargeTransportsList() async throws {
         let adapter = newAdapter()
         let manyTransports = (1...100).map { "transport-\($0)" }
-        let credential = StoredCredential(
+        let credential = OZStoredCredential(
             credentialId: "cred-many-transports",
             publicKey: testPublicKey(seed: 0),
             createdAt: 1_700_000_000_000,
@@ -732,7 +732,7 @@ final class OZStorageAdapterTests: XCTestCase {
         let adapter = newAdapter()
         let sharedContract = "CSHARED1234ABCD5678EFGH9012IJKL3456MNOP7890QRST1234UVWX"
 
-        let cred1 = StoredCredential(
+        let cred1 = OZStoredCredential(
             credentialId: "cred-primary",
             publicKey: testPublicKey(seed: 1),
             contractId: sharedContract,
@@ -741,7 +741,7 @@ final class OZStorageAdapterTests: XCTestCase {
             isPrimary: true
         )
 
-        let cred2 = StoredCredential(
+        let cred2 = OZStoredCredential(
             credentialId: "cred-backup",
             publicKey: testPublicKey(seed: 2),
             contractId: sharedContract,
@@ -750,7 +750,7 @@ final class OZStorageAdapterTests: XCTestCase {
             isPrimary: false
         )
 
-        let cred3 = StoredCredential(
+        let cred3 = OZStoredCredential(
             credentialId: "cred-recovery",
             publicKey: testPublicKey(seed: 3),
             contractId: sharedContract,
@@ -779,7 +779,7 @@ final class OZStorageAdapterTests: XCTestCase {
 
         for i in 1...50 {
             let id = "cred-rapid-\(i)"
-            let credential = StoredCredential(
+            let credential = OZStoredCredential(
                 credentialId: id,
                 publicKey: testPublicKey(seed: i),
                 contractId: "CONTRACT_RAPID",
@@ -803,7 +803,7 @@ final class OZStorageAdapterTests: XCTestCase {
         for i in 1...20 {
             try await adapter.update(
                 credentialId: "cred-full-001",
-                updates: StoredCredentialUpdate(
+                updates: OZStoredCredentialUpdate(
                     lastUsedAt: 1_700_000_000_000 + Int64(i) * 1000,
                     nickname: "Update #\(i)"
                 )
@@ -819,7 +819,7 @@ final class OZStorageAdapterTests: XCTestCase {
 
     func testDeploymentStatusTransition() async throws {
         let adapter = newAdapter()
-        let credential = StoredCredential(
+        let credential = OZStoredCredential(
             credentialId: "cred-deploy",
             publicKey: testPublicKey(seed: 0),
             deploymentStatus: .pending,
@@ -829,7 +829,7 @@ final class OZStorageAdapterTests: XCTestCase {
 
         try await adapter.update(
             credentialId: "cred-deploy",
-            updates: StoredCredentialUpdate(
+            updates: OZStoredCredentialUpdate(
                 deploymentStatus: .failed,
                 deploymentError: "Transaction rejected"
             )
@@ -841,7 +841,7 @@ final class OZStorageAdapterTests: XCTestCase {
 
         try await adapter.update(
             credentialId: "cred-deploy",
-            updates: StoredCredentialUpdate(deploymentStatus: .pending)
+            updates: OZStoredCredentialUpdate(deploymentStatus: .pending)
         )
 
         let retrying = try await adapter.get(credentialId: "cred-deploy")
@@ -860,7 +860,7 @@ final class OZStorageAdapterTests: XCTestCase {
         let afterDelete = try await adapter.get(credentialId: "cred-lifecycle")
         XCTAssertNil(afterDelete)
 
-        let newCredential = StoredCredential(
+        let newCredential = OZStoredCredential(
             credentialId: "cred-lifecycle",
             publicKey: testPublicKey(seed: 99),
             contractId: "NEW_CONTRACT",
@@ -885,10 +885,10 @@ final class OZStorageAdapterTests: XCTestCase {
         do {
             try await adapter.update(
                 credentialId: "cred-deleted",
-                updates: StoredCredentialUpdate(nickname: "Should fail")
+                updates: OZStoredCredentialUpdate(nickname: "Should fail")
             )
-            XCTFail("Expected CredentialException.NotFound")
-        } catch is CredentialException.NotFound {
+            XCTFail("Expected SmartAccountCredentialException.NotFound")
+        } catch is SmartAccountCredentialException.NotFound {
             // expected
         }
     }
@@ -911,10 +911,10 @@ final class OZStorageAdapterTests: XCTestCase {
         XCTAssertNil(absent)
     }
 
-    // MARK: - StoredSession.isExpired Property
+    // MARK: - OZStoredSession.isExpired Property
 
     func testStoredSessionIsExpiredProperty() {
-        let expired = StoredSession(
+        let expired = OZStoredSession(
             credentialId: "cred",
             contractId: "CONTRACT",
             connectedAt: 1000,
@@ -922,7 +922,7 @@ final class OZStorageAdapterTests: XCTestCase {
         )
         XCTAssertTrue(expired.isExpired, "Session expiring at epoch 2000ms should be expired")
 
-        let valid = StoredSession(
+        let valid = OZStoredSession(
             credentialId: "cred",
             contractId: "CONTRACT",
             connectedAt: 1_700_000_000_000,
@@ -931,18 +931,18 @@ final class OZStorageAdapterTests: XCTestCase {
         XCTAssertFalse(valid.isExpired, "Session expiring at Int64.max should not be expired")
     }
 
-    // MARK: - StoredCredential Equality
+    // MARK: - OZStoredCredential Equality
 
     func testStoredCredentialEqualityWithSameData() {
         let key = testPublicKey(seed: 5)
-        let cred1 = StoredCredential(
+        let cred1 = OZStoredCredential(
             credentialId: "cred-eq",
             publicKey: Data(key),
             contractId: "CONTRACT",
             createdAt: 1_700_000_000_000,
             nickname: "Test"
         )
-        let cred2 = StoredCredential(
+        let cred2 = OZStoredCredential(
             credentialId: "cred-eq",
             publicKey: Data(key),
             contractId: "CONTRACT",
@@ -955,12 +955,12 @@ final class OZStorageAdapterTests: XCTestCase {
     }
 
     func testStoredCredentialInequalityWithDifferentPublicKey() {
-        let cred1 = StoredCredential(
+        let cred1 = OZStoredCredential(
             credentialId: "cred-neq",
             publicKey: testPublicKey(seed: 1),
             createdAt: 1_700_000_000_000
         )
-        let cred2 = StoredCredential(
+        let cred2 = OZStoredCredential(
             credentialId: "cred-neq",
             publicKey: testPublicKey(seed: 2),
             createdAt: 1_700_000_000_000
@@ -972,7 +972,7 @@ final class OZStorageAdapterTests: XCTestCase {
     // MARK: - Interface Conformance
 
     func testInMemoryStorageAdapterImplementsStorageAdapterInterface() {
-        let adapter: StorageAdapter = InMemoryStorageAdapter()
+        let adapter: OZStorageAdapter = OZInMemoryStorageAdapter()
         XCTAssertNotNil(adapter)
     }
 
@@ -982,11 +982,11 @@ final class OZStorageAdapterTests: XCTestCase {
     /// readback returns one of the ten written values bit-identical and that the
     /// total count of stored credentials is exactly ten with no torn writes.
     func test_concurrent_writes_10_parallel_no_partial_state() async throws {
-        let adapter = InMemoryStorageAdapter()
+        let adapter = OZInMemoryStorageAdapter()
 
-        var expected: [String: StoredCredential] = [:]
+        var expected: [String: OZStoredCredential] = [:]
         for i in 0..<10 {
-            let cred = StoredCredential(
+            let cred = OZStoredCredential(
                 credentialId: "cred-concurrent-\(i)",
                 publicKey: testPublicKey(seed: i + 100),
                 contractId: "CONCURRENT_CONTRACT",
@@ -1016,13 +1016,13 @@ final class OZStorageAdapterTests: XCTestCase {
         XCTAssertEqual(Set(expected.keys), storedIds, "Stored ID set must equal the written set")
     }
 
-    // MARK: - InMemoryStorageAdapter Hashable
+    // MARK: - OZInMemoryStorageAdapter Hashable
 
-    /// `InMemoryStorageAdapter` is `Hashable`; two fresh instances must hash to
+    /// `OZInMemoryStorageAdapter` is `Hashable`; two fresh instances must hash to
     /// the same value because they use the shared type-level tag.
     func test_inMemoryStorageAdapter_hashable_twoInstancesSameHash() {
-        let a = InMemoryStorageAdapter()
-        let b = InMemoryStorageAdapter()
+        let a = OZInMemoryStorageAdapter()
+        let b = OZInMemoryStorageAdapter()
         var hasherA = Hasher()
         a.hash(into: &hasherA)
         var hasherB = Hasher()
@@ -1030,16 +1030,16 @@ final class OZStorageAdapterTests: XCTestCase {
         XCTAssertEqual(hasherA.finalize(), hasherB.finalize())
     }
 
-    // MARK: - ExternalWalletAdapter default implementations
+    // MARK: - OZExternalWalletAdapter default implementations
 
-    /// `ExternalWalletAdapter.disconnectByAddress` has a no-op default
+    /// `OZExternalWalletAdapter.disconnectByAddress` has a no-op default
     /// implementation. Calling it must not throw.
     func test_externalWalletAdapter_disconnectByAddress_defaultNoOp() async throws {
         let adapter = _NoOpExternalWalletAdapter()
         try await adapter.disconnectByAddress(address: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ")
     }
 
-    /// `ExternalWalletAdapter.getWalletForAddress` has a default that returns `nil`.
+    /// `OZExternalWalletAdapter.getWalletForAddress` has a default that returns `nil`.
     func test_externalWalletAdapter_getWalletForAddress_defaultReturnsNil() {
         let adapter = _NoOpExternalWalletAdapter()
         let result = adapter.getWalletForAddress(
@@ -1048,7 +1048,7 @@ final class OZStorageAdapterTests: XCTestCase {
         XCTAssertNil(result)
     }
 
-    /// `ExternalWalletAdapter.reconnect` has a default that returns `nil`.
+    /// `OZExternalWalletAdapter.reconnect` has a default that returns `nil`.
     func test_externalWalletAdapter_reconnect_defaultReturnsNil() async throws {
         let adapter = _NoOpExternalWalletAdapter()
         let result = try await adapter.reconnect(walletId: "some-wallet-id")
@@ -1058,23 +1058,23 @@ final class OZStorageAdapterTests: XCTestCase {
 
 // MARK: - _NoOpExternalWalletAdapter
 
-/// Minimal `ExternalWalletAdapter` that exercises the protocol's default
+/// Minimal `OZExternalWalletAdapter` that exercises the protocol's default
 /// extension method implementations. It delegates `connect`, `disconnect`,
 /// `signAuthEntry`, `getConnectedWallets`, and `canSignFor` to no-ops.
-private final class _NoOpExternalWalletAdapter: ExternalWalletAdapter, @unchecked Sendable {
+private final class _NoOpExternalWalletAdapter: OZExternalWalletAdapter, @unchecked Sendable {
 
-    func connect() async throws -> ConnectedWallet? { return nil }
+    func connect() async throws -> OZConnectedWallet? { return nil }
 
     func disconnect() async throws {}
 
     func signAuthEntry(
         preimageXdr: String,
-        options: SignAuthEntryOptions?
-    ) async throws -> SignAuthEntryResult {
-        return SignAuthEntryResult(signedAuthEntry: "")
+        options: OZSignAuthEntryOptions?
+    ) async throws -> OZSignAuthEntryResult {
+        return OZSignAuthEntryResult(signedAuthEntry: "")
     }
 
-    func getConnectedWallets() -> [ConnectedWallet] { return [] }
+    func getConnectedWallets() -> [OZConnectedWallet] { return [] }
 
     func canSignFor(address: String) -> Bool { return false }
 }

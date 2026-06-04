@@ -24,8 +24,8 @@ final class AppleWebAuthnProviderTests: XCTestCase {
 
     func test_blank_rpId_throws_configuration_exception() {
         XCTAssertThrowsError(try AppleWebAuthnProvider(rpId: "", rpName: "My Wallet")) { error in
-            XCTAssertTrue(error is ConfigurationException.InvalidConfig)
-            if let invalid = error as? ConfigurationException.InvalidConfig {
+            XCTAssertTrue(error is SmartAccountConfigurationException.InvalidConfig)
+            if let invalid = error as? SmartAccountConfigurationException.InvalidConfig {
                 XCTAssertEqual(invalid.code, .invalidConfig)
                 XCTAssertTrue(invalid.message.contains("rpId"))
             }
@@ -34,14 +34,14 @@ final class AppleWebAuthnProviderTests: XCTestCase {
 
     func test_whitespace_only_rpId_throws_configuration_exception() {
         XCTAssertThrowsError(try AppleWebAuthnProvider(rpId: "   ", rpName: "My Wallet")) { error in
-            XCTAssertTrue(error is ConfigurationException.InvalidConfig)
+            XCTAssertTrue(error is SmartAccountConfigurationException.InvalidConfig)
         }
     }
 
     func test_blank_rpName_throws_configuration_exception() {
         XCTAssertThrowsError(try AppleWebAuthnProvider(rpId: "example.com", rpName: "")) { error in
-            XCTAssertTrue(error is ConfigurationException.InvalidConfig)
-            if let invalid = error as? ConfigurationException.InvalidConfig {
+            XCTAssertTrue(error is SmartAccountConfigurationException.InvalidConfig)
+            if let invalid = error as? SmartAccountConfigurationException.InvalidConfig {
                 XCTAssertTrue(invalid.message.contains("rpName"))
             }
         }
@@ -49,7 +49,7 @@ final class AppleWebAuthnProviderTests: XCTestCase {
 
     func test_whitespace_only_rpName_throws_configuration_exception() {
         XCTAssertThrowsError(try AppleWebAuthnProvider(rpId: "example.com", rpName: "   ")) { error in
-            XCTAssertTrue(error is ConfigurationException.InvalidConfig)
+            XCTAssertTrue(error is SmartAccountConfigurationException.InvalidConfig)
         }
     }
 
@@ -57,8 +57,8 @@ final class AppleWebAuthnProviderTests: XCTestCase {
         XCTAssertThrowsError(
             try AppleWebAuthnProvider(rpId: "example.com", rpName: "My Wallet", timeout: 0)
         ) { error in
-            XCTAssertTrue(error is ConfigurationException.InvalidConfig)
-            if let invalid = error as? ConfigurationException.InvalidConfig {
+            XCTAssertTrue(error is SmartAccountConfigurationException.InvalidConfig)
+            if let invalid = error as? SmartAccountConfigurationException.InvalidConfig {
                 XCTAssertTrue(invalid.message.contains("timeout"))
             }
         }
@@ -68,7 +68,7 @@ final class AppleWebAuthnProviderTests: XCTestCase {
         XCTAssertThrowsError(
             try AppleWebAuthnProvider(rpId: "example.com", rpName: "My Wallet", timeout: -1)
         ) { error in
-            XCTAssertTrue(error is ConfigurationException.InvalidConfig)
+            XCTAssertTrue(error is SmartAccountConfigurationException.InvalidConfig)
         }
     }
 

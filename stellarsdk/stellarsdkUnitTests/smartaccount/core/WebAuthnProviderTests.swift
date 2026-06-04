@@ -387,7 +387,7 @@ final class WebAuthnProviderTests: XCTestCase {
 
     func test_mock_provider_authenticate_tracks_call_count_and_args() async throws {
         let mock = MockWebAuthnProvider()
-        let allow = [AllowCredential(id: Data([0x10, 0x20]), transports: ["internal"])]
+        let allow = [WebAuthnAllowCredential(id: Data([0x10, 0x20]), transports: ["internal"])]
 
         _ = try await mock.authenticate(challenge: Data([0x01]), allowCredentials: nil)
         _ = try await mock.authenticate(challenge: Data([0xAA, 0xBB]), allowCredentials: allow)

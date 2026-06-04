@@ -14,12 +14,12 @@ internal protocol OZContextRuleParser: AnyObject, Sendable {
 
     func getContextRule(contextRuleId: UInt32) async throws -> SCValXDR
 
-    func parseContextRule(_ scVal: SCValXDR) throws -> ParsedContextRule
+    func parseContextRule(_ scVal: SCValXDR) throws -> OZParsedContextRule
 }
 
 
 /// WebAuthn registration result and on-chain transaction outcome from adding a new passkey signer.
-public struct AddPasskeySignerResult: Sendable, Hashable {
+public struct OZAddPasskeySignerResult: Sendable, Hashable {
 
     /// Base64URL-encoded credential identifier (no padding).
     public let credentialId: String
@@ -28,12 +28,12 @@ public struct AddPasskeySignerResult: Sendable, Hashable {
     public let publicKey: Data
 
     /// Outcome of the on-chain signer-addition transaction.
-    public let transactionResult: TransactionResult
+    public let transactionResult: OZTransactionResult
 
     public init(
         credentialId: String,
         publicKey: Data,
-        transactionResult: TransactionResult
+        transactionResult: OZTransactionResult
     ) {
         self.credentialId = credentialId
         self.publicKey = publicKey
@@ -43,7 +43,7 @@ public struct AddPasskeySignerResult: Sendable, Hashable {
     /// Field-by-field equality using a constant-time comparison for the
     /// `publicKey` bytes so the comparison cost does not depend on where the
     /// first differing byte sits in the buffer.
-    public static func == (lhs: AddPasskeySignerResult, rhs: AddPasskeySignerResult) -> Bool {
+    public static func == (lhs: OZAddPasskeySignerResult, rhs: OZAddPasskeySignerResult) -> Bool {
         if lhs.credentialId != rhs.credentialId { return false }
         if lhs.transactionResult != rhs.transactionResult { return false }
         return lhs.publicKey.constantTimeEquals(rhs.publicKey)
@@ -131,7 +131,7 @@ public final class OZSignerManager: OZManagerHelpers, @unchecked Sendable {
     ///
     /// Performs the full end-to-end flow of creating a new passkey via the
     /// platform's WebAuthn API, persisting the credential locally as
-    /// `pending`, emitting a ``SmartAccountEvent/credentialCreated(credential:)``
+    /// `pending`, emitting an ``OZSmartAccountEvent/credentialCreated(credential:)``
     /// event, and adding the resulting public key as a signer on the
     /// smart-account contract. Use ``addPasskey(contextRuleId:publicKey:credentialId:selectedSigners:forceMethod:)``
     /// directly when the credential identifier and public key are already in
@@ -148,7 +148,7 @@ public final class OZSignerManager: OZManagerHelpers, @unchecked Sendable {
     /// 4. Base64URL-encodes the credential id for local storage.
     /// 5. Persists the new credential through
     ///    ``OZCredentialManagerProtocol/createPendingCredential(credentialId:publicKey:contractId:nickname:transports:deviceType:backedUp:)``.
-    /// 6. Emits ``SmartAccountEvent/credentialCreated(credential:)``.
+    /// 6. Emits ``OZSmartAccountEvent/credentialCreated(credential:)``.
     /// 7. Adds the passkey signer on-chain by delegating to
     ///    ``addPasskey(contextRuleId:publicKey:credentialId:selectedSigners:forceMethod:)``.
     ///
@@ -167,20 +167,20 @@ public final class OZSignerManager: OZManagerHelpers, @unchecked Sendable {
     ///     on-chain authorization ceremony. Empty (default) routes through
     ///     single-signer submission with the connected passkey credential.
     ///   - forceMethod: Optional submission-method override.
-    /// - Returns: An ``AddPasskeySignerResult`` carrying the credential id,
+    /// - Returns: An ``OZAddPasskeySignerResult`` carrying the credential id,
     ///   the public key, and the on-chain transaction outcome.
-    /// - Throws: ``WalletException/NotConnected`` when no wallet is connected;
+    /// - Throws: ``SmartAccountWalletException/NotConnected`` when no wallet is connected;
     ///   ``WebAuthnException/NotSupported`` when no WebAuthn provider is
     ///   configured; ``WebAuthnException`` when the registration ceremony
-    ///   fails or the user cancels; ``CredentialException`` when credential
-    ///   storage fails; ``TransactionException`` when the on-chain signer
+    ///   fails or the user cancels; ``SmartAccountCredentialException`` when credential
+    ///   storage fails; ``SmartAccountTransactionException`` when the on-chain signer
     ///   addition fails.
     public func addNewPasskeySigner(
         contextRuleId: UInt32,
         userName: String,
-        selectedSigners: [SelectedSigner] = [],
-        forceMethod: SubmissionMethod? = nil
-    ) async throws -> AddPasskeySignerResult {
+        selectedSigners: [OZSelectedSigner] = [],
+        forceMethod: OZSubmissionMethod? = nil
+    ) async throws -> OZAddPasskeySignerResult {
         let connected = try kit.requireConnected()
 
         guard let webauthnProvider = webauthnProviderOverride ?? kit.config.webauthnProvider else {
@@ -223,7 +223,7 @@ public final class OZSignerManager: OZManagerHelpers, @unchecked Sendable {
         // `createPendingCredential` rejects wrong-length keys before persisting;
         // `addPasskey` then rejects wrong-prefix keys after persisting.
         let credentialManager = credentialManagerOverride ?? kit.credentialManager
-        let credential: StoredCredential
+        let credential: OZStoredCredential
         do {
             credential = try await credentialManager.createPendingCredential(
                 credentialId: credentialIdBase64url,
@@ -234,12 +234,12 @@ public final class OZSignerManager: OZManagerHelpers, @unchecked Sendable {
                 deviceType: registrationResult.deviceType,
                 backedUp: registrationResult.backedUp
             )
-        } catch let error as CredentialException {
+        } catch let error as SmartAccountCredentialException {
             throw error
-        } catch let error as StorageException {
+        } catch let error as SmartAccountStorageException {
             throw error
         } catch {
-            throw StorageException.writeFailed(
+            throw SmartAccountStorageException.writeFailed(
                 key: credentialIdBase64url,
                 cause: error
             )
@@ -257,7 +257,7 @@ public final class OZSignerManager: OZManagerHelpers, @unchecked Sendable {
             forceMethod: forceMethod
         )
 
-        return AddPasskeySignerResult(
+        return OZAddPasskeySignerResult(
             credentialId: credentialIdBase64url,
             publicKey: registrationResult.publicKey,
             transactionResult: transactionResult
@@ -276,7 +276,7 @@ public final class OZSignerManager: OZManagerHelpers, @unchecked Sendable {
     ///
     /// Contract call: `smart_account.add_signer(context_rule_id, signer) -> u32`.
     /// The assigned numeric id surfaces on
-    /// ``ParsedContextRule/signerIds`` once the rule is refetched.
+    /// ``OZParsedContextRule/signerIds`` once the rule is refetched.
     ///
     /// - Parameters:
     ///   - contextRuleId: Context-rule identifier the new signer is being
@@ -288,34 +288,34 @@ public final class OZSignerManager: OZManagerHelpers, @unchecked Sendable {
     ///     empty.
     ///   - selectedSigners: Optional multi-signer participants list.
     ///   - forceMethod: Optional submission-method override.
-    /// - Returns: A ``TransactionResult`` describing the on-chain outcome.
-    /// - Throws: ``ValidationException`` for invalid input;
-    ///   ``WalletException`` for missing connection;
-    ///   ``TransactionException`` for submission failures.
+    /// - Returns: An ``OZTransactionResult`` describing the on-chain outcome.
+    /// - Throws: ``SmartAccountValidationException`` for invalid input;
+    ///   ``SmartAccountWalletException`` for missing connection;
+    ///   ``SmartAccountTransactionException`` for submission failures.
     public func addPasskey(
         contextRuleId: UInt32,
         publicKey: Data,
         credentialId: Data,
-        selectedSigners: [SelectedSigner] = [],
-        forceMethod: SubmissionMethod? = nil
-    ) async throws -> TransactionResult {
+        selectedSigners: [OZSelectedSigner] = [],
+        forceMethod: OZSubmissionMethod? = nil
+    ) async throws -> OZTransactionResult {
         _ = try kit.requireConnected()
 
         if publicKey.count != SmartAccountConstants.secp256r1PublicKeySize {
-            throw ValidationException.invalidInput(
+            throw SmartAccountValidationException.invalidInput(
                 field: "publicKey",
                 reason: "Public key must be \(SmartAccountConstants.secp256r1PublicKeySize) bytes, got: \(publicKey.count)"
             )
         }
         if publicKey[publicKey.startIndex] != SmartAccountConstants.uncompressedPubkeyPrefix {
             let firstByteHex = String(format: "%02x", publicKey[publicKey.startIndex])
-            throw ValidationException.invalidInput(
+            throw SmartAccountValidationException.invalidInput(
                 field: "publicKey",
                 reason: "Public key must start with 0x04 (uncompressed format), got: 0x\(firstByteHex)"
             )
         }
         if credentialId.isEmpty {
-            throw ValidationException.invalidInput(
+            throw SmartAccountValidationException.invalidInput(
                 field: "credentialId",
                 reason: "Credential ID cannot be empty"
             )
@@ -353,17 +353,17 @@ public final class OZSignerManager: OZManagerHelpers, @unchecked Sendable {
     ///   - address: Stellar account (`G…`) or contract (`C…`) strkey.
     ///   - selectedSigners: Optional multi-signer participants list.
     ///   - forceMethod: Optional submission-method override.
-    /// - Returns: A ``TransactionResult`` describing the on-chain outcome.
-    /// - Throws: ``ValidationException/InvalidAddress`` when the address
-    ///   strkey is malformed; ``WalletException/NotConnected`` when no
-    ///   wallet is connected; ``TransactionException`` for submission
+    /// - Returns: An ``OZTransactionResult`` describing the on-chain outcome.
+    /// - Throws: ``SmartAccountValidationException/InvalidAddress`` when the address
+    ///   strkey is malformed; ``SmartAccountWalletException/NotConnected`` when no
+    ///   wallet is connected; ``SmartAccountTransactionException`` for submission
     ///   failures.
     public func addDelegated(
         contextRuleId: UInt32,
         address: String,
-        selectedSigners: [SelectedSigner] = [],
-        forceMethod: SubmissionMethod? = nil
-    ) async throws -> TransactionResult {
+        selectedSigners: [OZSelectedSigner] = [],
+        forceMethod: OZSubmissionMethod? = nil
+    ) async throws -> OZTransactionResult {
         _ = try kit.requireConnected()
 
         let signer = try OZDelegatedSigner(address: address)
@@ -394,17 +394,17 @@ public final class OZSignerManager: OZManagerHelpers, @unchecked Sendable {
     ///     bytes).
     ///   - selectedSigners: Optional multi-signer participants list.
     ///   - forceMethod: Optional submission-method override.
-    /// - Returns: A ``TransactionResult`` describing the on-chain outcome.
-    /// - Throws: ``ValidationException`` for invalid input;
-    ///   ``WalletException/NotConnected`` when no wallet is connected;
-    ///   ``TransactionException`` for submission failures.
+    /// - Returns: An ``OZTransactionResult`` describing the on-chain outcome.
+    /// - Throws: ``SmartAccountValidationException`` for invalid input;
+    ///   ``SmartAccountWalletException/NotConnected`` when no wallet is connected;
+    ///   ``SmartAccountTransactionException`` for submission failures.
     public func addEd25519(
         contextRuleId: UInt32,
         verifierAddress: String,
         publicKey: Data,
-        selectedSigners: [SelectedSigner] = [],
-        forceMethod: SubmissionMethod? = nil
-    ) async throws -> TransactionResult {
+        selectedSigners: [OZSelectedSigner] = [],
+        forceMethod: OZSubmissionMethod? = nil
+    ) async throws -> OZTransactionResult {
         _ = try kit.requireConnected()
 
         let signer = try OZExternalSigner.ed25519(
@@ -425,7 +425,7 @@ public final class OZSignerManager: OZManagerHelpers, @unchecked Sendable {
     /// Removes a signer from a context rule by its on-chain numeric id.
     ///
     /// The id is assigned by the smart-account contract when the signer is
-    /// added and surfaces on ``ParsedContextRule/signerIds`` after the rule
+    /// added and surfaces on ``OZParsedContextRule/signerIds`` after the rule
     /// is fetched. Use ``removeSignerBySigner(contextRuleId:signer:selectedSigners:forceMethod:)``
     /// when only the signer value is known — that overload performs one extra
     /// RPC round trip to resolve the id internally.
@@ -443,15 +443,15 @@ public final class OZSignerManager: OZManagerHelpers, @unchecked Sendable {
     ///   - signerId: Numeric signer identifier assigned at addition time.
     ///   - selectedSigners: Optional multi-signer participants list.
     ///   - forceMethod: Optional submission-method override.
-    /// - Returns: A ``TransactionResult`` describing the on-chain outcome.
-    /// - Throws: ``WalletException/NotConnected`` when no wallet is
-    ///   connected; ``TransactionException`` for submission failures.
+    /// - Returns: An ``OZTransactionResult`` describing the on-chain outcome.
+    /// - Throws: ``SmartAccountWalletException/NotConnected`` when no wallet is
+    ///   connected; ``SmartAccountTransactionException`` for submission failures.
     public func removeSigner(
         contextRuleId: UInt32,
         signerId: UInt32,
-        selectedSigners: [SelectedSigner] = [],
-        forceMethod: SubmissionMethod? = nil
-    ) async throws -> TransactionResult {
+        selectedSigners: [OZSelectedSigner] = [],
+        forceMethod: OZSubmissionMethod? = nil
+    ) async throws -> OZTransactionResult {
         let connected = try kit.requireConnected()
 
         let hostFunction = try OZSignerManager.buildRemoveSignerFunction(
@@ -482,12 +482,12 @@ public final class OZSignerManager: OZManagerHelpers, @unchecked Sendable {
     ///   - signer: The signer value to match against the rule's signer list.
     ///   - selectedSigners: Optional multi-signer participants list.
     ///   - forceMethod: Optional submission-method override.
-    /// - Returns: A ``TransactionResult`` describing the on-chain outcome.
-    /// - Throws: ``WalletException/NotConnected`` when no wallet is
-    ///   connected; ``ValidationException`` when the signer is not found on
+    /// - Returns: An ``OZTransactionResult`` describing the on-chain outcome.
+    /// - Throws: ``SmartAccountWalletException/NotConnected`` when no wallet is
+    ///   connected; ``SmartAccountValidationException`` when the signer is not found on
     ///   the supplied rule or the rule's `signers` and `signerIds` arrays are
-    ///   misaligned; ``ConfigurationException`` when the manager was
-    ///   constructed without a context-rule parser; ``TransactionException``
+    ///   misaligned; ``SmartAccountConfigurationException`` when the manager was
+    ///   constructed without a context-rule parser; ``SmartAccountTransactionException``
     ///   for simulation, signing, or submission failures.
     ///
     /// - Note: The Swift name differs from the underlying contract method to
@@ -497,9 +497,9 @@ public final class OZSignerManager: OZManagerHelpers, @unchecked Sendable {
     public func removeSignerBySigner(
         contextRuleId: UInt32,
         signer: any OZSmartAccountSigner,
-        selectedSigners: [SelectedSigner] = [],
-        forceMethod: SubmissionMethod? = nil
-    ) async throws -> TransactionResult {
+        selectedSigners: [OZSelectedSigner] = [],
+        forceMethod: OZSubmissionMethod? = nil
+    ) async throws -> OZTransactionResult {
         _ = try kit.requireConnected()
 
         guard let parser = contextRuleParser else {
@@ -510,7 +510,7 @@ public final class OZSignerManager: OZManagerHelpers, @unchecked Sendable {
             // surface a configuration error so the caller can correct the
             // composition root rather than seeing a confusing parse failure
             // deeper in the resolution path.
-            throw ConfigurationException.invalidConfig(
+            throw SmartAccountConfigurationException.invalidConfig(
                 details: "Value-based signer removal requested but no context-rule parser is wired into the signer manager"
             )
         }
@@ -521,14 +521,14 @@ public final class OZSignerManager: OZManagerHelpers, @unchecked Sendable {
         guard let signerIndex = rule.signers.firstIndex(where: { existing in
             OZSmartAccountBuilders.signersEqual(existing, signer)
         }) else {
-            throw ValidationException.invalidInput(
+            throw SmartAccountValidationException.invalidInput(
                 field: "signer",
                 reason: "Signer not found on context rule \(contextRuleId)"
             )
         }
 
         if signerIndex >= rule.signerIds.count {
-            throw ValidationException.invalidInput(
+            throw SmartAccountValidationException.invalidInput(
                 field: "signer",
                 reason: "Signer found at index \(signerIndex) but signerIds has only \(rule.signerIds.count) entries"
             )
@@ -550,9 +550,9 @@ public final class OZSignerManager: OZManagerHelpers, @unchecked Sendable {
     ///
     /// Used by every public `add*` method. The contract assigns a `u32`
     /// signer identifier to the newly added signer; the identifier is not
-    /// included in the returned ``TransactionResult``. Callers that need the
+    /// included in the returned ``OZTransactionResult``. Callers that need the
     /// id must refetch the context rule and read
-    /// ``ParsedContextRule/signerIds``.
+    /// ``OZParsedContextRule/signerIds``.
     ///
     /// - Parameters:
     ///   - contextRuleId: Context-rule identifier the signer is being added
@@ -561,16 +561,16 @@ public final class OZSignerManager: OZManagerHelpers, @unchecked Sendable {
     ///   - selectedSigners: Multi-signer participants. Empty selects
     ///     single-signer routing.
     ///   - forceMethod: Optional submission-method override.
-    /// - Returns: A ``TransactionResult`` describing the on-chain outcome.
-    /// - Throws: ``WalletException/NotConnected`` when no wallet is
-    ///   connected; ``ValidationException`` when the signer cannot be
-    ///   encoded; ``TransactionException`` for submission failures.
+    /// - Returns: An ``OZTransactionResult`` describing the on-chain outcome.
+    /// - Throws: ``SmartAccountWalletException/NotConnected`` when no wallet is
+    ///   connected; ``SmartAccountValidationException`` when the signer cannot be
+    ///   encoded; ``SmartAccountTransactionException`` for submission failures.
     private func addSigner(
         contextRuleId: UInt32,
         signer: any OZSmartAccountSigner,
-        selectedSigners: [SelectedSigner] = [],
-        forceMethod: SubmissionMethod? = nil
-    ) async throws -> TransactionResult {
+        selectedSigners: [OZSelectedSigner] = [],
+        forceMethod: OZSubmissionMethod? = nil
+    ) async throws -> OZTransactionResult {
         let connected = try kit.requireConnected()
 
         let hostFunction = try OZSignerManager.buildAddSignerFunction(
@@ -599,7 +599,7 @@ public final class OZSignerManager: OZManagerHelpers, @unchecked Sendable {
     ///     ``OZSmartAccountSigner/toScVal()``.
     /// - Returns: The matching ``HostFunctionXDR`` ready for transaction
     ///   assembly.
-    /// - Throws: ``ValidationException/InvalidInput`` when the signer cannot
+    /// - Throws: ``SmartAccountValidationException/InvalidInput`` when the signer cannot
     ///   be encoded; ``StellarSDKError`` when the contract id cannot be
     ///   decoded into an ``SCAddressXDR``.
     internal static func buildAddSignerFunction(

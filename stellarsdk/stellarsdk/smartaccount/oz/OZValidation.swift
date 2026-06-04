@@ -18,11 +18,11 @@ import Foundation
 ///   - address: The address string to validate.
 ///   - fieldName: The field name embedded in the error message so callers can
 ///     identify which input failed validation.
-/// - Throws: ``ValidationException/InvalidAddress`` when `address` is not a
+/// - Throws: ``SmartAccountValidationException/InvalidAddress`` when `address` is not a
 ///   valid contract address.
 internal func requireContractAddress(_ address: String, fieldName: String) throws {
     if !address.isValidContractId() {
-        throw ValidationException.InvalidAddress(
+        throw SmartAccountValidationException.InvalidAddress(
             message: "\(fieldName) must be a valid contract address (C...), got: \(address)"
         )
     }
@@ -39,11 +39,11 @@ internal func requireContractAddress(_ address: String, fieldName: String) throw
 ///   - address: The address string to validate.
 ///   - fieldName: The field name embedded in the error message so callers can
 ///     identify which input failed validation.
-/// - Throws: ``ValidationException/InvalidAddress`` when `address` is not a
+/// - Throws: ``SmartAccountValidationException/InvalidAddress`` when `address` is not a
 ///   valid Stellar account or contract address.
 internal func requireStellarAddress(_ address: String, fieldName: String) throws {
     if !address.isValidEd25519PublicKey() && !address.isValidContractId() {
-        throw ValidationException.InvalidAddress(
+        throw SmartAccountValidationException.InvalidAddress(
             message: "\(fieldName) must be a valid Stellar address (G... or C...), got: \(address)"
         )
     }
@@ -84,10 +84,10 @@ internal func isLocalhostUrl(_ url: String) -> Bool {
 /// Validates that `targetFn` is non-blank after trimming whitespace.
 ///
 /// - Parameter targetFn: The function name to validate.
-/// - Throws: `ValidationException.invalidInput` when `targetFn` is empty or whitespace-only.
+/// - Throws: `SmartAccountValidationException.invalidInput` when `targetFn` is empty or whitespace-only.
 internal func requireNonBlankFunctionName(_ targetFn: String) throws {
     if targetFn.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-        throw ValidationException.invalidInput(
+        throw SmartAccountValidationException.invalidInput(
             field: "targetFn",
             reason: "Function name cannot be empty"
         )
@@ -106,15 +106,15 @@ internal func requireNonBlankFunctionName(_ targetFn: String) throws {
 ///   - url: The raw URL string supplied by the caller.
 ///   - label: Human-readable label used in error messages (e.g. `"Indexer"`, `"Relayer"`).
 /// - Returns: Normalised URL string with no trailing slashes.
-/// - Throws: `ConfigurationException.invalidConfig` when the URL is empty, does not
+/// - Throws: `SmartAccountConfigurationException.invalidConfig` when the URL is empty, does not
 ///   satisfy the HTTPS / localhost constraint, or has no host component.
 internal func ozValidateAndNormalizeEndpoint(_ url: String, label: String) throws -> String {
     let trimmedUrl = url.trimmingCharacters(in: .whitespacesAndNewlines)
     if trimmedUrl.isEmpty {
-        throw ConfigurationException.invalidConfig(details: "\(label) URL is required")
+        throw SmartAccountConfigurationException.invalidConfig(details: "\(label) URL is required")
     }
     if !trimmedUrl.hasPrefix("https://") && !isLocalhostUrl(trimmedUrl) {
-        throw ConfigurationException.invalidConfig(
+        throw SmartAccountConfigurationException.invalidConfig(
             details: "\(label) URL must use HTTPS (or http://localhost for development): \(trimmedUrl)"
         )
     }
@@ -128,7 +128,7 @@ internal func ozValidateAndNormalizeEndpoint(_ url: String, label: String) throw
     // failures don't surface as opaque URL errors.
     guard let components = URLComponents(string: stripped),
           let host = components.host, !host.isEmpty else {
-        throw ConfigurationException.invalidConfig(
+        throw SmartAccountConfigurationException.invalidConfig(
             details: "\(label) URL must include a host: \(trimmedUrl)"
         )
     }

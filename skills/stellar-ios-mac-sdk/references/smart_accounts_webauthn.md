@@ -1,6 +1,6 @@
 # Smart Accounts — WebAuthn Providers and Storage Adapters
 
-Platform-injected `WebAuthnProvider` and `StorageAdapter` for `OZSmartAccountConfig`. Core kit operations live in [smart_accounts.md](./smart_accounts.md); signer, context-rule, policy, and multi-signer flows live in [smart_accounts_policies.md](./smart_accounts_policies.md).
+Platform-injected `WebAuthnProvider` and `OZStorageAdapter` for `OZSmartAccountConfig`. Core kit operations live in [smart_accounts.md](./smart_accounts.md); signer, context-rule, policy, and multi-signer flows live in [smart_accounts_policies.md](./smart_accounts_policies.md).
 
 Everything in this file is exposed by a single module import:
 
@@ -8,7 +8,7 @@ Everything in this file is exposed by a single module import:
 import stellarsdk
 ```
 
-There is no submodule. `WebAuthnProvider`, `AppleWebAuthnProvider`, `AllowCredential`, `StorageAdapter`, `StoredCredential`, `KeychainStorageAdapter`, `UserDefaultsStorageAdapter`, `InMemoryStorageAdapter`, and the result/update DTOs are all available after `import stellarsdk`.
+There is no submodule. `WebAuthnProvider`, `AppleWebAuthnProvider`, `WebAuthnAllowCredential`, `OZStorageAdapter`, `OZStoredCredential`, `OZKeychainStorageAdapter`, `OZUserDefaultsStorageAdapter`, `OZInMemoryStorageAdapter`, and the result/update DTOs are all available after `import stellarsdk`.
 
 This SDK targets **iOS and macOS only**. The Apple provider is gated `@available(iOS 16.0, macOS 13.0, *)`; there is no tvOS / watchOS / visionOS provider.
 
@@ -19,14 +19,14 @@ This SDK targets **iOS and macOS only**. The Apple provider is gated `@available
   - [`WebAuthnProvider` protocol](#webauthnprovider-protocol)
   - [`WebAuthnRegistrationResult`](#webauthnregistrationresult)
   - [`WebAuthnAuthenticationResult`](#webauthnauthenticationresult)
-  - [`AllowCredential`](#allowcredential)
-  - [`StorageAdapter` protocol](#storageadapter-protocol)
-  - [`StoredCredential`, `StoredSession`, `StoredCredentialUpdate`](#storedcredential-storedsession-storedcredentialupdate)
-  - [`InMemoryStorageAdapter`](#inmemorystorageadapter)
+  - [`WebAuthnAllowCredential`](#webauthnallowcredential)
+  - [`OZStorageAdapter` protocol](#ozstorageadapter-protocol)
+  - [`OZStoredCredential`, `OZStoredSession`, `OZStoredCredentialUpdate`](#ozstoredcredential-ozstoredsession-ozstoredcredentialupdate)
+  - [`OZInMemoryStorageAdapter`](#ozinmemorystorageadapter)
 - [iOS](#ios)
 - [macOS](#macos)
-- [Choosing a StorageAdapter](#choosing-a-storageadapter)
-- [Implementing a custom StorageAdapter](#implementing-a-custom-storageadapter)
+- [Choosing an OZStorageAdapter](#choosing-an-ozstorageadapter)
+- [Implementing a custom OZStorageAdapter](#implementing-a-custom-ozstorageadapter)
 - [Implementing a custom WebAuthnProvider](#implementing-a-custom-webauthnprovider)
 - [iOS / macOS setup checklist](#ios--macos-setup-checklist)
 
@@ -34,10 +34,10 @@ This SDK targets **iOS and macOS only**. The Apple provider is gated `@available
 
 ## Overview
 
-`WebAuthnProvider` and `StorageAdapter` are the two pluggable dependencies the smart-account kit needs from the host application:
+`WebAuthnProvider` and `OZStorageAdapter` are the two pluggable dependencies the smart-account kit needs from the host application:
 
 - **`WebAuthnProvider`** drives the platform passkey ceremonies — registration (create) and authentication (assert). The SDK never talks to `AuthenticationServices` directly from the kit; it calls the provider you inject. `AppleWebAuthnProvider` is the shipped iOS/macOS implementation.
-- **`StorageAdapter`** persists `StoredCredential` records and the reconnection `StoredSession`. The SDK ships `KeychainStorageAdapter` (encrypted, production), `UserDefaultsStorageAdapter` (scoped, non-encrypted), and `InMemoryStorageAdapter` (tests / ephemeral only).
+- **`OZStorageAdapter`** persists `OZStoredCredential` records and the reconnection `OZStoredSession`. The SDK ships `OZKeychainStorageAdapter` (encrypted, production), `OZUserDefaultsStorageAdapter` (scoped, non-encrypted), and `OZInMemoryStorageAdapter` (tests / ephemeral only).
 
 Both are injected through `OZSmartAccountConfig`, which keeps the kit platform-agnostic and testable:
 
@@ -48,20 +48,20 @@ let config = try OZSmartAccountConfig(
     accountWasmHash: "your-wasm-hash-hex",
     webauthnVerifierAddress: "your-verifier-c-address",
     webauthnProvider: webAuthn,   // a WebAuthnProvider
-    storage: storage              // a StorageAdapter
+    storage: storage              // an OZStorageAdapter
 )
 ```
 
-The direct throwing initializer is the primary path; the two inject points are `webauthnProvider:` (`WebAuthnProvider? = nil`) and `storage:` (`StorageAdapter = InMemoryStorageAdapter()`). `OZSmartAccountConfig.builder(...)` is a fluent alternative with identical validation if you prefer chaining.
+The direct throwing initializer is the primary path; the two inject points are `webauthnProvider:` (`WebAuthnProvider? = nil`) and `storage:` (`OZStorageAdapter = OZInMemoryStorageAdapter()`). `OZSmartAccountConfig.builder(...)` is a fluent alternative with identical validation if you prefer chaining.
 
-`webauthnProvider` is **optional** in the config (`WebAuthnProvider?`). A provider is required for any flow that creates or signs with a passkey (wallet creation, transaction signing, signer changes). Read-only flows do not need one. `storage` is **non-optional** and defaults to `InMemoryStorageAdapter()` when not supplied — fine for tests, never for production.
+`webauthnProvider` is **optional** in the config (`WebAuthnProvider?`). A provider is required for any flow that creates or signs with a passkey (wallet creation, transaction signing, signer changes). Read-only flows do not need one. `storage` is **non-optional** and defaults to `OZInMemoryStorageAdapter()` when not supplied — fine for tests, never for production.
 
 ```swift
 // WRONG: shipping production with the default storage
-let config = try OZSmartAccountConfig(/* ... */)  // storage == InMemoryStorageAdapter()
+let config = try OZSmartAccountConfig(/* ... */)  // storage == OZInMemoryStorageAdapter()
 //   Credentials and session are lost on app restart.
 // CORRECT: inject a persistent adapter
-let config = try OZSmartAccountConfig(/* ... */, storage: KeychainStorageAdapter())
+let config = try OZSmartAccountConfig(/* ... */, storage: OZKeychainStorageAdapter())
 ```
 
 The relying-party identity (`rpId`, `rpName`) is set on `AppleWebAuthnProvider`, not on `OZSmartAccountConfig`. `OZSmartAccountConfig` has no `rpId` or `rpName` fields.
@@ -84,7 +84,7 @@ public protocol WebAuthnProvider: Sendable {
 
     func authenticate(
         challenge: Data,
-        allowCredentials: [AllowCredential]?
+        allowCredentials: [WebAuthnAllowCredential]?
     ) async throws -> WebAuthnAuthenticationResult
 }
 ```
@@ -97,7 +97,7 @@ public protocol WebAuthnProvider: Sendable {
 
 // WRONG: provider.authenticate(challenge: data)  — allowCredentials is a required argument label
 // CORRECT: provider.authenticate(challenge: data, allowCredentials: nil)
-//   or:     provider.authenticate(challenge: data, allowCredentials: AllowCredential.fromIds([idData]))
+//   or:     provider.authenticate(challenge: data, allowCredentials: WebAuthnAllowCredential.fromIds([idData]))
 ```
 
 The `challenge` MUST be passed to the authenticator as-is in both methods. For `register` it binds the credential to the deployment; for `authenticate` it is the authorization-payload hash that authorizes the transaction.
@@ -157,17 +157,17 @@ The kit normalizes the DER `signature` to the 64-byte compact low-S `r || s` for
 // CORRECT: return the authenticator's raw DER signature.
 ```
 
-### `AllowCredential`
+### `WebAuthnAllowCredential`
 
 ```swift
-public struct AllowCredential: Equatable, Hashable, Sendable {
+public struct WebAuthnAllowCredential: Equatable, Hashable, Sendable {
     public let id: Data                  // raw credential ID bytes
     public let transports: [String]?     // "internal" | "hybrid" | "usb" | "ble" | "nfc"
 
     public init(id: Data, transports: [String]? = nil)
 
-    public static func fromId(_ id: Data) -> AllowCredential
-    public static func fromIds(_ ids: [Data]) -> [AllowCredential]
+    public static func fromId(_ id: Data) -> WebAuthnAllowCredential
+    public static func fromIds(_ ids: [Data]) -> [WebAuthnAllowCredential]
 }
 ```
 
@@ -175,30 +175,30 @@ Passed to `authenticate(challenge:allowCredentials:)` to constrain which passkey
 
 ```swift
 // Restrict to a known credential, hinting cross-device:
-let cred = AllowCredential(id: credentialIdData, transports: ["internal", "hybrid"])
+let cred = WebAuthnAllowCredential(id: credentialIdData, transports: ["internal", "hybrid"])
 let result = try await provider.authenticate(challenge: challenge, allowCredentials: [cred])
 
 // Or from a list of raw IDs, no transports:
-let creds = AllowCredential.fromIds([idA, idB])
+let creds = WebAuthnAllowCredential.fromIds([idA, idB])
 ```
 
-### `StorageAdapter` protocol
+### `OZStorageAdapter` protocol
 
 All adapters implement the same contract. Method names are short (`save` / `get` / `delete`), not `saveCredential` / `getCredential`.
 
 ```swift
-public protocol StorageAdapter: AnyObject, Sendable {
+public protocol OZStorageAdapter: AnyObject, Sendable {
     // Credentials
-    func save(credential: StoredCredential) async throws
-    func get(credentialId: String) async throws -> StoredCredential?
-    func getByContract(contractId: String) async throws -> [StoredCredential]
-    func getAll() async throws -> [StoredCredential]
+    func save(credential: OZStoredCredential) async throws
+    func get(credentialId: String) async throws -> OZStoredCredential?
+    func getByContract(contractId: String) async throws -> [OZStoredCredential]
+    func getAll() async throws -> [OZStoredCredential]
     func delete(credentialId: String) async throws
-    func update(credentialId: String, updates: StoredCredentialUpdate) async throws
+    func update(credentialId: String, updates: OZStoredCredentialUpdate) async throws
     func clear() async throws
     // Sessions
-    func saveSession(_ session: StoredSession) async throws
-    func getSession() async throws -> StoredSession?
+    func saveSession(_ session: OZStoredSession) async throws
+    func getSession() async throws -> OZStoredSession?
     func clearSession() async throws
 }
 ```
@@ -217,19 +217,19 @@ public protocol StorageAdapter: AnyObject, Sendable {
 Contract notes:
 
 - `save` uses **upsert** semantics — a credential with the same ID is overwritten.
-- `update` applies a partial `StoredCredentialUpdate`: non-nil fields overwrite, nil fields are left unchanged. There is no way to set a previously non-nil field back to nil via `update` — call `save` with a full replacement, or construct a fresh `StoredCredential`. `update` throws `CredentialException.NotFound` for an unknown ID.
+- `update` applies a partial `OZStoredCredentialUpdate`: non-nil fields overwrite, nil fields are left unchanged. There is no way to set a previously non-nil field back to nil via `update` — call `save` with a full replacement, or construct a fresh `OZStoredCredential`. `update` throws `SmartAccountCredentialException.NotFound` for an unknown ID.
 - `clear` removes **all** credentials AND the stored session (hard reset).
 - `getSession()` returns `nil` both when no session exists and when the stored session is expired; the adapter auto-clears expired sessions on read. After app restart always check the return value.
-- Errors surface as `StorageException.ReadFailed` / `StorageException.WriteFailed`.
+- Errors surface as `SmartAccountStorageException.ReadFailed` / `SmartAccountStorageException.WriteFailed`.
 
-### `StoredCredential`, `StoredSession`, `StoredCredentialUpdate`
+### `OZStoredCredential`, `OZStoredSession`, `OZStoredCredentialUpdate`
 
 ```swift
-public struct StoredCredential: Sendable, Equatable, Hashable {
+public struct OZStoredCredential: Sendable, Equatable, Hashable {
     public let credentialId: String                       // Base64URL-encoded
     public let publicKey: Data                            // 65-byte 0x04-prefixed secp256r1
     public let contractId: String?                        // C… strkey, nil until derived
-    public let deploymentStatus: CredentialDeploymentStatus
+    public let deploymentStatus: OZCredentialDeploymentStatus
     public let deploymentError: String?
     public let createdAt: Int64                           // ms since epoch
     public let lastUsedAt: Int64?
@@ -243,7 +243,7 @@ public struct StoredCredential: Sendable, Equatable, Hashable {
         credentialId: String,
         publicKey: Data,
         contractId: String? = nil,
-        deploymentStatus: CredentialDeploymentStatus = .pending,
+        deploymentStatus: OZCredentialDeploymentStatus = .pending,
         deploymentError: String? = nil,
         createdAt: Int64 = Int64(Date().timeIntervalSince1970 * 1000),
         lastUsedAt: Int64? = nil,
@@ -254,18 +254,18 @@ public struct StoredCredential: Sendable, Equatable, Hashable {
         backedUp: Bool? = nil
     )
 
-    public func copyWith(/* every field, all nil-defaulted */) -> StoredCredential
-    public func applyUpdate(_ updates: StoredCredentialUpdate) -> StoredCredential
+    public func copyWith(/* every field, all nil-defaulted */) -> OZStoredCredential
+    public func applyUpdate(_ updates: OZStoredCredentialUpdate) -> OZStoredCredential
 }
 
-public enum CredentialDeploymentStatus: String, Sendable, CaseIterable {
+public enum OZCredentialDeploymentStatus: String, Sendable, CaseIterable {
     case pending = "PENDING"
     case failed  = "FAILED"
     // No `success` case: a credential is deleted from storage on successful deployment,
     // so the only persistent states are PENDING and FAILED.
 }
 
-public struct StoredSession: Sendable, Equatable, Hashable {
+public struct OZStoredSession: Sendable, Equatable, Hashable {
     public let credentialId: String
     public let contractId: String
     public let connectedAt: Int64       // ms since epoch
@@ -274,8 +274,8 @@ public struct StoredSession: Sendable, Equatable, Hashable {
     public var isExpired: Bool          // now >= expiresAt
 }
 
-public struct StoredCredentialUpdate: Sendable, Equatable, Hashable {
-    public let deploymentStatus: CredentialDeploymentStatus?
+public struct OZStoredCredentialUpdate: Sendable, Equatable, Hashable {
+    public let deploymentStatus: OZCredentialDeploymentStatus?
     public let deploymentError: String?
     public let contractId: String?
     public let lastUsedAt: Int64?
@@ -288,28 +288,28 @@ public struct StoredCredentialUpdate: Sendable, Equatable, Hashable {
 }
 ```
 
-`StoredCredential.transports` is the persisted copy of the WebAuthn transport hints captured at registration. It feeds `AllowCredential` construction for later `authenticate` ceremonies, which is what enables device-aware passkey selection (including the cross-device hybrid flow).
+`OZStoredCredential.transports` is the persisted copy of the WebAuthn transport hints captured at registration. It feeds `WebAuthnAllowCredential` construction for later `authenticate` ceremonies, which is what enables device-aware passkey selection (including the cross-device hybrid flow).
 
 ```swift
 // WRONG: trying to clear a field via update with nil — nil means "no change", not "set to nil"
-let u = StoredCredentialUpdate(nickname: nil)   // nickname stays whatever it was
+let u = OZStoredCredentialUpdate(nickname: nil)   // nickname stays whatever it was
 // CORRECT: to reset a field, save a full replacement credential with the field explicitly nil
-try await storage.save(credential: StoredCredential(
+try await storage.save(credential: OZStoredCredential(
     credentialId: existing.credentialId,
     publicKey: existing.publicKey,
     nickname: nil
 ))
 ```
 
-### `InMemoryStorageAdapter`
+### `OZInMemoryStorageAdapter`
 
 Tests and ephemeral / throwaway use only. Process-memory, not persistent, not encrypted. Every instance compares equal to every other (so two otherwise-equal `OZSmartAccountConfig` values that both default storage compare equal).
 
 ```swift
-let storage = InMemoryStorageAdapter()  // the OZSmartAccountConfig default
+let storage = OZInMemoryStorageAdapter()  // the OZSmartAccountConfig default
 
-// WRONG: shipping production with InMemoryStorageAdapter — credentials and session lost on restart.
-// CORRECT: production iOS/macOS apps inject KeychainStorageAdapter (or UserDefaultsStorageAdapter).
+// WRONG: shipping production with OZInMemoryStorageAdapter — credentials and session lost on restart.
+// CORRECT: production iOS/macOS apps inject OZKeychainStorageAdapter (or OZUserDefaultsStorageAdapter).
 ```
 
 ---
@@ -346,7 +346,7 @@ public final class AppleWebAuthnProvider: NSObject, WebAuthnProvider, @unchecked
 }
 ```
 
-The initializer **throws**: `rpId` and `rpName` must be non-blank and `timeout` must be strictly positive, otherwise it throws `ConfigurationException.invalidConfig`. `create(...)` is an ergonomic alternative that performs identical validation.
+The initializer **throws**: `rpId` and `rpName` must be non-blank and `timeout` must be strictly positive, otherwise it throws `SmartAccountConfigurationException.invalidConfig`. `create(...)` is an ergonomic alternative that performs identical validation.
 
 ```swift
 let webAuthn = try AppleWebAuthnProvider(
@@ -363,7 +363,7 @@ let webAuthn = try AppleWebAuthnProvider(
 
 On iOS, do **not** set `presentationContextProvider`; leave it `nil`. The system handles presentation.
 
-`register()` on Apple platforms always returns `transports: ["internal"]` — the platform authenticator is the Secure Enclave / iCloud Keychain. The SDK persists these hints in `StoredCredential.transports` and, on a later sign, builds `AllowCredential` values carrying them. But Apple's credential descriptor (`ASAuthorizationPlatformPublicKeyCredentialDescriptor`) has no transport field, so `authenticate()` maps `allowCredentials` to credential IDs only — the hints are not forwarded at the OS boundary, and Apple drives hybrid / cross-device ("use a passkey on another device" QR) presentation itself. Pass transports through for portability; do not expect a `"hybrid"` hint to force the QR flow on Apple platforms.
+`register()` on Apple platforms always returns `transports: ["internal"]` — the platform authenticator is the Secure Enclave / iCloud Keychain. The SDK persists these hints in `OZStoredCredential.transports` and, on a later sign, builds `WebAuthnAllowCredential` values carrying them. But Apple's credential descriptor (`ASAuthorizationPlatformPublicKeyCredentialDescriptor`) has no transport field, so `authenticate()` maps `allowCredentials` to credential IDs only — the hints are not forwarded at the OS boundary, and Apple drives hybrid / cross-device ("use a passkey on another device" QR) presentation itself. Pass transports through for portability; do not expect a `"hybrid"` hint to force the QR flow on Apple platforms.
 
 ### Associated Domains entitlement (Xcode)
 
@@ -435,27 +435,27 @@ The `TEAM_ID.bundle.identifier` in the AASA file must exactly equal the team tha
 ### Storage adapters (iOS)
 
 ```swift
-public final actor KeychainStorageAdapter: StorageAdapter {
+public final actor OZKeychainStorageAdapter: OZStorageAdapter {
     public static let defaultServiceName: String = "com.soneso.stellar.smartaccount"
-    public init(serviceName: String = KeychainStorageAdapter.defaultServiceName, shim: SecItemShim = RealSecItemShim())
+    public init(serviceName: String = OZKeychainStorageAdapter.defaultServiceName, shim: OZSecItemShim = OZRealSecItemShim())
 }
 
-public final actor UserDefaultsStorageAdapter: StorageAdapter {
+public final actor OZUserDefaultsStorageAdapter: OZStorageAdapter {
     public static let defaultSuiteName: String = "com.soneso.stellar.smartaccount"
-    public init(suiteName: String = UserDefaultsStorageAdapter.defaultSuiteName) throws
+    public init(suiteName: String = OZUserDefaultsStorageAdapter.defaultSuiteName) throws
 }
 ```
 
-- **`KeychainStorageAdapter`** — production storage backed by iOS Keychain Services with `kSecAttrAccessibleAfterFirstUnlock`. Survives reinstall (unless explicitly deleted) and can sync via iCloud Keychain. Override `serviceName` to scope isolated stores. The `shim` parameter exists for tests; production callers omit it.
-- **`UserDefaultsStorageAdapter`** — scoped `UserDefaults(suiteName:)` storage. Suitable for non-production builds; **not encrypted at rest**. The initializer throws if `UserDefaults(suiteName:)` returns nil.
-- **`InMemoryStorageAdapter`** — process-memory only; not for production.
+- **`OZKeychainStorageAdapter`** — production storage backed by iOS Keychain Services with `kSecAttrAccessibleAfterFirstUnlock`. Survives reinstall (unless explicitly deleted) and can sync via iCloud Keychain. Override `serviceName` to scope isolated stores. The `shim` parameter exists for tests; production callers omit it.
+- **`OZUserDefaultsStorageAdapter`** — scoped `UserDefaults(suiteName:)` storage. Suitable for non-production builds; **not encrypted at rest**. The initializer throws if `UserDefaults(suiteName:)` returns nil.
+- **`OZInMemoryStorageAdapter`** — process-memory only; not for production.
 
-`StoredCredential` holds **public** keys only (no secret material), so `UserDefaultsStorageAdapter` is technically adequate for the public data — but session tokens and contract IDs are still privacy-sensitive, so prefer `KeychainStorageAdapter` in production.
+`OZStoredCredential` holds **public** keys only (no secret material), so `OZUserDefaultsStorageAdapter` is technically adequate for the public data — but session tokens and contract IDs are still privacy-sensitive, so prefer `OZKeychainStorageAdapter` in production.
 
 ```swift
-let storage = KeychainStorageAdapter()                          // default service name
+let storage = OZKeychainStorageAdapter()                          // default service name
 // or scope it:
-let storage = KeychainStorageAdapter(serviceName: "com.yourapp.stellar")
+let storage = OZKeychainStorageAdapter(serviceName: "com.yourapp.stellar")
 ```
 
 ### Full kit initialization (iOS)
@@ -465,7 +465,7 @@ import stellarsdk
 
 @available(iOS 16.0, *)
 func buildKit() throws -> OZSmartAccountKit {
-    let storage = KeychainStorageAdapter()
+    let storage = OZKeychainStorageAdapter()
     let webAuthn = try AppleWebAuthnProvider(
         rpId: "wallet.example.com",
         rpName: "My Stellar App"
@@ -491,7 +491,7 @@ func buildKit() throws -> OZSmartAccountKit {
 - **`ASAuthorizationError` 1004 (failed)** — AASA validation failed. Verify: the entitlement is present in the compiled `.app`; the AASA file is reachable as `application/json`; the provisioning profile includes Associated Domains; and during development the entitlement carries `?mode=developer`.
 - **`ASAuthorizationError` 1003 (not supported)** — Target cannot handle passkeys (older OS or missing hardware). Mapped to `WebAuthnException.NotSupported`.
 - **"Application is not associated with domain"** — AASA validation failure surfaced by `ASAuthorizationController`. Same checklist as 1004; switch to `?mode=developer` while iterating to bypass CDN caching.
-- **Passkeys on the Simulator** — Supported from Xcode 14 / iOS 16. Use `?mode=developer` so the Simulator fetches the AASA file directly. Simulator passkeys are local-only (not iCloud-synced) and cannot produce attestation statements; the SDK requests no attestation, so this does not block any flow. A signed build needs no extra entitlement for `KeychainStorageAdapter`; only a Simulator run without a provisioning profile (or an unsigned test binary) needs `keychain-access-groups` to reach the Keychain.
+- **Passkeys on the Simulator** — Supported from Xcode 14 / iOS 16. Use `?mode=developer` so the Simulator fetches the AASA file directly. Simulator passkeys are local-only (not iCloud-synced) and cannot produce attestation statements; the SDK requests no attestation, so this does not block any flow. A signed build needs no extra entitlement for `OZKeychainStorageAdapter`; only a Simulator run without a provisioning profile (or an unsigned test binary) needs `keychain-access-groups` to reach the Keychain.
 - **First-install delay** — On device, Apple's CDN may take up to a minute to fetch the association file. Retry `register()` after a short wait, or use `?mode=developer`.
 - **Credential not found on `authenticate()`** — No passkey exists for this `rpId` on the device. Create one first, or enable iCloud Keychain so a passkey synced from another device is available.
 
@@ -578,7 +578,7 @@ webAuthn.presentationContextProvider = WindowPresentationProvider()
 <true/>
 ```
 
-A signed app (including a sandboxed macOS app) uses the default keychain access group, so `KeychainStorageAdapter` works with **no** `keychain-access-groups` entitlement — the adapter never sets `kSecAttrAccessGroup`. That entitlement is only needed for unsigned test binaries / CI, and the iOS Simulator without a provisioning profile, where no default group is supplied. Add it solely in those test contexts, or have tests probe Keychain availability and fall back to `UserDefaultsStorageAdapter` / `InMemoryStorageAdapter`.
+A signed app (including a sandboxed macOS app) uses the default keychain access group, so `OZKeychainStorageAdapter` works with **no** `keychain-access-groups` entitlement — the adapter never sets `kSecAttrAccessGroup`. That entitlement is only needed for unsigned test binaries / CI, and the iOS Simulator without a provisioning profile, where no default group is supplied. Add it solely in those test contexts, or have tests probe Keychain availability and fall back to `OZUserDefaultsStorageAdapter` / `OZInMemoryStorageAdapter`.
 
 macOS signing notes:
 
@@ -629,11 +629,11 @@ CORRECT: use a real staging domain, or mkcert + /etc/hosts for local development
 
 ### Storage adapters (macOS)
 
-`KeychainStorageAdapter` and `UserDefaultsStorageAdapter` are the same classes as iOS. A signed app (including a sandboxed macOS app) reaches the Keychain via its default access group with no extra entitlement; only unsigned test binaries / CI need `keychain-access-groups` (fall back to `UserDefaultsStorageAdapter` there if it is constrained). Consider a distinct `serviceName` / `suiteName` on macOS to keep stores separate from an iOS companion app that shares the Bundle ID family.
+`OZKeychainStorageAdapter` and `OZUserDefaultsStorageAdapter` are the same classes as iOS. A signed app (including a sandboxed macOS app) reaches the Keychain via its default access group with no extra entitlement; only unsigned test binaries / CI need `keychain-access-groups` (fall back to `OZUserDefaultsStorageAdapter` there if it is constrained). Consider a distinct `serviceName` / `suiteName` on macOS to keep stores separate from an iOS companion app that shares the Bundle ID family.
 
 ```swift
-let storage = KeychainStorageAdapter(serviceName: "com.yourapp.stellar.macos")
-// or non-encrypted: try UserDefaultsStorageAdapter(suiteName: "com.yourapp.stellar.macos")
+let storage = OZKeychainStorageAdapter(serviceName: "com.yourapp.stellar.macos")
+// or non-encrypted: try OZUserDefaultsStorageAdapter(suiteName: "com.yourapp.stellar.macos")
 ```
 
 ### Full kit initialization (macOS)
@@ -654,7 +654,7 @@ final class WindowPresentationProvider: NSObject,
 
 @available(macOS 13.0, *)
 func buildKit(anchorProvider: WindowPresentationProvider) throws -> OZSmartAccountKit {
-    let storage = KeychainStorageAdapter()
+    let storage = OZKeychainStorageAdapter()
     let webAuthn = try AppleWebAuthnProvider(
         rpId: "wallet.example.com",
         rpName: "My Stellar App"
@@ -685,52 +685,52 @@ func buildKit(anchorProvider: WindowPresentationProvider) throws -> OZSmartAccou
 - **`ASAuthorizationError` 1003 (not supported)** — Unsupported OS version or a configuration that disables passkeys. Mapped to `WebAuthnException.NotSupported`.
 - **"Application is not associated with domain"** — Usually developer mode not enabled plus the AASA file not yet served from the public CDN. Enable developer mode and confirm Xcode-launched runs.
 - **Passkeys synced from iOS missing** — Verify iCloud Keychain is enabled on both devices, both are signed into the same Apple ID, and `rpId` matches exactly.
-- **Keychain access in tests / CI** — A signed app (including a sandboxed macOS app) uses its default keychain access group with no extra entitlement. If `KeychainStorageAdapter` throws unexpected `OSStatus`-derived `StorageException`s, the host is almost certainly an unsigned test binary / CI runner (or a Simulator run without a profile): add `keychain-access-groups` there, or fall back to `UserDefaultsStorageAdapter`.
+- **Keychain access in tests / CI** — A signed app (including a sandboxed macOS app) uses its default keychain access group with no extra entitlement. If `OZKeychainStorageAdapter` throws unexpected `OSStatus`-derived `SmartAccountStorageException`s, the host is almost certainly an unsigned test binary / CI runner (or a Simulator run without a profile): add `keychain-access-groups` there, or fall back to `OZUserDefaultsStorageAdapter`.
 
 ---
 
-## Choosing a StorageAdapter
+## Choosing an OZStorageAdapter
 
 | Use case | iOS | macOS |
 |----------|-----|-------|
-| Production | `KeychainStorageAdapter` (encrypted, optional iCloud sync) | `KeychainStorageAdapter`, or `UserDefaultsStorageAdapter` per distribution constraints |
-| Non-production / quick local builds | `UserDefaultsStorageAdapter` (public data only) | `UserDefaultsStorageAdapter` with a dedicated suite |
-| Unit tests / ephemeral use | `InMemoryStorageAdapter` | `InMemoryStorageAdapter` |
-| Never in production | `InMemoryStorageAdapter` | `InMemoryStorageAdapter` |
+| Production | `OZKeychainStorageAdapter` (encrypted, optional iCloud sync) | `OZKeychainStorageAdapter`, or `OZUserDefaultsStorageAdapter` per distribution constraints |
+| Non-production / quick local builds | `OZUserDefaultsStorageAdapter` (public data only) | `OZUserDefaultsStorageAdapter` with a dedicated suite |
+| Unit tests / ephemeral use | `OZInMemoryStorageAdapter` | `OZInMemoryStorageAdapter` |
+| Never in production | `OZInMemoryStorageAdapter` | `OZInMemoryStorageAdapter` |
 
-`StoredCredential` contains **public keys only**, so the bar is lower than for private-key storage — but session tokens and contract IDs are privacy-sensitive. Prefer Keychain in production.
+`OZStoredCredential` contains **public keys only**, so the bar is lower than for private-key storage — but session tokens and contract IDs are privacy-sensitive. Prefer Keychain in production.
 
 ---
 
-## Implementing a custom StorageAdapter
+## Implementing a custom OZStorageAdapter
 
 Implement the protocol directly for unusual backends (an app-specific encrypted store, a server-side DB, etc.). The adapter must be a reference type (`AnyObject`) and `Sendable`; the simplest way to satisfy thread safety is an `actor`.
 
 ```swift
 import stellarsdk
 
-actor MyStorageAdapter: StorageAdapter {
-    private var credentials: [String: StoredCredential] = [:]
-    private var session: StoredSession?
+actor MyStorageAdapter: OZStorageAdapter {
+    private var credentials: [String: OZStoredCredential] = [:]
+    private var session: OZStoredSession?
     private let backend: MyEncryptedStore
 
     init(backend: MyEncryptedStore) { self.backend = backend }
 
-    func save(credential: StoredCredential) async throws {
+    func save(credential: OZStoredCredential) async throws {
         do { try backend.upsert(credential) }
-        catch { throw StorageException.WriteFailed(message: "save failed", cause: error) }
+        catch { throw SmartAccountStorageException.WriteFailed(message: "save failed", cause: error) }
     }
 
-    func get(credentialId: String) async throws -> StoredCredential? {
+    func get(credentialId: String) async throws -> OZStoredCredential? {
         do { return try backend.load(credentialId) }
-        catch { throw StorageException.ReadFailed(message: "read failed", cause: error) }
+        catch { throw SmartAccountStorageException.ReadFailed(message: "read failed", cause: error) }
     }
 
-    func getByContract(contractId: String) async throws -> [StoredCredential] {
+    func getByContract(contractId: String) async throws -> [OZStoredCredential] {
         try backend.all().filter { $0.contractId == contractId }
     }
 
-    func getAll() async throws -> [StoredCredential] {
+    func getAll() async throws -> [OZStoredCredential] {
         try backend.all()
     }
 
@@ -738,9 +738,9 @@ actor MyStorageAdapter: StorageAdapter {
         try backend.remove(credentialId)   // no-op when absent
     }
 
-    func update(credentialId: String, updates: StoredCredentialUpdate) async throws {
+    func update(credentialId: String, updates: OZStoredCredentialUpdate) async throws {
         guard let existing = try backend.load(credentialId) else {
-            throw CredentialException.notFound(credentialId: credentialId)
+            throw SmartAccountCredentialException.notFound(credentialId: credentialId)
         }
         try backend.upsert(existing.applyUpdate(updates))   // non-nil fields overwrite; nil = keep
     }
@@ -750,11 +750,11 @@ actor MyStorageAdapter: StorageAdapter {
         try backend.removeSession()        // clear() wipes credentials AND session
     }
 
-    func saveSession(_ session: StoredSession) async throws {
+    func saveSession(_ session: OZStoredSession) async throws {
         try backend.putSession(session)    // overwrites any prior session
     }
 
-    func getSession() async throws -> StoredSession? {
+    func getSession() async throws -> OZStoredSession? {
         guard let s = try backend.loadSession() else { return nil }
         if s.isExpired {                   // expired => return nil AND clear
             try backend.removeSession()
@@ -773,10 +773,10 @@ Contracts to satisfy:
 
 - **Thread safety** — concurrent callers; an `actor` (as above) or explicit locking.
 - **Upsert `save`** — overwrite on matching `credentialId`.
-- **Partial `update`** — apply non-nil fields via `StoredCredential.applyUpdate(_:)`; never overwrite with nil; throw `CredentialException.notFound(credentialId:)` for unknown IDs.
+- **Partial `update`** — apply non-nil fields via `OZStoredCredential.applyUpdate(_:)`; never overwrite with nil; throw `SmartAccountCredentialException.notFound(credentialId:)` for unknown IDs.
 - **`clear`** — remove all credentials AND the session.
-- **Expired-session read** — `getSession()` returns nil when `StoredSession.isExpired`, and clears the stored row.
-- **Errors** — wrap failures in `StorageException.ReadFailed(message:cause:)` / `StorageException.WriteFailed(message:cause:)`.
+- **Expired-session read** — `getSession()` returns nil when `OZStoredSession.isExpired`, and clears the stored row.
+- **Errors** — wrap failures in `SmartAccountStorageException.ReadFailed(message:cause:)` / `SmartAccountStorageException.WriteFailed(message:cause:)`.
 
 ---
 
@@ -827,7 +827,7 @@ final class MyCustomWebAuthnProvider: WebAuthnProvider, @unchecked Sendable {
 
     func authenticate(
         challenge: Data,
-        allowCredentials: [AllowCredential]?
+        allowCredentials: [WebAuthnAllowCredential]?
     ) async throws -> WebAuthnAuthenticationResult {
         // 1. Run a WebAuthn get ceremony, passing `challenge` as-is and forcing user verification.
         // 2. If allowCredentials is non-nil, constrain the picker to those IDs.
@@ -866,7 +866,7 @@ Wrap native errors into `WebAuthnException.registrationFailed(reason:cause:)`, `
 | Development AASA fetch | `?mode=developer` on the entitlement | `?mode=developer` **and** `sudo swcutil developer-mode -e true` |
 | Provider | `try AppleWebAuthnProvider(rpId:rpName:)` | `try AppleWebAuthnProvider(rpId:rpName:)` |
 | Presentation anchor | not needed | **`presentationContextProvider` required** |
-| Storage (production) | `KeychainStorageAdapter` | `KeychainStorageAdapter` |
+| Storage (production) | `OZKeychainStorageAdapter` | `OZKeychainStorageAdapter` |
 | Inject into config | `OZSmartAccountConfig(…, webauthnProvider:, storage:)` | `OZSmartAccountConfig(…, webauthnProvider:, storage:)` |
 | Localhost development | not supported | not supported |
 

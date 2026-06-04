@@ -20,11 +20,11 @@ public enum SmartAccountUtils {
     ///
     /// - Parameter derSignature: DER-encoded signature bytes.
     /// - Returns: `(r, s)` pair after stripping leading zero-padding.
-    /// - Throws: `ValidationException.InvalidInput` when the DER structure is malformed
+    /// - Throws: `SmartAccountValidationException.InvalidInput` when the DER structure is malformed
     ///           or `r`/`s` violate secp256r1 constraints.
     internal static func parseDerSignature(_ derSignature: Data) throws -> (r: Data, s: Data) {
         if derSignature.count < 8 || derSignature[derSignature.startIndex] != 0x30 {
-            throw ValidationException.invalidInput(
+            throw SmartAccountValidationException.invalidInput(
                 field: "derSignature",
                 reason: "Invalid DER signature format"
             )
@@ -34,7 +34,7 @@ public enum SmartAccountUtils {
         // contents, so the full signature must be exactly 2 + totalLength bytes.
         let totalLength = Int(derSignature[derSignature.startIndex + 1]) & 0xFF
         if 2 + totalLength != derSignature.count {
-            throw ValidationException.invalidInput(
+            throw SmartAccountValidationException.invalidInput(
                 field: "derSignature",
                 reason: "Invalid DER signature format: declared length does not match actual size"
             )
@@ -44,7 +44,7 @@ public enum SmartAccountUtils {
         if offset + 1 >= derSignature.count
             || derSignature[derSignature.startIndex + offset] != 0x02
         {
-            throw ValidationException.invalidInput(
+            throw SmartAccountValidationException.invalidInput(
                 field: "derSignature",
                 reason: "Invalid DER signature format: missing r component marker"
             )
@@ -52,7 +52,7 @@ public enum SmartAccountUtils {
 
         let rLength = Int(derSignature[derSignature.startIndex + offset + 1]) & 0xFF
         if rLength == 0 || offset + 2 + rLength > derSignature.count {
-            throw ValidationException.invalidInput(
+            throw SmartAccountValidationException.invalidInput(
                 field: "derSignature",
                 reason: "Invalid DER signature format: truncated r component"
             )
@@ -69,7 +69,7 @@ public enum SmartAccountUtils {
         if offset + 1 >= derSignature.count
             || derSignature[derSignature.startIndex + offset] != 0x02
         {
-            throw ValidationException.invalidInput(
+            throw SmartAccountValidationException.invalidInput(
                 field: "derSignature",
                 reason: "Invalid DER signature format: missing s component marker"
             )
@@ -77,7 +77,7 @@ public enum SmartAccountUtils {
 
         let sLength = Int(derSignature[derSignature.startIndex + offset + 1]) & 0xFF
         if sLength == 0 || offset + 2 + sLength > derSignature.count {
-            throw ValidationException.invalidInput(
+            throw SmartAccountValidationException.invalidInput(
                 field: "derSignature",
                 reason: "Invalid DER signature format: truncated s component"
             )
@@ -92,46 +92,46 @@ public enum SmartAccountUtils {
 
         let endOffset = offset + 2 + sLength
         if endOffset != derSignature.count {
-            throw ValidationException.invalidInput(
+            throw SmartAccountValidationException.invalidInput(
                 field: "derSignature",
                 reason: "Invalid DER signature format: trailing bytes after s component"
             )
         }
 
         if r.count > 32 {
-            throw ValidationException.invalidInput(
+            throw SmartAccountValidationException.invalidInput(
                 field: "derSignature",
                 reason: "Invalid DER signature: r component exceeds 32 bytes after stripping (\(r.count) bytes)"
             )
         }
         if s.count > 32 {
-            throw ValidationException.invalidInput(
+            throw SmartAccountValidationException.invalidInput(
                 field: "derSignature",
                 reason: "Invalid DER signature: s component exceeds 32 bytes after stripping (\(s.count) bytes)"
             )
         }
 
         if r.count == 1 && r[r.startIndex] == 0x00 {
-            throw ValidationException.invalidInput(
+            throw SmartAccountValidationException.invalidInput(
                 field: "derSignature",
                 reason: "Invalid DER signature: r component is zero (invalid ECDSA value)"
             )
         }
         if s.count == 1 && s[s.startIndex] == 0x00 {
-            throw ValidationException.invalidInput(
+            throw SmartAccountValidationException.invalidInput(
                 field: "derSignature",
                 reason: "Invalid DER signature: s component is zero (invalid ECDSA value)"
             )
         }
 
         if compareUnsignedBigEndian(r, curveOrderBytes) >= 0 {
-            throw ValidationException.invalidInput(
+            throw SmartAccountValidationException.invalidInput(
                 field: "derSignature",
                 reason: "Invalid DER signature: r component exceeds curve order"
             )
         }
         if compareUnsignedBigEndian(s, curveOrderBytes) >= 0 {
-            throw ValidationException.invalidInput(
+            throw SmartAccountValidationException.invalidInput(
                 field: "derSignature",
                 reason: "Invalid DER signature: s component exceeds curve order"
             )
@@ -155,7 +155,7 @@ public enum SmartAccountUtils {
     ///
     /// - Parameter derSignature: DER-encoded signature bytes.
     /// - Returns: 64-byte compact signature `r || s`.
-    /// - Throws: `ValidationException.InvalidInput` when the DER format is invalid.
+    /// - Throws: `SmartAccountValidationException.InvalidInput` when the DER format is invalid.
     public static func normalizeSignature(_ derSignature: Data) throws -> Data {
         let parsed = try parseDerSignature(derSignature)
         let r = parsed.r
@@ -186,7 +186,7 @@ public enum SmartAccountUtils {
     ///   - authenticatorData: Optional raw authenticator data from registration.
     ///   - attestationObject: Optional raw attestation object from registration.
     /// - Returns: 65-byte uncompressed public key (`0x04` prefix + `X` + `Y`).
-    /// - Throws: `ValidationException.InvalidInput` when a compressed key is detected,
+    /// - Throws: `SmartAccountValidationException.InvalidInput` when a compressed key is detected,
     ///           when no source is provided, or when all strategies fail.
     public static func extractPublicKeyFromRegistration(
         publicKey: Data? = nil,
@@ -221,7 +221,7 @@ public enum SmartAccountUtils {
             let firstByte = candidate[candidate.startIndex]
             if firstByte == 0x02 || firstByte == 0x03 {
                 let prefixHex = String(format: "%02x", firstByte)
-                throw ValidationException.invalidInput(
+                throw SmartAccountValidationException.invalidInput(
                     field: "publicKey",
                     reason: "Compressed secp256r1 key format (prefix 0x\(prefixHex)) is not supported; the platform must provide an uncompressed key (0x04 prefix)"
                 )
@@ -242,7 +242,7 @@ public enum SmartAccountUtils {
             return try extractPublicKeyFromAttestationObject(attestationObject)
         }
 
-        throw ValidationException.invalidInput(
+        throw SmartAccountValidationException.invalidInput(
             field: "registration",
             reason: "Could not extract public key from attestation response: no valid publicKey, authenticatorData, or attestationObject provided"
         )
@@ -270,7 +270,7 @@ public enum SmartAccountUtils {
     /// - Returns `nil` when the data is too short, the AT flag is absent, the COSE prefix
     ///   does not match, or the buffer is too short for a complete key (allowing the caller
     ///   to fall through to the next source).
-    /// - Throws `ValidationException.InvalidInput` when the COSE prefix is present, the
+    /// - Throws `SmartAccountValidationException.InvalidInput` when the COSE prefix is present, the
     ///   buffer is long enough for a complete key, but the parsed structure is malformed
     ///   (e.g. corrupted Y-coordinate separator) or the extracted point is not on the
     ///   secp256r1 curve.
@@ -331,7 +331,7 @@ public enum SmartAccountUtils {
         guard let key = WebAuthnCborParser.extractPublicKeyFromCoseKey(coseKeySlice) else {
             // Prefix and length are both valid, but the parser could not extract coordinates
             // (e.g. corrupted separator). Treat as malformed rather than falling through.
-            throw ValidationException.invalidInput(
+            throw SmartAccountValidationException.invalidInput(
                 field: "authenticatorData",
                 reason: "COSE key structure is invalid: could not extract secp256r1 coordinates from authenticator data"
             )
@@ -351,7 +351,7 @@ public enum SmartAccountUtils {
     ///
     /// - Parameter attestationObject: Raw attestation object bytes.
     /// - Returns: 65-byte uncompressed public key.
-    /// - Throws: `ValidationException.InvalidInput` when the COSE prefix is not found,
+    /// - Throws: `SmartAccountValidationException.InvalidInput` when the COSE prefix is not found,
     ///           the parsed structure is malformed, or the extracted point is not on the
     ///           secp256r1 curve.
     internal static func extractPublicKeyFromAttestationObject(
@@ -360,7 +360,7 @@ public enum SmartAccountUtils {
         let prefix = Data([0xA5, 0x01, 0x02, 0x03, 0x26, 0x20, 0x01, 0x21, 0x58, 0x20])
         let prefixIndex = findSubarray(array: attestationObject, subarray: prefix)
         if prefixIndex < 0 {
-            throw ValidationException.invalidInput(
+            throw SmartAccountValidationException.invalidInput(
                 field: "attestationObject",
                 reason: "COSE key prefix not found in attestation"
             )
@@ -370,7 +370,7 @@ public enum SmartAccountUtils {
         // pattern-matching fallback locates the prefix and strictly validates the
         // [0x22, 0x58, 0x20] Y-coordinate separator.
         guard let key = WebAuthnCborParser.extractPublicKeyFromCoseKey(attestationObject) else {
-            throw ValidationException.invalidInput(
+            throw SmartAccountValidationException.invalidInput(
                 field: "attestationObject",
                 reason: "COSE key structure is malformed: could not extract secp256r1 coordinates from attestation object"
             )
@@ -420,9 +420,9 @@ public enum SmartAccountUtils {
     ///   - deployerPublicKey: Stellar account ID (`G…` strkey) of the deployer.
     ///   - networkPassphrase: Network passphrase.
     /// - Returns: Contract address as a `C…` strkey.
-    /// - Throws: `ValidationException.InvalidAddress` when the deployer key is invalid,
-    ///           `ValidationException.InvalidInput` when contract-ID encoding fails, or
-    ///           `TransactionException.SigningFailed` when XDR encoding fails.
+    /// - Throws: `SmartAccountValidationException.InvalidAddress` when the deployer key is invalid,
+    ///           `SmartAccountValidationException.InvalidInput` when contract-ID encoding fails, or
+    ///           `SmartAccountTransactionException.SigningFailed` when XDR encoding fails.
     public static func deriveContractAddress(
         credentialId: Data,
         deployerPublicKey: String,
@@ -434,7 +434,7 @@ public enum SmartAccountUtils {
         do {
             deployerAddress = try SCAddressXDR(accountId: deployerPublicKey)
         } catch {
-            throw ValidationException.invalidAddress(
+            throw SmartAccountValidationException.invalidAddress(
                 address: deployerPublicKey,
                 cause: error
             )
@@ -457,7 +457,7 @@ public enum SmartAccountUtils {
         do {
             encodedPreimage = Data(try XDREncoder.encode(preimage))
         } catch {
-            throw TransactionException.signingFailed(
+            throw SmartAccountTransactionException.signingFailed(
                 reason: "Failed to XDR encode contract ID preimage",
                 cause: error
             )
@@ -468,7 +468,7 @@ public enum SmartAccountUtils {
         do {
             return try contractIdBytes.encodeContractId()
         } catch {
-            throw ValidationException.invalidInput(
+            throw SmartAccountValidationException.invalidInput(
                 field: "contractId",
                 reason: "Failed to encode contract ID: \(error.localizedDescription)",
                 cause: error
@@ -561,7 +561,7 @@ public enum SmartAccountUtils {
     fileprivate static func validatePointOnCurve(x: Data, y: Data) throws {
         // Reject the point at infinity and trivially invalid coordinates.
         if isAllZero(x) || isAllZero(y) {
-            throw ValidationException.invalidInput(
+            throw SmartAccountValidationException.invalidInput(
                 field: "publicKey",
                 reason: "Extracted secp256r1 coordinates contain a zero component; the point is not a valid curve point"
             )
@@ -573,7 +573,7 @@ public enum SmartAccountUtils {
         if compareUnsignedBigEndian(x, curvePBytes) >= 0
             || compareUnsignedBigEndian(y, curvePBytes) >= 0
         {
-            throw ValidationException.invalidInput(
+            throw SmartAccountValidationException.invalidInput(
                 field: "publicKey",
                 reason: "Extracted secp256r1 coordinates exceed the field prime"
             )
@@ -588,7 +588,7 @@ public enum SmartAccountUtils {
         let rhs = addMod(sum1, curveBBytes, p)
 
         if compareUnsignedBigEndian(lhs, rhs) != 0 {
-            throw ValidationException.invalidInput(
+            throw SmartAccountValidationException.invalidInput(
                 field: "publicKey",
                 reason: "Extracted secp256r1 public key coordinates are not on the P-256 curve; the attestation data may be malformed or corrupted"
             )

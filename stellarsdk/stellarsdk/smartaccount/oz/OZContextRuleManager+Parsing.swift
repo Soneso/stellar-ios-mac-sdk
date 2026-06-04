@@ -31,12 +31,12 @@ extension OZContextRuleManager {
     ///
     /// - Parameter scVal: The raw `SCValXDR` payload returned by the contract.
     /// - Returns: A parsed view of the rule.
-    /// - Throws: ``ValidationException/InvalidInput`` when the payload is not
+    /// - Throws: ``SmartAccountValidationException/InvalidInput`` when the payload is not
     ///   a map, when a required field is missing, when a field has the wrong
     ///   type, or when a nested discriminant is unknown.
-    internal func parseContextRule(scVal: SCValXDR) throws -> ParsedContextRule {
+    internal func parseContextRule(scVal: SCValXDR) throws -> OZParsedContextRule {
         guard case .map(let mapEntries) = scVal, let mapEntries = mapEntries else {
-            throw ValidationException.invalidInput(
+            throw SmartAccountValidationException.invalidInput(
                 field: "contextRule",
                 reason: "Expected Map ScVal for context rule, got: \(scVal)"
             )
@@ -56,13 +56,13 @@ extension OZContextRuleManager {
 
         // id (U32)
         guard let idScVal = fields[ContextRuleField.id] else {
-            throw ValidationException.invalidInput(
+            throw SmartAccountValidationException.invalidInput(
                 field: "contextRule",
                 reason: "Missing required field: \(ContextRuleField.id)"
             )
         }
         guard case .u32(let id) = idScVal else {
-            throw ValidationException.invalidInput(
+            throw SmartAccountValidationException.invalidInput(
                 field: ContextRuleField.id,
                 reason: "Expected U32 for \(ContextRuleField.id), got: \(idScVal)"
             )
@@ -70,13 +70,13 @@ extension OZContextRuleManager {
 
         // name (String)
         guard let nameScVal = fields[ContextRuleField.name] else {
-            throw ValidationException.invalidInput(
+            throw SmartAccountValidationException.invalidInput(
                 field: "contextRule",
                 reason: "Missing required field: \(ContextRuleField.name)"
             )
         }
         guard case .string(let name) = nameScVal else {
-            throw ValidationException.invalidInput(
+            throw SmartAccountValidationException.invalidInput(
                 field: ContextRuleField.name,
                 reason: "Expected String for \(ContextRuleField.name), got: \(nameScVal)"
             )
@@ -84,7 +84,7 @@ extension OZContextRuleManager {
 
         // context_type (Vec discriminant)
         guard let contextTypeScVal = fields[ContextRuleField.contextType] else {
-            throw ValidationException.invalidInput(
+            throw SmartAccountValidationException.invalidInput(
                 field: "contextRule",
                 reason: "Missing required field: \(ContextRuleField.contextType)"
             )
@@ -95,7 +95,7 @@ extension OZContextRuleManager {
         let signers: [any OZSmartAccountSigner]
         if let signersScVal = fields[ContextRuleField.signers] {
             guard case .vec(let signerVec) = signersScVal, let signerVec = signerVec else {
-                throw ValidationException.invalidInput(
+                throw SmartAccountValidationException.invalidInput(
                     field: ContextRuleField.signers,
                     reason: "Expected Vec for \(ContextRuleField.signers), got: \(signersScVal)"
                 )
@@ -114,7 +114,7 @@ extension OZContextRuleManager {
         let signerIds: [UInt32]
         if let signerIdsScVal = fields[ContextRuleField.signerIds] {
             guard case .vec(let idsVec) = signerIdsScVal, let idsVec = idsVec else {
-                throw ValidationException.invalidInput(
+                throw SmartAccountValidationException.invalidInput(
                     field: ContextRuleField.signerIds,
                     reason: "Expected Vec for \(ContextRuleField.signerIds), got: \(signerIdsScVal)"
                 )
@@ -123,7 +123,7 @@ extension OZContextRuleManager {
             parsedIds.reserveCapacity(idsVec.count)
             for entry in idsVec {
                 guard case .u32(let value) = entry else {
-                    throw ValidationException.invalidInput(
+                    throw SmartAccountValidationException.invalidInput(
                         field: ContextRuleField.signerIds,
                         reason: "Expected U32 entries in \(ContextRuleField.signerIds), got: \(entry)"
                     )
@@ -140,7 +140,7 @@ extension OZContextRuleManager {
         let policies: [String]
         if let policiesScVal = fields[ContextRuleField.policies] {
             guard case .vec(let policiesVec) = policiesScVal, let policiesVec = policiesVec else {
-                throw ValidationException.invalidInput(
+                throw SmartAccountValidationException.invalidInput(
                     field: ContextRuleField.policies,
                     reason: "Expected Vec for \(ContextRuleField.policies), got: \(policiesScVal)"
                 )
@@ -159,7 +159,7 @@ extension OZContextRuleManager {
         let policyIds: [UInt32]
         if let policyIdsScVal = fields[ContextRuleField.policyIds] {
             guard case .vec(let idsVec) = policyIdsScVal, let idsVec = idsVec else {
-                throw ValidationException.invalidInput(
+                throw SmartAccountValidationException.invalidInput(
                     field: ContextRuleField.policyIds,
                     reason: "Expected Vec for \(ContextRuleField.policyIds), got: \(policyIdsScVal)"
                 )
@@ -168,7 +168,7 @@ extension OZContextRuleManager {
             parsedIds.reserveCapacity(idsVec.count)
             for entry in idsVec {
                 guard case .u32(let value) = entry else {
-                    throw ValidationException.invalidInput(
+                    throw SmartAccountValidationException.invalidInput(
                         field: ContextRuleField.policyIds,
                         reason: "Expected U32 entries in \(ContextRuleField.policyIds), got: \(entry)"
                     )
@@ -189,7 +189,7 @@ extension OZContextRuleManager {
             case .u32(let value):
                 validUntil = value
             default:
-                throw ValidationException.invalidInput(
+                throw SmartAccountValidationException.invalidInput(
                     field: ContextRuleField.validUntil,
                     reason: "Expected U32 or Void for \(ContextRuleField.validUntil), got: \(validUntilScVal)"
                 )
@@ -198,7 +198,7 @@ extension OZContextRuleManager {
             validUntil = nil
         }
 
-        return ParsedContextRule(
+        return OZParsedContextRule(
             id: id,
             contextType: contextType,
             name: name,
@@ -219,21 +219,21 @@ extension OZContextRuleManager {
     /// - Default: `Vec([Symbol("Default")])`
     /// - CallContract: `Vec([Symbol("CallContract"), Address])`
     /// - CreateContract: `Vec([Symbol("CreateContract"), Bytes])`
-    fileprivate func parseContextRuleType(scVal: SCValXDR) throws -> ContextRuleType {
+    fileprivate func parseContextRuleType(scVal: SCValXDR) throws -> OZContextRuleType {
         guard case .vec(let vec) = scVal, let vec = vec else {
-            throw ValidationException.invalidInput(
+            throw SmartAccountValidationException.invalidInput(
                 field: ContextRuleField.contextType,
                 reason: "Expected Vec for \(ContextRuleField.contextType), got: \(scVal)"
             )
         }
         guard let firstElement = vec.first else {
-            throw ValidationException.invalidInput(
+            throw SmartAccountValidationException.invalidInput(
                 field: ContextRuleField.contextType,
                 reason: "\(ContextRuleField.contextType) Vec is empty"
             )
         }
         guard case .symbol(let discriminant) = firstElement else {
-            throw ValidationException.invalidInput(
+            throw SmartAccountValidationException.invalidInput(
                 field: ContextRuleField.contextType,
                 reason: "Expected Symbol discriminant in \(ContextRuleField.contextType) Vec, got: \(firstElement)"
             )
@@ -245,7 +245,7 @@ extension OZContextRuleManager {
 
         case ContextTypeDiscriminant.callContract:
             if vec.count < 2 {
-                throw ValidationException.invalidInput(
+                throw SmartAccountValidationException.invalidInput(
                     field: ContextRuleField.contextType,
                     reason: "\(ContextTypeDiscriminant.callContract) context_type missing address element"
                 )
@@ -254,7 +254,7 @@ extension OZContextRuleManager {
             do {
                 address = try parseAccountOrContractAddress(scVal: vec[1])
             } catch {
-                throw ValidationException.invalidInput(
+                throw SmartAccountValidationException.invalidInput(
                     field: ContextRuleField.contextType,
                     reason: "Expected Address for \(ContextTypeDiscriminant.callContract) context_type, got: \(vec[1])",
                     cause: error
@@ -264,13 +264,13 @@ extension OZContextRuleManager {
 
         case ContextTypeDiscriminant.createContract:
             if vec.count < 2 {
-                throw ValidationException.invalidInput(
+                throw SmartAccountValidationException.invalidInput(
                     field: ContextRuleField.contextType,
                     reason: "\(ContextTypeDiscriminant.createContract) context_type missing wasm hash element"
                 )
             }
             guard case .bytes(let wasmHash) = vec[1] else {
-                throw ValidationException.invalidInput(
+                throw SmartAccountValidationException.invalidInput(
                     field: ContextRuleField.contextType,
                     reason: "Expected Bytes for \(ContextTypeDiscriminant.createContract) context_type, got: \(vec[1])"
                 )
@@ -278,7 +278,7 @@ extension OZContextRuleManager {
             return .createContract(wasmHash: wasmHash)
 
         default:
-            throw ValidationException.invalidInput(
+            throw SmartAccountValidationException.invalidInput(
                 field: ContextRuleField.contextType,
                 reason: "Unknown \(ContextRuleField.contextType) discriminant: \(discriminant)"
             )
@@ -295,19 +295,19 @@ extension OZContextRuleManager {
     ///   contract and an account address cannot satisfy that role.
     fileprivate func parseSigner(scVal: SCValXDR) throws -> any OZSmartAccountSigner {
         guard case .vec(let vec) = scVal, let vec = vec else {
-            throw ValidationException.invalidInput(
+            throw SmartAccountValidationException.invalidInput(
                 field: "signer",
                 reason: "Expected Vec for signer, got: \(scVal)"
             )
         }
         guard let firstElement = vec.first else {
-            throw ValidationException.invalidInput(
+            throw SmartAccountValidationException.invalidInput(
                 field: "signer",
                 reason: "Signer Vec is empty"
             )
         }
         guard case .symbol(let discriminant) = firstElement else {
-            throw ValidationException.invalidInput(
+            throw SmartAccountValidationException.invalidInput(
                 field: "signer",
                 reason: "Expected Symbol discriminant in signer Vec, got: \(firstElement)"
             )
@@ -316,7 +316,7 @@ extension OZContextRuleManager {
         switch discriminant {
         case SignerDiscriminant.delegated:
             if vec.count < 2 {
-                throw ValidationException.invalidInput(
+                throw SmartAccountValidationException.invalidInput(
                     field: "signer",
                     reason: "\(SignerDiscriminant.delegated) signer missing address element"
                 )
@@ -325,7 +325,7 @@ extension OZContextRuleManager {
             do {
                 address = try parseAccountOrContractAddress(scVal: vec[1])
             } catch {
-                throw ValidationException.invalidInput(
+                throw SmartAccountValidationException.invalidInput(
                     field: "signer",
                     reason: "Expected Address for \(SignerDiscriminant.delegated) signer, got: \(vec[1])",
                     cause: error
@@ -335,7 +335,7 @@ extension OZContextRuleManager {
 
         case SignerDiscriminant.external:
             if vec.count < 3 {
-                throw ValidationException.invalidInput(
+                throw SmartAccountValidationException.invalidInput(
                     field: "signer",
                     reason: "\(SignerDiscriminant.external) signer missing address or keyData element"
                 )
@@ -349,14 +349,14 @@ extension OZContextRuleManager {
             do {
                 verifierAddress = try parseContractAddress(scVal: vec[1])
             } catch {
-                throw ValidationException.invalidInput(
+                throw SmartAccountValidationException.invalidInput(
                     field: "signer",
                     reason: "Expected contract address for \(SignerDiscriminant.external) signer verifier, got: \(vec[1])",
                     cause: error
                 )
             }
             guard case .bytes(let keyData) = vec[2] else {
-                throw ValidationException.invalidInput(
+                throw SmartAccountValidationException.invalidInput(
                     field: "signer",
                     reason: "Expected Bytes for \(SignerDiscriminant.external) signer keyData, got: \(vec[2])"
                 )
@@ -364,7 +364,7 @@ extension OZContextRuleManager {
             return try OZExternalSigner(verifierAddress: verifierAddress, keyData: keyData)
 
         default:
-            throw ValidationException.invalidInput(
+            throw SmartAccountValidationException.invalidInput(
                 field: "signer",
                 reason: "Unknown signer discriminant: \(discriminant)"
             )
@@ -372,7 +372,7 @@ extension OZContextRuleManager {
     }
 
     /// Decodes an `SCValXDR.address` value as a strict contract (`C…`)
-    /// strkey. G-addresses produce ``ValidationException/InvalidInput``.
+    /// strkey. G-addresses produce ``SmartAccountValidationException/InvalidInput``.
     ///
     /// Used at parse sites where the contract ABI requires a contract
     /// address (for example, the verifier address in an `External` signer).
@@ -380,7 +380,7 @@ extension OZContextRuleManager {
     /// on-chain record by tolerating an account address.
     fileprivate func parseContractAddress(scVal: SCValXDR) throws -> String {
         guard case .address(let scAddress) = scVal else {
-            throw ValidationException.invalidInput(
+            throw SmartAccountValidationException.invalidInput(
                 field: "address",
                 reason: "Expected Address ScVal, got: \(scVal)"
             )
@@ -390,7 +390,7 @@ extension OZContextRuleManager {
             do {
                 return try wrapped.wrapped.encodeContractId()
             } catch {
-                throw ValidationException.invalidInput(
+                throw SmartAccountValidationException.invalidInput(
                     field: "address",
                     reason: "Failed to encode contract address: \(error.localizedDescription)",
                     cause: error
@@ -398,7 +398,7 @@ extension OZContextRuleManager {
             }
         default:
             let observed = scAddress.accountId ?? "\(scAddress)"
-            throw ValidationException.invalidInput(
+            throw SmartAccountValidationException.invalidInput(
                 field: "address",
                 reason: "Expected contract address (C...), got non-contract address: \(observed)"
             )
@@ -411,7 +411,7 @@ extension OZContextRuleManager {
     /// tolerate account addresses for forward compatibility.
     fileprivate func parseAccountOrContractAddress(scVal: SCValXDR) throws -> String {
         guard case .address(let scAddress) = scVal else {
-            throw ValidationException.invalidInput(
+            throw SmartAccountValidationException.invalidInput(
                 field: "address",
                 reason: "Expected Address ScVal, got: \(scVal)"
             )

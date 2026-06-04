@@ -8,7 +8,7 @@
 import XCTest
 @testable import stellarsdk
 
-/// Concurrent stress tests for ``SmartAccountEventEmitter``.
+/// Concurrent stress tests for ``OZSmartAccountEventEmitter``.
 ///
 /// Verifies that concurrent emitters, subscribers, and unsubscribers produce no
 /// crashes, no lost deliveries, and no exceptions when subscription state is
@@ -18,7 +18,7 @@ final class OZConcurrentEventEmissionTests: XCTestCase {
     // MARK: - Concurrent Emit Tests
 
     func testConcurrentEmit_noLostEventsWithSingleListener() async {
-        let emitter = SmartAccountEventEmitter()
+        let emitter = OZSmartAccountEventEmitter()
         let counter = ConcurrentCounter()
 
         emitter.addListener { _ in counter.increment() }
@@ -36,7 +36,7 @@ final class OZConcurrentEventEmissionTests: XCTestCase {
     }
 
     func testConcurrentEmit_noExceptionWithMultipleListeners() async {
-        let emitter = SmartAccountEventEmitter()
+        let emitter = OZSmartAccountEventEmitter()
 
         for _ in 0..<5 {
             emitter.addListener { _ in }
@@ -52,7 +52,7 @@ final class OZConcurrentEventEmissionTests: XCTestCase {
     }
 
     func testConcurrentSubscribeAndEmit_noException() async {
-        let emitter = SmartAccountEventEmitter()
+        let emitter = OZSmartAccountEventEmitter()
 
         await withTaskGroup(of: Void.self) { group in
             for i in 1...30 {
@@ -69,7 +69,7 @@ final class OZConcurrentEventEmissionTests: XCTestCase {
     }
 
     func testConcurrentUnsubscribeAndEmit_noException() async {
-        let emitter = SmartAccountEventEmitter()
+        let emitter = OZSmartAccountEventEmitter()
 
         let unsubscribers = ConcurrentUnsubscribeList()
         for _ in 0..<20 {
@@ -91,7 +91,7 @@ final class OZConcurrentEventEmissionTests: XCTestCase {
     }
 
     func testConcurrentTypedListeners_noException() async {
-        let emitter = SmartAccountEventEmitter()
+        let emitter = OZSmartAccountEventEmitter()
 
         await withTaskGroup(of: Void.self) { group in
             for _ in 1...10 {
@@ -115,7 +115,7 @@ final class OZConcurrentEventEmissionTests: XCTestCase {
     }
 
     func testConcurrentEmit_listenerCountRemainsConsistent() async {
-        let emitter = SmartAccountEventEmitter()
+        let emitter = OZSmartAccountEventEmitter()
 
         emitter.addListener { _ in }
 
@@ -131,7 +131,7 @@ final class OZConcurrentEventEmissionTests: XCTestCase {
     // MARK: - removeAllListeners under concurrency
 
     func testConcurrentRemoveAllAndEmit_noException() async {
-        let emitter = SmartAccountEventEmitter()
+        let emitter = OZSmartAccountEventEmitter()
 
         for _ in 0..<10 {
             emitter.addListener { _ in }
@@ -165,11 +165,11 @@ final class ConcurrentCounter: @unchecked Sendable {
 /// Thread-safe list of unsubscribe closures used by concurrent test cases.
 final class ConcurrentUnsubscribeList: @unchecked Sendable {
     private let lock = NSLock()
-    private var items: [SmartAccountEventUnsubscribe] = []
-    func append(_ u: @escaping SmartAccountEventUnsubscribe) {
+    private var items: [OZSmartAccountEventUnsubscribe] = []
+    func append(_ u: @escaping OZSmartAccountEventUnsubscribe) {
         lock.lock(); items.append(u); lock.unlock()
     }
-    func snapshot() -> [SmartAccountEventUnsubscribe] {
+    func snapshot() -> [OZSmartAccountEventUnsubscribe] {
         lock.lock(); defer { lock.unlock() }; return items
     }
 }

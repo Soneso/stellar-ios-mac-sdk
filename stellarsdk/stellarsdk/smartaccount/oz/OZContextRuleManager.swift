@@ -21,7 +21,7 @@ internal enum ContextRuleField {
     static let validUntil = "valid_until"
 }
 
-/// Contract-ABI discriminant strings for ``ContextRuleType`` arms.
+/// Contract-ABI discriminant strings for ``OZContextRuleType`` arms.
 internal enum ContextTypeDiscriminant {
     static let defaultRule = "Default"
     static let callContract = "CallContract"
@@ -109,49 +109,49 @@ public final class OZContextRuleManager: OZContextRuleManagerProtocol, OZManager
     ///     routes through single-signer submission; non-empty routes through
     ///     the multi-signer collaborator.
     ///   - forceMethod: Optional submission-method override.
-    /// - Returns: A ``TransactionResult`` describing the on-chain outcome.
+    /// - Returns: An ``OZTransactionResult`` describing the on-chain outcome.
     /// - Throws:
-    ///   - ``WalletException/NotConnected`` when no wallet is connected.
-    ///   - ``ValidationException/InvalidInput`` when validation fails.
-    ///   - ``ValidationException/InvalidAddress`` when a policy address is
+    ///   - ``SmartAccountWalletException/NotConnected`` when no wallet is connected.
+    ///   - ``SmartAccountValidationException/InvalidInput`` when validation fails.
+    ///   - ``SmartAccountValidationException/InvalidAddress`` when a policy address is
     ///     malformed.
-    ///   - ``TransactionException`` for simulation, signing, or submission
+    ///   - ``SmartAccountTransactionException`` for simulation, signing, or submission
     ///     failures.
     public func addContextRule(
-        contextType: ContextRuleType,
+        contextType: OZContextRuleType,
         name: String,
         validUntil: UInt32? = nil,
         signers: [any OZSmartAccountSigner],
         policies: [String: SCValXDR] = [:],
-        selectedSigners: [SelectedSigner] = [],
-        forceMethod: SubmissionMethod? = nil
-    ) async throws -> TransactionResult {
+        selectedSigners: [OZSelectedSigner] = [],
+        forceMethod: OZSubmissionMethod? = nil
+    ) async throws -> OZTransactionResult {
         let connected = try kit.requireConnected()
 
         // Validate inputs.
         if name.isEmpty {
-            throw ValidationException.invalidInput(
+            throw SmartAccountValidationException.invalidInput(
                 field: "name",
                 reason: "Context rule name cannot be empty"
             )
         }
 
         if signers.isEmpty && policies.isEmpty {
-            throw ValidationException.invalidInput(
+            throw SmartAccountValidationException.invalidInput(
                 field: "signers",
                 reason: "Context rule must have at least one signer or one policy"
             )
         }
 
         if signers.count > OZConstants.maxSigners {
-            throw ValidationException.invalidInput(
+            throw SmartAccountValidationException.invalidInput(
                 field: "signers",
                 reason: "Context rule cannot have more than \(OZConstants.maxSigners) signers, got: \(signers.count)"
             )
         }
 
         if policies.count > OZConstants.maxPolicies {
-            throw ValidationException.invalidInput(
+            throw SmartAccountValidationException.invalidInput(
                 field: "policies",
                 reason: "Context rule cannot have more than \(OZConstants.maxPolicies) policies, got: \(policies.count)"
             )
@@ -223,7 +223,7 @@ public final class OZContextRuleManager: OZContextRuleManagerProtocol, OZManager
     ///
     /// - Parameter id: The context-rule identifier to look up.
     /// - Returns: The raw `SCValXDR` returned by the contract.
-    /// - Throws: ``WalletException/NotConnected``, ``TransactionException/SimulationFailed``.
+    /// - Throws: ``SmartAccountWalletException/NotConnected``, ``SmartAccountTransactionException/SimulationFailed``.
     public func getContextRule(id: UInt32) async throws -> SCValXDR {
         let connected = try kit.requireConnected()
 
@@ -247,9 +247,9 @@ public final class OZContextRuleManager: OZContextRuleManagerProtocol, OZManager
     ///
     /// - Returns: The active rule count parsed as `UInt32`.
     /// - Throws:
-    ///   - ``WalletException/NotConnected`` when no wallet is connected.
-    ///   - ``TransactionException`` when the simulation fails.
-    ///   - ``ValidationException/InvalidInput`` when the on-chain result is
+    ///   - ``SmartAccountWalletException/NotConnected`` when no wallet is connected.
+    ///   - ``SmartAccountTransactionException`` when the simulation fails.
+    ///   - ``SmartAccountValidationException/InvalidInput`` when the on-chain result is
     ///     not a `U32`.
     public func getContextRulesCount() async throws -> UInt32 {
         let connected = try kit.requireConnected()
@@ -266,7 +266,7 @@ public final class OZContextRuleManager: OZContextRuleManagerProtocol, OZManager
         )
 
         guard case .u32(let count) = resultScVal else {
-            throw ValidationException.invalidInput(
+            throw SmartAccountValidationException.invalidInput(
                 field: "result",
                 reason: "Expected U32 result from \(ContextRuleMethod.getContextRulesCount), got: \(resultScVal)"
             )
@@ -286,7 +286,7 @@ public final class OZContextRuleManager: OZContextRuleManagerProtocol, OZManager
     /// The contract assigns monotonically increasing identifiers; when a rule
     /// is removed its slot becomes empty but the identifier is never reused,
     /// creating gaps. This method iterates identifiers from zero upward,
-    /// skipping gaps reported as ``TransactionException/SimulationFailed`` by
+    /// skipping gaps reported as ``SmartAccountTransactionException/SimulationFailed`` by
     /// the underlying simulation, until either the active rule count has been
     /// collected or the effective scan upper bound is reached.
     ///
@@ -296,9 +296,9 @@ public final class OZContextRuleManager: OZContextRuleManagerProtocol, OZManager
     /// - Returns: One raw `SCValXDR` per active context rule in ascending id
     ///   order.
     /// - Throws:
-    ///   - ``WalletException/NotConnected`` when no wallet is connected.
-    ///   - ``TransactionException`` for non-gap simulation failures.
-    ///   - ``ValidationException`` when ``getContextRulesCount()`` returns a
+    ///   - ``SmartAccountWalletException/NotConnected`` when no wallet is connected.
+    ///   - ``SmartAccountTransactionException`` for non-gap simulation failures.
+    ///   - ``SmartAccountValidationException`` when ``getContextRulesCount()`` returns a
     ///     non-`U32` value.
     public func getAllContextRules(maxScanId: UInt32? = nil) async throws -> [SCValXDR] {
         let activeCount = try await getContextRulesCount()
@@ -318,7 +318,7 @@ public final class OZContextRuleManager: OZContextRuleManagerProtocol, OZManager
             do {
                 let ruleScVal = try await getContextRule(id: id)
                 result.append(ruleScVal)
-            } catch is TransactionException.SimulationFailed {
+            } catch is SmartAccountTransactionException.SimulationFailed {
                 // Gap from a previously removed rule — skip and continue.
             }
             id &+= 1
@@ -344,13 +344,13 @@ public final class OZContextRuleManager: OZContextRuleManagerProtocol, OZManager
     ///   is used.
     /// - Returns: Parsed context rules in ascending rule-id order.
     /// - Throws:
-    ///   - ``WalletException/NotConnected`` when no wallet is connected.
-    ///   - ``TransactionException`` for simulation failures.
-    ///   - ``ValidationException`` when a payload cannot be parsed or the
+    ///   - ``SmartAccountWalletException/NotConnected`` when no wallet is connected.
+    ///   - ``SmartAccountTransactionException`` for simulation failures.
+    ///   - ``SmartAccountValidationException`` when a payload cannot be parsed or the
     ///     count is malformed.
-    public func listContextRules(maxScanId: UInt32? = nil) async throws -> [ParsedContextRule] {
+    public func listContextRules(maxScanId: UInt32? = nil) async throws -> [OZParsedContextRule] {
         let raw = try await getAllContextRules(maxScanId: maxScanId)
-        var result: [ParsedContextRule] = []
+        var result: [OZParsedContextRule] = []
         result.reserveCapacity(raw.count)
         for scVal in raw {
             result.append(try parseContextRule(scVal: scVal))
@@ -389,12 +389,12 @@ public final class OZContextRuleManager: OZContextRuleManagerProtocol, OZManager
     ///    fewer signers than the rule has).
     ///
     /// Failure semantics:
-    /// - No candidates after the context-type filter → ``ValidationException``
+    /// - No candidates after the context-type filter → ``SmartAccountValidationException``
     ///   advising the caller to add a Default rule.
     /// - Multiple candidates whose signer sets all contain every selected
-    ///   signer → ``ValidationException`` listing the matching rule ids.
+    ///   signer → ``SmartAccountValidationException`` listing the matching rule ids.
     /// - Candidates exist but none contains every selected signer →
-    ///   ``ValidationException`` advising the caller that no rule contains all
+    ///   ``SmartAccountValidationException`` advising the caller that no rule contains all
     ///   selected signers.
     ///
     /// - Parameters:
@@ -402,11 +402,11 @@ public final class OZContextRuleManager: OZContextRuleManagerProtocol, OZManager
     ///   - signers: The signer values participating in the current ceremony.
     ///   - contextRules: Pre-fetched rule list.
     /// - Returns: One identifier per invocation context.
-    /// - Throws: ``ValidationException`` for unresolvable or ambiguous cases.
+    /// - Throws: ``SmartAccountValidationException`` for unresolvable or ambiguous cases.
     internal func resolveContextRuleIdsForEntry(
         entry: SorobanAuthorizationEntryXDR,
         signers: [any OZSmartAccountSigner],
-        contextRules: [ParsedContextRule]
+        contextRules: [OZParsedContextRule]
     ) async throws -> [UInt32] {
         let contexts = try buildInvocationContextTypes(entry: entry)
         var result: [UInt32] = []
@@ -466,7 +466,7 @@ public final class OZContextRuleManager: OZContextRuleManagerProtocol, OZManager
 
             // Failure paths.
             if candidates.isEmpty {
-                throw ValidationException.invalidInput(
+                throw SmartAccountValidationException.invalidInput(
                     field: "contextRuleIds",
                     reason: "No context rule matches \(contextType). Add a rule for this context type or a Default rule."
                 )
@@ -480,13 +480,13 @@ public final class OZContextRuleManager: OZContextRuleManagerProtocol, OZManager
             }
             if containsAll.count > 1 {
                 let ids = containsAll.map { String($0.id) }.joined(separator: ", ")
-                throw ValidationException.invalidInput(
+                throw SmartAccountValidationException.invalidInput(
                     field: "contextRuleIds",
                     reason: "Selected signers match multiple context rules: \(ids)."
                 )
             }
 
-            throw ValidationException.invalidInput(
+            throw SmartAccountValidationException.invalidInput(
                 field: "contextRuleIds",
                 reason: "No context rule contains all selected signers."
             )
@@ -500,17 +500,17 @@ public final class OZContextRuleManager: OZContextRuleManagerProtocol, OZManager
     /// Extracts the context-type list from an auth entry's invocation tree.
     ///
     /// Walks the root invocation followed by every sub-invocation (depth-first)
-    /// and emits one ``ContextRuleType`` per invocation node:
-    /// - `contractFn` produces ``ContextRuleType/callContract(contractAddress:)``
+    /// and emits one ``OZContextRuleType`` per invocation node:
+    /// - `contractFn` produces ``OZContextRuleType/callContract(contractAddress:)``
     ///   with the invocation's contract address.
     /// - `createContractHostFn` / `createContractV2HostFn` produce
-    ///   ``ContextRuleType/createContract(wasmHash:)`` with the executable's
+    ///   ``OZContextRuleType/createContract(wasmHash:)`` with the executable's
     ///   WASM hash. Stellar Asset Contract executables throw because they have
     ///   no WASM hash.
     private func buildInvocationContextTypes(
         entry: SorobanAuthorizationEntryXDR
-    ) throws -> [ContextRuleType] {
-        var result: [ContextRuleType] = []
+    ) throws -> [OZContextRuleType] {
+        var result: [OZContextRuleType] = []
         try collectInvocationContextTypes(
             function: entry.rootInvocation.function,
             into: &result
@@ -524,7 +524,7 @@ public final class OZContextRuleManager: OZContextRuleManagerProtocol, OZManager
 
     private func collectInvocationContextTypes(
         function: SorobanAuthorizedFunctionXDR,
-        into result: inout [ContextRuleType]
+        into result: inout [OZContextRuleType]
     ) throws {
         switch function {
         case .contractFn(let invokeArgs):
@@ -532,7 +532,7 @@ public final class OZContextRuleManager: OZContextRuleManagerProtocol, OZManager
             do {
                 address = try addressString(from: invokeArgs.contractAddress)
             } catch {
-                throw ValidationException.invalidInput(
+                throw SmartAccountValidationException.invalidInput(
                     field: "contractAddress",
                     reason: "Failed to parse contract address from ContractFn invocation: \(error.localizedDescription)",
                     cause: error
@@ -552,7 +552,7 @@ public final class OZContextRuleManager: OZContextRuleManagerProtocol, OZManager
 
     private func collectSubInvocationContextTypes(
         subInvocations: [SorobanAuthorizedInvocationXDR],
-        into result: inout [ContextRuleType]
+        into result: inout [OZContextRuleType]
     ) throws {
         for subInvocation in subInvocations {
             try collectInvocationContextTypes(
@@ -574,7 +574,7 @@ public final class OZContextRuleManager: OZContextRuleManagerProtocol, OZManager
         case .wasm(let hash):
             return Data(hash.wrapped)
         case .token:
-            throw ValidationException.invalidInput(
+            throw SmartAccountValidationException.invalidInput(
                 field: "executable",
                 reason: "CreateContract invocation references a Stellar Asset Contract, not a WASM contract"
             )
@@ -583,7 +583,7 @@ public final class OZContextRuleManager: OZContextRuleManagerProtocol, OZManager
 
     internal func addressString(from scAddress: SCAddressXDR) throws -> String {
         guard let address = OZAddressStrKey.fromXdr(scAddress) else {
-            throw ValidationException.invalidInput(
+            throw SmartAccountValidationException.invalidInput(
                 field: "address",
                 reason: "Unsupported SCAddressXDR variant: \(scAddress)"
             )
@@ -594,12 +594,12 @@ public final class OZContextRuleManager: OZContextRuleManagerProtocol, OZManager
     /// Returns `true` when the rule's context type matches the required
     /// context type.
     ///
-    /// ``ContextRuleType/defaultRule`` matches any required context type (the
+    /// ``OZContextRuleType/defaultRule`` matches any required context type (the
     /// fallback semantics intended by the contract); every other arm requires
     /// exact equality.
     private func contextRuleTypeMatches(
-        ruleType: ContextRuleType,
-        requiredType: ContextRuleType
+        ruleType: OZContextRuleType,
+        requiredType: OZContextRuleType
     ) -> Bool {
         if case .defaultRule = ruleType { return true }
         return ruleType == requiredType
@@ -615,19 +615,19 @@ public final class OZContextRuleManager: OZContextRuleManagerProtocol, OZManager
     ///   - name: The new name (must be non-empty).
     ///   - selectedSigners: Optional multi-signer participants list.
     ///   - forceMethod: Optional submission-method override.
-    /// - Returns: A ``TransactionResult`` describing the on-chain outcome.
-    /// - Throws: ``WalletException/NotConnected``,
-    ///   ``ValidationException/InvalidInput``, ``TransactionException``.
+    /// - Returns: An ``OZTransactionResult`` describing the on-chain outcome.
+    /// - Throws: ``SmartAccountWalletException/NotConnected``,
+    ///   ``SmartAccountValidationException/InvalidInput``, ``SmartAccountTransactionException``.
     public func updateName(
         id: UInt32,
         name: String,
-        selectedSigners: [SelectedSigner] = [],
-        forceMethod: SubmissionMethod? = nil
-    ) async throws -> TransactionResult {
+        selectedSigners: [OZSelectedSigner] = [],
+        forceMethod: OZSubmissionMethod? = nil
+    ) async throws -> OZTransactionResult {
         let connected = try kit.requireConnected()
 
         if name.isEmpty {
-            throw ValidationException.invalidInput(
+            throw SmartAccountValidationException.invalidInput(
                 field: "name",
                 reason: "Context rule name cannot be empty"
             )
@@ -661,14 +661,14 @@ public final class OZContextRuleManager: OZContextRuleManagerProtocol, OZManager
     ///   - validUntil: The new expiration ledger, or `nil` to clear.
     ///   - selectedSigners: Optional multi-signer participants list.
     ///   - forceMethod: Optional submission-method override.
-    /// - Returns: A ``TransactionResult`` describing the on-chain outcome.
-    /// - Throws: ``WalletException/NotConnected``, ``TransactionException``.
+    /// - Returns: An ``OZTransactionResult`` describing the on-chain outcome.
+    /// - Throws: ``SmartAccountWalletException/NotConnected``, ``SmartAccountTransactionException``.
     public func updateValidUntil(
         id: UInt32,
         validUntil: UInt32?,
-        selectedSigners: [SelectedSigner] = [],
-        forceMethod: SubmissionMethod? = nil
-    ) async throws -> TransactionResult {
+        selectedSigners: [OZSelectedSigner] = [],
+        forceMethod: OZSubmissionMethod? = nil
+    ) async throws -> OZTransactionResult {
         let connected = try kit.requireConnected()
 
         let validUntilScVal: SCValXDR
@@ -704,13 +704,13 @@ public final class OZContextRuleManager: OZContextRuleManagerProtocol, OZManager
     ///   - id: The context-rule identifier to remove.
     ///   - selectedSigners: Optional multi-signer participants list.
     ///   - forceMethod: Optional submission-method override.
-    /// - Returns: A ``TransactionResult`` describing the on-chain outcome.
-    /// - Throws: ``WalletException/NotConnected``, ``TransactionException``.
+    /// - Returns: An ``OZTransactionResult`` describing the on-chain outcome.
+    /// - Throws: ``SmartAccountWalletException/NotConnected``, ``SmartAccountTransactionException``.
     public func removeContextRule(
         id: UInt32,
-        selectedSigners: [SelectedSigner] = [],
-        forceMethod: SubmissionMethod? = nil
-    ) async throws -> TransactionResult {
+        selectedSigners: [OZSelectedSigner] = [],
+        forceMethod: OZSubmissionMethod? = nil
+    ) async throws -> OZTransactionResult {
         let connected = try kit.requireConnected()
 
         let invokeArgs = InvokeContractArgsXDR(

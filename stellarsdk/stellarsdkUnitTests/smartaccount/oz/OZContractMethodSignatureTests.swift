@@ -124,7 +124,7 @@ final class OZContractMethodSignatureTests: XCTestCase {
     }
 
     // ========================================================================
-    // MARK: - ContextRuleType Variant Name Verification
+    // MARK: - OZContextRuleType Variant Name Verification
     // ========================================================================
 
     /// `Default` variant name must exactly match the contract ABI.
@@ -142,11 +142,11 @@ final class OZContractMethodSignatureTests: XCTestCase {
         XCTAssertEqual(OZContractAbi.ContextRuleTypeVariants.createContract, "CreateContract")
     }
 
-    /// ``ContextRuleType/defaultRule`` encodes as `Vec([Symbol("Default")])`.
+    /// ``OZContextRuleType/defaultRule`` encodes as `Vec([Symbol("Default")])`.
     func test_contextRuleType_default_scValUsesCorrectVariantName() throws {
-        let scVal = try ContextRuleType.defaultRule.toScVal()
+        let scVal = try OZContextRuleType.defaultRule.toScVal()
         guard case .vec(let optVec) = scVal, let vec = optVec else {
-            return XCTFail("Default ContextRuleType ScVal must be Vec")
+            return XCTFail("Default OZContextRuleType ScVal must be Vec")
         }
         XCTAssertEqual(vec.count, 1)
         guard case .symbol(let variant) = vec[0] else {
@@ -155,13 +155,13 @@ final class OZContractMethodSignatureTests: XCTestCase {
         XCTAssertEqual(variant, OZContractAbi.ContextRuleTypeVariants.defaultRule)
     }
 
-    /// ``ContextRuleType/callContract(contractAddress:)`` encodes as
+    /// ``OZContextRuleType/callContract(contractAddress:)`` encodes as
     /// `Vec([Symbol("CallContract"), Address(...)])`.
     func test_contextRuleType_callContract_scValUsesCorrectVariantName() throws {
         let address = "CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC"
-        let scVal = try ContextRuleType.callContract(contractAddress: address).toScVal()
+        let scVal = try OZContextRuleType.callContract(contractAddress: address).toScVal()
         guard case .vec(let optVec) = scVal, let vec = optVec else {
-            return XCTFail("CallContract ContextRuleType ScVal must be Vec")
+            return XCTFail("CallContract OZContextRuleType ScVal must be Vec")
         }
         XCTAssertEqual(vec.count, 2)
         guard case .symbol(let variant) = vec[0] else {
@@ -173,15 +173,15 @@ final class OZContractMethodSignatureTests: XCTestCase {
         }
     }
 
-    /// ``ContextRuleType/createContract(wasmHash:)`` encodes as
+    /// ``OZContextRuleType/createContract(wasmHash:)`` encodes as
     /// `Vec([Symbol("CreateContract"), Bytes(wasmHash)])`.
     func test_contextRuleType_createContract_scValUsesCorrectVariantName() throws {
         var bytes = [UInt8](repeating: 0, count: 32)
         for i in 0 ..< 32 { bytes[i] = UInt8(i) }
         let wasmHash = Data(bytes)
-        let scVal = try ContextRuleType.createContract(wasmHash: wasmHash).toScVal()
+        let scVal = try OZContextRuleType.createContract(wasmHash: wasmHash).toScVal()
         guard case .vec(let optVec) = scVal, let vec = optVec else {
-            return XCTFail("CreateContract ContextRuleType ScVal must be Vec")
+            return XCTFail("CreateContract OZContextRuleType ScVal must be Vec")
         }
         XCTAssertEqual(vec.count, 2)
         guard case .symbol(let variant) = vec[0] else {
@@ -232,7 +232,7 @@ final class OZContractMethodSignatureTests: XCTestCase {
     /// `(context_type, name, valid_until, signers, policies)` with the
     /// matching SCVal-type discriminants.
     func test_addContextRule_argumentOrder_matchesAbi() throws {
-        let contextTypeScVal = try ContextRuleType.defaultRule.toScVal()
+        let contextTypeScVal = try OZContextRuleType.defaultRule.toScVal()
         let nameScVal = SCValXDR.string("default rule")
         let validUntilScVal = SCValXDR.void
         let signersScVal = SCValXDR.vec([])
@@ -287,10 +287,10 @@ final class OZContractMethodSignatureTests: XCTestCase {
         XCTAssertEqual(args[0].type(), SCValType.u32.rawValue)
     }
 
-    /// `get_context_rules(context_rule_type: ContextRuleType)` — single Vec
+    /// `get_context_rules(context_rule_type: OZContextRuleType)` — single Vec
     /// argument carrying the discriminant.
     func test_getContextRules_argumentOrder_matchesAbi() throws {
-        let args: [SCValXDR] = [try ContextRuleType.defaultRule.toScVal()]
+        let args: [SCValXDR] = [try OZContextRuleType.defaultRule.toScVal()]
         XCTAssertEqual(args.count, 1)
         XCTAssertEqual(args[0].type(), SCValType.vec.rawValue)
     }
@@ -622,7 +622,7 @@ private enum OZContractAbi {
         static let external = "External"
     }
 
-    /// Discriminant strings for the on-chain `ContextRuleType` enum arms.
+    /// Discriminant strings for the on-chain `OZContextRuleType` enum arms.
     enum ContextRuleTypeVariants {
         static let defaultRule = "Default"
         static let callContract = "CallContract"

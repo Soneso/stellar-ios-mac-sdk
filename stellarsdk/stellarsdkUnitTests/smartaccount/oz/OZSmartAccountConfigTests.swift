@@ -65,7 +65,7 @@ final class OZSmartAccountConfigTests: XCTestCase {
                 webauthnVerifierAddress: "    "
             )
         ) { error in
-            XCTAssertTrue(error is ConfigurationException.InvalidConfig)
+            XCTAssertTrue(error is SmartAccountConfigurationException.InvalidConfig)
         }
     }
 
@@ -79,7 +79,7 @@ final class OZSmartAccountConfigTests: XCTestCase {
                 webauthnVerifierAddress: badAddress
             )
         ) { error in
-            XCTAssertTrue(error is ConfigurationException.InvalidConfig)
+            XCTAssertTrue(error is SmartAccountConfigurationException.InvalidConfig)
         }
     }
 
@@ -92,7 +92,7 @@ final class OZSmartAccountConfigTests: XCTestCase {
                 webauthnVerifierAddress: "CABC"
             )
         ) { error in
-            XCTAssertTrue(error is ConfigurationException.InvalidConfig)
+            XCTAssertTrue(error is SmartAccountConfigurationException.InvalidConfig)
         }
     }
 
@@ -106,7 +106,7 @@ final class OZSmartAccountConfigTests: XCTestCase {
                 webauthnVerifierAddress: badAddress
             )
         ) { error in
-            XCTAssertTrue(error is ConfigurationException.InvalidConfig)
+            XCTAssertTrue(error is SmartAccountConfigurationException.InvalidConfig)
         }
     }
 
@@ -121,7 +121,7 @@ final class OZSmartAccountConfigTests: XCTestCase {
                 webauthnVerifierAddress: validVerifier
             )
         ) { error in
-            XCTAssertTrue(error is ConfigurationException.MissingConfig)
+            XCTAssertTrue(error is SmartAccountConfigurationException.MissingConfig)
         }
     }
 
@@ -136,7 +136,7 @@ final class OZSmartAccountConfigTests: XCTestCase {
                 webauthnVerifierAddress: validVerifier
             )
         ) { error in
-            XCTAssertTrue(error is ConfigurationException.MissingConfig)
+            XCTAssertTrue(error is SmartAccountConfigurationException.MissingConfig)
         }
     }
 
@@ -151,7 +151,7 @@ final class OZSmartAccountConfigTests: XCTestCase {
                 webauthnVerifierAddress: validVerifier
             )
         ) { error in
-            XCTAssertTrue(error is ConfigurationException.MissingConfig)
+            XCTAssertTrue(error is SmartAccountConfigurationException.MissingConfig)
         }
     }
 
@@ -164,7 +164,7 @@ final class OZSmartAccountConfigTests: XCTestCase {
                 webauthnVerifierAddress: validVerifier
             )
         ) { error in
-            XCTAssertTrue(error is ConfigurationException.InvalidConfig)
+            XCTAssertTrue(error is SmartAccountConfigurationException.InvalidConfig)
         }
     }
 
@@ -177,7 +177,7 @@ final class OZSmartAccountConfigTests: XCTestCase {
                 webauthnVerifierAddress: validVerifier
             )
         ) { error in
-            XCTAssertTrue(error is ConfigurationException.InvalidConfig)
+            XCTAssertTrue(error is SmartAccountConfigurationException.InvalidConfig)
         }
     }
 
@@ -474,7 +474,7 @@ final class OZSmartAccountConfigTests: XCTestCase {
     /// Exercises every optional builder setter. Verifies that the built
     /// `OZSmartAccountConfig` reflects the values set via the fluent API.
     func test_builder_allOptionalSetters_buildSucceeds() throws {
-        let customStorage = InMemoryStorageAdapter()
+        let customStorage = OZInMemoryStorageAdapter()
         let customMaxScanId: UInt32 = 200
 
         let config = try OZSmartAccountConfig.builder(
@@ -509,7 +509,7 @@ final class OZSmartAccountConfigTests: XCTestCase {
     // MARK: - isValidWasmHashHex — invalid character in 64-char string (line 328)
 
     /// A 64-character string that is otherwise the right length but contains a
-    /// non-hex character must throw `ConfigurationException.InvalidConfig`.
+    /// non-hex character must throw `SmartAccountConfigurationException.InvalidConfig`.
     /// This exercises the `return false` branch inside the hex character loop
     /// (line 328 in `OZSmartAccountConfig.swift`).
     func testAccountWasmHash_invalidCharInHexString_throws() {
@@ -522,14 +522,14 @@ final class OZSmartAccountConfigTests: XCTestCase {
                 webauthnVerifierAddress: validVerifier
             )
         ) { error in
-            XCTAssertTrue(error is ConfigurationException.InvalidConfig)
+            XCTAssertTrue(error is SmartAccountConfigurationException.InvalidConfig)
         }
     }
 
     // MARK: - Validation error paths
 
     /// `signatureExpirationLedgers` of zero must throw
-    /// `ConfigurationException.InvalidConfig`.
+    /// `SmartAccountConfigurationException.InvalidConfig`.
     func test_signatureExpirationLedgers_zeroThrows() {
         XCTAssertThrowsError(
             try OZSmartAccountConfig(
@@ -540,7 +540,7 @@ final class OZSmartAccountConfigTests: XCTestCase {
                 signatureExpirationLedgers: 0
             )
         ) { error in
-            XCTAssertTrue(error is ConfigurationException.InvalidConfig)
+            XCTAssertTrue(error is SmartAccountConfigurationException.InvalidConfig)
         }
     }
 
@@ -584,7 +584,7 @@ final class OZSmartAccountConfigTests: XCTestCase {
         XCTAssertEqual(100_000, config.timeoutInSeconds)
     }
 
-    /// A negative `timeoutInSeconds` must throw `ConfigurationException.InvalidConfig`.
+    /// A negative `timeoutInSeconds` must throw `SmartAccountConfigurationException.InvalidConfig`.
     func test_timeoutInSeconds_negativeThrows() {
         XCTAssertThrowsError(
             try OZSmartAccountConfig(
@@ -595,7 +595,7 @@ final class OZSmartAccountConfigTests: XCTestCase {
                 timeoutInSeconds: -1
             )
         ) { error in
-            XCTAssertTrue(error is ConfigurationException.InvalidConfig)
+            XCTAssertTrue(error is SmartAccountConfigurationException.InvalidConfig)
         }
     }
 
@@ -643,7 +643,7 @@ final class OZSmartAccountConfigTests: XCTestCase {
     }
 
     /// Configs with two different non-nil storage adapters that are NOT
-    /// `InMemoryStorageAdapter` must be unequal when they are different instances.
+    /// `OZInMemoryStorageAdapter` must be unequal when they are different instances.
     func test_equality_differentNonInMemoryStorageNotEqual() throws {
         let storage1 = _TestNamedStorageAdapter(name: "A")
         let storage2 = _TestNamedStorageAdapter(name: "B")
@@ -664,7 +664,7 @@ final class OZSmartAccountConfigTests: XCTestCase {
         XCTAssertNotEqual(config1, config2)
     }
 
-    /// Hash includes the storage identity when the adapter is not `InMemoryStorageAdapter`.
+    /// Hash includes the storage identity when the adapter is not `OZInMemoryStorageAdapter`.
     func test_hash_nonInMemoryStorageIncludesIdentity() throws {
         let storage = _TestNamedStorageAdapter(name: "X")
         let config = try OZSmartAccountConfig(
@@ -871,14 +871,14 @@ final class OZSmartAccountConfigTests: XCTestCase {
 
 // MARK: - _TestExternalWalletAdapter
 
-/// Minimal `ExternalWalletAdapter` used by equality/hash tests.
-private final class _TestExternalWalletAdapter: ExternalWalletAdapter, @unchecked Sendable {
-    func connect() async throws -> ConnectedWallet? { return nil }
+/// Minimal `OZExternalWalletAdapter` used by equality/hash tests.
+private final class _TestExternalWalletAdapter: OZExternalWalletAdapter, @unchecked Sendable {
+    func connect() async throws -> OZConnectedWallet? { return nil }
     func disconnect() async throws {}
-    func signAuthEntry(preimageXdr: String, options: SignAuthEntryOptions?) async throws -> SignAuthEntryResult {
-        return SignAuthEntryResult(signedAuthEntry: "")
+    func signAuthEntry(preimageXdr: String, options: OZSignAuthEntryOptions?) async throws -> OZSignAuthEntryResult {
+        return OZSignAuthEntryResult(signedAuthEntry: "")
     }
-    func getConnectedWallets() -> [ConnectedWallet] { return [] }
+    func getConnectedWallets() -> [OZConnectedWallet] { return [] }
     func canSignFor(address: String) -> Bool { return false }
 }
 
@@ -892,23 +892,23 @@ private final class _TestEd25519SignerAdapter: OZExternalEd25519SignerAdapter, @
 
 // MARK: - _TestNamedStorageAdapter
 
-/// Concrete `StorageAdapter` that is neither `InMemoryStorageAdapter` nor
-/// `KeychainStorageAdapter`. Used by equality tests to exercise the identity-
+/// Concrete `OZStorageAdapter` that is neither `OZInMemoryStorageAdapter` nor
+/// `OZKeychainStorageAdapter`. Used by equality tests to exercise the identity-
 /// comparison branch in `storageAdaptersEqual(_:_:)`.
-private final class _TestNamedStorageAdapter: StorageAdapter, @unchecked Sendable {
+private final class _TestNamedStorageAdapter: OZStorageAdapter, @unchecked Sendable {
     let name: String
-    private let inner = InMemoryStorageAdapter()
+    private let inner = OZInMemoryStorageAdapter()
 
     init(name: String) { self.name = name }
 
-    func save(credential: StoredCredential) async throws { try await inner.save(credential: credential) }
-    func get(credentialId: String) async throws -> StoredCredential? { try await inner.get(credentialId: credentialId) }
-    func getByContract(contractId: String) async throws -> [StoredCredential] { try await inner.getByContract(contractId: contractId) }
-    func getAll() async throws -> [StoredCredential] { try await inner.getAll() }
+    func save(credential: OZStoredCredential) async throws { try await inner.save(credential: credential) }
+    func get(credentialId: String) async throws -> OZStoredCredential? { try await inner.get(credentialId: credentialId) }
+    func getByContract(contractId: String) async throws -> [OZStoredCredential] { try await inner.getByContract(contractId: contractId) }
+    func getAll() async throws -> [OZStoredCredential] { try await inner.getAll() }
     func delete(credentialId: String) async throws { try await inner.delete(credentialId: credentialId) }
-    func update(credentialId: String, updates: StoredCredentialUpdate) async throws { try await inner.update(credentialId: credentialId, updates: updates) }
+    func update(credentialId: String, updates: OZStoredCredentialUpdate) async throws { try await inner.update(credentialId: credentialId, updates: updates) }
     func clear() async throws { try await inner.clear() }
-    func saveSession(_ session: StoredSession) async throws { try await inner.saveSession(session) }
-    func getSession() async throws -> StoredSession? { try await inner.getSession() }
+    func saveSession(_ session: OZStoredSession) async throws { try await inner.saveSession(session) }
+    func getSession() async throws -> OZStoredSession? { try await inner.getSession() }
     func clearSession() async throws { try await inner.clearSession() }
 }

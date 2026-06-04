@@ -1,5 +1,5 @@
 //
-//  KeychainStorageAdapter.swift
+//  OZKeychainStorageAdapter.swift
 //  stellarsdk
 //
 //  Copyright (c) 2026 Soneso. All rights reserved.
@@ -8,7 +8,7 @@
 import Foundation
 import Security
 
-/// Persistent `StorageAdapter` backed by the iOS / macOS Keychain Services API.
+/// Persistent `OZStorageAdapter` backed by the iOS / macOS Keychain Services API.
 ///
 /// Stores credential and session payloads as `kSecClassGenericPassword` items
 /// using the Security framework's `SecItem*` primitives. Each entry is a UTF-8
@@ -27,7 +27,7 @@ import Security
 ///
 /// Example:
 /// ```swift
-/// let storage = KeychainStorageAdapter()
+/// let storage = OZKeychainStorageAdapter()
 /// try await storage.save(credential: credential)
 /// let loaded = try await storage.get(credentialId: credential.credentialId)
 /// ```
@@ -35,7 +35,7 @@ import Security
 /// - Important: On iOS Simulator and unsigned macOS test binaries, Keychain
 ///   access requires the `keychain-access-groups` entitlement to be configured.
 @available(iOS 13.0, macOS 10.15, *)
-public final actor KeychainStorageAdapter: StorageAdapter {
+public final actor OZKeychainStorageAdapter: OZStorageAdapter {
 
     // ========================================================================
     // Companion Constants
@@ -60,34 +60,34 @@ public final actor KeychainStorageAdapter: StorageAdapter {
     /// Indirection over the Security framework's `SecItem*` C functions. The
     /// production conformance forwards directly; tests substitute a fake to
     /// simulate failure-mode `OSStatus` values without needing a real Keychain.
-    private let shim: SecItemShim
+    private let shim: OZSecItemShim
 
     // ========================================================================
     // Initialization
     // ========================================================================
 
-    /// Initializes a new `KeychainStorageAdapter`.
+    /// Initializes a new `OZKeychainStorageAdapter`.
     ///
     /// - Parameters:
     ///   - serviceName: Keychain service identifier (`kSecAttrService`).
-    ///     Defaults to `KeychainStorageAdapter.defaultServiceName`.
-    ///   - shim: Optional `SecItemShim` to use for all Security framework
+    ///     Defaults to `OZKeychainStorageAdapter.defaultServiceName`.
+    ///   - shim: Optional `OZSecItemShim` to use for all Security framework
     ///     calls. The default conformance forwards every call to the system
     ///     `SecItem*` functions; tests substitute a fake to drive failure
     ///     paths deterministically.
     public init(
-        serviceName: String = KeychainStorageAdapter.defaultServiceName,
-        shim: SecItemShim = RealSecItemShim()
+        serviceName: String = OZKeychainStorageAdapter.defaultServiceName,
+        shim: OZSecItemShim = OZRealSecItemShim()
     ) {
         self.serviceName = serviceName
         self.shim = shim
     }
 
     // ========================================================================
-    // StorageAdapter — Credential Operations
+    // OZStorageAdapter — Credential Operations
     // ========================================================================
 
-    public func save(credential: StoredCredential) async throws {
+    public func save(credential: OZStoredCredential) async throws {
         do {
             let serializable = credential.toSerializable()
             let jsonString = try encodeToString(serializable)
@@ -102,63 +102,63 @@ public final actor KeychainStorageAdapter: StorageAdapter {
                 let updated = CredentialIndex(ids: index.ids + [credential.credentialId])
                 try writeIndex(updated)
             }
-        } catch let error as StorageException {
+        } catch let error as SmartAccountStorageException {
             throw error
         } catch {
-            throw StorageException.WriteFailed(
+            throw SmartAccountStorageException.WriteFailed(
                 message: "Storage write failed for key: \(credential.credentialId)",
                 cause: error
             )
         }
     }
 
-    public func get(credentialId: String) async throws -> StoredCredential? {
+    public func get(credentialId: String) async throws -> OZStoredCredential? {
         do {
             return try readCredential(credentialId)
-        } catch let error as StorageException {
+        } catch let error as SmartAccountStorageException {
             throw error
         } catch {
-            throw StorageException.ReadFailed(
+            throw SmartAccountStorageException.ReadFailed(
                 message: "Storage read failed for key: \(credentialId)",
                 cause: error
             )
         }
     }
 
-    public func getByContract(contractId: String) async throws -> [StoredCredential] {
+    public func getByContract(contractId: String) async throws -> [OZStoredCredential] {
         do {
             let index = try readIndex()
-            var matches: [StoredCredential] = []
+            var matches: [OZStoredCredential] = []
             for id in index.ids {
                 if let credential = try readCredential(id), credential.contractId == contractId {
                     matches.append(credential)
                 }
             }
             return matches
-        } catch let error as StorageException {
+        } catch let error as SmartAccountStorageException {
             throw error
         } catch {
-            throw StorageException.ReadFailed(
+            throw SmartAccountStorageException.ReadFailed(
                 message: "Storage read failed for contract: \(contractId)",
                 cause: error
             )
         }
     }
 
-    public func getAll() async throws -> [StoredCredential] {
+    public func getAll() async throws -> [OZStoredCredential] {
         do {
             let index = try readIndex()
-            var all: [StoredCredential] = []
+            var all: [OZStoredCredential] = []
             for id in index.ids {
                 if let credential = try readCredential(id) {
                     all.append(credential)
                 }
             }
             return all
-        } catch let error as StorageException {
+        } catch let error as SmartAccountStorageException {
             throw error
         } catch {
-            throw StorageException.ReadFailed(
+            throw SmartAccountStorageException.ReadFailed(
                 message: "Storage read failed for key: all credentials",
                 cause: error
             )
@@ -175,20 +175,20 @@ public final actor KeychainStorageAdapter: StorageAdapter {
             let index = try readIndex()
             let updated = CredentialIndex(ids: index.ids.filter { $0 != credentialId })
             try writeIndex(updated)
-        } catch let error as StorageException {
+        } catch let error as SmartAccountStorageException {
             throw error
         } catch {
-            throw StorageException.WriteFailed(
+            throw SmartAccountStorageException.WriteFailed(
                 message: "Storage write failed for key: \(credentialId)",
                 cause: error
             )
         }
     }
 
-    public func update(credentialId: String, updates: StoredCredentialUpdate) async throws {
+    public func update(credentialId: String, updates: OZStoredCredentialUpdate) async throws {
         do {
             guard let existing = try readCredential(credentialId) else {
-                throw CredentialException.notFound(credentialId: credentialId)
+                throw SmartAccountCredentialException.notFound(credentialId: credentialId)
             }
             let updated = existing.applyUpdate(updates)
 
@@ -197,12 +197,12 @@ public final actor KeychainStorageAdapter: StorageAdapter {
             let account = OZStorageKeys.credentialKeyPrefix + credentialId
 
             try keychainUpsert(account: account, data: jsonString)
-        } catch let error as CredentialException {
+        } catch let error as SmartAccountCredentialException {
             throw error
-        } catch let error as StorageException {
+        } catch let error as SmartAccountStorageException {
             throw error
         } catch {
-            throw StorageException.WriteFailed(
+            throw SmartAccountStorageException.WriteFailed(
                 message: "Storage write failed for key: \(credentialId)",
                 cause: error
             )
@@ -217,10 +217,10 @@ public final actor KeychainStorageAdapter: StorageAdapter {
             }
             try keychainDelete(account: OZStorageKeys.credentialIndexKey)
             try keychainDelete(account: OZStorageKeys.sessionKey)
-        } catch let error as StorageException {
+        } catch let error as SmartAccountStorageException {
             throw error
         } catch {
-            throw StorageException.WriteFailed(
+            throw SmartAccountStorageException.WriteFailed(
                 message: "Storage write failed for key: clear all",
                 cause: error
             )
@@ -228,25 +228,25 @@ public final actor KeychainStorageAdapter: StorageAdapter {
     }
 
     // ========================================================================
-    // StorageAdapter — Session Operations
+    // OZStorageAdapter — Session Operations
     // ========================================================================
 
-    public func saveSession(_ session: StoredSession) async throws {
+    public func saveSession(_ session: OZStoredSession) async throws {
         do {
             let serializable = session.toSerializable()
             let jsonString = try encodeToString(serializable)
             try keychainUpsert(account: OZStorageKeys.sessionKey, data: jsonString)
-        } catch let error as StorageException {
+        } catch let error as SmartAccountStorageException {
             throw error
         } catch {
-            throw StorageException.WriteFailed(
+            throw SmartAccountStorageException.WriteFailed(
                 message: "Storage write failed for key: session",
                 cause: error
             )
         }
     }
 
-    public func getSession() async throws -> StoredSession? {
+    public func getSession() async throws -> OZStoredSession? {
         do {
             guard let jsonString = try keychainRead(account: OZStorageKeys.sessionKey) else {
                 return nil
@@ -263,10 +263,10 @@ public final actor KeychainStorageAdapter: StorageAdapter {
                 return nil
             }
             return session
-        } catch let error as StorageException {
+        } catch let error as SmartAccountStorageException {
             throw error
         } catch {
-            throw StorageException.ReadFailed(
+            throw SmartAccountStorageException.ReadFailed(
                 message: "Storage read failed for key: session",
                 cause: error
             )
@@ -276,10 +276,10 @@ public final actor KeychainStorageAdapter: StorageAdapter {
     public func clearSession() async throws {
         do {
             try keychainDelete(account: OZStorageKeys.sessionKey)
-        } catch let error as StorageException {
+        } catch let error as SmartAccountStorageException {
             throw error
         } catch {
-            throw StorageException.WriteFailed(
+            throw SmartAccountStorageException.WriteFailed(
                 message: "Storage write failed for key: session",
                 cause: error
             )
@@ -293,7 +293,7 @@ public final actor KeychainStorageAdapter: StorageAdapter {
     /// Reads and decodes a single credential by ID. Returns `nil` when the
     /// underlying Keychain entry does not exist. Must be called from within
     /// the actor's serialized context.
-    private func readCredential(_ credentialId: String) throws -> StoredCredential? {
+    private func readCredential(_ credentialId: String) throws -> OZStoredCredential? {
         let account = OZStorageKeys.credentialKeyPrefix + credentialId
         guard let jsonString = try keychainRead(account: account) else {
             return nil
@@ -335,7 +335,7 @@ public final actor KeychainStorageAdapter: StorageAdapter {
     /// Reads the UTF-8 string value stored at the given account.
     ///
     /// - Returns: The stored string, or `nil` when the entry does not exist.
-    /// - Throws: `StorageException.ReadFailed` for any non-success, non-not-found
+    /// - Throws: `SmartAccountStorageException.ReadFailed` for any non-success, non-not-found
     ///   `OSStatus`. This includes `errSecInteractionNotAllowed` (device
     ///   locked), `errSecMissingEntitlement` (CI / unsigned binary without
     ///   Keychain entitlement), and other transport-level failures.
@@ -359,7 +359,7 @@ public final actor KeychainStorageAdapter: StorageAdapter {
         case errSecItemNotFound:
             return nil
         default:
-            throw StorageException.ReadFailed(
+            throw SmartAccountStorageException.ReadFailed(
                 message: "Keychain read failed for account '\(account)' with OSStatus: \(status)"
             )
         }
@@ -369,13 +369,13 @@ public final actor KeychainStorageAdapter: StorageAdapter {
     ///
     /// First attempts `SecItemAdd`. If the item already exists
     /// (`errSecDuplicateItem`), falls back to `SecItemUpdate` with the new
-    /// value. Any other `OSStatus` becomes a `StorageException.WriteFailed`.
+    /// value. Any other `OSStatus` becomes a `SmartAccountStorageException.WriteFailed`.
     ///
-    /// - Throws: `StorageException.WriteFailed` for any failure that is not the
+    /// - Throws: `SmartAccountStorageException.WriteFailed` for any failure that is not the
     ///   benign `errSecDuplicateItem` arm.
     private func keychainUpsert(account: String, data: String) throws {
         guard let payload = data.data(using: .utf8) else {
-            throw StorageException.WriteFailed(
+            throw SmartAccountStorageException.WriteFailed(
                 message: "Failed to encode string data for account '\(account)'"
             )
         }
@@ -406,12 +406,12 @@ public final actor KeychainStorageAdapter: StorageAdapter {
                 attributesToUpdate: updateAttributes as CFDictionary
             )
             if updateStatus != errSecSuccess {
-                throw StorageException.WriteFailed(
+                throw SmartAccountStorageException.WriteFailed(
                     message: "Keychain update failed for account '\(account)' with OSStatus: \(updateStatus)"
                 )
             }
         default:
-            throw StorageException.WriteFailed(
+            throw SmartAccountStorageException.WriteFailed(
                 message: "Keychain add failed for account '\(account)' with OSStatus: \(addStatus)"
             )
         }
@@ -420,13 +420,13 @@ public final actor KeychainStorageAdapter: StorageAdapter {
     /// Deletes the entry at the given account. Treats both `errSecSuccess` and
     /// `errSecItemNotFound` as success so the operation is idempotent.
     ///
-    /// - Throws: `StorageException.WriteFailed` for any other `OSStatus`.
+    /// - Throws: `SmartAccountStorageException.WriteFailed` for any other `OSStatus`.
     private func keychainDelete(account: String) throws {
         let query = baseQuery(account: account)
         let status = shim.delete(query: query as CFDictionary)
 
         if status != errSecSuccess && status != errSecItemNotFound {
-            throw StorageException.WriteFailed(
+            throw SmartAccountStorageException.WriteFailed(
                 message: "Keychain delete failed for account '\(account)' with OSStatus: \(status)"
             )
         }

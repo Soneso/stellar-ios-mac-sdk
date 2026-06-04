@@ -451,7 +451,7 @@ final class OZSmartAccountBuildersTests: XCTestCase {
                 keyData: Data([0x01])
             )
         ) { error in
-            XCTAssertTrue(error is ValidationException.InvalidAddress)
+            XCTAssertTrue(error is SmartAccountValidationException.InvalidAddress)
         }
     }
 
@@ -465,7 +465,7 @@ final class OZSmartAccountBuildersTests: XCTestCase {
                 credentialId: Data([0xAA])
             )
         ) { error in
-            XCTAssertTrue(error is ValidationException.InvalidAddress)
+            XCTAssertTrue(error is SmartAccountValidationException.InvalidAddress)
         }
     }
 
@@ -476,7 +476,7 @@ final class OZSmartAccountBuildersTests: XCTestCase {
                 publicKey: Data(repeating: 0x42, count: 32)
             )
         ) { error in
-            XCTAssertTrue(error is ValidationException.InvalidAddress)
+            XCTAssertTrue(error is SmartAccountValidationException.InvalidAddress)
         }
     }
 
@@ -497,13 +497,13 @@ final class OZSmartAccountBuildersTests: XCTestCase {
 
     func testCreateThresholdParams_thresholdZero_throwsInvalidInput() {
         XCTAssertThrowsError(try OZSmartAccountBuilders.createThresholdParams(threshold: 0)) { error in
-            XCTAssertTrue(error is ValidationException.InvalidInput)
+            XCTAssertTrue(error is SmartAccountValidationException.InvalidInput)
         }
     }
 
     func testCreateThresholdParams_thresholdNegative_throwsInvalidInput() {
         XCTAssertThrowsError(try OZSmartAccountBuilders.createThresholdParams(threshold: -3)) { error in
-            XCTAssertTrue(error is ValidationException.InvalidInput)
+            XCTAssertTrue(error is SmartAccountValidationException.InvalidInput)
         }
     }
 
@@ -523,7 +523,7 @@ final class OZSmartAccountBuildersTests: XCTestCase {
         XCTAssertThrowsError(
             try OZSmartAccountBuilders.createWeightedThresholdParams(threshold: 1, signerWeights: [])
         ) { error in
-            XCTAssertTrue(error is ValidationException.InvalidInput)
+            XCTAssertTrue(error is SmartAccountValidationException.InvalidInput)
         }
     }
 
@@ -535,7 +535,7 @@ final class OZSmartAccountBuildersTests: XCTestCase {
                 signerWeights: [OZSignerWeight(signer: signer, weight: 0)]
             )
         ) { error in
-            XCTAssertTrue(error is ValidationException.InvalidInput)
+            XCTAssertTrue(error is SmartAccountValidationException.InvalidInput)
         }
     }
 
@@ -547,7 +547,7 @@ final class OZSmartAccountBuildersTests: XCTestCase {
                 signerWeights: [OZSignerWeight(signer: signer, weight: 1)]
             )
         ) { error in
-            XCTAssertTrue(error is ValidationException.InvalidInput)
+            XCTAssertTrue(error is SmartAccountValidationException.InvalidInput)
         }
     }
 
@@ -559,7 +559,7 @@ final class OZSmartAccountBuildersTests: XCTestCase {
                 signerWeights: [OZSignerWeight(signer: signer, weight: 1)]
             )
         ) { error in
-            XCTAssertTrue(error is ValidationException.InvalidInput)
+            XCTAssertTrue(error is SmartAccountValidationException.InvalidInput)
         }
     }
 
@@ -593,7 +593,7 @@ final class OZSmartAccountBuildersTests: XCTestCase {
         XCTAssertThrowsError(
             try OZSmartAccountBuilders.createSpendingLimitParams(spendingLimit: "1", periodLedgers: 0)
         ) { error in
-            XCTAssertTrue(error is ValidationException.InvalidInput)
+            XCTAssertTrue(error is SmartAccountValidationException.InvalidInput)
         }
     }
 

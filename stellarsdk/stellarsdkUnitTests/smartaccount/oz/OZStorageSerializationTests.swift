@@ -24,7 +24,7 @@ final class OZStorageSerializationTests: XCTestCase {
     // MARK: - Credential Round-Trip
 
     func test_credentialRoundTrip_fullPopulated() throws {
-        let original = StoredCredential(
+        let original = OZStoredCredential(
             credentialId: "cred-roundtrip-001",
             publicKey: testPublicKey(seed: 7),
             contractId: "CBCD1234EFGH5678IJKL9012MNOP3456QRST7890UVWX1234YZAB5678",
@@ -48,7 +48,7 @@ final class OZStorageSerializationTests: XCTestCase {
     }
 
     func test_credentialRoundTrip_minimalNullable() throws {
-        let original = StoredCredential(
+        let original = OZStoredCredential(
             credentialId: "cred-min",
             publicKey: testPublicKey(seed: 1),
             contractId: nil,
@@ -71,7 +71,7 @@ final class OZStorageSerializationTests: XCTestCase {
     }
 
     func test_credentialRoundTrip_jsonEncodeDecode() throws {
-        let original = StoredCredential(
+        let original = OZStoredCredential(
             credentialId: "cred-json",
             publicKey: testPublicKey(seed: 3),
             contractId: "CBCD1234EFGH5678IJKL9012MNOP3456QRST7890UVWX1234YZAB5678",
@@ -96,7 +96,7 @@ final class OZStorageSerializationTests: XCTestCase {
         )
 
         XCTAssertThrowsError(try dto.toStoredCredential()) { error in
-            XCTAssertTrue(error is ValidationException.InvalidInput)
+            XCTAssertTrue(error is SmartAccountValidationException.InvalidInput)
         }
     }
 
@@ -108,14 +108,14 @@ final class OZStorageSerializationTests: XCTestCase {
         )
 
         XCTAssertThrowsError(try dto.toStoredCredential()) { error in
-            XCTAssertTrue(error is ValidationException.InvalidInput)
+            XCTAssertTrue(error is SmartAccountValidationException.InvalidInput)
         }
     }
 
     // MARK: - Session Round-Trip
 
     func test_sessionRoundTrip_basic() {
-        let original = StoredSession(
+        let original = OZStoredSession(
             credentialId: "cred-session",
             contractId: "CBCD1234",
             connectedAt: 1_700_000_000_000,
@@ -129,7 +129,7 @@ final class OZStorageSerializationTests: XCTestCase {
     }
 
     func test_sessionRoundTrip_jsonEncodeDecode() throws {
-        let original = StoredSession(
+        let original = OZStoredSession(
             credentialId: "cred-session-json",
             contractId: "CONTRACT_X",
             connectedAt: 1,

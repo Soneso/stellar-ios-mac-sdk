@@ -11,7 +11,7 @@ import XCTest
 /// Unit tests for `OZPolicyManager.sortMapByKeyXdr` and the byte-encoding helper
 /// `OZPolicyManager.scValToXdrBytes`.
 ///
-/// The sort routine is consumed by `PolicyInstallParams.weightedThreshold` for
+/// The sort routine is consumed by `OZPolicyInstallParams.weightedThreshold` for
 /// the inner signer-weights map and by `OZContextRuleManager.addContextRule`
 /// for the policies map. Both call sites depend on byte-deterministic key
 /// ordering: the Soroban host rejects `SCMap` values whose keys are not in
@@ -289,7 +289,7 @@ final class OZScMapKeySortingTests: XCTestCase {
 
     // MARK: - Round trip with WeightedThreshold and policies map (4 cases)
 
-    /// `PolicyInstallParams.weightedThreshold` calls `sortMapByKeyXdr` on its
+    /// `OZPolicyInstallParams.weightedThreshold` calls `sortMapByKeyXdr` on its
     /// inner signer-weights map; the encoded shape must match across
     /// equivalent inputs in different order.
     func test_sortMapByKeyXdr_weightedThresholdRoundtripDeterministic() throws {
@@ -297,19 +297,19 @@ final class OZScMapKeySortingTests: XCTestCase {
         let s2 = try OZDelegatedSigner(address: "GBGWONUYEPTSADFMLRQSPRAPTWMGX5PMQXXHGSBVRF2KLUNVZT57SLVW")
         let s3 = try OZDelegatedSigner(address: "GB33CUURS5XLLECMLSE2EMMDJBMZSVF27BW6PLS53OFTJMP46CZH3CVG")
 
-        let paramsA = PolicyInstallParams.weightedThreshold(
+        let paramsA = OZPolicyInstallParams.weightedThreshold(
             signerWeights: [
-                SignerWeightEntry(signer: s3, weight: 20),
-                SignerWeightEntry(signer: s1, weight: 50),
-                SignerWeightEntry(signer: s2, weight: 30)
+                OZSignerWeightEntry(signer: s3, weight: 20),
+                OZSignerWeightEntry(signer: s1, weight: 50),
+                OZSignerWeightEntry(signer: s2, weight: 30)
             ],
             threshold: 100
         )
-        let paramsB = PolicyInstallParams.weightedThreshold(
+        let paramsB = OZPolicyInstallParams.weightedThreshold(
             signerWeights: [
-                SignerWeightEntry(signer: s2, weight: 30),
-                SignerWeightEntry(signer: s1, weight: 50),
-                SignerWeightEntry(signer: s3, weight: 20)
+                OZSignerWeightEntry(signer: s2, weight: 30),
+                OZSignerWeightEntry(signer: s1, weight: 50),
+                OZSignerWeightEntry(signer: s3, weight: 20)
             ],
             threshold: 100
         )
@@ -326,11 +326,11 @@ final class OZScMapKeySortingTests: XCTestCase {
         let s2 = try OZDelegatedSigner(address: "GBGWONUYEPTSADFMLRQSPRAPTWMGX5PMQXXHGSBVRF2KLUNVZT57SLVW")
         let s3 = try OZDelegatedSigner(address: "GB33CUURS5XLLECMLSE2EMMDJBMZSVF27BW6PLS53OFTJMP46CZH3CVG")
 
-        let params = PolicyInstallParams.weightedThreshold(
+        let params = OZPolicyInstallParams.weightedThreshold(
             signerWeights: [
-                SignerWeightEntry(signer: s3, weight: 20),
-                SignerWeightEntry(signer: s1, weight: 50),
-                SignerWeightEntry(signer: s2, weight: 30)
+                OZSignerWeightEntry(signer: s3, weight: 20),
+                OZSignerWeightEntry(signer: s1, weight: 50),
+                OZSignerWeightEntry(signer: s2, weight: 30)
             ],
             threshold: 100
         )

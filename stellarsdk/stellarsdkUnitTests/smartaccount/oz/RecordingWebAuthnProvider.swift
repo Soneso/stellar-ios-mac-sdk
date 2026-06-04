@@ -39,7 +39,7 @@ final class RecordingWebAuthnProvider: WebAuthnProvider, @unchecked Sendable {
     /// Captures every `authenticate(challenge:allowCredentials:)` invocation.
     struct AuthenticateCall {
         let challenge: Data
-        let allowCredentials: [AllowCredential]?
+        let allowCredentials: [WebAuthnAllowCredential]?
     }
 
     private let stateQueue = DispatchQueue(label: "RecordingWebAuthnProvider.state")
@@ -113,7 +113,7 @@ final class RecordingWebAuthnProvider: WebAuthnProvider, @unchecked Sendable {
 
     func authenticate(
         challenge: Data,
-        allowCredentials: [AllowCredential]?
+        allowCredentials: [WebAuthnAllowCredential]?
     ) async throws -> WebAuthnAuthenticationResult {
         let outcome: Swift.Result<WebAuthnAuthenticationResult, Error>? = stateQueue.sync {
             _authenticateCalls.append(

@@ -1,5 +1,5 @@
 //
-//  AllowCredential.swift
+//  WebAuthnAllowCredential.swift
 //  stellarsdk
 //
 //  Copyright (c) 2026 Soneso. All rights reserved.
@@ -23,10 +23,10 @@ import Foundation
 ///
 /// Example:
 /// ```swift
-/// let cred = AllowCredential(id: credentialIdData, transports: ["internal", "hybrid"])
+/// let cred = WebAuthnAllowCredential(id: credentialIdData, transports: ["internal", "hybrid"])
 /// let result = try await provider.authenticate(challenge: challenge, allowCredentials: [cred])
 /// ```
-public struct AllowCredential: Equatable, Hashable, Sendable {
+public struct WebAuthnAllowCredential: Equatable, Hashable, Sendable {
 
     /// The raw credential ID bytes.
     public let id: Data
@@ -34,7 +34,7 @@ public struct AllowCredential: Equatable, Hashable, Sendable {
     /// Optional list of transport hints (e.g., `internal`, `hybrid`, `usb`, `ble`, `nfc`).
     public let transports: [String]?
 
-    /// Creates an `AllowCredential` with the given credential ID and optional transports.
+    /// Creates a `WebAuthnAllowCredential` with the given credential ID and optional transports.
     ///
     /// - Parameters:
     ///   - id: Raw credential ID bytes.
@@ -45,11 +45,11 @@ public struct AllowCredential: Equatable, Hashable, Sendable {
         self.transports = transports
     }
 
-    public static func fromId(_ id: Data) -> AllowCredential {
-        return AllowCredential(id: id)
+    public static func fromId(_ id: Data) -> WebAuthnAllowCredential {
+        return WebAuthnAllowCredential(id: id)
     }
 
-    public static func fromIds(_ ids: [Data]) -> [AllowCredential] {
+    public static func fromIds(_ ids: [Data]) -> [WebAuthnAllowCredential] {
         return ids.map { fromId($0) }
     }
 }

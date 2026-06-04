@@ -175,9 +175,9 @@ try await kit.policyManager.addWeightedThreshold(
     contextRuleId: 0,
     policyAddress: "CPOLICY9012...",
     signerWeights: [
-        SignerWeightEntry(signer: signerA, weight: 50),
-        SignerWeightEntry(signer: signerB, weight: 30),
-        SignerWeightEntry(signer: signerC, weight: 20)
+        OZSignerWeightEntry(signer: signerA, weight: 50),
+        OZSignerWeightEntry(signer: signerB, weight: 30),
+        OZSignerWeightEntry(signer: signerC, weight: 20)
     ],
     threshold: 80
 )
@@ -276,7 +276,7 @@ An indexer is an optional service that maps credential IDs to contract addresses
 
 Without an indexer, the SDK derives the contract address from the credential ID and the deployer's public key. This works when the deployer keypair is known (including the default deployer). But if a custom deployer was used and the client does not have the deployer keypair, it cannot derive the address.
 
-With an indexer, `connectWallet()` falls back to it when derivation under the configured deployer doesn't find an on-chain contract — typically because the passkey was added as a signer to an existing wallet rather than deploying its own. If the indexer reports the passkey on more than one contract, `connectWallet()` returns `ConnectWalletResult.ambiguous(credentialId:candidates:)` so the app can let the user pick.
+With an indexer, `connectWallet()` falls back to it when derivation under the configured deployer doesn't find an on-chain contract — typically because the passkey was added as a signer to an existing wallet rather than deploying its own. If the indexer reports the passkey on more than one contract, `connectWallet()` returns `OZConnectWalletResult.ambiguous(credentialId:candidates:)` so the app can let the user pick.
 
 SDK configuration:
 ```swift
@@ -341,10 +341,10 @@ App builds tx --> SDK simulates --> Passkey signs auth entry --> SDK assembles t
 
 ### Reconnecting
 
-1. On app relaunch, the app calls `connectWallet()` with default options. The SDK checks for a saved session in the `StorageAdapter` (a platform-specific interface for persisting credentials and session data, covered in the [SDK guide](README.md)).
-2. If a valid (non-expired) session exists, the wallet is silently reconnected. No biometric prompt is shown. The SDK loads the credential ID and contract ID from the session and returns `ConnectWalletResult.connected(...)` with `restoredFromSession: true`. Sessions last 7 days by default, configurable via `sessionExpiryMs` in `OZSmartAccountConfig`.
-3. If no session exists or it has expired, `connectWallet()` returns `nil`. The app can then show a "Connect" button and call `connectWallet(options: ConnectWalletOptions(prompt: true))` when the user taps it, which triggers a WebAuthn biometric prompt.
-4. After authentication, the SDK runs a storage → derivation → indexer cascade to resolve the contract address and verifies it exists on-chain. If the indexer reports the passkey on multiple contracts, the SDK returns `ConnectWalletResult.ambiguous(credentialId:candidates:)` so the app can let the user pick (see the [SDK guide](README.md#reconnecting-to-an-existing-wallet) for the picker pattern).
+1. On app relaunch, the app calls `connectWallet()` with default options. The SDK checks for a saved session in the `OZStorageAdapter` (a platform-specific interface for persisting credentials and session data, covered in the [SDK guide](README.md)).
+2. If a valid (non-expired) session exists, the wallet is silently reconnected. No biometric prompt is shown. The SDK loads the credential ID and contract ID from the session and returns `OZConnectWalletResult.connected(...)` with `restoredFromSession: true`. Sessions last 7 days by default, configurable via `sessionExpiryMs` in `OZSmartAccountConfig`.
+3. If no session exists or it has expired, `connectWallet()` returns `nil`. The app can then show a "Connect" button and call `connectWallet(options: OZConnectWalletOptions(prompt: true))` when the user taps it, which triggers a WebAuthn biometric prompt.
+4. After authentication, the SDK runs a storage → derivation → indexer cascade to resolve the contract address and verifies it exists on-chain. If the indexer reports the passkey on multiple contracts, the SDK returns `OZConnectWalletResult.ambiguous(credentialId:candidates:)` so the app can let the user pick (see the [SDK guide](README.md#reconnecting-to-an-existing-wallet) for the picker pattern).
 
 ---
 

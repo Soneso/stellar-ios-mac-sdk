@@ -1,5 +1,5 @@
 //
-//  UserDefaultsStorageAdapter.swift
+//  OZUserDefaultsStorageAdapter.swift
 //  stellarsdk
 //
 //  Copyright (c) 2026 Soneso. All rights reserved.
@@ -7,7 +7,7 @@
 
 import Foundation
 
-/// Persistent `StorageAdapter` backed by an isolated `UserDefaults` suite.
+/// Persistent `OZStorageAdapter` backed by an isolated `UserDefaults` suite.
 ///
 /// Stores credential and session payloads as UTF-8 JSON strings under stable
 /// keys:
@@ -21,14 +21,14 @@ import Foundation
 /// not interfere with one another. Stored credentials contain only public
 /// key material plus metadata, so `UserDefaults` provides adequate isolation
 /// for typical use cases. Applications requiring stronger at-rest protection
-/// should use `KeychainStorageAdapter` instead.
+/// should use `OZKeychainStorageAdapter` instead.
 ///
 /// Thread safety is provided by Swift Concurrency `actor` isolation, which
 /// serializes all operations against the underlying `UserDefaults` instance.
 ///
 /// Example:
 /// ```swift
-/// let storage = try UserDefaultsStorageAdapter()
+/// let storage = try OZUserDefaultsStorageAdapter()
 /// try await storage.save(credential: credential)
 /// let loaded = try await storage.get(credentialId: credential.credentialId)
 /// ```
@@ -39,8 +39,8 @@ import Foundation
 ///   contents are recoverable. The credentials persisted by this adapter
 ///   contain only public-key material and non-secret metadata; applications
 ///   storing session data or anything sensitive should use
-///   `KeychainStorageAdapter` instead.
-public final actor UserDefaultsStorageAdapter: StorageAdapter {
+///   `OZKeychainStorageAdapter` instead.
+public final actor OZUserDefaultsStorageAdapter: OZStorageAdapter {
 
     // ========================================================================
     // Companion Constants
@@ -64,18 +64,18 @@ public final actor UserDefaultsStorageAdapter: StorageAdapter {
     // Initialization
     // ========================================================================
 
-    /// Initializes a new `UserDefaultsStorageAdapter` scoped to `suiteName`.
+    /// Initializes a new `OZUserDefaultsStorageAdapter` scoped to `suiteName`.
     ///
     /// - Parameter suiteName: Name of the `UserDefaults` suite to use as the
     ///   backing store. Defaults to
-    ///   `UserDefaultsStorageAdapter.defaultSuiteName`.
-    /// - Throws: `StorageException.WriteFailed` when
+    ///   `OZUserDefaultsStorageAdapter.defaultSuiteName`.
+    /// - Throws: `SmartAccountStorageException.WriteFailed` when
     ///   `UserDefaults(suiteName:)` returns `nil`. This happens when the
     ///   supplied suite name is reserved (for example the empty string) or
     ///   otherwise rejected by the system.
-    public init(suiteName: String = UserDefaultsStorageAdapter.defaultSuiteName) throws {
+    public init(suiteName: String = OZUserDefaultsStorageAdapter.defaultSuiteName) throws {
         guard let defaults = UserDefaults(suiteName: suiteName) else {
-            throw StorageException.WriteFailed(
+            throw SmartAccountStorageException.WriteFailed(
                 message: "Failed to create UserDefaults with suite: \(suiteName)"
             )
         }
@@ -83,10 +83,10 @@ public final actor UserDefaultsStorageAdapter: StorageAdapter {
     }
 
     // ========================================================================
-    // StorageAdapter — Credential Operations
+    // OZStorageAdapter — Credential Operations
     // ========================================================================
 
-    public func save(credential: StoredCredential) async throws {
+    public func save(credential: OZStoredCredential) async throws {
         do {
             let serializable = credential.toSerializable()
             let jsonString = try encodeToString(serializable)
@@ -102,63 +102,63 @@ public final actor UserDefaultsStorageAdapter: StorageAdapter {
                 let updated = CredentialIndex(ids: index.ids + [credential.credentialId])
                 try writeIndex(updated)
             }
-        } catch let error as StorageException {
+        } catch let error as SmartAccountStorageException {
             throw error
         } catch {
-            throw StorageException.WriteFailed(
+            throw SmartAccountStorageException.WriteFailed(
                 message: "Storage write failed for key: \(credential.credentialId)",
                 cause: error
             )
         }
     }
 
-    public func get(credentialId: String) async throws -> StoredCredential? {
+    public func get(credentialId: String) async throws -> OZStoredCredential? {
         do {
             return try readCredential(credentialId)
-        } catch let error as StorageException {
+        } catch let error as SmartAccountStorageException {
             throw error
         } catch {
-            throw StorageException.ReadFailed(
+            throw SmartAccountStorageException.ReadFailed(
                 message: "Storage read failed for key: \(credentialId)",
                 cause: error
             )
         }
     }
 
-    public func getByContract(contractId: String) async throws -> [StoredCredential] {
+    public func getByContract(contractId: String) async throws -> [OZStoredCredential] {
         do {
             let index = try readIndex()
-            var matches: [StoredCredential] = []
+            var matches: [OZStoredCredential] = []
             for id in index.ids {
                 if let credential = try readCredential(id), credential.contractId == contractId {
                     matches.append(credential)
                 }
             }
             return matches
-        } catch let error as StorageException {
+        } catch let error as SmartAccountStorageException {
             throw error
         } catch {
-            throw StorageException.ReadFailed(
+            throw SmartAccountStorageException.ReadFailed(
                 message: "Storage read failed for contract: \(contractId)",
                 cause: error
             )
         }
     }
 
-    public func getAll() async throws -> [StoredCredential] {
+    public func getAll() async throws -> [OZStoredCredential] {
         do {
             let index = try readIndex()
-            var all: [StoredCredential] = []
+            var all: [OZStoredCredential] = []
             for id in index.ids {
                 if let credential = try readCredential(id) {
                     all.append(credential)
                 }
             }
             return all
-        } catch let error as StorageException {
+        } catch let error as SmartAccountStorageException {
             throw error
         } catch {
-            throw StorageException.ReadFailed(
+            throw SmartAccountStorageException.ReadFailed(
                 message: "Storage read failed for key: all credentials",
                 cause: error
             )
@@ -175,20 +175,20 @@ public final actor UserDefaultsStorageAdapter: StorageAdapter {
             let index = try readIndex()
             let updated = CredentialIndex(ids: index.ids.filter { $0 != credentialId })
             try writeIndex(updated)
-        } catch let error as StorageException {
+        } catch let error as SmartAccountStorageException {
             throw error
         } catch {
-            throw StorageException.WriteFailed(
+            throw SmartAccountStorageException.WriteFailed(
                 message: "Storage write failed for key: \(credentialId)",
                 cause: error
             )
         }
     }
 
-    public func update(credentialId: String, updates: StoredCredentialUpdate) async throws {
+    public func update(credentialId: String, updates: OZStoredCredentialUpdate) async throws {
         do {
             guard let existing = try readCredential(credentialId) else {
-                throw CredentialException.notFound(credentialId: credentialId)
+                throw SmartAccountCredentialException.notFound(credentialId: credentialId)
             }
             let updated = existing.applyUpdate(updates)
 
@@ -197,12 +197,12 @@ public final actor UserDefaultsStorageAdapter: StorageAdapter {
             let key = OZStorageKeys.credentialKeyPrefix + credentialId
 
             defaults.set(jsonString, forKey: key)
-        } catch let error as CredentialException {
+        } catch let error as SmartAccountCredentialException {
             throw error
-        } catch let error as StorageException {
+        } catch let error as SmartAccountStorageException {
             throw error
         } catch {
-            throw StorageException.WriteFailed(
+            throw SmartAccountStorageException.WriteFailed(
                 message: "Storage write failed for key: \(credentialId)",
                 cause: error
             )
@@ -217,10 +217,10 @@ public final actor UserDefaultsStorageAdapter: StorageAdapter {
             }
             defaults.removeObject(forKey: OZStorageKeys.credentialIndexKey)
             defaults.removeObject(forKey: OZStorageKeys.sessionKey)
-        } catch let error as StorageException {
+        } catch let error as SmartAccountStorageException {
             throw error
         } catch {
-            throw StorageException.WriteFailed(
+            throw SmartAccountStorageException.WriteFailed(
                 message: "Storage write failed for key: clear all",
                 cause: error
             )
@@ -228,25 +228,25 @@ public final actor UserDefaultsStorageAdapter: StorageAdapter {
     }
 
     // ========================================================================
-    // StorageAdapter — Session Operations
+    // OZStorageAdapter — Session Operations
     // ========================================================================
 
-    public func saveSession(_ session: StoredSession) async throws {
+    public func saveSession(_ session: OZStoredSession) async throws {
         do {
             let serializable = session.toSerializable()
             let jsonString = try encodeToString(serializable)
             defaults.set(jsonString, forKey: OZStorageKeys.sessionKey)
-        } catch let error as StorageException {
+        } catch let error as SmartAccountStorageException {
             throw error
         } catch {
-            throw StorageException.WriteFailed(
+            throw SmartAccountStorageException.WriteFailed(
                 message: "Storage write failed for key: session",
                 cause: error
             )
         }
     }
 
-    public func getSession() async throws -> StoredSession? {
+    public func getSession() async throws -> OZStoredSession? {
         do {
             guard let jsonString = defaults.string(forKey: OZStorageKeys.sessionKey) else {
                 return nil
@@ -263,10 +263,10 @@ public final actor UserDefaultsStorageAdapter: StorageAdapter {
                 return nil
             }
             return session
-        } catch let error as StorageException {
+        } catch let error as SmartAccountStorageException {
             throw error
         } catch {
-            throw StorageException.ReadFailed(
+            throw SmartAccountStorageException.ReadFailed(
                 message: "Storage read failed for key: session",
                 cause: error
             )
@@ -284,7 +284,7 @@ public final actor UserDefaultsStorageAdapter: StorageAdapter {
     /// Reads and decodes a single credential by ID. Returns `nil` when the
     /// underlying entry does not exist. Must be called from within the actor's
     /// serialized context.
-    private func readCredential(_ credentialId: String) throws -> StoredCredential? {
+    private func readCredential(_ credentialId: String) throws -> OZStoredCredential? {
         let key = OZStorageKeys.credentialKeyPrefix + credentialId
         guard let jsonString = defaults.string(forKey: key) else {
             return nil

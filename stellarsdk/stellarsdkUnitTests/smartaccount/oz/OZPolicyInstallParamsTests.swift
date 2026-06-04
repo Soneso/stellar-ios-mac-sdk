@@ -8,7 +8,7 @@
 import XCTest
 @testable import stellarsdk
 
-/// Unit tests for `PolicyInstallParams` validation logic, ScVal structure
+/// Unit tests for `OZPolicyInstallParams` validation logic, ScVal structure
 /// correctness, and the sealed-arm boundary cases.
 ///
 /// Coverage focuses on:
@@ -35,9 +35,9 @@ final class OZPolicyInstallParamsTests: XCTestCase {
 
     func test_simpleThreshold_zeroThreshold_exceptionMessage() throws {
         do {
-            _ = try PolicyInstallParams.simpleThreshold(threshold: 0).toScVal()
+            _ = try OZPolicyInstallParams.simpleThreshold(threshold: 0).toScVal()
             XCTFail("expected validation error")
-        } catch let error as ValidationException.InvalidInput {
+        } catch let error as SmartAccountValidationException.InvalidInput {
             XCTAssertTrue(
                 error.message.contains("Threshold must be greater than zero"),
                 "Error message must state that threshold must be greater than zero, got: \(error.message)"
@@ -47,9 +47,9 @@ final class OZPolicyInstallParamsTests: XCTestCase {
 
     func test_simpleThreshold_zeroThreshold_exceptionFieldName() throws {
         do {
-            _ = try PolicyInstallParams.simpleThreshold(threshold: 0).toScVal()
+            _ = try OZPolicyInstallParams.simpleThreshold(threshold: 0).toScVal()
             XCTFail("expected validation error")
-        } catch let error as ValidationException.InvalidInput {
+        } catch let error as SmartAccountValidationException.InvalidInput {
             XCTAssertTrue(
                 error.message.contains("threshold"),
                 "Error message must reference the 'threshold' field"
@@ -62,8 +62,8 @@ final class OZPolicyInstallParamsTests: XCTestCase {
     // ========================================================================
 
     func test_simpleThreshold_caseEquality_sameValue() throws {
-        let a = PolicyInstallParams.simpleThreshold(threshold: 5)
-        let b = PolicyInstallParams.simpleThreshold(threshold: 5)
+        let a = OZPolicyInstallParams.simpleThreshold(threshold: 5)
+        let b = OZPolicyInstallParams.simpleThreshold(threshold: 5)
         // Compare encoded ScVals — the sealed enum has no synthesized Equatable
         // because its `weightedThreshold` arm carries existential signers that
         // do not conform to `Equatable`. Encoded bytes are the cross-cutting
@@ -74,8 +74,8 @@ final class OZPolicyInstallParamsTests: XCTestCase {
     }
 
     func test_simpleThreshold_caseInequality_differentValue() throws {
-        let a = PolicyInstallParams.simpleThreshold(threshold: 5)
-        let b = PolicyInstallParams.simpleThreshold(threshold: 6)
+        let a = OZPolicyInstallParams.simpleThreshold(threshold: 5)
+        let b = OZPolicyInstallParams.simpleThreshold(threshold: 6)
         let encA = try Data(XDREncoder.encode(try a.toScVal()))
         let encB = try Data(XDREncoder.encode(try b.toScVal()))
         XCTAssertNotEqual(encA, encB)
@@ -84,8 +84,8 @@ final class OZPolicyInstallParamsTests: XCTestCase {
     /// Verifies the case captures the threshold value passed in — the
     /// associated value round-trips through pattern matching unchanged.
     func test_simpleThreshold_associatedValueRoundtrip() throws {
-        let original = PolicyInstallParams.simpleThreshold(threshold: 3)
-        let modified = PolicyInstallParams.simpleThreshold(threshold: 7)
+        let original = OZPolicyInstallParams.simpleThreshold(threshold: 3)
+        let modified = OZPolicyInstallParams.simpleThreshold(threshold: 7)
         guard case .simpleThreshold(let originalThreshold) = original else {
             return XCTFail("expected simpleThreshold case")
         }
@@ -102,14 +102,14 @@ final class OZPolicyInstallParamsTests: XCTestCase {
 
     func test_weightedThreshold_zeroThreshold_throws() throws {
         let signer = try OZDelegatedSigner(address: validAddr1)
-        let params = PolicyInstallParams.weightedThreshold(
-            signerWeights: [SignerWeightEntry(signer: signer, weight: 50)],
+        let params = OZPolicyInstallParams.weightedThreshold(
+            signerWeights: [OZSignerWeightEntry(signer: signer, weight: 50)],
             threshold: 0
         )
         do {
             _ = try params.toScVal()
             XCTFail("expected validation error")
-        } catch let error as ValidationException.InvalidInput {
+        } catch let error as SmartAccountValidationException.InvalidInput {
             XCTAssertTrue(
                 error.message.contains("Threshold must be greater than zero"),
                 "Zero threshold in WeightedThreshold must be rejected with clear message"
@@ -120,14 +120,14 @@ final class OZPolicyInstallParamsTests: XCTestCase {
     /// When both `threshold == 0` and `signerWeights` is empty, the threshold
     /// check runs first per the implementation order.
     func test_weightedThreshold_zeroThreshold_checkedBeforeEmptySigners() throws {
-        let params = PolicyInstallParams.weightedThreshold(
+        let params = OZPolicyInstallParams.weightedThreshold(
             signerWeights: [],
             threshold: 0
         )
         do {
             _ = try params.toScVal()
             XCTFail("expected validation error")
-        } catch let error as ValidationException.InvalidInput {
+        } catch let error as SmartAccountValidationException.InvalidInput {
             XCTAssertTrue(
                 error.message.contains("Threshold must be greater than zero"),
                 "Threshold validation must execute before signer weights validation"
@@ -141,8 +141,8 @@ final class OZPolicyInstallParamsTests: XCTestCase {
 
     func test_weightedThreshold_thresholdOfOne() throws {
         let signer = try OZDelegatedSigner(address: validAddr1)
-        let params = PolicyInstallParams.weightedThreshold(
-            signerWeights: [SignerWeightEntry(signer: signer, weight: 1)],
+        let params = OZPolicyInstallParams.weightedThreshold(
+            signerWeights: [OZSignerWeightEntry(signer: signer, weight: 1)],
             threshold: 1
         )
         let scVal = try params.toScVal()
@@ -157,8 +157,8 @@ final class OZPolicyInstallParamsTests: XCTestCase {
 
     func test_weightedThreshold_maxUInt32Threshold() throws {
         let signer = try OZDelegatedSigner(address: validAddr1)
-        let params = PolicyInstallParams.weightedThreshold(
-            signerWeights: [SignerWeightEntry(signer: signer, weight: UInt32.max)],
+        let params = OZPolicyInstallParams.weightedThreshold(
+            signerWeights: [OZSignerWeightEntry(signer: signer, weight: UInt32.max)],
             threshold: UInt32.max
         )
         let scVal = try params.toScVal()
@@ -186,14 +186,14 @@ final class OZPolicyInstallParamsTests: XCTestCase {
             try OZExternalSigner(verifierAddress: validVerifier2, keyData: Data([0x04, 0x05, 0x06]))
         ]
         // Reverse-order insertion to verify the sort actually runs.
-        let weights: [SignerWeightEntry] = [
-            SignerWeightEntry(signer: signers[4], weight: 10),
-            SignerWeightEntry(signer: signers[2], weight: 20),
-            SignerWeightEntry(signer: signers[0], weight: 30),
-            SignerWeightEntry(signer: signers[3], weight: 25),
-            SignerWeightEntry(signer: signers[1], weight: 15)
+        let weights: [OZSignerWeightEntry] = [
+            OZSignerWeightEntry(signer: signers[4], weight: 10),
+            OZSignerWeightEntry(signer: signers[2], weight: 20),
+            OZSignerWeightEntry(signer: signers[0], weight: 30),
+            OZSignerWeightEntry(signer: signers[3], weight: 25),
+            OZSignerWeightEntry(signer: signers[1], weight: 15)
         ]
-        let params = PolicyInstallParams.weightedThreshold(signerWeights: weights, threshold: 100)
+        let params = OZPolicyInstallParams.weightedThreshold(signerWeights: weights, threshold: 100)
         let scVal = try params.toScVal()
 
         let outerEntries = try extractMapEntries(scVal)
@@ -221,8 +221,8 @@ final class OZPolicyInstallParamsTests: XCTestCase {
 
     func test_weightedThreshold_singleSigner_weightEqualsThreshold() throws {
         let signer = try OZDelegatedSigner(address: validAddr1)
-        let params = PolicyInstallParams.weightedThreshold(
-            signerWeights: [SignerWeightEntry(signer: signer, weight: 100)],
+        let params = OZPolicyInstallParams.weightedThreshold(
+            signerWeights: [OZSignerWeightEntry(signer: signer, weight: 100)],
             threshold: 100
         )
         let scVal = try params.toScVal()
@@ -240,14 +240,14 @@ final class OZPolicyInstallParamsTests: XCTestCase {
     // ========================================================================
 
     func test_weightedThreshold_emptySigners_exceptionMessage() throws {
-        let params = PolicyInstallParams.weightedThreshold(
+        let params = OZPolicyInstallParams.weightedThreshold(
             signerWeights: [],
             threshold: 10
         )
         do {
             _ = try params.toScVal()
             XCTFail("expected validation error")
-        } catch let error as ValidationException.InvalidInput {
+        } catch let error as SmartAccountValidationException.InvalidInput {
             XCTAssertTrue(
                 error.message.contains("at least one signer with weight"),
                 "Error message must mention requirement for at least one signer"
@@ -263,7 +263,7 @@ final class OZPolicyInstallParamsTests: XCTestCase {
     func test_spendingLimit_valueExceedingInt64MaxValue() throws {
         // Int64.max = 9_223_372_036_854_775_807; +1 = 9_223_372_036_854_775_808.
         let beyond = "9223372036854775808"
-        let params = PolicyInstallParams.spendingLimit(
+        let params = OZPolicyInstallParams.spendingLimit(
             spendingLimit: beyond,
             periodLedgers: 17_280
         )
@@ -281,7 +281,7 @@ final class OZPolicyInstallParamsTests: XCTestCase {
     /// `2^64` must set `hi=1`, `lo=0`.
     func test_spendingLimit_veryLargeValueRequiringHiBits() throws {
         let beyondULong = "18446744073709551616" // 2^64
-        let params = PolicyInstallParams.spendingLimit(
+        let params = OZPolicyInstallParams.spendingLimit(
             spendingLimit: beyondULong,
             periodLedgers: 720
         )
@@ -299,7 +299,7 @@ final class OZPolicyInstallParamsTests: XCTestCase {
     /// Maximum positive I128 = `2^127 - 1`.
     func test_spendingLimit_i128MaxPositiveValue() throws {
         let i128Max = "170141183460469231731687303715884105727"
-        let params = PolicyInstallParams.spendingLimit(
+        let params = OZPolicyInstallParams.spendingLimit(
             spendingLimit: i128Max,
             periodLedgers: 1
         )
@@ -319,14 +319,14 @@ final class OZPolicyInstallParamsTests: XCTestCase {
     // ========================================================================
 
     func test_spendingLimit_zeroLimit_exceptionMessage() throws {
-        let params = PolicyInstallParams.spendingLimit(
+        let params = OZPolicyInstallParams.spendingLimit(
             spendingLimit: "0",
             periodLedgers: 17_280
         )
         do {
             _ = try params.toScVal()
             XCTFail("expected validation error")
-        } catch let error as ValidationException.InvalidInput {
+        } catch let error as SmartAccountValidationException.InvalidInput {
             XCTAssertTrue(
                 error.message.contains("Spending limit must be greater than zero"),
                 "Error message must state spending limit requirement"
@@ -335,14 +335,14 @@ final class OZPolicyInstallParamsTests: XCTestCase {
     }
 
     func test_spendingLimit_zeroPeriod_exceptionMessage() throws {
-        let params = PolicyInstallParams.spendingLimit(
+        let params = OZPolicyInstallParams.spendingLimit(
             spendingLimit: "10000000",
             periodLedgers: 0
         )
         do {
             _ = try params.toScVal()
             XCTFail("expected validation error")
-        } catch let error as ValidationException.InvalidInput {
+        } catch let error as SmartAccountValidationException.InvalidInput {
             XCTAssertTrue(
                 error.message.contains("Period ledgers must be greater than zero"),
                 "Error message must state period ledgers requirement"
@@ -351,14 +351,14 @@ final class OZPolicyInstallParamsTests: XCTestCase {
     }
 
     func test_spendingLimit_negativeLimit_exceptionMessageIncludesValue() throws {
-        let params = PolicyInstallParams.spendingLimit(
+        let params = OZPolicyInstallParams.spendingLimit(
             spendingLimit: "-500",
             periodLedgers: 17_280
         )
         do {
             _ = try params.toScVal()
             XCTFail("expected validation error")
-        } catch let error as ValidationException.InvalidInput {
+        } catch let error as SmartAccountValidationException.InvalidInput {
             XCTAssertTrue(
                 error.message.contains("-500"),
                 "Error message must include the invalid value"
@@ -371,7 +371,7 @@ final class OZPolicyInstallParamsTests: XCTestCase {
     // ========================================================================
 
     func test_spendingLimit_singleLedgerPeriod_minimumValues() throws {
-        let params = PolicyInstallParams.spendingLimit(
+        let params = OZPolicyInstallParams.spendingLimit(
             spendingLimit: "1",
             periodLedgers: 1
         )
@@ -396,24 +396,24 @@ final class OZPolicyInstallParamsTests: XCTestCase {
     // ========================================================================
 
     func test_spendingLimit_caseEquality_sameValue() throws {
-        let a = PolicyInstallParams.spendingLimit(spendingLimit: "1000000", periodLedgers: 720)
-        let b = PolicyInstallParams.spendingLimit(spendingLimit: "1000000", periodLedgers: 720)
+        let a = OZPolicyInstallParams.spendingLimit(spendingLimit: "1000000", periodLedgers: 720)
+        let b = OZPolicyInstallParams.spendingLimit(spendingLimit: "1000000", periodLedgers: 720)
         let encA = try Data(XDREncoder.encode(try a.toScVal()))
         let encB = try Data(XDREncoder.encode(try b.toScVal()))
         XCTAssertEqual(encA, encB)
     }
 
     func test_spendingLimit_caseInequality_differentLimit() throws {
-        let a = PolicyInstallParams.spendingLimit(spendingLimit: "1000000", periodLedgers: 720)
-        let b = PolicyInstallParams.spendingLimit(spendingLimit: "2000000", periodLedgers: 720)
+        let a = OZPolicyInstallParams.spendingLimit(spendingLimit: "1000000", periodLedgers: 720)
+        let b = OZPolicyInstallParams.spendingLimit(spendingLimit: "2000000", periodLedgers: 720)
         let encA = try Data(XDREncoder.encode(try a.toScVal()))
         let encB = try Data(XDREncoder.encode(try b.toScVal()))
         XCTAssertNotEqual(encA, encB)
     }
 
     func test_spendingLimit_caseInequality_differentPeriod() throws {
-        let a = PolicyInstallParams.spendingLimit(spendingLimit: "1000000", periodLedgers: 720)
-        let b = PolicyInstallParams.spendingLimit(spendingLimit: "1000000", periodLedgers: 1440)
+        let a = OZPolicyInstallParams.spendingLimit(spendingLimit: "1000000", periodLedgers: 720)
+        let b = OZPolicyInstallParams.spendingLimit(spendingLimit: "1000000", periodLedgers: 1440)
         let encA = try Data(XDREncoder.encode(try a.toScVal()))
         let encB = try Data(XDREncoder.encode(try b.toScVal()))
         XCTAssertNotEqual(encA, encB)
@@ -512,13 +512,13 @@ final class OZPolicyInstallParamsTests: XCTestCase {
     /// exhaustive (compile-time check). Three concrete bindings demonstrate
     /// the polymorphic type can carry any arm.
     func test_policyInstallParams_isSealed() throws {
-        let simple: PolicyInstallParams = .simpleThreshold(threshold: 1)
+        let simple: OZPolicyInstallParams = .simpleThreshold(threshold: 1)
         let signer = try OZDelegatedSigner(address: validAddr1)
-        let weighted: PolicyInstallParams = .weightedThreshold(
-            signerWeights: [SignerWeightEntry(signer: signer, weight: 1)],
+        let weighted: OZPolicyInstallParams = .weightedThreshold(
+            signerWeights: [OZSignerWeightEntry(signer: signer, weight: 1)],
             threshold: 1
         )
-        let spending: PolicyInstallParams = .spendingLimit(
+        let spending: OZPolicyInstallParams = .spendingLimit(
             spendingLimit: "1",
             periodLedgers: 1
         )
@@ -528,11 +528,11 @@ final class OZPolicyInstallParamsTests: XCTestCase {
         if case .spendingLimit = spending { } else { XCTFail("spending should be spendingLimit arm") }
     }
 
-    /// Verifies a `switch` over `PolicyInstallParams` is exhaustive — Swift
+    /// Verifies a `switch` over `OZPolicyInstallParams` is exhaustive — Swift
     /// would emit a compile error if a new arm were added without updating
     /// this test, locking the case set in place.
     func test_policyInstallParams_switch_exhaustive() throws {
-        let params: PolicyInstallParams = .simpleThreshold(threshold: 2)
+        let params: OZPolicyInstallParams = .simpleThreshold(threshold: 2)
         let typeName: String
         switch params {
         case .simpleThreshold: typeName = "simple"
@@ -567,14 +567,14 @@ final class OZPolicyInstallParamsTests: XCTestCase {
     /// A spending limit of "00" (multiple zeros) must also be rejected —
     /// exercises the `return true` branch in `isAllZeroDigits`.
     func test_spendingLimit_multipleZeros_throwsValidationException() throws {
-        let params = PolicyInstallParams.spendingLimit(
+        let params = OZPolicyInstallParams.spendingLimit(
             spendingLimit: "00",
             periodLedgers: 100
         )
         do {
             _ = try params.toScVal()
-            XCTFail("expected ValidationException for all-zero spending limit")
-        } catch let error as ValidationException.InvalidInput {
+            XCTFail("expected SmartAccountValidationException for all-zero spending limit")
+        } catch let error as SmartAccountValidationException.InvalidInput {
             XCTAssertTrue(
                 error.message.contains("greater than zero"),
                 "Error must mention the zero constraint"

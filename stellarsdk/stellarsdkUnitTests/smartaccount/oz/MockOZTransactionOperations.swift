@@ -38,7 +38,7 @@ final class MockOZTransactionOperations: @unchecked Sendable {
         let auth: [SorobanAuthorizationEntryXDR]
 
         /// Submission-method override, if any.
-        let forceMethod: SubmissionMethod?
+        let forceMethod: OZSubmissionMethod?
 
         /// Whether a custom `resolveContextRuleIds` callback was supplied.
         let resolveContextRuleIdsProvided: Bool
@@ -49,7 +49,7 @@ final class MockOZTransactionOperations: @unchecked Sendable {
         let tokenContract: String
         let recipient: String
         let amount: String
-        let forceMethod: SubmissionMethod?
+        let forceMethod: OZSubmissionMethod?
     }
 
     /// A single captured `contractCall` invocation.
@@ -57,7 +57,7 @@ final class MockOZTransactionOperations: @unchecked Sendable {
         let target: String
         let targetFn: String
         let targetArgs: [SCValXDR]
-        let forceMethod: SubmissionMethod?
+        let forceMethod: OZSubmissionMethod?
         let resolveContextRuleIdsProvided: Bool
     }
 
@@ -66,14 +66,14 @@ final class MockOZTransactionOperations: @unchecked Sendable {
         let target: String
         let targetFn: String
         let targetArgs: [SCValXDR]
-        let forceMethod: SubmissionMethod?
+        let forceMethod: OZSubmissionMethod?
         let resolveContextRuleIdsProvided: Bool
     }
 
     /// A single captured `fundWallet` invocation.
     struct FundWalletCall {
         let nativeTokenContract: String
-        let forceMethod: SubmissionMethod?
+        let forceMethod: OZSubmissionMethod?
     }
 
     /// A single captured `simulateAndExtractResult` invocation.
@@ -124,16 +124,16 @@ final class MockOZTransactionOperations: @unchecked Sendable {
 
     // MARK: - Canned results
 
-    /// Canned ``TransactionResult`` returned from every `submit`-family call
+    /// Canned ``OZTransactionResult`` returned from every `submit`-family call
     /// when no per-test override is configured. Defaults to a deterministic
     /// success.
-    var defaultResult = TransactionResult(success: true, hash: "deadbeef")
+    var defaultResult = OZTransactionResult(success: true, hash: "deadbeef")
 
     /// Optional per-call result queue. When non-empty, each `submit`-family
     /// invocation pops the head of this queue instead of returning
     /// ``defaultResult``. Tests use this to script multiple sequential
     /// outcomes.
-    var queuedResults: [TransactionResult] = []
+    var queuedResults: [OZTransactionResult] = []
 
     /// Canned amount string returned from `fundWallet`.
     var fundWalletResult: String = "0"
@@ -157,16 +157,16 @@ final class MockOZTransactionOperations: @unchecked Sendable {
     func submit(
         hostFunction: HostFunctionXDR,
         auth: [SorobanAuthorizationEntryXDR],
-        forceMethod: SubmissionMethod? = nil,
-        resolveContextRuleIds: ResolveContextRuleIds? = nil
-    ) async throws -> TransactionResult {
+        forceMethod: OZSubmissionMethod? = nil,
+        resolveContextRuleIds: OZResolveContextRuleIds? = nil
+    ) async throws -> OZTransactionResult {
         let call = SubmitCall(
             hostFunction: hostFunction,
             auth: auth,
             forceMethod: forceMethod,
             resolveContextRuleIdsProvided: resolveContextRuleIds != nil
         )
-        return try queue.sync { () -> TransactionResult in
+        return try queue.sync { () -> OZTransactionResult in
             _submitCalls.append(call)
             if let error = throwOnSubmit { throw error }
             if !queuedResults.isEmpty {
@@ -181,15 +181,15 @@ final class MockOZTransactionOperations: @unchecked Sendable {
         tokenContract: String,
         recipient: String,
         amount: String,
-        forceMethod: SubmissionMethod? = nil
-    ) async throws -> TransactionResult {
+        forceMethod: OZSubmissionMethod? = nil
+    ) async throws -> OZTransactionResult {
         let call = TransferCall(
             tokenContract: tokenContract,
             recipient: recipient,
             amount: amount,
             forceMethod: forceMethod
         )
-        return try queue.sync { () -> TransactionResult in
+        return try queue.sync { () -> OZTransactionResult in
             _transferCalls.append(call)
             if let error = throwOnSubmit { throw error }
             if !queuedResults.isEmpty {
@@ -204,9 +204,9 @@ final class MockOZTransactionOperations: @unchecked Sendable {
         target: String,
         targetFn: String,
         targetArgs: [SCValXDR] = [],
-        forceMethod: SubmissionMethod? = nil,
-        resolveContextRuleIds: ResolveContextRuleIds? = nil
-    ) async throws -> TransactionResult {
+        forceMethod: OZSubmissionMethod? = nil,
+        resolveContextRuleIds: OZResolveContextRuleIds? = nil
+    ) async throws -> OZTransactionResult {
         let call = ContractCallCall(
             target: target,
             targetFn: targetFn,
@@ -214,7 +214,7 @@ final class MockOZTransactionOperations: @unchecked Sendable {
             forceMethod: forceMethod,
             resolveContextRuleIdsProvided: resolveContextRuleIds != nil
         )
-        return try queue.sync { () -> TransactionResult in
+        return try queue.sync { () -> OZTransactionResult in
             _contractCallCalls.append(call)
             if let error = throwOnSubmit { throw error }
             if !queuedResults.isEmpty {
@@ -229,9 +229,9 @@ final class MockOZTransactionOperations: @unchecked Sendable {
         target: String,
         targetFn: String,
         targetArgs: [SCValXDR] = [],
-        forceMethod: SubmissionMethod? = nil,
-        resolveContextRuleIds: ResolveContextRuleIds? = nil
-    ) async throws -> TransactionResult {
+        forceMethod: OZSubmissionMethod? = nil,
+        resolveContextRuleIds: OZResolveContextRuleIds? = nil
+    ) async throws -> OZTransactionResult {
         let call = ExecuteAndSubmitCall(
             target: target,
             targetFn: targetFn,
@@ -239,7 +239,7 @@ final class MockOZTransactionOperations: @unchecked Sendable {
             forceMethod: forceMethod,
             resolveContextRuleIdsProvided: resolveContextRuleIds != nil
         )
-        return try queue.sync { () -> TransactionResult in
+        return try queue.sync { () -> OZTransactionResult in
             _executeAndSubmitCalls.append(call)
             if let error = throwOnSubmit { throw error }
             if !queuedResults.isEmpty {
@@ -252,7 +252,7 @@ final class MockOZTransactionOperations: @unchecked Sendable {
     /// Mock counterpart to ``OZTransactionOperations/fundWallet(nativeTokenContract:forceMethod:)``.
     func fundWallet(
         nativeTokenContract: String,
-        forceMethod: SubmissionMethod? = nil
+        forceMethod: OZSubmissionMethod? = nil
     ) async throws -> String {
         let call = FundWalletCall(
             nativeTokenContract: nativeTokenContract,

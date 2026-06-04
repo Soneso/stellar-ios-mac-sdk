@@ -72,10 +72,10 @@ final class OZTransactionOperationsPipelineTests: XCTestCase {
     /// adapter so the signing path's storage hit short-circuits the on-chain
     /// context-rule walk.
     private func injectStoredCredential(
-        storage: InMemoryStorageAdapter,
+        storage: OZInMemoryStorageAdapter,
         contractId: String? = nil
     ) async throws {
-        let stored = StoredCredential(
+        let stored = OZStoredCredential(
             credentialId: credentialIdB64Url,
             publicKey: validPublicKey(),
             contractId: contractId ?? contractA
@@ -97,7 +97,7 @@ final class OZTransactionOperationsPipelineTests: XCTestCase {
     ///     response can be keyed on the same accountId
     ///   - a connected state pointing at `contractA` with the seeded
     ///     credential id
-    ///   - a stored credential in `InMemoryStorageAdapter` so the signing
+    ///   - a stored credential in `OZInMemoryStorageAdapter` so the signing
     ///     path can resolve the public key without on-chain lookup
     private struct PipelineHarness {
         let kit: MockOZSmartAccountKit
@@ -111,7 +111,7 @@ final class OZTransactionOperationsPipelineTests: XCTestCase {
     ) async throws -> PipelineHarness {
         let provider = RecordingWebAuthnProvider()
         let deployer = try deterministicDeployer()
-        let storage = InMemoryStorageAdapter()
+        let storage = OZInMemoryStorageAdapter()
         let config = try OZSmartAccountConfig(
             rpcUrl: "https://mock-rpc.invalid/rpc",
             networkPassphrase: Network.testnet.passphrase,
@@ -452,8 +452,8 @@ final class OZTransactionOperationsPipelineTests: XCTestCase {
         )
         do {
             _ = try await h.txOps.submit(hostFunction: hostFn, auth: [])
-            XCTFail("expected TransactionException.SimulationFailed")
-        } catch let e as TransactionException.SimulationFailed {
+            XCTFail("expected SmartAccountTransactionException.SimulationFailed")
+        } catch let e as SmartAccountTransactionException.SimulationFailed {
             XCTAssertTrue(e.message.contains("Re-simulation error"),
                           "expected re-simulation prefix, got: \(e.message)")
         }
@@ -473,8 +473,8 @@ final class OZTransactionOperationsPipelineTests: XCTestCase {
         )
         do {
             _ = try await h.txOps.submit(hostFunction: hostFn, auth: [])
-            XCTFail("expected TransactionException.SimulationFailed")
-        } catch let e as TransactionException.SimulationFailed {
+            XCTFail("expected SmartAccountTransactionException.SimulationFailed")
+        } catch let e as SmartAccountTransactionException.SimulationFailed {
             XCTAssertTrue(e.message.contains("Simulation error"),
                           "got: \(e.message)")
             XCTAssertTrue(e.message.contains("contract not found"),
@@ -490,8 +490,8 @@ final class OZTransactionOperationsPipelineTests: XCTestCase {
 
     func test_connectWallet_storageHit_pendingCredential_setsContractId() async throws {
         let provider = RecordingWebAuthnProvider()
-        let storage = InMemoryStorageAdapter()
-        let stored = StoredCredential(
+        let storage = OZInMemoryStorageAdapter()
+        let stored = OZStoredCredential(
             credentialId: credentialIdB64Url,
             publicKey: validPublicKey(),
             contractId: contractA
@@ -516,7 +516,7 @@ final class OZTransactionOperationsPipelineTests: XCTestCase {
 
         let walletOps = OZWalletOperations(kit: kit)
         let result = try await walletOps.connectWallet(
-            options: ConnectWalletOptions(credentialId: credentialIdB64Url)
+            options: OZConnectWalletOptions(credentialId: credentialIdB64Url)
         )
         guard let result = result, case .connected(_, let contractId, _) = result else {
             XCTFail("expected .connected result, got \(String(describing: result))")
@@ -555,7 +555,7 @@ final class OZTransactionOperationsPipelineTests: XCTestCase {
 
         let walletOps = OZWalletOperations(kit: kit)
         let result = try await walletOps.connectWallet(
-            options: ConnectWalletOptions(credentialId: credentialIdB64Url)
+            options: OZConnectWalletOptions(credentialId: credentialIdB64Url)
         )
         guard let result = result, case .connected(_, let contractId, _) = result else {
             XCTFail("expected .connected result, got \(String(describing: result))")
@@ -599,8 +599,8 @@ final class OZTransactionOperationsPipelineTests: XCTestCase {
         // hit must still resolve, and the kit's connected-state credential id
         // must be the unpadded canonical form, not the padded caller input.
         let provider = RecordingWebAuthnProvider()
-        let storage = InMemoryStorageAdapter()
-        let stored = StoredCredential(
+        let storage = OZInMemoryStorageAdapter()
+        let stored = OZStoredCredential(
             credentialId: credentialIdB64Url,
             publicKey: validPublicKey(),
             contractId: contractA
@@ -623,7 +623,7 @@ final class OZTransactionOperationsPipelineTests: XCTestCase {
         let paddedCredentialId = credentialIdB64Url + "=="
         let walletOps = OZWalletOperations(kit: kit)
         let result = try await walletOps.connectWallet(
-            options: ConnectWalletOptions(credentialId: paddedCredentialId)
+            options: OZConnectWalletOptions(credentialId: paddedCredentialId)
         )
         guard let result = result, case .connected(let credId, let contractId, _) = result else {
             XCTFail("expected .connected result, got \(String(describing: result))")
@@ -633,7 +633,7 @@ final class OZTransactionOperationsPipelineTests: XCTestCase {
         XCTAssertEqual(
             credId,
             credentialIdB64Url,
-            "ConnectWalletResult must carry the canonical unpadded credential id"
+            "OZConnectWalletResult must carry the canonical unpadded credential id"
         )
         XCTAssertEqual(
             kit.currentConnectedState?.credentialId,
@@ -653,7 +653,7 @@ final class OZTransactionOperationsPipelineTests: XCTestCase {
         // credential up under the unpadded key and propagate the unpadded
         // form into the kit's connected state.
         let provider = RecordingWebAuthnProvider()
-        let storage = InMemoryStorageAdapter()
+        let storage = OZInMemoryStorageAdapter()
         let deployer = try deterministicDeployer()
         let publicKey = validPublicKey()
         let credentialIdBytes = try Data(base64URLEncoded: credentialIdB64Url)
@@ -662,7 +662,7 @@ final class OZTransactionOperationsPipelineTests: XCTestCase {
             deployerPublicKey: deployer.accountId,
             networkPassphrase: Network.testnet.passphrase
         )
-        let stored = StoredCredential(
+        let stored = OZStoredCredential(
             credentialId: credentialIdB64Url,
             publicKey: publicKey,
             contractId: derivedContractId
@@ -844,8 +844,8 @@ final class OZTransactionOperationsPipelineTests: XCTestCase {
 
         do {
             _ = try await h.txOps.fundWallet(nativeTokenContract: contractA)
-            XCTFail("expected TransactionException.SubmissionFailed")
-        } catch is TransactionException.SubmissionFailed {
+            XCTFail("expected SmartAccountTransactionException.SubmissionFailed")
+        } catch is SmartAccountTransactionException.SubmissionFailed {
             // expected: balance below reserve
         }
     }
@@ -854,11 +854,11 @@ final class OZTransactionOperationsPipelineTests: XCTestCase {
         let h = try await buildPipelineHarness()
         installCustomURLHandler(script: script, friendbotSucceeds: false)
 
-        // Friendbot returns 500 → TransactionException.SubmissionFailed.
+        // Friendbot returns 500 → SmartAccountTransactionException.SubmissionFailed.
         do {
             _ = try await h.txOps.fundWallet(nativeTokenContract: contractA)
-            XCTFail("expected TransactionException.SubmissionFailed")
-        } catch is TransactionException.SubmissionFailed {
+            XCTFail("expected SmartAccountTransactionException.SubmissionFailed")
+        } catch is SmartAccountTransactionException.SubmissionFailed {
             // expected
         }
     }
@@ -1054,7 +1054,7 @@ final class OZTransactionOperationsPipelineTests: XCTestCase {
     func test_submit_rpcTimeout_throwsTransactionTimeout() async throws {
         // iOS surfaces URLSession timeouts as `requestFailed(message:)` from
         // `SorobanRpcRequestError`, which the pipeline lifts into
-        // `TransactionException.SimulationFailed`.
+        // `SmartAccountTransactionException.SimulationFailed`.
         let h = try await buildPipelineHarness()
         enqueueDeployerAccount(deployer: h.deployer)
 
@@ -1082,8 +1082,8 @@ final class OZTransactionOperationsPipelineTests: XCTestCase {
         )
         do {
             _ = try await h.txOps.submit(hostFunction: hostFn, auth: [])
-            XCTFail("expected TransactionException.SimulationFailed")
-        } catch let e as TransactionException.SimulationFailed {
+            XCTFail("expected SmartAccountTransactionException.SimulationFailed")
+        } catch let e as SmartAccountTransactionException.SimulationFailed {
             let msg = e.message.lowercased()
             XCTAssertTrue(msg.contains("timed out") || msg.contains("timeout"),
                           "expected timeout-flavoured message, got: \(e.message)")
@@ -1168,8 +1168,8 @@ final class OZTransactionOperationsPipelineTests: XCTestCase {
 
         do {
             _ = try await h.txOps.fundWallet(nativeTokenContract: contractA)
-            XCTFail("expected TransactionException.SubmissionFailed")
-        } catch is TransactionException.SubmissionFailed {
+            XCTFail("expected SmartAccountTransactionException.SubmissionFailed")
+        } catch is SmartAccountTransactionException.SubmissionFailed {
             // expected
         }
     }
@@ -1188,8 +1188,8 @@ final class OZTransactionOperationsPipelineTests: XCTestCase {
         )
         do {
             _ = try await h.txOps.submit(hostFunction: hostFn, auth: [])
-            XCTFail("expected TransactionException.SimulationFailed")
-        } catch let e as TransactionException.SimulationFailed {
+            XCTFail("expected SmartAccountTransactionException.SimulationFailed")
+        } catch let e as SmartAccountTransactionException.SimulationFailed {
             XCTAssertTrue(e.message.contains("Simulation error"),
                           "got: \(e.message)")
             XCTAssertTrue(e.message.contains("wasm hash mismatch"),
@@ -1200,7 +1200,7 @@ final class OZTransactionOperationsPipelineTests: XCTestCase {
     func test_connectWallet_indexerMalformedJson_propagatesIndexerException() async throws {
         let provider = RecordingWebAuthnProvider()
         // Indexer returns malformed JSON; OZIndexerClient surfaces an
-        // IndexerException which `connectWallet` propagates.
+        // SmartAccountIndexerException which `connectWallet` propagates.
         let indexerSession = makeMockedURLSession()
         let indexer = try OZIndexerClient(
             indexerUrl: "https://indexer.test",
@@ -1233,10 +1233,10 @@ final class OZTransactionOperationsPipelineTests: XCTestCase {
         let walletOps = OZWalletOperations(kit: kit)
         do {
             _ = try await walletOps.connectWallet(
-                options: ConnectWalletOptions(credentialId: credentialIdB64Url)
+                options: OZConnectWalletOptions(credentialId: credentialIdB64Url)
             )
-            XCTFail("expected IndexerException")
-        } catch is IndexerException {
+            XCTFail("expected SmartAccountIndexerException")
+        } catch is SmartAccountIndexerException {
             // expected
         }
     }
@@ -1244,9 +1244,9 @@ final class OZTransactionOperationsPipelineTests: XCTestCase {
     func test_submit_credentialDecodeFailure_throwsCredentialException() async throws {
         // Connect with a malformed (non-base64url) credential id; the
         // signing path's `Data(base64URLEncoded:)` decode raises
-        // CredentialException.Invalid.
+        // SmartAccountCredentialException.Invalid.
         let provider = RecordingWebAuthnProvider()
-        let storage = InMemoryStorageAdapter()
+        let storage = OZInMemoryStorageAdapter()
         let config = try OZSmartAccountConfig(
             rpcUrl: "https://mock-rpc.invalid/rpc",
             networkPassphrase: Network.testnet.passphrase,
@@ -1283,8 +1283,8 @@ final class OZTransactionOperationsPipelineTests: XCTestCase {
         let txOps = OZTransactionOperations(kit: kit)
         do {
             _ = try await txOps.submit(hostFunction: hostFn, auth: [])
-            XCTFail("expected CredentialException")
-        } catch is CredentialException.Invalid {
+            XCTFail("expected SmartAccountCredentialException")
+        } catch is SmartAccountCredentialException.Invalid {
             // expected
         }
     }
@@ -1300,7 +1300,7 @@ final class OZTransactionOperationsPipelineTests: XCTestCase {
         // registration ceremony) lets the test inspect the assembled deploy
         // transaction directly.
         let provider = RecordingWebAuthnProvider()
-        let storage = InMemoryStorageAdapter()
+        let storage = OZInMemoryStorageAdapter()
         let deployer = try deterministicDeployer()
         let publicKey = validPublicKey()
 
@@ -1312,7 +1312,7 @@ final class OZTransactionOperationsPipelineTests: XCTestCase {
             deployerPublicKey: deployer.accountId,
             networkPassphrase: Network.testnet.passphrase
         )
-        let stored = StoredCredential(
+        let stored = OZStoredCredential(
             credentialId: credentialIdB64Url,
             publicKey: publicKey,
             contractId: derivedContractId
@@ -1377,7 +1377,7 @@ final class OZTransactionOperationsPipelineTests: XCTestCase {
         // The deploy envelope's signature must verify against the
         // configured deployer's public key.
         let provider = RecordingWebAuthnProvider()
-        let storage = InMemoryStorageAdapter()
+        let storage = OZInMemoryStorageAdapter()
         let deployer = try deterministicDeployer()
         let publicKey = validPublicKey()
         let credentialIdBytes = try Data(base64URLEncoded: credentialIdB64Url)
@@ -1386,7 +1386,7 @@ final class OZTransactionOperationsPipelineTests: XCTestCase {
             deployerPublicKey: deployer.accountId,
             networkPassphrase: Network.testnet.passphrase
         )
-        let stored = StoredCredential(
+        let stored = OZStoredCredential(
             credentialId: credentialIdB64Url,
             publicKey: publicKey,
             contractId: derivedContractId
@@ -1432,7 +1432,7 @@ final class OZTransactionOperationsPipelineTests: XCTestCase {
         // autoSubmit=false must not call sendTransaction; the autoSubmit=true
         // call is verified via deployPendingCredential below.
         let provider = RecordingWebAuthnProvider()
-        let storage = InMemoryStorageAdapter()
+        let storage = OZInMemoryStorageAdapter()
         let deployer = try deterministicDeployer()
         let publicKey = validPublicKey()
         let credentialIdBytes = try Data(base64URLEncoded: credentialIdB64Url)
@@ -1441,7 +1441,7 @@ final class OZTransactionOperationsPipelineTests: XCTestCase {
             deployerPublicKey: deployer.accountId,
             networkPassphrase: Network.testnet.passphrase
         )
-        let stored = StoredCredential(
+        let stored = OZStoredCredential(
             credentialId: credentialIdB64Url,
             publicKey: publicKey,
             contractId: derivedContractId
@@ -1479,7 +1479,7 @@ final class OZTransactionOperationsPipelineTests: XCTestCase {
         // submitted to the network. This is verified by counting
         // `sendCallCount` after the call.
         let provider = RecordingWebAuthnProvider()
-        let storage = InMemoryStorageAdapter()
+        let storage = OZInMemoryStorageAdapter()
         let deployer = try deterministicDeployer()
         let publicKey = validPublicKey()
         let credentialIdBytes = try Data(base64URLEncoded: credentialIdB64Url)
@@ -1488,7 +1488,7 @@ final class OZTransactionOperationsPipelineTests: XCTestCase {
             deployerPublicKey: deployer.accountId,
             networkPassphrase: Network.testnet.passphrase
         )
-        let stored = StoredCredential(
+        let stored = OZStoredCredential(
             credentialId: credentialIdB64Url,
             publicKey: publicKey,
             contractId: derivedContractId
@@ -1547,8 +1547,8 @@ final class OZTransactionOperationsPipelineTests: XCTestCase {
                 autoFund: true,
                 nativeTokenContract: nil
             )
-            XCTFail("expected ValidationException.InvalidInput")
-        } catch is ValidationException.InvalidInput {
+            XCTFail("expected SmartAccountValidationException.InvalidInput")
+        } catch is SmartAccountValidationException.InvalidInput {
             // expected: autoFund without nativeTokenContract is invalid
         }
         XCTAssertEqual(script.simulateCallCount, 0,
@@ -1737,16 +1737,16 @@ final class OZTransactionOperationsPipelineTests: XCTestCase {
         let walletOps = OZWalletOperations(kit: kit)
         do {
             _ = try await walletOps.connectWallet(
-                options: ConnectWalletOptions(
+                options: OZConnectWalletOptions(
                     credentialId: credentialIdB64Url,
                     contractId: contractA
                 )
             )
         } catch {
             XCTAssertTrue(
-                error is WalletException.NotFound ||
-                error is TransactionException.SimulationFailed ||
-                error is TransactionException.SubmissionFailed,
+                error is SmartAccountWalletException.NotFound ||
+                error is SmartAccountTransactionException.SimulationFailed ||
+                error is SmartAccountTransactionException.SubmissionFailed,
                 "Unexpected error type: \(type(of: error))"
             )
         }
@@ -1757,7 +1757,7 @@ final class OZTransactionOperationsPipelineTests: XCTestCase {
         let walletOps = OZWalletOperations(kit: kit)
         do {
             _ = try await walletOps.connectWallet(
-                options: ConnectWalletOptions(fresh: true)
+                options: OZConnectWalletOptions(fresh: true)
             )
             XCTFail("expected WebAuthnException.NotSupported")
         } catch is WebAuthnException.NotSupported {
@@ -1771,8 +1771,8 @@ final class OZTransactionOperationsPipelineTests: XCTestCase {
         let h = try await buildPipelineHarness()
         do {
             _ = try await h.txOps.fundWallet(nativeTokenContract: "not-a-contract")
-            XCTFail("expected ValidationException.InvalidAddress")
-        } catch is ValidationException.InvalidAddress {
+            XCTFail("expected SmartAccountValidationException.InvalidAddress")
+        } catch is SmartAccountValidationException.InvalidAddress {
             // expected
         }
         XCTAssertEqual(script.simulateCallCount, 0,
@@ -1784,8 +1784,8 @@ final class OZTransactionOperationsPipelineTests: XCTestCase {
         let txOps = OZTransactionOperations(kit: kit)
         do {
             _ = try await txOps.fundWallet(nativeTokenContract: contractA)
-            XCTFail("expected WalletException.NotConnected")
-        } catch is WalletException.NotConnected {
+            XCTFail("expected SmartAccountWalletException.NotConnected")
+        } catch is SmartAccountWalletException.NotConnected {
             // expected
         }
         XCTAssertEqual(script.simulateCallCount, 0,
@@ -1800,8 +1800,8 @@ final class OZTransactionOperationsPipelineTests: XCTestCase {
                 credentialId: "does-not-exist",
                 autoSubmit: false
             )
-            XCTFail("expected CredentialException.NotFound")
-        } catch is CredentialException.NotFound {
+            XCTFail("expected SmartAccountCredentialException.NotFound")
+        } catch is SmartAccountCredentialException.NotFound {
             // expected
         }
         XCTAssertEqual(script.simulateCallCount, 0,
@@ -1817,8 +1817,8 @@ final class OZTransactionOperationsPipelineTests: XCTestCase {
                 autoFund: true,
                 nativeTokenContract: nil
             )
-            XCTFail("expected ValidationException.InvalidInput")
-        } catch is ValidationException.InvalidInput {
+            XCTFail("expected SmartAccountValidationException.InvalidInput")
+        } catch is SmartAccountValidationException.InvalidInput {
             // expected
         }
         XCTAssertEqual(script.simulateCallCount, 0,
@@ -1828,7 +1828,7 @@ final class OZTransactionOperationsPipelineTests: XCTestCase {
     func test_deployPendingCredential_credentialContractIdMismatch_throwsInvalid() async throws {
         let kit = MockOZSmartAccountKit(config: try buildConfig())
         let walletOps = OZWalletOperations(kit: kit)
-        let stored = StoredCredential(
+        let stored = OZStoredCredential(
             credentialId: credentialIdB64Url,
             publicKey: validPublicKey(),
             contractId: contractA  // intentionally wrong
@@ -1839,8 +1839,8 @@ final class OZTransactionOperationsPipelineTests: XCTestCase {
                 credentialId: credentialIdB64Url,
                 autoSubmit: false
             )
-            XCTFail("expected CredentialException.Invalid")
-        } catch is CredentialException.Invalid {
+            XCTFail("expected SmartAccountCredentialException.Invalid")
+        } catch is SmartAccountCredentialException.Invalid {
             // expected
         }
         XCTAssertEqual(script.simulateCallCount, 0,
@@ -1927,7 +1927,7 @@ final class OZTransactionOperationsPipelineTests: XCTestCase {
         let deployerAccount = try await {
             let response = await h.kit.sorobanServer.getAccount(accountId: h.deployer.accountId)
             if case .success(let account) = response { return account }
-            throw TransactionException.submissionFailed(reason: "getAccount failed in test")
+            throw SmartAccountTransactionException.submissionFailed(reason: "getAccount failed in test")
         }()
 
         let operation = InvokeHostFunctionOperation(hostFunction: hostFn, auth: [])
@@ -1972,7 +1972,7 @@ final class OZTransactionOperationsPipelineTests: XCTestCase {
     ///
     /// When the credential is not in local storage and `getAllContextRules()`
     /// returns an empty list, `findKeyDataFromContextRules` must throw
-    /// `CredentialException.NotFound`. This covers lines 975–1007 in
+    /// `SmartAccountCredentialException.NotFound`. This covers lines 975–1007 in
     /// `OZTransactionOperations.swift`.
     ///
     /// Setup: connected kit with a webauthn provider (required by signing
@@ -1990,7 +1990,7 @@ final class OZTransactionOperationsPipelineTests: XCTestCase {
             deployerKeypair: try deterministicDeployer(),
             webauthnProvider: provider
         )
-        // Use a kit with InMemoryStorageAdapter (no credential stored) and a
+        // Use a kit with OZInMemoryStorageAdapter (no credential stored) and a
         // stub context-rule manager returning empty rules.
         let stubRuleManager = StubContextRuleManager()
         stubRuleManager.getAllContextRulesResult = []
@@ -2028,8 +2028,8 @@ final class OZTransactionOperationsPipelineTests: XCTestCase {
 
         do {
             _ = try await txOps.submit(hostFunction: hostFn, auth: [])
-            XCTFail("expected CredentialException.NotFound when context rules are empty and no stored credential")
-        } catch is CredentialException.NotFound {
+            XCTFail("expected SmartAccountCredentialException.NotFound when context rules are empty and no stored credential")
+        } catch is SmartAccountCredentialException.NotFound {
             // Expected: findKeyDataFromContextRules returned not-found.
         } catch {
             // Also acceptable: any error after the storage-miss + context-rule
@@ -2049,7 +2049,7 @@ final class OZTransactionOperationsPipelineTests: XCTestCase {
     ///
     /// When `latestLedger.sequence` is near `UInt32.max` and the configured
     /// `signatureExpirationLedgers` causes the sum to overflow `UInt32`, the
-    /// guard must throw `TransactionException.SimulationFailed`. Covered lines:
+    /// guard must throw `SmartAccountTransactionException.SimulationFailed`. Covered lines:
     /// 422–425 in `OZTransactionOperations.swift`.
     ///
     /// Implementation approach: script `getLatestLedger` to return a sequence
@@ -2098,8 +2098,8 @@ final class OZTransactionOperationsPipelineTests: XCTestCase {
         )
         do {
             _ = try await txOps.submit(hostFunction: hostFn, auth: [])
-            XCTFail("expected TransactionException.SimulationFailed on expiration overflow")
-        } catch is TransactionException.SimulationFailed {
+            XCTFail("expected SmartAccountTransactionException.SimulationFailed on expiration overflow")
+        } catch is SmartAccountTransactionException.SimulationFailed {
             // Expected: overflow guard fired.
         } catch {
             // Also acceptable if the overflow causes a different failure mode
@@ -2146,14 +2146,14 @@ final class OZTransactionOperationsPipelineTests: XCTestCase {
         envelope: TransactionEnvelopeXDR
     ) throws -> SorobanAuthorizationEntryXDR {
         guard let op = firstInvokeHostFunctionOp(envelope: envelope) else {
-            throw TransactionException.signingFailed(
+            throw SmartAccountTransactionException.signingFailed(
                 reason: "No InvokeHostFunction operation in envelope"
             )
         }
         if let first = op.auth.first {
             return first
         }
-        throw TransactionException.signingFailed(
+        throw SmartAccountTransactionException.signingFailed(
             reason: "No auth entries on InvokeHostFunction operation"
         )
     }
@@ -2366,7 +2366,7 @@ final class OZTransactionOperationsPipelineTests: XCTestCase {
 
         let walletOps = OZWalletOperations(kit: kit)
         let result = try await walletOps.connectWallet(
-            options: ConnectWalletOptions(credentialId: credentialIdB64Url)
+            options: OZConnectWalletOptions(credentialId: credentialIdB64Url)
         )
 
         if ambiguous {

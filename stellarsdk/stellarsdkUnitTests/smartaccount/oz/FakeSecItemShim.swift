@@ -13,14 +13,14 @@ import Security
 // FakeSecItemShim
 // ============================================================================
 
-/// Test-only `SecItemShim` conformance whose call behavior is configurable
+/// Test-only `OZSecItemShim` conformance whose call behavior is configurable
 /// per-primitive.
 ///
 /// Each closure takes the same arguments as the corresponding `SecItem*`
 /// primitive and returns the `OSStatus` the production code should observe.
 /// The default closures forward to the system Security framework so a
 /// `FakeSecItemShim()` with no overrides behaves identically to
-/// `RealSecItemShim`.
+/// `OZRealSecItemShim`.
 ///
 /// Tests typically override one or two closures to inject deterministic
 /// failure codes (for example `errSecInteractionNotAllowed` to simulate a
@@ -30,7 +30,7 @@ import Security
 ///
 /// All access is guarded by an internal lock so tests that exercise
 /// concurrent operations against a single shim observe consistent state.
-final class FakeSecItemShim: SecItemShim, @unchecked Sendable {
+final class FakeSecItemShim: OZSecItemShim, @unchecked Sendable {
 
     typealias AddHandler = (CFDictionary, UnsafeMutablePointer<CFTypeRef?>?) -> OSStatus
     typealias CopyMatchingHandler = (CFDictionary, UnsafeMutablePointer<CFTypeRef?>?) -> OSStatus

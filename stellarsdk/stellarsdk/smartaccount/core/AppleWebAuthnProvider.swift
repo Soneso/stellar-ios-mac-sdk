@@ -105,7 +105,7 @@ public final class AppleWebAuthnProvider: NSObject, WebAuthnProvider, @unchecked
     ///     be non-blank.
     ///   - timeout: Operation timeout in milliseconds. Must be strictly
     ///     positive. Defaults to `defaultTimeoutMs` (60000).
-    /// - Throws: `ConfigurationException.InvalidConfig` when any input fails
+    /// - Throws: `SmartAccountConfigurationException.InvalidConfig` when any input fails
     ///   validation.
     public init(
         rpId: String,
@@ -113,13 +113,13 @@ public final class AppleWebAuthnProvider: NSObject, WebAuthnProvider, @unchecked
         timeout: Int64 = AppleWebAuthnProvider.defaultTimeoutMs
     ) throws {
         if rpId.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            throw ConfigurationException.invalidConfig(details: "rpId must not be blank")
+            throw SmartAccountConfigurationException.invalidConfig(details: "rpId must not be blank")
         }
         if rpName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            throw ConfigurationException.invalidConfig(details: "rpName must not be blank")
+            throw SmartAccountConfigurationException.invalidConfig(details: "rpName must not be blank")
         }
         if timeout <= 0 {
-            throw ConfigurationException.invalidConfig(details: "timeout must be positive")
+            throw SmartAccountConfigurationException.invalidConfig(details: "timeout must be positive")
         }
         self.rpId = rpId
         self.rpName = rpName
@@ -135,7 +135,7 @@ public final class AppleWebAuthnProvider: NSObject, WebAuthnProvider, @unchecked
     ///   - timeout: Operation timeout in milliseconds. Defaults to
     ///     `defaultTimeoutMs`.
     /// - Returns: A new configured `AppleWebAuthnProvider`.
-    /// - Throws: `ConfigurationException.InvalidConfig` for invalid inputs.
+    /// - Throws: `SmartAccountConfigurationException.InvalidConfig` for invalid inputs.
     public static func create(
         rpId: String,
         rpName: String,
@@ -216,7 +216,7 @@ public final class AppleWebAuthnProvider: NSObject, WebAuthnProvider, @unchecked
 
     public func authenticate(
         challenge: Data,
-        allowCredentials: [AllowCredential]?
+        allowCredentials: [WebAuthnAllowCredential]?
     ) async throws -> WebAuthnAuthenticationResult {
         let provider = ASAuthorizationPlatformPublicKeyCredentialProvider(
             relyingPartyIdentifier: rpId

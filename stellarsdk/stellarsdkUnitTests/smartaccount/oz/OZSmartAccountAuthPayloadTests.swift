@@ -54,25 +54,25 @@ final class OZSmartAccountAuthPayloadTests: XCTestCase {
 
     func testRead_nonMapNonVoidThrows() {
         XCTAssertThrowsError(try OZSmartAccountAuthPayloadCodec.read(.bool(true))) { error in
-            XCTAssertTrue(error is TransactionException.SigningFailed)
+            XCTAssertTrue(error is SmartAccountTransactionException.SigningFailed)
         }
     }
 
     func testRead_symbolScValThrows() {
         XCTAssertThrowsError(try OZSmartAccountAuthPayloadCodec.read(.symbol("foo"))) { error in
-            XCTAssertTrue(error is TransactionException.SigningFailed)
+            XCTAssertTrue(error is SmartAccountTransactionException.SigningFailed)
         }
     }
 
     func testRead_bytesScValThrows() {
         XCTAssertThrowsError(try OZSmartAccountAuthPayloadCodec.read(.bytes(Data([0x01])))) { error in
-            XCTAssertTrue(error is TransactionException.SigningFailed)
+            XCTAssertTrue(error is SmartAccountTransactionException.SigningFailed)
         }
     }
 
     func testRead_vecScValThrows() {
         XCTAssertThrowsError(try OZSmartAccountAuthPayloadCodec.read(.vec([]))) { error in
-            XCTAssertTrue(error is TransactionException.SigningFailed)
+            XCTAssertTrue(error is SmartAccountTransactionException.SigningFailed)
         }
     }
 
@@ -143,7 +143,7 @@ final class OZSmartAccountAuthPayloadTests: XCTestCase {
             SCMapEntryXDR(key: .symbol("signers"), val: signersMap)
         ])
         XCTAssertThrowsError(try OZSmartAccountAuthPayloadCodec.read(scVal)) { error in
-            XCTAssertTrue(error is TransactionException.SigningFailed)
+            XCTAssertTrue(error is SmartAccountTransactionException.SigningFailed)
         }
     }
 
@@ -462,13 +462,13 @@ final class OZSmartAccountAuthPayloadTests: XCTestCase {
 
     func testSignerFromScVal_nonVecThrows() {
         XCTAssertThrowsError(try OZSmartAccountAuthPayloadCodec.signerFromScVal(.symbol("foo"))) { error in
-            XCTAssertTrue(error is TransactionException.SigningFailed)
+            XCTAssertTrue(error is SmartAccountTransactionException.SigningFailed)
         }
     }
 
     func testSignerFromScVal_emptyVecThrows() {
         XCTAssertThrowsError(try OZSmartAccountAuthPayloadCodec.signerFromScVal(.vec([]))) { error in
-            XCTAssertTrue(error is TransactionException.SigningFailed)
+            XCTAssertTrue(error is SmartAccountTransactionException.SigningFailed)
         }
     }
 
@@ -476,7 +476,7 @@ final class OZSmartAccountAuthPayloadTests: XCTestCase {
         XCTAssertThrowsError(
             try OZSmartAccountAuthPayloadCodec.signerFromScVal(.vec([.u32(1), .u32(2)]))
         ) { error in
-            XCTAssertTrue(error is TransactionException.SigningFailed)
+            XCTAssertTrue(error is SmartAccountTransactionException.SigningFailed)
         }
     }
 
@@ -484,7 +484,7 @@ final class OZSmartAccountAuthPayloadTests: XCTestCase {
         XCTAssertThrowsError(
             try OZSmartAccountAuthPayloadCodec.signerFromScVal(.vec([.symbol("Unknown")]))
         ) { error in
-            XCTAssertTrue(error is TransactionException.SigningFailed)
+            XCTAssertTrue(error is SmartAccountTransactionException.SigningFailed)
         }
     }
 
@@ -492,7 +492,7 @@ final class OZSmartAccountAuthPayloadTests: XCTestCase {
         XCTAssertThrowsError(
             try OZSmartAccountAuthPayloadCodec.signerFromScVal(.vec([.symbol("Delegated")]))
         ) { error in
-            XCTAssertTrue(error is TransactionException.SigningFailed)
+            XCTAssertTrue(error is SmartAccountTransactionException.SigningFailed)
         }
     }
 
@@ -502,7 +502,7 @@ final class OZSmartAccountAuthPayloadTests: XCTestCase {
                 .vec([.symbol("Delegated"), .u32(1)])
             )
         ) { error in
-            XCTAssertTrue(error is TransactionException.SigningFailed)
+            XCTAssertTrue(error is SmartAccountTransactionException.SigningFailed)
         }
     }
 
@@ -512,7 +512,7 @@ final class OZSmartAccountAuthPayloadTests: XCTestCase {
             .address(try SCAddressXDR(contractId: validContractC))
         ])
         XCTAssertThrowsError(try OZSmartAccountAuthPayloadCodec.signerFromScVal(scVal)) { error in
-            XCTAssertTrue(error is TransactionException.SigningFailed)
+            XCTAssertTrue(error is SmartAccountTransactionException.SigningFailed)
         }
     }
 
@@ -523,7 +523,7 @@ final class OZSmartAccountAuthPayloadTests: XCTestCase {
             .bytes(Data())
         ])
         XCTAssertThrowsError(try OZSmartAccountAuthPayloadCodec.signerFromScVal(scVal)) { error in
-            XCTAssertTrue(error is TransactionException.SigningFailed)
+            XCTAssertTrue(error is SmartAccountTransactionException.SigningFailed)
         }
     }
 
@@ -534,7 +534,7 @@ final class OZSmartAccountAuthPayloadTests: XCTestCase {
             .u32(1)
         ])
         XCTAssertThrowsError(try OZSmartAccountAuthPayloadCodec.signerFromScVal(scVal)) { error in
-            XCTAssertTrue(error is TransactionException.SigningFailed)
+            XCTAssertTrue(error is SmartAccountTransactionException.SigningFailed)
         }
     }
 
@@ -542,7 +542,7 @@ final class OZSmartAccountAuthPayloadTests: XCTestCase {
         XCTAssertThrowsError(
             try OZSmartAccountAuthPayloadCodec.signerFromScVal(.vec([.symbol("External")]))
         ) { error in
-            XCTAssertTrue(error is TransactionException.SigningFailed)
+            XCTAssertTrue(error is SmartAccountTransactionException.SigningFailed)
         }
     }
 

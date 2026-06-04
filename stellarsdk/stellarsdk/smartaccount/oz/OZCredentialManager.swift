@@ -13,7 +13,7 @@ import Foundation
 /// Returned by ``OZCredentialManager/syncAll()`` to summarise how many stored
 /// credentials are confirmed deployed (and were therefore removed from local
 /// storage), how many remain pending, and how many failed deployment.
-public struct SyncResult: Sendable, Equatable, Hashable {
+public struct OZSyncResult: Sendable, Equatable, Hashable {
 
     /// Number of credentials confirmed as deployed on-chain (and removed from
     /// storage as part of the sync).
@@ -25,7 +25,7 @@ public struct SyncResult: Sendable, Equatable, Hashable {
     /// Number of credentials whose deployment status is `.failed`.
     public let failed: Int
 
-    /// Initialises a new ``SyncResult``.
+    /// Initialises a new ``OZSyncResult``.
     ///
     /// - Parameters:
     ///   - deployed: Credentials confirmed deployed on-chain (removed from storage).
@@ -45,7 +45,7 @@ public struct SyncResult: Sendable, Equatable, Hashable {
 /// and deleting stored credentials, and for reconciling local credential state
 /// with on-chain deployment status. The manager is the only supported entry
 /// point for the application-visible side of credential storage; lower-level
-/// access goes through the underlying ``StorageAdapter``.
+/// access goes through the underlying ``OZStorageAdapter``.
 ///
 /// ## Credential State Machine
 ///
@@ -100,7 +100,7 @@ public final class OZCredentialManager: OZCredentialManagerProtocol, @unchecked 
 
     // MARK: - Computed accessors
 
-    private var storage: StorageAdapter {
+    private var storage: OZStorageAdapter {
         return kit.getStorage()
     }
 
@@ -108,7 +108,7 @@ public final class OZCredentialManager: OZCredentialManagerProtocol, @unchecked 
 
     /// Creates a new pending credential and persists it to storage.
     ///
-    /// The credential is created with deployment status ``CredentialDeploymentStatus/pending``,
+    /// The credential is created with deployment status ``OZCredentialDeploymentStatus/pending``,
     /// `isPrimary` set to `false` (the wallet-creation flow is responsible for
     /// promoting a credential to primary), and `createdAt` set to the current
     /// wall-clock time in milliseconds since the Unix epoch.
@@ -127,11 +127,11 @@ public final class OZCredentialManager: OZCredentialManagerProtocol, @unchecked 
     ///   - transports: Optional WebAuthn transport hints (e.g. `"usb"`, `"nfc"`, `"ble"`, `"internal"`).
     ///   - deviceType: Optional authenticator device type (`"singleDevice"` or `"multiDevice"`).
     ///   - backedUp: Optional flag indicating whether the passkey is backed up or synced.
-    /// - Returns: The persisted ``StoredCredential``.
+    /// - Returns: The persisted ``OZStoredCredential``.
     /// - Throws:
-    ///   - ``ValidationException/InvalidInput`` when validation fails.
-    ///   - ``CredentialException/AlreadyExists`` when a credential with the same identifier already exists.
-    ///   - ``StorageException/WriteFailed`` when persistence fails.
+    ///   - ``SmartAccountValidationException/InvalidInput`` when validation fails.
+    ///   - ``SmartAccountCredentialException/AlreadyExists`` when a credential with the same identifier already exists.
+    ///   - ``SmartAccountStorageException/WriteFailed`` when persistence fails.
     public func createPendingCredential(
         credentialId: String,
         publicKey: Data,
@@ -140,15 +140,15 @@ public final class OZCredentialManager: OZCredentialManagerProtocol, @unchecked 
         transports: [String]? = nil,
         deviceType: String? = nil,
         backedUp: Bool? = nil
-    ) async throws -> StoredCredential {
+    ) async throws -> OZStoredCredential {
         if publicKey.count != SmartAccountConstants.secp256r1PublicKeySize {
-            throw ValidationException.invalidInput(
+            throw SmartAccountValidationException.invalidInput(
                 field: "publicKey",
                 reason: "Expected \(SmartAccountConstants.secp256r1PublicKeySize) bytes, got \(publicKey.count)"
             )
         }
         if credentialId.isEmpty {
-            throw ValidationException.invalidInput(
+            throw SmartAccountValidationException.invalidInput(
                 field: "credentialId",
                 reason: "Credential ID cannot be empty"
             )
@@ -156,10 +156,10 @@ public final class OZCredentialManager: OZCredentialManagerProtocol, @unchecked 
 
         let existing = try await storage.get(credentialId: credentialId)
         if existing != nil {
-            throw CredentialException.alreadyExists(credentialId: credentialId)
+            throw SmartAccountCredentialException.alreadyExists(credentialId: credentialId)
         }
 
-        let credential = StoredCredential(
+        let credential = OZStoredCredential(
             credentialId: credentialId,
             publicKey: publicKey,
             contractId: contractId,
@@ -174,12 +174,12 @@ public final class OZCredentialManager: OZCredentialManagerProtocol, @unchecked 
 
         do {
             try await storage.save(credential: credential)
-        } catch let error as CredentialException {
+        } catch let error as SmartAccountCredentialException {
             throw error
-        } catch let error as StorageException {
+        } catch let error as SmartAccountStorageException {
             throw error
         } catch {
-            throw StorageException.writeFailed(key: credentialId, cause: error)
+            throw SmartAccountStorageException.writeFailed(key: credentialId, cause: error)
         }
 
         return credential
@@ -204,30 +204,30 @@ public final class OZCredentialManager: OZCredentialManagerProtocol, @unchecked 
     ///   - publicKey: Uncompressed secp256r1 public key (`secp256r1PublicKeySize` bytes).
     ///   - nickname: Optional user-friendly display name.
     ///   - contractId: Optional smart account contract address. `nil` is stored as the empty string.
-    /// - Returns: The persisted ``StoredCredential``.
+    /// - Returns: The persisted ``OZStoredCredential``.
     /// - Throws:
-    ///   - ``ValidationException/InvalidInput`` when validation fails.
-    ///   - ``StorageException/WriteFailed`` when persistence fails.
+    ///   - ``SmartAccountValidationException/InvalidInput`` when validation fails.
+    ///   - ``SmartAccountStorageException/WriteFailed`` when persistence fails.
     public func saveCredential(
         credentialId: String,
         publicKey: Data,
         nickname: String? = nil,
         contractId: String? = nil
-    ) async throws -> StoredCredential {
+    ) async throws -> OZStoredCredential {
         if credentialId.isEmpty {
-            throw ValidationException.invalidInput(
+            throw SmartAccountValidationException.invalidInput(
                 field: "credentialId",
                 reason: "Credential ID cannot be empty"
             )
         }
         if publicKey.count != SmartAccountConstants.secp256r1PublicKeySize {
-            throw ValidationException.invalidInput(
+            throw SmartAccountValidationException.invalidInput(
                 field: "publicKey",
                 reason: "Expected \(SmartAccountConstants.secp256r1PublicKeySize) bytes, got \(publicKey.count)"
             )
         }
 
-        let credential = StoredCredential(
+        let credential = OZStoredCredential(
             credentialId: credentialId,
             publicKey: publicKey,
             contractId: contractId ?? "",
@@ -239,10 +239,10 @@ public final class OZCredentialManager: OZCredentialManagerProtocol, @unchecked 
 
         do {
             try await storage.save(credential: credential)
-        } catch let error as StorageException {
+        } catch let error as SmartAccountStorageException {
             throw error
         } catch {
-            throw StorageException.writeFailed(key: credentialId, cause: error)
+            throw SmartAccountStorageException.writeFailed(key: credentialId, cause: error)
         }
 
         return credential
@@ -268,21 +268,21 @@ public final class OZCredentialManager: OZCredentialManagerProtocol, @unchecked 
     /// - Returns: `true` when the contract is deployed and the credential was
     ///   removed from local storage, otherwise `false`.
     /// - Throws:
-    ///   - ``CredentialException/NotFound`` when no credential with the supplied
+    ///   - ``SmartAccountCredentialException/NotFound`` when no credential with the supplied
     ///     identifier exists in storage.
-    ///   - ``StorageException/ReadFailed`` when reading the credential fails.
+    ///   - ``SmartAccountStorageException/ReadFailed`` when reading the credential fails.
     @discardableResult
     public func sync(credentialId: String) async throws -> Bool {
-        let credential: StoredCredential?
+        let credential: OZStoredCredential?
         do {
             credential = try await storage.get(credentialId: credentialId)
-        } catch let error as StorageException {
+        } catch let error as SmartAccountStorageException {
             throw error
         } catch {
-            throw StorageException.readFailed(key: credentialId, cause: error)
+            throw SmartAccountStorageException.readFailed(key: credentialId, cause: error)
         }
         guard let credential = credential else {
-            throw CredentialException.notFound(credentialId: credentialId)
+            throw SmartAccountCredentialException.notFound(credentialId: credentialId)
         }
 
         guard let contractAddress = credential.contractId, !contractAddress.isEmpty else {
@@ -326,17 +326,17 @@ public final class OZCredentialManager: OZCredentialManagerProtocol, @unchecked 
     /// as `deployed`); failed credentials are counted as `failed`; everything
     /// else is counted as `pending`.
     ///
-    /// - Returns: A ``SyncResult`` summarising the deployment status counts.
-    /// - Throws: ``StorageException/ReadFailed`` when reading the credential
+    /// - Returns: An ``OZSyncResult`` summarising the deployment status counts.
+    /// - Throws: ``SmartAccountStorageException/ReadFailed`` when reading the credential
     ///   set fails.
-    public func syncAll() async throws -> SyncResult {
-        let all: [StoredCredential]
+    public func syncAll() async throws -> OZSyncResult {
+        let all: [OZStoredCredential]
         do {
             all = try await storage.getAll()
-        } catch let error as StorageException {
+        } catch let error as SmartAccountStorageException {
             throw error
         } catch {
-            throw StorageException.readFailed(key: "all", cause: error)
+            throw SmartAccountStorageException.readFailed(key: "all", cause: error)
         }
 
         var deployed = 0
@@ -348,7 +348,7 @@ public final class OZCredentialManager: OZCredentialManagerProtocol, @unchecked 
             let exists: Bool
             do {
                 exists = try await sync(credentialId: credential.credentialId)
-            } catch is CredentialException {
+            } catch is SmartAccountCredentialException {
                 // why: the credential may have been removed by an earlier
                 // iteration of this loop (or by a concurrent caller). Treat a
                 // missing-credential error as "not deployed" so the loop
@@ -365,7 +365,7 @@ public final class OZCredentialManager: OZCredentialManagerProtocol, @unchecked 
             }
         }
 
-        return SyncResult(deployed: deployed, pending: pending, failed: failed)
+        return OZSyncResult(deployed: deployed, pending: pending, failed: failed)
     }
 
     // MARK: - Public API: Delete
@@ -375,46 +375,46 @@ public final class OZCredentialManager: OZCredentialManagerProtocol, @unchecked 
     /// Before deletion the manager runs ``sync(credentialId:)`` to confirm the
     /// contract has not been deployed on-chain. When the contract is already
     /// deployed the sync removes the credential and the deletion is rejected
-    /// with ``CredentialException/Invalid`` because the wallet exists on-chain
+    /// with ``SmartAccountCredentialException/Invalid`` because the wallet exists on-chain
     /// and the local entry is no longer authoritative.
     ///
     /// On successful deletion the manager emits a
-    /// ``SmartAccountEvent/credentialDeleted(credentialId:)`` event.
+    /// ``OZSmartAccountEvent/credentialDeleted(credentialId:)`` event.
     ///
     /// - Parameter credentialId: Identifier of the credential to delete.
     /// - Throws:
-    ///   - ``CredentialException/NotFound`` when no credential with the supplied
+    ///   - ``SmartAccountCredentialException/NotFound`` when no credential with the supplied
     ///     identifier exists in storage.
-    ///   - ``CredentialException/Invalid`` when the credential is already
+    ///   - ``SmartAccountCredentialException/Invalid`` when the credential is already
     ///     deployed on-chain.
-    ///   - ``StorageException/ReadFailed`` when reading the credential fails.
-    ///   - ``StorageException/WriteFailed`` when deletion fails.
+    ///   - ``SmartAccountStorageException/ReadFailed`` when reading the credential fails.
+    ///   - ``SmartAccountStorageException/WriteFailed`` when deletion fails.
     public func deleteCredential(credentialId: String) async throws {
-        let credential: StoredCredential?
+        let credential: OZStoredCredential?
         do {
             credential = try await storage.get(credentialId: credentialId)
-        } catch let error as StorageException {
+        } catch let error as SmartAccountStorageException {
             throw error
         } catch {
-            throw StorageException.readFailed(key: credentialId, cause: error)
+            throw SmartAccountStorageException.readFailed(key: credentialId, cause: error)
         }
         guard credential != nil else {
-            throw CredentialException.notFound(credentialId: credentialId)
+            throw SmartAccountCredentialException.notFound(credentialId: credentialId)
         }
 
         let isDeployed = try await sync(credentialId: credentialId)
         if isDeployed {
-            throw CredentialException.invalid(
+            throw SmartAccountCredentialException.invalid(
                 reason: "Cannot delete a deployed credential. The wallet exists on-chain."
             )
         }
 
         do {
             try await storage.delete(credentialId: credentialId)
-        } catch let error as StorageException {
+        } catch let error as SmartAccountStorageException {
             throw error
         } catch {
-            throw StorageException.writeFailed(key: credentialId, cause: error)
+            throw SmartAccountStorageException.writeFailed(key: credentialId, cause: error)
         }
 
         kit.events.emit(.credentialDeleted(credentialId: credentialId))
@@ -425,15 +425,15 @@ public final class OZCredentialManager: OZCredentialManagerProtocol, @unchecked 
     /// Retrieves a stored credential by its identifier.
     ///
     /// - Parameter credentialId: Identifier of the credential to look up.
-    /// - Returns: The ``StoredCredential`` when present, otherwise `nil`.
-    /// - Throws: ``StorageException/ReadFailed`` when reading fails.
-    public func getCredential(credentialId: String) async throws -> StoredCredential? {
+    /// - Returns: The ``OZStoredCredential`` when present, otherwise `nil`.
+    /// - Throws: ``SmartAccountStorageException/ReadFailed`` when reading fails.
+    public func getCredential(credentialId: String) async throws -> OZStoredCredential? {
         do {
             return try await storage.get(credentialId: credentialId)
-        } catch let error as StorageException {
+        } catch let error as SmartAccountStorageException {
             throw error
         } catch {
-            throw StorageException.readFailed(key: credentialId, cause: error)
+            throw SmartAccountStorageException.readFailed(key: credentialId, cause: error)
         }
     }
 
@@ -441,14 +441,14 @@ public final class OZCredentialManager: OZCredentialManagerProtocol, @unchecked 
     ///
     /// - Parameter contractId: Contract address to filter by.
     /// - Returns: Credentials whose `contractId` matches; empty when none match.
-    /// - Throws: ``StorageException/ReadFailed`` when reading fails.
-    public func getCredentialsByContract(contractId: String) async throws -> [StoredCredential] {
+    /// - Throws: ``SmartAccountStorageException/ReadFailed`` when reading fails.
+    public func getCredentialsByContract(contractId: String) async throws -> [OZStoredCredential] {
         do {
             return try await storage.getByContract(contractId: contractId)
-        } catch let error as StorageException {
+        } catch let error as SmartAccountStorageException {
             throw error
         } catch {
-            throw StorageException.readFailed(key: "contract:\(contractId)", cause: error)
+            throw SmartAccountStorageException.readFailed(key: "contract:\(contractId)", cause: error)
         }
     }
 
@@ -456,14 +456,14 @@ public final class OZCredentialManager: OZCredentialManagerProtocol, @unchecked 
     /// associated contract.
     ///
     /// - Returns: All stored credentials (empty when no credentials exist).
-    /// - Throws: ``StorageException/ReadFailed`` when reading fails.
-    public func getAllCredentials() async throws -> [StoredCredential] {
+    /// - Throws: ``SmartAccountStorageException/ReadFailed`` when reading fails.
+    public func getAllCredentials() async throws -> [OZStoredCredential] {
         do {
             return try await storage.getAll()
-        } catch let error as StorageException {
+        } catch let error as SmartAccountStorageException {
             throw error
         } catch {
-            throw StorageException.readFailed(key: "all", cause: error)
+            throw SmartAccountStorageException.readFailed(key: "all", cause: error)
         }
     }
 
@@ -477,8 +477,8 @@ public final class OZCredentialManager: OZCredentialManagerProtocol, @unchecked 
     /// - Returns: Credentials whose `contractId` matches the connected
     ///   wallet's contract address (empty when not connected or when no
     ///   credentials match).
-    /// - Throws: ``StorageException/ReadFailed`` when reading fails.
-    public func getForConnectedWallet() async throws -> [StoredCredential] {
+    /// - Throws: ``SmartAccountStorageException/ReadFailed`` when reading fails.
+    public func getForConnectedWallet() async throws -> [OZStoredCredential] {
         let state: ConnectedState
         do {
             state = try kit.requireConnected()
@@ -498,15 +498,15 @@ public final class OZCredentialManager: OZCredentialManagerProtocol, @unchecked 
     ///
     /// - Returns: Credentials with status `.pending` or `.failed` (empty when
     ///   none match).
-    /// - Throws: ``StorageException/ReadFailed`` when reading fails.
-    public func getPendingCredentials() async throws -> [StoredCredential] {
-        let all: [StoredCredential]
+    /// - Throws: ``SmartAccountStorageException/ReadFailed`` when reading fails.
+    public func getPendingCredentials() async throws -> [OZStoredCredential] {
+        let all: [OZStoredCredential]
         do {
             all = try await storage.getAll()
-        } catch let error as StorageException {
+        } catch let error as SmartAccountStorageException {
             throw error
         } catch {
-            throw StorageException.readFailed(key: "all", cause: error)
+            throw SmartAccountStorageException.readFailed(key: "all", cause: error)
         }
 
         return all.filter { credential in
@@ -530,10 +530,10 @@ public final class OZCredentialManager: OZCredentialManagerProtocol, @unchecked 
     ///   - nickname: New nickname, or `nil` to leave the existing nickname
     ///     unchanged.
     /// - Throws:
-    ///   - ``CredentialException/NotFound`` when the credential does not exist.
-    ///   - ``StorageException/WriteFailed`` when the update fails.
+    ///   - ``SmartAccountCredentialException/NotFound`` when the credential does not exist.
+    ///   - ``SmartAccountStorageException/WriteFailed`` when the update fails.
     public func updateNickname(credentialId: String, nickname: String?) async throws {
-        let update = StoredCredentialUpdate(nickname: nickname)
+        let update = OZStoredCredentialUpdate(nickname: nickname)
         try await updateCredential(credentialId: credentialId, updates: update)
     }
 
@@ -541,14 +541,14 @@ public final class OZCredentialManager: OZCredentialManagerProtocol, @unchecked 
     ///
     /// This operation is irreversible. Use with caution.
     ///
-    /// - Throws: ``StorageException/WriteFailed`` when clearing fails.
+    /// - Throws: ``SmartAccountStorageException/WriteFailed`` when clearing fails.
     public func clearAll() async throws {
         do {
             try await storage.clear()
-        } catch let error as StorageException {
+        } catch let error as SmartAccountStorageException {
             throw error
         } catch {
-            throw StorageException.writeFailed(key: "all", cause: error)
+            throw SmartAccountStorageException.writeFailed(key: "all", cause: error)
         }
     }
 
@@ -557,7 +557,7 @@ public final class OZCredentialManager: OZCredentialManagerProtocol, @unchecked 
     /// Marks a credential as failed deployment and records the supplied error
     /// message.
     ///
-    /// Updates the credential's `deploymentStatus` to ``CredentialDeploymentStatus/failed``
+    /// Updates the credential's `deploymentStatus` to ``OZCredentialDeploymentStatus/failed``
     /// and stores the supplied error message. The credential can be retried by
     /// deleting it and creating a new one with the same identifier.
     ///
@@ -565,27 +565,27 @@ public final class OZCredentialManager: OZCredentialManagerProtocol, @unchecked 
     ///   - credentialId: Identifier of the credential whose deployment failed.
     ///   - error: Human-readable error message describing the failure.
     /// - Throws:
-    ///   - ``CredentialException/NotFound`` when the credential does not exist.
-    ///   - ``StorageException/WriteFailed`` when the update fails.
+    ///   - ``SmartAccountCredentialException/NotFound`` when the credential does not exist.
+    ///   - ``SmartAccountStorageException/WriteFailed`` when the update fails.
     internal func markDeploymentFailed(credentialId: String, error: String) async throws {
         let existing = try await storage.get(credentialId: credentialId)
         guard existing != nil else {
-            throw CredentialException.notFound(credentialId: credentialId)
+            throw SmartAccountCredentialException.notFound(credentialId: credentialId)
         }
 
-        let update = StoredCredentialUpdate(
+        let update = OZStoredCredentialUpdate(
             deploymentStatus: .failed,
             deploymentError: error
         )
 
         do {
             try await storage.update(credentialId: credentialId, updates: update)
-        } catch let error as CredentialException {
+        } catch let error as SmartAccountCredentialException {
             throw error
-        } catch let error as StorageException {
+        } catch let error as SmartAccountStorageException {
             throw error
         } catch {
-            throw StorageException.writeFailed(key: credentialId, cause: error)
+            throw SmartAccountStorageException.writeFailed(key: credentialId, cause: error)
         }
     }
 
@@ -598,25 +598,25 @@ public final class OZCredentialManager: OZCredentialManagerProtocol, @unchecked 
     ///   - credentialId: Identifier of the credential to update.
     ///   - updates: The partial updates to apply.
     /// - Throws:
-    ///   - ``CredentialException/NotFound`` when the credential does not exist.
-    ///   - ``StorageException/WriteFailed`` when the update fails.
+    ///   - ``SmartAccountCredentialException/NotFound`` when the credential does not exist.
+    ///   - ``SmartAccountStorageException/WriteFailed`` when the update fails.
     internal func updateCredential(
         credentialId: String,
-        updates: StoredCredentialUpdate
+        updates: OZStoredCredentialUpdate
     ) async throws {
         let existing = try await storage.get(credentialId: credentialId)
         guard existing != nil else {
-            throw CredentialException.notFound(credentialId: credentialId)
+            throw SmartAccountCredentialException.notFound(credentialId: credentialId)
         }
 
         do {
             try await storage.update(credentialId: credentialId, updates: updates)
-        } catch let error as CredentialException {
+        } catch let error as SmartAccountCredentialException {
             throw error
-        } catch let error as StorageException {
+        } catch let error as SmartAccountStorageException {
             throw error
         } catch {
-            throw StorageException.writeFailed(key: credentialId, cause: error)
+            throw SmartAccountStorageException.writeFailed(key: credentialId, cause: error)
         }
     }
 
@@ -625,10 +625,10 @@ public final class OZCredentialManager: OZCredentialManagerProtocol, @unchecked 
     ///
     /// - Parameter credentialId: Identifier of the credential to update.
     /// - Throws:
-    ///   - ``CredentialException/NotFound`` when the credential does not exist.
-    ///   - ``StorageException/WriteFailed`` when the update fails.
+    ///   - ``SmartAccountCredentialException/NotFound`` when the credential does not exist.
+    ///   - ``SmartAccountStorageException/WriteFailed`` when the update fails.
     internal func updateLastUsed(credentialId: String) async throws {
-        let update = StoredCredentialUpdate(
+        let update = OZStoredCredentialUpdate(
             lastUsedAt: Int64(Date().timeIntervalSince1970 * 1000)
         )
         try await updateCredential(credentialId: credentialId, updates: update)
@@ -645,15 +645,15 @@ public final class OZCredentialManager: OZCredentialManagerProtocol, @unchecked 
     ///
     /// - Parameter credentialId: Identifier of the credential to promote.
     /// - Throws:
-    ///   - ``CredentialException/NotFound`` when the credential does not exist.
-    ///   - ``StorageException/WriteFailed`` when the final promotion update fails.
+    ///   - ``SmartAccountCredentialException/NotFound`` when the credential does not exist.
+    ///   - ``SmartAccountStorageException/WriteFailed`` when the final promotion update fails.
     internal func setPrimary(credentialId: String) async throws {
         let credential = try await storage.get(credentialId: credentialId)
         guard let credential = credential else {
-            throw CredentialException.notFound(credentialId: credentialId)
+            throw SmartAccountCredentialException.notFound(credentialId: credentialId)
         }
 
-        let siblings: [StoredCredential]
+        let siblings: [OZStoredCredential]
         if let contractId = credential.contractId, !contractId.isEmpty {
             siblings = try await storage.getByContract(contractId: contractId)
         } else {
@@ -664,7 +664,7 @@ public final class OZCredentialManager: OZCredentialManagerProtocol, @unchecked 
             do {
                 try await storage.update(
                     credentialId: sibling.credentialId,
-                    updates: StoredCredentialUpdate(isPrimary: false)
+                    updates: OZStoredCredentialUpdate(isPrimary: false)
                 )
             } catch {
                 // why: best-effort. Failing to demote a sibling is not fatal —
@@ -675,15 +675,15 @@ public final class OZCredentialManager: OZCredentialManagerProtocol, @unchecked 
             }
         }
 
-        let update = StoredCredentialUpdate(isPrimary: true)
+        let update = OZStoredCredentialUpdate(isPrimary: true)
         do {
             try await storage.update(credentialId: credentialId, updates: update)
-        } catch let error as CredentialException {
+        } catch let error as SmartAccountCredentialException {
             throw error
-        } catch let error as StorageException {
+        } catch let error as SmartAccountStorageException {
             throw error
         } catch {
-            throw StorageException.writeFailed(key: credentialId, cause: error)
+            throw SmartAccountStorageException.writeFailed(key: credentialId, cause: error)
         }
     }
 }

@@ -30,7 +30,7 @@ public enum OZSmartAccountBuilders {
     ///
     /// - Parameter publicKey: Stellar account or contract address (`G…` or `C…` strkey).
     /// - Returns: An `OZDelegatedSigner` for use in context rules.
-    /// - Throws: `ValidationException.InvalidAddress` when `publicKey` is not a valid strkey.
+    /// - Throws: `SmartAccountValidationException.InvalidAddress` when `publicKey` is not a valid strkey.
     public static func createDelegatedSigner(publicKey: String) throws -> OZDelegatedSigner {
         return try OZDelegatedSigner(address: publicKey)
     }
@@ -43,8 +43,8 @@ public enum OZSmartAccountBuilders {
     ///   - verifierAddress: Contract address (`C…` strkey) of the signature verifier.
     ///   - keyData: Public-key bytes plus any auxiliary authentication data; must not be empty.
     /// - Returns: An `OZExternalSigner` for use in context rules.
-    /// - Throws: `ValidationException.InvalidAddress` when `verifierAddress` is not valid;
-    ///           `ValidationException.InvalidInput` when `keyData` is empty.
+    /// - Throws: `SmartAccountValidationException.InvalidAddress` when `verifierAddress` is not valid;
+    ///           `SmartAccountValidationException.InvalidInput` when `keyData` is empty.
     public static func createExternalSigner(
         verifierAddress: String,
         keyData: Data
@@ -62,8 +62,8 @@ public enum OZSmartAccountBuilders {
     ///   - publicKey: 65-byte secp256r1 uncompressed public key (`0x04` prefix + X + Y).
     ///   - credentialId: WebAuthn credential identifier bytes; must not be empty.
     /// - Returns: An `OZExternalSigner` configured for WebAuthn verification.
-    /// - Throws: `ValidationException.InvalidAddress` when the verifier address is invalid;
-    ///           `ValidationException.InvalidInput` when the public key size or shape is
+    /// - Throws: `SmartAccountValidationException.InvalidAddress` when the verifier address is invalid;
+    ///           `SmartAccountValidationException.InvalidInput` when the public key size or shape is
     ///           wrong, or when the credential ID is empty.
     public static func createWebAuthnSigner(
         webauthnVerifierAddress: String,
@@ -85,8 +85,8 @@ public enum OZSmartAccountBuilders {
     ///   - ed25519VerifierAddress: Ed25519 verifier contract address (`C…` strkey).
     ///   - publicKey: 32-byte Ed25519 public key.
     /// - Returns: An `OZExternalSigner` configured for Ed25519 verification.
-    /// - Throws: `ValidationException.InvalidAddress` when the verifier address is invalid;
-    ///           `ValidationException.InvalidInput` when the public key is not 32 bytes.
+    /// - Throws: `SmartAccountValidationException.InvalidAddress` when the verifier address is invalid;
+    ///           `SmartAccountValidationException.InvalidInput` when the public key is not 32 bytes.
     public static func createEd25519Signer(
         ed25519VerifierAddress: String,
         publicKey: Data
@@ -271,10 +271,10 @@ public enum OZSmartAccountBuilders {
     ///
     /// - Parameter threshold: Minimum number of signers required (must be >= 1).
     /// - Returns: Policy parameters for simple threshold.
-    /// - Throws: `ValidationException.InvalidInput` when `threshold < 1`.
+    /// - Throws: `SmartAccountValidationException.InvalidInput` when `threshold < 1`.
     public static func createThresholdParams(threshold: Int) throws -> OZSimpleThresholdParams {
         if threshold < 1 {
-            throw ValidationException.invalidInput(
+            throw SmartAccountValidationException.invalidInput(
                 field: "threshold",
                 reason: "Threshold must be at least 1, got: \(threshold)"
             )
@@ -303,7 +303,7 @@ public enum OZSmartAccountBuilders {
     ///   - threshold: Total weight required for authorisation (must be >= 1).
     ///   - signerWeights: Ordered list of signer-weight pairs (each weight must be >= 1).
     /// - Returns: Policy parameters for weighted threshold.
-    /// - Throws: `ValidationException.InvalidInput` when `threshold < 1`, when
+    /// - Throws: `SmartAccountValidationException.InvalidInput` when `threshold < 1`, when
     ///           `signerWeights` is empty, when any weight is < 1, or when the total
     ///           weight is less than `threshold`.
     public static func createWeightedThresholdParams(
@@ -311,13 +311,13 @@ public enum OZSmartAccountBuilders {
         signerWeights: [OZSignerWeight]
     ) throws -> OZWeightedThresholdParams {
         if threshold < 1 {
-            throw ValidationException.invalidInput(
+            throw SmartAccountValidationException.invalidInput(
                 field: "threshold",
                 reason: "Threshold must be at least 1, got: \(threshold)"
             )
         }
         if signerWeights.isEmpty {
-            throw ValidationException.invalidInput(
+            throw SmartAccountValidationException.invalidInput(
                 field: "signerWeights",
                 reason: "At least one signer weight must be provided"
             )
@@ -325,7 +325,7 @@ public enum OZSmartAccountBuilders {
         var totalWeight = 0
         for entry in signerWeights {
             if entry.weight < 1 {
-                throw ValidationException.invalidInput(
+                throw SmartAccountValidationException.invalidInput(
                     field: "signerWeights",
                     reason: "All weights must be positive integers, got: \(entry.weight)"
                 )
@@ -333,7 +333,7 @@ public enum OZSmartAccountBuilders {
             totalWeight += entry.weight
         }
         if totalWeight < threshold {
-            throw ValidationException.invalidInput(
+            throw SmartAccountValidationException.invalidInput(
                 field: "signerWeights",
                 reason: "Sum of weights (\(totalWeight)) must be >= threshold (\(threshold))"
             )
@@ -355,14 +355,14 @@ public enum OZSmartAccountBuilders {
     ///   - periodLedgers: Number of ledgers in the period (must be >= 1).
     /// - Returns: Policy parameters for spending limit.
     /// - Throws: `StellarSDKError.invalidArgument` when the spending-limit string is
-    ///           invalid; `ValidationException.InvalidInput` when `periodLedgers < 1`.
+    ///           invalid; `SmartAccountValidationException.InvalidInput` when `periodLedgers < 1`.
     public static func createSpendingLimitParams(
         spendingLimit: String,
         periodLedgers: Int
     ) throws -> OZSpendingLimitParams {
         let stroops = try Operation.toXDRAmount(amount: spendingLimit)
         if periodLedgers < 1 {
-            throw ValidationException.invalidInput(
+            throw SmartAccountValidationException.invalidInput(
                 field: "periodLedgers",
                 reason: "Period must be at least 1 ledger, got: \(periodLedgers)"
             )

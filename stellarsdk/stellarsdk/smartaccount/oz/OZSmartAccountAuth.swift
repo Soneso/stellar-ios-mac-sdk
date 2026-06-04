@@ -50,7 +50,7 @@ public enum OZSmartAccountAuth {
     ///   - signaturePayload: 32-byte signature payload hash from `buildAuthPayloadHash`.
     ///   - contextRuleIds: Context rule IDs to bind into the digest.
     /// - Returns: 32-byte SHA-256 auth digest.
-    /// - Throws: `TransactionException.SigningFailed` when XDR encoding fails.
+    /// - Throws: `SmartAccountTransactionException.SigningFailed` when XDR encoding fails.
     public static func buildAuthDigest(
         signaturePayload: Data,
         contextRuleIds: [UInt32]
@@ -62,7 +62,7 @@ public enum OZSmartAccountAuth {
             let encoded = try XDREncoder.encode(ruleIdsScVal)
             ruleIdsXdr = Data(encoded)
         } catch {
-            throw TransactionException.signingFailed(
+            throw SmartAccountTransactionException.signingFailed(
                 reason: "Failed to XDR encode context rule IDs ScVal",
                 cause: error
             )
@@ -89,7 +89,7 @@ public enum OZSmartAccountAuth {
     ///   - expirationLedger: Ledger number at which the signature expires.
     ///   - networkPassphrase: Network passphrase.
     /// - Returns: 32-byte SHA-256 hash of the authorisation payload.
-    /// - Throws: `TransactionException.SigningFailed` when credentials are not address
+    /// - Throws: `SmartAccountTransactionException.SigningFailed` when credentials are not address
     ///           type or when XDR encoding fails.
     public static func buildAuthPayloadHash(
         entry: SorobanAuthorizationEntryXDR,
@@ -97,7 +97,7 @@ public enum OZSmartAccountAuth {
         networkPassphrase: String
     ) async throws -> Data {
         guard case .address(let credentials) = entry.credentials else {
-            throw TransactionException.signingFailed(
+            throw SmartAccountTransactionException.signingFailed(
                 reason: "Credentials must be of type address to build auth payload hash"
             )
         }
@@ -122,7 +122,7 @@ public enum OZSmartAccountAuth {
     ///   - expirationLedger: Ledger number at which the signature expires.
     ///   - networkPassphrase: Network passphrase.
     /// - Returns: 32-byte SHA-256 hash of the authorisation payload.
-    /// - Throws: `TransactionException.SigningFailed` when XDR encoding fails.
+    /// - Throws: `SmartAccountTransactionException.SigningFailed` when XDR encoding fails.
     public static func buildSourceAccountAuthPayloadHash(
         entry: SorobanAuthorizationEntryXDR,
         nonce: Int64,
@@ -156,7 +156,7 @@ public enum OZSmartAccountAuth {
     ///                       value used when computing the payload hash).
     ///   - contextRuleIds: Optional override for the bound context rule IDs.
     /// - Returns: A new authorisation entry with the signature attached.
-    /// - Throws: `TransactionException.SigningFailed` when credentials are not address type,
+    /// - Throws: `SmartAccountTransactionException.SigningFailed` when credentials are not address type,
     ///           when the XDR clone fails, or when encoding the signer or signature fails.
     public static func signAuthEntry(
         entry: SorobanAuthorizationEntryXDR,
@@ -170,7 +170,7 @@ public enum OZSmartAccountAuth {
         do {
             entryBytes = try XDREncoder.encode(entry)
         } catch {
-            throw TransactionException.signingFailed(
+            throw SmartAccountTransactionException.signingFailed(
                 reason: "Failed to XDR encode authorization entry for cloning",
                 cause: error
             )
@@ -180,14 +180,14 @@ public enum OZSmartAccountAuth {
         do {
             entryCopy = try XDRDecoder.decode(SorobanAuthorizationEntryXDR.self, data: entryBytes)
         } catch {
-            throw TransactionException.signingFailed(
+            throw SmartAccountTransactionException.signingFailed(
                 reason: "Failed to XDR decode authorization entry after cloning",
                 cause: error
             )
         }
 
         guard case .address(let credentialsCopy) = entryCopy.credentials else {
-            throw TransactionException.signingFailed(
+            throw SmartAccountTransactionException.signingFailed(
                 reason: "Credentials must be of type address to sign auth entry"
             )
         }
@@ -196,7 +196,7 @@ public enum OZSmartAccountAuth {
         do {
             signerKey = try signer.toScVal()
         } catch {
-            throw TransactionException.signingFailed(
+            throw SmartAccountTransactionException.signingFailed(
                 reason: "Failed to convert signer to SCVal",
                 cause: error
             )
@@ -207,7 +207,7 @@ public enum OZSmartAccountAuth {
         do {
             sigXdrBytes = try signature.toAuthPayloadBytes()
         } catch {
-            throw TransactionException.signingFailed(
+            throw SmartAccountTransactionException.signingFailed(
                 reason: "Failed to encode signature bytes for auth payload",
                 cause: error
             )
@@ -261,7 +261,7 @@ public enum OZSmartAccountAuth {
     ///   - signatureValue: Raw ScVal value to attach.
     ///   - contextRuleIds: Optional override for the bound context rule IDs.
     /// - Returns: A new authorisation entry with the map entry added.
-    /// - Throws: `TransactionException.SigningFailed` when credentials are not address
+    /// - Throws: `SmartAccountTransactionException.SigningFailed` when credentials are not address
     ///           type or when XDR encoding of the signature value fails.
     public static func addRawSignatureMapEntry(
         entry: SorobanAuthorizationEntryXDR,
@@ -270,7 +270,7 @@ public enum OZSmartAccountAuth {
         contextRuleIds: [UInt32] = []
     ) throws -> SorobanAuthorizationEntryXDR {
         guard case .address(let credentials) = entry.credentials else {
-            throw TransactionException.signingFailed(
+            throw SmartAccountTransactionException.signingFailed(
                 reason: "Credentials must be of type address to add signature map entry"
             )
         }
@@ -292,7 +292,7 @@ public enum OZSmartAccountAuth {
             do {
                 sigBytes = Data(try XDREncoder.encode(signatureValue))
             } catch {
-                throw TransactionException.signingFailed(
+                throw SmartAccountTransactionException.signingFailed(
                     reason: "Failed to XDR-encode raw signature value",
                     cause: error
                 )
@@ -349,7 +349,7 @@ public enum OZSmartAccountAuth {
         do {
             encodedPreimage = Data(try XDREncoder.encode(preimage))
         } catch {
-            throw TransactionException.signingFailed(
+            throw SmartAccountTransactionException.signingFailed(
                 reason: "Failed to XDR encode auth payload preimage",
                 cause: error
             )

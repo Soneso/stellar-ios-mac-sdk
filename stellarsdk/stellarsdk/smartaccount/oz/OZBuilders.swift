@@ -8,7 +8,7 @@
 import Foundation
 
 // ============================================================================
-// ContextRuleType
+// OZContextRuleType
 // ============================================================================
 
 /// Type of context rule that determines which operations it applies to.
@@ -22,15 +22,15 @@ import Foundation
 /// Example:
 /// ```swift
 /// // Default rule applies to all operations
-/// let defaultRule = ContextRuleType.defaultRule
+/// let defaultRule = OZContextRuleType.defaultRule
 ///
 /// // Rule for calling a specific token contract
-/// let tokenRule = ContextRuleType.callContract(contractAddress: "CBCD1234...")
+/// let tokenRule = OZContextRuleType.callContract(contractAddress: "CBCD1234...")
 ///
 /// // Rule for deploying contracts with a specific WASM hash
-/// let deployRule = ContextRuleType.createContract(wasmHash: wasmHashData)
+/// let deployRule = OZContextRuleType.createContract(wasmHash: wasmHashData)
 /// ```
-public enum ContextRuleType: Sendable, Hashable {
+public enum OZContextRuleType: Sendable, Hashable {
 
     /// Matches any operation (fallback / default rule).
     case defaultRule
@@ -43,7 +43,7 @@ public enum ContextRuleType: Sendable, Hashable {
 
     // why: `wasmHash` uses constant-time comparison via `Data.constantTimeEquals`;
     // see that extension for the timing-attack rationale.
-    public static func == (lhs: ContextRuleType, rhs: ContextRuleType) -> Bool {
+    public static func == (lhs: OZContextRuleType, rhs: OZContextRuleType) -> Bool {
         switch (lhs, rhs) {
         case (.defaultRule, .defaultRule):
             return true
@@ -77,7 +77,7 @@ public enum ContextRuleType: Sendable, Hashable {
     /// - CreateContract: `SCValXDR.vec([Symbol("CreateContract"), Bytes(wasmHash)])`
     ///
     /// - Returns: The `SCValXDR` representation of this context rule type.
-    /// - Throws: ``ValidationException/InvalidAddress`` when the call-contract
+    /// - Throws: ``SmartAccountValidationException/InvalidAddress`` when the call-contract
     ///   address cannot be converted to an `SCAddressXDR`.
     public func toScVal() throws -> SCValXDR {
         switch self {
@@ -91,7 +91,7 @@ public enum ContextRuleType: Sendable, Hashable {
                     .address(scAddress)
                 ])
             } catch {
-                throw ValidationException.invalidAddress(address: contractAddress, cause: error)
+                throw SmartAccountValidationException.invalidAddress(address: contractAddress, cause: error)
             }
         case .createContract(let wasmHash):
             return .vec([
@@ -103,7 +103,7 @@ public enum ContextRuleType: Sendable, Hashable {
 }
 
 // ============================================================================
-// ParsedContextRule
+// OZParsedContextRule
 // ============================================================================
 
 /// Parsed representation of a context rule sourced from on-chain data.
@@ -113,13 +113,13 @@ public enum ContextRuleType: Sendable, Hashable {
 /// parser; consumed by ``OZBuilders/collectUniqueSignersFromRules(rules:)`` and
 /// by higher-level managers that decide which signers and policies apply to an
 /// operation.
-public struct ParsedContextRule: Sendable, Hashable {
+public struct OZParsedContextRule: Sendable, Hashable {
 
     /// Unique identifier of this context rule.
     public let id: UInt32
 
     /// Type of operations this rule applies to.
-    public let contextType: ContextRuleType
+    public let contextType: OZContextRuleType
 
     /// Human-readable name for the rule.
     public let name: String
@@ -141,7 +141,7 @@ public struct ParsedContextRule: Sendable, Hashable {
 
     public init(
         id: UInt32,
-        contextType: ContextRuleType,
+        contextType: OZContextRuleType,
         name: String,
         signers: [any OZSmartAccountSigner],
         signerIds: [UInt32],
@@ -159,7 +159,7 @@ public struct ParsedContextRule: Sendable, Hashable {
         self.validUntil = validUntil
     }
 
-    public static func == (lhs: ParsedContextRule, rhs: ParsedContextRule) -> Bool {
+    public static func == (lhs: OZParsedContextRule, rhs: OZParsedContextRule) -> Bool {
         guard lhs.id == rhs.id,
               lhs.contextType == rhs.contextType,
               lhs.name == rhs.name,
@@ -196,7 +196,7 @@ public struct ParsedContextRule: Sendable, Hashable {
 
 /// Builder utilities for OpenZeppelin smart account context rules.
 ///
-/// Provides type-safe constructors and display utilities for ``ContextRuleType``
+/// Provides type-safe constructors and display utilities for ``OZContextRuleType``
 /// and related OZ-specific operations. These functions are separated from
 /// ``OZSmartAccountBuilders`` to avoid a circular dependency between core and OZ
 /// types.
@@ -212,8 +212,8 @@ public enum OZBuilders {
     /// Default rules apply to any operation that does not match a more specific
     /// `callContract` or `createContract` rule.
     ///
-    /// - Returns: ``ContextRuleType/defaultRule`` for default authorization.
-    public static func createDefaultContext() -> ContextRuleType {
+    /// - Returns: ``OZContextRuleType/defaultRule`` for default authorization.
+    public static func createDefaultContext() -> OZContextRuleType {
         return .defaultRule
     }
 
@@ -223,11 +223,11 @@ public enum OZBuilders {
     /// for restricting signers to specific dApps or operations.
     ///
     /// - Parameter contractAddress: Contract address this rule applies to (`C…`).
-    /// - Returns: A ``ContextRuleType/callContract(contractAddress:)`` configured
+    /// - Returns: An ``OZContextRuleType/callContract(contractAddress:)`` configured
     ///   for the supplied contract.
-    /// - Throws: ``ValidationException/InvalidAddress`` if the contract address
+    /// - Throws: ``SmartAccountValidationException/InvalidAddress`` if the contract address
     ///   format is invalid.
-    public static func createCallContractContext(contractAddress: String) throws -> ContextRuleType {
+    public static func createCallContractContext(contractAddress: String) throws -> OZContextRuleType {
         try requireContractAddress(contractAddress, fieldName: "contractAddress")
         return .callContract(contractAddress: contractAddress)
     }
@@ -239,12 +239,12 @@ public enum OZBuilders {
     ///
     /// - Parameter wasmHashHex: WASM hash as a 64-character hex string (an
     ///   optional `0x` prefix is accepted and stripped).
-    /// - Returns: A ``ContextRuleType/createContract(wasmHash:)`` for the
+    /// - Returns: An ``OZContextRuleType/createContract(wasmHash:)`` for the
     ///   supplied hash.
-    /// - Throws: ``ValidationException/InvalidInput`` when the hex string is not
+    /// - Throws: ``SmartAccountValidationException/InvalidInput`` when the hex string is not
     ///   exactly 64 characters after stripping any `0x` prefix or when it
     ///   contains non-hex characters.
-    public static func createCreateContractContext(wasmHashHex: String) throws -> ContextRuleType {
+    public static func createCreateContractContext(wasmHashHex: String) throws -> OZContextRuleType {
         let cleanHash: String
         if wasmHashHex.hasPrefix("0x") {
             cleanHash = String(wasmHashHex.dropFirst(2))
@@ -252,7 +252,7 @@ public enum OZBuilders {
             cleanHash = wasmHashHex
         }
         if cleanHash.count != 64 {
-            throw ValidationException.invalidInput(
+            throw SmartAccountValidationException.invalidInput(
                 field: "wasmHash",
                 reason: "WASM hash must be 32 bytes (64 hex characters), got: \(cleanHash.count) characters"
             )
@@ -261,7 +261,7 @@ public enum OZBuilders {
         do {
             hashBytes = try Data(base16Encoded: cleanHash)
         } catch {
-            throw ValidationException.invalidInput(
+            throw SmartAccountValidationException.invalidInput(
                 field: "wasmHash",
                 reason: "WASM hash hex string must contain only hex characters",
                 cause: error
@@ -276,13 +276,13 @@ public enum OZBuilders {
     /// WASM hash.
     ///
     /// - Parameter wasmHash: 32-byte WASM hash.
-    /// - Returns: A ``ContextRuleType/createContract(wasmHash:)`` for the
+    /// - Returns: An ``OZContextRuleType/createContract(wasmHash:)`` for the
     ///   supplied hash.
-    /// - Throws: ``ValidationException/InvalidInput`` when `wasmHash` is not
+    /// - Throws: ``SmartAccountValidationException/InvalidInput`` when `wasmHash` is not
     ///   exactly 32 bytes.
-    public static func createCreateContractContext(wasmHash: Data) throws -> ContextRuleType {
+    public static func createCreateContractContext(wasmHash: Data) throws -> OZContextRuleType {
         if wasmHash.count != 32 {
-            throw ValidationException.invalidInput(
+            throw SmartAccountValidationException.invalidInput(
                 field: "wasmHash",
                 reason: "WASM hash must be 32 bytes, got: \(wasmHash.count)"
             )
@@ -302,7 +302,7 @@ public enum OZBuilders {
     /// - Parameter rules: The parsed context rules to scan.
     /// - Returns: Unique signers across all rules, in first-occurrence order.
     public static func collectUniqueSignersFromRules(
-        rules: [ParsedContextRule]
+        rules: [OZParsedContextRule]
     ) -> [any OZSmartAccountSigner] {
         let allSigners = rules.flatMap { $0.signers }
         return OZSmartAccountBuilders.collectUniqueSigners(signers: allSigners)

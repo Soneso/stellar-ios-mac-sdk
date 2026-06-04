@@ -44,9 +44,9 @@ internal protocol OZCredentialManagerProtocol: AnyObject, Sendable {
     ///   - transports: Optional WebAuthn transport hints captured during registration.
     ///   - deviceType: Optional authenticator device type (`singleDevice` / `multiDevice`).
     ///   - backedUp: Optional cloud-sync flag from the WebAuthn ceremony.
-    /// - Returns: The persisted ``StoredCredential``.
-    /// - Throws: ``ValidationException`` for malformed inputs, ``CredentialException``
-    ///           for duplicate identifiers, ``StorageException`` for write failures.
+    /// - Returns: The persisted ``OZStoredCredential``.
+    /// - Throws: ``SmartAccountValidationException`` for malformed inputs, ``SmartAccountCredentialException``
+    ///           for duplicate identifiers, ``SmartAccountStorageException`` for write failures.
     func createPendingCredential(
         credentialId: String,
         publicKey: Data,
@@ -55,39 +55,39 @@ internal protocol OZCredentialManagerProtocol: AnyObject, Sendable {
         transports: [String]?,
         deviceType: String?,
         backedUp: Bool?
-    ) async throws -> StoredCredential
+    ) async throws -> OZStoredCredential
 
     /// Fetches a previously stored credential by identifier.
     ///
     /// - Parameter credentialId: Base64URL-encoded credential identifier.
     /// - Returns: The credential when present, otherwise `nil`.
-    /// - Throws: ``StorageException`` on read failure.
-    func getCredential(credentialId: String) async throws -> StoredCredential?
+    /// - Throws: ``SmartAccountStorageException`` on read failure.
+    func getCredential(credentialId: String) async throws -> OZStoredCredential?
 
     /// Marks the credential's deployment as failed and stores the supplied error message.
     ///
     /// - Parameters:
     ///   - credentialId: Base64URL-encoded credential identifier.
     ///   - error: Human-readable failure description preserved on the credential.
-    /// - Throws: ``CredentialException``, ``StorageException``.
+    /// - Throws: ``SmartAccountCredentialException``, ``SmartAccountStorageException``.
     func markDeploymentFailed(credentialId: String, error: String) async throws
 
     /// Sets the supplied credential as the primary credential for the user.
     ///
     /// - Parameter credentialId: Base64URL-encoded credential identifier.
-    /// - Throws: ``CredentialException``, ``StorageException``.
+    /// - Throws: ``SmartAccountCredentialException``, ``SmartAccountStorageException``.
     func setPrimary(credentialId: String) async throws
 
     /// Updates the credential's last-used timestamp to the current wall-clock time.
     ///
     /// - Parameter credentialId: Base64URL-encoded credential identifier.
-    /// - Throws: ``CredentialException``, ``StorageException``.
+    /// - Throws: ``SmartAccountCredentialException``, ``SmartAccountStorageException``.
     func updateLastUsed(credentialId: String) async throws
 
     /// Deletes the credential from storage if present.
     ///
     /// - Parameter credentialId: Base64URL-encoded credential identifier.
-    /// - Throws: ``StorageException`` on write failure.
+    /// - Throws: ``SmartAccountStorageException`` on write failure.
     func deleteCredential(credentialId: String) async throws
 }
 
@@ -105,9 +105,9 @@ internal protocol OZContextRuleManagerProtocol: AnyObject, Sendable {
     /// account contract.
     ///
     /// - Returns: Parsed context rules in ascending rule-id order.
-    /// - Throws: ``TransactionException`` on simulation failure, ``IndexerException``
+    /// - Throws: ``SmartAccountTransactionException`` on simulation failure, ``SmartAccountIndexerException``
     ///           when the indexer fallback fails.
-    func listContextRules(maxScanId: UInt32?) async throws -> [ParsedContextRule]
+    func listContextRules(maxScanId: UInt32?) async throws -> [OZParsedContextRule]
 
     /// Resolves which context-rule identifiers should be bound into the signing
     /// digest for the supplied authorization entry.
@@ -117,18 +117,18 @@ internal protocol OZContextRuleManagerProtocol: AnyObject, Sendable {
     ///   - signers: The signer values participating in the current ceremony.
     ///   - contextRules: Pre-fetched rule view, supplied to avoid repeated RPC calls.
     /// - Returns: Identifiers of every rule whose root authorizes the entry.
-    /// - Throws: ``ValidationException`` when no rule matches the supplied signer set.
+    /// - Throws: ``SmartAccountValidationException`` when no rule matches the supplied signer set.
     func resolveContextRuleIdsForEntry(
         entry: SorobanAuthorizationEntryXDR,
         signers: [any OZSmartAccountSigner],
-        contextRules: [ParsedContextRule]
+        contextRules: [OZParsedContextRule]
     ) async throws -> [UInt32]
 
     /// Returns the raw `SCValXDR` representation of every active context rule, used
     /// for low-level credential-id lookups when local storage is not authoritative.
     ///
     /// - Returns: Raw `Map` ScVal representation of each active rule.
-    /// - Throws: ``TransactionException`` on simulation failure.
+    /// - Throws: ``SmartAccountTransactionException`` on simulation failure.
     func getAllContextRules(maxScanId: UInt32?) async throws -> [SCValXDR]
 
     /// Retrieves the raw `SCValXDR` payload of a single context rule by its
@@ -136,22 +136,22 @@ internal protocol OZContextRuleManagerProtocol: AnyObject, Sendable {
     ///
     /// Issues a simulated host-function invocation against the connected
     /// smart-account contract. Use ``parseContextRule(_:)`` to convert the
-    /// returned payload into the typed ``ParsedContextRule`` shape.
+    /// returned payload into the typed ``OZParsedContextRule`` shape.
     ///
     /// - Parameter id: The context-rule identifier to look up.
     /// - Returns: The raw `SCValXDR` payload returned by the contract.
-    /// - Throws: ``WalletException/NotConnected`` when no wallet is connected;
-    ///   ``TransactionException`` when the simulation fails.
+    /// - Throws: ``SmartAccountWalletException/NotConnected`` when no wallet is connected;
+    ///   ``SmartAccountTransactionException`` when the simulation fails.
     func getContextRule(id: UInt32) async throws -> SCValXDR
 
     /// Parses a raw context-rule `SCValXDR` payload into the typed
-    /// ``ParsedContextRule`` representation.
+    /// ``OZParsedContextRule`` representation.
     ///
     /// - Parameter scVal: The raw `SCValXDR` payload returned by the contract.
     /// - Returns: A typed view over the rule's signers, signer ids, policies,
     ///   policy ids, name, and expiration ledger.
-    /// - Throws: ``ValidationException`` when the payload is malformed.
-    func parseContextRule(_ scVal: SCValXDR) throws -> ParsedContextRule
+    /// - Throws: ``SmartAccountValidationException`` when the payload is malformed.
+    func parseContextRule(_ scVal: SCValXDR) throws -> OZParsedContextRule
 }
 
 // MARK: - OZSmartAccountKit Protocol
@@ -190,7 +190,7 @@ internal protocol OZSmartAccountKitProtocol: AnyObject, Sendable {
 
     /// Event emitter for the kit; receives lifecycle events emitted by wallet
     /// and transaction operations.
-    var events: SmartAccountEventEmitter { get }
+    var events: OZSmartAccountEventEmitter { get }
 
     /// Credential storage and metadata manager.
     var credentialManager: OZCredentialManagerProtocol { get }
@@ -205,14 +205,14 @@ internal protocol OZSmartAccountKitProtocol: AnyObject, Sendable {
     var transactionOperations: OZTransactionOperations { get }
 
     /// Returns the storage adapter used by the kit.
-    func getStorage() -> StorageAdapter
+    func getStorage() -> OZStorageAdapter
 
     /// Returns the deployer keypair, deriving the default deterministic deployer
     /// when no explicit deployer is configured.
     ///
     /// - Returns: The keypair used to deploy smart-account contracts and to pay
     ///   transaction fees when no relayer is configured.
-    /// - Throws: ``ConfigurationException`` when default-deployer construction
+    /// - Throws: ``SmartAccountConfigurationException`` when default-deployer construction
     ///           fails.
     func getDeployer() async throws -> KeyPair
 
@@ -220,7 +220,7 @@ internal protocol OZSmartAccountKitProtocol: AnyObject, Sendable {
     ///
     /// - Returns: ``ConnectedState`` carrying the active credential and contract
     ///   identifiers.
-    /// - Throws: ``WalletException/NotConnected`` when no wallet is connected.
+    /// - Throws: ``SmartAccountWalletException/NotConnected`` when no wallet is connected.
     func requireConnected() throws -> ConnectedState
 
     /// Records the connected state on the kit.

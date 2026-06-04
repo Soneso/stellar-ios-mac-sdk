@@ -34,8 +34,8 @@ final class OZExternalSignerManagerTests: XCTestCase {
     }
 
     private func makeManager(
-        walletAdapter: ExternalWalletAdapter? = nil,
-        walletConnectionStorage: WalletConnectionStorage? = nil
+        walletAdapter: OZExternalWalletAdapter? = nil,
+        walletConnectionStorage: OZWalletConnectionStorage? = nil
     ) -> OZExternalSignerManager {
         return OZExternalSignerManager(
             networkPassphrase: testNetworkPassphrase,
@@ -72,16 +72,16 @@ final class OZExternalSignerManagerTests: XCTestCase {
 
         do {
             _ = try await manager.addFromSecret(secretKey: "INVALID_SECRET_KEY")
-            XCTFail("expected SignerException.Invalid")
-        } catch let error as SignerException.Invalid {
+            XCTFail("expected SmartAccountSignerException.Invalid")
+        } catch let error as SmartAccountSignerException.Invalid {
             XCTAssertEqual(error.code, .signerInvalid)
             XCTAssertTrue(error.message.contains("Invalid signer"))
         }
 
         do {
             _ = try await manager.addFromSecret(secretKey: "")
-            XCTFail("expected SignerException.Invalid")
-        } catch is SignerException.Invalid {
+            XCTFail("expected SmartAccountSignerException.Invalid")
+        } catch is SmartAccountSignerException.Invalid {
             // expected
         }
 
@@ -89,8 +89,8 @@ final class OZExternalSignerManagerTests: XCTestCase {
         let keypair = try newKeypair()
         do {
             _ = try await manager.addFromSecret(secretKey: keypair.accountId)
-            XCTFail("expected SignerException.Invalid")
-        } catch is SignerException.Invalid {
+            XCTFail("expected SmartAccountSignerException.Invalid")
+        } catch is SmartAccountSignerException.Invalid {
             // expected
         }
     }
@@ -109,12 +109,12 @@ final class OZExternalSignerManagerTests: XCTestCase {
     }
 
     func test_addFromSecret_removesStaleWalletEntry() async throws {
-        let storage = InMemoryWalletConnectionStorage()
+        let storage = OZInMemoryWalletConnectionStorage()
         let keypair = try newKeypair()
         let address = keypair.accountId
 
         let adapter = FakeExternalWalletAdapter()
-        adapter.preset(wallet: ConnectedWallet(
+        adapter.preset(wallet: OZConnectedWallet(
             address: address,
             walletId: "wallet-1",
             walletName: "WalletOne"
@@ -126,7 +126,7 @@ final class OZExternalSignerManagerTests: XCTestCase {
         )
 
         // Establish a persisted wallet entry first.
-        adapter.nextConnect = ConnectedWallet(
+        adapter.nextConnect = OZConnectedWallet(
             address: address,
             walletId: "wallet-1",
             walletName: "WalletOne"
@@ -186,8 +186,8 @@ final class OZExternalSignerManagerTests: XCTestCase {
 
         do {
             _ = try await manager.addFromWallet()
-            XCTFail("expected ConfigurationException.MissingConfig")
-        } catch let error as ConfigurationException.MissingConfig {
+            XCTFail("expected SmartAccountConfigurationException.MissingConfig")
+        } catch let error as SmartAccountConfigurationException.MissingConfig {
             XCTAssertEqual(error.code, .missingConfig)
             XCTAssertTrue(error.message.contains("walletAdapter"))
         }
@@ -204,8 +204,8 @@ final class OZExternalSignerManagerTests: XCTestCase {
 
     func test_addFromWallet_success_persistsToStorage() async throws {
         let adapter = FakeExternalWalletAdapter()
-        let storage = InMemoryWalletConnectionStorage()
-        let wallet = ConnectedWallet(
+        let storage = OZInMemoryWalletConnectionStorage()
+        let wallet = OZConnectedWallet(
             address: validAddress1,
             walletId: "freighter",
             walletName: "Freighter"
@@ -228,7 +228,7 @@ final class OZExternalSignerManagerTests: XCTestCase {
 
     func test_addFromWallet_noStorage_doesNotPersist() async throws {
         let adapter = FakeExternalWalletAdapter()
-        let wallet = ConnectedWallet(
+        let wallet = OZConnectedWallet(
             address: validAddress1,
             walletId: "freighter",
             walletName: "Freighter"
@@ -261,7 +261,7 @@ final class OZExternalSignerManagerTests: XCTestCase {
 
     func test_canSignFor_walletExists_returnsTrue() async throws {
         let adapter = FakeExternalWalletAdapter()
-        let wallet = ConnectedWallet(
+        let wallet = OZConnectedWallet(
             address: validAddress1,
             walletId: "wallet-1",
             walletName: "WalletOne"
@@ -287,7 +287,7 @@ final class OZExternalSignerManagerTests: XCTestCase {
         let keypair = try newKeypair()
         let address = keypair.accountId
         // Pre-register the wallet adapter to claim the same address.
-        adapter.preset(wallet: ConnectedWallet(
+        adapter.preset(wallet: OZConnectedWallet(
             address: address,
             walletId: "wallet-1",
             walletName: "WalletOne"
@@ -342,8 +342,8 @@ final class OZExternalSignerManagerTests: XCTestCase {
                 address: address,
                 authEntry: "not-valid-base64-!!!"
             )
-            XCTFail("expected TransactionException.SigningFailed")
-        } catch let error as TransactionException.SigningFailed {
+            XCTFail("expected SmartAccountTransactionException.SigningFailed")
+        } catch let error as SmartAccountTransactionException.SigningFailed {
             XCTAssertEqual(error.code, .transactionSigningFailed)
             XCTAssertTrue(error.message.contains("decode"))
         }
@@ -355,7 +355,7 @@ final class OZExternalSignerManagerTests: XCTestCase {
         // test cares about.
         let adapter = FakeExternalWalletAdapter()
         let walletKeyPair = try newKeypair()
-        let wallet = ConnectedWallet(
+        let wallet = OZConnectedWallet(
             address: walletKeyPair.accountId,
             walletId: "wallet-1",
             walletName: "WalletOne"
@@ -366,7 +366,7 @@ final class OZExternalSignerManagerTests: XCTestCase {
         let preimageBase64 = preimagePayload.base64EncodedString()
         let preimageHash = preimagePayload.sha256Hash
         let realSignature = Data(walletKeyPair.sign([UInt8](preimageHash)))
-        adapter.nextSignAuthResult = SignAuthEntryResult(
+        adapter.nextSignAuthResult = OZSignAuthEntryResult(
             signedAuthEntry: realSignature.base64EncodedString(),
             signerAddress: walletKeyPair.accountId
         )
@@ -390,7 +390,7 @@ final class OZExternalSignerManagerTests: XCTestCase {
     func test_signAuthEntry_walletDelegate_signatureDoesNotVerify_throwsSigningFailed() async throws {
         let adapter = FakeExternalWalletAdapter()
         let walletKeyPair = try newKeypair()
-        let wallet = ConnectedWallet(
+        let wallet = OZConnectedWallet(
             address: walletKeyPair.accountId,
             walletId: "wallet-1",
             walletName: "WalletOne"
@@ -399,7 +399,7 @@ final class OZExternalSignerManagerTests: XCTestCase {
 
         // Mismatched signature: 64 zero bytes will not verify under any real
         // public key.
-        adapter.nextSignAuthResult = SignAuthEntryResult(
+        adapter.nextSignAuthResult = OZSignAuthEntryResult(
             signedAuthEntry: Data(repeating: 0x00, count: 64).base64EncodedString(),
             signerAddress: walletKeyPair.accountId
         )
@@ -411,8 +411,8 @@ final class OZExternalSignerManagerTests: XCTestCase {
                 address: walletKeyPair.accountId,
                 authEntry: preimageBase64
             )
-            XCTFail("expected TransactionException.SigningFailed")
-        } catch let error as TransactionException.SigningFailed {
+            XCTFail("expected SmartAccountTransactionException.SigningFailed")
+        } catch let error as SmartAccountTransactionException.SigningFailed {
             XCTAssertEqual(error.code, .transactionSigningFailed)
             XCTAssertTrue(
                 error.message.contains("does not verify"),
@@ -429,8 +429,8 @@ final class OZExternalSignerManagerTests: XCTestCase {
                 address: validAddress3,
                 authEntry: "AAAA" // base64 for 24 bits of zero
             )
-            XCTFail("expected SignerException.NotFound")
-        } catch let error as SignerException.NotFound {
+            XCTFail("expected SmartAccountSignerException.NotFound")
+        } catch let error as SmartAccountSignerException.NotFound {
             XCTAssertEqual(error.code, .signerNotFound)
             XCTAssertTrue(error.message.contains(validAddress3))
         }
@@ -440,12 +440,12 @@ final class OZExternalSignerManagerTests: XCTestCase {
         let adapter = FakeExternalWalletAdapter()
         let keypair = try newKeypair()
         let address = keypair.accountId
-        adapter.preset(wallet: ConnectedWallet(
+        adapter.preset(wallet: OZConnectedWallet(
             address: address,
             walletId: "wallet-1",
             walletName: "WalletOne"
         ))
-        adapter.nextSignAuthResult = SignAuthEntryResult(
+        adapter.nextSignAuthResult = OZSignAuthEntryResult(
             signedAuthEntry: Data(repeating: 0xFF, count: 64).base64EncodedString(),
             signerAddress: address
         )
@@ -471,7 +471,7 @@ final class OZExternalSignerManagerTests: XCTestCase {
 
     func test_signAuthEntry_walletAdapterError_wrapsAsSigningFailed() async throws {
         let adapter = FakeExternalWalletAdapter()
-        let wallet = ConnectedWallet(
+        let wallet = OZConnectedWallet(
             address: validAddress1,
             walletId: "wallet-1",
             walletName: "WalletOne"
@@ -488,8 +488,8 @@ final class OZExternalSignerManagerTests: XCTestCase {
                 address: validAddress1,
                 authEntry: "AAAA"
             )
-            XCTFail("expected TransactionException.SigningFailed")
-        } catch let error as TransactionException.SigningFailed {
+            XCTFail("expected SmartAccountTransactionException.SigningFailed")
+        } catch let error as SmartAccountTransactionException.SigningFailed {
             XCTAssertEqual(error.code, .transactionSigningFailed)
             XCTAssertTrue(
                 error.message.contains(validAddress1),
@@ -535,7 +535,7 @@ final class OZExternalSignerManagerTests: XCTestCase {
     func test_getAll_returnsKeypairsFirstThenWallets() async throws {
         let adapter = FakeExternalWalletAdapter()
         let walletAddr = validAddress1
-        adapter.preset(wallet: ConnectedWallet(
+        adapter.preset(wallet: OZConnectedWallet(
             address: walletAddr,
             walletId: "wallet-1",
             walletName: "WalletOne"
@@ -557,7 +557,7 @@ final class OZExternalSignerManagerTests: XCTestCase {
         let adapter = FakeExternalWalletAdapter()
         let kp = try newKeypair()
         let address = kp.accountId
-        adapter.preset(wallet: ConnectedWallet(
+        adapter.preset(wallet: OZConnectedWallet(
             address: address,
             walletId: "wallet-1",
             walletName: "WalletOne"
@@ -576,7 +576,7 @@ final class OZExternalSignerManagerTests: XCTestCase {
         let adapter = FakeExternalWalletAdapter()
         let kp = try newKeypair()
         let address = kp.accountId
-        adapter.preset(wallet: ConnectedWallet(
+        adapter.preset(wallet: OZConnectedWallet(
             address: address,
             walletId: "wallet-1",
             walletName: "WalletOne"
@@ -611,7 +611,7 @@ final class OZExternalSignerManagerTests: XCTestCase {
 
         // Now via wallet adapter only.
         let adapter = FakeExternalWalletAdapter()
-        adapter.preset(wallet: ConnectedWallet(
+        adapter.preset(wallet: OZConnectedWallet(
             address: validAddress1,
             walletId: "wallet-1",
             walletName: "WalletOne"
@@ -627,12 +627,12 @@ final class OZExternalSignerManagerTests: XCTestCase {
 
     func test_remove_keypairAndWallet_removesBoth() async throws {
         let adapter = FakeExternalWalletAdapter()
-        let storage = InMemoryWalletConnectionStorage()
+        let storage = OZInMemoryWalletConnectionStorage()
         let kp = try newKeypair()
         let address = kp.accountId
 
         // Persist a wallet entry for the same address first.
-        adapter.nextConnect = ConnectedWallet(
+        adapter.nextConnect = OZConnectedWallet(
             address: address,
             walletId: "wallet-1",
             walletName: "WalletOne"
@@ -646,7 +646,7 @@ final class OZExternalSignerManagerTests: XCTestCase {
         _ = try await manager.addFromSecret(secretKey: kp.secretSeed!)
 
         // Re-add wallet to storage manually (simulate a stale entry surviving).
-        adapter.preset(wallet: ConnectedWallet(
+        adapter.preset(wallet: OZConnectedWallet(
             address: address,
             walletId: "wallet-1",
             walletName: "WalletOne"
@@ -663,7 +663,7 @@ final class OZExternalSignerManagerTests: XCTestCase {
 
     func test_remove_callsAdapterDisconnectByAddress() async throws {
         let adapter = FakeExternalWalletAdapter()
-        adapter.preset(wallet: ConnectedWallet(
+        adapter.preset(wallet: OZConnectedWallet(
             address: validAddress1,
             walletId: "wallet-1",
             walletName: "WalletOne"
@@ -682,13 +682,13 @@ final class OZExternalSignerManagerTests: XCTestCase {
 
     func test_removeAll_clearsAllAndDisconnects() async throws {
         let adapter = FakeExternalWalletAdapter()
-        let storage = InMemoryWalletConnectionStorage()
-        adapter.preset(wallet: ConnectedWallet(
+        let storage = OZInMemoryWalletConnectionStorage()
+        adapter.preset(wallet: OZConnectedWallet(
             address: validAddress1,
             walletId: "w1",
             walletName: "WalletOne"
         ))
-        adapter.preset(wallet: ConnectedWallet(
+        adapter.preset(wallet: OZConnectedWallet(
             address: validAddress2,
             walletId: "w2",
             walletName: "WalletTwo"
@@ -712,9 +712,9 @@ final class OZExternalSignerManagerTests: XCTestCase {
     }
 
     func test_removeAll_removesStorageKey() async throws {
-        let storage = InMemoryWalletConnectionStorage()
+        let storage = OZInMemoryWalletConnectionStorage()
         let adapter = FakeExternalWalletAdapter()
-        adapter.nextConnect = ConnectedWallet(
+        adapter.nextConnect = OZConnectedWallet(
             address: validAddress1,
             walletId: "wallet-1",
             walletName: "WalletOne"
@@ -735,12 +735,12 @@ final class OZExternalSignerManagerTests: XCTestCase {
 
     func test_removeAll_clearsEd25519RegistrationsAlongsideWalletSigners() async throws {
         let adapter = FakeExternalWalletAdapter()
-        adapter.nextConnect = ConnectedWallet(
+        adapter.nextConnect = OZConnectedWallet(
             address: validAddress1,
             walletId: "w1",
             walletName: "WalletOne"
         )
-        let storage = InMemoryWalletConnectionStorage()
+        let storage = OZInMemoryWalletConnectionStorage()
         let manager = makeManager(
             walletAdapter: adapter,
             walletConnectionStorage: storage
@@ -784,7 +784,7 @@ final class OZExternalSignerManagerTests: XCTestCase {
     // ========================================================================
 
     func test_restoreConnections_idempotent_secondCallReturnsCurrent() async throws {
-        let storage = InMemoryWalletConnectionStorage()
+        let storage = OZInMemoryWalletConnectionStorage()
         await storage.setItem(
             key: walletStorageKey,
             value: """
@@ -793,7 +793,7 @@ final class OZExternalSignerManagerTests: XCTestCase {
         )
 
         let adapter = FakeExternalWalletAdapter()
-        adapter.reconnectResponse["freighter"] = ConnectedWallet(
+        adapter.reconnectResponse["freighter"] = OZConnectedWallet(
             address: validAddress1,
             walletId: "freighter",
             walletName: "Freighter"
@@ -825,7 +825,7 @@ final class OZExternalSignerManagerTests: XCTestCase {
     }
 
     func test_restoreConnections_reconnectFailure_removesStaleEntry() async throws {
-        let storage = InMemoryWalletConnectionStorage()
+        let storage = OZInMemoryWalletConnectionStorage()
         await storage.setItem(
             key: walletStorageKey,
             value: """
@@ -836,7 +836,7 @@ final class OZExternalSignerManagerTests: XCTestCase {
 
         let adapter = FakeExternalWalletAdapter()
         // Alpha succeeds; beta returns nil (treated as failure).
-        adapter.reconnectResponse["alpha"] = ConnectedWallet(
+        adapter.reconnectResponse["alpha"] = OZConnectedWallet(
             address: validAddress1,
             walletId: "alpha",
             walletName: "Alpha"
@@ -861,7 +861,7 @@ final class OZExternalSignerManagerTests: XCTestCase {
     }
 
     func test_restoreConnections_reconnectSuccess_returnsRestored() async throws {
-        let storage = InMemoryWalletConnectionStorage()
+        let storage = OZInMemoryWalletConnectionStorage()
         await storage.setItem(
             key: walletStorageKey,
             value: """
@@ -871,12 +871,12 @@ final class OZExternalSignerManagerTests: XCTestCase {
         )
 
         let adapter = FakeExternalWalletAdapter()
-        adapter.reconnectResponse["alpha"] = ConnectedWallet(
+        adapter.reconnectResponse["alpha"] = OZConnectedWallet(
             address: validAddress1,
             walletId: "alpha",
             walletName: "Alpha"
         )
-        adapter.reconnectResponse["beta"] = ConnectedWallet(
+        adapter.reconnectResponse["beta"] = OZConnectedWallet(
             address: validAddress2,
             walletId: "beta",
             walletName: "Beta"
@@ -894,7 +894,7 @@ final class OZExternalSignerManagerTests: XCTestCase {
     }
 
     func test_restoreConnections_concurrentCalls_serializedByActor() async throws {
-        let storage = InMemoryWalletConnectionStorage()
+        let storage = OZInMemoryWalletConnectionStorage()
         await storage.setItem(
             key: walletStorageKey,
             value: """
@@ -903,7 +903,7 @@ final class OZExternalSignerManagerTests: XCTestCase {
         )
 
         let adapter = FakeExternalWalletAdapter()
-        adapter.reconnectResponse["freighter"] = ConnectedWallet(
+        adapter.reconnectResponse["freighter"] = OZConnectedWallet(
             address: validAddress1,
             walletId: "freighter",
             walletName: "Freighter"
@@ -939,9 +939,9 @@ final class OZExternalSignerManagerTests: XCTestCase {
     func test_serializeWallets_emptyList_validJsonArray() async throws {
         // Round-trip through storage: removing the last entry deletes the
         // storage key entirely (so we never need to serialize an empty list).
-        let storage = InMemoryWalletConnectionStorage()
+        let storage = OZInMemoryWalletConnectionStorage()
         let adapter = FakeExternalWalletAdapter()
-        adapter.nextConnect = ConnectedWallet(
+        adapter.nextConnect = OZConnectedWallet(
             address: validAddress1,
             walletId: "w1",
             walletName: "WalletOne"
@@ -964,7 +964,7 @@ final class OZExternalSignerManagerTests: XCTestCase {
     }
 
     func test_serializeWallets_multipleEntries_correctOrder() async throws {
-        let storage = InMemoryWalletConnectionStorage()
+        let storage = OZInMemoryWalletConnectionStorage()
         let adapter = FakeExternalWalletAdapter()
         let manager = makeManager(
             walletAdapter: adapter,
@@ -973,9 +973,9 @@ final class OZExternalSignerManagerTests: XCTestCase {
 
         // Persist three wallets in a known order.
         let wallets = [
-            ConnectedWallet(address: validAddress1, walletId: "alpha", walletName: "Alpha"),
-            ConnectedWallet(address: validAddress2, walletId: "beta", walletName: "Beta"),
-            ConnectedWallet(address: validAddress3, walletId: "gamma", walletName: "Gamma")
+            OZConnectedWallet(address: validAddress1, walletId: "alpha", walletName: "Alpha"),
+            OZConnectedWallet(address: validAddress2, walletId: "beta", walletName: "Beta"),
+            OZConnectedWallet(address: validAddress3, walletId: "gamma", walletName: "Gamma")
         ]
         for wallet in wallets {
             adapter.nextConnect = wallet
@@ -995,7 +995,7 @@ final class OZExternalSignerManagerTests: XCTestCase {
     }
 
     func test_parseStoredWallets_validJson_returnsList() async throws {
-        let storage = InMemoryWalletConnectionStorage()
+        let storage = OZInMemoryWalletConnectionStorage()
         await storage.setItem(
             key: walletStorageKey,
             value: """
@@ -1005,12 +1005,12 @@ final class OZExternalSignerManagerTests: XCTestCase {
         )
 
         let adapter = FakeExternalWalletAdapter()
-        adapter.reconnectResponse["freighter"] = ConnectedWallet(
+        adapter.reconnectResponse["freighter"] = OZConnectedWallet(
             address: validAddress1,
             walletId: "freighter",
             walletName: "Freighter"
         )
-        adapter.reconnectResponse["lobstr"] = ConnectedWallet(
+        adapter.reconnectResponse["lobstr"] = OZConnectedWallet(
             address: validAddress2,
             walletId: "lobstr",
             walletName: "LOBSTR"
@@ -1028,7 +1028,7 @@ final class OZExternalSignerManagerTests: XCTestCase {
     }
 
     func test_parseStoredWallets_malformedJson_returnsEmpty() async throws {
-        let storage = InMemoryWalletConnectionStorage()
+        let storage = OZInMemoryWalletConnectionStorage()
         await storage.setItem(key: walletStorageKey, value: "this is not json at all")
 
         let adapter = FakeExternalWalletAdapter()
@@ -1044,14 +1044,14 @@ final class OZExternalSignerManagerTests: XCTestCase {
     }
 
     func test_removeWalletFromStorage_lastEntry_deletesStorageKey() async throws {
-        let storage = InMemoryWalletConnectionStorage()
+        let storage = OZInMemoryWalletConnectionStorage()
         let adapter = FakeExternalWalletAdapter()
         let manager = makeManager(
             walletAdapter: adapter,
             walletConnectionStorage: storage
         )
 
-        adapter.nextConnect = ConnectedWallet(
+        adapter.nextConnect = OZConnectedWallet(
             address: validAddress1,
             walletId: "only",
             walletName: "Only"
@@ -1070,11 +1070,11 @@ final class OZExternalSignerManagerTests: XCTestCase {
     }
 
     // ========================================================================
-    // Auxiliary coverage — InMemoryWalletConnectionStorage primitives
+    // Auxiliary coverage — OZInMemoryWalletConnectionStorage primitives
     // ========================================================================
 
     func test_inMemoryStorage_basicOperations() async throws {
-        let storage = InMemoryWalletConnectionStorage()
+        let storage = OZInMemoryWalletConnectionStorage()
 
         let empty = await storage.getItem(key: "k1")
         XCTAssertNil(empty)
@@ -1121,8 +1121,8 @@ final class OZExternalSignerManagerTests: XCTestCase {
         let manager = makeManager()
         do {
             _ = try await manager.addFromSecret(secretKey: "")
-            XCTFail("expected SignerException.Invalid")
-        } catch is SignerException.Invalid {
+            XCTFail("expected SmartAccountSignerException.Invalid")
+        } catch is SmartAccountSignerException.Invalid {
             // expected
         }
     }
@@ -1134,8 +1134,8 @@ final class OZExternalSignerManagerTests: XCTestCase {
         let keypair = try newKeypair()
         do {
             _ = try await manager.addFromSecret(secretKey: keypair.accountId)
-            XCTFail("expected SignerException.Invalid for G-address as secret")
-        } catch is SignerException.Invalid {
+            XCTFail("expected SmartAccountSignerException.Invalid for G-address as secret")
+        } catch is SmartAccountSignerException.Invalid {
             // expected
         }
     }
@@ -1232,7 +1232,7 @@ final class OZExternalSignerManagerTests: XCTestCase {
     /// Wallet names containing JSON-significant characters must round-trip
     /// through the JSON storage layer without corruption.
     func test_serializationRoundTrip_specialCharactersInWalletName() async throws {
-        let storage = InMemoryWalletConnectionStorage()
+        let storage = OZInMemoryWalletConnectionStorage()
         let adapter = FakeExternalWalletAdapter()
         let manager = makeManager(
             walletAdapter: adapter,
@@ -1240,7 +1240,7 @@ final class OZExternalSignerManagerTests: XCTestCase {
         )
 
         let specialName = #"Wallet "Pro" / v1.0 \ alpha"#
-        let wallet = ConnectedWallet(
+        let wallet = OZConnectedWallet(
             address: validAddress1,
             walletId: "special-id",
             walletName: specialName
@@ -1261,14 +1261,14 @@ final class OZExternalSignerManagerTests: XCTestCase {
     /// Empty-string fields must round-trip correctly. The serializer must
     /// not coerce empty strings to nil or omit them.
     func test_serializationRoundTrip_emptyStringFields() async throws {
-        let storage = InMemoryWalletConnectionStorage()
+        let storage = OZInMemoryWalletConnectionStorage()
         let adapter = FakeExternalWalletAdapter()
         let manager = makeManager(
             walletAdapter: adapter,
             walletConnectionStorage: storage
         )
 
-        let wallet = ConnectedWallet(
+        let wallet = OZConnectedWallet(
             address: validAddress1,
             walletId: "",
             walletName: ""
@@ -1328,8 +1328,8 @@ final class OZExternalSignerManagerTests: XCTestCase {
                 secretKeyBytes: Data(repeating: 0, count: 16),
                 verifierAddress: ed25519VerifierAlpha
             )
-            XCTFail("expected ValidationException.InvalidInput for 16-byte key")
-        } catch let error as ValidationException.InvalidInput {
+            XCTFail("expected SmartAccountValidationException.InvalidInput for 16-byte key")
+        } catch let error as SmartAccountValidationException.InvalidInput {
             XCTAssertEqual(error.code, .invalidInput)
             XCTAssertTrue(error.message.lowercased().contains("32"))
         }
@@ -1340,8 +1340,8 @@ final class OZExternalSignerManagerTests: XCTestCase {
                 secretKeyBytes: Data(),
                 verifierAddress: ed25519VerifierAlpha
             )
-            XCTFail("expected ValidationException.InvalidInput for empty key")
-        } catch is ValidationException.InvalidInput {
+            XCTFail("expected SmartAccountValidationException.InvalidInput for empty key")
+        } catch is SmartAccountValidationException.InvalidInput {
             // expected
         }
 
@@ -1351,8 +1351,8 @@ final class OZExternalSignerManagerTests: XCTestCase {
                 secretKeyBytes: Data(repeating: 0, count: 33),
                 verifierAddress: ed25519VerifierAlpha
             )
-            XCTFail("expected ValidationException.InvalidInput for 33-byte key")
-        } catch is ValidationException.InvalidInput {
+            XCTFail("expected SmartAccountValidationException.InvalidInput for 33-byte key")
+        } catch is SmartAccountValidationException.InvalidInput {
             // expected
         }
     }
@@ -1445,8 +1445,8 @@ final class OZExternalSignerManagerTests: XCTestCase {
                 publicKey: publicKey,
                 authDigest: authDigest
             )
-            XCTFail("expected ValidationException.InvalidInput")
-        } catch is ValidationException.InvalidInput {
+            XCTFail("expected SmartAccountValidationException.InvalidInput")
+        } catch is SmartAccountValidationException.InvalidInput {
             // expected
         }
     }
@@ -1547,21 +1547,21 @@ private final class FakeEd25519SignerAdapter: OZExternalEd25519SignerAdapter, @u
 // Test doubles
 // ============================================================================
 
-/// Recording fake ``ExternalWalletAdapter`` for unit tests.
+/// Recording fake ``OZExternalWalletAdapter`` for unit tests.
 ///
 /// Exposes preset state, queued responses, and call-site recordings so tests
 /// can verify interaction patterns (precedence ordering, options propagation,
 /// idempotency) without standing up a real wallet integration.
-private final class FakeExternalWalletAdapter: ExternalWalletAdapter, @unchecked Sendable {
+private final class FakeExternalWalletAdapter: OZExternalWalletAdapter, @unchecked Sendable {
 
     // Synchronisation: tests run sequentially per method by default. Concurrent
     // tests use Swift actor isolation on the manager side; the fake itself is
     // mutated only inside actor-isolated calls.
     private let queue = DispatchQueue(label: "FakeExternalWalletAdapter")
 
-    var nextConnect: ConnectedWallet?
-    var reconnectResponse: [String: ConnectedWallet?] = [:]
-    var nextSignAuthResult: SignAuthEntryResult?
+    var nextConnect: OZConnectedWallet?
+    var reconnectResponse: [String: OZConnectedWallet?] = [:]
+    var nextSignAuthResult: OZSignAuthEntryResult?
     var signAuthError: Error?
 
     private(set) var connectCallCount = 0
@@ -1572,18 +1572,18 @@ private final class FakeExternalWalletAdapter: ExternalWalletAdapter, @unchecked
 
     struct SignAuthInvocation {
         let preimageXdr: String
-        let options: SignAuthEntryOptions?
+        let options: OZSignAuthEntryOptions?
     }
     private(set) var lastSignAuthInvocation: SignAuthInvocation?
 
-    private var presetWallets: [String: ConnectedWallet] = [:]
+    private var presetWallets: [String: OZConnectedWallet] = [:]
 
-    func preset(wallet: ConnectedWallet) {
+    func preset(wallet: OZConnectedWallet) {
         queue.sync { presetWallets[wallet.address] = wallet }
     }
 
-    func connect() async throws -> ConnectedWallet? {
-        let wallet = queue.sync { () -> ConnectedWallet? in
+    func connect() async throws -> OZConnectedWallet? {
+        let wallet = queue.sync { () -> OZConnectedWallet? in
             connectCallCount += 1
             return nextConnect
         }
@@ -1612,21 +1612,21 @@ private final class FakeExternalWalletAdapter: ExternalWalletAdapter, @unchecked
 
     func signAuthEntry(
         preimageXdr: String,
-        options: SignAuthEntryOptions?
-    ) async throws -> SignAuthEntryResult {
-        let snapshot: (Error?, SignAuthEntryResult?) = queue.sync {
+        options: OZSignAuthEntryOptions?
+    ) async throws -> OZSignAuthEntryResult {
+        let snapshot: (Error?, OZSignAuthEntryResult?) = queue.sync {
             signAuthCallCount += 1
             lastSignAuthInvocation = SignAuthInvocation(preimageXdr: preimageXdr, options: options)
             return (signAuthError, nextSignAuthResult)
         }
         if let error = snapshot.0 { throw error }
         if let result = snapshot.1 { return result }
-        throw TransactionException.signingFailed(
+        throw SmartAccountTransactionException.signingFailed(
             reason: "FakeExternalWalletAdapter: no signAuth result configured"
         )
     }
 
-    func getConnectedWallets() -> [ConnectedWallet] {
+    func getConnectedWallets() -> [OZConnectedWallet] {
         return queue.sync { Array(presetWallets.values) }
     }
 
@@ -1634,12 +1634,12 @@ private final class FakeExternalWalletAdapter: ExternalWalletAdapter, @unchecked
         return queue.sync { presetWallets[address] != nil }
     }
 
-    func getWalletForAddress(address: String) -> ConnectedWallet? {
+    func getWalletForAddress(address: String) -> OZConnectedWallet? {
         return queue.sync { presetWallets[address] }
     }
 
-    func reconnect(walletId: String) async throws -> ConnectedWallet? {
-        let response: ConnectedWallet?? = queue.sync {
+    func reconnect(walletId: String) async throws -> OZConnectedWallet? {
+        let response: OZConnectedWallet?? = queue.sync {
             reconnectCallCount += 1
             return reconnectResponse[walletId]
         }

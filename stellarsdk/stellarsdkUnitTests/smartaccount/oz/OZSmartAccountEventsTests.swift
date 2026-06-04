@@ -12,13 +12,13 @@ final class OZSmartAccountEventsTests: XCTestCase {
 
     // MARK: - Test fixtures
 
-    private func makeStoredCredential(id: String = "cr", nickname: String? = nil) -> StoredCredential {
+    private func makeStoredCredential(id: String = "cr", nickname: String? = nil) -> OZStoredCredential {
         var publicKey = Data(count: 65)
         publicKey[0] = 0x04
         for i in 1..<65 {
             publicKey[i] = UInt8(i & 0xff)
         }
-        return StoredCredential(
+        return OZStoredCredential(
             credentialId: id,
             publicKey: publicKey,
             createdAt: 1_700_000_000_000,
@@ -29,7 +29,7 @@ final class OZSmartAccountEventsTests: XCTestCase {
     // MARK: - addListener (Global Listener) Tests
 
     func testAddListener_receivesAllEventTypes() {
-        let emitter = SmartAccountEventEmitter()
+        let emitter = OZSmartAccountEventEmitter()
         let recorder = EventRecorder()
 
         emitter.addListener { event in
@@ -53,7 +53,7 @@ final class OZSmartAccountEventsTests: XCTestCase {
     }
 
     func testAddListener_unsubscribeStopsReceiving() {
-        let emitter = SmartAccountEventEmitter()
+        let emitter = OZSmartAccountEventEmitter()
         let counter = Counter()
 
         let unsubscribe = emitter.addListener { _ in counter.increment() }
@@ -68,7 +68,7 @@ final class OZSmartAccountEventsTests: XCTestCase {
     }
 
     func testAddListener_multipleGlobalListenersAllReceive() {
-        let emitter = SmartAccountEventEmitter()
+        let emitter = OZSmartAccountEventEmitter()
         let c1 = Counter()
         let c2 = Counter()
         let c3 = Counter()
@@ -87,7 +87,7 @@ final class OZSmartAccountEventsTests: XCTestCase {
     // MARK: - Error Handler Tests
 
     func testErrorHandler_failingListenerDoesNotAffectOthers() {
-        let emitter = SmartAccountEventEmitter()
+        let emitter = OZSmartAccountEventEmitter()
         let listener1Called = AtomicBool()
         let listener3Called = AtomicBool()
 
@@ -103,7 +103,7 @@ final class OZSmartAccountEventsTests: XCTestCase {
     }
 
     func testSetErrorHandler_capturesEventAndError() {
-        let emitter = SmartAccountEventEmitter()
+        let emitter = OZSmartAccountEventEmitter()
         let captured = ErrorCapture()
 
         emitter.setErrorHandler { event, error in
@@ -115,7 +115,7 @@ final class OZSmartAccountEventsTests: XCTestCase {
             throw TestEventError(message: errorMessage)
         }
 
-        let event: SmartAccountEvent = .transactionSubmitted(hash: "abc123", success: false)
+        let event: OZSmartAccountEvent = .transactionSubmitted(hash: "abc123", success: false)
         emitter.emit(event)
 
         guard let capturedEvent = captured.event, let capturedError = captured.error else {
@@ -126,7 +126,7 @@ final class OZSmartAccountEventsTests: XCTestCase {
     }
 
     func testSetErrorHandler_nullDisablesHandler() {
-        let emitter = SmartAccountEventEmitter()
+        let emitter = OZSmartAccountEventEmitter()
         let handlerCalled = AtomicBool()
 
         emitter.setErrorHandler { _, _ in handlerCalled.set(true) }
@@ -141,12 +141,12 @@ final class OZSmartAccountEventsTests: XCTestCase {
     // MARK: - listenerCount Tests
 
     func testListenerCount_noListenersReturnsZero() {
-        let emitter = SmartAccountEventEmitter()
+        let emitter = OZSmartAccountEventEmitter()
         XCTAssertEqual(emitter.listenerCount(eventType: "WalletConnected"), 0)
     }
 
     func testListenerCount_countsTypeSpecificListeners() {
-        let emitter = SmartAccountEventEmitter()
+        let emitter = OZSmartAccountEventEmitter()
         emitter.on(.walletConnected) { _ in }
         emitter.on(.walletConnected) { _ in }
         emitter.on(.transactionSubmitted) { _ in }
@@ -156,7 +156,7 @@ final class OZSmartAccountEventsTests: XCTestCase {
     }
 
     func testListenerCount_includesGlobalListeners() {
-        let emitter = SmartAccountEventEmitter()
+        let emitter = OZSmartAccountEventEmitter()
         emitter.on(.walletConnected) { _ in }
         emitter.addListener { _ in }
 
@@ -167,7 +167,7 @@ final class OZSmartAccountEventsTests: XCTestCase {
     // MARK: - Emit Isolation Tests
 
     func testEmitIsolation_typeSpecificOnlyReceivesMatchingEvents() {
-        let emitter = SmartAccountEventEmitter()
+        let emitter = OZSmartAccountEventEmitter()
         let walletConnectedCount = Counter()
         let txSubmittedCount = Counter()
 
@@ -182,7 +182,7 @@ final class OZSmartAccountEventsTests: XCTestCase {
     }
 
     func testEmitIsolation_globalAndTypedMixed() {
-        let emitter = SmartAccountEventEmitter()
+        let emitter = OZSmartAccountEventEmitter()
         let globalCount = Counter()
         let typedCount = Counter()
 
@@ -203,7 +203,7 @@ final class OZSmartAccountEventsTests: XCTestCase {
     // MARK: - removeAllListeners for Specific Event Type
 
     func testRemoveAllListeners_specificTypeOnly() {
-        let emitter = SmartAccountEventEmitter()
+        let emitter = OZSmartAccountEventEmitter()
         let walletCount = Counter()
         let txCount = Counter()
 
@@ -220,7 +220,7 @@ final class OZSmartAccountEventsTests: XCTestCase {
     }
 
     func testRemoveAllListeners_allTypesAndGlobal() {
-        let emitter = SmartAccountEventEmitter()
+        let emitter = OZSmartAccountEventEmitter()
         let count = Counter()
 
         emitter.on(.walletConnected) { _ in count.increment() }
@@ -238,7 +238,7 @@ final class OZSmartAccountEventsTests: XCTestCase {
     // MARK: - on() Unsubscribe Tests
 
     func testOnUnsubscribe_stopsReceivingTypedEvents() {
-        let emitter = SmartAccountEventEmitter()
+        let emitter = OZSmartAccountEventEmitter()
         let count = Counter()
 
         let unsubscribe = emitter.on(.sessionExpired) { _ in count.increment() }
@@ -252,10 +252,10 @@ final class OZSmartAccountEventsTests: XCTestCase {
         XCTAssertEqual(count.value, 1, "Should not receive after unsubscribe")
     }
 
-    // MARK: - SmartAccountEvent Data Class Tests
+    // MARK: - OZSmartAccountEvent Data Class Tests
 
     func testWalletConnectedEvent() {
-        let event = SmartAccountEvent.walletConnected(contractId: "CABC", credentialId: "cred-id")
+        let event = OZSmartAccountEvent.walletConnected(contractId: "CABC", credentialId: "cred-id")
         if case let .walletConnected(contractId, credentialId) = event {
             XCTAssertEqual(contractId, "CABC")
             XCTAssertEqual(credentialId, "cred-id")
@@ -265,7 +265,7 @@ final class OZSmartAccountEventsTests: XCTestCase {
     }
 
     func testWalletDisconnectedEvent() {
-        let event = SmartAccountEvent.walletDisconnected(contractId: "CXYZ")
+        let event = OZSmartAccountEvent.walletDisconnected(contractId: "CXYZ")
         if case let .walletDisconnected(contractId) = event {
             XCTAssertEqual(contractId, "CXYZ")
         } else {
@@ -274,7 +274,7 @@ final class OZSmartAccountEventsTests: XCTestCase {
     }
 
     func testCredentialDeletedEvent() {
-        let event = SmartAccountEvent.credentialDeleted(credentialId: "del-cred")
+        let event = OZSmartAccountEvent.credentialDeleted(credentialId: "del-cred")
         if case let .credentialDeleted(credentialId) = event {
             XCTAssertEqual(credentialId, "del-cred")
         } else {
@@ -283,7 +283,7 @@ final class OZSmartAccountEventsTests: XCTestCase {
     }
 
     func testSessionExpiredEvent() {
-        let event = SmartAccountEvent.sessionExpired(contractId: "CSESS", credentialId: "cred-sess")
+        let event = OZSmartAccountEvent.sessionExpired(contractId: "CSESS", credentialId: "cred-sess")
         if case let .sessionExpired(contractId, credentialId) = event {
             XCTAssertEqual(contractId, "CSESS")
             XCTAssertEqual(credentialId, "cred-sess")
@@ -293,7 +293,7 @@ final class OZSmartAccountEventsTests: XCTestCase {
     }
 
     func testTransactionSignedEvent() {
-        let event = SmartAccountEvent.transactionSigned(contractId: "CTX", credentialId: "cred-tx")
+        let event = OZSmartAccountEvent.transactionSigned(contractId: "CTX", credentialId: "cred-tx")
         if case let .transactionSigned(contractId, credentialId) = event {
             XCTAssertEqual(contractId, "CTX")
             XCTAssertEqual(credentialId, "cred-tx")
@@ -301,7 +301,7 @@ final class OZSmartAccountEventsTests: XCTestCase {
             XCTFail("expected transactionSigned arm")
         }
 
-        let eventWithNull = SmartAccountEvent.transactionSigned(contractId: "CTX", credentialId: nil)
+        let eventWithNull = OZSmartAccountEvent.transactionSigned(contractId: "CTX", credentialId: nil)
         if case let .transactionSigned(_, credentialId) = eventWithNull {
             XCTAssertNil(credentialId)
         } else {
@@ -310,7 +310,7 @@ final class OZSmartAccountEventsTests: XCTestCase {
     }
 
     func testTransactionSubmittedEvent() {
-        let successEvent = SmartAccountEvent.transactionSubmitted(hash: "tx-hash", success: true)
+        let successEvent = OZSmartAccountEvent.transactionSubmitted(hash: "tx-hash", success: true)
         if case let .transactionSubmitted(hash, success) = successEvent {
             XCTAssertEqual(hash, "tx-hash")
             XCTAssertTrue(success)
@@ -318,7 +318,7 @@ final class OZSmartAccountEventsTests: XCTestCase {
             XCTFail("expected transactionSubmitted arm")
         }
 
-        let failEvent = SmartAccountEvent.transactionSubmitted(hash: "fail-hash", success: false)
+        let failEvent = OZSmartAccountEvent.transactionSubmitted(hash: "fail-hash", success: false)
         if case let .transactionSubmitted(_, success) = failEvent {
             XCTAssertFalse(success)
         } else {
@@ -328,7 +328,7 @@ final class OZSmartAccountEventsTests: XCTestCase {
 
     func testCredentialCreatedEvent() {
         let credential = makeStoredCredential(id: "new-cred", nickname: "Test Key")
-        let event = SmartAccountEvent.credentialCreated(credential: credential)
+        let event = OZSmartAccountEvent.credentialCreated(credential: credential)
         if case let .credentialCreated(captured) = event {
             XCTAssertEqual(captured.credentialId, "new-cred")
             XCTAssertEqual(captured.nickname, "Test Key")
@@ -340,7 +340,7 @@ final class OZSmartAccountEventsTests: XCTestCase {
     // MARK: - once() Tests
 
     func testOnce_firesOnFirstEventOnly() {
-        let emitter = SmartAccountEventEmitter()
+        let emitter = OZSmartAccountEventEmitter()
         let receivedHashes = StringList()
 
         emitter.once(.walletConnected) { event in
@@ -358,7 +358,7 @@ final class OZSmartAccountEventsTests: XCTestCase {
     }
 
     func testOnce_unsubscribeBeforeEventFiresCancels() {
-        let emitter = SmartAccountEventEmitter()
+        let emitter = OZSmartAccountEventEmitter()
         let callCount = Counter()
 
         let unsubscribe = emitter.once(.walletDisconnected) { _ in callCount.increment() }
@@ -370,7 +370,7 @@ final class OZSmartAccountEventsTests: XCTestCase {
     }
 
     func testOnce_listenerCountDecrementsAfterFiring() {
-        let emitter = SmartAccountEventEmitter()
+        let emitter = OZSmartAccountEventEmitter()
 
         emitter.once(.transactionSubmitted) { _ in }
 
@@ -386,7 +386,7 @@ final class OZSmartAccountEventsTests: XCTestCase {
     }
 
     func testOnce_multipleOnceListenersForSameType() {
-        let emitter = SmartAccountEventEmitter()
+        let emitter = OZSmartAccountEventEmitter()
         let c1 = Counter()
         let c2 = Counter()
 
@@ -412,7 +412,7 @@ final class OZSmartAccountEventsTests: XCTestCase {
     }
 
     func testOnce_doesNotAffectOtherEventTypes() {
-        let emitter = SmartAccountEventEmitter()
+        let emitter = OZSmartAccountEventEmitter()
         let onceCount = Counter()
         let permanentCount = Counter()
 
@@ -431,7 +431,7 @@ final class OZSmartAccountEventsTests: XCTestCase {
     // MARK: - Error Handler with once Tests
 
     func testOnce_listenerThrowsOnFirstEvent_errorHandlerCalled() {
-        let emitter = SmartAccountEventEmitter()
+        let emitter = OZSmartAccountEventEmitter()
         let errorHandlerCalled = AtomicBool()
         let captured = ErrorCapture()
 
@@ -452,7 +452,7 @@ final class OZSmartAccountEventsTests: XCTestCase {
     }
 
     func testOnce_listenerThrowsOnFirstEvent_stillAutoUnsubscribes() {
-        let emitter = SmartAccountEventEmitter()
+        let emitter = OZSmartAccountEventEmitter()
         let callCount = Counter()
 
         emitter.setErrorHandler { _, _ in }
@@ -475,7 +475,7 @@ final class OZSmartAccountEventsTests: XCTestCase {
     }
 
     func testErrorHandler_failingTypedListenerDoesNotAffectGlobalListener() {
-        let emitter = SmartAccountEventEmitter()
+        let emitter = OZSmartAccountEventEmitter()
         let globalCalled = AtomicBool()
 
         emitter.setErrorHandler { _, _ in }
@@ -494,7 +494,7 @@ final class OZSmartAccountEventsTests: XCTestCase {
     // MARK: - removeAllListeners(eventType) Does Not Remove Global Listeners
 
     func testRemoveAllListeners_specificType_doesNotRemoveGlobalListeners() {
-        let emitter = SmartAccountEventEmitter()
+        let emitter = OZSmartAccountEventEmitter()
         let globalCount = Counter()
         let typedCount = Counter()
 
@@ -511,7 +511,7 @@ final class OZSmartAccountEventsTests: XCTestCase {
     }
 
     func testRemoveAllListeners_specificType_globalListenerCountUnchanged() {
-        let emitter = SmartAccountEventEmitter()
+        let emitter = OZSmartAccountEventEmitter()
 
         emitter.addListener { _ in }
         emitter.on(.walletConnected) { _ in }
@@ -527,7 +527,7 @@ final class OZSmartAccountEventsTests: XCTestCase {
     // MARK: - Edge Cases
 
     func testEmit_withNoListeners_doesNotThrow() {
-        let emitter = SmartAccountEventEmitter()
+        let emitter = OZSmartAccountEventEmitter()
 
         emitter.emit(.walletConnected(contractId: "C", credentialId: "cr"))
         emitter.emit(.transactionSubmitted(hash: "h", success: true))
@@ -541,7 +541,7 @@ final class OZSmartAccountEventsTests: XCTestCase {
     }
 
     func testRemoveAllListeners_whenAlreadyEmpty_doesNotThrow() {
-        let emitter = SmartAccountEventEmitter()
+        let emitter = OZSmartAccountEventEmitter()
 
         emitter.removeAllListeners()
         emitter.removeAllListeners(eventType: "WalletConnected")
@@ -551,7 +551,7 @@ final class OZSmartAccountEventsTests: XCTestCase {
     }
 
     func testUnsubscribe_calledMultipleTimes_doesNotThrow() {
-        let emitter = SmartAccountEventEmitter()
+        let emitter = OZSmartAccountEventEmitter()
 
         let unsubscribe = emitter.on(.walletConnected) { _ in }
 
@@ -562,7 +562,7 @@ final class OZSmartAccountEventsTests: XCTestCase {
     }
 
     func testAddListenerUnsubscribe_calledMultipleTimes_doesNotThrow() {
-        let emitter = SmartAccountEventEmitter()
+        let emitter = OZSmartAccountEventEmitter()
 
         let unsubscribe = emitter.addListener { _ in }
 
@@ -575,7 +575,7 @@ final class OZSmartAccountEventsTests: XCTestCase {
     // MARK: - Rapid/Sequential Emission Tests
 
     func testRapidEmission_allEventsDeliveredInOrder() {
-        let emitter = SmartAccountEventEmitter()
+        let emitter = OZSmartAccountEventEmitter()
         let receivedHashes = StringList()
 
         emitter.on(.transactionSubmitted) { event in
@@ -597,7 +597,7 @@ final class OZSmartAccountEventsTests: XCTestCase {
     }
 
     func testRapidEmission_mixedEventTypes() {
-        let emitter = SmartAccountEventEmitter()
+        let emitter = OZSmartAccountEventEmitter()
         let allEvents = EventRecorder()
 
         emitter.addListener { event in allEvents.append(event) }
@@ -622,15 +622,15 @@ final class OZSmartAccountEventsTests: XCTestCase {
     // MARK: - Data Class Equality Tests
 
     func testWalletConnected_equalityAndCopy() {
-        let event1 = SmartAccountEvent.walletConnected(contractId: "C1", credentialId: "cr1")
-        let event2 = SmartAccountEvent.walletConnected(contractId: "C1", credentialId: "cr1")
-        let event3 = SmartAccountEvent.walletConnected(contractId: "C2", credentialId: "cr1")
+        let event1 = OZSmartAccountEvent.walletConnected(contractId: "C1", credentialId: "cr1")
+        let event2 = OZSmartAccountEvent.walletConnected(contractId: "C1", credentialId: "cr1")
+        let event3 = OZSmartAccountEvent.walletConnected(contractId: "C2", credentialId: "cr1")
 
         XCTAssertEqual(event1, event2, "Same properties should be equal")
         XCTAssertEqual(event1.hashValue, event2.hashValue, "Equal objects should have equal hashCode")
         XCTAssertNotEqual(event1, event3, "Different contractId should not be equal")
 
-        let copied = SmartAccountEvent.walletConnected(contractId: "C1", credentialId: "cr-new")
+        let copied = OZSmartAccountEvent.walletConnected(contractId: "C1", credentialId: "cr-new")
         if case let .walletConnected(contractId, credentialId) = copied {
             XCTAssertEqual(contractId, "C1", "Copy should preserve unchanged fields")
             XCTAssertEqual(credentialId, "cr-new", "Copy should update specified field")
@@ -640,15 +640,15 @@ final class OZSmartAccountEventsTests: XCTestCase {
     }
 
     func testWalletDisconnected_equalityAndCopy() {
-        let event1 = SmartAccountEvent.walletDisconnected(contractId: "C1")
-        let event2 = SmartAccountEvent.walletDisconnected(contractId: "C1")
-        let event3 = SmartAccountEvent.walletDisconnected(contractId: "C2")
+        let event1 = OZSmartAccountEvent.walletDisconnected(contractId: "C1")
+        let event2 = OZSmartAccountEvent.walletDisconnected(contractId: "C1")
+        let event3 = OZSmartAccountEvent.walletDisconnected(contractId: "C2")
 
         XCTAssertEqual(event1, event2)
         XCTAssertEqual(event1.hashValue, event2.hashValue)
         XCTAssertNotEqual(event1, event3)
 
-        let copied = SmartAccountEvent.walletDisconnected(contractId: "C-new")
+        let copied = OZSmartAccountEvent.walletDisconnected(contractId: "C-new")
         if case let .walletDisconnected(contractId) = copied {
             XCTAssertEqual(contractId, "C-new")
         } else {
@@ -657,15 +657,15 @@ final class OZSmartAccountEventsTests: XCTestCase {
     }
 
     func testTransactionSubmitted_equalityAndCopy() {
-        let event1 = SmartAccountEvent.transactionSubmitted(hash: "h1", success: true)
-        let event2 = SmartAccountEvent.transactionSubmitted(hash: "h1", success: true)
-        let event3 = SmartAccountEvent.transactionSubmitted(hash: "h1", success: false)
+        let event1 = OZSmartAccountEvent.transactionSubmitted(hash: "h1", success: true)
+        let event2 = OZSmartAccountEvent.transactionSubmitted(hash: "h1", success: true)
+        let event3 = OZSmartAccountEvent.transactionSubmitted(hash: "h1", success: false)
 
         XCTAssertEqual(event1, event2)
         XCTAssertEqual(event1.hashValue, event2.hashValue)
         XCTAssertNotEqual(event1, event3, "Different success value should not be equal")
 
-        let copied = SmartAccountEvent.transactionSubmitted(hash: "h1", success: false)
+        let copied = OZSmartAccountEvent.transactionSubmitted(hash: "h1", success: false)
         if case let .transactionSubmitted(hash, success) = copied {
             XCTAssertEqual(hash, "h1")
             XCTAssertFalse(success)
@@ -675,22 +675,22 @@ final class OZSmartAccountEventsTests: XCTestCase {
     }
 
     func testTransactionSigned_equalityWithNullCredential() {
-        let event1 = SmartAccountEvent.transactionSigned(contractId: "C1", credentialId: nil)
-        let event2 = SmartAccountEvent.transactionSigned(contractId: "C1", credentialId: nil)
-        let event3 = SmartAccountEvent.transactionSigned(contractId: "C1", credentialId: "cr")
+        let event1 = OZSmartAccountEvent.transactionSigned(contractId: "C1", credentialId: nil)
+        let event2 = OZSmartAccountEvent.transactionSigned(contractId: "C1", credentialId: nil)
+        let event3 = OZSmartAccountEvent.transactionSigned(contractId: "C1", credentialId: "cr")
 
         XCTAssertEqual(event1, event2, "Both with null credentialId should be equal")
         XCTAssertNotEqual(event1, event3, "Null vs non-null credentialId should not be equal")
     }
 
     func testSessionExpired_equalityAndCopy() {
-        let event1 = SmartAccountEvent.sessionExpired(contractId: "C1", credentialId: "cr1")
-        let event2 = SmartAccountEvent.sessionExpired(contractId: "C1", credentialId: "cr1")
+        let event1 = OZSmartAccountEvent.sessionExpired(contractId: "C1", credentialId: "cr1")
+        let event2 = OZSmartAccountEvent.sessionExpired(contractId: "C1", credentialId: "cr1")
 
         XCTAssertEqual(event1, event2)
         XCTAssertEqual(event1.hashValue, event2.hashValue)
 
-        let copied = SmartAccountEvent.sessionExpired(contractId: "C-new", credentialId: "cr1")
+        let copied = OZSmartAccountEvent.sessionExpired(contractId: "C-new", credentialId: "cr1")
         if case let .sessionExpired(contractId, credentialId) = copied {
             XCTAssertEqual(contractId, "C-new")
             XCTAssertEqual(credentialId, "cr1")
@@ -700,14 +700,14 @@ final class OZSmartAccountEventsTests: XCTestCase {
     }
 
     func testCredentialDeleted_equalityAndCopy() {
-        let event1 = SmartAccountEvent.credentialDeleted(credentialId: "cr1")
-        let event2 = SmartAccountEvent.credentialDeleted(credentialId: "cr1")
-        let event3 = SmartAccountEvent.credentialDeleted(credentialId: "cr2")
+        let event1 = OZSmartAccountEvent.credentialDeleted(credentialId: "cr1")
+        let event2 = OZSmartAccountEvent.credentialDeleted(credentialId: "cr1")
+        let event3 = OZSmartAccountEvent.credentialDeleted(credentialId: "cr2")
 
         XCTAssertEqual(event1, event2)
         XCTAssertNotEqual(event1, event3)
 
-        let copied = SmartAccountEvent.credentialDeleted(credentialId: "cr-new")
+        let copied = OZSmartAccountEvent.credentialDeleted(credentialId: "cr-new")
         if case let .credentialDeleted(credentialId) = copied {
             XCTAssertEqual(credentialId, "cr-new")
         } else {
@@ -716,9 +716,9 @@ final class OZSmartAccountEventsTests: XCTestCase {
     }
 
     func testDifferentEventTypes_areNeverEqual() {
-        let connected = SmartAccountEvent.walletConnected(contractId: "C", credentialId: "cr")
-        let disconnected = SmartAccountEvent.walletDisconnected(contractId: "C")
-        let expired = SmartAccountEvent.sessionExpired(contractId: "C", credentialId: "cr")
+        let connected = OZSmartAccountEvent.walletConnected(contractId: "C", credentialId: "cr")
+        let disconnected = OZSmartAccountEvent.walletDisconnected(contractId: "C")
+        let expired = OZSmartAccountEvent.sessionExpired(contractId: "C", credentialId: "cr")
 
         XCTAssertNotEqual(connected, disconnected,
             "Different event types should never be equal")
@@ -729,7 +729,7 @@ final class OZSmartAccountEventsTests: XCTestCase {
     // MARK: - Listener Interaction During Emission
 
     func testListener_canUnsubscribeItselfDuringEmission() {
-        let emitter = SmartAccountEventEmitter()
+        let emitter = OZSmartAccountEventEmitter()
         let callCount = Counter()
         let unsubscribeBox = UnsubscribeReceiver()
 
@@ -747,7 +747,7 @@ final class OZSmartAccountEventsTests: XCTestCase {
     }
 
     func testOnce_combinedWithPermanentListener() {
-        let emitter = SmartAccountEventEmitter()
+        let emitter = OZSmartAccountEventEmitter()
         let onceCount = Counter()
         let permanentCount = Counter()
 
@@ -801,19 +801,19 @@ final class StringList: @unchecked Sendable {
 /// Thread-safe event recorder.
 final class EventRecorder: @unchecked Sendable {
     private let lock = NSLock()
-    private var events: [SmartAccountEvent] = []
-    func append(_ event: SmartAccountEvent) { lock.lock(); events.append(event); lock.unlock() }
-    func snapshot() -> [SmartAccountEvent] { lock.lock(); defer { lock.unlock() }; return events }
+    private var events: [OZSmartAccountEvent] = []
+    func append(_ event: OZSmartAccountEvent) { lock.lock(); events.append(event); lock.unlock() }
+    func snapshot() -> [OZSmartAccountEvent] { lock.lock(); defer { lock.unlock() }; return events }
 }
 
 /// Captures the (event, error) pair surfaced by the emitter's error handler.
 final class ErrorCapture: @unchecked Sendable {
     private let lock = NSLock()
-    private var _event: SmartAccountEvent?
+    private var _event: OZSmartAccountEvent?
     private var _error: Error?
-    var event: SmartAccountEvent? { lock.lock(); defer { lock.unlock() }; return _event }
+    var event: OZSmartAccountEvent? { lock.lock(); defer { lock.unlock() }; return _event }
     var error: Error? { lock.lock(); defer { lock.unlock() }; return _error }
-    func set(event: SmartAccountEvent, error: Error) {
+    func set(event: OZSmartAccountEvent, error: Error) {
         lock.lock(); _event = event; _error = error; lock.unlock()
     }
 }
@@ -822,8 +822,8 @@ final class ErrorCapture: @unchecked Sendable {
 /// supporting the listener-self-unsubscribe pattern.
 final class UnsubscribeReceiver: @unchecked Sendable {
     private let lock = NSLock()
-    private var unsubscribe: SmartAccountEventUnsubscribe?
-    func set(_ u: @escaping SmartAccountEventUnsubscribe) { lock.lock(); unsubscribe = u; lock.unlock() }
+    private var unsubscribe: OZSmartAccountEventUnsubscribe?
+    func set(_ u: @escaping OZSmartAccountEventUnsubscribe) { lock.lock(); unsubscribe = u; lock.unlock() }
     func invoke() {
         lock.lock()
         let u = unsubscribe
@@ -832,14 +832,14 @@ final class UnsubscribeReceiver: @unchecked Sendable {
     }
 }
 
-// MARK: - SmartAccountEvent equality and hash — extra coverage
+// MARK: - OZSmartAccountEvent equality and hash — extra coverage
 
 extension OZSmartAccountEventsTests {
 
-    /// `SmartAccountEvent.credentialCreated` equality and hash coverage.
+    /// `OZSmartAccountEvent.credentialCreated` equality and hash coverage.
     func test_event_credentialCreated_equalityAndHash() {
         let key = Data(repeating: 0x04, count: 65)
-        let cred = StoredCredential(
+        let cred = OZStoredCredential(
             credentialId: "cred-eq",
             publicKey: key,
             contractId: "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM",
@@ -848,19 +848,19 @@ extension OZSmartAccountEventsTests {
             nickname: nil,
             isPrimary: false
         )
-        let event1: SmartAccountEvent = .credentialCreated(credential: cred)
-        let event2: SmartAccountEvent = .credentialCreated(credential: cred)
+        let event1: OZSmartAccountEvent = .credentialCreated(credential: cred)
+        let event2: OZSmartAccountEvent = .credentialCreated(credential: cred)
         XCTAssertEqual(event1, event2)
         XCTAssertEqual(event1.hashValue, event2.hashValue)
     }
 
-    /// `SmartAccountEvent.transactionSigned` equality and hash coverage.
+    /// `OZSmartAccountEvent.transactionSigned` equality and hash coverage.
     func test_event_transactionSigned_equalityAndHash() {
-        let event1: SmartAccountEvent = .transactionSigned(
+        let event1: OZSmartAccountEvent = .transactionSigned(
             contractId: "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM",
             credentialId: "cred-ts"
         )
-        let event2: SmartAccountEvent = .transactionSigned(
+        let event2: OZSmartAccountEvent = .transactionSigned(
             contractId: "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM",
             credentialId: "cred-ts"
         )
@@ -868,30 +868,30 @@ extension OZSmartAccountEventsTests {
         XCTAssertEqual(event1.hashValue, event2.hashValue)
     }
 
-    /// `SmartAccountEvent.transactionSubmitted` equality and hash coverage.
+    /// `OZSmartAccountEvent.transactionSubmitted` equality and hash coverage.
     func test_event_transactionSubmitted_equalityAndHash() {
-        let event1: SmartAccountEvent = .transactionSubmitted(hash: "abc", success: true)
-        let event2: SmartAccountEvent = .transactionSubmitted(hash: "abc", success: true)
+        let event1: OZSmartAccountEvent = .transactionSubmitted(hash: "abc", success: true)
+        let event2: OZSmartAccountEvent = .transactionSubmitted(hash: "abc", success: true)
         XCTAssertEqual(event1, event2)
         XCTAssertEqual(event1.hashValue, event2.hashValue)
     }
 
-    /// `SmartAccountEvent.credentialSyncFailed` equality and hash coverage.
+    /// `OZSmartAccountEvent.credentialSyncFailed` equality and hash coverage.
     func test_event_credentialSyncFailed_equalityAndHash() {
         struct _SyncErr: Error, LocalizedError {
             var errorDescription: String? { "sync failed" }
         }
         let err = _SyncErr()
-        let event1: SmartAccountEvent = .credentialSyncFailed(credentialId: "cred-sf", error: err)
-        let event2: SmartAccountEvent = .credentialSyncFailed(credentialId: "cred-sf", error: err)
+        let event1: OZSmartAccountEvent = .credentialSyncFailed(credentialId: "cred-sf", error: err)
+        let event2: OZSmartAccountEvent = .credentialSyncFailed(credentialId: "cred-sf", error: err)
         XCTAssertEqual(event1, event2)
         XCTAssertEqual(event1.hashValue, event2.hashValue)
     }
 
-    /// `SmartAccountEvent.credentialDeleted` hash coverage.
+    /// `OZSmartAccountEvent.credentialDeleted` hash coverage.
     func test_event_credentialDeleted_hashCoverageAndEquality() {
-        let event1: SmartAccountEvent = .credentialDeleted(credentialId: "cred-del")
-        let event2: SmartAccountEvent = .credentialDeleted(credentialId: "cred-del")
+        let event1: OZSmartAccountEvent = .credentialDeleted(credentialId: "cred-del")
+        let event2: OZSmartAccountEvent = .credentialDeleted(credentialId: "cred-del")
         XCTAssertEqual(event1, event2)
         XCTAssertEqual(event1.hashValue, event2.hashValue)
     }
@@ -902,7 +902,7 @@ extension OZSmartAccountEventsTests {
     /// fired must be a no-op. This exercises the `if fired { ... return }`
     /// guard inside `UnsubscribeBox.callOnce()` (lines 478-480).
     func test_once_callingReturnedUnsubscribeAfterEventFires_isNoOp() {
-        let emitter = SmartAccountEventEmitter()
+        let emitter = OZSmartAccountEventEmitter()
         let callCount = Counter()
         let unsubscribe = emitter.once(.transactionSubmitted) { _ in
             callCount.increment()
@@ -920,7 +920,7 @@ extension OZSmartAccountEventsTests {
     /// listener from running. Exercises the `set` path normally and verifies
     /// `callOnce` from the event does not double-fire.
     func test_once_callingReturnedUnsubscribeBeforeEventFires_preventsListenerFromRunning() {
-        let emitter = SmartAccountEventEmitter()
+        let emitter = OZSmartAccountEventEmitter()
         let callCount = Counter()
         let unsubscribe = emitter.once(.transactionSubmitted) { _ in
             callCount.increment()

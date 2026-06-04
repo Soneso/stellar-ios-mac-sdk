@@ -13,7 +13,7 @@ import XCTest
 /// Covers the credential lifecycle operations the manager owns: create / save /
 /// query / update / sync / delete / setPrimary / clearAll. All tests use the
 /// ``MockOZSmartAccountKit`` test double, which holds a real
-/// ``InMemoryStorageAdapter`` and lets the tests inject a scriptable
+/// ``OZInMemoryStorageAdapter`` and lets the tests inject a scriptable
 /// ``MockSorobanServerScript`` for the on-chain sync paths.
 final class OZCredentialManagerTests: XCTestCase {
 
@@ -39,14 +39,14 @@ final class OZCredentialManagerTests: XCTestCase {
 
     /// Builds a real ``OZCredentialManager`` bound to a ``MockOZSmartAccountKit``.
     ///
-    /// The mock kit is constructed with a fresh ``InMemoryStorageAdapter`` and
+    /// The mock kit is constructed with a fresh ``OZInMemoryStorageAdapter`` and
     /// (when `useScriptedServer` is true) a ``SorobanServer`` whose URL is
     /// intercepted by ``MockSorobanServerScript`` so the sync paths can be
     /// driven without live RPC traffic.
     private func makeManager(
         useScriptedServer: Bool = false
-    ) throws -> (manager: OZCredentialManager, kit: MockOZSmartAccountKit, storage: InMemoryStorageAdapter) {
-        let storage = InMemoryStorageAdapter()
+    ) throws -> (manager: OZCredentialManager, kit: MockOZSmartAccountKit, storage: OZInMemoryStorageAdapter) {
+        let storage = OZInMemoryStorageAdapter()
         let config = try OZSmartAccountConfig(
             rpcUrl: "https://mock-rpc.invalid/rpc",
             networkPassphrase: Network.testnet.passphrase,
@@ -100,11 +100,11 @@ final class OZCredentialManagerTests: XCTestCase {
                 publicKey: Data(repeating: 0, count: 32),
                 contractId: contractA
             )
-            XCTFail("expected ValidationException.InvalidInput")
-        } catch is ValidationException.InvalidInput {
+            XCTFail("expected SmartAccountValidationException.InvalidInput")
+        } catch is SmartAccountValidationException.InvalidInput {
             // expected
         } catch {
-            XCTFail("expected ValidationException.InvalidInput, got \(type(of: error))")
+            XCTFail("expected SmartAccountValidationException.InvalidInput, got \(type(of: error))")
         }
     }
 
@@ -117,11 +117,11 @@ final class OZCredentialManagerTests: XCTestCase {
                 publicKey: testPublicKey(),
                 contractId: contractA
             )
-            XCTFail("expected ValidationException.InvalidInput")
-        } catch is ValidationException.InvalidInput {
+            XCTFail("expected SmartAccountValidationException.InvalidInput")
+        } catch is SmartAccountValidationException.InvalidInput {
             // expected
         } catch {
-            XCTFail("expected ValidationException.InvalidInput, got \(type(of: error))")
+            XCTFail("expected SmartAccountValidationException.InvalidInput, got \(type(of: error))")
         }
     }
 
@@ -139,11 +139,11 @@ final class OZCredentialManagerTests: XCTestCase {
                 publicKey: testPublicKey(),
                 contractId: contractB
             )
-            XCTFail("expected CredentialException.AlreadyExists")
-        } catch is CredentialException.AlreadyExists {
+            XCTFail("expected SmartAccountCredentialException.AlreadyExists")
+        } catch is SmartAccountCredentialException.AlreadyExists {
             // expected
         } catch {
-            XCTFail("expected CredentialException.AlreadyExists, got \(type(of: error))")
+            XCTFail("expected SmartAccountCredentialException.AlreadyExists, got \(type(of: error))")
         }
     }
 
@@ -204,11 +204,11 @@ final class OZCredentialManagerTests: XCTestCase {
                 credentialId: "",
                 publicKey: testPublicKey()
             )
-            XCTFail("expected ValidationException.InvalidInput")
-        } catch is ValidationException.InvalidInput {
+            XCTFail("expected SmartAccountValidationException.InvalidInput")
+        } catch is SmartAccountValidationException.InvalidInput {
             // expected
         } catch {
-            XCTFail("expected ValidationException.InvalidInput, got \(type(of: error))")
+            XCTFail("expected SmartAccountValidationException.InvalidInput, got \(type(of: error))")
         }
     }
 
@@ -220,11 +220,11 @@ final class OZCredentialManagerTests: XCTestCase {
                 credentialId: "invalid-key-cred",
                 publicKey: Data(repeating: 0, count: 32)
             )
-            XCTFail("expected ValidationException.InvalidInput")
-        } catch is ValidationException.InvalidInput {
+            XCTFail("expected SmartAccountValidationException.InvalidInput")
+        } catch is SmartAccountValidationException.InvalidInput {
             // expected
         } catch {
-            XCTFail("expected ValidationException.InvalidInput, got \(type(of: error))")
+            XCTFail("expected SmartAccountValidationException.InvalidInput, got \(type(of: error))")
         }
     }
 
@@ -347,17 +347,17 @@ final class OZCredentialManagerTests: XCTestCase {
         XCTAssertEqual(result.pending, 2)
     }
 
-    /// A.3.13: sync throws CredentialException.NotFound when the credential
+    /// A.3.13: sync throws SmartAccountCredentialException.NotFound when the credential
     /// does not exist in storage.
     func testSync_credentialNotFound_throwsCredentialNotFound() async throws {
         let (manager, _, _) = try makeManager()
         do {
             _ = try await manager.sync(credentialId: "missing-cred")
-            XCTFail("expected CredentialException.NotFound")
-        } catch is CredentialException.NotFound {
+            XCTFail("expected SmartAccountCredentialException.NotFound")
+        } catch is SmartAccountCredentialException.NotFound {
             // expected
         } catch {
-            XCTFail("expected CredentialException.NotFound, got \(type(of: error))")
+            XCTFail("expected SmartAccountCredentialException.NotFound, got \(type(of: error))")
         }
     }
 
@@ -442,7 +442,7 @@ final class OZCredentialManagerTests: XCTestCase {
 
     /// A.4.15: deleteCredential refuses to delete when the on-chain contract
     /// already exists; sync removes the credential and the deletion then
-    /// throws CredentialException.Invalid.
+    /// throws SmartAccountCredentialException.Invalid.
     func testDeleteCredential_deployedCredential_throwsCannotDelete() async throws {
         let script = MockSorobanServerScript()
         MockSorobanServer.activate(script: script)
@@ -464,28 +464,28 @@ final class OZCredentialManagerTests: XCTestCase {
 
         do {
             try await manager.deleteCredential(credentialId: "deployed-cred")
-            XCTFail("expected CredentialException.Invalid")
-        } catch is CredentialException.Invalid {
+            XCTFail("expected SmartAccountCredentialException.Invalid")
+        } catch is SmartAccountCredentialException.Invalid {
             // expected
         } catch {
-            XCTFail("expected CredentialException.Invalid, got \(type(of: error))")
+            XCTFail("expected SmartAccountCredentialException.Invalid, got \(type(of: error))")
         }
         // sync removed the credential during the pre-delete check.
         let leftover = try await storage.get(credentialId: "deployed-cred")
         XCTAssertNil(leftover)
     }
 
-    /// A.4.16: deleteCredential throws CredentialException.NotFound when the
+    /// A.4.16: deleteCredential throws SmartAccountCredentialException.NotFound when the
     /// credential does not exist.
     func testDeleteCredential_credentialNotFound_throwsNotFound() async throws {
         let (manager, _, _) = try makeManager()
         do {
             try await manager.deleteCredential(credentialId: "missing-cred")
-            XCTFail("expected CredentialException.NotFound")
-        } catch is CredentialException.NotFound {
+            XCTFail("expected SmartAccountCredentialException.NotFound")
+        } catch is SmartAccountCredentialException.NotFound {
             // expected
         } catch {
-            XCTFail("expected CredentialException.NotFound, got \(type(of: error))")
+            XCTFail("expected SmartAccountCredentialException.NotFound, got \(type(of: error))")
         }
     }
 
@@ -669,7 +669,7 @@ final class OZCredentialManagerTests: XCTestCase {
         } catch {
             // Acceptable alternative: an awaited RPC failure surfaced before
             // the cancellation checkpoint observed. Any thrown error proves
-            // the loop did not return a fully-populated SyncResult.
+            // the loop did not return a fully-populated OZSyncResult.
         }
     }
 
@@ -699,7 +699,7 @@ final class OZCredentialManagerTests: XCTestCase {
         return OZCredentialManager(kit: kit)
     }
 
-    /// `createPendingCredential` must surface `StorageException.WriteFailed`
+    /// `createPendingCredential` must surface `SmartAccountStorageException.WriteFailed`
     /// when the underlying storage adapter fails the write.
     func test_createPendingCredential_storageWriteFails_throwsStorageException() async throws {
         let manager = try makeManagerWithFailingStorage(failOnWrite: true)
@@ -709,13 +709,13 @@ final class OZCredentialManagerTests: XCTestCase {
                 publicKey: testPublicKey(),
                 contractId: contractA
             )
-            XCTFail("expected StorageException")
-        } catch is StorageException {
+            XCTFail("expected SmartAccountStorageException")
+        } catch is SmartAccountStorageException {
             // expected
         }
     }
 
-    /// `saveCredential` must surface `StorageException.WriteFailed` when
+    /// `saveCredential` must surface `SmartAccountStorageException.WriteFailed` when
     /// the underlying storage adapter fails the write.
     func test_saveCredential_storageWriteFails_throwsStorageException() async throws {
         let manager = try makeManagerWithFailingStorage(failOnWrite: true)
@@ -725,38 +725,38 @@ final class OZCredentialManagerTests: XCTestCase {
                 publicKey: testPublicKey(),
                 contractId: contractA
             )
-            XCTFail("expected StorageException")
-        } catch is StorageException {
+            XCTFail("expected SmartAccountStorageException")
+        } catch is SmartAccountStorageException {
             // expected
         }
     }
 
-    /// `getAllCredentials` must surface `StorageException.ReadFailed` when
+    /// `getAllCredentials` must surface `SmartAccountStorageException.ReadFailed` when
     /// the underlying storage adapter fails the read.
     func test_getAllCredentials_storageReadFails_throws() async throws {
         let manager = try makeManagerWithFailingStorage(failOnRead: true)
         do {
             _ = try await manager.getAllCredentials()
-            XCTFail("expected StorageException")
-        } catch is StorageException {
+            XCTFail("expected SmartAccountStorageException")
+        } catch is SmartAccountStorageException {
             // expected
         }
     }
 
-    /// `clearAll` must surface `StorageException.WriteFailed` when the
+    /// `clearAll` must surface `SmartAccountStorageException.WriteFailed` when the
     /// underlying storage adapter fails the clear operation.
     func test_clearAll_storageWriteFails_throwsStorageException() async throws {
         let manager = try makeManagerWithFailingStorage(failOnWrite: true)
         do {
             try await manager.clearAll()
-            XCTFail("expected StorageException")
-        } catch is StorageException {
+            XCTFail("expected SmartAccountStorageException")
+        } catch is SmartAccountStorageException {
             // expected
         }
     }
 
     /// `updateNickname` on a non-existent credential must surface
-    /// `CredentialException.NotFound` (the `updateCredential` guard fires
+    /// `SmartAccountCredentialException.NotFound` (the `updateCredential` guard fires
     /// before the storage write is attempted).
     func test_updateNickname_credentialNotFound_throwsCredentialException() async throws {
         let (manager, _, _) = try makeManager()
@@ -765,20 +765,20 @@ final class OZCredentialManagerTests: XCTestCase {
                 credentialId: "does-not-exist",
                 nickname: "new name"
             )
-            XCTFail("expected CredentialException.NotFound")
-        } catch is CredentialException.NotFound {
+            XCTFail("expected SmartAccountCredentialException.NotFound")
+        } catch is SmartAccountCredentialException.NotFound {
             // expected
         }
     }
 
-    /// `getPendingCredentials` must surface `StorageException.ReadFailed` when
+    /// `getPendingCredentials` must surface `SmartAccountStorageException.ReadFailed` when
     /// the underlying storage adapter fails the getAll read.
     func test_getPendingCredentials_storageReadFails_throws() async throws {
         let manager = try makeManagerWithFailingStorage(failOnRead: true)
         do {
             _ = try await manager.getPendingCredentials()
-            XCTFail("expected StorageException")
-        } catch is StorageException {
+            XCTFail("expected SmartAccountStorageException")
+        } catch is SmartAccountStorageException {
             // expected
         }
     }
@@ -816,7 +816,7 @@ final class OZCredentialManagerTests: XCTestCase {
         XCTAssertEqual(2, results.count, "Both credentials bound to the same contract must be returned")
     }
 
-    /// `createPendingCredential` must rethrow `CredentialException` when
+    /// `createPendingCredential` must rethrow `SmartAccountCredentialException` when
     /// the underlying storage throws one (covers the first catch branch).
     func test_createPendingCredential_storageThrowsCredentialException_rethrows() async throws {
         let throwingStorage = _TypedThrowingStorage(throwOnSave: .credential)
@@ -835,14 +835,14 @@ final class OZCredentialManagerTests: XCTestCase {
                 publicKey: testPublicKey(),
                 contractId: contractA
             )
-            XCTFail("expected CredentialException")
-        } catch is CredentialException {
-            // expected — CredentialException propagated as-is from storage
+            XCTFail("expected SmartAccountCredentialException")
+        } catch is SmartAccountCredentialException {
+            // expected — SmartAccountCredentialException propagated as-is from storage
         }
     }
 
     /// `createPendingCredential` must wrap a generic `Error` from storage
-    /// into `StorageException.WriteFailed` (covers the final catch branch).
+    /// into `SmartAccountStorageException.WriteFailed` (covers the final catch branch).
     func test_createPendingCredential_storageThrowsGenericError_wrapsInStorageException() async throws {
         let throwingStorage = _TypedThrowingStorage(throwOnSave: .generic)
         let config = try OZSmartAccountConfig(
@@ -860,38 +860,38 @@ final class OZCredentialManagerTests: XCTestCase {
                 publicKey: testPublicKey(),
                 contractId: contractA
             )
-            XCTFail("expected StorageException.WriteFailed")
-        } catch is StorageException.WriteFailed {
+            XCTFail("expected SmartAccountStorageException.WriteFailed")
+        } catch is SmartAccountStorageException.WriteFailed {
             // expected
-        } catch is StorageException {
+        } catch is SmartAccountStorageException {
             // also acceptable
         }
     }
 
     // MARK: - syncAll storage-failure paths
 
-    /// `syncAll` must rethrow `StorageException` when `getAll()` fails with one.
+    /// `syncAll` must rethrow `SmartAccountStorageException` when `getAll()` fails with one.
     /// Covers lines 341-342 in `OZCredentialManager.syncAll`.
     func test_syncAll_storageReadFails_throwsStorageException() async throws {
         let manager = try makeManagerWithFailingStorage(failOnRead: true)
         do {
             _ = try await manager.syncAll()
-            XCTFail("expected StorageException")
-        } catch is StorageException {
+            XCTFail("expected SmartAccountStorageException")
+        } catch is SmartAccountStorageException {
             // expected
         }
     }
 
-    /// `syncAll` must wrap a non-StorageException from `getAll()` into
-    /// `StorageException.ReadFailed`. Covers lines 343-344.
+    /// `syncAll` must wrap a non-SmartAccountStorageException from `getAll()` into
+    /// `SmartAccountStorageException.ReadFailed`. Covers lines 343-344.
     func test_syncAll_storageThrowsGenericError_wrapsInStorageException() async throws {
         let throwingStorage = _GenericThrowingStorage(failMode: .getAllGeneric)
         let manager = try _makeManagerWithCustomStorage(throwingStorage)
         do {
             _ = try await manager.syncAll()
-            XCTFail("expected StorageException")
-        } catch is StorageException {
-            // expected — generic error wrapped into StorageException.readFailed
+            XCTFail("expected SmartAccountStorageException")
+        } catch is SmartAccountStorageException {
+            // expected — generic error wrapped into SmartAccountStorageException.readFailed
         }
     }
 
@@ -926,14 +926,14 @@ final class OZCredentialManagerTests: XCTestCase {
         XCTAssertEqual(result.failed, 0)
     }
 
-    /// `syncAll` must absorb `CredentialException` thrown by `sync` for
-    /// individual credentials (covers lines 356-361: the `CredentialException`
+    /// `syncAll` must absorb `SmartAccountCredentialException` thrown by `sync` for
+    /// individual credentials (covers lines 356-361: the `SmartAccountCredentialException`
     /// catch inside the syncAll loop). When `sync` cannot find a credential
     /// that was in the list (race condition modelled by deleting it between
     /// `getAll` and the per-entry `sync`), syncAll treats it as not-deployed.
     ///
     /// Setup: seed a credential, then replace storage with a version that
-    /// returns the credential from `getAll` but throws `CredentialException`
+    /// returns the credential from `getAll` but throws `SmartAccountCredentialException`
     /// from `get(credentialId:)` (which is what `sync` calls internally).
     func test_syncAll_syncThrowsCredentialException_treatsAsNotDeployed() async throws {
         // Use a real manager to seed the credential, then call syncAll against
@@ -955,35 +955,35 @@ final class OZCredentialManagerTests: XCTestCase {
 
     // MARK: - sync storage-error paths
 
-    /// `sync` must rethrow a `StorageException` from its initial `storage.get`
-    /// call (covers line 281: the StorageException catch in sync's get block).
+    /// `sync` must rethrow a `SmartAccountStorageException` from its initial `storage.get`
+    /// call (covers line 281: the SmartAccountStorageException catch in sync's get block).
     func test_sync_storageReadFails_throwsStorageException() async throws {
         let manager = try makeManagerWithFailingStorage(failOnRead: true)
         do {
             _ = try await manager.sync(credentialId: "any-cred")
-            XCTFail("expected StorageException")
-        } catch is StorageException {
+            XCTFail("expected SmartAccountStorageException")
+        } catch is SmartAccountStorageException {
             // expected
         }
     }
 
     /// `sync` must wrap a generic `Error` from `storage.get` into
-    /// `StorageException.ReadFailed` (covers lines 282-283).
+    /// `SmartAccountStorageException.ReadFailed` (covers lines 282-283).
     func test_sync_storageThrowsGenericError_wrapsInStorageException() async throws {
         let throwingStorage = _GenericThrowingStorage(failMode: .readGeneric)
         let manager = try _makeManagerWithCustomStorage(throwingStorage)
         do {
             _ = try await manager.sync(credentialId: "any-cred")
-            XCTFail("expected StorageException")
-        } catch is StorageException {
-            // expected — generic error wrapped into StorageException.readFailed
+            XCTFail("expected SmartAccountStorageException")
+        } catch is SmartAccountStorageException {
+            // expected — generic error wrapped into SmartAccountStorageException.readFailed
         }
     }
 
     // MARK: - Generic error catch branches (Batch F extensions)
 
-    /// `saveCredential` must wrap a non-StorageException write error into
-    /// `StorageException.WriteFailed` (covers the generic catch branch, line 245).
+    /// `saveCredential` must wrap a non-SmartAccountStorageException write error into
+    /// `SmartAccountStorageException.WriteFailed` (covers the generic catch branch, line 245).
     func test_saveCredential_storageThrowsGenericError_wrapsInStorageException() async throws {
         let throwingStorage = _GenericThrowingStorage(failMode: .writeGeneric)
         let manager = try _makeManagerWithCustomStorage(throwingStorage)
@@ -993,79 +993,79 @@ final class OZCredentialManagerTests: XCTestCase {
                 publicKey: testPublicKey(),
                 contractId: contractA
             )
-            XCTFail("expected StorageException")
-        } catch is StorageException {
-            // expected — generic error wrapped into StorageException.writeFailed
+            XCTFail("expected SmartAccountStorageException")
+        } catch is SmartAccountStorageException {
+            // expected — generic error wrapped into SmartAccountStorageException.writeFailed
         }
     }
 
-    /// `getCredential` must wrap a non-StorageException read error into
-    /// `StorageException.ReadFailed` (covers the generic catch branch, lines 440-441).
+    /// `getCredential` must wrap a non-SmartAccountStorageException read error into
+    /// `SmartAccountStorageException.ReadFailed` (covers the generic catch branch, lines 440-441).
     func test_getCredential_storageThrowsGenericError_wrapsInStorageException() async throws {
         let throwingStorage = _GenericThrowingStorage(failMode: .readGeneric)
         let manager = try _makeManagerWithCustomStorage(throwingStorage)
         do {
             _ = try await manager.getCredential(credentialId: "any")
-            XCTFail("expected StorageException")
-        } catch is StorageException {
+            XCTFail("expected SmartAccountStorageException")
+        } catch is SmartAccountStorageException {
             // expected
         }
     }
 
-    /// `getCredentialsByContract` must wrap a non-StorageException read error
+    /// `getCredentialsByContract` must wrap a non-SmartAccountStorageException read error
     /// (covers the generic catch branch, lines 454-456).
     func test_getCredentialsByContract_storageThrowsGenericError_wrapsInStorageException() async throws {
         let throwingStorage = _GenericThrowingStorage(failMode: .readByContractGeneric)
         let manager = try _makeManagerWithCustomStorage(throwingStorage)
         do {
             _ = try await manager.getCredentialsByContract(contractId: contractA)
-            XCTFail("expected StorageException")
-        } catch is StorageException {
+            XCTFail("expected SmartAccountStorageException")
+        } catch is SmartAccountStorageException {
             // expected
         }
     }
 
-    /// `getAllCredentials` must wrap a non-StorageException read error into
-    /// `StorageException.ReadFailed` (covers the generic catch branch, lines 470-471).
+    /// `getAllCredentials` must wrap a non-SmartAccountStorageException read error into
+    /// `SmartAccountStorageException.ReadFailed` (covers the generic catch branch, lines 470-471).
     func test_getAllCredentials_storageThrowsGenericError_wrapsInStorageException() async throws {
         let throwingStorage = _GenericThrowingStorage(failMode: .getAllGeneric)
         let manager = try _makeManagerWithCustomStorage(throwingStorage)
         do {
             _ = try await manager.getAllCredentials()
-            XCTFail("expected StorageException")
-        } catch is StorageException {
+            XCTFail("expected SmartAccountStorageException")
+        } catch is SmartAccountStorageException {
             // expected
         }
     }
 
-    /// `getPendingCredentials` must wrap a non-StorageException read error
+    /// `getPendingCredentials` must wrap a non-SmartAccountStorageException read error
     /// (covers the generic catch branch, line 513-514).
     func test_getPendingCredentials_storageThrowsGenericError_wrapsInStorageException() async throws {
         let throwingStorage = _GenericThrowingStorage(failMode: .getAllGeneric)
         let manager = try _makeManagerWithCustomStorage(throwingStorage)
         do {
             _ = try await manager.getPendingCredentials()
-            XCTFail("expected StorageException")
-        } catch is StorageException {
+            XCTFail("expected SmartAccountStorageException")
+        } catch is SmartAccountStorageException {
             // expected
         }
     }
 
-    /// `clearAll` must wrap a non-StorageException clear error into
-    /// `StorageException.WriteFailed` (covers the generic catch branch, lines 555-557).
+    /// `clearAll` must wrap a non-SmartAccountStorageException clear error into
+    /// `SmartAccountStorageException.WriteFailed` (covers the generic catch branch, lines 555-557).
     func test_clearAll_storageThrowsGenericError_wrapsInStorageException() async throws {
         let throwingStorage = _GenericThrowingStorage(failMode: .clearGeneric)
         let manager = try _makeManagerWithCustomStorage(throwingStorage)
         do {
             try await manager.clearAll()
-            XCTFail("expected StorageException")
-        } catch is StorageException {
+            XCTFail("expected SmartAccountStorageException")
+        } catch is SmartAccountStorageException {
             // expected
         }
     }
 
-    /// `updateCredential` must wrap a non-StorageException update error into
-    /// `StorageException.WriteFailed` (covers the generic catch branch, lines 620-624).
+    /// `updateCredential` must wrap a non-SmartAccountStorageException update error into
+    /// `SmartAccountStorageException.WriteFailed` (covers the generic catch branch, lines 620-624).
     /// The credential must exist first so the guard-check passes; then the
     /// update itself fails with a generic error.
     func test_updateCredential_storageThrowsGenericError_wrapsInStorageException() async throws {
@@ -1079,22 +1079,22 @@ final class OZCredentialManagerTests: XCTestCase {
         )
         do {
             try await manager.updateNickname(credentialId: "exist-cred", nickname: "new")
-            XCTFail("expected StorageException")
-        } catch is StorageException {
-            // expected — generic update error wrapped into StorageException.writeFailed
-        } catch is CredentialException {
+            XCTFail("expected SmartAccountStorageException")
+        } catch is SmartAccountStorageException {
+            // expected — generic update error wrapped into SmartAccountStorageException.writeFailed
+        } catch is SmartAccountCredentialException {
             // Also acceptable if the existence check fires first (depends on seeding).
         }
     }
 
-    /// `setPrimary` must surface `CredentialException.NotFound` when the
+    /// `setPrimary` must surface `SmartAccountCredentialException.NotFound` when the
     /// credential does not exist (covers line 658).
     func test_setPrimary_credentialNotFound_throwsNotFound() async throws {
         let (manager, _, _) = try makeManager()
         do {
             try await manager.setPrimary(credentialId: "nonexistent")
-            XCTFail("expected CredentialException.NotFound")
-        } catch is CredentialException.NotFound {
+            XCTFail("expected SmartAccountCredentialException.NotFound")
+        } catch is SmartAccountCredentialException.NotFound {
             // expected
         }
     }
@@ -1104,7 +1104,7 @@ final class OZCredentialManagerTests: XCTestCase {
     func test_setPrimary_noContractId_usesGetAllForSiblings() async throws {
         let (manager, _, storage) = try makeManager()
         // Create a credential without an explicit contractId.
-        let credential = StoredCredential(
+        let credential = OZStoredCredential(
             credentialId: "no-contract-cred",
             publicKey: testPublicKey(),
             contractId: nil
@@ -1118,8 +1118,8 @@ final class OZCredentialManagerTests: XCTestCase {
                        "setPrimary must promote the credential to primary")
     }
 
-    /// `setPrimary` must wrap a non-StorageException final-update error into
-    /// `StorageException.WriteFailed` (covers the generic catch branch, lines 687-691).
+    /// `setPrimary` must wrap a non-SmartAccountStorageException final-update error into
+    /// `SmartAccountStorageException.WriteFailed` (covers the generic catch branch, lines 687-691).
     func test_setPrimary_updateThrowsGenericError_wrapsInStorageException() async throws {
         let throwingStorage = _GenericThrowingStorage(failMode: .updateGeneric)
         let manager = try _makeManagerWithCustomStorage(throwingStorage)
@@ -1130,24 +1130,24 @@ final class OZCredentialManagerTests: XCTestCase {
         )
         do {
             try await manager.setPrimary(credentialId: "primary-cred")
-            XCTFail("expected StorageException")
-        } catch is StorageException {
+            XCTFail("expected SmartAccountStorageException")
+        } catch is SmartAccountStorageException {
             // expected — generic update error wrapped
-        } catch is CredentialException {
+        } catch is SmartAccountCredentialException {
             // Acceptable if the not-found guard fires (seeding may not persist).
         }
     }
 
     // MARK: - deleteCredential storage-error path
 
-    /// `deleteCredential` must rethrow `StorageException` when the initial
+    /// `deleteCredential` must rethrow `SmartAccountStorageException` when the initial
     /// `storage.get` fails (covers lines 401-402 in `deleteCredential`).
     func test_deleteCredential_storageReadFails_throwsStorageException() async throws {
         let manager = try makeManagerWithFailingStorage(failOnRead: true)
         do {
             try await manager.deleteCredential(credentialId: "any-cred")
-            XCTFail("expected StorageException")
-        } catch is StorageException {
+            XCTFail("expected SmartAccountStorageException")
+        } catch is SmartAccountStorageException {
             // expected
         }
     }
@@ -1155,7 +1155,7 @@ final class OZCredentialManagerTests: XCTestCase {
     // MARK: - Private helpers for generic-error tests
 
     private func _makeManagerWithCustomStorage(
-        _ storage: StorageAdapter
+        _ storage: OZStorageAdapter
     ) throws -> OZCredentialManager {
         let config = try OZSmartAccountConfig(
             rpcUrl: "https://mock-rpc.invalid/rpc",
@@ -1210,9 +1210,9 @@ private final class ErrorBox: @unchecked Sendable {
 
 // MARK: - _CredentialTestFailingStorage
 
-/// `StorageAdapter` test double that fails all write and/or read operations
-/// with `StorageException`. Used by the Batch F storage-error-path tests.
-private final class _CredentialTestFailingStorage: StorageAdapter, @unchecked Sendable {
+/// `OZStorageAdapter` test double that fails all write and/or read operations
+/// with `SmartAccountStorageException`. Used by the Batch F storage-error-path tests.
+private final class _CredentialTestFailingStorage: OZStorageAdapter, @unchecked Sendable {
 
     private let failOnWrite: Bool
     private let failOnRead: Bool
@@ -1222,67 +1222,67 @@ private final class _CredentialTestFailingStorage: StorageAdapter, @unchecked Se
         self.failOnRead = failOnRead
     }
 
-    func save(credential: StoredCredential) async throws {
+    func save(credential: OZStoredCredential) async throws {
         if failOnWrite {
-            throw StorageException.writeFailed(key: credential.credentialId)
+            throw SmartAccountStorageException.writeFailed(key: credential.credentialId)
         }
     }
 
-    func get(credentialId: String) async throws -> StoredCredential? {
+    func get(credentialId: String) async throws -> OZStoredCredential? {
         if failOnRead {
-            throw StorageException.readFailed(key: credentialId)
+            throw SmartAccountStorageException.readFailed(key: credentialId)
         }
         return nil
     }
 
-    func getByContract(contractId: String) async throws -> [StoredCredential] {
+    func getByContract(contractId: String) async throws -> [OZStoredCredential] {
         if failOnRead {
-            throw StorageException.readFailed(key: contractId)
+            throw SmartAccountStorageException.readFailed(key: contractId)
         }
         return []
     }
 
-    func getAll() async throws -> [StoredCredential] {
+    func getAll() async throws -> [OZStoredCredential] {
         if failOnRead {
-            throw StorageException.readFailed(key: "all")
+            throw SmartAccountStorageException.readFailed(key: "all")
         }
         return []
     }
 
     func delete(credentialId: String) async throws {
         if failOnWrite {
-            throw StorageException.writeFailed(key: credentialId)
+            throw SmartAccountStorageException.writeFailed(key: credentialId)
         }
     }
 
-    func update(credentialId: String, updates: StoredCredentialUpdate) async throws {
+    func update(credentialId: String, updates: OZStoredCredentialUpdate) async throws {
         if failOnWrite {
-            throw StorageException.writeFailed(key: credentialId)
+            throw SmartAccountStorageException.writeFailed(key: credentialId)
         }
     }
 
     func clear() async throws {
         if failOnWrite {
-            throw StorageException.writeFailed(key: "all")
+            throw SmartAccountStorageException.writeFailed(key: "all")
         }
     }
 
-    func saveSession(_ session: StoredSession) async throws {
+    func saveSession(_ session: OZStoredSession) async throws {
         if failOnWrite {
-            throw StorageException.writeFailed(key: "session")
+            throw SmartAccountStorageException.writeFailed(key: "session")
         }
     }
 
-    func getSession() async throws -> StoredSession? {
+    func getSession() async throws -> OZStoredSession? {
         if failOnRead {
-            throw StorageException.readFailed(key: "session")
+            throw SmartAccountStorageException.readFailed(key: "session")
         }
         return nil
     }
 
     func clearSession() async throws {
         if failOnWrite {
-            throw StorageException.writeFailed(key: "session")
+            throw SmartAccountStorageException.writeFailed(key: "session")
         }
     }
 }
@@ -1290,37 +1290,37 @@ private final class _CredentialTestFailingStorage: StorageAdapter, @unchecked Se
 // MARK: - _CredentialManagerTestKit
 
 /// Minimal `OZSmartAccountKitProtocol` conformance that returns a custom
-/// `StorageAdapter` from `getStorage()`. Used by the Batch F
+/// `OZStorageAdapter` from `getStorage()`. Used by the Batch F
 /// storage-error-path tests where `MockOZSmartAccountKit` is unsuitable
-/// because it coerces the storage to `InMemoryStorageAdapter`.
+/// because it coerces the storage to `OZInMemoryStorageAdapter`.
 private final class _CredentialManagerTestKit: OZSmartAccountKitProtocol, @unchecked Sendable {
 
     let config: OZSmartAccountConfig
     let sorobanServer: SorobanServer
     let indexerClient: OZIndexerClient? = nil
     let relayerClient: OZRelayerClient? = nil
-    let events: SmartAccountEventEmitter = SmartAccountEventEmitter()
+    let events: OZSmartAccountEventEmitter = OZSmartAccountEventEmitter()
     let contractId: String? = nil
     let externalSigners: OZExternalSignerManager
 
-    private let _storage: StorageAdapter
+    private let _storage: OZStorageAdapter
     let credentialManager: OZCredentialManagerProtocol
     let contextRuleManager: OZContextRuleManagerProtocol
     // Lazily constructed on first access to avoid circular init.
     private var _managers: (OZTransactionOperations, OZSignerManager, OZPolicyManager, OZMultiSignerManager)?
 
-    init(config: OZSmartAccountConfig, storage: StorageAdapter) {
+    init(config: OZSmartAccountConfig, storage: OZStorageAdapter) {
         self.config = config
         self.sorobanServer = SorobanServer(endpoint: "http://127.0.0.1:1")
         self._storage = storage
-        self.credentialManager = MockCredentialManager(storage: InMemoryStorageAdapter())
+        self.credentialManager = MockCredentialManager(storage: OZInMemoryStorageAdapter())
         self.contextRuleManager = StubContextRuleManager()
         self.externalSigners = OZExternalSignerManager(
             networkPassphrase: config.networkPassphrase
         )
     }
 
-    func getStorage() -> StorageAdapter { _storage }
+    func getStorage() -> OZStorageAdapter { _storage }
 
     var transactionOperations: OZTransactionOperations { ensureManagers().0 }
     var signerManager: OZSignerManager { ensureManagers().1 }
@@ -1342,7 +1342,7 @@ private final class _CredentialManagerTestKit: OZSmartAccountKitProtocol, @unche
     }
 
     func requireConnected() throws -> ConnectedState {
-        throw WalletException.notConnected(details: "Test kit is always disconnected")
+        throw SmartAccountWalletException.notConnected(details: "Test kit is always disconnected")
     }
 
     func setConnectedState(credentialId: String, contractId: String) {}
@@ -1351,9 +1351,9 @@ private final class _CredentialManagerTestKit: OZSmartAccountKitProtocol, @unche
 // MARK: - _TypedThrowingStorage
 
 /// Storage adapter that throws a specific error type from `save(credential:)`.
-/// Allows testing catch branches for `CredentialException` (line 178) and
+/// Allows testing catch branches for `SmartAccountCredentialException` (line 178) and
 /// generic errors (line 182) in `OZCredentialManager.createPendingCredential`.
-private final class _TypedThrowingStorage: StorageAdapter, @unchecked Sendable {
+private final class _TypedThrowingStorage: OZStorageAdapter, @unchecked Sendable {
 
     enum ThrowKind {
         case credential
@@ -1362,16 +1362,16 @@ private final class _TypedThrowingStorage: StorageAdapter, @unchecked Sendable {
     }
 
     private let throwOnSave: ThrowKind
-    private let inner = InMemoryStorageAdapter()
+    private let inner = OZInMemoryStorageAdapter()
 
     init(throwOnSave: ThrowKind = .none) {
         self.throwOnSave = throwOnSave
     }
 
-    func save(credential: StoredCredential) async throws {
+    func save(credential: OZStoredCredential) async throws {
         switch throwOnSave {
         case .credential:
-            throw CredentialException.alreadyExists(credentialId: credential.credentialId)
+            throw SmartAccountCredentialException.alreadyExists(credentialId: credential.credentialId)
         case .generic:
             struct SyntheticError: Error {}
             throw SyntheticError()
@@ -1380,15 +1380,15 @@ private final class _TypedThrowingStorage: StorageAdapter, @unchecked Sendable {
         }
     }
 
-    func get(credentialId: String) async throws -> StoredCredential? {
+    func get(credentialId: String) async throws -> OZStoredCredential? {
         return try await inner.get(credentialId: credentialId)
     }
 
-    func getByContract(contractId: String) async throws -> [StoredCredential] {
+    func getByContract(contractId: String) async throws -> [OZStoredCredential] {
         return try await inner.getByContract(contractId: contractId)
     }
 
-    func getAll() async throws -> [StoredCredential] {
+    func getAll() async throws -> [OZStoredCredential] {
         return try await inner.getAll()
     }
 
@@ -1396,7 +1396,7 @@ private final class _TypedThrowingStorage: StorageAdapter, @unchecked Sendable {
         try await inner.delete(credentialId: credentialId)
     }
 
-    func update(credentialId: String, updates: StoredCredentialUpdate) async throws {
+    func update(credentialId: String, updates: OZStoredCredentialUpdate) async throws {
         try await inner.update(credentialId: credentialId, updates: updates)
     }
 
@@ -1404,11 +1404,11 @@ private final class _TypedThrowingStorage: StorageAdapter, @unchecked Sendable {
         try await inner.clear()
     }
 
-    func saveSession(_ session: StoredSession) async throws {
+    func saveSession(_ session: OZStoredSession) async throws {
         try await inner.saveSession(session)
     }
 
-    func getSession() async throws -> StoredSession? {
+    func getSession() async throws -> OZStoredSession? {
         return try await inner.getSession()
     }
 
@@ -1419,21 +1419,21 @@ private final class _TypedThrowingStorage: StorageAdapter, @unchecked Sendable {
 
 // MARK: - _DeleteAfterGetAllStorage
 
-/// `StorageAdapter` that returns a fixed list from `getAll()` but throws
-/// `CredentialException.notFound` from `get(credentialId:)`.
+/// `OZStorageAdapter` that returns a fixed list from `getAll()` but throws
+/// `SmartAccountCredentialException.notFound` from `get(credentialId:)`.
 ///
 /// Used by `test_syncAll_syncThrowsCredentialException_treatsAsNotDeployed`
 /// to model the concurrent-deletion race: `syncAll` calls `getAll()` first
 /// (sees the credential), then calls `sync(credentialId:)` per entry (which
-/// calls `get(credentialId:)` internally and gets a CredentialException).
-private final class _DeleteAfterGetAllStorage: StorageAdapter, @unchecked Sendable {
+/// calls `get(credentialId:)` internally and gets a SmartAccountCredentialException).
+private final class _DeleteAfterGetAllStorage: OZStorageAdapter, @unchecked Sendable {
 
-    private let inner = InMemoryStorageAdapter()
+    private let inner = OZInMemoryStorageAdapter()
 
     /// Pre-seed a credential for `getAll()` without storing it in a way
     /// that `get(credentialId:)` can retrieve it.
     func seedForGetAll(credentialId: String, publicKey: Data, contractId: String?) async throws {
-        let credential = StoredCredential(
+        let credential = OZStoredCredential(
             credentialId: credentialId,
             publicKey: publicKey,
             contractId: contractId
@@ -1441,20 +1441,20 @@ private final class _DeleteAfterGetAllStorage: StorageAdapter, @unchecked Sendab
         try await inner.save(credential: credential)
     }
 
-    func save(credential: StoredCredential) async throws {
+    func save(credential: OZStoredCredential) async throws {
         try await inner.save(credential: credential)
     }
 
     /// Returns nil for every credentialId (simulates concurrent deletion).
-    func get(credentialId: String) async throws -> StoredCredential? {
+    func get(credentialId: String) async throws -> OZStoredCredential? {
         return nil
     }
 
-    func getByContract(contractId: String) async throws -> [StoredCredential] {
+    func getByContract(contractId: String) async throws -> [OZStoredCredential] {
         return try await inner.getByContract(contractId: contractId)
     }
 
-    func getAll() async throws -> [StoredCredential] {
+    func getAll() async throws -> [OZStoredCredential] {
         return try await inner.getAll()
     }
 
@@ -1462,7 +1462,7 @@ private final class _DeleteAfterGetAllStorage: StorageAdapter, @unchecked Sendab
         try await inner.delete(credentialId: credentialId)
     }
 
-    func update(credentialId: String, updates: StoredCredentialUpdate) async throws {
+    func update(credentialId: String, updates: OZStoredCredentialUpdate) async throws {
         try await inner.update(credentialId: credentialId, updates: updates)
     }
 
@@ -1470,11 +1470,11 @@ private final class _DeleteAfterGetAllStorage: StorageAdapter, @unchecked Sendab
         try await inner.clear()
     }
 
-    func saveSession(_ session: StoredSession) async throws {
+    func saveSession(_ session: OZStoredSession) async throws {
         try await inner.saveSession(session)
     }
 
-    func getSession() async throws -> StoredSession? {
+    func getSession() async throws -> OZStoredSession? {
         return try await inner.getSession()
     }
 
@@ -1485,14 +1485,14 @@ private final class _DeleteAfterGetAllStorage: StorageAdapter, @unchecked Sendab
 
 // MARK: - _GenericThrowingStorage
 
-/// `StorageAdapter` that throws a non-`StorageException` generic error from a
+/// `OZStorageAdapter` that throws a non-`SmartAccountStorageException` generic error from a
 /// specific method. Used by Batch F extension tests to exercise the generic
-/// catch branches in `OZCredentialManager` (which wrap non-StorageException
-/// errors into `StorageException.writeFailed` or `StorageException.readFailed`).
+/// catch branches in `OZCredentialManager` (which wrap non-SmartAccountStorageException
+/// errors into `SmartAccountStorageException.writeFailed` or `SmartAccountStorageException.readFailed`).
 ///
 /// Each `FailMode` case maps to one adapter method; all other methods delegate
-/// to an internal `InMemoryStorageAdapter` so seeding and existence checks work.
-private final class _GenericThrowingStorage: StorageAdapter, @unchecked Sendable {
+/// to an internal `OZInMemoryStorageAdapter` so seeding and existence checks work.
+private final class _GenericThrowingStorage: OZStorageAdapter, @unchecked Sendable {
 
     enum FailMode {
         case writeGeneric       // save(credential:) throws generic
@@ -1506,7 +1506,7 @@ private final class _GenericThrowingStorage: StorageAdapter, @unchecked Sendable
     private struct SyntheticError: Error {}
 
     private let failMode: FailMode
-    private let inner = InMemoryStorageAdapter()
+    private let inner = OZInMemoryStorageAdapter()
 
     init(failMode: FailMode) {
         self.failMode = failMode
@@ -1520,7 +1520,7 @@ private final class _GenericThrowingStorage: StorageAdapter, @unchecked Sendable
         publicKey: Data,
         contractId: String?
     ) async throws {
-        let credential = StoredCredential(
+        let credential = OZStoredCredential(
             credentialId: credentialId,
             publicKey: publicKey,
             contractId: contractId
@@ -1528,22 +1528,22 @@ private final class _GenericThrowingStorage: StorageAdapter, @unchecked Sendable
         try await inner.save(credential: credential)
     }
 
-    func save(credential: StoredCredential) async throws {
+    func save(credential: OZStoredCredential) async throws {
         if failMode == .writeGeneric { throw SyntheticError() }
         try await inner.save(credential: credential)
     }
 
-    func get(credentialId: String) async throws -> StoredCredential? {
+    func get(credentialId: String) async throws -> OZStoredCredential? {
         if failMode == .readGeneric { throw SyntheticError() }
         return try await inner.get(credentialId: credentialId)
     }
 
-    func getByContract(contractId: String) async throws -> [StoredCredential] {
+    func getByContract(contractId: String) async throws -> [OZStoredCredential] {
         if failMode == .readByContractGeneric { throw SyntheticError() }
         return try await inner.getByContract(contractId: contractId)
     }
 
-    func getAll() async throws -> [StoredCredential] {
+    func getAll() async throws -> [OZStoredCredential] {
         if failMode == .getAllGeneric { throw SyntheticError() }
         return try await inner.getAll()
     }
@@ -1552,7 +1552,7 @@ private final class _GenericThrowingStorage: StorageAdapter, @unchecked Sendable
         try await inner.delete(credentialId: credentialId)
     }
 
-    func update(credentialId: String, updates: StoredCredentialUpdate) async throws {
+    func update(credentialId: String, updates: OZStoredCredentialUpdate) async throws {
         if failMode == .updateGeneric { throw SyntheticError() }
         try await inner.update(credentialId: credentialId, updates: updates)
     }
@@ -1562,11 +1562,11 @@ private final class _GenericThrowingStorage: StorageAdapter, @unchecked Sendable
         try await inner.clear()
     }
 
-    func saveSession(_ session: StoredSession) async throws {
+    func saveSession(_ session: OZStoredSession) async throws {
         try await inner.saveSession(session)
     }
 
-    func getSession() async throws -> StoredSession? {
+    func getSession() async throws -> OZStoredSession? {
         return try await inner.getSession()
     }
 

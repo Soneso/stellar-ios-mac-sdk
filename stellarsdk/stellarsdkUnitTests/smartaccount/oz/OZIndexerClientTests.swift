@@ -98,19 +98,19 @@ final class OZIndexerClientTests: XCTestCase {
 
     func testConstructor_blankUrl_throwsConfigurationException() {
         XCTAssertThrowsError(try OZIndexerClient(indexerUrl: "")) { error in
-            XCTAssertTrue(error is ConfigurationException.InvalidConfig)
+            XCTAssertTrue(error is SmartAccountConfigurationException.InvalidConfig)
         }
     }
 
     func testConstructor_whitespaceUrl_throwsConfigurationException() {
         XCTAssertThrowsError(try OZIndexerClient(indexerUrl: "   ")) { error in
-            XCTAssertTrue(error is ConfigurationException.InvalidConfig)
+            XCTAssertTrue(error is SmartAccountConfigurationException.InvalidConfig)
         }
     }
 
     func testConstructor_httpUrl_throwsConfigurationException() {
         XCTAssertThrowsError(try OZIndexerClient(indexerUrl: "http://indexer.example.com")) { error in
-            XCTAssertTrue(error is ConfigurationException.InvalidConfig)
+            XCTAssertTrue(error is SmartAccountConfigurationException.InvalidConfig)
         }
     }
 
@@ -126,13 +126,13 @@ final class OZIndexerClientTests: XCTestCase {
 
     func testConstructor_ftpSchemeThrows() {
         XCTAssertThrowsError(try OZIndexerClient(indexerUrl: "ftp://indexer.example.com")) { error in
-            XCTAssertTrue(error is ConfigurationException.InvalidConfig)
+            XCTAssertTrue(error is SmartAccountConfigurationException.InvalidConfig)
         }
     }
 
     func testConstructor_noSchemeThrows() {
         XCTAssertThrowsError(try OZIndexerClient(indexerUrl: "indexer.example.com")) { error in
-            XCTAssertTrue(error is ConfigurationException.InvalidConfig)
+            XCTAssertTrue(error is SmartAccountConfigurationException.InvalidConfig)
         }
     }
 
@@ -148,7 +148,7 @@ final class OZIndexerClientTests: XCTestCase {
 
     func testConstructor_schemeOnlyUrl_throwsConfigurationException() {
         XCTAssertThrowsError(try OZIndexerClient(indexerUrl: "https://")) { error in
-            XCTAssertTrue(error is ConfigurationException.InvalidConfig)
+            XCTAssertTrue(error is SmartAccountConfigurationException.InvalidConfig)
         }
     }
 
@@ -332,8 +332,8 @@ final class OZIndexerClientTests: XCTestCase {
 
         do {
             _ = try await indexer.lookupByCredentialId(credentialId: "!!!invalid-base64url!!!")
-            XCTFail("Expected ValidationException.InvalidInput")
-        } catch is ValidationException.InvalidInput {
+            XCTFail("Expected SmartAccountValidationException.InvalidInput")
+        } catch is SmartAccountValidationException.InvalidInput {
             // expected
         } catch {
             XCTFail("Unexpected error: \(error)")
@@ -351,8 +351,8 @@ final class OZIndexerClientTests: XCTestCase {
 
         do {
             _ = try await indexer.lookupByCredentialId(credentialId: "qrvM3Q")
-            XCTFail("Expected IndexerException.RequestFailed")
-        } catch let error as IndexerException.RequestFailed {
+            XCTFail("Expected SmartAccountIndexerException.RequestFailed")
+        } catch let error as SmartAccountIndexerException.RequestFailed {
             XCTAssertTrue(error.message.contains("404"))
         } catch {
             XCTFail("Unexpected error: \(error)")
@@ -370,8 +370,8 @@ final class OZIndexerClientTests: XCTestCase {
 
         do {
             _ = try await indexer.lookupByCredentialId(credentialId: "qrvM3Q")
-            XCTFail("Expected IndexerException.RequestFailed")
-        } catch let error as IndexerException.RequestFailed {
+            XCTFail("Expected SmartAccountIndexerException.RequestFailed")
+        } catch let error as SmartAccountIndexerException.RequestFailed {
             XCTAssertTrue(error.message.contains("500"))
         } catch {
             XCTFail("Unexpected error: \(error)")
@@ -389,8 +389,8 @@ final class OZIndexerClientTests: XCTestCase {
 
         do {
             _ = try await indexer.lookupByCredentialId(credentialId: "qrvM3Q")
-            XCTFail("Expected IndexerException.RequestFailed")
-        } catch is IndexerException.RequestFailed {
+            XCTFail("Expected SmartAccountIndexerException.RequestFailed")
+        } catch is SmartAccountIndexerException.RequestFailed {
             // expected
         } catch {
             XCTFail("Unexpected error: \(error)")
@@ -420,8 +420,8 @@ final class OZIndexerClientTests: XCTestCase {
 
         do {
             _ = try await indexer.lookupByCredentialId(credentialId: "qrvM3Q")
-            XCTFail("Expected IndexerException.RequestFailed")
-        } catch let error as IndexerException.RequestFailed {
+            XCTFail("Expected SmartAccountIndexerException.RequestFailed")
+        } catch let error as SmartAccountIndexerException.RequestFailed {
             XCTAssertTrue(
                 error.message.contains("Unexpected Content-Type"),
                 "Surfaced error must name the unexpected Content-Type header"
@@ -516,8 +516,8 @@ final class OZIndexerClientTests: XCTestCase {
 
         do {
             _ = try await indexer.lookupByAddress(address: "INVALID_ADDRESS")
-            XCTFail("Expected ValidationException.InvalidAddress")
-        } catch is ValidationException.InvalidAddress {
+            XCTFail("Expected SmartAccountValidationException.InvalidAddress")
+        } catch is SmartAccountValidationException.InvalidAddress {
             // expected
         } catch {
             XCTFail("Unexpected error: \(error)")
@@ -535,8 +535,8 @@ final class OZIndexerClientTests: XCTestCase {
 
         do {
             _ = try await indexer.lookupByAddress(address: testAccountId)
-            XCTFail("Expected IndexerException.RequestFailed")
-        } catch is IndexerException.RequestFailed {
+            XCTFail("Expected SmartAccountIndexerException.RequestFailed")
+        } catch is SmartAccountIndexerException.RequestFailed {
             // expected
         } catch {
             XCTFail("Unexpected error: \(error)")
@@ -658,8 +658,8 @@ final class OZIndexerClientTests: XCTestCase {
 
         do {
             _ = try await indexer.getContract(contractId: testAccountId)
-            XCTFail("Expected ValidationException.InvalidAddress")
-        } catch is ValidationException.InvalidAddress {
+            XCTFail("Expected SmartAccountValidationException.InvalidAddress")
+        } catch is SmartAccountValidationException.InvalidAddress {
             // expected
         } catch {
             XCTFail("Unexpected error: \(error)")
@@ -677,8 +677,8 @@ final class OZIndexerClientTests: XCTestCase {
 
         do {
             _ = try await indexer.getContract(contractId: testContractId)
-            XCTFail("Expected IndexerException.RequestFailed")
-        } catch is IndexerException.RequestFailed {
+            XCTFail("Expected SmartAccountIndexerException.RequestFailed")
+        } catch is SmartAccountIndexerException.RequestFailed {
             // expected
         } catch {
             XCTFail("Unexpected error: \(error)")
@@ -768,8 +768,8 @@ final class OZIndexerClientTests: XCTestCase {
 
         do {
             _ = try await indexer.getStats()
-            XCTFail("Expected IndexerException.RequestFailed")
-        } catch let error as IndexerException.RequestFailed {
+            XCTFail("Expected SmartAccountIndexerException.RequestFailed")
+        } catch let error as SmartAccountIndexerException.RequestFailed {
             XCTAssertTrue(error.message.contains("500"))
         } catch {
             XCTFail("Unexpected error: \(error)")
@@ -790,8 +790,8 @@ final class OZIndexerClientTests: XCTestCase {
 
         do {
             _ = try await indexer.lookupByCredentialId(credentialId: "qrvM3Q")
-            XCTFail("Expected IndexerException.RequestFailed")
-        } catch let error as IndexerException.RequestFailed {
+            XCTFail("Expected SmartAccountIndexerException.RequestFailed")
+        } catch let error as SmartAccountIndexerException.RequestFailed {
             XCTAssertTrue(
                 error.message.contains("..."),
                 "Long error body must be truncated with ellipsis"
@@ -816,8 +816,8 @@ final class OZIndexerClientTests: XCTestCase {
 
         do {
             _ = try await indexer.lookupByCredentialId(credentialId: "qrvM3Q")
-            XCTFail("Expected IndexerException.RequestFailed")
-        } catch let error as IndexerException.RequestFailed {
+            XCTFail("Expected SmartAccountIndexerException.RequestFailed")
+        } catch let error as SmartAccountIndexerException.RequestFailed {
             XCTAssertTrue(error.message.contains("short error"))
             XCTAssertFalse(
                 error.message.hasSuffix("..."),
@@ -845,8 +845,8 @@ final class OZIndexerClientTests: XCTestCase {
 
         do {
             _ = try await indexer.getStats()
-            XCTFail("Expected IndexerException.RequestFailed for oversize body")
-        } catch let error as IndexerException.RequestFailed {
+            XCTFail("Expected SmartAccountIndexerException.RequestFailed for oversize body")
+        } catch let error as SmartAccountIndexerException.RequestFailed {
             XCTAssertTrue(
                 error.message.contains("exceeds maximum size"),
                 "Error message must indicate the body exceeded the configured cap"
@@ -869,8 +869,8 @@ final class OZIndexerClientTests: XCTestCase {
 
         do {
             _ = try await indexer.getStats()
-            XCTFail("Expected IndexerException.Timeout")
-        } catch let error as IndexerException.Timeout {
+            XCTFail("Expected SmartAccountIndexerException.Timeout")
+        } catch let error as SmartAccountIndexerException.Timeout {
             XCTAssertTrue(
                 error.message.contains("timed out"),
                 "Timeout exception message must indicate timeout"
@@ -898,8 +898,8 @@ final class OZIndexerClientTests: XCTestCase {
 
         do {
             _ = try await indexer.lookupByCredentialId(credentialId: "qrvM3Q")
-            XCTFail("Expected IndexerException.RequestFailed")
-        } catch let error as IndexerException.RequestFailed {
+            XCTFail("Expected SmartAccountIndexerException.RequestFailed")
+        } catch let error as SmartAccountIndexerException.RequestFailed {
             XCTAssertTrue(
                 error.message.contains("unexpected network failure"),
                 "Generic exception must surface the original message"
@@ -1292,7 +1292,7 @@ final class OZIndexerClientTests: XCTestCase {
 
     func testLookupByCredentialId_rejectsNonNumericString() async throws {
         // A non-numeric string for a numeric field must surface as a
-        // decoding failure mapped to IndexerException.RequestFailed.
+        // decoding failure mapped to SmartAccountIndexerException.RequestFailed.
         let responseJson = """
         {
             "credentialId": "aabbccdd",
@@ -1310,8 +1310,8 @@ final class OZIndexerClientTests: XCTestCase {
 
         do {
             _ = try await indexer.lookupByCredentialId(credentialId: "qrvM3Q")
-            XCTFail("Expected IndexerException.RequestFailed")
-        } catch is IndexerException.RequestFailed {
+            XCTFail("Expected SmartAccountIndexerException.RequestFailed")
+        } catch is SmartAccountIndexerException.RequestFailed {
             // expected
         } catch {
             XCTFail("Unexpected error: \(error)")
@@ -1342,8 +1342,8 @@ final class OZIndexerClientTests: XCTestCase {
 
         do {
             _ = try await indexer.lookupByCredentialId(credentialId: "qrvM3Q")
-            XCTFail("Expected IndexerException.RequestFailed for oversized body")
-        } catch let error as IndexerException.RequestFailed {
+            XCTFail("Expected SmartAccountIndexerException.RequestFailed for oversized body")
+        } catch let error as SmartAccountIndexerException.RequestFailed {
             XCTAssertTrue(
                 error.message.lowercased().contains("size") ||
                 error.message.lowercased().contains("maximum") ||
@@ -1439,7 +1439,7 @@ final class OZIndexerClientTests: XCTestCase {
     // MARK: - Flexible Int64 decode error path
 
     /// The stats response with a non-numeric string in an Int64 field must
-    /// surface as `IndexerException.RequestFailed` (exercises `decodeFlexibleInt64`
+    /// surface as `SmartAccountIndexerException.RequestFailed` (exercises `decodeFlexibleInt64`
     /// error throw path).
     func test_getStats_nonNumericStringForInt64Field_throwsIndexerException() async throws {
         let responseJson = """
@@ -1464,8 +1464,8 @@ final class OZIndexerClientTests: XCTestCase {
 
         do {
             _ = try await indexer.getStats()
-            XCTFail("Expected IndexerException.RequestFailed")
-        } catch is IndexerException.RequestFailed {
+            XCTFail("Expected SmartAccountIndexerException.RequestFailed")
+        } catch is SmartAccountIndexerException.RequestFailed {
             // expected
         } catch {
             XCTFail("Unexpected error: \(error)")
@@ -1473,7 +1473,7 @@ final class OZIndexerClientTests: XCTestCase {
     }
 
     /// The `lookupByCredentialId` response with a non-numeric string for a
-    /// contract_id array element must surface as `IndexerException.RequestFailed`
+    /// contract_id array element must surface as `SmartAccountIndexerException.RequestFailed`
     /// (exercises `UnkeyedDecodingContainer.decodeFlexibleInt` error path).
     func test_lookupByCredentialId_nonNumericContextRuleId_throwsIndexerException() async throws {
         let responseJson = """
@@ -1504,8 +1504,8 @@ final class OZIndexerClientTests: XCTestCase {
 
         do {
             _ = try await indexer.lookupByCredentialId(credentialId: "qrvM3Q")
-            XCTFail("Expected IndexerException.RequestFailed")
-        } catch is IndexerException.RequestFailed {
+            XCTFail("Expected SmartAccountIndexerException.RequestFailed")
+        } catch is SmartAccountIndexerException.RequestFailed {
             // expected
         } catch {
             XCTFail("Unexpected error: \(error)")

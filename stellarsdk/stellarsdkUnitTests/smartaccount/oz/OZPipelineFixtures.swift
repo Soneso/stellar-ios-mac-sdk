@@ -173,7 +173,7 @@ enum OZPipelineFixtures {
 
     /// Returns an `error`-bearing `simulateTransaction` JSON-RPC `result`
     /// payload. The pipeline lifts this into
-    /// `TransactionException.SimulationFailed`.
+    /// `SmartAccountTransactionException.SimulationFailed`.
     static func simulateErrorResponse(
         latestLedger: Int = 1000,
         message: String

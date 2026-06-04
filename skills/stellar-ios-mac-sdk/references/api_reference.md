@@ -52,19 +52,6 @@ func streamAccountData(accountId: String, key: String) -> AccountDataStreamItem
 init(requestUrl:String)
 func onReceive(response:StreamResponseEnum<AccountResponse>.ResponseClosure)
 func closeStream()
-## struct AddPasskeySignerResult: Sendable, Hashable
-var credentialId: String
-var publicKey: Data
-var transactionResult: TransactionResult
-init(credentialId: String, publicKey: Data, transactionResult: TransactionResult)
-static func ==(lhs: AddPasskeySignerResult, rhs: AddPasskeySignerResult) -> Bool
-func hash(into hasher: inout Hasher)
-## struct AllowCredential: Equatable, Hashable, Sendable
-var id: Data
-var transports: [String]?
-init(id: Data, transports: [String]? = nil)
-static func fromId(_ id: Data) -> AllowCredential
-static func fromIds(_ ids: [Data]) -> [AllowCredential]
 ## extension AllowTrustOpAssetXDR
 var assetCode: String
 ## extension Alpha12XDR
@@ -73,9 +60,9 @@ init(assetCodeString: String, issuer: KeyPair) throws
 ## extension Alpha4XDR
 var assetCodeString: String
 init(assetCodeString: String, issuer: KeyPair) throws
-## class AlreadyExists: WalletException, @unchecked Sendable
+## class AlreadyExists: SmartAccountWalletException, @unchecked Sendable
 init(message: String, cause: Error? = nil)
-## class AlreadyExists: CredentialException, @unchecked Sendable
+## class AlreadyExists: SmartAccountCredentialException, @unchecked Sendable
 init(message: String, cause: Error? = nil)
 ## struct AnchorFeatureFlags: Decodable, Sendable
 var accountCreation: Bool
@@ -215,7 +202,7 @@ var presentationContextProvider: ASAuthorizationControllerPresentationContextPro
 init(rpId: String, rpName: String, timeout: Int64 = AppleWebAuthnProvider.defaultTimeoutMs) throws
 static func create(rpId: String, rpName: String, timeout: Int64 = AppleWebAuthnProvider.defaultTimeoutMs) throws -> AppleWebAuthnProvider
 func register(challenge: Data, userId: Data, userName: String) async throws -> WebAuthnRegistrationResult
-func authenticate(challenge: Data, allowCredentials: [AllowCredential]?) async throws -> WebAuthnAuthenticationResult
+func authenticate(challenge: Data, allowCredentials: [WebAuthnAllowCredential]?) async throws -> WebAuthnAuthenticationResult
 ## extension Array
 init(fromBinary decoder: XDRDecoder) throws
 func xdrEncode(to encoder: XDREncoder) throws
@@ -236,13 +223,6 @@ init(assetCode: String, issuer: KeyPair) throws
 ## class AssetsService: @unchecked Sendable
 func getAssets(for assetCode:String? = nil, assetIssuer:String? = nil, cursor:String? = nil, order:Order? = nil, limit:Int? = nil) async -> PageResponse<AssetResponse>.ResponseEnum
 func getAssetsFromUrl(url:String) async -> PageResponse<AssetResponse>.ResponseEnum
-## struct AuthenticatePasskeyResult: Sendable, Hashable
-var credentialId: String
-var signature: OZWebAuthnSignature
-var publicKey: Data
-init(credentialId: String, signature: OZWebAuthnSignature, publicKey: Data)
-static func ==(lhs: AuthenticatePasskeyResult, rhs: AuthenticatePasskeyResult) -> Bool
-func hash(into hasher: inout Hasher)
 ## class AuthenticationFailed: WebAuthnException, @unchecked Sendable
 init(message: String, cause: Error? = nil)
 ## enum AuthorizationRequiredEnum: Sendable
@@ -383,8 +363,8 @@ func timeoutInSeconds(_ value: Int) -> Builder
 func relayerUrl(_ value: String?) -> Builder
 func indexerUrl(_ value: String?) -> Builder
 func webauthnProvider(_ webauthnProvider: WebAuthnProvider?) -> Builder
-func storage(_ storage: StorageAdapter) -> Builder
-func externalWallet(_ externalWallet: ExternalWalletAdapter?) -> Builder
+func storage(_ storage: OZStorageAdapter) -> Builder
+func externalWallet(_ externalWallet: OZExternalWalletAdapter?) -> Builder
 func externalEd25519Adapter(_ adapter: OZExternalEd25519SignerAdapter?) -> Builder
 func maxContextRuleScanId(_ value: UInt32) -> Builder
 func build() throws -> OZSmartAccountConfig
@@ -437,34 +417,6 @@ func getClaimableBalances(asset:Asset, cursor:String? = nil, order:Order? = nil,
 func getClaimableBalances(claimantAccountId:String, cursor:String? = nil, order:Order? = nil, limit:Int? = nil) async -> PageResponse<ClaimableBalanceResponse>.ResponseEnum
 func getClaimableBalances(sponsorAccountId:String, cursor:String? = nil, order:Order? = nil, limit:Int? = nil) async -> PageResponse<ClaimableBalanceResponse>.ResponseEnum
 func getClaimableBalancesFromUrl(url:String) async -> PageResponse<ClaimableBalanceResponse>.ResponseEnum
-## class ConfigurationException: SmartAccountException, @unchecked Sendable
-final class InvalidConfig
-final class MissingConfig
-static func invalidConfig(details: String, cause: Error? = nil) -> InvalidConfig
-static func missingConfig(param: String, cause: Error? = nil) -> MissingConfig
-## struct ConnectWalletOptions: Sendable, Equatable, Hashable
-var credentialId: String?
-var contractId: String?
-var fresh: Bool
-var prompt: Bool
-init(credentialId: String? = nil, contractId: String? = nil, fresh: Bool = false, prompt: Bool = false)
-func copy(credentialId: String?? = .none, contractId: String?? = .none, fresh: Bool? = nil, prompt: Bool? = nil) -> ConnectWalletOptions
-## enum ConnectWalletResult: Sendable, Equatable, Hashable
-case connected(credentialId: String, contractId: String, restoredFromSession: Bool)
-case ambiguous(credentialId: String, candidates: [String])
-var credentialId: String
-## struct ConnectedWallet: Sendable, Equatable, Hashable
-var address: String
-var walletId: String
-var walletName: String
-init(address: String, walletId: String, walletName: String)
-## enum ContextRuleType: Sendable, Hashable
-case defaultRule
-case callContract(contractAddress: String)
-case createContract(wasmHash: Data)
-static func ==(lhs: ContextRuleType, rhs: ContextRuleType) -> Bool
-func hash(into hasher: inout Hasher)
-func toScVal() throws -> SCValXDR
 ## struct ContractChallengeResponse: Decodable, Sendable
 var authorizationEntries: String
 var networkPassphrase: String?
@@ -493,29 +445,6 @@ var fromAsset: AssetXDR?
 ## enum CreateTestAccountResponseEnum: @unchecked Sendable
 case success(details: Any)
 case failure(error: HorizonRequestError)
-## struct CreateWalletResult: Sendable, Hashable
-var credentialId: String
-var contractId: String
-var publicKey: Data
-var signedTransactionXdr: String
-var transactionHash: String?
-var nickname: String?
-init(credentialId: String, contractId: String, publicKey: Data, signedTransactionXdr: String, transactionHash: String? = nil, nickname: String? = nil)
-static func ==(lhs: CreateWalletResult, rhs: CreateWalletResult) -> Bool
-func hash(into hasher: inout Hasher)
-func copy(credentialId: String? = nil, contractId: String? = nil, publicKey: Data? = nil, signedTransactionXdr: String? = nil, transactionHash: String?? = .none, nickname: String?? = .none) -> CreateWalletResult
-## enum CredentialDeploymentStatus: String, Sendable, CaseIterable
-case pending = "PENDING"
-case failed = "FAILED"
-## class CredentialException: SmartAccountException, @unchecked Sendable
-final class NotFound
-final class AlreadyExists
-final class Invalid
-final class DeploymentFailed
-static func notFound(credentialId: String, cause: Error? = nil) -> NotFound
-static func alreadyExists(credentialId: String, cause: Error? = nil) -> AlreadyExists
-static func invalid(reason: String, cause: Error? = nil) -> Invalid
-static func deploymentFailed(reason: String, cause: Error? = nil) -> DeploymentFailed
 ## extension CryptoKeyType
 static let KEY_TYPE_ED25519: Int32
 static let KEY_TYPE_PRE_AUTH_TX: Int32
@@ -619,13 +548,7 @@ static let iso8601: DateFormatter
 ## enum DeleteCustomerResponseEnum: Sendable
 case success
 case failure(error: KycServiceError)
-## struct DeployPendingResult: Sendable, Equatable, Hashable
-var contractId: String
-var signedTransactionXdr: String
-var transactionHash: String?
-init(contractId: String, signedTransactionXdr: String, transactionHash: String? = nil)
-func copy(contractId: String? = nil, signedTransactionXdr: String? = nil, transactionHash: String?? = .none) -> DeployPendingResult
-## class DeploymentFailed: CredentialException, @unchecked Sendable
+## class DeploymentFailed: SmartAccountCredentialException, @unchecked Sendable
 init(message: String, cause: Error? = nil)
 ## struct DepositAsset: Decodable, Sendable
 var enabled: Bool
@@ -778,30 +701,8 @@ class func basicAuth(_ username: String, password: String) -> String
 case connecting
 case open
 case closed
-## class Expired: SessionException, @unchecked Sendable
+## class Expired: SmartAccountSessionException, @unchecked Sendable
 init(message: String = "Session has expired", cause: Error? = nil)
-## struct ExternalSignerInfo: Sendable, Codable, Equatable, Hashable
-var address: String
-var type: ExternalSignerType
-var walletName: String?
-var walletId: String?
-init(address: String, type: ExternalSignerType, walletName: String? = nil, walletId: String? = nil)
-## enum ExternalSignerType: String, Sendable, Codable, CaseIterable
-case keypair = "KEYPAIR"
-case wallet = "WALLET"
-## protocol ExternalWalletAdapter: AnyObject, Sendable
-func connect() async throws -> ConnectedWallet?
-func disconnect() async throws
-func disconnectByAddress(address: String) async throws
-func signAuthEntry(preimageXdr: String, options: SignAuthEntryOptions?) async throws -> SignAuthEntryResult
-func getConnectedWallets() -> [ConnectedWallet]
-func canSignFor(address: String) -> Bool
-func getWalletForAddress(address: String) -> ConnectedWallet?
-func reconnect(walletId: String) async throws -> ConnectedWallet?
-## extension ExternalWalletAdapter
-func disconnectByAddress(address: String) async throws
-func getWalletForAddress(address: String) -> ConnectedWallet?
-func reconnect(walletId: String) async throws -> ConnectedWallet?
 ## struct ExtraInfo: Decodable, Sendable
 var message: String?
 init(from decoder: Decoder) throws
@@ -952,28 +853,6 @@ var invokeContract: InvokeContractArgsXDR?
 var createContract: CreateContractArgsXDR?
 var uploadContractWasm: Data?
 var createContractV2: CreateContractV2ArgsXDR?
-## actor InMemoryStorageAdapter: StorageAdapter
-init()
-func save(credential: StoredCredential) async throws
-func get(credentialId: String) async throws -> StoredCredential?
-func getByContract(contractId: String) async throws -> [StoredCredential]
-func getAll() async throws -> [StoredCredential]
-func delete(credentialId: String) async throws
-func update(credentialId: String, updates: StoredCredentialUpdate) async throws
-func clear() async throws
-func saveSession(_ session: StoredSession) async throws
-func getSession() async throws -> StoredSession?
-func clearSession() async throws
-## actor InMemoryWalletConnectionStorage: WalletConnectionStorage
-init()
-func getItem(key: String) async -> String?
-func setItem(key: String, value: String) async
-func removeItem(key: String) async
-## class IndexerException: SmartAccountException, @unchecked Sendable
-final class RequestFailed
-final class Timeout
-static func requestFailed(reason: String, cause: Error? = nil) -> RequestFailed
-static func timeout(url: String, cause: Error? = nil) -> Timeout
 ## enum InformationNeededEnum: Sendable
 case nonInteractive(info:CustomerInformationNeededNonInteractive)
 case status(info:CustomerInformationStatus)
@@ -1002,19 +881,19 @@ case horizonError(error: HorizonRequestError)
 ## enum InteractiveServiceForDomainEnum: Sendable
 case success(response: InteractiveService)
 case failure(error: InteractiveServiceError)
-## class Invalid: CredentialException, @unchecked Sendable
+## class Invalid: SmartAccountCredentialException, @unchecked Sendable
 init(message: String, cause: Error? = nil)
-## class Invalid: SignerException, @unchecked Sendable
+## class Invalid: SmartAccountSignerException, @unchecked Sendable
 init(message: String, cause: Error? = nil)
-## class Invalid: SessionException, @unchecked Sendable
+## class Invalid: SmartAccountSessionException, @unchecked Sendable
 init(message: String, cause: Error? = nil)
-## class InvalidAddress: ValidationException, @unchecked Sendable
+## class InvalidAddress: SmartAccountValidationException, @unchecked Sendable
 init(message: String, cause: Error? = nil)
-## class InvalidAmount: ValidationException, @unchecked Sendable
+## class InvalidAmount: SmartAccountValidationException, @unchecked Sendable
 init(message: String, cause: Error? = nil)
-## class InvalidConfig: ConfigurationException, @unchecked Sendable
+## class InvalidConfig: SmartAccountConfigurationException, @unchecked Sendable
 init(message: String, cause: Error? = nil)
-## class InvalidInput: ValidationException, @unchecked Sendable
+## class InvalidInput: SmartAccountValidationException, @unchecked Sendable
 init(message: String, cause: Error? = nil)
 ## class IssuerDocumentation: Sendable
 var orgName: String?
@@ -1127,19 +1006,6 @@ var parameter: (String, Data)
 case invalidEncodedString
 case invalidVersionByte
 case invalidChecksum
-## actor KeychainStorageAdapter: StorageAdapter
-static let defaultServiceName: String
-init(serviceName: String = KeychainStorageAdapter.defaultServiceName, shim: SecItemShim = RealSecItemShim())
-func save(credential: StoredCredential) async throws
-func get(credentialId: String) async throws -> StoredCredential?
-func getByContract(contractId: String) async throws -> [StoredCredential]
-func getAll() async throws -> [StoredCredential]
-func delete(credentialId: String) async throws
-func update(credentialId: String, updates: StoredCredentialUpdate) async throws
-func clear() async throws
-func saveSession(_ session: StoredSession) async throws
-func getSession() async throws -> StoredSession?
-func clearSession() async throws
 ## class KycService: @unchecked Sendable
 var kycServiceAddress: String
 init(kycServiceAddress:String)
@@ -1233,7 +1099,7 @@ static let TEXT = "text"
 static let ID = "id"
 static let HASH = "hash"
 static let RETURN = "return"
-## class MissingConfig: ConfigurationException, @unchecked Sendable
+## class MissingConfig: SmartAccountConfigurationException, @unchecked Sendable
 init(message: String, cause: Error? = nil)
 ## class Mnemonic: Sendable
 enum Strength
@@ -1245,28 +1111,58 @@ static let HTTP_SUCCESS_STATUS_MAX = 299
 static let HTTP_ERROR_STATUS_MIN = 300
 static let DEFAULT_TIMEOUT_SECONDS: UInt64
 static let TRANSACTION_TIME_BUFFER_SECONDS = 10
-## class NotConnected: WalletException, @unchecked Sendable
+## class NotConnected: SmartAccountWalletException, @unchecked Sendable
 init(message: String = "Wallet is not connected", cause: Error? = nil)
-## class NotFound: WalletException, @unchecked Sendable
+## class NotFound: SmartAccountWalletException, @unchecked Sendable
 init(message: String, cause: Error? = nil)
-## class NotFound: CredentialException, @unchecked Sendable
+## class NotFound: SmartAccountCredentialException, @unchecked Sendable
 init(message: String, cause: Error? = nil)
-## class NotFound: SignerException, @unchecked Sendable
+## class NotFound: SmartAccountSignerException, @unchecked Sendable
 init(message: String, cause: Error? = nil)
 ## class NotSupported: WebAuthnException, @unchecked Sendable
 init(message: String = "WebAuthn is not supported on this platform", cause: Error? = nil)
+## struct OZAddPasskeySignerResult: Sendable, Hashable
+var credentialId: String
+var publicKey: Data
+var transactionResult: OZTransactionResult
+init(credentialId: String, publicKey: Data, transactionResult: OZTransactionResult)
+static func ==(lhs: OZAddPasskeySignerResult, rhs: OZAddPasskeySignerResult) -> Bool
+func hash(into hasher: inout Hasher)
 ## struct OZAddressLookupResponse: Decodable, Equatable, Sendable
 var signerAddress: String
 var contracts: [OZIndexedContractSummary]
 var count: Int
 init(signerAddress: String, contracts: [OZIndexedContractSummary], count: Int)
 init(from decoder: Decoder) throws
+## struct OZAuthenticatePasskeyResult: Sendable, Hashable
+var credentialId: String
+var signature: OZWebAuthnSignature
+var publicKey: Data
+init(credentialId: String, signature: OZWebAuthnSignature, publicKey: Data)
+static func ==(lhs: OZAuthenticatePasskeyResult, rhs: OZAuthenticatePasskeyResult) -> Bool
+func hash(into hasher: inout Hasher)
 ## enum OZBuilders
-static func createDefaultContext() -> ContextRuleType
-static func createCallContractContext(contractAddress: String) throws -> ContextRuleType
-static func createCreateContractContext(wasmHashHex: String) throws -> ContextRuleType
-static func createCreateContractContext(wasmHash: Data) throws -> ContextRuleType
-static func collectUniqueSignersFromRules(rules: [ParsedContextRule]) -> [any OZSmartAccountSigner]
+static func createDefaultContext() -> OZContextRuleType
+static func createCallContractContext(contractAddress: String) throws -> OZContextRuleType
+static func createCreateContractContext(wasmHashHex: String) throws -> OZContextRuleType
+static func createCreateContractContext(wasmHash: Data) throws -> OZContextRuleType
+static func collectUniqueSignersFromRules(rules: [OZParsedContextRule]) -> [any OZSmartAccountSigner]
+## struct OZConnectWalletOptions: Sendable, Equatable, Hashable
+var credentialId: String?
+var contractId: String?
+var fresh: Bool
+var prompt: Bool
+init(credentialId: String? = nil, contractId: String? = nil, fresh: Bool = false, prompt: Bool = false)
+func copy(credentialId: String?? = .none, contractId: String?? = .none, fresh: Bool? = nil, prompt: Bool? = nil) -> OZConnectWalletOptions
+## enum OZConnectWalletResult: Sendable, Equatable, Hashable
+case connected(credentialId: String, contractId: String, restoredFromSession: Bool)
+case ambiguous(credentialId: String, candidates: [String])
+var credentialId: String
+## struct OZConnectedWallet: Sendable, Equatable, Hashable
+var address: String
+var walletId: String
+var walletName: String
+init(address: String, walletId: String, walletName: String)
 ## enum OZConstants
 static let defaultSessionExpiryMs: Int64
 static let defaultIndexerTimeoutMs: Int64
@@ -1281,14 +1177,21 @@ static let clientName: String
 static let maxIndexerResponseBytes: Int
 static let maxRelayerResponseBytes: Int
 ## class OZContextRuleManager: OZContextRuleManagerProtocol, OZManagerHelpers, @unchecked Sendable
-func addContextRule(contextType: ContextRuleType, name: String, validUntil: UInt32? = nil, signers: [any OZSmartAccountSigner], policies: [String: SCValXDR] = [:], selectedSigners: [SelectedSigner] = [], forceMethod: SubmissionMethod? = nil) async throws -> TransactionResult
+func addContextRule(contextType: OZContextRuleType, name: String, validUntil: UInt32? = nil, signers: [any OZSmartAccountSigner], policies: [String: SCValXDR] = [:], selectedSigners: [OZSelectedSigner] = [], forceMethod: OZSubmissionMethod? = nil) async throws -> OZTransactionResult
 func getContextRule(id: UInt32) async throws -> SCValXDR
 func getContextRulesCount() async throws -> UInt32
 func getAllContextRules(maxScanId: UInt32? = nil) async throws -> [SCValXDR]
-func listContextRules(maxScanId: UInt32? = nil) async throws -> [ParsedContextRule]
-func updateName(id: UInt32, name: String, selectedSigners: [SelectedSigner] = [], forceMethod: SubmissionMethod? = nil) async throws -> TransactionResult
-func updateValidUntil(id: UInt32, validUntil: UInt32?, selectedSigners: [SelectedSigner] = [], forceMethod: SubmissionMethod? = nil) async throws -> TransactionResult
-func removeContextRule(id: UInt32, selectedSigners: [SelectedSigner] = [], forceMethod: SubmissionMethod? = nil) async throws -> TransactionResult
+func listContextRules(maxScanId: UInt32? = nil) async throws -> [OZParsedContextRule]
+func updateName(id: UInt32, name: String, selectedSigners: [OZSelectedSigner] = [], forceMethod: OZSubmissionMethod? = nil) async throws -> OZTransactionResult
+func updateValidUntil(id: UInt32, validUntil: UInt32?, selectedSigners: [OZSelectedSigner] = [], forceMethod: OZSubmissionMethod? = nil) async throws -> OZTransactionResult
+func removeContextRule(id: UInt32, selectedSigners: [OZSelectedSigner] = [], forceMethod: OZSubmissionMethod? = nil) async throws -> OZTransactionResult
+## enum OZContextRuleType: Sendable, Hashable
+case defaultRule
+case callContract(contractAddress: String)
+case createContract(wasmHash: Data)
+static func ==(lhs: OZContextRuleType, rhs: OZContextRuleType) -> Bool
+func hash(into hasher: inout Hasher)
+func toScVal() throws -> SCValXDR
 ## struct OZContractDetailsResponse: Decodable, Equatable, Sendable
 var contractId: String
 var summary: OZIndexedContractSummary
@@ -1300,6 +1203,20 @@ static let keyDataTooLarge: Int
 static let contextRuleIdsLengthMismatch: Int
 static let nameTooLong: Int
 static let unauthorizedSigner: Int
+## struct OZCreateWalletResult: Sendable, Hashable
+var credentialId: String
+var contractId: String
+var publicKey: Data
+var signedTransactionXdr: String
+var transactionHash: String?
+var nickname: String?
+init(credentialId: String, contractId: String, publicKey: Data, signedTransactionXdr: String, transactionHash: String? = nil, nickname: String? = nil)
+static func ==(lhs: OZCreateWalletResult, rhs: OZCreateWalletResult) -> Bool
+func hash(into hasher: inout Hasher)
+func copy(credentialId: String? = nil, contractId: String? = nil, publicKey: Data? = nil, signedTransactionXdr: String? = nil, transactionHash: String?? = .none, nickname: String?? = .none) -> OZCreateWalletResult
+## enum OZCredentialDeploymentStatus: String, Sendable, CaseIterable
+case pending = "PENDING"
+case failed = "FAILED"
 ## struct OZCredentialLookupResponse: Decodable, Equatable, Sendable
 var credentialId: String
 var contracts: [OZIndexedContractSummary]
@@ -1307,16 +1224,16 @@ var count: Int
 init(credentialId: String, contracts: [OZIndexedContractSummary], count: Int)
 init(from decoder: Decoder) throws
 ## class OZCredentialManager: OZCredentialManagerProtocol, @unchecked Sendable
-func createPendingCredential(credentialId: String, publicKey: Data, contractId: String, nickname: String? = nil, transports: [String]? = nil, deviceType: String? = nil, backedUp: Bool? = nil) async throws -> StoredCredential
-func saveCredential(credentialId: String, publicKey: Data, nickname: String? = nil, contractId: String? = nil) async throws -> StoredCredential
+func createPendingCredential(credentialId: String, publicKey: Data, contractId: String, nickname: String? = nil, transports: [String]? = nil, deviceType: String? = nil, backedUp: Bool? = nil) async throws -> OZStoredCredential
+func saveCredential(credentialId: String, publicKey: Data, nickname: String? = nil, contractId: String? = nil) async throws -> OZStoredCredential
 func sync(credentialId: String) async throws -> Bool
-func syncAll() async throws -> SyncResult
+func syncAll() async throws -> OZSyncResult
 func deleteCredential(credentialId: String) async throws
-func getCredential(credentialId: String) async throws -> StoredCredential?
-func getCredentialsByContract(contractId: String) async throws -> [StoredCredential]
-func getAllCredentials() async throws -> [StoredCredential]
-func getForConnectedWallet() async throws -> [StoredCredential]
-func getPendingCredentials() async throws -> [StoredCredential]
+func getCredential(credentialId: String) async throws -> OZStoredCredential?
+func getCredentialsByContract(contractId: String) async throws -> [OZStoredCredential]
+func getAllCredentials() async throws -> [OZStoredCredential]
+func getForConnectedWallet() async throws -> [OZStoredCredential]
+func getPendingCredentials() async throws -> [OZStoredCredential]
 func updateNickname(credentialId: String, nickname: String?) async throws
 func clearAll() async throws
 ## struct OZDelegatedSigner: OZSmartAccountSigner, Equatable, Hashable
@@ -1324,6 +1241,12 @@ var address: String
 var uniqueKey: String
 init(address: String) throws
 func toScVal() throws -> SCValXDR
+## struct OZDeployPendingResult: Sendable, Equatable, Hashable
+var contractId: String
+var signedTransactionXdr: String
+var transactionHash: String?
+init(contractId: String, signedTransactionXdr: String, transactionHash: String? = nil)
+func copy(contractId: String? = nil, signedTransactionXdr: String? = nil, transactionHash: String?? = .none) -> OZDeployPendingResult
 ## struct OZEd25519Signature: OZSmartAccountSignature, Hashable
 var publicKey: Data
 var signature: Data
@@ -1350,23 +1273,62 @@ static func ==(lhs: OZExternalSigner, rhs: OZExternalSigner) -> Bool
 func hash(into hasher: inout Hasher)
 static func webAuthn(verifierAddress: String, publicKey: Data, credentialId: Data) throws -> OZExternalSigner
 static func ed25519(verifierAddress: String, publicKey: Data) throws -> OZExternalSigner
+## struct OZExternalSignerInfo: Sendable, Codable, Equatable, Hashable
+var address: String
+var type: OZExternalSignerType
+var walletName: String?
+var walletId: String?
+init(address: String, type: OZExternalSignerType, walletName: String? = nil, walletId: String? = nil)
 ## actor OZExternalSignerManager
 var hasWalletAdapter: Bool
-init(networkPassphrase: String, walletAdapter: ExternalWalletAdapter? = nil, walletConnectionStorage: WalletConnectionStorage? = nil, ed25519Adapter: OZExternalEd25519SignerAdapter? = nil)
+init(networkPassphrase: String, walletAdapter: OZExternalWalletAdapter? = nil, walletConnectionStorage: OZWalletConnectionStorage? = nil, ed25519Adapter: OZExternalEd25519SignerAdapter? = nil)
 func addFromSecret(secretKey: String) async throws -> String
-func addFromWallet() async throws -> ConnectedWallet?
+func addFromWallet() async throws -> OZConnectedWallet?
 func canSignFor(address: String) async -> Bool
-func get(address: String) async -> ExternalSignerInfo?
-func getAll() async -> [ExternalSignerInfo]
+func get(address: String) async -> OZExternalSignerInfo?
+func getAll() async -> [OZExternalSignerInfo]
 func hasSigners() async -> Bool
-func signAuthEntry(address: String, authEntry: String) async throws -> SignAuthEntryResult
+func signAuthEntry(address: String, authEntry: String) async throws -> OZSignAuthEntryResult
 func remove(address: String) async throws
 func removeAll() async throws
 func addEd25519FromRawKey(secretKeyBytes: Data, verifierAddress: String) throws -> Data
 func canSignEd25519For(verifierAddress: String, publicKey: Data) -> Bool
 func signEd25519AuthDigest(verifierAddress: String, publicKey: Data, authDigest: Data) async throws -> Data
 func removeEd25519(verifierAddress: String, publicKey: Data)
-func restoreConnections() async throws -> [ConnectedWallet]
+func restoreConnections() async throws -> [OZConnectedWallet]
+## enum OZExternalSignerType: String, Sendable, Codable, CaseIterable
+case keypair = "KEYPAIR"
+case wallet = "WALLET"
+## protocol OZExternalWalletAdapter: AnyObject, Sendable
+func connect() async throws -> OZConnectedWallet?
+func disconnect() async throws
+func disconnectByAddress(address: String) async throws
+func signAuthEntry(preimageXdr: String, options: OZSignAuthEntryOptions?) async throws -> OZSignAuthEntryResult
+func getConnectedWallets() -> [OZConnectedWallet]
+func canSignFor(address: String) -> Bool
+func getWalletForAddress(address: String) -> OZConnectedWallet?
+func reconnect(walletId: String) async throws -> OZConnectedWallet?
+## extension OZExternalWalletAdapter
+func disconnectByAddress(address: String) async throws
+func getWalletForAddress(address: String) -> OZConnectedWallet?
+func reconnect(walletId: String) async throws -> OZConnectedWallet?
+## actor OZInMemoryStorageAdapter: OZStorageAdapter
+init()
+func save(credential: OZStoredCredential) async throws
+func get(credentialId: String) async throws -> OZStoredCredential?
+func getByContract(contractId: String) async throws -> [OZStoredCredential]
+func getAll() async throws -> [OZStoredCredential]
+func delete(credentialId: String) async throws
+func update(credentialId: String, updates: OZStoredCredentialUpdate) async throws
+func clear() async throws
+func saveSession(_ session: OZStoredSession) async throws
+func getSession() async throws -> OZStoredSession?
+func clearSession() async throws
+## actor OZInMemoryWalletConnectionStorage: OZWalletConnectionStorage
+init()
+func getItem(key: String) async -> String?
+func setItem(key: String, value: String) async
+func removeItem(key: String) async
 ## struct OZIndexedContextRule: Decodable, Equatable, Sendable
 var contextRuleId: Int
 var signers: [OZIndexedSigner]
@@ -1430,23 +1392,58 @@ case object([String: OZJSONValue])
 case null
 init(from decoder: Decoder) throws
 func hash(into hasher: inout Hasher)
+## actor OZKeychainStorageAdapter: OZStorageAdapter
+static let defaultServiceName: String
+init(serviceName: String = OZKeychainStorageAdapter.defaultServiceName, shim: OZSecItemShim = OZRealSecItemShim())
+func save(credential: OZStoredCredential) async throws
+func get(credentialId: String) async throws -> OZStoredCredential?
+func getByContract(contractId: String) async throws -> [OZStoredCredential]
+func getAll() async throws -> [OZStoredCredential]
+func delete(credentialId: String) async throws
+func update(credentialId: String, updates: OZStoredCredentialUpdate) async throws
+func clear() async throws
+func saveSession(_ session: OZStoredSession) async throws
+func getSession() async throws -> OZStoredSession?
+func clearSession() async throws
 ## class OZMultiSignerManager: OZManagerHelpers, @unchecked Sendable
-func multiSignerTransfer(tokenContract: String, recipient: String, amount: String, selectedSigners: [SelectedSigner], forceMethod: SubmissionMethod? = nil, resolveContextRuleIds: ResolveContextRuleIds? = nil) async throws -> TransactionResult
-func multiSignerContractCall(target: String, targetFn: String, targetArgs: [SCValXDR] = [], selectedSigners: [SelectedSigner], forceMethod: SubmissionMethod? = nil, resolveContextRuleIds: ResolveContextRuleIds? = nil) async throws -> TransactionResult
-func multiSignerExecuteAndSubmit(target: String, targetFn: String, targetArgs: [SCValXDR] = [], selectedSigners: [SelectedSigner], forceMethod: SubmissionMethod? = nil, resolveContextRuleIds: ResolveContextRuleIds? = nil) async throws -> TransactionResult
-func submitWithMultipleSigners(hostFunction: HostFunctionXDR, selectedSigners: [SelectedSigner], forceMethod: SubmissionMethod? = nil, resolveContextRuleIds: ResolveContextRuleIds? = nil) async throws -> TransactionResult
+func multiSignerTransfer(tokenContract: String, recipient: String, amount: String, selectedSigners: [OZSelectedSigner], forceMethod: OZSubmissionMethod? = nil, resolveContextRuleIds: OZResolveContextRuleIds? = nil) async throws -> OZTransactionResult
+func multiSignerContractCall(target: String, targetFn: String, targetArgs: [SCValXDR] = [], selectedSigners: [OZSelectedSigner], forceMethod: OZSubmissionMethod? = nil, resolveContextRuleIds: OZResolveContextRuleIds? = nil) async throws -> OZTransactionResult
+func multiSignerExecuteAndSubmit(target: String, targetFn: String, targetArgs: [SCValXDR] = [], selectedSigners: [OZSelectedSigner], forceMethod: OZSubmissionMethod? = nil, resolveContextRuleIds: OZResolveContextRuleIds? = nil) async throws -> OZTransactionResult
+func submitWithMultipleSigners(hostFunction: HostFunctionXDR, selectedSigners: [OZSelectedSigner], forceMethod: OZSubmissionMethod? = nil, resolveContextRuleIds: OZResolveContextRuleIds? = nil) async throws -> OZTransactionResult
+## struct OZParsedContextRule: Sendable, Hashable
+var id: UInt32
+var contextType: OZContextRuleType
+var name: String
+var signers: [any OZSmartAccountSigner]
+var signerIds: [UInt32]
+var policies: [String]
+var policyIds: [UInt32]
+var validUntil: UInt32?
+init(id: UInt32, contextType: OZContextRuleType, name: String, signers: [any OZSmartAccountSigner], signerIds: [UInt32], policies: [String], policyIds: [UInt32], validUntil: UInt32?)
+static func ==(lhs: OZParsedContextRule, rhs: OZParsedContextRule) -> Bool
+func hash(into hasher: inout Hasher)
+## enum OZPolicyInstallParams: Sendable
+case simpleThreshold(threshold: UInt32)
+case weightedThreshold(signerWeights: [OZSignerWeightEntry], threshold: UInt32)
+case spendingLimit(spendingLimit: String, periodLedgers: UInt32)
 ## class OZPolicyManager: OZManagerHelpers, @unchecked Sendable
-func addSimpleThreshold(contextRuleId: UInt32, policyAddress: String, threshold: UInt32, selectedSigners: [SelectedSigner] = [], forceMethod: SubmissionMethod? = nil) async throws -> TransactionResult
-func addWeightedThreshold(contextRuleId: UInt32, policyAddress: String, signerWeights: [SignerWeightEntry], threshold: UInt32, selectedSigners: [SelectedSigner] = [], forceMethod: SubmissionMethod? = nil) async throws -> TransactionResult
-func addSpendingLimit(contextRuleId: UInt32, policyAddress: String, spendingLimit: String, periodLedgers: UInt32, selectedSigners: [SelectedSigner] = [], forceMethod: SubmissionMethod? = nil) async throws -> TransactionResult
-func removePolicy(contextRuleId: UInt32, policyId: UInt32, selectedSigners: [SelectedSigner] = [], forceMethod: SubmissionMethod? = nil) async throws -> TransactionResult
-func removePolicyByAddress(contextRuleId: UInt32, policyAddress: String, selectedSigners: [SelectedSigner] = [], forceMethod: SubmissionMethod? = nil) async throws -> TransactionResult
-func addPolicy(contextRuleId: UInt32, policyAddress: String, installParams: SCValXDR, selectedSigners: [SelectedSigner] = [], forceMethod: SubmissionMethod? = nil) async throws -> TransactionResult
+func addSimpleThreshold(contextRuleId: UInt32, policyAddress: String, threshold: UInt32, selectedSigners: [OZSelectedSigner] = [], forceMethod: OZSubmissionMethod? = nil) async throws -> OZTransactionResult
+func addWeightedThreshold(contextRuleId: UInt32, policyAddress: String, signerWeights: [OZSignerWeightEntry], threshold: UInt32, selectedSigners: [OZSelectedSigner] = [], forceMethod: OZSubmissionMethod? = nil) async throws -> OZTransactionResult
+func addSpendingLimit(contextRuleId: UInt32, policyAddress: String, spendingLimit: String, periodLedgers: UInt32, selectedSigners: [OZSelectedSigner] = [], forceMethod: OZSubmissionMethod? = nil) async throws -> OZTransactionResult
+func removePolicy(contextRuleId: UInt32, policyId: UInt32, selectedSigners: [OZSelectedSigner] = [], forceMethod: OZSubmissionMethod? = nil) async throws -> OZTransactionResult
+func removePolicyByAddress(contextRuleId: UInt32, policyAddress: String, selectedSigners: [OZSelectedSigner] = [], forceMethod: OZSubmissionMethod? = nil) async throws -> OZTransactionResult
+func addPolicy(contextRuleId: UInt32, policyAddress: String, installParams: SCValXDR, selectedSigners: [OZSelectedSigner] = [], forceMethod: OZSubmissionMethod? = nil) async throws -> OZTransactionResult
 static func sortMapByKeyXdr(_ entries: [SCMapEntryXDR]) -> [SCMapEntryXDR]
 ## struct OZPolicySignature: OZSmartAccountSignature, Hashable
 static let instance = OZPolicySignature()
 func toScVal() -> SCValXDR
 func toAuthPayloadBytes() throws -> Data
+## struct OZRealSecItemShim: OZSecItemShim
+init()
+func add(query: CFDictionary, result: UnsafeMutablePointer<CFTypeRef?>?) -> OSStatus
+func copyMatching(query: CFDictionary, result: UnsafeMutablePointer<CFTypeRef?>?) -> OSStatus
+func update(query: CFDictionary, attributesToUpdate: CFDictionary) -> OSStatus
+func delete(query: CFDictionary) -> OSStatus
 ## class OZRelayerClient: @unchecked Sendable
 init(relayerUrl: String, timeoutMs: Int64 = OZConstants.defaultRelayerTimeoutMs, urlSession: URLSession? = nil) throws
 func send(hostFunction: HostFunctionXDR, authEntries: [SorobanAuthorizationEntryXDR], perRequestTimeoutMs: Int64? = nil) async -> OZRelayerResponse
@@ -1473,17 +1470,38 @@ var errorCode: String?
 var details: [String: OZJSONValue]?
 init(success: Bool, transactionId: String? = nil, hash: String? = nil, status: String? = nil, error: String? = nil, errorCode: String? = nil, details: [String: OZJSONValue]? = nil)
 init(from decoder: Decoder) throws
+## protocol OZSecItemShim: Sendable
+func add(query: CFDictionary, result: UnsafeMutablePointer<CFTypeRef?>?) -> OSStatus
+func copyMatching(query: CFDictionary, result: UnsafeMutablePointer<CFTypeRef?>?) -> OSStatus
+func update(query: CFDictionary, attributesToUpdate: CFDictionary) -> OSStatus
+func delete(query: CFDictionary) -> OSStatus
+## enum OZSelectedSigner: Sendable, Hashable
+case passkey(credentialId: String, credentialIdBytes: Data? = nil, keyData: Data? = nil, transports: [String]? = nil)
+case wallet(accountId: String)
+case ed25519(verifierAddress: String, publicKey: Data)
+## struct OZSignAuthEntryOptions: Sendable, Equatable, Hashable
+var networkPassphrase: String?
+var address: String?
+init(networkPassphrase: String? = nil, address: String? = nil)
+## struct OZSignAuthEntryResult: Sendable, Equatable, Hashable
+var signedAuthEntry: String
+var signerAddress: String?
+init(signedAuthEntry: String, signerAddress: String? = nil)
 ## class OZSignerManager: OZManagerHelpers, @unchecked Sendable
-func addNewPasskeySigner(contextRuleId: UInt32, userName: String, selectedSigners: [SelectedSigner] = [], forceMethod: SubmissionMethod? = nil) async throws -> AddPasskeySignerResult
-func addPasskey(contextRuleId: UInt32, publicKey: Data, credentialId: Data, selectedSigners: [SelectedSigner] = [], forceMethod: SubmissionMethod? = nil) async throws -> TransactionResult
-func addDelegated(contextRuleId: UInt32, address: String, selectedSigners: [SelectedSigner] = [], forceMethod: SubmissionMethod? = nil) async throws -> TransactionResult
-func addEd25519(contextRuleId: UInt32, verifierAddress: String, publicKey: Data, selectedSigners: [SelectedSigner] = [], forceMethod: SubmissionMethod? = nil) async throws -> TransactionResult
-func removeSigner(contextRuleId: UInt32, signerId: UInt32, selectedSigners: [SelectedSigner] = [], forceMethod: SubmissionMethod? = nil) async throws -> TransactionResult
-func removeSignerBySigner(contextRuleId: UInt32, signer: any OZSmartAccountSigner, selectedSigners: [SelectedSigner] = [], forceMethod: SubmissionMethod? = nil) async throws -> TransactionResult
+func addNewPasskeySigner(contextRuleId: UInt32, userName: String, selectedSigners: [OZSelectedSigner] = [], forceMethod: OZSubmissionMethod? = nil) async throws -> OZAddPasskeySignerResult
+func addPasskey(contextRuleId: UInt32, publicKey: Data, credentialId: Data, selectedSigners: [OZSelectedSigner] = [], forceMethod: OZSubmissionMethod? = nil) async throws -> OZTransactionResult
+func addDelegated(contextRuleId: UInt32, address: String, selectedSigners: [OZSelectedSigner] = [], forceMethod: OZSubmissionMethod? = nil) async throws -> OZTransactionResult
+func addEd25519(contextRuleId: UInt32, verifierAddress: String, publicKey: Data, selectedSigners: [OZSelectedSigner] = [], forceMethod: OZSubmissionMethod? = nil) async throws -> OZTransactionResult
+func removeSigner(contextRuleId: UInt32, signerId: UInt32, selectedSigners: [OZSelectedSigner] = [], forceMethod: OZSubmissionMethod? = nil) async throws -> OZTransactionResult
+func removeSignerBySigner(contextRuleId: UInt32, signer: any OZSmartAccountSigner, selectedSigners: [OZSelectedSigner] = [], forceMethod: OZSubmissionMethod? = nil) async throws -> OZTransactionResult
 ## struct OZSignerWeight: Sendable
 var signer: any OZSmartAccountSigner
 var weight: Int
 init(signer: any OZSmartAccountSigner, weight: Int)
+## struct OZSignerWeightEntry: Sendable
+var signer: any OZSmartAccountSigner
+var weight: UInt32
+init(signer: any OZSmartAccountSigner, weight: UInt32)
 ## struct OZSimpleThresholdParams: Sendable, Hashable
 var threshold: Int
 init(threshold: Int)
@@ -1535,11 +1553,11 @@ var timeoutInSeconds: Int
 var relayerUrl: String?
 var indexerUrl: String?
 var webauthnProvider: WebAuthnProvider?
-var storage: StorageAdapter
-var externalWallet: ExternalWalletAdapter?
+var storage: OZStorageAdapter
+var externalWallet: OZExternalWalletAdapter?
 var externalEd25519Adapter: OZExternalEd25519SignerAdapter?
 var maxContextRuleScanId: UInt32
-init(rpcUrl: String, networkPassphrase: String, accountWasmHash: String, webauthnVerifierAddress: String, deployerKeypair: KeyPair? = nil, sessionExpiryMs: Int64 = OZConstants.defaultSessionExpiryMs, signatureExpirationLedgers: Int = StellarProtocolConstants.ledgersPerHour, timeoutInSeconds: Int = OZConstants.defaultTimeoutSeconds, relayerUrl: String? = nil, indexerUrl: String? = nil, webauthnProvider: WebAuthnProvider? = nil, storage: StorageAdapter = InMemoryStorageAdapter(), externalWallet: ExternalWalletAdapter? = nil, externalEd25519Adapter: OZExternalEd25519SignerAdapter? = nil, maxContextRuleScanId: UInt32 = 50) throws
+init(rpcUrl: String, networkPassphrase: String, accountWasmHash: String, webauthnVerifierAddress: String, deployerKeypair: KeyPair? = nil, sessionExpiryMs: Int64 = OZConstants.defaultSessionExpiryMs, signatureExpirationLedgers: Int = StellarProtocolConstants.ledgersPerHour, timeoutInSeconds: Int = OZConstants.defaultTimeoutSeconds, relayerUrl: String? = nil, indexerUrl: String? = nil, webauthnProvider: WebAuthnProvider? = nil, storage: OZStorageAdapter = OZInMemoryStorageAdapter(), externalWallet: OZExternalWalletAdapter? = nil, externalEd25519Adapter: OZExternalEd25519SignerAdapter? = nil, maxContextRuleScanId: UInt32 = 50) throws
 static func createDefaultDeployer() async throws -> KeyPair
 static func builder(rpcUrl: String, networkPassphrase: String, accountWasmHash: String, webauthnVerifierAddress: String) -> Builder
 func effectiveDeployer() async throws -> KeyPair
@@ -1547,11 +1565,42 @@ func effectiveIndexerUrl() -> String?
 ## extension OZSmartAccountConfig
 static func ==(lhs: OZSmartAccountConfig, rhs: OZSmartAccountConfig) -> Bool
 func hash(into hasher: inout Hasher)
+## enum OZSmartAccountEvent: Sendable, Equatable, Hashable
+case walletConnected(contractId: String, credentialId: String)
+case walletDisconnected(contractId: String)
+case credentialCreated(credential: OZStoredCredential)
+case credentialDeleted(credentialId: String)
+case sessionExpired(contractId: String, credentialId: String)
+case transactionSigned(contractId: String, credentialId: String?)
+case transactionSubmitted(hash: String, success: Bool)
+case credentialSyncFailed(credentialId: String, error: Error)
+var eventTypeTag: String
+static func ==(lhs: OZSmartAccountEvent, rhs: OZSmartAccountEvent) -> Bool
+func hash(into hasher: inout Hasher)
+## class OZSmartAccountEventEmitter: @unchecked Sendable
+init()
+func setErrorHandler(_ handler: OZSmartAccountEventErrorHandler?)
+func addListener(_ listener: OZSmartAccountEventListener) -> OZSmartAccountEventUnsubscribe
+func on(_ eventType: OZSmartAccountEventType, listener: OZSmartAccountEventListener) -> OZSmartAccountEventUnsubscribe
+func once(_ eventType: OZSmartAccountEventType, listener: OZSmartAccountEventListener) -> OZSmartAccountEventUnsubscribe
+func removeAllListeners(eventType: String? = nil)
+func removeAllListeners()
+func listenerCount(eventType: String) -> Int
+## enum OZSmartAccountEventType: String, Sendable, CaseIterable
+case walletConnected = "WalletConnected"
+case walletDisconnected = "WalletDisconnected"
+case credentialCreated = "CredentialCreated"
+case credentialDeleted = "CredentialDeleted"
+case sessionExpired = "SessionExpired"
+case transactionSigned = "TransactionSigned"
+case transactionSubmitted = "TransactionSubmitted"
+case credentialSyncFailed = "CredentialSyncFailed"
+var tag: String
 ## class OZSmartAccountKit: OZSmartAccountKitProtocol, @unchecked Sendable
 var config: OZSmartAccountConfig
 var indexerClient: OZIndexerClient?
 var relayerClient: OZRelayerClient?
-var events: SmartAccountEventEmitter
+var events: OZSmartAccountEventEmitter
 var walletOperations: OZWalletOperations
 var transactionOperations: OZTransactionOperations
 var signerManager: OZSignerManager
@@ -1576,17 +1625,97 @@ func toScVal() throws -> SCValXDR
 ## struct OZSpendingLimitParams: Sendable, Hashable
 var spendingLimit: Int64
 var periodLedgers: Int
+## protocol OZStorageAdapter: AnyObject, Sendable
+func save(credential: OZStoredCredential) async throws
+func get(credentialId: String) async throws -> OZStoredCredential?
+func getByContract(contractId: String) async throws -> [OZStoredCredential]
+func getAll() async throws -> [OZStoredCredential]
+func delete(credentialId: String) async throws
+func update(credentialId: String, updates: OZStoredCredentialUpdate) async throws
+func clear() async throws
+func saveSession(_ session: OZStoredSession) async throws
+func getSession() async throws -> OZStoredSession?
+func clearSession() async throws
+## struct OZStoredCredential: Sendable
+var credentialId: String
+var publicKey: Data
+var contractId: String?
+var deploymentStatus: OZCredentialDeploymentStatus
+var deploymentError: String?
+var createdAt: Int64
+var lastUsedAt: Int64?
+var nickname: String?
+var isPrimary: Bool
+var transports: [String]?
+var deviceType: String?
+var backedUp: Bool?
+init(credentialId: String, publicKey: Data, contractId: String? = nil, deploymentStatus: OZCredentialDeploymentStatus = .pending, deploymentError: String? = nil, createdAt: Int64 = Int64(Date().timeIntervalSince1970 * 1000), lastUsedAt: Int64? = nil, nickname: String? = nil, isPrimary: Bool = false, transports: [String]? = nil, deviceType: String? = nil, backedUp: Bool? = nil)
+func copyWith(credentialId: String? = nil, publicKey: Data? = nil, contractId: String? = nil, deploymentStatus: OZCredentialDeploymentStatus? = nil, deploymentError: String? = nil, createdAt: Int64? = nil, lastUsedAt: Int64? = nil, nickname: String? = nil, isPrimary: Bool? = nil, transports: [String]? = nil, deviceType: String? = nil, backedUp: Bool? = nil) -> OZStoredCredential
+func applyUpdate(_ updates: OZStoredCredentialUpdate) -> OZStoredCredential
+## extension OZStoredCredential
+static func ==(lhs: OZStoredCredential, rhs: OZStoredCredential) -> Bool
+func hash(into hasher: inout Hasher)
+## struct OZStoredCredentialUpdate: Sendable, Equatable, Hashable
+var deploymentStatus: OZCredentialDeploymentStatus?
+var deploymentError: String?
+var contractId: String?
+var lastUsedAt: Int64?
+var nickname: String?
+var isPrimary: Bool?
+var transports: [String]?
+var deviceType: String?
+var backedUp: Bool?
+init(deploymentStatus: OZCredentialDeploymentStatus? = nil, deploymentError: String? = nil, contractId: String? = nil, lastUsedAt: Int64? = nil, nickname: String? = nil, isPrimary: Bool? = nil, transports: [String]? = nil, deviceType: String? = nil, backedUp: Bool? = nil)
+## struct OZStoredSession: Sendable, Equatable, Hashable
+var credentialId: String
+var contractId: String
+var connectedAt: Int64
+var expiresAt: Int64
+var isExpired: Bool
+init(credentialId: String, contractId: String, connectedAt: Int64, expiresAt: Int64)
+## enum OZSubmissionMethod: Sendable
+case relayer
+case rpc
+## struct OZSyncResult: Sendable, Equatable, Hashable
+var deployed: Int
+var pending: Int
+var failed: Int
+init(deployed: Int, pending: Int, failed: Int)
 ## class OZTransactionOperations: OZManagerHelpers, @unchecked Sendable
-func transfer(tokenContract: String, recipient: String, amount: String, forceMethod: SubmissionMethod? = nil) async throws -> TransactionResult
-func contractCall(target: String, targetFn: String, targetArgs: [SCValXDR] = [], forceMethod: SubmissionMethod? = nil, resolveContextRuleIds: ResolveContextRuleIds? = nil) async throws -> TransactionResult
-func executeAndSubmit(target: String, targetFn: String, targetArgs: [SCValXDR] = [], forceMethod: SubmissionMethod? = nil, resolveContextRuleIds: ResolveContextRuleIds? = nil) async throws -> TransactionResult
-func submit(hostFunction: HostFunctionXDR, auth: [SorobanAuthorizationEntryXDR], forceMethod: SubmissionMethod? = nil, resolveContextRuleIds: ResolveContextRuleIds? = nil) async throws -> TransactionResult
-func fundWallet(nativeTokenContract: String, forceMethod: SubmissionMethod? = nil) async throws -> String
+func transfer(tokenContract: String, recipient: String, amount: String, forceMethod: OZSubmissionMethod? = nil) async throws -> OZTransactionResult
+func contractCall(target: String, targetFn: String, targetArgs: [SCValXDR] = [], forceMethod: OZSubmissionMethod? = nil, resolveContextRuleIds: OZResolveContextRuleIds? = nil) async throws -> OZTransactionResult
+func executeAndSubmit(target: String, targetFn: String, targetArgs: [SCValXDR] = [], forceMethod: OZSubmissionMethod? = nil, resolveContextRuleIds: OZResolveContextRuleIds? = nil) async throws -> OZTransactionResult
+func submit(hostFunction: HostFunctionXDR, auth: [SorobanAuthorizationEntryXDR], forceMethod: OZSubmissionMethod? = nil, resolveContextRuleIds: OZResolveContextRuleIds? = nil) async throws -> OZTransactionResult
+func fundWallet(nativeTokenContract: String, forceMethod: OZSubmissionMethod? = nil) async throws -> String
+## struct OZTransactionResult: Sendable, Equatable, Hashable
+var success: Bool
+var hash: String?
+var ledger: UInt32?
+var error: String?
+init(success: Bool, hash: String? = nil, ledger: UInt32? = nil, error: String? = nil)
+func copy(success: Bool? = nil, hash: String?? = .none, ledger: UInt32?? = .none, error: String?? = .none) -> OZTransactionResult
+## actor OZUserDefaultsStorageAdapter: OZStorageAdapter
+static let defaultSuiteName: String
+init(suiteName: String = OZUserDefaultsStorageAdapter.defaultSuiteName) throws
+func save(credential: OZStoredCredential) async throws
+func get(credentialId: String) async throws -> OZStoredCredential?
+func getByContract(contractId: String) async throws -> [OZStoredCredential]
+func getAll() async throws -> [OZStoredCredential]
+func delete(credentialId: String) async throws
+func update(credentialId: String, updates: OZStoredCredentialUpdate) async throws
+func clear() async throws
+func saveSession(_ session: OZStoredSession) async throws
+func getSession() async throws -> OZStoredSession?
+func clearSession() async throws
+## protocol OZWalletConnectionStorage: Sendable
+func getItem(key: String) async throws -> String?
+func setItem(key: String, value: String) async throws
+func removeItem(key: String) async throws
 ## class OZWalletOperations: OZManagerHelpers, @unchecked Sendable
-func createWallet(userName: String = "Smart Account User", autoSubmit: Bool = false, autoFund: Bool = false, nativeTokenContract: String? = nil, forceMethod: SubmissionMethod? = nil) async throws -> CreateWalletResult
-func connectWallet(options: ConnectWalletOptions = ConnectWalletOptions()) async throws -> ConnectWalletResult?
-func authenticatePasskey(challenge: Data? = nil, credentialIds: [String]? = nil) async throws -> AuthenticatePasskeyResult
-func deployPendingCredential(credentialId: String, autoSubmit: Bool = true, autoFund: Bool = false, nativeTokenContract: String? = nil, forceMethod: SubmissionMethod? = nil) async throws -> DeployPendingResult
+func createWallet(userName: String = "Smart Account User", autoSubmit: Bool = false, autoFund: Bool = false, nativeTokenContract: String? = nil, forceMethod: OZSubmissionMethod? = nil) async throws -> OZCreateWalletResult
+func connectWallet(options: OZConnectWalletOptions = OZConnectWalletOptions()) async throws -> OZConnectWalletResult?
+func authenticatePasskey(challenge: Data? = nil, credentialIds: [String]? = nil) async throws -> OZAuthenticatePasskeyResult
+func deployPendingCredential(credentialId: String, autoSubmit: Bool = true, autoFund: Bool = false, nativeTokenContract: String? = nil, forceMethod: OZSubmissionMethod? = nil) async throws -> OZDeployPendingResult
 ## struct OZWebAuthnSignature: OZSmartAccountSignature, Hashable
 var authenticatorData: Data
 var clientData: Data
@@ -1661,18 +1790,6 @@ func stream(for orderbookType:OrderbookChange) -> OrderbookStreamItem
 init(requestUrl:String)
 func onReceive(response:StreamResponseEnum<OrderbookResponse>.ResponseClosure)
 func closeStream()
-## struct ParsedContextRule: Sendable, Hashable
-var id: UInt32
-var contextType: ContextRuleType
-var name: String
-var signers: [any OZSmartAccountSigner]
-var signerIds: [UInt32]
-var policies: [String]
-var policyIds: [UInt32]
-var validUntil: UInt32?
-init(id: UInt32, contextType: ContextRuleType, name: String, signers: [any OZSmartAccountSigner], signerIds: [UInt32], policies: [String], policyIds: [UInt32], validUntil: UInt32?)
-static func ==(lhs: ParsedContextRule, rhs: ParsedContextRule) -> Bool
-func hash(into hasher: inout Hasher)
 ## struct Path: Hashable, Equatable, Sendable
 func hash(into hasher: inout Hasher)
 static func ==(lhs: Path, rhs: Path) -> Bool
@@ -1717,10 +1834,6 @@ var github: String?
 var idPhotoHash: String?
 var verificationPhotoHash: String?
 init(fromToml toml:Toml)
-## enum PolicyInstallParams: Sendable
-case simpleThreshold(threshold: UInt32)
-case weightedThreshold(signerWeights: [SignerWeightEntry], threshold: UInt32)
-case spendingLimit(spendingLimit: String, periodLedgers: UInt32)
 ## enum PostCustomerFileResponseEnum: Sendable
 case success(response: CustomerFileResponse)
 case failure(error: KycServiceError)
@@ -1790,14 +1903,8 @@ case permissionDenied(message:String)
 case notFound(message:String)
 case parsingResponseFailed(message:String)
 case horizonError(error: HorizonRequestError)
-## class ReadFailed: StorageException, @unchecked Sendable
+## class ReadFailed: SmartAccountStorageException, @unchecked Sendable
 init(message: String, cause: Error? = nil)
-## struct RealSecItemShim: SecItemShim
-init()
-func add(query: CFDictionary, result: UnsafeMutablePointer<CFTypeRef?>?) -> OSStatus
-func copyMatching(query: CFDictionary, result: UnsafeMutablePointer<CFTypeRef?>?) -> OSStatus
-func update(query: CFDictionary, attributesToUpdate: CFDictionary) -> OSStatus
-func delete(query: CFDictionary) -> OSStatus
 ## class RecoveryService: @unchecked Sendable
 var serviceAddress: String
 init(serviceAddress:String)
@@ -1854,7 +1961,7 @@ case horizonError(error: HorizonRequestError)
 ## enum RegulatedAssetsServiceForDomainEnum: Sendable
 case success(response: RegulatedAssetsService)
 case failure(error: RegulatedAssetsServiceError)
-## class RequestFailed: IndexerException, @unchecked Sendable
+## class RequestFailed: SmartAccountIndexerException, @unchecked Sendable
 init(message: String, cause: Error? = nil)
 ## struct RequiredInfoUpdates: Decodable, Sendable
 var fields: [String:AnchorField]?
@@ -1945,15 +2052,6 @@ var key: String
 init(from decoder: Decoder) throws
 ## struct SEPConstants: Sendable
 static let WEBAUTH_GRACE_PERIOD_SECONDS: UInt64
-## protocol SecItemShim: Sendable
-func add(query: CFDictionary, result: UnsafeMutablePointer<CFTypeRef?>?) -> OSStatus
-func copyMatching(query: CFDictionary, result: UnsafeMutablePointer<CFTypeRef?>?) -> OSStatus
-func update(query: CFDictionary, attributesToUpdate: CFDictionary) -> OSStatus
-func delete(query: CFDictionary) -> OSStatus
-## enum SelectedSigner: Sendable, Hashable
-case passkey(credentialId: String, credentialIdBytes: Data? = nil, keyData: Data? = nil, transports: [String]? = nil)
-case wallet(accountId: String)
-case ed25519(verifierAddress: String, publicKey: Data)
 ## enum SendChallengeResponseEnum: Sendable
 case success(jwtToken: String)
 case failure(error: HorizonRequestError)
@@ -2268,22 +2366,9 @@ case failure(error: QuoteServiceError)
 var name: String
 var description: String
 init(from decoder: Decoder) throws
-## class SessionException: SmartAccountException, @unchecked Sendable
-final class Expired
-final class Invalid
-static func expired(sessionId: String? = nil, cause: Error? = nil) -> Expired
-static func invalid(reason: String, cause: Error? = nil) -> Invalid
 ## enum SetupTransactionXDREnum: Sendable
 case success(transactionXDR: TransactionXDR?)
 case failure(error: HorizonRequestError)
-## struct SignAuthEntryOptions: Sendable, Equatable, Hashable
-var networkPassphrase: String?
-var address: String?
-init(networkPassphrase: String? = nil, address: String? = nil)
-## struct SignAuthEntryResult: Sendable, Equatable, Hashable
-var signedAuthEntry: String
-var signerAddress: String?
-init(signedAuthEntry: String, signerAddress: String? = nil)
 ## enum SignTransactionParams: Sendable
 case xdr
 case replace
@@ -2301,27 +2386,32 @@ case failure(URISchemeErrors)
 var signer: any OZSmartAccountSigner
 var signatureBytes: Data
 init(signer: any OZSmartAccountSigner, signatureBytes: Data)
-## class SignerException: SmartAccountException, @unchecked Sendable
-final class NotFound
-final class Invalid
-static func notFound(signerId: String, cause: Error? = nil) -> NotFound
-static func invalid(reason: String, cause: Error? = nil) -> Invalid
 ## extension SignerKeyXDR
 static func ==(lhs: SignerKeyXDR, rhs: SignerKeyXDR) -> Bool
-## struct SignerWeightEntry: Sendable
-var signer: any OZSmartAccountSigner
-var weight: UInt32
-init(signer: any OZSmartAccountSigner, weight: UInt32)
-## class SigningFailed: TransactionException, @unchecked Sendable
+## class SigningFailed: SmartAccountTransactionException, @unchecked Sendable
 init(message: String, cause: Error? = nil)
-## class SimulationFailed: TransactionException, @unchecked Sendable
+## class SimulationFailed: SmartAccountTransactionException, @unchecked Sendable
 init(message: String, cause: Error? = nil)
+## class SmartAccountConfigurationException: SmartAccountException, @unchecked Sendable
+final class InvalidConfig
+final class MissingConfig
+static func invalidConfig(details: String, cause: Error? = nil) -> InvalidConfig
+static func missingConfig(param: String, cause: Error? = nil) -> MissingConfig
 ## enum SmartAccountConstants
 static let ed25519PublicKeySize: Int
 static let ed25519SecretSeedSize: Int
 static let ed25519SignatureSize: Int
 static let secp256r1PublicKeySize: Int
 static let uncompressedPubkeyPrefix: UInt8
+## class SmartAccountCredentialException: SmartAccountException, @unchecked Sendable
+final class NotFound
+final class AlreadyExists
+final class Invalid
+final class DeploymentFailed
+static func notFound(credentialId: String, cause: Error? = nil) -> NotFound
+static func alreadyExists(credentialId: String, cause: Error? = nil) -> AlreadyExists
+static func invalid(reason: String, cause: Error? = nil) -> Invalid
+static func deploymentFailed(reason: String, cause: Error? = nil) -> DeploymentFailed
 ## enum SmartAccountErrorCode: Int, Sendable, CaseIterable
 case invalidConfig = 1001
 case missingConfig = 1002
@@ -2352,48 +2442,60 @@ case sessionInvalid = 9002
 case indexerRequestFailed = 10001
 case indexerTimeout = 10002
 var code: Int
-## enum SmartAccountEvent: Sendable, Equatable, Hashable
-case walletConnected(contractId: String, credentialId: String)
-case walletDisconnected(contractId: String)
-case credentialCreated(credential: StoredCredential)
-case credentialDeleted(credentialId: String)
-case sessionExpired(contractId: String, credentialId: String)
-case transactionSigned(contractId: String, credentialId: String?)
-case transactionSubmitted(hash: String, success: Bool)
-case credentialSyncFailed(credentialId: String, error: Error)
-var eventTypeTag: String
-static func ==(lhs: SmartAccountEvent, rhs: SmartAccountEvent) -> Bool
-func hash(into hasher: inout Hasher)
-## class SmartAccountEventEmitter: @unchecked Sendable
-init()
-func setErrorHandler(_ handler: SmartAccountEventErrorHandler?)
-func addListener(_ listener: SmartAccountEventListener) -> SmartAccountEventUnsubscribe
-func on(_ eventType: SmartAccountEventType, listener: SmartAccountEventListener) -> SmartAccountEventUnsubscribe
-func once(_ eventType: SmartAccountEventType, listener: SmartAccountEventListener) -> SmartAccountEventUnsubscribe
-func removeAllListeners(eventType: String? = nil)
-func removeAllListeners()
-func listenerCount(eventType: String) -> Int
-## enum SmartAccountEventType: String, Sendable, CaseIterable
-case walletConnected = "WalletConnected"
-case walletDisconnected = "WalletDisconnected"
-case credentialCreated = "CredentialCreated"
-case credentialDeleted = "CredentialDeleted"
-case sessionExpired = "SessionExpired"
-case transactionSigned = "TransactionSigned"
-case transactionSubmitted = "TransactionSubmitted"
-case credentialSyncFailed = "CredentialSyncFailed"
-var tag: String
 ## class SmartAccountException: Error, CustomStringConvertible, @unchecked Sendable
 var code: SmartAccountErrorCode
 var message: String
 var cause: Error?
 var description: String
 static func wrapError(_ err: Error, defaultCode: SmartAccountErrorCode = .invalidInput) -> SmartAccountException
+## class SmartAccountIndexerException: SmartAccountException, @unchecked Sendable
+final class RequestFailed
+final class Timeout
+static func requestFailed(reason: String, cause: Error? = nil) -> RequestFailed
+static func timeout(url: String, cause: Error? = nil) -> Timeout
+## class SmartAccountSessionException: SmartAccountException, @unchecked Sendable
+final class Expired
+final class Invalid
+static func expired(sessionId: String? = nil, cause: Error? = nil) -> Expired
+static func invalid(reason: String, cause: Error? = nil) -> Invalid
+## class SmartAccountSignerException: SmartAccountException, @unchecked Sendable
+final class NotFound
+final class Invalid
+static func notFound(signerId: String, cause: Error? = nil) -> NotFound
+static func invalid(reason: String, cause: Error? = nil) -> Invalid
+## class SmartAccountStorageException: SmartAccountException, @unchecked Sendable
+final class ReadFailed
+final class WriteFailed
+static func readFailed(key: String, cause: Error? = nil) -> ReadFailed
+static func writeFailed(key: String, cause: Error? = nil) -> WriteFailed
+## class SmartAccountTransactionException: SmartAccountException, @unchecked Sendable
+final class SimulationFailed
+final class SigningFailed
+final class SubmissionFailed
+final class Timeout
+static func simulationFailed(reason: String, cause: Error? = nil) -> SimulationFailed
+static func signingFailed(reason: String, cause: Error? = nil) -> SigningFailed
+static func submissionFailed(reason: String, cause: Error? = nil) -> SubmissionFailed
+static func timeout(details: String? = nil, cause: Error? = nil) -> Timeout
 ## enum SmartAccountUtils
 static func normalizeSignature(_ derSignature: Data) throws -> Data
 static func extractPublicKeyFromRegistration(publicKey: Data? = nil, authenticatorData: Data? = nil, attestationObject: Data? = nil) throws -> Data
 static func getContractSalt(credentialId: Data) -> Data
 static func deriveContractAddress(credentialId: Data, deployerPublicKey: String, networkPassphrase: String) throws -> String
+## class SmartAccountValidationException: SmartAccountException, @unchecked Sendable
+final class InvalidAddress
+final class InvalidAmount
+final class InvalidInput
+static func invalidAddress(address: String, cause: Error? = nil) -> InvalidAddress
+static func invalidAmount(amount: String, reason: String? = nil, cause: Error? = nil) -> InvalidAmount
+static func invalidInput(field: String, reason: String, cause: Error? = nil) -> InvalidInput
+## class SmartAccountWalletException: SmartAccountException, @unchecked Sendable
+final class NotConnected
+final class AlreadyExists
+final class NotFound
+static func notConnected(details: String? = nil, cause: Error? = nil) -> NotConnected
+static func alreadyExists(identifier: String, cause: Error? = nil) -> AlreadyExists
+static func notFound(identifier: String, cause: Error? = nil) -> NotFound
 ## extension SorobanAddressCredentialsXDR
 mutating func appendSignature(signature: SCValXDR)
 ## extension SorobanAuthorizationEntryXDR
@@ -2517,59 +2619,6 @@ var currenciesDocumentation: [CurrencyDocumentation]
 var validatorsInformation: [ValidatorInformation]
 init(fromString string:String) throws
 static func from(domain: String, secure: Bool = true) async -> TomlForDomainEnum
-## protocol StorageAdapter: AnyObject, Sendable
-func save(credential: StoredCredential) async throws
-func get(credentialId: String) async throws -> StoredCredential?
-func getByContract(contractId: String) async throws -> [StoredCredential]
-func getAll() async throws -> [StoredCredential]
-func delete(credentialId: String) async throws
-func update(credentialId: String, updates: StoredCredentialUpdate) async throws
-func clear() async throws
-func saveSession(_ session: StoredSession) async throws
-func getSession() async throws -> StoredSession?
-func clearSession() async throws
-## class StorageException: SmartAccountException, @unchecked Sendable
-final class ReadFailed
-final class WriteFailed
-static func readFailed(key: String, cause: Error? = nil) -> ReadFailed
-static func writeFailed(key: String, cause: Error? = nil) -> WriteFailed
-## struct StoredCredential: Sendable
-var credentialId: String
-var publicKey: Data
-var contractId: String?
-var deploymentStatus: CredentialDeploymentStatus
-var deploymentError: String?
-var createdAt: Int64
-var lastUsedAt: Int64?
-var nickname: String?
-var isPrimary: Bool
-var transports: [String]?
-var deviceType: String?
-var backedUp: Bool?
-init(credentialId: String, publicKey: Data, contractId: String? = nil, deploymentStatus: CredentialDeploymentStatus = .pending, deploymentError: String? = nil, createdAt: Int64 = Int64(Date().timeIntervalSince1970 * 1000), lastUsedAt: Int64? = nil, nickname: String? = nil, isPrimary: Bool = false, transports: [String]? = nil, deviceType: String? = nil, backedUp: Bool? = nil)
-func copyWith(credentialId: String? = nil, publicKey: Data? = nil, contractId: String? = nil, deploymentStatus: CredentialDeploymentStatus? = nil, deploymentError: String? = nil, createdAt: Int64? = nil, lastUsedAt: Int64? = nil, nickname: String? = nil, isPrimary: Bool? = nil, transports: [String]? = nil, deviceType: String? = nil, backedUp: Bool? = nil) -> StoredCredential
-func applyUpdate(_ updates: StoredCredentialUpdate) -> StoredCredential
-## extension StoredCredential
-static func ==(lhs: StoredCredential, rhs: StoredCredential) -> Bool
-func hash(into hasher: inout Hasher)
-## struct StoredCredentialUpdate: Sendable, Equatable, Hashable
-var deploymentStatus: CredentialDeploymentStatus?
-var deploymentError: String?
-var contractId: String?
-var lastUsedAt: Int64?
-var nickname: String?
-var isPrimary: Bool?
-var transports: [String]?
-var deviceType: String?
-var backedUp: Bool?
-init(deploymentStatus: CredentialDeploymentStatus? = nil, deploymentError: String? = nil, contractId: String? = nil, lastUsedAt: Int64? = nil, nickname: String? = nil, isPrimary: Bool? = nil, transports: [String]? = nil, deviceType: String? = nil, backedUp: Bool? = nil)
-## struct StoredSession: Sendable, Equatable, Hashable
-var credentialId: String
-var contractId: String
-var connectedAt: Int64
-var expiresAt: Int64
-var isExpired: Bool
-init(credentialId: String, contractId: String, connectedAt: Int64, expiresAt: Int64)
 ## class StreamingHelper: @unchecked Sendable
 ## enum Strength: Int, Sendable
 case normal = 128
@@ -2620,11 +2669,8 @@ func encodeLiquidityPoolIdHex() throws -> String
 func isHexString() -> Bool
 func base32DecodedString(_ encoding: String.Encoding = .utf8) -> String?
 func base32HexDecodedString(_ encoding: String.Encoding = .utf8) -> String?
-## class SubmissionFailed: TransactionException, @unchecked Sendable
+## class SubmissionFailed: SmartAccountTransactionException, @unchecked Sendable
 init(message: String, cause: Error? = nil)
-## enum SubmissionMethod: Sendable
-case relayer
-case rpc
 ## enum SubmitContractChallengeResponseEnum: Sendable
 case success(jwtToken: String)
 case failure(error: GetContractJWTTokenError)
@@ -2632,14 +2678,9 @@ case failure(error: GetContractJWTTokenError)
 case success
 case destinationRequiresMemo(destinationAccountId: String)
 case failure(error: HorizonRequestError)
-## struct SyncResult: Sendable, Equatable, Hashable
-var deployed: Int
-var pending: Int
-var failed: Int
-init(deployed: Int, pending: Int, failed: Int)
-## class Timeout: TransactionException, @unchecked Sendable
+## class Timeout: SmartAccountTransactionException, @unchecked Sendable
 init(message: String = "Transaction timed out", cause: Error? = nil)
-## class Timeout: IndexerException, @unchecked Sendable
+## class Timeout: SmartAccountIndexerException, @unchecked Sendable
 init(message: String, cause: Error? = nil)
 ## class Toml: CustomStringConvertible, SetValueProtocol, @unchecked Sendable
 var description: String
@@ -2725,15 +2766,6 @@ func toTxRep(prefix: String, lines: inout [String]) throws
 static func fromTxRep(_ map: [String: String], prefix: String) throws -> TransactionEnvelopeXDR
 func txHash(network: Network) throws -> Data
 func appendSignature(signature: DecoratedSignatureXDR)
-## class TransactionException: SmartAccountException, @unchecked Sendable
-final class SimulationFailed
-final class SigningFailed
-final class SubmissionFailed
-final class Timeout
-static func simulationFailed(reason: String, cause: Error? = nil) -> SimulationFailed
-static func signingFailed(reason: String, cause: Error? = nil) -> SigningFailed
-static func submissionFailed(reason: String, cause: Error? = nil) -> SubmissionFailed
-static func timeout(details: String? = nil, cause: Error? = nil) -> Timeout
 ## enum TransactionMetaType: Int32, Sendable
 case operations = 0
 case transactionMetaV1 = 1
@@ -2752,13 +2784,6 @@ case failure(error: HorizonRequestError)
 case success(details: SubmitTransactionResponse)
 case destinationRequiresMemo(destinationAccountId: String)
 case failure(error: HorizonRequestError)
-## struct TransactionResult: Sendable, Equatable, Hashable
-var success: Bool
-var hash: String?
-var ledger: UInt32?
-var error: String?
-init(success: Bool, hash: String? = nil, ledger: UInt32? = nil, error: String? = nil)
-func copy(success: Bool? = nil, hash: String?? = .none, ledger: UInt32?? = .none, error: String?? = .none) -> TransactionResult
 ## extension TransactionResultXDR
 var code: TransactionResultCode
 init(feeCharged: Int64, result: TransactionResultBodyXDR)
@@ -2873,26 +2898,6 @@ case failure(URISchemeErrors)
 init()
 func signURI(url: String, signerKeyPair: KeyPair) -> SignURLEnum
 func checkURISchemeIsValid(url: String) async -> URISchemeIsValidEnum
-## actor UserDefaultsStorageAdapter: StorageAdapter
-static let defaultSuiteName: String
-init(suiteName: String = UserDefaultsStorageAdapter.defaultSuiteName) throws
-func save(credential: StoredCredential) async throws
-func get(credentialId: String) async throws -> StoredCredential?
-func getByContract(contractId: String) async throws -> [StoredCredential]
-func getAll() async throws -> [StoredCredential]
-func delete(credentialId: String) async throws
-func update(credentialId: String, updates: StoredCredentialUpdate) async throws
-func clear() async throws
-func saveSession(_ session: StoredSession) async throws
-func getSession() async throws -> StoredSession?
-func clearSession() async throws
-## class ValidationException: SmartAccountException, @unchecked Sendable
-final class InvalidAddress
-final class InvalidAmount
-final class InvalidInput
-static func invalidAddress(address: String, cause: Error? = nil) -> InvalidAddress
-static func invalidAmount(amount: String, reason: String? = nil, cause: Error? = nil) -> InvalidAmount
-static func invalidInput(field: String, reason: String, cause: Error? = nil) -> InvalidInput
 ## class ValidatorInformation: Sendable
 var alias: String?
 var displayName: String?
@@ -2900,17 +2905,6 @@ var publicKey: String?
 var host: String?
 var history: String?
 init(fromToml toml:Toml)
-## protocol WalletConnectionStorage: Sendable
-func getItem(key: String) async throws -> String?
-func setItem(key: String, value: String) async throws
-func removeItem(key: String) async throws
-## class WalletException: SmartAccountException, @unchecked Sendable
-final class NotConnected
-final class AlreadyExists
-final class NotFound
-static func notConnected(details: String? = nil, cause: Error? = nil) -> NotConnected
-static func alreadyExists(identifier: String, cause: Error? = nil) -> AlreadyExists
-static func notFound(identifier: String, cause: Error? = nil) -> NotFound
 ## class WebAuthForContracts: @unchecked Sendable
 var authEndpoint: String
 var webAuthContractId: String
@@ -2962,6 +2956,12 @@ case noAuthEndpoint
 ## enum WebAuthenticatorForDomainEnum: Sendable
 case success(response: WebAuthenticator)
 case failure(error: WebAuthenticatorError)
+## struct WebAuthnAllowCredential: Equatable, Hashable, Sendable
+var id: Data
+var transports: [String]?
+init(id: Data, transports: [String]? = nil)
+static func fromId(_ id: Data) -> WebAuthnAllowCredential
+static func fromIds(_ ids: [Data]) -> [WebAuthnAllowCredential]
 ## struct WebAuthnAuthenticationResult: Equatable, Hashable, Sendable
 var credentialId: Data
 var authenticatorData: Data
@@ -2981,7 +2981,7 @@ static func notSupported(details: String? = nil, cause: Error? = nil) -> NotSupp
 static func cancelled(cause: Error? = nil) -> Cancelled
 ## protocol WebAuthnProvider: Sendable
 func register(challenge: Data, userId: Data, userName: String) async throws -> WebAuthnRegistrationResult
-func authenticate(challenge: Data, allowCredentials: [AllowCredential]?) async throws -> WebAuthnAuthenticationResult
+func authenticate(challenge: Data, allowCredentials: [WebAuthnAllowCredential]?) async throws -> WebAuthnAuthenticationResult
 ## struct WebAuthnRegistrationResult: Equatable, Hashable, Sendable
 var credentialId: Data
 var publicKey: Data
@@ -3115,7 +3115,7 @@ init()
 static let capacity: Int
 var wrapped: Data
 init()
-## class WriteFailed: StorageException, @unchecked Sendable
+## class WriteFailed: SmartAccountStorageException, @unchecked Sendable
 init(message: String, cause: Error? = nil)
 ## protocol XDRDecodable: Decodable, Sendable
 init(fromBinary decoder: XDRDecoder) throws

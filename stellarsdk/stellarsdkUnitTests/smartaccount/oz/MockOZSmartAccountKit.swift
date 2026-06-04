@@ -13,7 +13,7 @@ import Foundation
 ///
 /// Holds an in-memory connected state, a `SorobanServer` (configured against a
 /// non-routable host so live RPC calls fail cleanly unless a `MockSorobanServer`
-/// is supplied), a real ``InMemoryStorageAdapter``, an in-memory credential
+/// is supplied), a real ``OZInMemoryStorageAdapter``, an in-memory credential
 /// manager that satisfies the ``OZCredentialManagerProtocol`` surface, and a
 /// stub context-rule manager that returns empty data so the signing pass
 /// falls through to the on-chain fallback when it is exercised.
@@ -25,7 +25,7 @@ final class MockOZSmartAccountKit: OZSmartAccountKitProtocol, @unchecked Sendabl
     let sorobanServer: SorobanServer
     var indexerClient: OZIndexerClient?
     var relayerClient: OZRelayerClient?
-    let events: SmartAccountEventEmitter
+    let events: OZSmartAccountEventEmitter
     let credentialManager: OZCredentialManagerProtocol
     let contextRuleManager: OZContextRuleManagerProtocol
 
@@ -141,7 +141,7 @@ final class MockOZSmartAccountKit: OZSmartAccountKitProtocol, @unchecked Sendabl
     var configuredDeployer: KeyPair?
 
     /// Underlying storage adapter (also returned by `getStorage()`).
-    let storage: InMemoryStorageAdapter
+    let storage: OZInMemoryStorageAdapter
 
     /// Records the last `setConnectedState` invocation so tests can assert
     /// state writes occurred.
@@ -154,7 +154,7 @@ final class MockOZSmartAccountKit: OZSmartAccountKitProtocol, @unchecked Sendabl
         sorobanServer: SorobanServer? = nil,
         relayerClient: OZRelayerClient? = nil,
         indexerClient: OZIndexerClient? = nil,
-        events: SmartAccountEventEmitter? = nil,
+        events: OZSmartAccountEventEmitter? = nil,
         credentialManager: MockCredentialManager? = nil,
         contextRuleManager: OZContextRuleManagerProtocol? = nil
     ) {
@@ -169,13 +169,13 @@ final class MockOZSmartAccountKit: OZSmartAccountKitProtocol, @unchecked Sendabl
         )
         self.relayerClient = relayerClient
         self.indexerClient = indexerClient
-        self.events = events ?? SmartAccountEventEmitter()
-        self.storage = config.storage as? InMemoryStorageAdapter ?? InMemoryStorageAdapter()
+        self.events = events ?? OZSmartAccountEventEmitter()
+        self.storage = config.storage as? OZInMemoryStorageAdapter ?? OZInMemoryStorageAdapter()
         self.credentialManager = credentialManager ?? MockCredentialManager(storage: self.storage)
         self.contextRuleManager = contextRuleManager ?? StubContextRuleManager()
     }
 
-    func getStorage() -> StorageAdapter {
+    func getStorage() -> OZStorageAdapter {
         return storage
     }
 
@@ -194,7 +194,7 @@ final class MockOZSmartAccountKit: OZSmartAccountKitProtocol, @unchecked Sendabl
         defer { stateLock.unlock() }
         guard let credentialId = connectedCredentialId,
               let contractId = connectedContractId else {
-            throw WalletException.notConnected(
+            throw SmartAccountWalletException.notConnected(
                 details: "No wallet connected"
             )
         }
@@ -240,11 +240,11 @@ final class MockOZSmartAccountKit: OZSmartAccountKitProtocol, @unchecked Sendabl
 // ============================================================================
 
 /// In-memory credential manager used by the operations-unit tests. Persists
-/// credentials in the supplied ``InMemoryStorageAdapter`` and records the
+/// credentials in the supplied ``OZInMemoryStorageAdapter`` and records the
 /// most recent invocations so tests can assert call counts and arguments.
 final class MockCredentialManager: OZCredentialManagerProtocol, @unchecked Sendable {
 
-    private let storage: InMemoryStorageAdapter
+    private let storage: OZInMemoryStorageAdapter
     private let stateQueue = DispatchQueue(label: "MockCredentialManager.state")
 
     // Recorded invocations
@@ -278,7 +278,7 @@ final class MockCredentialManager: OZCredentialManagerProtocol, @unchecked Senda
         return stateQueue.sync { _deleteCredentialCalls }
     }
 
-    init(storage: InMemoryStorageAdapter) {
+    init(storage: OZInMemoryStorageAdapter) {
         self.storage = storage
     }
 
@@ -290,13 +290,13 @@ final class MockCredentialManager: OZCredentialManagerProtocol, @unchecked Senda
         transports: [String]?,
         deviceType: String?,
         backedUp: Bool?
-    ) async throws -> StoredCredential {
+    ) async throws -> OZStoredCredential {
         let hook: SmartAccountException? = stateQueue.sync {
             _createPendingCalls.append((credentialId, publicKey, contractId))
             return throwOnCreatePending
         }
         if let hook = hook { throw hook }
-        let credential = StoredCredential(
+        let credential = OZStoredCredential(
             credentialId: credentialId,
             publicKey: publicKey,
             contractId: contractId,
@@ -310,7 +310,7 @@ final class MockCredentialManager: OZCredentialManagerProtocol, @unchecked Senda
         return credential
     }
 
-    func getCredential(credentialId: String) async throws -> StoredCredential? {
+    func getCredential(credentialId: String) async throws -> OZStoredCredential? {
         if let hook = throwOnGetCredential { throw hook }
         return try await storage.get(credentialId: credentialId)
     }
@@ -366,7 +366,7 @@ final class MockCredentialManager: OZCredentialManagerProtocol, @unchecked Senda
 /// real RPC traffic.
 final class StubContextRuleManager: OZContextRuleManagerProtocol, @unchecked Sendable {
 
-    var listRulesResult: [ParsedContextRule] = []
+    var listRulesResult: [OZParsedContextRule] = []
     var resolveContextRuleIdsResult: [UInt32] = []
     var getAllContextRulesResult: [SCValXDR] = []
 
@@ -374,7 +374,7 @@ final class StubContextRuleManager: OZContextRuleManagerProtocol, @unchecked Sen
     var throwOnResolveContextRuleIdsForEntry: SmartAccountException?
     var throwOnGetAllContextRules: SmartAccountException?
 
-    func listContextRules(maxScanId: UInt32? = nil) async throws -> [ParsedContextRule] {
+    func listContextRules(maxScanId: UInt32? = nil) async throws -> [OZParsedContextRule] {
         if let hook = throwOnListContextRules { throw hook }
         return listRulesResult
     }
@@ -382,7 +382,7 @@ final class StubContextRuleManager: OZContextRuleManagerProtocol, @unchecked Sen
     func resolveContextRuleIdsForEntry(
         entry: SorobanAuthorizationEntryXDR,
         signers: [any OZSmartAccountSigner],
-        contextRules: [ParsedContextRule]
+        contextRules: [OZParsedContextRule]
     ) async throws -> [UInt32] {
         if let hook = throwOnResolveContextRuleIdsForEntry { throw hook }
         return resolveContextRuleIdsResult
@@ -399,7 +399,7 @@ final class StubContextRuleManager: OZContextRuleManagerProtocol, @unchecked Sen
     var getContextRuleResultsById: [UInt32: SCValXDR] = [:]
 
     /// Pre-set parsed rule returned by ``parseContextRule(_:)``.
-    var parseContextRuleResult: ParsedContextRule?
+    var parseContextRuleResult: OZParsedContextRule?
 
     /// Optional thrown error for ``getContextRule(id:)``.
     var throwOnGetContextRule: SmartAccountException?
@@ -421,11 +421,11 @@ final class StubContextRuleManager: OZContextRuleManagerProtocol, @unchecked Sen
         return SCValXDR.void
     }
 
-    func parseContextRule(_ scVal: SCValXDR) throws -> ParsedContextRule {
+    func parseContextRule(_ scVal: SCValXDR) throws -> OZParsedContextRule {
         parseContextRuleCalls += 1
         if let hook = throwOnParseContextRule { throw hook }
         if let value = parseContextRuleResult { return value }
-        throw ValidationException.invalidInput(
+        throw SmartAccountValidationException.invalidInput(
             field: "scVal",
             reason: "Stub holds no parsed rule"
         )

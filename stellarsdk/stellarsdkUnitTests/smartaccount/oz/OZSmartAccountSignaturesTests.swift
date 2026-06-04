@@ -150,7 +150,7 @@ final class OZSmartAccountSignaturesTests: XCTestCase {
                 signature: Data([0x03])
             )
             XCTFail("Expected throw")
-        } catch let error as ValidationException.InvalidInput {
+        } catch let error as SmartAccountValidationException.InvalidInput {
             XCTAssertTrue(error.message.contains("signature"))
         } catch {
             XCTFail("Unexpected error: \(error)")
@@ -267,7 +267,7 @@ final class OZSmartAccountSignaturesTests: XCTestCase {
                 signature: Data()
             )
         ) { error in
-            XCTAssertTrue(error is ValidationException.InvalidInput)
+            XCTAssertTrue(error is SmartAccountValidationException.InvalidInput)
         }
     }
 
@@ -387,7 +387,7 @@ final class OZSmartAccountSignaturesTests: XCTestCase {
                 signature: Data(repeating: 0x03, count: 64)
             )
         ) { error in
-            XCTAssertTrue(error is ValidationException.InvalidInput)
+            XCTAssertTrue(error is SmartAccountValidationException.InvalidInput)
         }
     }
 
@@ -398,7 +398,7 @@ final class OZSmartAccountSignaturesTests: XCTestCase {
                 signature: Data(repeating: 0x03, count: 63)
             )
         ) { error in
-            XCTAssertTrue(error is ValidationException.InvalidInput)
+            XCTAssertTrue(error is SmartAccountValidationException.InvalidInput)
         }
     }
 

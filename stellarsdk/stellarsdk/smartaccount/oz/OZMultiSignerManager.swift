@@ -58,7 +58,7 @@ public class OZMultiSignerManager: OZManagerHelpers, @unchecked Sendable {
     ///
     /// The caller supplies every signer that must sign via `selectedSigners`.
     /// There is no implicit connected passkey — include
-    /// ``SelectedSigner/passkey(credentialId:credentialIdBytes:keyData:transports:)`` when
+    /// ``OZSelectedSigner/passkey(credentialId:credentialIdBytes:keyData:transports:)`` when
     /// the connected passkey should sign. Signatures are collected in list
     /// order; passkey entries trigger one OS WebAuthn prompt each, wallet
     /// entries trigger one external-wallet request each.
@@ -68,12 +68,12 @@ public class OZMultiSignerManager: OZManagerHelpers, @unchecked Sendable {
     /// ``multiSignerContractCall(target:targetFn:targetArgs:selectedSigners:forceMethod:resolveContextRuleIds:)``
     /// (via `validateContractCallArgs`), not in this method.
     /// 1. ``OZSmartAccountKitProtocol/requireConnected()`` — throws
-    ///    ``WalletException/NotConnected`` when no wallet is connected.
+    ///    ``SmartAccountWalletException/NotConnected`` when no wallet is connected.
     /// 2. `requireStellarAddress(_:fieldName:)` over `recipient`.
     /// 3. Self-transfer guard (recipient must differ from the connected
     ///    contract id).
     /// 4. Amount parsing via ``OZTransactionOperations/amountToStroops(_:)``.
-    /// 5. `selectedSigners.isEmpty` — throws ``ValidationException/InvalidInput``.
+    /// 5. `selectedSigners.isEmpty` — throws ``SmartAccountValidationException/InvalidInput``.
     /// 6. `tokenContract` validation.
     ///
     /// - Parameters:
@@ -89,20 +89,20 @@ public class OZMultiSignerManager: OZManagerHelpers, @unchecked Sendable {
     ///     identifiers per auth entry. When `nil` (default), the SDK resolves
     ///     rule identifiers automatically from the supplied signer set and the
     ///     active context rules.
-    /// - Returns: A ``TransactionResult`` describing the on-chain outcome.
-    /// - Throws: ``WalletException/NotConnected`` for unconnected kits;
-    ///           ``ValidationException`` for invalid inputs;
-    ///           ``TransactionException`` for simulation, signing, or
+    /// - Returns: An ``OZTransactionResult`` describing the on-chain outcome.
+    /// - Throws: ``SmartAccountWalletException/NotConnected`` for unconnected kits;
+    ///           ``SmartAccountValidationException`` for invalid inputs;
+    ///           ``SmartAccountTransactionException`` for simulation, signing, or
     ///           submission failures;
     ///           ``WebAuthnException`` for biometric-authentication failures.
     public func multiSignerTransfer(
         tokenContract: String,
         recipient: String,
         amount: String,
-        selectedSigners: [SelectedSigner],
-        forceMethod: SubmissionMethod? = nil,
-        resolveContextRuleIds: ResolveContextRuleIds? = nil
-    ) async throws -> TransactionResult {
+        selectedSigners: [OZSelectedSigner],
+        forceMethod: OZSubmissionMethod? = nil,
+        resolveContextRuleIds: OZResolveContextRuleIds? = nil
+    ) async throws -> OZTransactionResult {
         let connected = try kit.requireConnected()
 
         try requireStellarAddress(recipient, fieldName: "recipient")
@@ -112,7 +112,7 @@ public class OZMultiSignerManager: OZManagerHelpers, @unchecked Sendable {
         // the most specific error first (NotConnected, then InvalidAddress,
         // then InvalidInput).
         if recipient == connected.contractId {
-            throw ValidationException.invalidInput(
+            throw SmartAccountValidationException.invalidInput(
                 field: "recipient",
                 reason: "Cannot transfer to self"
             )
@@ -165,18 +165,18 @@ public class OZMultiSignerManager: OZManagerHelpers, @unchecked Sendable {
     ///     Must be non-empty.
     ///   - forceMethod: Optional submission-method override.
     ///   - resolveContextRuleIds: Optional context-rule resolver override.
-    /// - Returns: A ``TransactionResult`` describing the on-chain outcome.
-    /// - Throws: ``WalletException``, ``ValidationException``,
-    ///           ``TransactionException``, ``WebAuthnException``,
-    ///           ``ConfigurationException``.
+    /// - Returns: An ``OZTransactionResult`` describing the on-chain outcome.
+    /// - Throws: ``SmartAccountWalletException``, ``SmartAccountValidationException``,
+    ///           ``SmartAccountTransactionException``, ``WebAuthnException``,
+    ///           ``SmartAccountConfigurationException``.
     public func multiSignerContractCall(
         target: String,
         targetFn: String,
         targetArgs: [SCValXDR] = [],
-        selectedSigners: [SelectedSigner],
-        forceMethod: SubmissionMethod? = nil,
-        resolveContextRuleIds: ResolveContextRuleIds? = nil
-    ) async throws -> TransactionResult {
+        selectedSigners: [OZSelectedSigner],
+        forceMethod: OZSubmissionMethod? = nil,
+        resolveContextRuleIds: OZResolveContextRuleIds? = nil
+    ) async throws -> OZTransactionResult {
         _ = try kit.requireConnected()
         try validateContractCallArgs(
             target: target,
@@ -221,18 +221,18 @@ public class OZMultiSignerManager: OZManagerHelpers, @unchecked Sendable {
     ///     Must be non-empty.
     ///   - forceMethod: Optional submission-method override.
     ///   - resolveContextRuleIds: Optional context-rule resolver override.
-    /// - Returns: A ``TransactionResult`` describing the on-chain outcome.
-    /// - Throws: ``WalletException``, ``ValidationException``,
-    ///           ``TransactionException``, ``WebAuthnException``,
-    ///           ``ConfigurationException``.
+    /// - Returns: An ``OZTransactionResult`` describing the on-chain outcome.
+    /// - Throws: ``SmartAccountWalletException``, ``SmartAccountValidationException``,
+    ///           ``SmartAccountTransactionException``, ``WebAuthnException``,
+    ///           ``SmartAccountConfigurationException``.
     public func multiSignerExecuteAndSubmit(
         target: String,
         targetFn: String,
         targetArgs: [SCValXDR] = [],
-        selectedSigners: [SelectedSigner],
-        forceMethod: SubmissionMethod? = nil,
-        resolveContextRuleIds: ResolveContextRuleIds? = nil
-    ) async throws -> TransactionResult {
+        selectedSigners: [OZSelectedSigner],
+        forceMethod: OZSubmissionMethod? = nil,
+        resolveContextRuleIds: OZResolveContextRuleIds? = nil
+    ) async throws -> OZTransactionResult {
         let connected = try kit.requireConnected()
         try validateContractCallArgs(
             target: target,
@@ -282,14 +282,14 @@ public class OZMultiSignerManager: OZManagerHelpers, @unchecked Sendable {
     ///     non-empty.
     ///   - forceMethod: Optional submission-method override.
     /// - Returns: The on-chain submission outcome.
-    /// - Throws: ``WalletException``, ``ValidationException``,
-    ///           ``TransactionException``, ``WebAuthnException``,
-    ///           ``ConfigurationException``.
+    /// - Throws: ``SmartAccountWalletException``, ``SmartAccountValidationException``,
+    ///           ``SmartAccountTransactionException``, ``WebAuthnException``,
+    ///           ``SmartAccountConfigurationException``.
     internal func submitWithMultipleSigners(
         hostFunction: HostFunctionXDR,
-        selectedSigners: [SelectedSigner],
-        forceMethod: SubmissionMethod?
-    ) async throws -> TransactionResult {
+        selectedSigners: [OZSelectedSigner],
+        forceMethod: OZSubmissionMethod?
+    ) async throws -> OZTransactionResult {
         return try await submitWithMultipleSigners(
             hostFunction: hostFunction,
             selectedSigners: selectedSigners,
@@ -333,16 +333,16 @@ public class OZMultiSignerManager: OZManagerHelpers, @unchecked Sendable {
     ///     Must be non-empty; an empty list is a routing bug at the call site.
     ///   - forceMethod: Optional submission-method override.
     ///   - resolveContextRuleIds: Optional context-rule resolver override.
-    /// - Returns: A ``TransactionResult`` describing the on-chain outcome.
-    /// - Throws: ``WalletException``, ``ValidationException``,
-    ///           ``TransactionException``, ``WebAuthnException``,
-    ///           ``ConfigurationException``.
+    /// - Returns: An ``OZTransactionResult`` describing the on-chain outcome.
+    /// - Throws: ``SmartAccountWalletException``, ``SmartAccountValidationException``,
+    ///           ``SmartAccountTransactionException``, ``WebAuthnException``,
+    ///           ``SmartAccountConfigurationException``.
     public func submitWithMultipleSigners(
         hostFunction: HostFunctionXDR,
-        selectedSigners: [SelectedSigner],
-        forceMethod: SubmissionMethod? = nil,
-        resolveContextRuleIds: ResolveContextRuleIds? = nil
-    ) async throws -> TransactionResult {
+        selectedSigners: [OZSelectedSigner],
+        forceMethod: OZSubmissionMethod? = nil,
+        resolveContextRuleIds: OZResolveContextRuleIds? = nil
+    ) async throws -> OZTransactionResult {
         let connected = try kit.requireConnected()
 
         // Step 0: validate signer-set preconditions (per-wallet reachability,
@@ -400,7 +400,7 @@ public class OZMultiSignerManager: OZManagerHelpers, @unchecked Sendable {
                     signedAuthEntries.append(signedWalletEntry)
                 } else {
                     let displayAddress = entryAddressString ?? "<unparseable address>"
-                    throw TransactionException.signingFailed(
+                    throw SmartAccountTransactionException.signingFailed(
                         reason: "Unsupported auth entry for \(displayAddress). " +
                             "Add an external signer for that address or remove it from the transaction."
                     )
@@ -510,9 +510,9 @@ public class OZMultiSignerManager: OZManagerHelpers, @unchecked Sendable {
     ///
     /// - Parameter selectedSigners: The signer set supplied by the caller.
     /// - Returns: The extracted wallet signer addresses.
-    /// - Throws: ``ValidationException`` when any of the preconditions fail.
+    /// - Throws: ``SmartAccountValidationException`` when any of the preconditions fail.
     private func validateSignerSet(
-        selectedSigners: [SelectedSigner]
+        selectedSigners: [OZSelectedSigner]
     ) async throws -> [String] {
         var walletSigners: [String] = []
         for signer in selectedSigners {
@@ -533,7 +533,7 @@ public class OZMultiSignerManager: OZManagerHelpers, @unchecked Sendable {
     /// Verifies that the kit's external-signer manager can sign for every wallet signer address.
     ///
     /// - Parameter walletSigners: G-address strings extracted from the `selectedSigners` list.
-    /// - Throws: ``ValidationException`` when a signer address has no signing source available.
+    /// - Throws: ``SmartAccountValidationException`` when a signer address has no signing source available.
     private func validateWalletSigners(
         _ walletSigners: [String]
     ) async throws {
@@ -541,7 +541,7 @@ public class OZMultiSignerManager: OZManagerHelpers, @unchecked Sendable {
         for walletAddress in walletSigners {
             let canSign = await kit.externalSigners.canSignFor(address: walletAddress)
             if !canSign {
-                throw ValidationException.invalidInput(
+                throw SmartAccountValidationException.invalidInput(
                     field: "selectedSigners",
                     reason: "No signing source available for wallet address: \(walletAddress). " +
                         "Register a keypair via kit.externalSigners.addFromSecret(secretKey:), " +
@@ -554,12 +554,12 @@ public class OZMultiSignerManager: OZManagerHelpers, @unchecked Sendable {
     /// Verifies that every passkey signer in `selectedSigners` carries non-nil `keyData`.
     ///
     /// - Parameter selectedSigners: The full signer list; non-passkey entries are skipped.
-    /// - Throws: ``ValidationException`` when any passkey entry has `keyData == nil`.
-    private func validatePasskeyKeyData(_ selectedSigners: [SelectedSigner]) throws {
+    /// - Throws: ``SmartAccountValidationException`` when any passkey entry has `keyData == nil`.
+    private func validatePasskeyKeyData(_ selectedSigners: [OZSelectedSigner]) throws {
         for signer in selectedSigners {
             if case .passkey(_, _, let keyData, _) = signer {
                 if keyData == nil {
-                    throw ValidationException.invalidInput(
+                    throw SmartAccountValidationException.invalidInput(
                         field: "selectedSigners",
                         reason: "keyData is required for passkey signers for rule resolution"
                     )
@@ -574,23 +574,23 @@ public class OZMultiSignerManager: OZManagerHelpers, @unchecked Sendable {
     /// - Parameters:
     ///   - selectedSigners: The full signer list; non-Ed25519 entries are skipped.
     ///   - signerManager: The kit's external-signer manager.
-    /// - Throws: ``ValidationException`` when any Ed25519 precondition fails.
+    /// - Throws: ``SmartAccountValidationException`` when any Ed25519 precondition fails.
     private func validateEd25519Signers(
-        _ selectedSigners: [SelectedSigner],
+        _ selectedSigners: [OZSelectedSigner],
         signerManager: OZExternalSignerManager
     ) async throws {
         for signer in selectedSigners {
             guard case .ed25519(let verifierAddress, let publicKey) = signer else { continue }
 
             if !verifierAddress.isValidContractId() {
-                throw ValidationException.invalidInput(
+                throw SmartAccountValidationException.invalidInput(
                     field: "selectedSigners",
                     reason: "Ed25519 signer has an invalid verifier address (must be a C... contract strkey): \(verifierAddress)"
                 )
             }
 
             if publicKey.count != SmartAccountConstants.ed25519PublicKeySize {
-                throw ValidationException.invalidInput(
+                throw SmartAccountValidationException.invalidInput(
                     field: "selectedSigners",
                     reason: "Ed25519 signer public key must be exactly \(SmartAccountConstants.ed25519PublicKeySize) bytes, " +
                         "got \(publicKey.count)"
@@ -603,7 +603,7 @@ public class OZMultiSignerManager: OZManagerHelpers, @unchecked Sendable {
             )
             if !canSign {
                 let prefix = String(verifierAddress.prefix(addressLogPrefixCount))
-                throw ValidationException.invalidInput(
+                throw SmartAccountValidationException.invalidInput(
                     field: "selectedSigners",
                     reason: "Ed25519 signer (verifier=\(prefix)...) has no registered signing source. " +
                         "Register a keypair via kit.externalSigners.addEd25519FromRawKey(...), " +
@@ -656,7 +656,7 @@ public class OZMultiSignerManager: OZManagerHelpers, @unchecked Sendable {
         let expirationU64 = UInt64(latestLedger.sequence)
             + UInt64(kit.config.signatureExpirationLedgers)
         guard let expirationLedger = UInt32(exactly: expirationU64) else {
-            throw TransactionException.simulationFailed(
+            throw SmartAccountTransactionException.simulationFailed(
                 reason: "Computed expirationLedger \(expirationU64) overflows UInt32"
             )
         }
@@ -668,7 +668,7 @@ public class OZMultiSignerManager: OZManagerHelpers, @unchecked Sendable {
     /// repeating the work N times for entries that all reference the same
     /// signer set.
     private func buildSmartAccountSigners(
-        selectedSigners: [SelectedSigner]
+        selectedSigners: [OZSelectedSigner]
     ) throws -> [any OZSmartAccountSigner] {
         var smartAccountSigners: [any OZSmartAccountSigner] = []
         smartAccountSigners.reserveCapacity(selectedSigners.count)
@@ -677,7 +677,7 @@ public class OZMultiSignerManager: OZManagerHelpers, @unchecked Sendable {
             case .passkey(_, _, let keyData, _):
                 guard let keyData = keyData else {
                     // compiler-required unwrap; validateSignerSet rejects nil keyData upstream.
-                    throw ValidationException.invalidInput(
+                    throw SmartAccountValidationException.invalidInput(
                         field: "selectedSigners",
                         reason: "keyData is required for passkey signers for rule resolution"
                     )
@@ -734,7 +734,7 @@ public class OZMultiSignerManager: OZManagerHelpers, @unchecked Sendable {
         authDigest: Data,
         expirationLedger: UInt32,
         resolvedContextRuleIds: [UInt32],
-        selectedSigners: [SelectedSigner]
+        selectedSigners: [OZSelectedSigner]
     ) async throws -> SorobanAuthorizationEntryXDR {
         var workingEntry = workingEntry
         for (signerIndex, signer) in selectedSigners.enumerated() {
@@ -743,30 +743,30 @@ public class OZMultiSignerManager: OZManagerHelpers, @unchecked Sendable {
             }
             try Task.checkCancellation()
             guard let webauthnProvider = kit.config.webauthnProvider else {
-                throw ValidationException.invalidInput(
+                throw SmartAccountValidationException.invalidInput(
                     field: "webauthnProvider",
                     reason: "WebAuthn provider is required for passkey signers but is not configured"
                 )
             }
             guard let keyData = keyData else {
                 // compiler-required unwrap; validateSignerSet rejects nil keyData upstream.
-                throw ValidationException.invalidInput(
+                throw SmartAccountValidationException.invalidInput(
                     field: "selectedSigners",
                     reason: "keyData is required for passkey signers for rule resolution"
                 )
             }
 
             // why: when credentialIdBytes is available, attach an
-            // AllowCredential carrying it and any transport hints so the
+            // WebAuthnAllowCredential carrying it and any transport hints so the
             // OS routing layer can pick the correct passkey when more
             // than one is registered for this RP. When credentialIdBytes
             // is nil we pass no allowCredentials list at all so the
             // authenticator falls back to its default credential
             // discovery flow.
-            let allowCredentials: [AllowCredential]?
+            let allowCredentials: [WebAuthnAllowCredential]?
             if let credentialIdBytes = credentialIdBytes {
                 allowCredentials = [
-                    AllowCredential(
+                    WebAuthnAllowCredential(
                         id: credentialIdBytes,
                         transports: transports
                     )
@@ -841,14 +841,14 @@ public class OZMultiSignerManager: OZManagerHelpers, @unchecked Sendable {
     ///   - resolvedContextRuleIds: Context rule IDs bound into the auth-payload map.
     ///   - selectedSigners: Full signer list; non-Ed25519 entries are skipped.
     /// - Returns: The updated working entry after all Ed25519 signatures have been attached.
-    /// - Throws: ``ValidationException`` when the external signer manager is not configured;
-    ///   ``TransactionException/SigningFailed`` when signing or local verification fails.
+    /// - Throws: ``SmartAccountValidationException`` when the external signer manager is not configured;
+    ///   ``SmartAccountTransactionException/SigningFailed`` when signing or local verification fails.
     private func signEntryWithEd25519Signers(
         workingEntry: SorobanAuthorizationEntryXDR,
         authDigest: Data,
         expirationLedger: UInt32,
         resolvedContextRuleIds: [UInt32],
-        selectedSigners: [SelectedSigner]
+        selectedSigners: [OZSelectedSigner]
     ) async throws -> SorobanAuthorizationEntryXDR {
         var workingEntry = workingEntry
         let signerManager = kit.externalSigners
@@ -906,7 +906,7 @@ public class OZMultiSignerManager: OZManagerHelpers, @unchecked Sendable {
     ///   - publicKey: 32-byte Ed25519 public key used to verify the signature.
     ///   - authDigest: 32-byte message that was signed.
     ///   - verifierAddress: On-chain verifier contract address; used only in error messages.
-    /// - Throws: ``TransactionException/signingFailed`` when the length check, key
+    /// - Throws: ``SmartAccountTransactionException/signingFailed`` when the length check, key
     ///   construction, or signature verification fails.
     private func locallyVerifyEd25519(
         rawSignature: Data,
@@ -915,7 +915,7 @@ public class OZMultiSignerManager: OZManagerHelpers, @unchecked Sendable {
         verifierAddress: String
     ) throws {
         guard rawSignature.count == SmartAccountConstants.ed25519SignatureSize else {
-            throw TransactionException.signingFailed(
+            throw SmartAccountTransactionException.signingFailed(
                 reason: "Ed25519 signing source returned \(rawSignature.count) bytes for verifier " +
                     "\(verifierAddress); expected \(SmartAccountConstants.ed25519SignatureSize)"
             )
@@ -925,7 +925,7 @@ public class OZMultiSignerManager: OZManagerHelpers, @unchecked Sendable {
         do {
             pubKeyObj = try PublicKey([UInt8](publicKey))
         } catch {
-            throw TransactionException.signingFailed(
+            throw SmartAccountTransactionException.signingFailed(
                 reason: "Failed to construct Ed25519 public key for local verification: " +
                     (SmartAccountException.messageOf(error) ?? "unknown"),
                 cause: error
@@ -940,14 +940,14 @@ public class OZMultiSignerManager: OZManagerHelpers, @unchecked Sendable {
                 message: [UInt8](authDigest)
             )
         } catch {
-            throw TransactionException.signingFailed(
+            throw SmartAccountTransactionException.signingFailed(
                 reason: "Ed25519 signature local verification failed for verifier \(verifierAddress): " +
                     (SmartAccountException.messageOf(error) ?? "unknown"),
                 cause: error
             )
         }
         if !signatureValid {
-            throw TransactionException.signingFailed(
+            throw SmartAccountTransactionException.signingFailed(
                 reason: "Ed25519 signing source returned a signature that does not verify " +
                     "against the registered public key for verifier \(verifierAddress)"
             )
@@ -968,7 +968,7 @@ public class OZMultiSignerManager: OZManagerHelpers, @unchecked Sendable {
         authDigest: Data,
         expirationLedger: UInt32,
         resolvedContextRuleIds: [UInt32],
-        selectedSigners: [SelectedSigner],
+        selectedSigners: [OZSelectedSigner],
         connectedContractId: String,
         signedAuthEntries: inout [SorobanAuthorizationEntryXDR]
     ) async throws -> SorobanAuthorizationEntryXDR {
@@ -1014,8 +1014,8 @@ public class OZMultiSignerManager: OZManagerHelpers, @unchecked Sendable {
         hostFunction: HostFunctionXDR,
         signedAuthEntries: [SorobanAuthorizationEntryXDR],
         deployer: KeyPair,
-        forceMethod: SubmissionMethod?
-    ) async throws -> TransactionResult {
+        forceMethod: OZSubmissionMethod?
+    ) async throws -> OZTransactionResult {
         try Task.checkCancellation()
         let refreshedDeployerAccount = try await fetchAccount(accountId: deployer.accountId)
         let signedOperation = InvokeHostFunctionOperation(
@@ -1051,20 +1051,20 @@ public class OZMultiSignerManager: OZManagerHelpers, @unchecked Sendable {
     ///   - target: Target contract address.
     ///   - targetFn: Function name. Must be non-blank.
     ///   - selectedSigners: Signer set. Must be non-empty.
-    /// - Throws: ``ValidationException/InvalidAddress`` for malformed
-    ///   `target`; ``ValidationException/InvalidInput`` for blank `targetFn`
+    /// - Throws: ``SmartAccountValidationException/InvalidAddress`` for malformed
+    ///   `target`; ``SmartAccountValidationException/InvalidInput`` for blank `targetFn`
     ///   or empty `selectedSigners`.
     private func validateContractCallArgs(
         target: String,
         targetFn: String,
-        selectedSigners: [SelectedSigner]
+        selectedSigners: [OZSelectedSigner]
     ) throws {
         try requireContractAddress(target, fieldName: "target")
 
         try requireNonBlankFunctionName(targetFn)
 
         if selectedSigners.isEmpty {
-            throw ValidationException.invalidInput(
+            throw SmartAccountValidationException.invalidInput(
                 field: "selectedSigners",
                 reason: "At least one signer must be provided"
             )
@@ -1085,7 +1085,7 @@ public class OZMultiSignerManager: OZManagerHelpers, @unchecked Sendable {
     ///   - walletAddress: The Stellar `G…` address of the wallet signer.
     ///   - expirationLedger: Ledger sequence at which the signature expires.
     /// - Returns: The signed auth entry.
-    /// - Throws: ``TransactionException/SigningFailed``.
+    /// - Throws: ``SmartAccountTransactionException/SigningFailed``.
     private func signWalletAddressAuthEntry(
         entry: SorobanAuthorizationEntryXDR,
         walletAddress: String,
@@ -1096,7 +1096,7 @@ public class OZMultiSignerManager: OZManagerHelpers, @unchecked Sendable {
         // address credentials.
         let cloned = try OZTransactionOperations.cloneAuthEntry(entry)
         guard case .address(let credentials) = cloned.credentials else {
-            throw TransactionException.signingFailed(
+            throw SmartAccountTransactionException.signingFailed(
                 reason: "Expected Address credentials on wallet auth entry for \(walletAddress)"
             )
         }
@@ -1112,7 +1112,7 @@ public class OZMultiSignerManager: OZManagerHelpers, @unchecked Sendable {
         do {
             preimageBytes = try XDREncoder.encode(preimageXdr)
         } catch {
-            throw TransactionException.signingFailed(
+            throw SmartAccountTransactionException.signingFailed(
                 reason: "Failed to XDR-encode wallet auth preimage: " +
                     (SmartAccountException.messageOf(error) ?? "unknown"),
                 cause: error
@@ -1126,7 +1126,7 @@ public class OZMultiSignerManager: OZManagerHelpers, @unchecked Sendable {
         )
 
         guard let signatureBytes = Data(base64Encoded: signResult.signedAuthEntry) else {
-            throw TransactionException.signingFailed(
+            throw SmartAccountTransactionException.signingFailed(
                 reason: "External signer returned non-base64 signature for \(walletAddress)"
             )
         }
@@ -1136,7 +1136,7 @@ public class OZMultiSignerManager: OZManagerHelpers, @unchecked Sendable {
         do {
             signerKeyPair = try KeyPair(accountId: resolvedSignerAddress)
         } catch {
-            throw TransactionException.signingFailed(
+            throw SmartAccountTransactionException.signingFailed(
                 reason: "Failed to derive public key from wallet signer address \(resolvedSignerAddress): " +
                     (SmartAccountException.messageOf(error) ?? "unknown"),
                 cause: error
@@ -1165,7 +1165,7 @@ public class OZMultiSignerManager: OZManagerHelpers, @unchecked Sendable {
     /// Builds and signs a delegated wallet auth entry for `walletAddress` via the
     /// kit's external-signer manager. Produces the `Vec([Map({public_key, signature})])`
     /// credential shape.
-    /// - Throws: ``TransactionException/SigningFailed``.
+    /// - Throws: ``SmartAccountTransactionException/SigningFailed``.
     private static func authorizeInvocation(
         walletAddress: String,
         validUntilLedger: UInt32,
@@ -1190,7 +1190,7 @@ public class OZMultiSignerManager: OZManagerHelpers, @unchecked Sendable {
         do {
             preimageBytes = try XDREncoder.encode(preimage)
         } catch {
-            throw TransactionException.signingFailed(
+            throw SmartAccountTransactionException.signingFailed(
                 reason: "Failed to XDR-encode delegated wallet auth preimage: " +
                     (SmartAccountException.messageOf(error) ?? "unknown"),
                 cause: error
@@ -1204,7 +1204,7 @@ public class OZMultiSignerManager: OZManagerHelpers, @unchecked Sendable {
         )
 
         guard let signatureBytes = Data(base64Encoded: signResult.signedAuthEntry) else {
-            throw TransactionException.signingFailed(
+            throw SmartAccountTransactionException.signingFailed(
                 reason: "External signer returned non-base64 signature for \(walletAddress)"
             )
         }
@@ -1214,7 +1214,7 @@ public class OZMultiSignerManager: OZManagerHelpers, @unchecked Sendable {
         do {
             signerKeyPair = try KeyPair(accountId: resolvedSignerAddress)
         } catch {
-            throw TransactionException.signingFailed(
+            throw SmartAccountTransactionException.signingFailed(
                 reason: "Failed to derive public key from wallet signer address \(resolvedSignerAddress): " +
                     (SmartAccountException.messageOf(error) ?? "unknown"),
                 cause: error

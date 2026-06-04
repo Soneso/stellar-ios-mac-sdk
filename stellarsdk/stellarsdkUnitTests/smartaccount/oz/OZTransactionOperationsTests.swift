@@ -58,8 +58,8 @@ final class OZTransactionOperationsTests: XCTestCase {
                 recipient: validAccountAddress,
                 amount: "10"
             )
-            XCTFail("expected WalletException.NotConnected")
-        } catch let error as WalletException.NotConnected {
+            XCTFail("expected SmartAccountWalletException.NotConnected")
+        } catch let error as SmartAccountWalletException.NotConnected {
             XCTAssertEqual(error.code, .walletNotConnected)
             XCTAssertTrue(error.message.contains("No wallet connected"))
         }
@@ -73,8 +73,8 @@ final class OZTransactionOperationsTests: XCTestCase {
                 recipient: "not-a-stellar-address",
                 amount: "10"
             )
-            XCTFail("expected ValidationException.InvalidAddress")
-        } catch let error as ValidationException.InvalidAddress {
+            XCTFail("expected SmartAccountValidationException.InvalidAddress")
+        } catch let error as SmartAccountValidationException.InvalidAddress {
             XCTAssertTrue(error.message.contains("recipient"))
         }
     }
@@ -87,8 +87,8 @@ final class OZTransactionOperationsTests: XCTestCase {
                 recipient: "",
                 amount: "10"
             )
-            XCTFail("expected ValidationException.InvalidAddress")
-        } catch is ValidationException.InvalidAddress {
+            XCTFail("expected SmartAccountValidationException.InvalidAddress")
+        } catch is SmartAccountValidationException.InvalidAddress {
             // expected
         }
     }
@@ -101,8 +101,8 @@ final class OZTransactionOperationsTests: XCTestCase {
                 recipient: validMuxedAddress,
                 amount: "10"
             )
-            XCTFail("expected ValidationException.InvalidAddress")
-        } catch is ValidationException.InvalidAddress {
+            XCTFail("expected SmartAccountValidationException.InvalidAddress")
+        } catch is SmartAccountValidationException.InvalidAddress {
             // expected
         }
     }
@@ -115,8 +115,8 @@ final class OZTransactionOperationsTests: XCTestCase {
                 recipient: validContractAddress2,
                 amount: "10"
             )
-            XCTFail("expected ValidationException.InvalidInput")
-        } catch let error as ValidationException.InvalidInput {
+            XCTFail("expected SmartAccountValidationException.InvalidInput")
+        } catch let error as SmartAccountValidationException.InvalidInput {
             XCTAssertTrue(error.message.contains("Cannot transfer to self"))
         }
     }
@@ -129,8 +129,8 @@ final class OZTransactionOperationsTests: XCTestCase {
                 recipient: validAccountAddress,
                 amount: "0"
             )
-            XCTFail("expected ValidationException.InvalidAmount")
-        } catch is ValidationException.InvalidAmount {
+            XCTFail("expected SmartAccountValidationException.InvalidAmount")
+        } catch is SmartAccountValidationException.InvalidAmount {
             // expected
         }
     }
@@ -143,8 +143,8 @@ final class OZTransactionOperationsTests: XCTestCase {
                 recipient: validAccountAddress,
                 amount: "-5"
             )
-            XCTFail("expected ValidationException.InvalidAmount")
-        } catch is ValidationException.InvalidAmount {
+            XCTFail("expected SmartAccountValidationException.InvalidAmount")
+        } catch is SmartAccountValidationException.InvalidAmount {
             // expected
         }
     }
@@ -157,8 +157,8 @@ final class OZTransactionOperationsTests: XCTestCase {
                 recipient: validAccountAddress,
                 amount: "abc"
             )
-            XCTFail("expected ValidationException.InvalidAmount")
-        } catch is ValidationException.InvalidAmount {
+            XCTFail("expected SmartAccountValidationException.InvalidAmount")
+        } catch is SmartAccountValidationException.InvalidAmount {
             // expected
         }
     }
@@ -171,8 +171,8 @@ final class OZTransactionOperationsTests: XCTestCase {
                 recipient: validAccountAddress,
                 amount: ""
             )
-            XCTFail("expected ValidationException.InvalidAmount")
-        } catch is ValidationException.InvalidAmount {
+            XCTFail("expected SmartAccountValidationException.InvalidAmount")
+        } catch is SmartAccountValidationException.InvalidAmount {
             // expected
         }
     }
@@ -185,8 +185,8 @@ final class OZTransactionOperationsTests: XCTestCase {
                 recipient: validAccountAddress,
                 amount: "1e5"
             )
-            XCTFail("expected ValidationException.InvalidAmount")
-        } catch is ValidationException.InvalidAmount {
+            XCTFail("expected SmartAccountValidationException.InvalidAmount")
+        } catch is SmartAccountValidationException.InvalidAmount {
             // expected
         }
     }
@@ -199,8 +199,8 @@ final class OZTransactionOperationsTests: XCTestCase {
                 recipient: validAccountAddress,
                 amount: "0.00000001"
             )
-            XCTFail("expected ValidationException.InvalidAmount")
-        } catch is ValidationException.InvalidAmount {
+            XCTFail("expected SmartAccountValidationException.InvalidAmount")
+        } catch is SmartAccountValidationException.InvalidAmount {
             // expected
         }
     }
@@ -213,8 +213,8 @@ final class OZTransactionOperationsTests: XCTestCase {
                 recipient: validAccountAddress,
                 amount: "10"
             )
-            XCTFail("expected ValidationException.InvalidAddress")
-        } catch let error as ValidationException.InvalidAddress {
+            XCTFail("expected SmartAccountValidationException.InvalidAddress")
+        } catch let error as SmartAccountValidationException.InvalidAddress {
             XCTAssertTrue(error.message.contains("target"))
         }
     }
@@ -232,9 +232,9 @@ final class OZTransactionOperationsTests: XCTestCase {
                 amount: "10"
             )
             // If we get here, the pipeline somehow succeeded which is fine.
-        } catch is ValidationException {
+        } catch is SmartAccountValidationException {
             XCTFail("Validation should pass for G-address recipient")
-        } catch is WalletException {
+        } catch is SmartAccountWalletException {
             XCTFail("Wallet exception unexpected")
         } catch {
             // expected: network/simulation failure
@@ -249,9 +249,9 @@ final class OZTransactionOperationsTests: XCTestCase {
                 recipient: validContractAddress2,
                 amount: "10"
             )
-        } catch is ValidationException {
+        } catch is SmartAccountValidationException {
             XCTFail("Validation should pass for C-address recipient")
-        } catch is WalletException {
+        } catch is SmartAccountWalletException {
             XCTFail("Wallet exception unexpected")
         } catch {
             // expected: network/simulation failure
@@ -269,8 +269,8 @@ final class OZTransactionOperationsTests: XCTestCase {
                 target: validContractAddress,
                 targetFn: "transfer"
             )
-            XCTFail("expected WalletException.NotConnected")
-        } catch is WalletException.NotConnected {
+            XCTFail("expected SmartAccountWalletException.NotConnected")
+        } catch is SmartAccountWalletException.NotConnected {
             // expected
         }
     }
@@ -282,8 +282,8 @@ final class OZTransactionOperationsTests: XCTestCase {
                 target: "not-a-contract-address",
                 targetFn: "my_function"
             )
-            XCTFail("expected ValidationException.InvalidAddress")
-        } catch let error as ValidationException.InvalidAddress {
+            XCTFail("expected SmartAccountValidationException.InvalidAddress")
+        } catch let error as SmartAccountValidationException.InvalidAddress {
             XCTAssertTrue(error.message.contains("target"))
         }
     }
@@ -295,8 +295,8 @@ final class OZTransactionOperationsTests: XCTestCase {
                 target: validAccountAddress,
                 targetFn: "my_function"
             )
-            XCTFail("expected ValidationException.InvalidAddress")
-        } catch is ValidationException.InvalidAddress {
+            XCTFail("expected SmartAccountValidationException.InvalidAddress")
+        } catch is SmartAccountValidationException.InvalidAddress {
             // expected
         }
     }
@@ -308,8 +308,8 @@ final class OZTransactionOperationsTests: XCTestCase {
                 target: "",
                 targetFn: "my_function"
             )
-            XCTFail("expected ValidationException.InvalidAddress")
-        } catch is ValidationException.InvalidAddress {
+            XCTFail("expected SmartAccountValidationException.InvalidAddress")
+        } catch is SmartAccountValidationException.InvalidAddress {
             // expected
         }
     }
@@ -321,8 +321,8 @@ final class OZTransactionOperationsTests: XCTestCase {
                 target: validContractAddress,
                 targetFn: ""
             )
-            XCTFail("expected ValidationException.InvalidInput")
-        } catch let error as ValidationException.InvalidInput {
+            XCTFail("expected SmartAccountValidationException.InvalidInput")
+        } catch let error as SmartAccountValidationException.InvalidInput {
             XCTAssertTrue(error.message.contains("Function name cannot be empty"))
         }
     }
@@ -334,8 +334,8 @@ final class OZTransactionOperationsTests: XCTestCase {
                 target: validContractAddress,
                 targetFn: "   "
             )
-            XCTFail("expected ValidationException.InvalidInput")
-        } catch is ValidationException.InvalidInput {
+            XCTFail("expected SmartAccountValidationException.InvalidInput")
+        } catch is SmartAccountValidationException.InvalidInput {
             // expected
         }
     }
@@ -347,9 +347,9 @@ final class OZTransactionOperationsTests: XCTestCase {
                 target: validContractAddress,
                 targetFn: "my_function"
             )
-        } catch is ValidationException {
+        } catch is SmartAccountValidationException {
             XCTFail("Validation should pass for valid inputs")
-        } catch is WalletException {
+        } catch is SmartAccountWalletException {
             XCTFail("Wallet exception unexpected")
         } catch {
             // expected
@@ -367,8 +367,8 @@ final class OZTransactionOperationsTests: XCTestCase {
                 target: validContractAddress,
                 targetFn: "execute"
             )
-            XCTFail("expected WalletException.NotConnected")
-        } catch is WalletException.NotConnected {
+            XCTFail("expected SmartAccountWalletException.NotConnected")
+        } catch is SmartAccountWalletException.NotConnected {
             // expected
         }
     }
@@ -380,8 +380,8 @@ final class OZTransactionOperationsTests: XCTestCase {
                 target: "bad-address",
                 targetFn: "do_something"
             )
-            XCTFail("expected ValidationException.InvalidAddress")
-        } catch let error as ValidationException.InvalidAddress {
+            XCTFail("expected SmartAccountValidationException.InvalidAddress")
+        } catch let error as SmartAccountValidationException.InvalidAddress {
             XCTAssertTrue(error.message.contains("target"))
         }
     }
@@ -393,8 +393,8 @@ final class OZTransactionOperationsTests: XCTestCase {
                 target: validAccountAddress,
                 targetFn: "do_something"
             )
-            XCTFail("expected ValidationException.InvalidAddress")
-        } catch is ValidationException.InvalidAddress {
+            XCTFail("expected SmartAccountValidationException.InvalidAddress")
+        } catch is SmartAccountValidationException.InvalidAddress {
             // expected
         }
     }
@@ -406,8 +406,8 @@ final class OZTransactionOperationsTests: XCTestCase {
                 target: "",
                 targetFn: "do_something"
             )
-            XCTFail("expected ValidationException.InvalidAddress")
-        } catch is ValidationException.InvalidAddress {
+            XCTFail("expected SmartAccountValidationException.InvalidAddress")
+        } catch is SmartAccountValidationException.InvalidAddress {
             // expected
         }
     }
@@ -419,18 +419,18 @@ final class OZTransactionOperationsTests: XCTestCase {
                 target: validContractAddress,
                 targetFn: ""
             )
-            XCTFail("expected ValidationException.InvalidInput")
-        } catch is ValidationException.InvalidInput {
+            XCTFail("expected SmartAccountValidationException.InvalidInput")
+        } catch is SmartAccountValidationException.InvalidInput {
             // expected
         }
     }
 
     // ========================================================================
-    // MARK: - TransactionResult data-class behavior
+    // MARK: - OZTransactionResult data-class behavior
     // ========================================================================
 
     func test_transactionResult_allFields() {
-        let result = TransactionResult(
+        let result = OZTransactionResult(
             success: true,
             hash: "abc123",
             ledger: 42,
@@ -443,7 +443,7 @@ final class OZTransactionOperationsTests: XCTestCase {
     }
 
     func test_transactionResult_defaults() {
-        let result = TransactionResult(success: false)
+        let result = OZTransactionResult(success: false)
         XCTAssertFalse(result.success)
         XCTAssertNil(result.hash)
         XCTAssertNil(result.ledger)
@@ -451,7 +451,7 @@ final class OZTransactionOperationsTests: XCTestCase {
     }
 
     func test_transactionResult_failureWithError() {
-        let result = TransactionResult(
+        let result = OZTransactionResult(
             success: false,
             hash: "def456",
             ledger: nil,
@@ -464,27 +464,27 @@ final class OZTransactionOperationsTests: XCTestCase {
     }
 
     func test_transactionResult_successWithLedger() {
-        let result = TransactionResult(success: true, hash: "txhash", ledger: 1000)
+        let result = OZTransactionResult(success: true, hash: "txhash", ledger: 1000)
         XCTAssertTrue(result.success)
         XCTAssertEqual(result.ledger, 1000)
         XCTAssertNil(result.error)
     }
 
     func test_transactionResult_equalInstances() {
-        let a = TransactionResult(success: true, hash: "h1", ledger: 10, error: nil)
-        let b = TransactionResult(success: true, hash: "h1", ledger: 10, error: nil)
+        let a = OZTransactionResult(success: true, hash: "h1", ledger: 10, error: nil)
+        let b = OZTransactionResult(success: true, hash: "h1", ledger: 10, error: nil)
         XCTAssertEqual(a, b)
         XCTAssertEqual(a.hashValue, b.hashValue)
     }
 
     func test_transactionResult_unequalInstances() {
-        let a = TransactionResult(success: true, hash: "h1", ledger: 10)
-        let b = TransactionResult(success: false, hash: "h1", ledger: 10)
+        let a = OZTransactionResult(success: true, hash: "h1", ledger: 10)
+        let b = OZTransactionResult(success: false, hash: "h1", ledger: 10)
         XCTAssertNotEqual(a, b)
     }
 
     func test_transactionResult_copy() {
-        let original = TransactionResult(success: true, hash: "orig")
+        let original = OZTransactionResult(success: true, hash: "orig")
         let modified = original.copy(success: false, error: "failed")
         XCTAssertTrue(original.success)
         XCTAssertFalse(modified.success)
@@ -493,11 +493,11 @@ final class OZTransactionOperationsTests: XCTestCase {
     }
 
     // ========================================================================
-    // MARK: - SubmissionMethod enum behavior
+    // MARK: - OZSubmissionMethod enum behavior
     // ========================================================================
 
     func test_submissionMethod_values() {
-        let values: [SubmissionMethod] = [.relayer, .rpc]
+        let values: [OZSubmissionMethod] = [.relayer, .rpc]
         XCTAssertEqual(values.count, 2)
         XCTAssertTrue(values.contains(.relayer))
         XCTAssertTrue(values.contains(.rpc))
@@ -507,8 +507,8 @@ final class OZTransactionOperationsTests: XCTestCase {
         // Swift enums are referenced through their static cases; this test
         // documents the case-mapping contract using an exhaustive switch so
         // every case is observed.
-        let relayer: SubmissionMethod = .relayer
-        let rpc: SubmissionMethod = .rpc
+        let relayer: OZSubmissionMethod = .relayer
+        let rpc: OZSubmissionMethod = .rpc
         switch relayer {
         case .relayer: break
         case .rpc: XCTFail()
@@ -523,7 +523,7 @@ final class OZTransactionOperationsTests: XCTestCase {
         // Swift's exhaustive switch over the enum guarantees that no third
         // case can exist at compile time; an "invalid" submission method is
         // unrepresentable. This test pins that invariant.
-        let value: SubmissionMethod = .relayer
+        let value: OZSubmissionMethod = .relayer
         switch value {
         case .relayer, .rpc:
             // exhaustive: the type system rejects any third case at compile
@@ -533,11 +533,11 @@ final class OZTransactionOperationsTests: XCTestCase {
     }
 
     // ========================================================================
-    // MARK: - ResolveContextRuleIds typealias behavior
+    // MARK: - OZResolveContextRuleIds typealias behavior
     // ========================================================================
 
     func test_resolveContextRuleIds_lambdaUsable() async throws {
-        let resolver: ResolveContextRuleIds = { _, index in
+        let resolver: OZResolveContextRuleIds = { _, index in
             return [UInt32(index)]
         }
         let result = try await resolver(minimalAuthEntry(), 3)
@@ -545,13 +545,13 @@ final class OZTransactionOperationsTests: XCTestCase {
     }
 
     func test_resolveContextRuleIds_emptyList() async throws {
-        let resolver: ResolveContextRuleIds = { _, _ in [] }
+        let resolver: OZResolveContextRuleIds = { _, _ in [] }
         let result = try await resolver(minimalAuthEntry(), 0)
         XCTAssertTrue(result.isEmpty)
     }
 
     func test_resolveContextRuleIds_multipleIds() async throws {
-        let resolver: ResolveContextRuleIds = { _, _ in [1, 2, 5] }
+        let resolver: OZResolveContextRuleIds = { _, _ in [1, 2, 5] }
         let result = try await resolver(minimalAuthEntry(), 0)
         XCTAssertEqual(result, [1, 2, 5])
     }
@@ -568,8 +568,8 @@ final class OZTransactionOperationsTests: XCTestCase {
                 recipient: "invalid",
                 amount: "10"
             )
-            XCTFail("expected WalletException.NotConnected")
-        } catch is WalletException.NotConnected {
+            XCTFail("expected SmartAccountWalletException.NotConnected")
+        } catch is SmartAccountWalletException.NotConnected {
             // expected
         }
     }
@@ -582,8 +582,8 @@ final class OZTransactionOperationsTests: XCTestCase {
                 recipient: validAccountAddress,
                 amount: "not-a-number"
             )
-            XCTFail("expected WalletException.NotConnected")
-        } catch is WalletException.NotConnected {
+            XCTFail("expected SmartAccountWalletException.NotConnected")
+        } catch is SmartAccountWalletException.NotConnected {
             // expected
         }
     }
@@ -595,8 +595,8 @@ final class OZTransactionOperationsTests: XCTestCase {
                 target: "invalid-target",
                 targetFn: "fn"
             )
-            XCTFail("expected WalletException.NotConnected")
-        } catch is WalletException.NotConnected {
+            XCTFail("expected SmartAccountWalletException.NotConnected")
+        } catch is SmartAccountWalletException.NotConnected {
             // expected
         }
     }
@@ -608,8 +608,8 @@ final class OZTransactionOperationsTests: XCTestCase {
                 target: "invalid-target",
                 targetFn: "fn"
             )
-            XCTFail("expected WalletException.NotConnected")
-        } catch is WalletException.NotConnected {
+            XCTFail("expected SmartAccountWalletException.NotConnected")
+        } catch is SmartAccountWalletException.NotConnected {
             // expected
         }
     }
@@ -731,8 +731,8 @@ final class OZTransactionOperationsTests: XCTestCase {
         let (_, txOps) = try connectedKit()
         do {
             _ = try await txOps.fundWallet(nativeTokenContract: "not-a-contract")
-            XCTFail("expected ValidationException.InvalidAddress")
-        } catch is ValidationException.InvalidAddress {
+            XCTFail("expected SmartAccountValidationException.InvalidAddress")
+        } catch is SmartAccountValidationException.InvalidAddress {
             // expected
         }
     }
@@ -741,8 +741,8 @@ final class OZTransactionOperationsTests: XCTestCase {
         let (_, txOps) = try disconnectedKit()
         do {
             _ = try await txOps.fundWallet(nativeTokenContract: validContractAddress)
-            XCTFail("expected WalletException.NotConnected")
-        } catch is WalletException.NotConnected {
+            XCTFail("expected SmartAccountWalletException.NotConnected")
+        } catch is SmartAccountWalletException.NotConnected {
             // expected
         }
     }
@@ -768,37 +768,37 @@ final class OZTransactionOperationsTests: XCTestCase {
 
     func test_amountToStroops_zero_throws() {
         XCTAssertThrowsError(try OZTransactionOperations.amountToStroops("0")) { error in
-            XCTAssertTrue(error is ValidationException.InvalidAmount)
+            XCTAssertTrue(error is SmartAccountValidationException.InvalidAmount)
         }
     }
 
     func test_amountToStroops_belowOneStroop_throws() {
         XCTAssertThrowsError(try OZTransactionOperations.amountToStroops("0.00000001")) { error in
-            XCTAssertTrue(error is ValidationException.InvalidAmount)
+            XCTAssertTrue(error is SmartAccountValidationException.InvalidAmount)
         }
     }
 
     func test_amountToStroops_scientific_throws() {
         XCTAssertThrowsError(try OZTransactionOperations.amountToStroops("1e5")) { error in
-            XCTAssertTrue(error is ValidationException.InvalidAmount)
+            XCTAssertTrue(error is SmartAccountValidationException.InvalidAmount)
         }
     }
 
     func test_amountToStroops_empty_throws() {
         XCTAssertThrowsError(try OZTransactionOperations.amountToStroops("")) { error in
-            XCTAssertTrue(error is ValidationException.InvalidAmount)
+            XCTAssertTrue(error is SmartAccountValidationException.InvalidAmount)
         }
     }
 
     func test_amountToStroops_nonNumeric_throws() {
         XCTAssertThrowsError(try OZTransactionOperations.amountToStroops("abc")) { error in
-            XCTAssertTrue(error is ValidationException.InvalidAmount)
+            XCTAssertTrue(error is SmartAccountValidationException.InvalidAmount)
         }
     }
 
     func test_amountToStroops_negative_throws() {
         XCTAssertThrowsError(try OZTransactionOperations.amountToStroops("-5")) { error in
-            XCTAssertTrue(error is ValidationException.InvalidAmount)
+            XCTAssertTrue(error is SmartAccountValidationException.InvalidAmount)
         }
     }
 
@@ -809,15 +809,15 @@ final class OZTransactionOperationsTests: XCTestCase {
     func test_submit_simulationRpcFailure_throwsSimulationFailed() async throws {
         // The default mock kit points at TEST-NET-1 (192.0.2.x); the RPC call
         // fails with a transport error, which submit() lifts into
-        // TransactionException.SimulationFailed.
+        // SmartAccountTransactionException.SimulationFailed.
         let (_, txOps) = try connectedKit()
         do {
             _ = try await txOps.contractCall(
                 target: validContractAddress,
                 targetFn: "noop"
             )
-            XCTFail("expected TransactionException")
-        } catch is TransactionException {
+            XCTFail("expected SmartAccountTransactionException")
+        } catch is SmartAccountTransactionException {
             // expected
         } catch {
             XCTFail("unexpected error type: \(error)")
@@ -829,7 +829,7 @@ final class OZTransactionOperationsTests: XCTestCase {
     // ========================================================================
 
     /// Minimal authorization entry with `sourceAccount` (Void) credentials and
-    /// a trivial invocation tree. Used by ResolveContextRuleIds tests.
+    /// a trivial invocation tree. Used by OZResolveContextRuleIds tests.
     private func minimalAuthEntry() -> SorobanAuthorizationEntryXDR {
         let contractAddress = SCAddressXDR.contract(WrappedData32(Data(count: 32)))
         let invokeArgs = InvokeContractArgsXDR(

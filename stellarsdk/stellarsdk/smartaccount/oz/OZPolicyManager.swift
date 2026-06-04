@@ -12,7 +12,7 @@ import Foundation
 ///
 /// The smart-account contract supports M-of-N authorization across a mix of signer
 /// kinds (passkey-backed external signers, Stellar G-address wallet signers, and Ed25519 external signers).
-/// `SelectedSigner` is the single tagged-union shape passed by callers to manager
+/// `OZSelectedSigner` is the single tagged-union shape passed by callers to manager
 /// methods that take a `selectedSigners` parameter (for example
 /// ``OZPolicyManager/addPolicy(contextRuleId:policyAddress:installParams:selectedSigners:forceMethod:)``).
 ///
@@ -26,7 +26,7 @@ import Foundation
 ///   authorization. It is defined here because the policy manager is the first
 ///   manager to require it; subsequent managers consume the same definition without
 ///   redeclaring it.
-public enum SelectedSigner: Sendable, Hashable {
+public enum OZSelectedSigner: Sendable, Hashable {
 
     /// A passkey-backed external signer identified by its WebAuthn credential id.
     ///
@@ -34,7 +34,7 @@ public enum SelectedSigner: Sendable, Hashable {
     ///   - credentialId: Base64URL-encoded WebAuthn credential identifier.
     ///   - credentialIdBytes: Optional raw credential identifier bytes. When
     ///     supplied, the multi-signer pipeline includes a matching
-    ///     ``AllowCredential`` (with ``transports``) on the WebAuthn
+    ///     ``WebAuthnAllowCredential`` (with ``transports``) on the WebAuthn
     ///     authentication request so the OS can route to the correct passkey.
     ///     When `nil`, no `allowCredentials` list is passed to the provider and
     ///     the authenticator falls back to its default credential discovery.
@@ -43,7 +43,7 @@ public enum SelectedSigner: Sendable, Hashable {
     ///     lookup during signature collection. May be `nil` when the manager
     ///     should resolve the key data on demand.
     ///   - transports: Optional WebAuthn transport hints (`internal`, `hybrid`,
-    ///     `usb`, `ble`, `nfc`) propagated into the ``AllowCredential`` passed
+    ///     `usb`, `ble`, `nfc`) propagated into the ``WebAuthnAllowCredential`` passed
     ///     to the WebAuthn provider when ``credentialIdBytes`` is non-nil.
     ///     Cross-device flows typically leave this `nil`.
     case passkey(credentialId: String, credentialIdBytes: Data? = nil, keyData: Data? = nil, transports: [String]? = nil)
@@ -96,29 +96,29 @@ public enum SelectedSigner: Sendable, Hashable {
 /// (``OZPolicyManager/addSimpleThreshold(contextRuleId:policyAddress:threshold:selectedSigners:forceMethod:)``,
 /// ``OZPolicyManager/addWeightedThreshold(contextRuleId:policyAddress:signerWeights:threshold:selectedSigners:forceMethod:)``,
 /// ``OZPolicyManager/addSpendingLimit(contextRuleId:policyAddress:spendingLimit:periodLedgers:selectedSigners:forceMethod:)``)
-/// which build the matching `PolicyInstallParams` value internally. Callers that
+/// which build the matching `OZPolicyInstallParams` value internally. Callers that
 /// need to install a custom policy contract construct the `SCValXDR` directly and
 /// pass it to ``OZPolicyManager/addPolicy(contextRuleId:policyAddress:installParams:selectedSigners:forceMethod:)``.
 ///
 /// Example:
 /// ```swift
 /// // 2-of-3 simple threshold.
-/// let simple = PolicyInstallParams.simpleThreshold(threshold: 2)
+/// let simple = OZPolicyInstallParams.simpleThreshold(threshold: 2)
 ///
 /// // Weighted vote with a single Stellar-account-backed signer.
 /// let signer = try OZDelegatedSigner(address: "GAAZI4TCR3TY...")
-/// let weighted = PolicyInstallParams.weightedThreshold(
-///     signerWeights: [SignerWeightEntry(signer: signer, weight: 50)],
+/// let weighted = OZPolicyInstallParams.weightedThreshold(
+///     signerWeights: [OZSignerWeightEntry(signer: signer, weight: 50)],
 ///     threshold: 50
 /// )
 ///
 /// // Spend at most one XLM per ledger day.
-/// let spending = PolicyInstallParams.spendingLimit(
+/// let spending = OZPolicyInstallParams.spendingLimit(
 ///     spendingLimit: "1",
 ///     periodLedgers: 17_280
 /// )
 /// ```
-public enum PolicyInstallParams: Sendable {
+public enum OZPolicyInstallParams: Sendable {
 
     /// Simple threshold policy requiring at least `threshold` of the context
     /// rule's signers to authorize. All signers carry equal weight (one vote
@@ -132,12 +132,12 @@ public enum PolicyInstallParams: Sendable {
     /// meet or exceed `threshold`.
     ///
     /// - Parameters:
-    ///   - signerWeights: One ``SignerWeightEntry`` per signer with its assigned
+    ///   - signerWeights: One ``OZSignerWeightEntry`` per signer with its assigned
     ///     vote weight. Must contain at least one entry. Order is normalized
     ///     internally — callers may supply any insertion order.
     ///   - threshold: Minimum summed weight required to authorize. Must be
     ///     greater than zero.
-    case weightedThreshold(signerWeights: [SignerWeightEntry], threshold: UInt32)
+    case weightedThreshold(signerWeights: [OZSignerWeightEntry], threshold: UInt32)
 
     /// Spending limit policy capping cumulative spend within a rolling
     /// `periodLedgers`-ledger window.
@@ -165,14 +165,14 @@ public enum PolicyInstallParams: Sendable {
     /// - Returns: The encoded `SCValXDR` map suitable for passing as the
     ///   `installParams` argument of the smart-account contract's `add_policy`
     ///   method.
-    /// - Throws: ``ValidationException/InvalidInput`` when the variant's
+    /// - Throws: ``SmartAccountValidationException/InvalidInput`` when the variant's
     ///   parameters are invalid (zero threshold, empty signer weights, non-positive
     ///   spending limit, zero period, or malformed spending-limit string).
     internal func toScVal() throws -> SCValXDR {
         switch self {
         case .simpleThreshold(let threshold):
             if threshold == 0 {
-                throw ValidationException.invalidInput(
+                throw SmartAccountValidationException.invalidInput(
                     field: "threshold",
                     reason: "Threshold must be greater than zero"
                 )
@@ -188,13 +188,13 @@ public enum PolicyInstallParams: Sendable {
             // validation so the error surfaced when both inputs are bad
             // names the threshold first.
             if threshold == 0 {
-                throw ValidationException.invalidInput(
+                throw SmartAccountValidationException.invalidInput(
                     field: "threshold",
                     reason: "Threshold must be greater than zero"
                 )
             }
             if signerWeights.isEmpty {
-                throw ValidationException.invalidInput(
+                throw SmartAccountValidationException.invalidInput(
                     field: "signerWeights",
                     reason: "Weighted threshold policy requires at least one signer with weight"
                 )
@@ -212,7 +212,7 @@ public enum PolicyInstallParams: Sendable {
                 do {
                     signerScVal = try entry.signer.toScVal()
                 } catch {
-                    throw ValidationException.InvalidInput(
+                    throw SmartAccountValidationException.InvalidInput(
                         message: "Failed to encode signer for weighted threshold policy: \(error.localizedDescription)",
                         cause: error
                     )
@@ -250,7 +250,7 @@ public enum PolicyInstallParams: Sendable {
             // error message is field-specific.
             let trimmed = spendingLimit.trimmingCharacters(in: .whitespacesAndNewlines)
             if trimmed.isEmpty {
-                throw ValidationException.invalidInput(
+                throw SmartAccountValidationException.invalidInput(
                     field: "spendingLimit",
                     reason: "Spending limit must be greater than zero, got: \(spendingLimit)"
                 )
@@ -259,7 +259,7 @@ public enum PolicyInstallParams: Sendable {
             // Reject negative values up front so the surfaced message is
             // field-specific and includes the offending value.
             if trimmed.hasPrefix("-") {
-                throw ValidationException.invalidInput(
+                throw SmartAccountValidationException.invalidInput(
                     field: "spendingLimit",
                     reason: "Spending limit must be greater than zero, got: \(spendingLimit)"
                 )
@@ -269,14 +269,14 @@ public enum PolicyInstallParams: Sendable {
             // scientific notation. We treat the string as already in stroops.
             let pattern = "^[0-9]+$"
             guard let regex = try? NSRegularExpression(pattern: pattern, options: []) else {
-                throw ValidationException.invalidInput(
+                throw SmartAccountValidationException.invalidInput(
                     field: "spendingLimit",
                     reason: "Spending limit validator failed to initialize"
                 )
             }
             let nsRange = NSRange(trimmed.startIndex..<trimmed.endIndex, in: trimmed)
             if regex.firstMatch(in: trimmed, options: [], range: nsRange) == nil {
-                throw ValidationException.invalidInput(
+                throw SmartAccountValidationException.invalidInput(
                     field: "spendingLimit",
                     reason: "Spending limit must be a positive integer in stroops, got: \(spendingLimit)"
                 )
@@ -285,15 +285,15 @@ public enum PolicyInstallParams: Sendable {
             // Reject zero with the canonical message after shape validation
             // so any leading-zero variant ("0", "00", "000") is rejected
             // uniformly.
-            if PolicyInstallParams.isAllZeroDigits(trimmed) {
-                throw ValidationException.invalidInput(
+            if OZPolicyInstallParams.isAllZeroDigits(trimmed) {
+                throw SmartAccountValidationException.invalidInput(
                     field: "spendingLimit",
                     reason: "Spending limit must be greater than zero, got: \(spendingLimit)"
                 )
             }
 
             if periodLedgers == 0 {
-                throw ValidationException.invalidInput(
+                throw SmartAccountValidationException.invalidInput(
                     field: "periodLedgers",
                     reason: "Period ledgers must be greater than zero, got: \(periodLedgers)"
                 )
@@ -307,7 +307,7 @@ public enum PolicyInstallParams: Sendable {
             do {
                 limitScVal = try SCValXDR.i128(stringValue: trimmed)
             } catch {
-                throw ValidationException.InvalidInput(
+                throw SmartAccountValidationException.InvalidInput(
                     message: "Spending limit out of i128 range: \(spendingLimit)",
                     cause: error
                 )
@@ -342,7 +342,7 @@ public enum PolicyInstallParams: Sendable {
 }
 
 
-/// A single signer-weight pair carried by ``PolicyInstallParams/weightedThreshold(signerWeights:threshold:)``.
+/// A single signer-weight pair carried by ``OZPolicyInstallParams/weightedThreshold(signerWeights:threshold:)``.
 ///
 /// Models a weighted-vote contribution: the wrapped ``OZSmartAccountSigner``
 /// contributes ``weight`` points toward a weighted-threshold policy when it
@@ -356,12 +356,12 @@ public enum PolicyInstallParams: Sendable {
 /// time, so the on-chain shape is deterministic regardless of the order callers
 /// supply the entries.
 ///
-/// - Note: An array of `SignerWeightEntry` is used in place of a `Dictionary`
+/// - Note: An array of `OZSignerWeightEntry` is used in place of a `Dictionary`
 ///   keyed by signer because Swift protocol existentials do not satisfy the
 ///   `Hashable` requirement that dictionary keys impose. The array shape also
 ///   gives callers explicit, observable insertion order during construction
 ///   even though the on-chain map is sorted later.
-public struct SignerWeightEntry: Sendable {
+public struct OZSignerWeightEntry: Sendable {
 
     /// The signer that contributes ``weight`` points when it authorizes.
     public let signer: any OZSmartAccountSigner
@@ -371,7 +371,7 @@ public struct SignerWeightEntry: Sendable {
     /// all and is rejected by the smart-account contract.
     public let weight: UInt32
 
-    /// Initializes a new `SignerWeightEntry`.
+    /// Initializes a new `OZSignerWeightEntry`.
     ///
     /// - Parameters:
     ///   - signer: The signer that contributes ``weight`` points.
@@ -453,19 +453,19 @@ public final class OZPolicyManager: OZManagerHelpers, @unchecked Sendable {
     ///     multi-signer path.
     ///   - forceMethod: Optional submission-method override. When `nil` the
     ///     kit's configured default is used.
-    /// - Returns: A ``TransactionResult`` describing the on-chain outcome.
-    /// - Throws: ``ValidationException`` when validation fails;
-    ///   ``WalletException`` when no wallet is connected;
-    ///   ``TransactionException`` for simulation, signing, or submission
+    /// - Returns: An ``OZTransactionResult`` describing the on-chain outcome.
+    /// - Throws: ``SmartAccountValidationException`` when validation fails;
+    ///   ``SmartAccountWalletException`` when no wallet is connected;
+    ///   ``SmartAccountTransactionException`` for simulation, signing, or submission
     ///   failures.
     public func addSimpleThreshold(
         contextRuleId: UInt32,
         policyAddress: String,
         threshold: UInt32,
-        selectedSigners: [SelectedSigner] = [],
-        forceMethod: SubmissionMethod? = nil
-    ) async throws -> TransactionResult {
-        let params = PolicyInstallParams.simpleThreshold(threshold: threshold)
+        selectedSigners: [OZSelectedSigner] = [],
+        forceMethod: OZSubmissionMethod? = nil
+    ) async throws -> OZTransactionResult {
+        let params = OZPolicyInstallParams.simpleThreshold(threshold: threshold)
         let installParams = try params.toScVal()
         return try await addPolicy(
             contextRuleId: contextRuleId,
@@ -489,26 +489,26 @@ public final class OZPolicyManager: OZManagerHelpers, @unchecked Sendable {
     ///   - contextRuleId: The context-rule identifier the policy is being added
     ///     to (zero is the default rule).
     ///   - policyAddress: Policy contract address (`C…` strkey).
-    ///   - signerWeights: One ``SignerWeightEntry`` per signer with its assigned
+    ///   - signerWeights: One ``OZSignerWeightEntry`` per signer with its assigned
     ///     vote weight. Must contain at least one entry.
     ///   - threshold: Minimum summed weight required to authorize. Must be
     ///     greater than zero.
     ///   - selectedSigners: Optional multi-signer participants list (see
     ///     ``addSimpleThreshold(contextRuleId:policyAddress:threshold:selectedSigners:forceMethod:)``).
     ///   - forceMethod: Optional submission-method override.
-    /// - Returns: A ``TransactionResult`` describing the on-chain outcome.
-    /// - Throws: ``ValidationException`` for invalid input;
-    ///   ``WalletException`` for missing connection;
-    ///   ``TransactionException`` for submission failures.
+    /// - Returns: An ``OZTransactionResult`` describing the on-chain outcome.
+    /// - Throws: ``SmartAccountValidationException`` for invalid input;
+    ///   ``SmartAccountWalletException`` for missing connection;
+    ///   ``SmartAccountTransactionException`` for submission failures.
     public func addWeightedThreshold(
         contextRuleId: UInt32,
         policyAddress: String,
-        signerWeights: [SignerWeightEntry],
+        signerWeights: [OZSignerWeightEntry],
         threshold: UInt32,
-        selectedSigners: [SelectedSigner] = [],
-        forceMethod: SubmissionMethod? = nil
-    ) async throws -> TransactionResult {
-        let params = PolicyInstallParams.weightedThreshold(
+        selectedSigners: [OZSelectedSigner] = [],
+        forceMethod: OZSubmissionMethod? = nil
+    ) async throws -> OZTransactionResult {
+        let params = OZPolicyInstallParams.weightedThreshold(
             signerWeights: signerWeights,
             threshold: threshold
         )
@@ -533,7 +533,7 @@ public final class OZPolicyManager: OZManagerHelpers, @unchecked Sendable {
     /// stroops using the protocol-standard 7-decimal-place fixed-point shift
     /// (one XLM equals ten million stroops). For amounts whose stroops value
     /// exceeds the `Int64` ceiling (~9.2×10^18 stroops), construct the policy
-    /// directly via ``PolicyInstallParams/spendingLimit(spendingLimit:periodLedgers:)``
+    /// directly via ``OZPolicyInstallParams/spendingLimit(spendingLimit:periodLedgers:)``
     /// with a stroops-denominated decimal-integer string and pass it through
     /// ``addPolicy(contextRuleId:policyAddress:installParams:selectedSigners:forceMethod:)``.
     ///
@@ -548,28 +548,28 @@ public final class OZPolicyManager: OZManagerHelpers, @unchecked Sendable {
     ///     than zero.
     ///   - selectedSigners: Optional multi-signer participants list.
     ///   - forceMethod: Optional submission-method override.
-    /// - Returns: A ``TransactionResult`` describing the on-chain outcome.
-    /// - Throws: ``ValidationException`` for invalid input;
-    ///   ``WalletException`` for missing connection;
-    ///   ``TransactionException`` for submission failures.
+    /// - Returns: An ``OZTransactionResult`` describing the on-chain outcome.
+    /// - Throws: ``SmartAccountValidationException`` for invalid input;
+    ///   ``SmartAccountWalletException`` for missing connection;
+    ///   ``SmartAccountTransactionException`` for submission failures.
     public func addSpendingLimit(
         contextRuleId: UInt32,
         policyAddress: String,
         spendingLimit: String,
         periodLedgers: UInt32,
-        selectedSigners: [SelectedSigner] = [],
-        forceMethod: SubmissionMethod? = nil
-    ) async throws -> TransactionResult {
+        selectedSigners: [OZSelectedSigner] = [],
+        forceMethod: OZSubmissionMethod? = nil
+    ) async throws -> OZTransactionResult {
         // Convert the decimal XLM string to stroops using the same routine the
         // transaction-operations layer uses for token transfers.
         let stroops: Int64
         do {
             stroops = try OZTransactionOperations.amountToStroops(spendingLimit)
-        } catch let error as ValidationException.InvalidAmount {
+        } catch let error as SmartAccountValidationException.InvalidAmount {
             // Re-surface as a field-tagged validation error so the message
             // refers to the policy parameter the caller supplied rather than
             // the generic "amount" label.
-            throw ValidationException.invalidInput(
+            throw SmartAccountValidationException.invalidInput(
                 field: "spendingLimit",
                 reason: error.message,
                 cause: error
@@ -579,13 +579,13 @@ public final class OZPolicyManager: OZManagerHelpers, @unchecked Sendable {
         // amountToStroops throws on non-positive inputs already, but defend
         // here too so the constraint is local to this method as well.
         if stroops <= 0 {
-            throw ValidationException.invalidInput(
+            throw SmartAccountValidationException.invalidInput(
                 field: "spendingLimit",
                 reason: "Spending limit must be greater than zero, got: \(spendingLimit)"
             )
         }
 
-        let params = PolicyInstallParams.spendingLimit(
+        let params = OZPolicyInstallParams.spendingLimit(
             spendingLimit: String(stroops),
             periodLedgers: periodLedgers
         )
@@ -613,15 +613,15 @@ public final class OZPolicyManager: OZManagerHelpers, @unchecked Sendable {
     ///   - policyId: Numeric policy identifier assigned at installation time.
     ///   - selectedSigners: Optional multi-signer participants list.
     ///   - forceMethod: Optional submission-method override.
-    /// - Returns: A ``TransactionResult`` describing the on-chain outcome.
-    /// - Throws: ``WalletException`` for missing connection;
-    ///   ``TransactionException`` for submission failures.
+    /// - Returns: An ``OZTransactionResult`` describing the on-chain outcome.
+    /// - Throws: ``SmartAccountWalletException`` for missing connection;
+    ///   ``SmartAccountTransactionException`` for submission failures.
     public func removePolicy(
         contextRuleId: UInt32,
         policyId: UInt32,
-        selectedSigners: [SelectedSigner] = [],
-        forceMethod: SubmissionMethod? = nil
-    ) async throws -> TransactionResult {
+        selectedSigners: [OZSelectedSigner] = [],
+        forceMethod: OZSubmissionMethod? = nil
+    ) async throws -> OZTransactionResult {
         let connected = try kit.requireConnected()
 
         let hostFunction = try OZPolicyManager.buildRemovePolicyFunction(
@@ -652,11 +652,11 @@ public final class OZPolicyManager: OZManagerHelpers, @unchecked Sendable {
     ///     against the rule's installed policies.
     ///   - selectedSigners: Optional multi-signer participants list.
     ///   - forceMethod: Optional submission-method override.
-    /// - Returns: A ``TransactionResult`` describing the on-chain outcome.
-    /// - Throws: ``WalletException`` for missing connection;
-    ///   ``ValidationException`` when `policyAddress` is malformed or absent
+    /// - Returns: An ``OZTransactionResult`` describing the on-chain outcome.
+    /// - Throws: ``SmartAccountWalletException`` for missing connection;
+    ///   ``SmartAccountValidationException`` when `policyAddress` is malformed or absent
     ///   from the rule;
-    ///   ``TransactionException`` for submission failures.
+    ///   ``SmartAccountTransactionException`` for submission failures.
     ///
     /// - Note: The Swift name differs from the underlying contract method to
     ///   distinguish this overload at the call site from the id-based
@@ -665,9 +665,9 @@ public final class OZPolicyManager: OZManagerHelpers, @unchecked Sendable {
     public func removePolicyByAddress(
         contextRuleId: UInt32,
         policyAddress: String,
-        selectedSigners: [SelectedSigner] = [],
-        forceMethod: SubmissionMethod? = nil
-    ) async throws -> TransactionResult {
+        selectedSigners: [OZSelectedSigner] = [],
+        forceMethod: OZSubmissionMethod? = nil
+    ) async throws -> OZTransactionResult {
         try requireContractAddress(policyAddress, fieldName: "policyAddress")
 
         let policyId = try await resolvePolicyIdByAddress(
@@ -698,21 +698,21 @@ public final class OZPolicyManager: OZManagerHelpers, @unchecked Sendable {
     ///   - policyAddress: Policy contract address (`C…` strkey).
     ///   - installParams: Policy-specific installation parameters encoded as
     ///     `SCValXDR`. The structure depends on the target policy contract; for
-    ///     the three built-in policy types use ``PolicyInstallParams/toScVal()``
+    ///     the three built-in policy types use ``OZPolicyInstallParams/toScVal()``
     ///     on the matching enum case.
     ///   - selectedSigners: Optional multi-signer participants list.
     ///   - forceMethod: Optional submission-method override.
-    /// - Returns: A ``TransactionResult`` describing the on-chain outcome.
-    /// - Throws: ``WalletException`` for missing connection;
-    ///   ``ValidationException`` when `policyAddress` is malformed;
-    ///   ``TransactionException`` for submission failures.
+    /// - Returns: An ``OZTransactionResult`` describing the on-chain outcome.
+    /// - Throws: ``SmartAccountWalletException`` for missing connection;
+    ///   ``SmartAccountValidationException`` when `policyAddress` is malformed;
+    ///   ``SmartAccountTransactionException`` for submission failures.
     public func addPolicy(
         contextRuleId: UInt32,
         policyAddress: String,
         installParams: SCValXDR,
-        selectedSigners: [SelectedSigner] = [],
-        forceMethod: SubmissionMethod? = nil
-    ) async throws -> TransactionResult {
+        selectedSigners: [OZSelectedSigner] = [],
+        forceMethod: OZSubmissionMethod? = nil
+    ) async throws -> OZTransactionResult {
         let connected = try kit.requireConnected()
         try requireContractAddress(policyAddress, fieldName: "policyAddress")
 
@@ -746,14 +746,14 @@ public final class OZPolicyManager: OZManagerHelpers, @unchecked Sendable {
     ///   - contextRuleId: Identifier of the rule containing the policy.
     ///   - policyAddress: Policy contract address to resolve.
     /// - Returns: The numeric policy id at the matching index.
-    /// - Throws: ``ValidationException`` when the address is absent from the
+    /// - Throws: ``SmartAccountValidationException`` when the address is absent from the
     ///   rule, when the rule's `policies` and `policyIds` arrays are
     ///   misaligned, or when the rule itself cannot be located.
     private func resolvePolicyIdByAddress(
         contextRuleId: UInt32,
         policyAddress: String
     ) async throws -> UInt32 {
-        let rule: ParsedContextRule
+        let rule: OZParsedContextRule
         if let parser = contextRuleParser {
             // Fast path: single-rule fetch + parse, one RPC simulation.
             let scVal = try await parser.getContextRule(contextRuleId: contextRuleId)
@@ -765,7 +765,7 @@ public final class OZPolicyManager: OZManagerHelpers, @unchecked Sendable {
             // parser surface.
             let rules = try await kit.contextRuleManager.listContextRules(maxScanId: nil)
             guard let located = rules.first(where: { $0.id == contextRuleId }) else {
-                throw ValidationException.invalidInput(
+                throw SmartAccountValidationException.invalidInput(
                     field: "contextRuleId",
                     reason: "Context rule \(contextRuleId) not found"
                 )
@@ -774,7 +774,7 @@ public final class OZPolicyManager: OZManagerHelpers, @unchecked Sendable {
         }
 
         guard let index = rule.policies.firstIndex(where: { $0 == policyAddress }) else {
-            throw ValidationException.invalidInput(
+            throw SmartAccountValidationException.invalidInput(
                 field: "policyAddress",
                 reason: "Policy \(policyAddress) not found on context rule \(contextRuleId)"
             )
@@ -787,7 +787,7 @@ public final class OZPolicyManager: OZManagerHelpers, @unchecked Sendable {
         // misalignment explicitly so the surfaced error names the constraint
         // rather than throwing an opaque out-of-bounds runtime trap.
         if index >= rule.policyIds.count {
-            throw ValidationException.invalidInput(
+            throw SmartAccountValidationException.invalidInput(
                 field: "policyAddress",
                 reason: "Policy found at index \(index) but policyIds has only \(rule.policyIds.count) entries"
             )

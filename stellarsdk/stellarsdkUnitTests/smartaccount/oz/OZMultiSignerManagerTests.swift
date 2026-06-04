@@ -18,7 +18,7 @@ import XCTest
 /// (mirrored in the test structure):
 ///
 /// 1. ``OZSmartAccountKitProtocol/requireConnected()`` — throws
-///    ``WalletException/NotConnected`` when no wallet is connected.
+///    ``SmartAccountWalletException/NotConnected`` when no wallet is connected.
 /// 2. ``requireContractAddress(_:fieldName:)`` /
 ///    ``requireStellarAddress(_:fieldName:)`` — address-format validation.
 /// 3. Blank function name check (`multiSignerExecuteAndSubmit` and
@@ -81,11 +81,11 @@ final class OZMultiSignerManagerTests: XCTestCase {
     }
 
     /// Minimal passkey signer used for empty / shape checks. iOS
-    /// ``SelectedSigner/passkey(credentialId:credentialIdBytes:keyData:)``
+    /// ``OZSelectedSigner/passkey(credentialId:credentialIdBytes:keyData:)``
     /// requires non-optional `credentialId` and `credentialIdBytes`; both are
     /// fixed sentinel values that exercise the type construction surface
     /// without binding to any real WebAuthn ceremony.
-    private func passkeySignerStub() -> SelectedSigner {
+    private func passkeySignerStub() -> OZSelectedSigner {
         return .passkey(
             credentialId: "stub-credential",
             credentialIdBytes: Data([0x01]),
@@ -105,8 +105,8 @@ final class OZMultiSignerManagerTests: XCTestCase {
                 targetFn: "vote",
                 selectedSigners: [passkeySignerStub()]
             )
-            XCTFail("expected WalletException.NotConnected")
-        } catch let error as WalletException.NotConnected {
+            XCTFail("expected SmartAccountWalletException.NotConnected")
+        } catch let error as SmartAccountWalletException.NotConnected {
             XCTAssertEqual(error.code, .walletNotConnected)
         }
     }
@@ -123,8 +123,8 @@ final class OZMultiSignerManagerTests: XCTestCase {
                 targetFn: "vote",
                 selectedSigners: [passkeySignerStub()]
             )
-            XCTFail("expected ValidationException.InvalidAddress")
-        } catch let error as ValidationException.InvalidAddress {
+            XCTFail("expected SmartAccountValidationException.InvalidAddress")
+        } catch let error as SmartAccountValidationException.InvalidAddress {
             XCTAssertTrue(error.message.contains("target"))
         }
     }
@@ -137,8 +137,8 @@ final class OZMultiSignerManagerTests: XCTestCase {
                 targetFn: "vote",
                 selectedSigners: [passkeySignerStub()]
             )
-            XCTFail("expected ValidationException.InvalidAddress")
-        } catch is ValidationException.InvalidAddress {
+            XCTFail("expected SmartAccountValidationException.InvalidAddress")
+        } catch is SmartAccountValidationException.InvalidAddress {
             // expected
         }
     }
@@ -151,8 +151,8 @@ final class OZMultiSignerManagerTests: XCTestCase {
                 targetFn: "vote",
                 selectedSigners: [passkeySignerStub()]
             )
-            XCTFail("expected ValidationException.InvalidAddress")
-        } catch is ValidationException.InvalidAddress {
+            XCTFail("expected SmartAccountValidationException.InvalidAddress")
+        } catch is SmartAccountValidationException.InvalidAddress {
             // expected
         }
     }
@@ -169,8 +169,8 @@ final class OZMultiSignerManagerTests: XCTestCase {
                 targetFn: "",
                 selectedSigners: [passkeySignerStub()]
             )
-            XCTFail("expected ValidationException.InvalidInput")
-        } catch let error as ValidationException.InvalidInput {
+            XCTFail("expected SmartAccountValidationException.InvalidInput")
+        } catch let error as SmartAccountValidationException.InvalidInput {
             XCTAssertTrue(
                 error.message.contains("Function name"),
                 "exception message must reference 'Function name', got: \(error.message)"
@@ -186,8 +186,8 @@ final class OZMultiSignerManagerTests: XCTestCase {
                 targetFn: "   ",
                 selectedSigners: [passkeySignerStub()]
             )
-            XCTFail("expected ValidationException.InvalidInput")
-        } catch is ValidationException.InvalidInput {
+            XCTFail("expected SmartAccountValidationException.InvalidInput")
+        } catch is SmartAccountValidationException.InvalidInput {
             // expected
         }
     }
@@ -204,8 +204,8 @@ final class OZMultiSignerManagerTests: XCTestCase {
                 targetFn: "vote",
                 selectedSigners: []
             )
-            XCTFail("expected ValidationException.InvalidInput")
-        } catch let error as ValidationException.InvalidInput {
+            XCTFail("expected SmartAccountValidationException.InvalidInput")
+        } catch let error as SmartAccountValidationException.InvalidInput {
             XCTAssertTrue(
                 error.message.contains("signer"),
                 "exception message must reference signers, got: \(error.message)"
@@ -226,8 +226,8 @@ final class OZMultiSignerManagerTests: XCTestCase {
                 amount: "10",
                 selectedSigners: [passkeySignerStub()]
             )
-            XCTFail("expected WalletException.NotConnected")
-        } catch let error as WalletException.NotConnected {
+            XCTFail("expected SmartAccountWalletException.NotConnected")
+        } catch let error as SmartAccountWalletException.NotConnected {
             XCTAssertEqual(error.code, .walletNotConnected)
         }
     }
@@ -250,8 +250,8 @@ final class OZMultiSignerManagerTests: XCTestCase {
                 amount: "10",
                 selectedSigners: [passkeySignerStub()]
             )
-            XCTFail("expected ValidationException.InvalidAddress")
-        } catch let error as ValidationException.InvalidAddress {
+            XCTFail("expected SmartAccountValidationException.InvalidAddress")
+        } catch let error as SmartAccountValidationException.InvalidAddress {
             XCTAssertTrue(
                 error.message.contains("recipient"),
                 "exception message must reference 'recipient', got: \(error.message)"
@@ -264,7 +264,7 @@ final class OZMultiSignerManagerTests: XCTestCase {
     // ========================================================================
 
     /// Self-transfer (recipient == connected contractId) must throw
-    /// ``ValidationException/InvalidInput`` — the guard fires AFTER
+    /// ``SmartAccountValidationException/InvalidInput`` — the guard fires AFTER
     /// `requireConnected()` AND `requireStellarAddress(recipient, …)` so the
     /// caller receives the most specific error.
     func test_multiSignerTransfer_recipientIsSelf_throwsInvalidInput() async throws {
@@ -276,8 +276,8 @@ final class OZMultiSignerManagerTests: XCTestCase {
                 amount: "10",
                 selectedSigners: [passkeySignerStub()]
             )
-            XCTFail("expected ValidationException.InvalidInput")
-        } catch let error as ValidationException.InvalidInput {
+            XCTFail("expected SmartAccountValidationException.InvalidInput")
+        } catch let error as SmartAccountValidationException.InvalidInput {
             XCTAssertTrue(
                 error.message.lowercased().contains("self"),
                 "exception message must reference self-transfer, got: \(error.message)"
@@ -304,8 +304,8 @@ final class OZMultiSignerManagerTests: XCTestCase {
                 amount: "10",
                 selectedSigners: [passkeySignerStub()]
             )
-            XCTFail("expected ValidationException.InvalidAddress")
-        } catch let error as ValidationException.InvalidAddress {
+            XCTFail("expected SmartAccountValidationException.InvalidAddress")
+        } catch let error as SmartAccountValidationException.InvalidAddress {
             XCTAssertTrue(error.message.contains("target"))
         }
     }
@@ -321,8 +321,8 @@ final class OZMultiSignerManagerTests: XCTestCase {
                 amount: "10",
                 selectedSigners: [passkeySignerStub()]
             )
-            XCTFail("expected ValidationException.InvalidAddress")
-        } catch is ValidationException.InvalidAddress {
+            XCTFail("expected SmartAccountValidationException.InvalidAddress")
+        } catch is SmartAccountValidationException.InvalidAddress {
             // expected
         }
     }
@@ -340,8 +340,8 @@ final class OZMultiSignerManagerTests: XCTestCase {
                 amount: "10",
                 selectedSigners: []
             )
-            XCTFail("expected ValidationException.InvalidInput")
-        } catch let error as ValidationException.InvalidInput {
+            XCTFail("expected SmartAccountValidationException.InvalidInput")
+        } catch let error as SmartAccountValidationException.InvalidInput {
             XCTAssertTrue(
                 error.message.contains("signer"),
                 "exception message must reference signers, got: \(error.message)"
@@ -366,8 +366,8 @@ final class OZMultiSignerManagerTests: XCTestCase {
                 amount: "10",
                 selectedSigners: [passkeySignerStub()]
             )
-            XCTFail("expected WalletException.NotConnected")
-        } catch is WalletException.NotConnected {
+            XCTFail("expected SmartAccountWalletException.NotConnected")
+        } catch is SmartAccountWalletException.NotConnected {
             // expected
         }
     }
@@ -382,8 +382,8 @@ final class OZMultiSignerManagerTests: XCTestCase {
                 selectedSigners: [passkeySignerStub()],
                 forceMethod: .rpc
             )
-            XCTFail("expected WalletException.NotConnected")
-        } catch is WalletException.NotConnected {
+            XCTFail("expected SmartAccountWalletException.NotConnected")
+        } catch is SmartAccountWalletException.NotConnected {
             // expected
         }
     }
@@ -398,8 +398,8 @@ final class OZMultiSignerManagerTests: XCTestCase {
                 selectedSigners: [passkeySignerStub()],
                 forceMethod: .relayer
             )
-            XCTFail("expected WalletException.NotConnected")
-        } catch is WalletException.NotConnected {
+            XCTFail("expected SmartAccountWalletException.NotConnected")
+        } catch is SmartAccountWalletException.NotConnected {
             // expected
         }
     }
@@ -416,8 +416,8 @@ final class OZMultiSignerManagerTests: XCTestCase {
                 targetFn: "vote",
                 selectedSigners: [passkeySignerStub()]
             )
-            XCTFail("expected WalletException.NotConnected")
-        } catch is WalletException.NotConnected {
+            XCTFail("expected SmartAccountWalletException.NotConnected")
+        } catch is SmartAccountWalletException.NotConnected {
             // expected
         }
     }
@@ -431,23 +431,23 @@ final class OZMultiSignerManagerTests: XCTestCase {
                 selectedSigners: [passkeySignerStub()],
                 forceMethod: .rpc
             )
-            XCTFail("expected WalletException.NotConnected")
-        } catch is WalletException.NotConnected {
+            XCTFail("expected SmartAccountWalletException.NotConnected")
+        } catch is SmartAccountWalletException.NotConnected {
             // expected
         }
     }
 
     // ========================================================================
-    // SelectedSigner — sealed-class shape (5 cases)
+    // OZSelectedSigner — sealed-class shape (5 cases)
     // ========================================================================
 
-    /// The iOS ``SelectedSigner/passkey(credentialId:credentialIdBytes:keyData:)``
+    /// The iOS ``OZSelectedSigner/passkey(credentialId:credentialIdBytes:keyData:)``
     /// arm requires non-optional `credentialId` (`String`) and
     /// `credentialIdBytes` (`Data`); only `keyData` is optional. This test
     /// exercises the empty-string / empty-bytes / nil-keyData boundary so the
     /// type construction surface accepts the absolute minimum input shape.
     func test_selectedSigner_passkey_emptyDefaultsAreAccepted() {
-        let signer = SelectedSigner.passkey(
+        let signer = OZSelectedSigner.passkey(
             credentialId: "",
             credentialIdBytes: Data(),
             keyData: nil
@@ -465,7 +465,7 @@ final class OZMultiSignerManagerTests: XCTestCase {
         let credId = "abc123"
         let credBytes = Data([0x01, 0x02, 0x03])
         let keyData = Data((0..<97).map { UInt8($0) })
-        let signer = SelectedSigner.passkey(
+        let signer = OZSelectedSigner.passkey(
             credentialId: credId,
             credentialIdBytes: credBytes,
             keyData: keyData
@@ -480,7 +480,7 @@ final class OZMultiSignerManagerTests: XCTestCase {
     }
 
     func test_selectedSigner_wallet_holdsAddress() {
-        let signer = SelectedSigner.wallet(accountId: validAccountAddress)
+        let signer = OZSelectedSigner.wallet(accountId: validAccountAddress)
         if case .wallet(let accountId) = signer {
             XCTAssertEqual(accountId, validAccountAddress)
         } else {
@@ -489,20 +489,20 @@ final class OZMultiSignerManagerTests: XCTestCase {
     }
 
     func test_selectedSigner_wallet_equalityAndHash() {
-        let a = SelectedSigner.wallet(accountId: validAccountAddress)
-        let b = SelectedSigner.wallet(accountId: validAccountAddress)
+        let a = OZSelectedSigner.wallet(accountId: validAccountAddress)
+        let b = OZSelectedSigner.wallet(accountId: validAccountAddress)
         XCTAssertEqual(a, b)
         XCTAssertEqual(a.hashCode, b.hashCode)
     }
 
     func test_selectedSigner_passkey_equalityWithEqualBytes() {
         let bytes = Data([0x01, 0x02])
-        let a = SelectedSigner.passkey(
+        let a = OZSelectedSigner.passkey(
             credentialId: "id",
             credentialIdBytes: bytes,
             keyData: nil
         )
-        let b = SelectedSigner.passkey(
+        let b = OZSelectedSigner.passkey(
             credentialId: "id",
             credentialIdBytes: bytes,
             keyData: nil
@@ -540,7 +540,7 @@ final class OZMultiSignerManagerTests: XCTestCase {
         // type. The test does not invoke the function because doing so
         // would require a connected kit and a live RPC backend; the
         // compile-time type check is the contract lock.
-        let _: (HostFunctionXDR, [SelectedSigner], SubmissionMethod?) async throws -> TransactionResult = manager.submitWithMultipleSigners
+        let _: (HostFunctionXDR, [OZSelectedSigner], OZSubmissionMethod?) async throws -> OZTransactionResult = manager.submitWithMultipleSigners
     }
 
     // ========================================================================
@@ -563,7 +563,7 @@ final class OZMultiSignerManagerTests: XCTestCase {
                 args: []
             )
         )
-        let signers: [SelectedSigner] = [passkeySignerStub()]
+        let signers: [OZSelectedSigner] = [passkeySignerStub()]
 
         let task = Task { [manager] in
             // Connecting via mock + non-routable RPC means the first await
@@ -590,7 +590,7 @@ final class OZMultiSignerManagerTests: XCTestCase {
             // Acceptable alternative: the awaited RPC failed before the
             // cancellation checkpoint fired. The test passes as long as the
             // pipeline did not silently submit on chain — which we verify
-            // by the absence of a `TransactionResult.success`.
+            // by the absence of an `OZTransactionResult.success`.
             // Any thrown error proves the pipeline did not return a
             // success result.
         }
@@ -712,12 +712,12 @@ final class OZMultiSignerManagerTests: XCTestCase {
     }
 
     // ========================================================================
-    // Ed25519 SelectedSigner — shape and equality (2 cases)
+    // Ed25519 OZSelectedSigner — shape and equality (2 cases)
     // ========================================================================
 
     func test_selectedSigner_ed25519_holdsVerifierAndPublicKey() {
         let pubKey = Data(repeating: 0xAB, count: 32)
-        let signer = SelectedSigner.ed25519(
+        let signer = OZSelectedSigner.ed25519(
             verifierAddress: validContractId,
             publicKey: pubKey
         )
@@ -731,8 +731,8 @@ final class OZMultiSignerManagerTests: XCTestCase {
 
     func test_selectedSigner_ed25519_equalityAndHash() {
         let pubKey = Data(repeating: 0x12, count: 32)
-        let a = SelectedSigner.ed25519(verifierAddress: validContractId, publicKey: pubKey)
-        let b = SelectedSigner.ed25519(verifierAddress: validContractId, publicKey: pubKey)
+        let a = OZSelectedSigner.ed25519(verifierAddress: validContractId, publicKey: pubKey)
+        let b = OZSelectedSigner.ed25519(verifierAddress: validContractId, publicKey: pubKey)
         XCTAssertEqual(a, b)
         XCTAssertEqual(a.hashCode, b.hashCode)
     }
@@ -750,7 +750,7 @@ final class OZMultiSignerManagerTests: XCTestCase {
         let extMgr = OZExternalSignerManager(networkPassphrase: Network.testnet.passphrase)
         kit.externalSignersOverride = extMgr
 
-        let signers: [SelectedSigner] = [
+        let signers: [OZSelectedSigner] = [
             .ed25519(verifierAddress: "NOT_A_CONTRACT_ADDRESS", publicKey: Data(count: 32))
         ]
         let hostFn = HostFunctionXDR.invokeContract(
@@ -766,8 +766,8 @@ final class OZMultiSignerManagerTests: XCTestCase {
                 hostFunction: hostFn,
                 selectedSigners: signers
             )
-            XCTFail("expected ValidationException.InvalidInput")
-        } catch let error as ValidationException.InvalidInput {
+            XCTFail("expected SmartAccountValidationException.InvalidInput")
+        } catch let error as SmartAccountValidationException.InvalidInput {
             XCTAssertTrue(
                 error.message.lowercased().contains("verifier"),
                 "error message must reference the verifier address, got: \(error.message)"
@@ -781,7 +781,7 @@ final class OZMultiSignerManagerTests: XCTestCase {
         let extMgr = OZExternalSignerManager(networkPassphrase: Network.testnet.passphrase)
         kit.externalSignersOverride = extMgr
 
-        let signers: [SelectedSigner] = [
+        let signers: [OZSelectedSigner] = [
             .ed25519(verifierAddress: validContractId, publicKey: Data(count: 16))
         ]
         let hostFn = HostFunctionXDR.invokeContract(
@@ -797,8 +797,8 @@ final class OZMultiSignerManagerTests: XCTestCase {
                 hostFunction: hostFn,
                 selectedSigners: signers
             )
-            XCTFail("expected ValidationException.InvalidInput")
-        } catch let error as ValidationException.InvalidInput {
+            XCTFail("expected SmartAccountValidationException.InvalidInput")
+        } catch let error as SmartAccountValidationException.InvalidInput {
             XCTAssertTrue(
                 error.message.contains("32"),
                 "error message must mention the required key length, got: \(error.message)"
@@ -815,7 +815,7 @@ final class OZMultiSignerManagerTests: XCTestCase {
 
         // A valid 32-byte key, but nothing is registered for it.
         let unregisteredKey = Data(repeating: 0x77, count: 32)
-        let signers: [SelectedSigner] = [
+        let signers: [OZSelectedSigner] = [
             .ed25519(verifierAddress: validContractId, publicKey: unregisteredKey)
         ]
         let hostFn = HostFunctionXDR.invokeContract(
@@ -831,8 +831,8 @@ final class OZMultiSignerManagerTests: XCTestCase {
                 hostFunction: hostFn,
                 selectedSigners: signers
             )
-            XCTFail("expected ValidationException.InvalidInput")
-        } catch let error as ValidationException.InvalidInput {
+            XCTFail("expected SmartAccountValidationException.InvalidInput")
+        } catch let error as SmartAccountValidationException.InvalidInput {
             XCTAssertTrue(
                 error.message.contains("no registered signing source"),
                 "error message must reference missing signing source, got: \(error.message)"
@@ -841,7 +841,7 @@ final class OZMultiSignerManagerTests: XCTestCase {
     }
 
     /// An Ed25519 signer with a valid public key but no registered keypair and no
-    /// `config.externalEd25519Adapter` must throw `ValidationException.InvalidInput`
+    /// `config.externalEd25519Adapter` must throw `SmartAccountValidationException.InvalidInput`
     /// naming the two real remedies.
     ///
     /// The kit always constructs an `OZExternalSignerManager`; the absence of any
@@ -854,7 +854,7 @@ final class OZMultiSignerManagerTests: XCTestCase {
         // built from the config — which has no ed25519Adapter and no registered keys.
         XCTAssertNil(kit.externalSignersOverride)
 
-        let signers: [SelectedSigner] = [
+        let signers: [OZSelectedSigner] = [
             .ed25519(verifierAddress: validContractId, publicKey: Data(count: 32))
         ]
         let hostFn = HostFunctionXDR.invokeContract(
@@ -870,8 +870,8 @@ final class OZMultiSignerManagerTests: XCTestCase {
                 hostFunction: hostFn,
                 selectedSigners: signers
             )
-            XCTFail("expected ValidationException.InvalidInput")
-        } catch let error as ValidationException.InvalidInput {
+            XCTFail("expected SmartAccountValidationException.InvalidInput")
+        } catch let error as SmartAccountValidationException.InvalidInput {
             XCTAssertTrue(
                 error.message.contains("no registered signing source"),
                 "error message must reference missing signing source, got: \(error.message)"
@@ -893,14 +893,14 @@ final class OZMultiSignerManagerTests: XCTestCase {
 
     /// A wallet signer whose address is neither registered via
     /// `kit.externalSigners.addFromSecret` nor covered by a wallet adapter must
-    /// throw `ValidationException.InvalidInput` naming both remedies.
+    /// throw `SmartAccountValidationException.InvalidInput` naming both remedies.
     func test_submitWithMultipleSigners_wallet_noSigningSource_throwsInvalidInput() async throws {
         let (kit, manager) = try connectedKit()
         let extMgr = OZExternalSignerManager(networkPassphrase: Network.testnet.passphrase)
         kit.externalSignersOverride = extMgr
 
         // No adapter, no registered keypair for validAccountAddress.
-        let signers: [SelectedSigner] = [
+        let signers: [OZSelectedSigner] = [
             .wallet(accountId: validAccountAddress)
         ]
         let hostFn = HostFunctionXDR.invokeContract(
@@ -916,8 +916,8 @@ final class OZMultiSignerManagerTests: XCTestCase {
                 hostFunction: hostFn,
                 selectedSigners: signers
             )
-            XCTFail("expected ValidationException.InvalidInput")
-        } catch let error as ValidationException.InvalidInput {
+            XCTFail("expected SmartAccountValidationException.InvalidInput")
+        } catch let error as SmartAccountValidationException.InvalidInput {
             XCTAssertTrue(
                 error.message.contains("No signing source available for wallet address"),
                 "error message must reference the missing wallet signing source, got: \(error.message)"
@@ -954,7 +954,7 @@ final class OZMultiSignerManagerTests: XCTestCase {
         }
         let registeredAddress = try await extMgr.addFromSecret(secretKey: secret)
 
-        let signers: [SelectedSigner] = [
+        let signers: [OZSelectedSigner] = [
             .wallet(accountId: registeredAddress)
         ]
         let hostFn = HostFunctionXDR.invokeContract(
@@ -970,7 +970,7 @@ final class OZMultiSignerManagerTests: XCTestCase {
                 hostFunction: hostFn,
                 selectedSigners: signers
             )
-        } catch is ValidationException.InvalidInput {
+        } catch is SmartAccountValidationException.InvalidInput {
             XCTFail(
                 "wallet signer with an in-memory keypair must pass validation " +
                 "even when no wallet adapter is configured"
@@ -999,7 +999,7 @@ final class OZMultiSignerManagerTests: XCTestCase {
         }
         let address = try await extMgr.addFromSecret(secretKey: secret)
 
-        let signers: [SelectedSigner] = [.wallet(accountId: address)]
+        let signers: [OZSelectedSigner] = [.wallet(accountId: address)]
         let hostFn = HostFunctionXDR.invokeContract(
             InvokeContractArgsXDR(
                 contractAddress: try SCAddressXDR(contractId: validContractId),
@@ -1013,7 +1013,7 @@ final class OZMultiSignerManagerTests: XCTestCase {
                 hostFunction: hostFn,
                 selectedSigners: signers
             )
-        } catch is ValidationException.InvalidInput {
+        } catch is SmartAccountValidationException.InvalidInput {
             XCTFail("wallet signer registered in-memory must pass the validation stage")
         } catch {
             // Expected: RPC-layer error on the non-routable server.
@@ -1038,7 +1038,7 @@ final class OZMultiSignerManagerTests: XCTestCase {
         kit.setConnectedState(credentialId: "test-cred", contractId: validContractId)
         let manager = OZMultiSignerManager(kit: kit)
 
-        let signers: [SelectedSigner] = [.wallet(accountId: validAccountAddress)]
+        let signers: [OZSelectedSigner] = [.wallet(accountId: validAccountAddress)]
         let hostFn = HostFunctionXDR.invokeContract(
             InvokeContractArgsXDR(
                 contractAddress: try SCAddressXDR(contractId: validContractId),
@@ -1052,7 +1052,7 @@ final class OZMultiSignerManagerTests: XCTestCase {
                 hostFunction: hostFn,
                 selectedSigners: signers
             )
-        } catch is ValidationException.InvalidInput {
+        } catch is SmartAccountValidationException.InvalidInput {
             XCTFail(
                 "wallet signer covered by config.externalWallet adapter must pass validation"
             )
@@ -1075,7 +1075,7 @@ final class OZMultiSignerManagerTests: XCTestCase {
             verifierAddress: validContractId
         )
 
-        let signers: [SelectedSigner] = [
+        let signers: [OZSelectedSigner] = [
             .ed25519(verifierAddress: validContractId, publicKey: pubKey)
         ]
         let hostFn = HostFunctionXDR.invokeContract(
@@ -1091,7 +1091,7 @@ final class OZMultiSignerManagerTests: XCTestCase {
                 hostFunction: hostFn,
                 selectedSigners: signers
             )
-        } catch is ValidationException.InvalidInput {
+        } catch is SmartAccountValidationException.InvalidInput {
             XCTFail("Ed25519 signer registered in-memory must pass validation")
         } catch {
             // Expected: RPC-layer error on the non-routable server.
@@ -1121,7 +1121,7 @@ final class OZMultiSignerManagerTests: XCTestCase {
         kit.setConnectedState(credentialId: "test-cred", contractId: validContractId)
         let manager = OZMultiSignerManager(kit: kit)
 
-        let signers: [SelectedSigner] = [
+        let signers: [OZSelectedSigner] = [
             .ed25519(verifierAddress: validContractId, publicKey: pubKey)
         ]
         let hostFn = HostFunctionXDR.invokeContract(
@@ -1137,7 +1137,7 @@ final class OZMultiSignerManagerTests: XCTestCase {
                 hostFunction: hostFn,
                 selectedSigners: signers
             )
-        } catch is ValidationException.InvalidInput {
+        } catch is SmartAccountValidationException.InvalidInput {
             XCTFail(
                 "Ed25519 signer covered by config.externalEd25519Adapter must pass validation"
             )
@@ -1172,7 +1172,7 @@ final class OZMultiSignerManagerTests: XCTestCase {
         var passkeyKeyData = Data(repeating: 0x44, count: SmartAccountConstants.secp256r1PublicKeySize + 4)
         passkeyKeyData[0] = SmartAccountConstants.uncompressedPubkeyPrefix
 
-        let signers: [SelectedSigner] = [
+        let signers: [OZSelectedSigner] = [
             .passkey(
                 credentialId: "mixed-cred",
                 credentialIdBytes: Data([0x11]),
@@ -1194,7 +1194,7 @@ final class OZMultiSignerManagerTests: XCTestCase {
                 hostFunction: hostFn,
                 selectedSigners: signers
             )
-        } catch is ValidationException.InvalidInput {
+        } catch is SmartAccountValidationException.InvalidInput {
             XCTFail(
                 "passkey + wallet + Ed25519 ceremony with all signers wired must pass validation"
             )
@@ -1226,7 +1226,7 @@ final class OZMultiSignerManagerTests: XCTestCase {
         )
 
         // A signer referencing verifierBeta (not registered) must fail.
-        let signers: [SelectedSigner] = [
+        let signers: [OZSelectedSigner] = [
             .ed25519(verifierAddress: verifierBeta, publicKey: publicKey)
         ]
         let hostFn = HostFunctionXDR.invokeContract(
@@ -1242,8 +1242,8 @@ final class OZMultiSignerManagerTests: XCTestCase {
                 hostFunction: hostFn,
                 selectedSigners: signers
             )
-            XCTFail("expected ValidationException.InvalidInput for unregistered (verifierBeta, publicKey) pair")
-        } catch is ValidationException.InvalidInput {
+            XCTFail("expected SmartAccountValidationException.InvalidInput for unregistered (verifierBeta, publicKey) pair")
+        } catch is SmartAccountValidationException.InvalidInput {
             // expected: (verifierBeta, publicKey) not in registry
         }
     }
@@ -1267,7 +1267,7 @@ final class OZMultiSignerManagerTests: XCTestCase {
         // Both signers are registered — validation must pass (the pipeline will
         // subsequently fail at the RPC simulation step since the mock kit points
         // at a non-routable port, but it must NOT fail at validation).
-        let signers: [SelectedSigner] = [
+        let signers: [OZSelectedSigner] = [
             .ed25519(verifierAddress: verifierAlpha, publicKey: pubKeyAlpha),
             .ed25519(verifierAddress: verifierBeta,  publicKey: pubKeyBeta)
         ]
@@ -1284,7 +1284,7 @@ final class OZMultiSignerManagerTests: XCTestCase {
                 hostFunction: hostFn,
                 selectedSigners: signers
             )
-        } catch is ValidationException.InvalidInput {
+        } catch is SmartAccountValidationException.InvalidInput {
             XCTFail("both (verifier, publicKey) pairs are registered; validation must pass")
         } catch {
             // Any non-validation error (e.g. RPC failure on the mock server) is
@@ -1308,7 +1308,7 @@ final class OZMultiSignerManagerTests: XCTestCase {
         let ed25519Seed = Data(0x00 ..< 0x20)
         let pubKey = try await extMgr.addEd25519FromRawKey(secretKeyBytes: ed25519Seed, verifierAddress: validContractId)
 
-        let signers: [SelectedSigner] = [
+        let signers: [OZSelectedSigner] = [
             // passkey with nil keyData — must be rejected before the Ed25519 signer is reached
             .passkey(credentialId: "cred", credentialIdBytes: Data([0x01]), keyData: nil),
             .ed25519(verifierAddress: validContractId, publicKey: pubKey)
@@ -1326,8 +1326,8 @@ final class OZMultiSignerManagerTests: XCTestCase {
                 hostFunction: hostFn,
                 selectedSigners: signers
             )
-            XCTFail("expected ValidationException.InvalidInput for nil keyData")
-        } catch let error as ValidationException.InvalidInput {
+            XCTFail("expected SmartAccountValidationException.InvalidInput for nil keyData")
+        } catch let error as SmartAccountValidationException.InvalidInput {
             XCTAssertTrue(
                 error.message.lowercased().contains("keydata"),
                 "error message must reference keyData, got: \(error.message)"
@@ -1347,7 +1347,7 @@ final class OZMultiSignerManagerTests: XCTestCase {
         let pubKey = try await extMgr.addEd25519FromRawKey(secretKeyBytes: ed25519Seed, verifierAddress: validContractId)
 
         // The kit config has no externalWallet configured.
-        let signers: [SelectedSigner] = [
+        let signers: [OZSelectedSigner] = [
             .wallet(accountId: validAccountAddress),
             .ed25519(verifierAddress: validContractId, publicKey: pubKey)
         ]
@@ -1364,8 +1364,8 @@ final class OZMultiSignerManagerTests: XCTestCase {
                 hostFunction: hostFn,
                 selectedSigners: signers
             )
-            XCTFail("expected ValidationException.InvalidInput for missing wallet adapter")
-        } catch let error as ValidationException.InvalidInput {
+            XCTFail("expected SmartAccountValidationException.InvalidInput for missing wallet adapter")
+        } catch let error as SmartAccountValidationException.InvalidInput {
             XCTAssertTrue(
                 error.message.lowercased().contains("wallet adapter"),
                 "error message must reference wallet adapter, got: \(error.message)"
@@ -1386,7 +1386,7 @@ final class OZMultiSignerManagerTests: XCTestCase {
         let ed25519Seed = Data(0x00 ..< 0x20)
         let pubKey = try await extMgr.addEd25519FromRawKey(secretKeyBytes: ed25519Seed, verifierAddress: validContractId)
 
-        let signers: [SelectedSigner] = [
+        let signers: [OZSelectedSigner] = [
             .passkey(
                 credentialId: "cred-A",
                 credentialIdBytes: Data([0x0A]),
@@ -1407,7 +1407,7 @@ final class OZMultiSignerManagerTests: XCTestCase {
                 hostFunction: hostFn,
                 selectedSigners: signers
             )
-        } catch is ValidationException.InvalidInput {
+        } catch is SmartAccountValidationException.InvalidInput {
             XCTFail("validation must pass when both signers are properly configured")
         } catch {
             // Expected: RPC failure or cancellation after validation succeeds.
@@ -1425,7 +1425,7 @@ final class OZMultiSignerManagerTests: XCTestCase {
         let ed25519Seed = Data(0x00 ..< 0x20)
         let pubKey = try await extMgr.addEd25519FromRawKey(secretKeyBytes: ed25519Seed, verifierAddress: validContractId)
 
-        let signers: [SelectedSigner] = [
+        let signers: [OZSelectedSigner] = [
             .ed25519(verifierAddress: validContractId, publicKey: pubKey)
         ]
         let hostFn = HostFunctionXDR.invokeContract(
@@ -1441,7 +1441,7 @@ final class OZMultiSignerManagerTests: XCTestCase {
                 hostFunction: hostFn,
                 selectedSigners: signers
             )
-        } catch is ValidationException.InvalidInput {
+        } catch is SmartAccountValidationException.InvalidInput {
             XCTFail("a properly registered Ed25519 signer must pass validation")
         } catch {
             // Expected: any non-validation error (RPC refused, network error,
@@ -1454,7 +1454,7 @@ final class OZMultiSignerManagerTests: XCTestCase {
     // Ed25519 local verification failure
     // ========================================================================
 
-    /// `signEntryWithEd25519Signers` must throw `TransactionException.signingFailed`
+    /// `signEntryWithEd25519Signers` must throw `SmartAccountTransactionException.signingFailed`
     /// when the signing source returns a signature that fails local verification.
     ///
     /// The test wires a `FakeZeroByteEd25519Adapter` that always returns 64
@@ -1520,7 +1520,7 @@ final class OZMultiSignerManagerTests: XCTestCase {
         // Script: getLatestLedger for expiration computation.
         script.setGetLatestLedger(sequence: 1000)
 
-        let signers: [SelectedSigner] = [
+        let signers: [OZSelectedSigner] = [
             .ed25519(verifierAddress: validContractId, publicKey: pubKey)
         ]
         let hostFn = HostFunctionXDR.invokeContract(
@@ -1537,8 +1537,8 @@ final class OZMultiSignerManagerTests: XCTestCase {
                 hostFunction: hostFn,
                 selectedSigners: signers
             )
-            XCTFail("expected TransactionException.signingFailed")
-        } catch let e as TransactionException.SigningFailed {
+            XCTFail("expected SmartAccountTransactionException.signingFailed")
+        } catch let e as SmartAccountTransactionException.SigningFailed {
             XCTAssertTrue(
                 e.message.contains("does not verify") || e.message.contains("verify"),
                 "error message must describe local verification failure, got: \(e.message)"
@@ -1553,7 +1553,7 @@ final class OZMultiSignerManagerTests: XCTestCase {
     /// An Ed25519 signer whose 32-byte public key coincides with the raw pubkey
     /// bytes of a wallet G-address must not be false-matched to the wallet branch.
     ///
-    /// The two signer types are discriminated by the `SelectedSigner` enum case,
+    /// The two signer types are discriminated by the `OZSelectedSigner` enum case,
     /// not by their key bytes. Registering the 32-byte key as an Ed25519 entry
     /// and passing it as `.ed25519(verifierAddress:publicKey:)` must route only
     /// through the Ed25519 validation path.
@@ -1602,7 +1602,7 @@ final class OZMultiSignerManagerTests: XCTestCase {
         // selectedSigners contains only an Ed25519 entry — no wallet signer.
         // The wallet-adapter check must not fire; the Ed25519 path must validate
         // the (verifierAddress, rawPubKeyBytes) pair via the adapter.
-        let signers: [SelectedSigner] = [
+        let signers: [OZSelectedSigner] = [
             .ed25519(verifierAddress: validContractId, publicKey: rawPubKeyBytes)
         ]
         let hostFn = HostFunctionXDR.invokeContract(
@@ -1618,7 +1618,7 @@ final class OZMultiSignerManagerTests: XCTestCase {
                 hostFunction: hostFn,
                 selectedSigners: signers
             )
-        } catch is ValidationException.InvalidInput {
+        } catch is SmartAccountValidationException.InvalidInput {
             XCTFail(
                 "Ed25519 signer whose pubkey bytes match a G-address must not produce " +
                 "a wallet-adapter error; only the Ed25519 path is involved here"
@@ -1643,7 +1643,7 @@ final class OZMultiSignerManagerTests: XCTestCase {
     /// Validation must pass for both a well-configured Ed25519 entry and a
     /// well-configured passkey entry when placed at the same index (0 and 0 after
     /// separate array construction), and the pipeline must proceed past
-    /// validation without a `ValidationException.InvalidInput`.
+    /// validation without a `SmartAccountValidationException.InvalidInput`.
     func test_submitWithMultipleSigners_mixedRuleEd25519AndPasskeyAtSameIndex_routesCorrectly() async throws {
         let (kit, manager) = try connectedKit()
         let extMgr = OZExternalSignerManager(networkPassphrase: Network.testnet.passphrase)
@@ -1661,7 +1661,7 @@ final class OZMultiSignerManagerTests: XCTestCase {
 
         // Both signers at index 0 of their respective conceptual "signer
         // type" slices; they occupy adjacent positions in the flat array.
-        let signers: [SelectedSigner] = [
+        let signers: [OZSelectedSigner] = [
             .ed25519(verifierAddress: validContractId, publicKey: pubKey),
             .passkey(
                 credentialId: "cred-passkey",
@@ -1682,7 +1682,7 @@ final class OZMultiSignerManagerTests: XCTestCase {
                 hostFunction: hostFn,
                 selectedSigners: signers
             )
-        } catch is ValidationException.InvalidInput {
+        } catch is SmartAccountValidationException.InvalidInput {
             XCTFail("mixed Ed25519 + passkey must pass validation when both are correctly configured")
         } catch {
             // Expected: RPC failure after successful validation.
@@ -1694,7 +1694,7 @@ final class OZMultiSignerManagerTests: XCTestCase {
     // ========================================================================
 
     /// Passing `selectedSigners: []` to the low-level `submitWithMultipleSigners`
-    /// directly must not throw `ValidationException.InvalidInput`.
+    /// directly must not throw `SmartAccountValidationException.InvalidInput`.
     ///
     /// The emptiness guard exists on `multiSignerContractCall` and
     /// `multiSignerExecuteAndSubmit` (caller-facing), but NOT on the low-level
@@ -1720,10 +1720,10 @@ final class OZMultiSignerManagerTests: XCTestCase {
                 hostFunction: hostFn,
                 selectedSigners: []
             )
-        } catch is ValidationException.InvalidInput {
+        } catch is SmartAccountValidationException.InvalidInput {
             XCTFail(
                 "submitWithMultipleSigners with empty selectedSigners must not throw " +
-                "ValidationException.InvalidInput — the emptiness guard lives on the " +
+                "SmartAccountValidationException.InvalidInput — the emptiness guard lives on the " +
                 "higher-level callers, not on this low-level method"
             )
         } catch {
@@ -1840,7 +1840,7 @@ extension OZMultiSignerManagerTests {
     func test_multiSignerContractCall_validArgs_reachesSubmitPipeline() async throws {
         let (_, manager) = try connectedKit()
         let keyData = Data(repeating: 0x42, count: SmartAccountConstants.secp256r1PublicKeySize + 4)
-        let signer = SelectedSigner.passkey(
+        let signer = OZSelectedSigner.passkey(
             credentialId: "cred",
             credentialIdBytes: Data([0x01]),
             keyData: keyData
@@ -1869,7 +1869,7 @@ extension OZMultiSignerManagerTests {
     func test_multiSignerContractCall_withTargetArgs_reachesSubmitPipeline() async throws {
         let (_, manager) = try connectedKit()
         let keyData = Data(repeating: 0x77, count: SmartAccountConstants.secp256r1PublicKeySize + 4)
-        let signer = SelectedSigner.passkey(
+        let signer = OZSelectedSigner.passkey(
             credentialId: "cred2",
             credentialIdBytes: Data([0x02]),
             keyData: keyData
@@ -1898,7 +1898,7 @@ extension OZMultiSignerManagerTests {
     func test_multiSignerExecuteAndSubmit_validArgs_reachesSubmitPipeline() async throws {
         let (_, manager) = try connectedKit()
         let keyData = Data(repeating: 0x11, count: SmartAccountConstants.secp256r1PublicKeySize + 4)
-        let signer = SelectedSigner.passkey(
+        let signer = OZSelectedSigner.passkey(
             credentialId: "exec-cred",
             credentialIdBytes: Data([0x03]),
             keyData: keyData
@@ -1921,7 +1921,7 @@ extension OZMultiSignerManagerTests {
     func test_multiSignerExecuteAndSubmit_withTargetArgs_reachesSubmitPipeline() async throws {
         let (_, manager) = try connectedKit()
         let keyData = Data(repeating: 0x22, count: SmartAccountConstants.secp256r1PublicKeySize + 4)
-        let signer = SelectedSigner.passkey(
+        let signer = OZSelectedSigner.passkey(
             credentialId: "exec-cred2",
             credentialIdBytes: Data([0x04]),
             keyData: keyData
@@ -1998,7 +1998,7 @@ extension OZMultiSignerManagerTests {
         // Script re-simulation to return an error so the pipeline stops there.
         script.enqueueSimulateError("re-simulation intentionally aborted for test")
 
-        let signers: [SelectedSigner] = [.wallet(accountId: walletAddress)]
+        let signers: [OZSelectedSigner] = [.wallet(accountId: walletAddress)]
         let hostFn = HostFunctionXDR.invokeContract(
             InvokeContractArgsXDR(
                 contractAddress: try SCAddressXDR(contractId: validTargetContract),
@@ -2013,9 +2013,9 @@ extension OZMultiSignerManagerTests {
                 hostFunction: hostFn,
                 selectedSigners: signers
             )
-        } catch is TransactionException.SimulationFailed {
+        } catch is SmartAccountTransactionException.SimulationFailed {
             // Expected: re-simulation was scripted to fail.
-        } catch is ValidationException.InvalidInput {
+        } catch is SmartAccountValidationException.InvalidInput {
             XCTFail("wallet signer with a registered in-memory keypair must pass validation")
         }
     }
@@ -2075,7 +2075,7 @@ extension OZMultiSignerManagerTests {
         script.enqueueSimulateError("re-simulation aborted for delegated wallet path test")
 
         // Wallet signer: no passkeys, so only the delegated-entry path fires.
-        let signers: [SelectedSigner] = [.wallet(accountId: walletAddress)]
+        let signers: [OZSelectedSigner] = [.wallet(accountId: walletAddress)]
         let hostFn = HostFunctionXDR.invokeContract(
             InvokeContractArgsXDR(
                 contractAddress: try SCAddressXDR(contractId: validTargetContract),
@@ -2090,10 +2090,10 @@ extension OZMultiSignerManagerTests {
                 hostFunction: hostFn,
                 selectedSigners: signers
             )
-        } catch is TransactionException.SimulationFailed {
+        } catch is SmartAccountTransactionException.SimulationFailed {
             // Expected: re-simulation was scripted to fail after the delegated
             // signing path completed successfully.
-        } catch is ValidationException.InvalidInput {
+        } catch is SmartAccountValidationException.InvalidInput {
             XCTFail("wallet signer with a registered in-memory keypair must pass validation")
         } catch {
             // Acceptable: any other non-validation failure after the signing phase.
@@ -2102,7 +2102,7 @@ extension OZMultiSignerManagerTests {
 
     /// When the initial simulation returns an auth entry whose credential
     /// address is an unknown address (not the connected contract, not any wallet
-    /// signer), the pipeline must throw `TransactionException.SigningFailed` with
+    /// signer), the pipeline must throw `SmartAccountTransactionException.SigningFailed` with
     /// a message referencing the unsupported address.
     func test_submitWithMultipleSigners_unknownAuthEntryAddress_throwsSigningFailed() async throws {
         let script = MockSorobanServerScript()
@@ -2146,7 +2146,7 @@ extension OZMultiSignerManagerTests {
         // wallet/ed25519 validation; the unknown auth entry is discovered only
         // after simulation, inside the signing loop).
         let passkeyKeyData = Data(repeating: SmartAccountConstants.uncompressedPubkeyPrefix, count: 65)
-        let signers: [SelectedSigner] = [
+        let signers: [OZSelectedSigner] = [
             .passkey(
                 credentialId: "cred",
                 credentialIdBytes: Data([0x01]),
@@ -2167,8 +2167,8 @@ extension OZMultiSignerManagerTests {
                 hostFunction: hostFn,
                 selectedSigners: signers
             )
-            XCTFail("expected TransactionException.SigningFailed for unknown auth entry address")
-        } catch let e as TransactionException.SigningFailed {
+            XCTFail("expected SmartAccountTransactionException.SigningFailed for unknown auth entry address")
+        } catch let e as SmartAccountTransactionException.SigningFailed {
             XCTAssertTrue(
                 e.message.lowercased().contains("unsupported") || e.message.lowercased().contains("auth entry"),
                 "error message must describe the unsupported auth entry, got: \(e.message)"
@@ -2196,7 +2196,7 @@ extension OZMultiSignerManagerTests {
             )
         )
         // A passkey signer with keyData == nil is invalid.
-        let signer = SelectedSigner.passkey(
+        let signer = OZSelectedSigner.passkey(
             credentialId: "pk",
             credentialIdBytes: Data([0x01]),
             keyData: nil
@@ -2208,8 +2208,8 @@ extension OZMultiSignerManagerTests {
                 forceMethod: nil,
                 resolveContextRuleIds: nil
             )
-            XCTFail("expected ValidationException.InvalidInput for nil keyData")
-        } catch let error as ValidationException.InvalidInput {
+            XCTFail("expected SmartAccountValidationException.InvalidInput for nil keyData")
+        } catch let error as SmartAccountValidationException.InvalidInput {
             XCTAssertTrue(
                 error.message.lowercased().contains("keydata"),
                 "error message must reference keyData, got: \(error.message)"
@@ -2271,11 +2271,11 @@ private func walletAddressAuthEntry(
 // MARK: - Ed25519 test doubles
 // ============================================================================
 
-/// Minimal `ExternalWalletAdapter` that claims `canSignFor` is true for a
+/// Minimal `OZExternalWalletAdapter` that claims `canSignFor` is true for a
 /// single pre-configured address. Used to exercise the config-injected wallet
 /// adapter path (custody model 1) in `validateWalletSigners` without a real
 /// external wallet.
-private final class FakeCanSignWalletAdapter: ExternalWalletAdapter, @unchecked Sendable {
+private final class FakeCanSignWalletAdapter: OZExternalWalletAdapter, @unchecked Sendable {
 
     private let claimedAddress: String
 
@@ -2287,12 +2287,12 @@ private final class FakeCanSignWalletAdapter: ExternalWalletAdapter, @unchecked 
         return address == claimedAddress
     }
 
-    func connect() async throws -> ConnectedWallet? { return nil }
+    func connect() async throws -> OZConnectedWallet? { return nil }
     func disconnect() async throws {}
-    func signAuthEntry(preimageXdr: String, options: SignAuthEntryOptions?) async throws -> SignAuthEntryResult {
-        return SignAuthEntryResult(signedAuthEntry: preimageXdr)
+    func signAuthEntry(preimageXdr: String, options: OZSignAuthEntryOptions?) async throws -> OZSignAuthEntryResult {
+        return OZSignAuthEntryResult(signedAuthEntry: preimageXdr)
     }
-    func getConnectedWallets() -> [ConnectedWallet] { return [] }
+    func getConnectedWallets() -> [OZConnectedWallet] { return [] }
 }
 
 /// Minimal `OZExternalEd25519SignerAdapter` that claims `canSignFor` is true

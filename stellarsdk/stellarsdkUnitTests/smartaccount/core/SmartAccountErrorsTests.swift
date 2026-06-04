@@ -68,12 +68,12 @@ final class SmartAccountErrorsTests: XCTestCase {
     // MARK: - SmartAccountException
 
     func test_smart_account_exception_code_property_returns_underlying_error_code() {
-        let exception = ValidationException.invalidAddress(address: "GBAD")
+        let exception = SmartAccountValidationException.invalidAddress(address: "GBAD")
         XCTAssertEqual(exception.code, .invalidAddress)
     }
 
     func test_smart_account_exception_to_string_format_includes_code_and_message() {
-        let exception = WalletException.notConnected(details: "Connect first")
+        let exception = SmartAccountWalletException.notConnected(details: "Connect first")
         let described = "\(exception)"
         XCTAssertTrue(described.contains("[\(exception.code.code)]"))
         XCTAssertTrue(described.contains("Connect first"))
@@ -84,7 +84,7 @@ final class SmartAccountErrorsTests: XCTestCase {
             var errorDescription: String? { "boom" }
         }
         let cause = UnderlyingError()
-        let exception = TransactionException.SimulationFailed(message: "simulation broke", cause: cause)
+        let exception = SmartAccountTransactionException.SimulationFailed(message: "simulation broke", cause: cause)
         let described = "\(exception)"
         XCTAssertTrue(described.contains("caused by"))
         XCTAssertTrue(described.contains("boom"))
@@ -93,7 +93,7 @@ final class SmartAccountErrorsTests: XCTestCase {
     // MARK: - wrapError
 
     func test_wrap_error_returns_input_unchanged_when_already_smart_account_exception() {
-        let original = WalletException.notFound(identifier: "wallet-1")
+        let original = SmartAccountWalletException.notFound(identifier: "wallet-1")
         let wrapped = SmartAccountException.wrapError(original)
         XCTAssertTrue(wrapped === original)
     }
@@ -102,7 +102,7 @@ final class SmartAccountErrorsTests: XCTestCase {
         struct OtherError: Error {}
         let wrapped = SmartAccountException.wrapError(OtherError())
         XCTAssertEqual(wrapped.code, .invalidInput)
-        XCTAssertTrue(wrapped is ValidationException.InvalidInput)
+        XCTAssertTrue(wrapped is SmartAccountValidationException.InvalidInput)
     }
 
     func test_wrap_error_maps_each_of_28_codes_to_correct_arm() {
@@ -120,19 +120,19 @@ final class SmartAccountErrorsTests: XCTestCase {
 
     func test_each_sealed_subtype_has_correct_arm_count() {
         // Configuration: 2 arms
-        XCTAssertNotNil(ConfigurationException.invalidConfig(details: "x") as ConfigurationException.InvalidConfig)
-        XCTAssertNotNil(ConfigurationException.missingConfig(param: "y") as ConfigurationException.MissingConfig)
+        XCTAssertNotNil(SmartAccountConfigurationException.invalidConfig(details: "x") as SmartAccountConfigurationException.InvalidConfig)
+        XCTAssertNotNil(SmartAccountConfigurationException.missingConfig(param: "y") as SmartAccountConfigurationException.MissingConfig)
 
         // Wallet: 3 arms
-        XCTAssertNotNil(WalletException.notConnected() as WalletException.NotConnected)
-        XCTAssertNotNil(WalletException.alreadyExists(identifier: "w") as WalletException.AlreadyExists)
-        XCTAssertNotNil(WalletException.notFound(identifier: "w") as WalletException.NotFound)
+        XCTAssertNotNil(SmartAccountWalletException.notConnected() as SmartAccountWalletException.NotConnected)
+        XCTAssertNotNil(SmartAccountWalletException.alreadyExists(identifier: "w") as SmartAccountWalletException.AlreadyExists)
+        XCTAssertNotNil(SmartAccountWalletException.notFound(identifier: "w") as SmartAccountWalletException.NotFound)
 
         // Credential: 4 arms
-        XCTAssertNotNil(CredentialException.notFound(credentialId: "c") as CredentialException.NotFound)
-        XCTAssertNotNil(CredentialException.alreadyExists(credentialId: "c") as CredentialException.AlreadyExists)
-        XCTAssertNotNil(CredentialException.invalid(reason: "r") as CredentialException.Invalid)
-        XCTAssertNotNil(CredentialException.deploymentFailed(reason: "r") as CredentialException.DeploymentFailed)
+        XCTAssertNotNil(SmartAccountCredentialException.notFound(credentialId: "c") as SmartAccountCredentialException.NotFound)
+        XCTAssertNotNil(SmartAccountCredentialException.alreadyExists(credentialId: "c") as SmartAccountCredentialException.AlreadyExists)
+        XCTAssertNotNil(SmartAccountCredentialException.invalid(reason: "r") as SmartAccountCredentialException.Invalid)
+        XCTAssertNotNil(SmartAccountCredentialException.deploymentFailed(reason: "r") as SmartAccountCredentialException.DeploymentFailed)
 
         // WebAuthn: 4 arms
         XCTAssertNotNil(WebAuthnException.registrationFailed(reason: "r") as WebAuthnException.RegistrationFailed)
@@ -141,67 +141,67 @@ final class SmartAccountErrorsTests: XCTestCase {
         XCTAssertNotNil(WebAuthnException.cancelled() as WebAuthnException.Cancelled)
 
         // Transaction: 4 arms
-        XCTAssertNotNil(TransactionException.simulationFailed(reason: "r") as TransactionException.SimulationFailed)
-        XCTAssertNotNil(TransactionException.signingFailed(reason: "r") as TransactionException.SigningFailed)
-        XCTAssertNotNil(TransactionException.submissionFailed(reason: "r") as TransactionException.SubmissionFailed)
-        XCTAssertNotNil(TransactionException.timeout() as TransactionException.Timeout)
+        XCTAssertNotNil(SmartAccountTransactionException.simulationFailed(reason: "r") as SmartAccountTransactionException.SimulationFailed)
+        XCTAssertNotNil(SmartAccountTransactionException.signingFailed(reason: "r") as SmartAccountTransactionException.SigningFailed)
+        XCTAssertNotNil(SmartAccountTransactionException.submissionFailed(reason: "r") as SmartAccountTransactionException.SubmissionFailed)
+        XCTAssertNotNil(SmartAccountTransactionException.timeout() as SmartAccountTransactionException.Timeout)
 
         // Signer: 2 arms
-        XCTAssertNotNil(SignerException.notFound(signerId: "s") as SignerException.NotFound)
-        XCTAssertNotNil(SignerException.invalid(reason: "r") as SignerException.Invalid)
+        XCTAssertNotNil(SmartAccountSignerException.notFound(signerId: "s") as SmartAccountSignerException.NotFound)
+        XCTAssertNotNil(SmartAccountSignerException.invalid(reason: "r") as SmartAccountSignerException.Invalid)
 
         // Validation: 3 arms
-        XCTAssertNotNil(ValidationException.invalidAddress(address: "a") as ValidationException.InvalidAddress)
-        XCTAssertNotNil(ValidationException.invalidAmount(amount: "1") as ValidationException.InvalidAmount)
-        XCTAssertNotNil(ValidationException.invalidInput(field: "f", reason: "r") as ValidationException.InvalidInput)
+        XCTAssertNotNil(SmartAccountValidationException.invalidAddress(address: "a") as SmartAccountValidationException.InvalidAddress)
+        XCTAssertNotNil(SmartAccountValidationException.invalidAmount(amount: "1") as SmartAccountValidationException.InvalidAmount)
+        XCTAssertNotNil(SmartAccountValidationException.invalidInput(field: "f", reason: "r") as SmartAccountValidationException.InvalidInput)
 
         // Storage: 2 arms
-        XCTAssertNotNil(StorageException.readFailed(key: "k") as StorageException.ReadFailed)
-        XCTAssertNotNil(StorageException.writeFailed(key: "k") as StorageException.WriteFailed)
+        XCTAssertNotNil(SmartAccountStorageException.readFailed(key: "k") as SmartAccountStorageException.ReadFailed)
+        XCTAssertNotNil(SmartAccountStorageException.writeFailed(key: "k") as SmartAccountStorageException.WriteFailed)
 
         // Session: 2 arms
-        XCTAssertNotNil(SessionException.expired() as SessionException.Expired)
-        XCTAssertNotNil(SessionException.invalid(reason: "r") as SessionException.Invalid)
+        XCTAssertNotNil(SmartAccountSessionException.expired() as SmartAccountSessionException.Expired)
+        XCTAssertNotNil(SmartAccountSessionException.invalid(reason: "r") as SmartAccountSessionException.Invalid)
 
         // Indexer: 2 arms
-        XCTAssertNotNil(IndexerException.requestFailed(reason: "r") as IndexerException.RequestFailed)
-        XCTAssertNotNil(IndexerException.timeout(url: "u") as IndexerException.Timeout)
+        XCTAssertNotNil(SmartAccountIndexerException.requestFailed(reason: "r") as SmartAccountIndexerException.RequestFailed)
+        XCTAssertNotNil(SmartAccountIndexerException.timeout(url: "u") as SmartAccountIndexerException.Timeout)
     }
 
     // MARK: - Default messages
 
     func test_default_messages_present_NotConnected_NotSupported_Cancelled_Timeout_Expired() {
-        XCTAssertEqual(WalletException.NotConnected().message, "Wallet is not connected")
+        XCTAssertEqual(SmartAccountWalletException.NotConnected().message, "Wallet is not connected")
         XCTAssertEqual(WebAuthnException.NotSupported().message, "WebAuthn is not supported on this platform")
         XCTAssertEqual(WebAuthnException.Cancelled().message, "User cancelled WebAuthn operation")
-        XCTAssertEqual(TransactionException.Timeout().message, "Transaction timed out")
-        XCTAssertEqual(SessionException.Expired().message, "Session has expired")
+        XCTAssertEqual(SmartAccountTransactionException.Timeout().message, "Transaction timed out")
+        XCTAssertEqual(SmartAccountSessionException.Expired().message, "Session has expired")
     }
 
     // MARK: - Companion factory message formats
 
     func test_companion_factory_invalidAddress_message_format_invalid_address_colon_address() {
-        let error = ValidationException.invalidAddress(address: "GBAD")
+        let error = SmartAccountValidationException.invalidAddress(address: "GBAD")
         XCTAssertEqual(error.message, "Invalid address: GBAD")
     }
 
     func test_companion_factory_invalidAmount_optional_reason_appended_after_dash() {
-        let withReason = ValidationException.invalidAmount(amount: "12.34", reason: "negative")
+        let withReason = SmartAccountValidationException.invalidAmount(amount: "12.34", reason: "negative")
         XCTAssertEqual(withReason.message, "Invalid amount: 12.34 - negative")
-        let withoutReason = ValidationException.invalidAmount(amount: "12.34")
+        let withoutReason = SmartAccountValidationException.invalidAmount(amount: "12.34")
         XCTAssertEqual(withoutReason.message, "Invalid amount: 12.34")
     }
 
     func test_companion_factory_invalidInput_field_and_reason_in_message() {
-        let error = ValidationException.invalidInput(field: "publicKey", reason: "wrong size")
+        let error = SmartAccountValidationException.invalidInput(field: "publicKey", reason: "wrong size")
         XCTAssertEqual(error.message, "Invalid input for publicKey: wrong size")
     }
 
     func test_companion_factory_invalidInput_throws_correct_arm_with_correct_code() {
         // Erase to the base type so the runtime-type check below is meaningful rather than
         // a compile-time tautology.
-        let error: SmartAccountException = ValidationException.invalidInput(field: "k", reason: "v")
-        XCTAssertTrue(error is ValidationException.InvalidInput)
+        let error: SmartAccountException = SmartAccountValidationException.invalidInput(field: "k", reason: "v")
+        XCTAssertTrue(error is SmartAccountValidationException.InvalidInput)
         XCTAssertEqual(error.code, .invalidInput)
     }
 
@@ -211,34 +211,34 @@ final class SmartAccountErrorsTests: XCTestCase {
         // Constructing one instance of every concrete arm enforces exhaustive coverage at
         // compile time: adding a new arm without updating this list fails to type-check.
         let exceptions: [SmartAccountException] = [
-            ConfigurationException.invalidConfig(details: "x"),
-            ConfigurationException.missingConfig(param: "y"),
-            WalletException.notConnected(),
-            WalletException.alreadyExists(identifier: "w"),
-            WalletException.notFound(identifier: "w"),
-            CredentialException.notFound(credentialId: "c"),
-            CredentialException.alreadyExists(credentialId: "c"),
-            CredentialException.invalid(reason: "r"),
-            CredentialException.deploymentFailed(reason: "r"),
+            SmartAccountConfigurationException.invalidConfig(details: "x"),
+            SmartAccountConfigurationException.missingConfig(param: "y"),
+            SmartAccountWalletException.notConnected(),
+            SmartAccountWalletException.alreadyExists(identifier: "w"),
+            SmartAccountWalletException.notFound(identifier: "w"),
+            SmartAccountCredentialException.notFound(credentialId: "c"),
+            SmartAccountCredentialException.alreadyExists(credentialId: "c"),
+            SmartAccountCredentialException.invalid(reason: "r"),
+            SmartAccountCredentialException.deploymentFailed(reason: "r"),
             WebAuthnException.registrationFailed(reason: "r"),
             WebAuthnException.authenticationFailed(reason: "r"),
             WebAuthnException.notSupported(),
             WebAuthnException.cancelled(),
-            TransactionException.simulationFailed(reason: "r"),
-            TransactionException.signingFailed(reason: "r"),
-            TransactionException.submissionFailed(reason: "r"),
-            TransactionException.timeout(),
-            SignerException.notFound(signerId: "s"),
-            SignerException.invalid(reason: "r"),
-            ValidationException.invalidAddress(address: "a"),
-            ValidationException.invalidAmount(amount: "1"),
-            ValidationException.invalidInput(field: "f", reason: "r"),
-            StorageException.readFailed(key: "k"),
-            StorageException.writeFailed(key: "k"),
-            SessionException.expired(),
-            SessionException.invalid(reason: "r"),
-            IndexerException.requestFailed(reason: "r"),
-            IndexerException.timeout(url: "u"),
+            SmartAccountTransactionException.simulationFailed(reason: "r"),
+            SmartAccountTransactionException.signingFailed(reason: "r"),
+            SmartAccountTransactionException.submissionFailed(reason: "r"),
+            SmartAccountTransactionException.timeout(),
+            SmartAccountSignerException.notFound(signerId: "s"),
+            SmartAccountSignerException.invalid(reason: "r"),
+            SmartAccountValidationException.invalidAddress(address: "a"),
+            SmartAccountValidationException.invalidAmount(amount: "1"),
+            SmartAccountValidationException.invalidInput(field: "f", reason: "r"),
+            SmartAccountStorageException.readFailed(key: "k"),
+            SmartAccountStorageException.writeFailed(key: "k"),
+            SmartAccountSessionException.expired(),
+            SmartAccountSessionException.invalid(reason: "r"),
+            SmartAccountIndexerException.requestFailed(reason: "r"),
+            SmartAccountIndexerException.timeout(url: "u"),
         ]
         XCTAssertEqual(exceptions.count, 28, "Every error arm must be present")
         for exception in exceptions {
@@ -252,23 +252,23 @@ final class SmartAccountErrorsTests: XCTestCase {
     private func assertConcreteArm(_ wrapped: SmartAccountException, matches code: SmartAccountErrorCode) {
         switch code {
         case .invalidConfig:
-            XCTAssertTrue(wrapped is ConfigurationException.InvalidConfig)
+            XCTAssertTrue(wrapped is SmartAccountConfigurationException.InvalidConfig)
         case .missingConfig:
-            XCTAssertTrue(wrapped is ConfigurationException.MissingConfig)
+            XCTAssertTrue(wrapped is SmartAccountConfigurationException.MissingConfig)
         case .walletNotConnected:
-            XCTAssertTrue(wrapped is WalletException.NotConnected)
+            XCTAssertTrue(wrapped is SmartAccountWalletException.NotConnected)
         case .walletAlreadyExists:
-            XCTAssertTrue(wrapped is WalletException.AlreadyExists)
+            XCTAssertTrue(wrapped is SmartAccountWalletException.AlreadyExists)
         case .walletNotFound:
-            XCTAssertTrue(wrapped is WalletException.NotFound)
+            XCTAssertTrue(wrapped is SmartAccountWalletException.NotFound)
         case .credentialNotFound:
-            XCTAssertTrue(wrapped is CredentialException.NotFound)
+            XCTAssertTrue(wrapped is SmartAccountCredentialException.NotFound)
         case .credentialAlreadyExists:
-            XCTAssertTrue(wrapped is CredentialException.AlreadyExists)
+            XCTAssertTrue(wrapped is SmartAccountCredentialException.AlreadyExists)
         case .credentialInvalid:
-            XCTAssertTrue(wrapped is CredentialException.Invalid)
+            XCTAssertTrue(wrapped is SmartAccountCredentialException.Invalid)
         case .credentialDeploymentFailed:
-            XCTAssertTrue(wrapped is CredentialException.DeploymentFailed)
+            XCTAssertTrue(wrapped is SmartAccountCredentialException.DeploymentFailed)
         case .webAuthnRegistrationFailed:
             XCTAssertTrue(wrapped is WebAuthnException.RegistrationFailed)
         case .webAuthnAuthenticationFailed:
@@ -278,35 +278,35 @@ final class SmartAccountErrorsTests: XCTestCase {
         case .webAuthnCancelled:
             XCTAssertTrue(wrapped is WebAuthnException.Cancelled)
         case .transactionSimulationFailed:
-            XCTAssertTrue(wrapped is TransactionException.SimulationFailed)
+            XCTAssertTrue(wrapped is SmartAccountTransactionException.SimulationFailed)
         case .transactionSigningFailed:
-            XCTAssertTrue(wrapped is TransactionException.SigningFailed)
+            XCTAssertTrue(wrapped is SmartAccountTransactionException.SigningFailed)
         case .transactionSubmissionFailed:
-            XCTAssertTrue(wrapped is TransactionException.SubmissionFailed)
+            XCTAssertTrue(wrapped is SmartAccountTransactionException.SubmissionFailed)
         case .transactionTimeout:
-            XCTAssertTrue(wrapped is TransactionException.Timeout)
+            XCTAssertTrue(wrapped is SmartAccountTransactionException.Timeout)
         case .signerNotFound:
-            XCTAssertTrue(wrapped is SignerException.NotFound)
+            XCTAssertTrue(wrapped is SmartAccountSignerException.NotFound)
         case .signerInvalid:
-            XCTAssertTrue(wrapped is SignerException.Invalid)
+            XCTAssertTrue(wrapped is SmartAccountSignerException.Invalid)
         case .invalidAddress:
-            XCTAssertTrue(wrapped is ValidationException.InvalidAddress)
+            XCTAssertTrue(wrapped is SmartAccountValidationException.InvalidAddress)
         case .invalidAmount:
-            XCTAssertTrue(wrapped is ValidationException.InvalidAmount)
+            XCTAssertTrue(wrapped is SmartAccountValidationException.InvalidAmount)
         case .invalidInput:
-            XCTAssertTrue(wrapped is ValidationException.InvalidInput)
+            XCTAssertTrue(wrapped is SmartAccountValidationException.InvalidInput)
         case .storageReadFailed:
-            XCTAssertTrue(wrapped is StorageException.ReadFailed)
+            XCTAssertTrue(wrapped is SmartAccountStorageException.ReadFailed)
         case .storageWriteFailed:
-            XCTAssertTrue(wrapped is StorageException.WriteFailed)
+            XCTAssertTrue(wrapped is SmartAccountStorageException.WriteFailed)
         case .sessionExpired:
-            XCTAssertTrue(wrapped is SessionException.Expired)
+            XCTAssertTrue(wrapped is SmartAccountSessionException.Expired)
         case .sessionInvalid:
-            XCTAssertTrue(wrapped is SessionException.Invalid)
+            XCTAssertTrue(wrapped is SmartAccountSessionException.Invalid)
         case .indexerRequestFailed:
-            XCTAssertTrue(wrapped is IndexerException.RequestFailed)
+            XCTAssertTrue(wrapped is SmartAccountIndexerException.RequestFailed)
         case .indexerTimeout:
-            XCTAssertTrue(wrapped is IndexerException.Timeout)
+            XCTAssertTrue(wrapped is SmartAccountIndexerException.Timeout)
         }
     }
 
@@ -316,11 +316,11 @@ final class SmartAccountErrorsTests: XCTestCase {
     /// must include the inner exception's message. This exercises the
     /// `if let smartAccountError = error as? SmartAccountException` branch.
     func test_description_withSmartAccountExceptionCause_includesInnerMessage() {
-        let innerError = ValidationException.invalidInput(
+        let innerError = SmartAccountValidationException.invalidInput(
             field: "field",
             reason: "inner error message"
         )
-        let outerError = TransactionException.signingFailed(
+        let outerError = SmartAccountTransactionException.signingFailed(
             reason: "outer error",
             cause: innerError
         )
@@ -340,7 +340,7 @@ final class SmartAccountErrorsTests: XCTestCase {
             var description: String { "custom description" }
         }
         let err = _EmptyLocalized()
-        let wrapped = ValidationException.invalidInput(
+        let wrapped = SmartAccountValidationException.invalidInput(
             field: "test",
             reason: "test reason",
             cause: err

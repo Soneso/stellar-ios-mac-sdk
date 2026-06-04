@@ -256,7 +256,7 @@ final class OZSignerManagerTests: XCTestCase {
     // ========================================================================
 
     /// Disconnected kit + `addPasskey` must throw
-    /// ``WalletException/NotConnected`` before any submission attempt.
+    /// ``SmartAccountWalletException/NotConnected`` before any submission attempt.
     func test_addPasskey_notConnected_throws() async throws {
         let (_, manager) = try disconnectedKit()
         do {
@@ -265,8 +265,8 @@ final class OZSignerManagerTests: XCTestCase {
                 publicKey: validSecp256r1PublicKey(),
                 credentialId: Data([0x01, 0x02])
             )
-            XCTFail("expected WalletException.NotConnected")
-        } catch let error as WalletException.NotConnected {
+            XCTFail("expected SmartAccountWalletException.NotConnected")
+        } catch let error as SmartAccountWalletException.NotConnected {
             XCTAssertEqual(error.code, .walletNotConnected)
         }
     }
@@ -281,8 +281,8 @@ final class OZSignerManagerTests: XCTestCase {
                 publicKey: Data([0x04, 0x00, 0x00, 0x00]),
                 credentialId: Data([0x01, 0x02])
             )
-            XCTFail("expected ValidationException.InvalidInput")
-        } catch let error as ValidationException.InvalidInput {
+            XCTFail("expected SmartAccountValidationException.InvalidInput")
+        } catch let error as SmartAccountValidationException.InvalidInput {
             XCTAssertTrue(
                 error.message.contains("publicKey"),
                 "error message should reference the publicKey field, got: \(error.message)"
@@ -302,8 +302,8 @@ final class OZSignerManagerTests: XCTestCase {
                 publicKey: badKey,
                 credentialId: Data([0x01, 0x02])
             )
-            XCTFail("expected ValidationException.InvalidInput")
-        } catch let error as ValidationException.InvalidInput {
+            XCTFail("expected SmartAccountValidationException.InvalidInput")
+        } catch let error as SmartAccountValidationException.InvalidInput {
             XCTAssertTrue(
                 error.message.contains("0x04"),
                 "error message should mention the expected uncompressed prefix, got: \(error.message)"
@@ -320,8 +320,8 @@ final class OZSignerManagerTests: XCTestCase {
                 publicKey: validSecp256r1PublicKey(),
                 credentialId: Data()
             )
-            XCTFail("expected ValidationException.InvalidInput")
-        } catch let error as ValidationException.InvalidInput {
+            XCTFail("expected SmartAccountValidationException.InvalidInput")
+        } catch let error as SmartAccountValidationException.InvalidInput {
             XCTAssertTrue(
                 error.message.contains("credentialId") || error.message.contains("Credential ID"),
                 "error message should reference the credentialId field, got: \(error.message)"
@@ -333,7 +333,7 @@ final class OZSignerManagerTests: XCTestCase {
     /// through the kit's multi-signer manager, whose initial validation
     /// rejects wallet-kind signers when the kit's config does not declare an
     /// external wallet adapter. The check surfaces as
-    /// ``ValidationException/InvalidInput`` naming the `selectedSigners`
+    /// ``SmartAccountValidationException/InvalidInput`` naming the `selectedSigners`
     /// field so callers can correct the kit configuration before retrying.
     func test_addPasskey_walletSigner_withoutExternalWalletAdapter_throwsValidation() async throws {
         let (_, manager) = try connectedKit()
@@ -344,8 +344,8 @@ final class OZSignerManagerTests: XCTestCase {
                 credentialId: Data([0x01, 0x02]),
                 selectedSigners: [.wallet(accountId: validGAddr1)]
             )
-            XCTFail("expected ValidationException.InvalidInput")
-        } catch let error as ValidationException.InvalidInput {
+            XCTFail("expected SmartAccountValidationException.InvalidInput")
+        } catch let error as SmartAccountValidationException.InvalidInput {
             XCTAssertEqual(error.code, .invalidInput)
             XCTAssertTrue(
                 error.message.contains("selectedSigners"),
@@ -359,7 +359,7 @@ final class OZSignerManagerTests: XCTestCase {
     // ========================================================================
 
     /// Disconnected kit + `addDelegated` must throw
-    /// ``WalletException/NotConnected`` before any submission attempt.
+    /// ``SmartAccountWalletException/NotConnected`` before any submission attempt.
     func test_addDelegated_notConnected_throws() async throws {
         let (_, manager) = try disconnectedKit()
         do {
@@ -367,8 +367,8 @@ final class OZSignerManagerTests: XCTestCase {
                 contextRuleId: 0,
                 address: validGAddr1
             )
-            XCTFail("expected WalletException.NotConnected")
-        } catch let error as WalletException.NotConnected {
+            XCTFail("expected SmartAccountWalletException.NotConnected")
+        } catch let error as SmartAccountWalletException.NotConnected {
             XCTAssertEqual(error.code, .walletNotConnected)
         }
     }
@@ -382,8 +382,8 @@ final class OZSignerManagerTests: XCTestCase {
                 contextRuleId: 0,
                 address: "not-a-stellar-address"
             )
-            XCTFail("expected ValidationException.InvalidAddress")
-        } catch is ValidationException.InvalidAddress {
+            XCTFail("expected SmartAccountValidationException.InvalidAddress")
+        } catch is SmartAccountValidationException.InvalidAddress {
             // expected
         }
     }
@@ -393,7 +393,7 @@ final class OZSignerManagerTests: XCTestCase {
     // ========================================================================
 
     /// Disconnected kit + `addEd25519` must throw
-    /// ``WalletException/NotConnected`` before any submission attempt.
+    /// ``SmartAccountWalletException/NotConnected`` before any submission attempt.
     func test_addEd25519_notConnected_throws() async throws {
         let (_, manager) = try disconnectedKit()
         do {
@@ -402,8 +402,8 @@ final class OZSignerManagerTests: XCTestCase {
                 verifierAddress: validVerifier,
                 publicKey: validEd25519PublicKey()
             )
-            XCTFail("expected WalletException.NotConnected")
-        } catch let error as WalletException.NotConnected {
+            XCTFail("expected SmartAccountWalletException.NotConnected")
+        } catch let error as SmartAccountWalletException.NotConnected {
             XCTAssertEqual(error.code, .walletNotConnected)
         }
     }
@@ -418,8 +418,8 @@ final class OZSignerManagerTests: XCTestCase {
                 verifierAddress: validVerifier,
                 publicKey: Data([0x00, 0x01, 0x02])
             )
-            XCTFail("expected ValidationException.InvalidInput")
-        } catch let error as ValidationException.InvalidInput {
+            XCTFail("expected SmartAccountValidationException.InvalidInput")
+        } catch let error as SmartAccountValidationException.InvalidInput {
             XCTAssertTrue(
                 error.message.contains("publicKey"),
                 "error message should reference the publicKey field, got: \(error.message)"
@@ -432,7 +432,7 @@ final class OZSignerManagerTests: XCTestCase {
     // ========================================================================
 
     /// Disconnected kit + `removeSigner` by id must throw
-    /// ``WalletException/NotConnected``.
+    /// ``SmartAccountWalletException/NotConnected``.
     func test_removeSigner_byId_notConnected_throws() async throws {
         let (_, manager) = try disconnectedKit()
         do {
@@ -440,8 +440,8 @@ final class OZSignerManagerTests: XCTestCase {
                 contextRuleId: 0,
                 signerId: 1
             )
-            XCTFail("expected WalletException.NotConnected")
-        } catch let error as WalletException.NotConnected {
+            XCTFail("expected SmartAccountWalletException.NotConnected")
+        } catch let error as SmartAccountWalletException.NotConnected {
             XCTAssertEqual(error.code, .walletNotConnected)
         }
     }
@@ -460,7 +460,7 @@ final class OZSignerManagerTests: XCTestCase {
         let signerB = try OZDelegatedSigner(address: validGAddr2)
         let signerC = try OZDelegatedSigner(address: validGAddr3)
         let signerIds: [UInt32] = [10, 20, 30]
-        let rule = ParsedContextRule(
+        let rule = OZParsedContextRule(
             id: 0,
             contextType: .defaultRule,
             name: "Default",
@@ -482,7 +482,7 @@ final class OZSignerManagerTests: XCTestCase {
         // pinned transaction operations, which would attempt to reach the
         // configured RPC endpoint and fail before the host function shape
         // can be observed.
-        let selectedSigners: [SelectedSigner] = [.wallet(accountId: validGAddr1)]
+        let selectedSigners: [OZSelectedSigner] = [.wallet(accountId: validGAddr1)]
         _ = try await manager.removeSignerBySigner(
             contextRuleId: 0,
             signer: signerB,
@@ -510,12 +510,12 @@ final class OZSignerManagerTests: XCTestCase {
     }
 
     /// When the supplied signer value is not present on the resolved context
-    /// rule, the manager must throw ``ValidationException/InvalidInput``
+    /// rule, the manager must throw ``SmartAccountValidationException/InvalidInput``
     /// without producing a host function or invoking the submitter.
     func test_removeSigner_bySignerValue_signerNotInRule_throwsValidation() async throws {
         let signerA = try OZDelegatedSigner(address: validGAddr1)
         let signerB = try OZDelegatedSigner(address: validGAddr2)
-        let rule = ParsedContextRule(
+        let rule = OZParsedContextRule(
             id: 0,
             contextType: .defaultRule,
             name: "Default",
@@ -538,8 +538,8 @@ final class OZSignerManagerTests: XCTestCase {
                 signer: absent,
                 selectedSigners: [.wallet(accountId: validGAddr1)]
             )
-            XCTFail("expected ValidationException.InvalidInput")
-        } catch let error as ValidationException.InvalidInput {
+            XCTFail("expected SmartAccountValidationException.InvalidInput")
+        } catch let error as SmartAccountValidationException.InvalidInput {
             XCTAssertTrue(
                 error.message.contains("Signer not found"),
                 "error message should explain the missing-signer reason, got: \(error.message)"
@@ -559,7 +559,7 @@ final class OZSignerManagerTests: XCTestCase {
     // ========================================================================
 
     /// Disconnected kit + value-based remove must throw
-    /// ``WalletException/NotConnected`` before any parser interaction so a
+    /// ``SmartAccountWalletException/NotConnected`` before any parser interaction so a
     /// disconnected kit cannot accidentally hit the indexer / RPC.
     func test_removeSignerBySigner_notConnected_throws() async throws {
         let parser = _StubContextRuleParser(rule: nil)
@@ -569,8 +569,8 @@ final class OZSignerManagerTests: XCTestCase {
                 contextRuleId: 0,
                 signer: try OZDelegatedSigner(address: validGAddr1)
             )
-            XCTFail("expected WalletException.NotConnected")
-        } catch let error as WalletException.NotConnected {
+            XCTFail("expected SmartAccountWalletException.NotConnected")
+        } catch let error as SmartAccountWalletException.NotConnected {
             XCTAssertEqual(error.code, .walletNotConnected)
         }
         XCTAssertEqual(
@@ -581,7 +581,7 @@ final class OZSignerManagerTests: XCTestCase {
     }
 
     /// Connected kit without a wired context-rule parser must surface a
-    /// ``ConfigurationException`` rather than a runtime null-pointer-style
+    /// ``SmartAccountConfigurationException`` rather than a runtime null-pointer-style
     /// failure deeper in the resolution path.
     func test_removeSignerBySigner_noParser_throwsConfiguration() async throws {
         let (_, manager) = try connectedKit()
@@ -590,8 +590,8 @@ final class OZSignerManagerTests: XCTestCase {
                 contextRuleId: 0,
                 signer: try OZDelegatedSigner(address: validGAddr1)
             )
-            XCTFail("expected ConfigurationException.InvalidConfig")
-        } catch is ConfigurationException.InvalidConfig {
+            XCTFail("expected SmartAccountConfigurationException.InvalidConfig")
+        } catch is SmartAccountConfigurationException.InvalidConfig {
             // expected
         }
     }
@@ -605,7 +605,7 @@ final class OZSignerManagerTests: XCTestCase {
         let signerA = try OZDelegatedSigner(address: validGAddr1)
         let signerB = try OZDelegatedSigner(address: validGAddr2)
         let signerC = try OZDelegatedSigner(address: validGAddr3)
-        let rule = ParsedContextRule(
+        let rule = OZParsedContextRule(
             id: 0,
             contextType: .defaultRule,
             name: "Default",
@@ -624,8 +624,8 @@ final class OZSignerManagerTests: XCTestCase {
                 contextRuleId: 0,
                 signer: signerC
             )
-            XCTFail("expected ValidationException.InvalidInput")
-        } catch let error as ValidationException.InvalidInput {
+            XCTFail("expected SmartAccountValidationException.InvalidInput")
+        } catch let error as SmartAccountValidationException.InvalidInput {
             XCTAssertTrue(
                 error.message.contains("signerIds"),
                 "error message should name the misalignment, got: \(error.message)"
@@ -647,7 +647,7 @@ final class OZSignerManagerTests: XCTestCase {
     /// the contract submit).
     func test_addNewPasskeySigner_cancellation_propagatesCancellationError() async throws {
         let provider = RecordingWebAuthnProvider()
-        let storage = InMemoryStorageAdapter()
+        let storage = OZInMemoryStorageAdapter()
         let config = try OZSmartAccountConfig(
             rpcUrl: "http://127.0.0.1:1",
             networkPassphrase: Network.testnet.passphrase,
@@ -684,28 +684,28 @@ final class OZSignerManagerTests: XCTestCase {
     }
 
     // ========================================================================
-    // MARK: - AddPasskeySignerResult value-type conformances (Batch E)
+    // MARK: - OZAddPasskeySignerResult value-type conformances (Batch E)
     // ========================================================================
 
-    /// `AddPasskeySignerResult` is `Equatable` and `Hashable`. Verifies that
+    /// `OZAddPasskeySignerResult` is `Equatable` and `Hashable`. Verifies that
     /// two instances with byte-equal public keys and identical remaining fields
     /// compare equal and produce the same hash value.
     func test_addPasskeySignerResult_equatable_hashable() throws {
-        let txResult = TransactionResult(success: true, hash: "abc")
+        let txResult = OZTransactionResult(success: true, hash: "abc")
         let key1 = validSecp256r1PublicKey()
         let key2 = validSecp256r1PublicKey()
 
-        let a = AddPasskeySignerResult(
+        let a = OZAddPasskeySignerResult(
             credentialId: "cred-x",
             publicKey: key1,
             transactionResult: txResult
         )
-        let b = AddPasskeySignerResult(
+        let b = OZAddPasskeySignerResult(
             credentialId: "cred-x",
             publicKey: key2,
             transactionResult: txResult
         )
-        let c = AddPasskeySignerResult(
+        let c = OZAddPasskeySignerResult(
             credentialId: "cred-y",
             publicKey: key1,
             transactionResult: txResult
@@ -776,7 +776,7 @@ final class OZSignerManagerTests: XCTestCase {
     }
 
     /// When credential storage throws after a successful WebAuthn registration,
-    /// `addNewPasskeySigner` must surface `StorageException.WriteFailed`.
+    /// `addNewPasskeySigner` must surface `SmartAccountStorageException.WriteFailed`.
     func test_addNewPasskeySigner_storageFails_throwsStorageException() async throws {
         let provider = RecordingWebAuthnProvider()
         provider.enqueueRegister(
@@ -801,11 +801,11 @@ final class OZSignerManagerTests: XCTestCase {
 
         do {
             _ = try await manager.addNewPasskeySigner(contextRuleId: 0, userName: "carol")
-            XCTFail("expected StorageException or related error")
-        } catch is StorageException {
+            XCTFail("expected SmartAccountStorageException or related error")
+        } catch is SmartAccountStorageException {
             // expected: storage write failed
-        } catch is CredentialException {
-            // also acceptable: the manager may surface CredentialException on
+        } catch is SmartAccountCredentialException {
+            // also acceptable: the manager may surface SmartAccountCredentialException on
             // a storage failure depending on the internal path taken.
         } catch is WebAuthnException {
             // also acceptable: the manager may rethrow a WebAuthn error from
@@ -819,15 +819,15 @@ final class OZSignerManagerTests: XCTestCase {
     }
 
     /// `addDelegated` with an invalid address must throw
-    /// `ValidationException.InvalidAddress` before any network access.
+    /// `SmartAccountValidationException.InvalidAddress` before any network access.
     func test_addDelegated_invalidAddress_throwsValidationException() async throws {
         let (_, manager) = try connectedKit()
         do {
             _ = try await manager.addDelegated(contextRuleId: 0, address: "NOT-VALID-ADDRESS")
-            XCTFail("expected ValidationException.InvalidAddress")
-        } catch is ValidationException.InvalidAddress {
+            XCTFail("expected SmartAccountValidationException.InvalidAddress")
+        } catch is SmartAccountValidationException.InvalidAddress {
             // expected
-        } catch is ValidationException.InvalidInput {
+        } catch is SmartAccountValidationException.InvalidInput {
             // also acceptable depending on the delegated signer init path
         }
     }
@@ -878,7 +878,7 @@ final class OZSignerManagerTests: XCTestCase {
 /// In-memory ``OZContextRuleParser`` stub used by the value-based remove
 /// tests.
 ///
-/// Returns the supplied ``ParsedContextRule`` (wrapped in a deterministic raw
+/// Returns the supplied ``OZParsedContextRule`` (wrapped in a deterministic raw
 /// `SCValXDR`) from ``getContextRule(contextRuleId:)`` and yields the same
 /// rule back from ``parseContextRule(_:)``. Records every call so the
 /// resolution-path tests can assert the parser was consulted exactly once.
@@ -886,7 +886,7 @@ private final class _StubContextRuleParser: OZContextRuleParser, @unchecked Send
 
     /// Pre-set rule returned by both parser methods. When `nil`, calls throw
     /// a placeholder error so tests can assert the parser was not consulted.
-    private let rule: ParsedContextRule?
+    private let rule: OZParsedContextRule?
 
     /// Records every `contextRuleId` passed to ``getContextRule(contextRuleId:)``.
     private(set) var getContextRuleCalls: [UInt32] = []
@@ -894,14 +894,14 @@ private final class _StubContextRuleParser: OZContextRuleParser, @unchecked Send
     /// Counts every invocation of ``parseContextRule(_:)``.
     private(set) var parseContextRuleCalls: Int = 0
 
-    init(rule: ParsedContextRule?) {
+    init(rule: OZParsedContextRule?) {
         self.rule = rule
     }
 
     func getContextRule(contextRuleId: UInt32) async throws -> SCValXDR {
         getContextRuleCalls.append(contextRuleId)
         guard rule != nil else {
-            throw ValidationException.invalidInput(
+            throw SmartAccountValidationException.invalidInput(
                 field: "contextRuleId",
                 reason: "Stub parser holds no rule for id \(contextRuleId)"
             )
@@ -913,10 +913,10 @@ private final class _StubContextRuleParser: OZContextRuleParser, @unchecked Send
         return SCValXDR.void
     }
 
-    func parseContextRule(_ scVal: SCValXDR) throws -> ParsedContextRule {
+    func parseContextRule(_ scVal: SCValXDR) throws -> OZParsedContextRule {
         parseContextRuleCalls += 1
         guard let rule = rule else {
-            throw ValidationException.invalidInput(
+            throw SmartAccountValidationException.invalidInput(
                 field: "scVal",
                 reason: "Stub parser holds no rule to return"
             )
@@ -928,7 +928,7 @@ private final class _StubContextRuleParser: OZContextRuleParser, @unchecked Send
 /// Storage adapter that always fails on write operations. Used by the
 /// `addNewPasskeySigner_storageFails` test to verify the manager surfaces
 /// a storage error rather than silently proceeding when persistence is broken.
-private final class _FailingStorageAdapter: StorageAdapter, @unchecked Sendable {
+private final class _FailingStorageAdapter: OZStorageAdapter, @unchecked Sendable {
 
     private let failOnWrite: Bool
     private let failOnRead: Bool
@@ -938,67 +938,67 @@ private final class _FailingStorageAdapter: StorageAdapter, @unchecked Sendable 
         self.failOnRead = failOnRead
     }
 
-    func save(credential: StoredCredential) async throws {
+    func save(credential: OZStoredCredential) async throws {
         if failOnWrite {
-            throw StorageException.writeFailed(key: credential.credentialId)
+            throw SmartAccountStorageException.writeFailed(key: credential.credentialId)
         }
     }
 
-    func get(credentialId: String) async throws -> StoredCredential? {
+    func get(credentialId: String) async throws -> OZStoredCredential? {
         if failOnRead {
-            throw StorageException.readFailed(key: credentialId)
+            throw SmartAccountStorageException.readFailed(key: credentialId)
         }
         return nil
     }
 
-    func getByContract(contractId: String) async throws -> [StoredCredential] {
+    func getByContract(contractId: String) async throws -> [OZStoredCredential] {
         if failOnRead {
-            throw StorageException.readFailed(key: contractId)
+            throw SmartAccountStorageException.readFailed(key: contractId)
         }
         return []
     }
 
-    func getAll() async throws -> [StoredCredential] {
+    func getAll() async throws -> [OZStoredCredential] {
         if failOnRead {
-            throw StorageException.readFailed(key: "all")
+            throw SmartAccountStorageException.readFailed(key: "all")
         }
         return []
     }
 
     func delete(credentialId: String) async throws {
         if failOnWrite {
-            throw StorageException.writeFailed(key: credentialId)
+            throw SmartAccountStorageException.writeFailed(key: credentialId)
         }
     }
 
-    func update(credentialId: String, updates: StoredCredentialUpdate) async throws {
+    func update(credentialId: String, updates: OZStoredCredentialUpdate) async throws {
         if failOnWrite {
-            throw StorageException.writeFailed(key: credentialId)
+            throw SmartAccountStorageException.writeFailed(key: credentialId)
         }
     }
 
     func clear() async throws {
         if failOnWrite {
-            throw StorageException.writeFailed(key: "all")
+            throw SmartAccountStorageException.writeFailed(key: "all")
         }
     }
 
-    func saveSession(_ session: StoredSession) async throws {
+    func saveSession(_ session: OZStoredSession) async throws {
         if failOnWrite {
-            throw StorageException.writeFailed(key: "session")
+            throw SmartAccountStorageException.writeFailed(key: "session")
         }
     }
 
-    func getSession() async throws -> StoredSession? {
+    func getSession() async throws -> OZStoredSession? {
         if failOnRead {
-            throw StorageException.readFailed(key: "session")
+            throw SmartAccountStorageException.readFailed(key: "session")
         }
         return nil
     }
 
     func clearSession() async throws {
         if failOnWrite {
-            throw StorageException.writeFailed(key: "session")
+            throw SmartAccountStorageException.writeFailed(key: "session")
         }
     }
 }

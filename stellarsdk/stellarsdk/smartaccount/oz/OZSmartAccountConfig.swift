@@ -38,7 +38,7 @@ import Foundation
 ///     .build()
 /// ```
 ///
-/// Throws `ConfigurationException` if required parameters are blank or invalid (for
+/// Throws `SmartAccountConfigurationException` if required parameters are blank or invalid (for
 /// example, `accountWasmHash` is not a 64-character hex string, or
 /// `webauthnVerifierAddress` is not a valid C-address).
 public struct OZSmartAccountConfig: @unchecked Sendable {
@@ -120,18 +120,18 @@ public struct OZSmartAccountConfig: @unchecked Sendable {
 
     /// Storage adapter for persisting credentials and session data.
     ///
-    /// Defaults to `InMemoryStorageAdapter` (non-persistent, suitable for testing).
-    public let storage: StorageAdapter
+    /// Defaults to `OZInMemoryStorageAdapter` (non-persistent, suitable for testing).
+    public let storage: OZStorageAdapter
 
     /// When set, delegates transaction signing to this adapter instead of using WebAuthn credentials.
-    public let externalWallet: ExternalWalletAdapter?
+    public let externalWallet: OZExternalWalletAdapter?
 
     /// Optional adapter for out-of-process Ed25519 signing in multi-signer ceremonies.
     ///
     /// When non-`nil`, the adapter is injected into the kit's ``OZExternalSignerManager`` at
     /// construction time and consulted (with adapter-first precedence) before the in-memory
     /// Ed25519 keypair registry for every
-    /// ``SelectedSigner/ed25519(verifierAddress:publicKey:)`` entry. In-memory keypairs can
+    /// ``OZSelectedSigner/ed25519(verifierAddress:publicKey:)`` entry. In-memory keypairs can
     /// still be registered at runtime via ``OZSmartAccountKit/externalSigners``
     /// ``OZExternalSignerManager/addEd25519FromRawKey(secretKeyBytes:verifierAddress:)``.
     public let externalEd25519Adapter: OZExternalEd25519SignerAdapter?
@@ -147,8 +147,8 @@ public struct OZSmartAccountConfig: @unchecked Sendable {
 
     /// Initializes a new `OZSmartAccountConfig`.
     ///
-    /// - Throws: `ConfigurationException.MissingConfig` for blank required strings;
-    ///           `ConfigurationException.InvalidConfig` for malformed `accountWasmHash`
+    /// - Throws: `SmartAccountConfigurationException.MissingConfig` for blank required strings;
+    ///           `SmartAccountConfigurationException.InvalidConfig` for malformed `accountWasmHash`
     ///           or `webauthnVerifierAddress`.
     public init(
         rpcUrl: String,
@@ -162,27 +162,27 @@ public struct OZSmartAccountConfig: @unchecked Sendable {
         relayerUrl: String? = nil,
         indexerUrl: String? = nil,
         webauthnProvider: WebAuthnProvider? = nil,
-        storage: StorageAdapter = InMemoryStorageAdapter(),
-        externalWallet: ExternalWalletAdapter? = nil,
+        storage: OZStorageAdapter = OZInMemoryStorageAdapter(),
+        externalWallet: OZExternalWalletAdapter? = nil,
         externalEd25519Adapter: OZExternalEd25519SignerAdapter? = nil,
         maxContextRuleScanId: UInt32 = 50
     ) throws {
         if rpcUrl.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            throw ConfigurationException.missingConfig(param: "rpcUrl")
+            throw SmartAccountConfigurationException.missingConfig(param: "rpcUrl")
         }
         if networkPassphrase.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            throw ConfigurationException.missingConfig(param: "networkPassphrase")
+            throw SmartAccountConfigurationException.missingConfig(param: "networkPassphrase")
         }
         if accountWasmHash.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            throw ConfigurationException.missingConfig(param: "accountWasmHash")
+            throw SmartAccountConfigurationException.missingConfig(param: "accountWasmHash")
         }
         if !OZSmartAccountConfig.isValidWasmHashHex(accountWasmHash) {
-            throw ConfigurationException.invalidConfig(
+            throw SmartAccountConfigurationException.invalidConfig(
                 details: "accountWasmHash must be a 64-character hex string (SHA-256 of WASM), got: \(accountWasmHash)"
             )
         }
         if !webauthnVerifierAddress.isValidContractId() {
-            throw ConfigurationException.invalidConfig(
+            throw SmartAccountConfigurationException.invalidConfig(
                 details: "webauthnVerifierAddress must be a valid contract address (C...), got: \(webauthnVerifierAddress)"
             )
         }
@@ -194,7 +194,7 @@ public struct OZSmartAccountConfig: @unchecked Sendable {
         // validates this at submission and reports an out-of-range ledger; a hardcoded
         // client cap cannot track the network's value and would reject valid inputs.
         if signatureExpirationLedgers < 1 {
-            throw ConfigurationException.invalidConfig(
+            throw SmartAccountConfigurationException.invalidConfig(
                 details: "signatureExpirationLedgers must be >= 1, got: \(signatureExpirationLedgers)"
             )
         }
@@ -204,7 +204,7 @@ public struct OZSmartAccountConfig: @unchecked Sendable {
         // transaction never expires by time); any positive value sets
         // `max_time = now + timeoutInSeconds`.
         if timeoutInSeconds < 0 {
-            throw ConfigurationException.invalidConfig(
+            throw SmartAccountConfigurationException.invalidConfig(
                 details: "timeoutInSeconds must be >= 0 (0 means no expiry), got: \(timeoutInSeconds)"
             )
         }
@@ -236,7 +236,7 @@ public struct OZSmartAccountConfig: @unchecked Sendable {
     /// Production apps typically supply a custom deployer for attribution and traceability.
     ///
     /// - Returns: A deterministic `KeyPair` for contract deployment.
-    /// - Throws: `ConfigurationException.InvalidConfig` if seed generation fails.
+    /// - Throws: `SmartAccountConfigurationException.InvalidConfig` if seed generation fails.
     public static func createDefaultDeployer() async throws -> KeyPair {
         // why: the seed must remain byte-stable: the default deployer's contract address
         // is derived from this exact UTF-8 sequence, and changing it would orphan every
@@ -247,7 +247,7 @@ public struct OZSmartAccountConfig: @unchecked Sendable {
             let seed = try Seed(bytes: [UInt8](seedBytes))
             return KeyPair(seed: seed)
         } catch {
-            throw ConfigurationException.invalidConfig(
+            throw SmartAccountConfigurationException.invalidConfig(
                 details: "Failed to create default deployer keypair: \(error.localizedDescription)",
                 cause: error
             )
@@ -285,7 +285,7 @@ public struct OZSmartAccountConfig: @unchecked Sendable {
     /// (SHA-256 hashing and Ed25519 seed derivation).
     ///
     /// - Returns: The configured deployer or the default deterministic deployer.
-    /// - Throws: `ConfigurationException.InvalidConfig` if default deployer creation
+    /// - Throws: `SmartAccountConfigurationException.InvalidConfig` if default deployer creation
     ///           fails.
     public func effectiveDeployer() async throws -> KeyPair {
         if let configured = deployerKeypair {
@@ -360,8 +360,8 @@ public struct OZSmartAccountConfig: @unchecked Sendable {
         private var _relayerUrl: String? = nil
         private var _indexerUrl: String? = nil
         private var _webauthnProvider: WebAuthnProvider? = nil
-        private var _storage: StorageAdapter = InMemoryStorageAdapter()
-        private var _externalWallet: ExternalWalletAdapter? = nil
+        private var _storage: OZStorageAdapter = OZInMemoryStorageAdapter()
+        private var _externalWallet: OZExternalWalletAdapter? = nil
         private var _externalEd25519Adapter: OZExternalEd25519SignerAdapter? = nil
         private var _maxContextRuleScanId: UInt32 = 50
 
@@ -461,7 +461,7 @@ public struct OZSmartAccountConfig: @unchecked Sendable {
         ///                      sessions.
         /// - Returns: `self` for chaining.
         @discardableResult
-        public func storage(_ storage: StorageAdapter) -> Builder {
+        public func storage(_ storage: OZStorageAdapter) -> Builder {
             _storage = storage
             return self
         }
@@ -472,7 +472,7 @@ public struct OZSmartAccountConfig: @unchecked Sendable {
         ///                             external signing).
         /// - Returns: `self` for chaining.
         @discardableResult
-        public func externalWallet(_ externalWallet: ExternalWalletAdapter?) -> Builder {
+        public func externalWallet(_ externalWallet: OZExternalWalletAdapter?) -> Builder {
             _externalWallet = externalWallet
             return self
         }
@@ -503,7 +503,7 @@ public struct OZSmartAccountConfig: @unchecked Sendable {
         /// Builds the `OZSmartAccountConfig`.
         ///
         /// - Returns: A new `OZSmartAccountConfig` instance.
-        /// - Throws: `ConfigurationException` if validation fails.
+        /// - Throws: `SmartAccountConfigurationException` if validation fails.
         public func build() throws -> OZSmartAccountConfig {
             return try OZSmartAccountConfig(
                 rpcUrl: rpcUrl,
@@ -534,7 +534,7 @@ extension OZSmartAccountConfig: Equatable {
     ///
     /// `KeyPair` and the protocol-typed `storage`, `webauthnProvider`, and
     /// `externalWallet` fields use reference / instance equality where applicable.
-    /// `InMemoryStorageAdapter` overrides equality so all instances of that class
+    /// `OZInMemoryStorageAdapter` overrides equality so all instances of that class
     /// compare equal, which lets two default-constructed configs round-trip through
     /// equality without surprises.
     public static func == (lhs: OZSmartAccountConfig, rhs: OZSmartAccountConfig) -> Bool {
@@ -581,8 +581,8 @@ extension OZSmartAccountConfig: Equatable {
         hasher.combine(indexerUrl)
         hasher.combine(maxContextRuleScanId)
         hasher.combine(deployerKeypair?.accountId)
-        if storage is InMemoryStorageAdapter {
-            hasher.combine(InMemoryStorageAdapter.sharedTypeHashTag)
+        if storage is OZInMemoryStorageAdapter {
+            hasher.combine(OZInMemoryStorageAdapter.sharedTypeHashTag)
         } else {
             hasher.combine(ObjectIdentifier(storage as AnyObject))
         }
@@ -608,8 +608,8 @@ extension OZSmartAccountConfig: Equatable {
         }
     }
 
-    private static func storageAdaptersEqual(_ lhs: StorageAdapter, _ rhs: StorageAdapter) -> Bool {
-        if let l = lhs as? InMemoryStorageAdapter, let r = rhs as? InMemoryStorageAdapter {
+    private static func storageAdaptersEqual(_ lhs: OZStorageAdapter, _ rhs: OZStorageAdapter) -> Bool {
+        if let l = lhs as? OZInMemoryStorageAdapter, let r = rhs as? OZInMemoryStorageAdapter {
             return l == r
         }
         return (lhs as AnyObject) === (rhs as AnyObject)
@@ -627,8 +627,8 @@ extension OZSmartAccountConfig: Equatable {
     }
 
     private static func externalWalletAdaptersEqual(
-        _ lhs: ExternalWalletAdapter?,
-        _ rhs: ExternalWalletAdapter?
+        _ lhs: OZExternalWalletAdapter?,
+        _ rhs: OZExternalWalletAdapter?
     ) -> Bool {
         switch (lhs, rhs) {
         case (nil, nil):

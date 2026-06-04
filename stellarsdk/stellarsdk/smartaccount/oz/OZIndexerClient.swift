@@ -627,7 +627,7 @@ public class OZIndexerClient: @unchecked Sendable {
     ///     `close()`. When an injected session is supplied, the
     ///     redirect-handling policy of that session is the caller's
     ///     responsibility.
-    /// - Throws: `ConfigurationException.InvalidConfig` when the URL is blank or
+    /// - Throws: `SmartAccountConfigurationException.InvalidConfig` when the URL is blank or
     ///   does not satisfy the HTTPS / localhost constraint.
     public init(
         indexerUrl: String,
@@ -673,9 +673,9 @@ public class OZIndexerClient: @unchecked Sendable {
     /// - Parameter credentialId: The credential ID to look up, base64url-encoded with
     ///   no padding. The client converts it to hex before contacting the indexer.
     /// - Returns: The decoded `OZCredentialLookupResponse`.
-    /// - Throws: `ValidationException.InvalidInput` when the credential ID is not
-    ///   valid base64url. `IndexerException.RequestFailed` on network failure,
-    ///   non-2xx response, or decoding failure. `IndexerException.Timeout` when the
+    /// - Throws: `SmartAccountValidationException.InvalidInput` when the credential ID is not
+    ///   valid base64url. `SmartAccountIndexerException.RequestFailed` on network failure,
+    ///   non-2xx response, or decoding failure. `SmartAccountIndexerException.Timeout` when the
     ///   request exceeds the configured timeout.
     public func lookupByCredentialId(credentialId: String) async throws -> OZCredentialLookupResponse {
         let hexCredentialId = try base64UrlToHex(credentialId)
@@ -687,9 +687,9 @@ public class OZIndexerClient: @unchecked Sendable {
     ///
     /// - Parameter address: A `G…` account or `C…` contract address.
     /// - Returns: The decoded `OZAddressLookupResponse`.
-    /// - Throws: `ValidationException.InvalidAddress` when the address is malformed.
-    ///   `IndexerException.RequestFailed` on network failure, non-2xx response, or
-    ///   decoding failure. `IndexerException.Timeout` on per-request timeout.
+    /// - Throws: `SmartAccountValidationException.InvalidAddress` when the address is malformed.
+    ///   `SmartAccountIndexerException.RequestFailed` on network failure, non-2xx response, or
+    ///   decoding failure. `SmartAccountIndexerException.Timeout` on per-request timeout.
     public func lookupByAddress(address: String) async throws -> OZAddressLookupResponse {
         try requireStellarAddress(address, fieldName: "address")
         let url = "\(baseUrl)/api/lookup/address/\(address)"
@@ -700,9 +700,9 @@ public class OZIndexerClient: @unchecked Sendable {
     ///
     /// - Parameter contractId: The contract ID (`C…` strkey).
     /// - Returns: The decoded `OZContractDetailsResponse`.
-    /// - Throws: `ValidationException.InvalidAddress` when the contract ID is
-    ///   malformed. `IndexerException.RequestFailed` on network failure, non-2xx
-    ///   response, or decoding failure. `IndexerException.Timeout` on per-request
+    /// - Throws: `SmartAccountValidationException.InvalidAddress` when the contract ID is
+    ///   malformed. `SmartAccountIndexerException.RequestFailed` on network failure, non-2xx
+    ///   response, or decoding failure. `SmartAccountIndexerException.Timeout` on per-request
     ///   timeout.
     public func getContract(contractId: String) async throws -> OZContractDetailsResponse {
         try requireContractAddress(contractId, fieldName: "contractId")
@@ -713,8 +713,8 @@ public class OZIndexerClient: @unchecked Sendable {
     /// Gets aggregate statistics from the indexer.
     ///
     /// - Returns: The decoded `OZIndexerStatsResponse`.
-    /// - Throws: `IndexerException.RequestFailed` on network failure, non-2xx
-    ///   response, or decoding failure. `IndexerException.Timeout` on per-request
+    /// - Throws: `SmartAccountIndexerException.RequestFailed` on network failure, non-2xx
+    ///   response, or decoding failure. `SmartAccountIndexerException.Timeout` on per-request
     ///   timeout.
     public func getStats() async throws -> OZIndexerStatsResponse {
         let url = "\(baseUrl)/api/stats"
@@ -808,7 +808,7 @@ public class OZIndexerClient: @unchecked Sendable {
 
     private func performRequest<T: Decodable>(url: String) async throws -> T {
         guard let urlObject = URL(string: url) else {
-            throw IndexerException.requestFailed(reason: "Invalid URL: \(url)")
+            throw SmartAccountIndexerException.requestFailed(reason: "Invalid URL: \(url)")
         }
 
         var request = URLRequest(url: urlObject, timeoutInterval: timeoutInterval)
@@ -821,27 +821,27 @@ public class OZIndexerClient: @unchecked Sendable {
         do {
             (data, response) = try await urlSession.data(for: request)
         } catch let error as URLError where error.code == .timedOut {
-            throw IndexerException.timeout(url: url, cause: error)
+            throw SmartAccountIndexerException.timeout(url: url, cause: error)
         } catch {
             let message = error.localizedDescription
-            throw IndexerException.requestFailed(reason: message, cause: error)
+            throw SmartAccountIndexerException.requestFailed(reason: message, cause: error)
         }
 
         if data.count > OZConstants.maxIndexerResponseBytes {
-            throw IndexerException.requestFailed(
+            throw SmartAccountIndexerException.requestFailed(
                 reason: "Response body exceeds maximum size of \(OZConstants.maxIndexerResponseBytes) bytes"
             )
         }
 
         guard let httpResponse = response as? HTTPURLResponse else {
-            throw IndexerException.requestFailed(reason: "Response is not an HTTP response")
+            throw SmartAccountIndexerException.requestFailed(reason: "Response is not an HTTP response")
         }
 
         let statusCode = httpResponse.statusCode
         if !(200...299).contains(statusCode) {
             let errorBody = String(data: data, encoding: .utf8) ?? "(unable to decode response body)"
             let truncatedBody = ozTruncateBody(errorBody)
-            throw IndexerException.requestFailed(reason: "HTTP \(statusCode): \(truncatedBody)")
+            throw SmartAccountIndexerException.requestFailed(reason: "HTTP \(statusCode): \(truncatedBody)")
         }
 
         // why: a proxy / gateway error page typically arrives with
@@ -851,7 +851,7 @@ public class OZIndexerClient: @unchecked Sendable {
         let responseContentType = httpResponse.value(forHTTPHeaderField: "Content-Type")
         if !ozResponseIsJson(responseContentType),
            let contentType = responseContentType {
-            throw IndexerException.requestFailed(
+            throw SmartAccountIndexerException.requestFailed(
                 reason: "Unexpected Content-Type: \(ozTruncateBody(contentType))"
             )
         }
@@ -862,7 +862,7 @@ public class OZIndexerClient: @unchecked Sendable {
         } catch let exception as SmartAccountException {
             throw exception
         } catch {
-            throw IndexerException.requestFailed(reason: error.localizedDescription, cause: error)
+            throw SmartAccountIndexerException.requestFailed(reason: error.localizedDescription, cause: error)
         }
     }
 
@@ -870,13 +870,13 @@ public class OZIndexerClient: @unchecked Sendable {
     ///
     /// The SDK stores credential IDs in base64url format (RFC 4648, no padding). The
     /// indexer API expects hex encoding without any prefix. Invalid base64url input
-    /// surfaces as `ValidationException.InvalidInput`.
+    /// surfaces as `SmartAccountValidationException.InvalidInput`.
     private func base64UrlToHex(_ base64url: String) throws -> String {
         do {
             let bytes = try Data(base64URLEncoded: base64url)
             return bytes.base16EncodedString()
         } catch {
-            throw ValidationException.invalidInput(
+            throw SmartAccountValidationException.invalidInput(
                 field: "credentialId",
                 reason: "Failed to decode base64url credential ID"
             )

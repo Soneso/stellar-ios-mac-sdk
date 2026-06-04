@@ -37,8 +37,8 @@ final class OZSmartAccountTypesTests: XCTestCase {
     func test_delegated_signer_rejects_invalid_address_throws_invalid_address() {
         do {
             _ = try OZDelegatedSigner(address: "not-a-real-address")
-            XCTFail("Expected ValidationException.InvalidAddress")
-        } catch let error as ValidationException.InvalidAddress {
+            XCTFail("Expected SmartAccountValidationException.InvalidAddress")
+        } catch let error as SmartAccountValidationException.InvalidAddress {
             XCTAssertEqual(error.code, .invalidAddress)
             XCTAssertTrue(error.message.contains("Invalid address"))
         } catch {
@@ -95,8 +95,8 @@ final class OZSmartAccountTypesTests: XCTestCase {
                 publicKey: publicKey,
                 credentialId: Data([0x01])
             )
-            XCTFail("Expected ValidationException.InvalidInput")
-        } catch let error as ValidationException.InvalidInput {
+            XCTFail("Expected SmartAccountValidationException.InvalidInput")
+        } catch let error as SmartAccountValidationException.InvalidInput {
             XCTAssertEqual(error.code, .invalidInput)
             XCTAssertTrue(error.message.contains("publicKey"))
         } catch {
@@ -113,8 +113,8 @@ final class OZSmartAccountTypesTests: XCTestCase {
                 publicKey: publicKey,
                 credentialId: Data([0x01])
             )
-            XCTFail("Expected ValidationException.InvalidInput for prefix 0x02")
-        } catch let error as ValidationException.InvalidInput {
+            XCTFail("Expected SmartAccountValidationException.InvalidInput for prefix 0x02")
+        } catch let error as SmartAccountValidationException.InvalidInput {
             XCTAssertEqual(error.code, .invalidInput)
             XCTAssertTrue(error.message.contains("0x04") || error.message.contains("uncompressed"))
         } catch {
@@ -131,8 +131,8 @@ final class OZSmartAccountTypesTests: XCTestCase {
                 publicKey: publicKey,
                 credentialId: Data([0x01])
             )
-            XCTFail("Expected ValidationException.InvalidInput for prefix 0x03")
-        } catch let error as ValidationException.InvalidInput {
+            XCTFail("Expected SmartAccountValidationException.InvalidInput for prefix 0x03")
+        } catch let error as SmartAccountValidationException.InvalidInput {
             XCTAssertEqual(error.code, .invalidInput)
             XCTAssertTrue(error.message.contains("0x04") || error.message.contains("uncompressed"))
         } catch {
@@ -148,8 +148,8 @@ final class OZSmartAccountTypesTests: XCTestCase {
                 publicKey: publicKey,
                 credentialId: Data()
             )
-            XCTFail("Expected ValidationException.InvalidInput for empty credentialId")
-        } catch let error as ValidationException.InvalidInput {
+            XCTFail("Expected SmartAccountValidationException.InvalidInput for empty credentialId")
+        } catch let error as SmartAccountValidationException.InvalidInput {
             XCTAssertEqual(error.code, .invalidInput)
             XCTAssertTrue(error.message.contains("credentialId"))
         } catch {
@@ -170,8 +170,8 @@ final class OZSmartAccountTypesTests: XCTestCase {
         let publicKey = Data(repeating: 0x11, count: 31) // 31 instead of 32
         do {
             _ = try OZExternalSigner.ed25519(verifierAddress: validContractC, publicKey: publicKey)
-            XCTFail("Expected ValidationException.InvalidInput")
-        } catch let error as ValidationException.InvalidInput {
+            XCTFail("Expected SmartAccountValidationException.InvalidInput")
+        } catch let error as SmartAccountValidationException.InvalidInput {
             XCTAssertEqual(error.code, .invalidInput)
             XCTAssertTrue(error.message.contains("Ed25519"))
         } catch {
@@ -184,8 +184,8 @@ final class OZSmartAccountTypesTests: XCTestCase {
     func test_external_signer_rejects_non_contract_verifier_address_throws_invalid_address() {
         do {
             _ = try OZExternalSigner(verifierAddress: validAccountG, keyData: Data([0x01, 0x02]))
-            XCTFail("Expected ValidationException.InvalidAddress")
-        } catch let error as ValidationException.InvalidAddress {
+            XCTFail("Expected SmartAccountValidationException.InvalidAddress")
+        } catch let error as SmartAccountValidationException.InvalidAddress {
             XCTAssertEqual(error.code, .invalidAddress)
             XCTAssertTrue(error.message.contains("contract"))
         } catch {
@@ -196,8 +196,8 @@ final class OZSmartAccountTypesTests: XCTestCase {
     func test_external_signer_rejects_empty_key_data_throws_invalid_input() {
         do {
             _ = try OZExternalSigner(verifierAddress: validContractC, keyData: Data())
-            XCTFail("Expected ValidationException.InvalidInput")
-        } catch let error as ValidationException.InvalidInput {
+            XCTFail("Expected SmartAccountValidationException.InvalidInput")
+        } catch let error as SmartAccountValidationException.InvalidInput {
             XCTAssertEqual(error.code, .invalidInput)
             XCTAssertTrue(error.message.contains("keyData"))
         } catch {
@@ -318,17 +318,17 @@ final class OZSmartAccountTypesTests: XCTestCase {
                        "OZExternalSigner equality must return false (not trap) for length-XOR > 0xFF")
     }
 
-    // MARK: - SubmissionMethod
+    // MARK: - OZSubmissionMethod
 
     func test_submission_method_has_two_cases_relayer_and_rpc() {
-        let cases: [SubmissionMethod] = [.relayer, .rpc]
+        let cases: [OZSubmissionMethod] = [.relayer, .rpc]
         XCTAssertEqual(cases.count, 2)
         XCTAssertTrue(cases.contains(.relayer))
         XCTAssertTrue(cases.contains(.rpc))
     }
 
     func test_submission_method_round_trip_through_string_or_index() {
-        let allCases: [SubmissionMethod] = [.relayer, .rpc]
+        let allCases: [OZSubmissionMethod] = [.relayer, .rpc]
         for method in allCases {
             let description = String(describing: method)
             XCTAssertFalse(description.isEmpty, "Description must not be empty")

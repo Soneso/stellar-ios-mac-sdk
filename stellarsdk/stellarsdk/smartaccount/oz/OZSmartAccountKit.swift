@@ -80,16 +80,16 @@ public final class OZSmartAccountKit: OZSmartAccountKitProtocol, @unchecked Send
     public let relayerClient: OZRelayerClient?
 
     /// Storage adapter for persisting credentials and sessions.
-    private let storage: StorageAdapter
+    private let storage: OZStorageAdapter
 
     /// Event emitter shared by every manager bound to this kit.
     ///
-    /// A single ``SmartAccountEventEmitter`` instance is created at kit
+    /// A single ``OZSmartAccountEventEmitter`` instance is created at kit
     /// construction time and exposed to consumers and to the wallet- and
     /// transaction-operations modules. Lifecycle and credential-lifecycle
     /// listeners installed here observe events from every manager belonging
     /// to the same kit.
-    public let events: SmartAccountEventEmitter
+    public let events: OZSmartAccountEventEmitter
 
     /// Wallet-operations module bound to this kit. Traps if accessed after `close()`.
     public var walletOperations: OZWalletOperations {
@@ -259,7 +259,7 @@ public final class OZSmartAccountKit: OZSmartAccountKitProtocol, @unchecked Send
     ///   - indexerClient: The optional indexer client owned by the kit.
     internal init(
         config: OZSmartAccountConfig,
-        storage: StorageAdapter,
+        storage: OZStorageAdapter,
         sorobanServer: SorobanServer,
         relayerClient: OZRelayerClient?,
         indexerClient: OZIndexerClient?,
@@ -271,7 +271,7 @@ public final class OZSmartAccountKit: OZSmartAccountKitProtocol, @unchecked Send
         self.relayerClient = relayerClient
         self.indexerClient = indexerClient
         self.ownedUrlSession = ownedUrlSession
-        self.events = SmartAccountEventEmitter()
+        self.events = OZSmartAccountEventEmitter()
         self._externalSigners = OZExternalSignerManager(
             networkPassphrase: config.networkPassphrase,
             walletAdapter: config.externalWallet,
@@ -328,13 +328,13 @@ public final class OZSmartAccountKit: OZSmartAccountKitProtocol, @unchecked Send
     ///
     /// - Returns: A ``ConnectedState`` carrying the active credential and
     ///   contract identifiers.
-    /// - Throws: ``WalletException/NotConnected`` when no wallet is
+    /// - Throws: ``SmartAccountWalletException/NotConnected`` when no wallet is
     ///   connected.
     internal func requireConnected() throws -> ConnectedState {
         stateLock.lock()
         defer { stateLock.unlock() }
         guard let cId = _credentialId, let ctId = _contractId else {
-            throw WalletException.notConnected(
+            throw SmartAccountWalletException.notConnected(
                 details: "No wallet connected. Call createWallet() or connectWallet() first."
             )
         }
@@ -344,8 +344,8 @@ public final class OZSmartAccountKit: OZSmartAccountKitProtocol, @unchecked Send
     /// Disconnects the currently connected wallet.
     ///
     /// Clears the in-memory connection state, removes the persisted session
-    /// via ``StorageAdapter/clearSession()``, and emits
-    /// ``SmartAccountEvent/walletDisconnected(contractId:)`` when a wallet
+    /// via ``OZStorageAdapter/clearSession()``, and emits
+    /// ``OZSmartAccountEvent/walletDisconnected(contractId:)`` when a wallet
     /// was connected at the time of the call. Stored credentials remain in
     /// storage and can be reconnected with
     /// ``OZWalletOperations/connectWallet(options:)``.
@@ -438,7 +438,7 @@ public final class OZSmartAccountKit: OZSmartAccountKitProtocol, @unchecked Send
     }
 
     /// Returns the storage adapter used by the kit.
-    internal func getStorage() -> StorageAdapter {
+    internal func getStorage() -> OZStorageAdapter {
         return storage
     }
 
@@ -447,7 +447,7 @@ public final class OZSmartAccountKit: OZSmartAccountKitProtocol, @unchecked Send
     ///
     /// - Returns: The keypair used to deploy smart-account contracts and to pay transaction
     ///   fees when no relayer is configured.
-    /// - Throws: ``ConfigurationException/InvalidConfig`` when default deployer derivation fails.
+    /// - Throws: ``SmartAccountConfigurationException/InvalidConfig`` when default deployer derivation fails.
     public func getDeployer() async throws -> KeyPair {
         if let cached = cachedDeployer {
             return cached
