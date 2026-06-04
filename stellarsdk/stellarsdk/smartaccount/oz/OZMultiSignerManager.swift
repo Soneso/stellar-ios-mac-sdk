@@ -37,13 +37,13 @@ import Security
 /// )
 /// ```
 // non-final to allow internal test subclassing in the unit-test target.
-public class OZMultiSignerManager: @unchecked Sendable {
+public class OZMultiSignerManager: OZRpcHelpers, @unchecked Sendable {
 
     // MARK: - Stored properties
 
     private let addressLogPrefixCount = 8
 
-    private let kit: OZSmartAccountKitProtocol
+    let kit: OZSmartAccountKitProtocol
 
     // MARK: - Initialization
 
@@ -1241,110 +1241,6 @@ public class OZMultiSignerManager: @unchecked Sendable {
             )),
             rootInvocation: invocation
         )
-    }
-
-    // MARK: - Internal RPC and transaction helpers
-
-    /// Builds the unsigned transaction shape used by the simulate / re-simulate
-    /// passes. Mirrors the shape used by ``OZTransactionOperations`` so the
-    /// resource-fee envelopes line up across single- and multi-signer flows.
-    private func buildTransaction(
-        sourceAccount: TransactionAccount,
-        operations: [Operation],
-        timeoutSeconds: Int
-    ) throws -> Transaction {
-        let nowSeconds = UInt64(Date().timeIntervalSince1970)
-        let maxTime: UInt64 = timeoutSeconds <= 0 ? 0 : nowSeconds + UInt64(timeoutSeconds)
-        let timeBounds = TimeBounds(
-            minTime: 0,
-            maxTime: maxTime
-        )
-        let preconditions = TransactionPreconditions(timeBounds: timeBounds)
-        do {
-            return try Transaction(
-                sourceAccount: sourceAccount,
-                operations: operations,
-                memo: Memo.none,
-                preconditions: preconditions,
-                maxOperationFee: StellarProtocolConstants.MIN_BASE_FEE
-            )
-        } catch {
-            throw TransactionException.signingFailed(
-                reason: "Failed to build transaction: " +
-                    (SmartAccountException.messageOf(error) ?? "unknown"),
-                cause: error
-            )
-        }
-    }
-
-    /// Wraps the kit's RPC `simulateTransaction` and lifts transport-level and
-    /// simulation-error responses into ``TransactionException/SimulationFailed``.
-    private func simulate(
-        transaction: Transaction,
-        failureMessagePrefix: String
-    ) async throws -> SimulateTransactionResponse {
-        let request = SimulateTransactionRequest(transaction: transaction)
-        let response = await kit.sorobanServer.simulateTransaction(
-            simulateTxRequest: request
-        )
-        switch response {
-        case .success(let simulation):
-            if let error = simulation.error {
-                throw TransactionException.simulationFailed(
-                    reason: "\(failureMessagePrefix)\(error)"
-                )
-            }
-            return simulation
-        case .failure(let error):
-            throw TransactionException.simulationFailed(
-                reason: "\(failureMessagePrefix)\(rpcErrorMessage(error))",
-                cause: error
-            )
-        }
-    }
-
-    /// Wraps `SorobanServer.getAccount(accountId:)` and lifts transport-level
-    /// failures into ``TransactionException/SubmissionFailed``.
-    private func fetchAccount(accountId: String) async throws -> Account {
-        let response = await kit.sorobanServer.getAccount(accountId: accountId)
-        switch response {
-        case .success(let account):
-            return account
-        case .failure(let error):
-            throw TransactionException.submissionFailed(
-                reason: "Failed to fetch account \(accountId): \(rpcErrorMessage(error))",
-                cause: error
-            )
-        }
-    }
-
-    /// Wraps `SorobanServer.getLatestLedger()` and lifts transport-level
-    /// failures into ``TransactionException/SubmissionFailed``.
-    private func fetchLatestLedger() async throws -> GetLatestLedgerResponse {
-        let response = await kit.sorobanServer.getLatestLedger()
-        switch response {
-        case .success(let ledger):
-            return ledger
-        case .failure(let error):
-            throw TransactionException.submissionFailed(
-                reason: "Failed to fetch latest ledger: \(rpcErrorMessage(error))",
-                cause: error
-            )
-        }
-    }
-
-    private func rpcErrorMessage(_ error: SorobanRpcRequestError) -> String {
-        switch error {
-        case .requestFailed(let message):
-            return message
-        case .errorResponse(let rpcError):
-            if let message = rpcError.message, !message.isEmpty {
-                return "\(rpcError.code): \(message)"
-            }
-            return "RPC error \(rpcError.code)"
-        case .parsingResponseFailed(let message, _):
-            return message
-        }
     }
 }
 

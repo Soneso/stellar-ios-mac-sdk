@@ -301,11 +301,11 @@ public struct ConnectWalletOptions: Sendable, Equatable, Hashable {
 ///
 /// Instances are constructed by ``OZSmartAccountKit`` and accessed through
 /// `kit.walletOperations`.
-public final class OZWalletOperations: @unchecked Sendable {
+public final class OZWalletOperations: OZRpcHelpers, @unchecked Sendable {
 
     // MARK: - Stored properties
 
-    private let kit: OZSmartAccountKitProtocol
+    let kit: OZSmartAccountKitProtocol
 
     // MARK: - Initialization
 
@@ -1407,7 +1407,10 @@ public final class OZWalletOperations: @unchecked Sendable {
 
         let simulation: SimulateTransactionResponse
         do {
-            simulation = try await simulateDeploy(transaction: transaction)
+            simulation = try await simulate(
+                transaction: transaction,
+                failureMessagePrefix: "Simulation error: "
+            )
         } catch let error as TransactionException {
             throw error
         } catch {
@@ -1446,29 +1449,6 @@ public final class OZWalletOperations: @unchecked Sendable {
         }
 
         return transaction
-    }
-
-    /// Simulates the supplied deploy transaction and lifts the response into
-    /// ``TransactionException/SimulationFailed``.
-    private func simulateDeploy(transaction: Transaction) async throws -> SimulateTransactionResponse {
-        let request = SimulateTransactionRequest(transaction: transaction)
-        let response = await kit.sorobanServer.simulateTransaction(
-            simulateTxRequest: request
-        )
-        switch response {
-        case .success(let simulation):
-            if let error = simulation.error {
-                throw TransactionException.simulationFailed(
-                    reason: "Simulation error: \(error)"
-                )
-            }
-            return simulation
-        case .failure(let error):
-            throw TransactionException.simulationFailed(
-                reason: "Simulation error: \(rpcErrorMessage(error))",
-                cause: error
-            )
-        }
     }
 
     /// Submits the supplied deploy transaction and polls for confirmation
@@ -1627,14 +1607,6 @@ public final class OZWalletOperations: @unchecked Sendable {
         }
     }
 
-    private func safeGetCredential(credentialId: String) async -> StoredCredential? {
-        do {
-            return try await credentialManager.getCredential(credentialId: credentialId)
-        } catch {
-            return nil
-        }
-    }
-
     private func markDeploymentFailedSafely(credentialId: String, error: String) async {
         do {
             try await credentialManager.markDeploymentFailed(
@@ -1643,34 +1615,6 @@ public final class OZWalletOperations: @unchecked Sendable {
             )
         } catch {
             // best-effort; the credential update is non-critical
-        }
-    }
-
-    /// Wraps `SorobanServer.getAccount` and lifts transport-level failures.
-    private func fetchAccount(accountId: String) async throws -> Account {
-        let response = await kit.sorobanServer.getAccount(accountId: accountId)
-        switch response {
-        case .success(let account):
-            return account
-        case .failure(let error):
-            throw TransactionException.submissionFailed(
-                reason: "Failed to fetch account \(accountId): \(rpcErrorMessage(error))",
-                cause: error
-            )
-        }
-    }
-
-    private func rpcErrorMessage(_ error: SorobanRpcRequestError) -> String {
-        switch error {
-        case .requestFailed(let message):
-            return message
-        case .errorResponse(let rpcError):
-            if let message = rpcError.message, !message.isEmpty {
-                return "\(rpcError.code): \(message)"
-            }
-            return "RPC error \(rpcError.code)"
-        case .parsingResponseFailed(let message, _):
-            return "Parse failure: \(message)"
         }
     }
 

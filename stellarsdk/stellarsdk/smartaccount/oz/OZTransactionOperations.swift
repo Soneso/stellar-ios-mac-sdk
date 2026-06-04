@@ -122,11 +122,11 @@ public typealias ResolveContextRuleIds = @Sendable (
 ///
 /// Instances are constructed by ``OZSmartAccountKit`` and accessed through
 /// `kit.transactionOperations`.
-public final class OZTransactionOperations: @unchecked Sendable {
+public final class OZTransactionOperations: OZRpcHelpers, @unchecked Sendable {
 
     // MARK: - Stored properties
 
-    private let kit: OZSmartAccountKitProtocol
+    let kit: OZSmartAccountKitProtocol
 
     // MARK: - Initialization
 
@@ -851,100 +851,6 @@ public final class OZTransactionOperations: @unchecked Sendable {
 
     // MARK: - Private helpers
 
-    /// Constructs the unsigned transaction shape used by every simulate / submit
-    /// path. Applies `MIN_BASE_FEE`, the operation list, a no-op memo, and a
-    /// `TransactionPreconditions` carrying a time-bounds upper limit of
-    /// `now + timeoutSeconds`. A `timeoutSeconds` of `0` yields `max_time = 0`,
-    /// the Stellar sentinel for "no upper bound" (the transaction never expires
-    /// by time).
-    private func buildTransaction(
-        sourceAccount: TransactionAccount,
-        operations: [Operation],
-        timeoutSeconds: Int
-    ) throws -> Transaction {
-        let nowSeconds = UInt64(Date().timeIntervalSince1970)
-        let maxTime: UInt64 = timeoutSeconds <= 0 ? 0 : nowSeconds + UInt64(timeoutSeconds)
-        let timeBounds = TimeBounds(
-            minTime: 0,
-            maxTime: maxTime
-        )
-        let preconditions = TransactionPreconditions(timeBounds: timeBounds)
-        do {
-            return try Transaction(
-                sourceAccount: sourceAccount,
-                operations: operations,
-                memo: Memo.none,
-                preconditions: preconditions,
-                maxOperationFee: StellarProtocolConstants.MIN_BASE_FEE
-            )
-        } catch {
-            throw TransactionException.signingFailed(
-                reason: "Failed to build transaction: \(SmartAccountException.messageOf(error) ?? "unknown")",
-                cause: error
-            )
-        }
-    }
-
-    private func simulate(
-        transaction: Transaction,
-        failureMessagePrefix: String
-    ) async throws -> SimulateTransactionResponse {
-        let request = SimulateTransactionRequest(transaction: transaction)
-        let response = await kit.sorobanServer.simulateTransaction(
-            simulateTxRequest: request
-        )
-        switch response {
-        case .success(let simulation):
-            if let error = simulation.error {
-                throw TransactionException.simulationFailed(
-                    reason: "\(failureMessagePrefix)\(error)"
-                )
-            }
-            return simulation
-        case .failure(let error):
-            throw TransactionException.simulationFailed(
-                reason: "\(failureMessagePrefix)\(rpcErrorMessage(error))",
-                cause: error
-            )
-        }
-    }
-
-    private func fetchAccount(accountId: String) async throws -> Account {
-        let response = await kit.sorobanServer.getAccount(accountId: accountId)
-        switch response {
-        case .success(let account):
-            return account
-        case .failure(let error):
-            throw TransactionException.submissionFailed(
-                reason: "Failed to fetch account \(accountId): \(rpcErrorMessage(error))",
-                cause: error
-            )
-        }
-    }
-
-    private func fetchLatestLedger() async throws -> GetLatestLedgerResponse {
-        let response = await kit.sorobanServer.getLatestLedger()
-        switch response {
-        case .success(let ledger):
-            return ledger
-        case .failure(let error):
-            throw TransactionException.submissionFailed(
-                reason: "Failed to fetch latest ledger: \(rpcErrorMessage(error))",
-                cause: error
-            )
-        }
-    }
-
-    private func safeGetCredential(credentialId: String) async -> StoredCredential? {
-        do {
-            return try await kit.credentialManager.getCredential(
-                credentialId: credentialId
-            )
-        } catch {
-            return nil
-        }
-    }
-
     /// Resolves the submission method given the optional forced override.
     ///
     /// Priority:
@@ -1280,20 +1186,6 @@ public final class OZTransactionOperations: @unchecked Sendable {
                 hash: hash,
                 error: "Polling failed: \(rpcErrorMessage(error))"
             )
-        }
-    }
-
-    private func rpcErrorMessage(_ error: SorobanRpcRequestError) -> String {
-        switch error {
-        case .requestFailed(let message):
-            return message
-        case .errorResponse(let rpcError):
-            if let message = rpcError.message, !message.isEmpty {
-                return "\(rpcError.code): \(message)"
-            }
-            return "RPC error \(rpcError.code)"
-        case .parsingResponseFailed(let message, _):
-            return "Parse failure: \(message)"
         }
     }
 
