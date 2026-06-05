@@ -1512,6 +1512,395 @@ final class OZExternalSignerManagerTests: XCTestCase {
             "when adapter returns false, canSignEd25519For must fall back to the in-process keypair registry"
         )
     }
+
+    // ========================================================================
+    // E.10 — get(address:) wallet branch
+    // ========================================================================
+
+    /// When no keypair matches but a wallet adapter reports a wallet for the
+    /// address, `get(address:)` must return a `.wallet` info populated from the
+    /// adapter's wallet record (name and id included).
+    func test_get_walletOnly_returnsWalletInfoFromAdapter() async throws {
+        let adapter = FakeExternalWalletAdapter()
+        adapter.preset(wallet: OZConnectedWallet(
+            address: validAddress1,
+            walletId: "freighter",
+            walletName: "Freighter"
+        ))
+        let manager = makeManager(walletAdapter: adapter)
+
+        let info = await manager.get(address: validAddress1)
+        XCTAssertNotNil(info)
+        XCTAssertEqual(info?.type, .wallet)
+        XCTAssertEqual(info?.address, validAddress1)
+        XCTAssertEqual(info?.walletName, "Freighter")
+        XCTAssertEqual(info?.walletId, "freighter")
+    }
+
+    /// With a wallet adapter configured but no wallet registered for the
+    /// queried address, `get(address:)` must return `nil`.
+    func test_get_walletAdapterPresent_noMatch_returnsNil() async throws {
+        let adapter = FakeExternalWalletAdapter()
+        let manager = makeManager(walletAdapter: adapter)
+
+        let info = await manager.get(address: validAddress2)
+        XCTAssertNil(info)
+    }
+
+    // ========================================================================
+    // E.11 — verifyExternalWalletSignature error branches
+    // ========================================================================
+
+    /// The wallet adapter returning a non-base64 signature must be rejected
+    /// during local verification before any on-chain submission.
+    func test_signAuthEntry_walletDelegate_nonBase64Signature_throwsSigningFailed() async throws {
+        let adapter = FakeExternalWalletAdapter()
+        let walletKeyPair = try newKeypair()
+        adapter.preset(wallet: OZConnectedWallet(
+            address: walletKeyPair.accountId,
+            walletId: "wallet-1",
+            walletName: "WalletOne"
+        ))
+        adapter.nextSignAuthResult = OZSignAuthEntryResult(
+            signedAuthEntry: "not-valid-base64-!!!",
+            signerAddress: walletKeyPair.accountId
+        )
+        let manager = makeManager(walletAdapter: adapter)
+
+        let preimageBase64 = Data(repeating: 0x33, count: 32).base64EncodedString()
+        do {
+            _ = try await manager.signAuthEntry(
+                address: walletKeyPair.accountId,
+                authEntry: preimageBase64
+            )
+            XCTFail("expected SmartAccountTransactionException.SigningFailed")
+        } catch let error as SmartAccountTransactionException.SigningFailed {
+            XCTAssertEqual(error.code, .transactionSigningFailed)
+            XCTAssertTrue(
+                error.message.contains("non-base64"),
+                "expected non-base64 signature message, got: \(error.message)"
+            )
+        }
+    }
+
+    /// When the adapter reports a signer address that is not a valid Stellar
+    /// account id, public-key derivation must fail and surface as SigningFailed.
+    func test_signAuthEntry_walletDelegate_invalidSignerAddress_throwsSigningFailed() async throws {
+        let adapter = FakeExternalWalletAdapter()
+        // The adapter must claim it can sign for the requested address, so use a
+        // valid requested address but return an invalid signerAddress in the
+        // result. expectedSignerAddress = result.signerAddress, which is invalid.
+        let requested = validAddress1
+        adapter.preset(wallet: OZConnectedWallet(
+            address: requested,
+            walletId: "wallet-1",
+            walletName: "WalletOne"
+        ))
+        adapter.nextSignAuthResult = OZSignAuthEntryResult(
+            signedAuthEntry: Data(repeating: 0x00, count: 64).base64EncodedString(),
+            signerAddress: "not-a-valid-stellar-address"
+        )
+        let manager = makeManager(walletAdapter: adapter)
+
+        let preimageBase64 = Data(repeating: 0x33, count: 32).base64EncodedString()
+        do {
+            _ = try await manager.signAuthEntry(
+                address: requested,
+                authEntry: preimageBase64
+            )
+            XCTFail("expected SmartAccountTransactionException.SigningFailed")
+        } catch let error as SmartAccountTransactionException.SigningFailed {
+            XCTAssertEqual(error.code, .transactionSigningFailed)
+            XCTAssertTrue(
+                error.message.contains("derive public key"),
+                "expected key-derivation failure message, got: \(error.message)"
+            )
+        }
+    }
+
+    /// A signature with a length other than 64 bytes makes `KeyPair.verify`
+    /// throw (rather than return false); that throwing path must surface as
+    /// SigningFailed with the "does not verify" message.
+    func test_signAuthEntry_walletDelegate_wrongLengthSignature_verifyThrows_throwsSigningFailed() async throws {
+        let adapter = FakeExternalWalletAdapter()
+        let walletKeyPair = try newKeypair()
+        adapter.preset(wallet: OZConnectedWallet(
+            address: walletKeyPair.accountId,
+            walletId: "wallet-1",
+            walletName: "WalletOne"
+        ))
+        // 32-byte signature (valid base64, wrong length) makes verify() throw
+        // Ed25519Error.invalidSignatureLength inside verifyExternalWalletSignature.
+        adapter.nextSignAuthResult = OZSignAuthEntryResult(
+            signedAuthEntry: Data(repeating: 0x01, count: 32).base64EncodedString(),
+            signerAddress: walletKeyPair.accountId
+        )
+        let manager = makeManager(walletAdapter: adapter)
+
+        let preimageBase64 = Data(repeating: 0x33, count: 32).base64EncodedString()
+        do {
+            _ = try await manager.signAuthEntry(
+                address: walletKeyPair.accountId,
+                authEntry: preimageBase64
+            )
+            XCTFail("expected SmartAccountTransactionException.SigningFailed")
+        } catch let error as SmartAccountTransactionException.SigningFailed {
+            XCTAssertEqual(error.code, .transactionSigningFailed)
+            XCTAssertTrue(
+                error.message.contains("does not verify"),
+                "expected verification-failure message, got: \(error.message)"
+            )
+        }
+    }
+
+    /// The wallet adapter must be unable to produce a signature over an
+    /// auth-entry preimage that is itself not valid base64. The verification
+    /// step decodes the preimage and rejects it before checking the signature.
+    ///
+    /// The adapter is configured to echo back a structurally valid (base64)
+    /// signature so the failure is attributable to the preimage decode, which
+    /// is the first guard inside `verifyExternalWalletSignature`.
+    func test_signAuthEntry_walletDelegate_nonBase64Preimage_verificationRejects() async throws {
+        let adapter = FakeExternalWalletAdapter()
+        let walletKeyPair = try newKeypair()
+        adapter.preset(wallet: OZConnectedWallet(
+            address: walletKeyPair.accountId,
+            walletId: "wallet-1",
+            walletName: "WalletOne"
+        ))
+        // Adapter ignores the (invalid) preimage and returns a base64 signature.
+        adapter.nextSignAuthResult = OZSignAuthEntryResult(
+            signedAuthEntry: Data(repeating: 0x00, count: 64).base64EncodedString(),
+            signerAddress: walletKeyPair.accountId
+        )
+        let manager = makeManager(walletAdapter: adapter)
+
+        do {
+            _ = try await manager.signAuthEntry(
+                address: walletKeyPair.accountId,
+                authEntry: "not-valid-base64-!!!"
+            )
+            XCTFail("expected SmartAccountTransactionException.SigningFailed")
+        } catch let error as SmartAccountTransactionException.SigningFailed {
+            XCTAssertEqual(error.code, .transactionSigningFailed)
+            XCTAssertTrue(
+                error.message.contains("decode base64 auth entry preimage"),
+                "expected preimage-decode failure message, got: \(error.message)"
+            )
+        }
+    }
+
+    // ========================================================================
+    // E.12 — addEd25519FromRawKey invalid verifier address
+    // ========================================================================
+
+    /// A verifier address that is not a valid C-strkey must be rejected before
+    /// any keypair construction is attempted.
+    func test_addEd25519FromRawKey_invalidVerifierAddress_throwsInvalidInput() async throws {
+        let manager = makeManager()
+
+        do {
+            _ = try await manager.addEd25519FromRawKey(
+                secretKeyBytes: ed25519SecretBytes,
+                verifierAddress: "not-a-contract-address"
+            )
+            XCTFail("expected SmartAccountValidationException.InvalidInput for bad verifier")
+        } catch let error as SmartAccountValidationException.InvalidInput {
+            XCTAssertEqual(error.code, .invalidInput)
+            XCTAssertTrue(
+                error.message.contains("verifierAddress") || error.message.contains("verifier address"),
+                "expected verifier-address validation message, got: \(error.message)"
+            )
+        }
+
+        // A G-address is a valid strkey but not a contract id; it must also be
+        // rejected by the C-strkey check.
+        let gAddress = try newKeypair().accountId
+        do {
+            _ = try await manager.addEd25519FromRawKey(
+                secretKeyBytes: ed25519SecretBytes,
+                verifierAddress: gAddress
+            )
+            XCTFail("expected SmartAccountValidationException.InvalidInput for G-address verifier")
+        } catch is SmartAccountValidationException.InvalidInput {
+            // expected
+        }
+    }
+
+    // ========================================================================
+    // E.13 — signEd25519AuthDigest adapter error path
+    // ========================================================================
+
+    /// When the adapter claims it can sign but throws during signing, the error
+    /// must be wrapped as SigningFailed and reference the verifier address.
+    func test_signEd25519AuthDigest_adapterThrows_wrapsAsSigningFailed() async throws {
+        struct AdapterFailure: Error, LocalizedError {
+            var errorDescription: String? { "hardware unavailable" }
+        }
+        let adapter = ThrowingEd25519SignerAdapter(error: AdapterFailure())
+        let manager = OZExternalSignerManager(
+            networkPassphrase: testNetworkPassphrase,
+            ed25519Adapter: adapter
+        )
+
+        let seed = try Seed(bytes: [UInt8](ed25519SecretBytes))
+        let publicKey = Data(KeyPair(seed: seed).publicKey.bytes)
+        let authDigest = Data(repeating: 0x42, count: 32)
+
+        do {
+            _ = try await manager.signEd25519AuthDigest(
+                verifierAddress: ed25519VerifierAlpha,
+                publicKey: publicKey,
+                authDigest: authDigest
+            )
+            XCTFail("expected SmartAccountTransactionException.SigningFailed")
+        } catch let error as SmartAccountTransactionException.SigningFailed {
+            XCTAssertEqual(error.code, .transactionSigningFailed)
+            XCTAssertTrue(
+                error.message.contains("Ed25519 adapter signing failed"),
+                "expected adapter-signing-failure message, got: \(error.message)"
+            )
+            XCTAssertTrue(
+                error.message.contains("hardware unavailable"),
+                "wrapped message must surface the underlying adapter error text"
+            )
+        }
+    }
+
+    // ========================================================================
+    // E.14 — restoreConnections transient reconnect error keeps entry
+    // ========================================================================
+
+    /// When `reconnect` throws (treated as transient), the stored entry must be
+    /// left intact so a later restore can retry. The throwing entry must not be
+    /// purged from storage, and only successfully reconnected wallets appear in
+    /// the result.
+    func test_restoreConnections_reconnectThrows_keepsStaleEntry() async throws {
+        let storage = OZInMemoryWalletConnectionStorage()
+        await storage.setItem(
+            key: walletStorageKey,
+            value: """
+            [{"address":"\(validAddress1)","walletId":"alpha","walletName":"Alpha","connectedAt":1700000000000},\
+            {"address":"\(validAddress2)","walletId":"beta","walletName":"Beta","connectedAt":1700000001000}]
+            """
+        )
+
+        let adapter = FakeExternalWalletAdapter()
+        // alpha reconnects fine; beta throws a transient error.
+        adapter.reconnectResponse["alpha"] = OZConnectedWallet(
+            address: validAddress1,
+            walletId: "alpha",
+            walletName: "Alpha"
+        )
+        struct TransientReconnectError: Error {}
+        adapter.reconnectErrors["beta"] = TransientReconnectError()
+
+        let manager = makeManager(
+            walletAdapter: adapter,
+            walletConnectionStorage: storage
+        )
+
+        let restored = try await manager.restoreConnections()
+        XCTAssertEqual(restored.count, 1)
+        XCTAssertEqual(restored[0].walletId, "alpha")
+
+        // Both entries must still be present: alpha was never removed and beta
+        // failed transiently, so it is left for a future retry.
+        let json = await storage.getItem(key: walletStorageKey)
+        XCTAssertNotNil(json)
+        XCTAssertTrue(json!.contains(validAddress1), "alpha must remain in storage")
+        XCTAssertTrue(
+            json!.contains(validAddress2),
+            "transiently-failing entry must NOT be purged from storage"
+        )
+    }
+
+    // ========================================================================
+    // E.16 — getStoredWallets storage-read failure returns empty
+    // ========================================================================
+
+    /// When the storage backend throws on read, `restoreConnections` (which
+    /// reads via getStoredWallets) must treat the failure as an empty store
+    /// rather than propagating the error.
+    func test_restoreConnections_storageReadThrows_returnsEmpty() async throws {
+        struct StorageReadError: Error {}
+        let storage = ThrowingWalletConnectionStorage(getError: StorageReadError())
+        let adapter = FakeExternalWalletAdapter()
+        let manager = makeManager(
+            walletAdapter: adapter,
+            walletConnectionStorage: storage
+        )
+
+        let result = try await manager.restoreConnections()
+        XCTAssertTrue(result.isEmpty, "storage read failure must yield an empty restore set")
+        XCTAssertEqual(
+            adapter.reconnectCallCount,
+            0,
+            "no reconnect attempts when the store read failed"
+        )
+    }
+
+    // ========================================================================
+    // E.17 — describe(...) message-extraction branches
+    // ========================================================================
+
+    /// When the wallet adapter throws a `SmartAccountException`, the wrapping
+    /// SigningFailed error must surface the structured `message` of that
+    /// exception (the SmartAccountException branch of `describe`).
+    func test_signAuthEntry_walletAdapterThrowsSmartAccountException_usesStructuredMessage() async throws {
+        let adapter = FakeExternalWalletAdapter()
+        adapter.preset(wallet: OZConnectedWallet(
+            address: validAddress1,
+            walletId: "wallet-1",
+            walletName: "WalletOne"
+        ))
+        let innerMessage = "Storage read failed for key: probe"
+        adapter.signAuthError = SmartAccountStorageException.readFailed(key: "probe")
+        let manager = makeManager(walletAdapter: adapter)
+
+        do {
+            _ = try await manager.signAuthEntry(
+                address: validAddress1,
+                authEntry: "AAAA"
+            )
+            XCTFail("expected SmartAccountTransactionException.SigningFailed")
+        } catch let error as SmartAccountTransactionException.SigningFailed {
+            XCTAssertEqual(error.code, .transactionSigningFailed)
+            XCTAssertTrue(
+                error.message.contains(innerMessage),
+                "wrapped message must include the SmartAccountException structured message, got: \(error.message)"
+            )
+        }
+    }
+
+    /// When the wallet adapter throws an error whose `localizedDescription` is
+    /// empty, `describe` must fall back to `String(describing:)`. The wrapped
+    /// SigningFailed message must then include the type-derived description.
+    func test_signAuthEntry_walletAdapterThrowsEmptyLocalizedError_usesDescribingFallback() async throws {
+        let adapter = FakeExternalWalletAdapter()
+        adapter.preset(wallet: OZConnectedWallet(
+            address: validAddress1,
+            walletId: "wallet-1",
+            walletName: "WalletOne"
+        ))
+        adapter.signAuthError = EmptyLocalizedDescriptionError()
+        let manager = makeManager(walletAdapter: adapter)
+
+        do {
+            _ = try await manager.signAuthEntry(
+                address: validAddress1,
+                authEntry: "AAAA"
+            )
+            XCTFail("expected SmartAccountTransactionException.SigningFailed")
+        } catch let error as SmartAccountTransactionException.SigningFailed {
+            XCTAssertEqual(error.code, .transactionSigningFailed)
+            // String(describing:) of the value type yields the type name.
+            XCTAssertTrue(
+                error.message.contains("EmptyLocalizedDescriptionError"),
+                "wrapped message must fall back to String(describing:), got: \(error.message)"
+            )
+        }
+    }
 }
 
 // ============================================================================
@@ -1543,6 +1932,53 @@ private final class FakeEd25519SignerAdapter: OZExternalEd25519SignerAdapter, @u
     }
 }
 
+/// Stub ``OZExternalEd25519SignerAdapter`` that always claims it can sign and
+/// always throws from ``signAuthDigest(authDigest:publicKey:)``. Used to drive
+/// the adapter-signing-failure path of ``signEd25519AuthDigest``.
+private final class ThrowingEd25519SignerAdapter: OZExternalEd25519SignerAdapter, @unchecked Sendable {
+
+    private let error: Error
+
+    init(error: Error) {
+        self.error = error
+    }
+
+    func canSignFor(verifierAddress: String, publicKey: Data) -> Bool {
+        return true
+    }
+
+    func signAuthDigest(authDigest: Data, publicKey: Data) async throws -> Data {
+        throw error
+    }
+}
+
+/// ``OZWalletConnectionStorage`` whose `getItem` always throws. Used to drive
+/// the storage-read-failure path of `getStoredWallets`, which must swallow the
+/// error and behave as if the store were empty.
+private final class ThrowingWalletConnectionStorage: OZWalletConnectionStorage, @unchecked Sendable {
+
+    private let getError: Error
+
+    init(getError: Error) {
+        self.getError = getError
+    }
+
+    func getItem(key: String) async throws -> String? {
+        throw getError
+    }
+
+    func setItem(key: String, value: String) async throws {}
+
+    func removeItem(key: String) async throws {}
+}
+
+/// Error whose `localizedDescription` is the empty string, used to drive the
+/// `String(describing:)` fallback branch of the manager's private `describe`
+/// helper.
+private struct EmptyLocalizedDescriptionError: Error, LocalizedError {
+    var errorDescription: String? { "" }
+}
+
 // ============================================================================
 // Test doubles
 // ============================================================================
@@ -1561,6 +1997,10 @@ private final class FakeExternalWalletAdapter: OZExternalWalletAdapter, @uncheck
 
     var nextConnect: OZConnectedWallet?
     var reconnectResponse: [String: OZConnectedWallet?] = [:]
+    /// Per-walletId errors thrown by `reconnect`. Takes precedence over
+    /// `reconnectResponse` for the same walletId, modeling a transient
+    /// reconnect failure (network outage, pop-up blocked, back-end overload).
+    var reconnectErrors: [String: Error] = [:]
     var nextSignAuthResult: OZSignAuthEntryResult?
     var signAuthError: Error?
 
@@ -1639,10 +2079,12 @@ private final class FakeExternalWalletAdapter: OZExternalWalletAdapter, @uncheck
     }
 
     func reconnect(walletId: String) async throws -> OZConnectedWallet? {
-        let response: OZConnectedWallet?? = queue.sync {
+        let snapshot: (Error?, OZConnectedWallet??) = queue.sync {
             reconnectCallCount += 1
-            return reconnectResponse[walletId]
+            return (reconnectErrors[walletId], reconnectResponse[walletId])
         }
+        if let error = snapshot.0 { throw error }
+        let response: OZConnectedWallet?? = snapshot.1
         guard let resolved = response else { return nil }
         if let wallet = resolved {
             queue.sync { presetWallets[wallet.address] = wallet }

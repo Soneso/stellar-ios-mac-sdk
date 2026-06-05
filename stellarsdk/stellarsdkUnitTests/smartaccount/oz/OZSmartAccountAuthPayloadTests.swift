@@ -635,4 +635,139 @@ final class OZSmartAccountAuthPayloadTests: XCTestCase {
         XCTAssertEqual(actualHex, expectedHex,
                        "Golden vector 5 mismatch — actual: \(actualHex)")
     }
+
+    // MARK: - write — signer toScVal() failure (lines 174-177)
+
+    /// When a signer's ``OZSmartAccountSigner/toScVal()`` throws, ``write(_:)``
+    /// must wrap the error in ``SmartAccountTransactionException/SigningFailed``
+    /// with the "Failed to convert signer to SCVal" reason and preserve the
+    /// underlying cause.
+    func testWrite_signerToScValThrows_wrapsAsSigningFailed() {
+        let payload = OZSmartAccountAuthPayload(
+            signers: [.init(signer: _ThrowingSigner(), signatureBytes: Data([0x01]))],
+            contextRuleIds: []
+        )
+        XCTAssertThrowsError(try OZSmartAccountAuthPayloadCodec.write(payload)) { error in
+            guard let signingFailed = error as? SmartAccountTransactionException.SigningFailed else {
+                return XCTFail("expected SmartAccountTransactionException.SigningFailed, got: \(error)")
+            }
+            XCTAssertTrue(
+                signingFailed.message.contains("Failed to convert signer to SCVal"),
+                "expected the convert-signer reason, got: \(signingFailed.message)"
+            )
+        }
+    }
+
+    // MARK: - signerFromScVal — null Vec payload (line 257)
+
+    /// A `Vec` ScVal whose element array is `nil` (rather than empty) must throw
+    /// ``SmartAccountTransactionException/SigningFailed`` from the
+    /// `guard let elements = optionalElements` branch.
+    func testSignerFromScVal_nullVecElements_throws() {
+        let scVal: SCValXDR = .vec(nil)
+        XCTAssertThrowsError(try OZSmartAccountAuthPayloadCodec.signerFromScVal(scVal)) { error in
+            guard let signingFailed = error as? SmartAccountTransactionException.SigningFailed else {
+                return XCTFail("expected SmartAccountTransactionException.SigningFailed, got: \(error)")
+            }
+            XCTAssertTrue(
+                signingFailed.message.contains("null") || signingFailed.message.contains("empty"),
+                "expected the null/empty Vec reason, got: \(signingFailed.message)"
+            )
+        }
+    }
+
+    // MARK: - signerFromScVal — Delegated construction failure (lines 285-289)
+
+    /// A `Delegated` signer Vec whose address decodes to a muxed (`M…`) address
+    /// is rejected by the ``OZDelegatedSigner`` initializer (which accepts only
+    /// `G…` accounts and `C…` contracts). ``signerFromScVal(_:)`` must wrap the
+    /// init failure in ``SmartAccountTransactionException/SigningFailed`` naming
+    /// the invalid-address reason.
+    func testSignerFromScVal_delegatedWithMuxedAddress_throwsSigningFailed() throws {
+        let keyPair = try KeyPair.generateRandomKeyPair()
+        let muxed = MuxedAccountMed25519XDR(
+            id: 1,
+            sourceAccountEd25519: [UInt8](keyPair.publicKey.bytes)
+        )
+        let scVal: SCValXDR = .vec([
+            .symbol("Delegated"),
+            .address(.muxedAccount(muxed))
+        ])
+        XCTAssertThrowsError(try OZSmartAccountAuthPayloadCodec.signerFromScVal(scVal)) { error in
+            guard let signingFailed = error as? SmartAccountTransactionException.SigningFailed else {
+                return XCTFail("expected SmartAccountTransactionException.SigningFailed, got: \(error)")
+            }
+            XCTAssertTrue(
+                signingFailed.message.contains("valid Stellar address"),
+                "expected the invalid-delegated-address reason, got: \(signingFailed.message)"
+            )
+        }
+    }
+
+    // MARK: - signerFromScVal — External construction failure (lines 310-314)
+
+    /// An `External` signer Vec whose verifier address decodes to a `G…` account
+    /// address is rejected by the ``OZExternalSigner`` initializer (which
+    /// requires a `C…` contract address). ``signerFromScVal(_:)`` must wrap the
+    /// init failure in ``SmartAccountTransactionException/SigningFailed`` naming
+    /// the construction-failure reason.
+    func testSignerFromScVal_externalWithAccountVerifier_throwsSigningFailed() throws {
+        let scVal: SCValXDR = .vec([
+            .symbol("External"),
+            .address(try SCAddressXDR(accountId: validAccountG)),
+            .bytes(Data([0x01, 0x02]))
+        ])
+        XCTAssertThrowsError(try OZSmartAccountAuthPayloadCodec.signerFromScVal(scVal)) { error in
+            guard let signingFailed = error as? SmartAccountTransactionException.SigningFailed else {
+                return XCTFail("expected SmartAccountTransactionException.SigningFailed, got: \(error)")
+            }
+            XCTAssertTrue(
+                signingFailed.message.contains("External signer construction failed"),
+                "expected the external-construction-failure reason, got: \(signingFailed.message)"
+            )
+        }
+    }
+
+    // MARK: - signerFromScVal — unsupported address variant (lines 330-332)
+
+    /// When a `Delegated` signer Vec carries an `SCAddressXDR` variant that the
+    /// strkey converter does not support (a liquidity-pool id, which is neither
+    /// an account nor a contract), the internal `addressString(from:)` helper
+    /// must throw ``SmartAccountTransactionException/SigningFailed`` with the
+    /// "Unsupported signer address type" reason.
+    func testSignerFromScVal_unsupportedAddressVariant_throwsSigningFailed() {
+        let scVal: SCValXDR = .vec([
+            .symbol("Delegated"),
+            .address(.liquidityPoolId(WrappedData32(Data(repeating: 0x07, count: 32))))
+        ])
+        XCTAssertThrowsError(try OZSmartAccountAuthPayloadCodec.signerFromScVal(scVal)) { error in
+            guard let signingFailed = error as? SmartAccountTransactionException.SigningFailed else {
+                return XCTFail("expected SmartAccountTransactionException.SigningFailed, got: \(error)")
+            }
+            XCTAssertTrue(
+                signingFailed.message.contains("Unsupported signer address type"),
+                "expected the unsupported-address reason, got: \(signingFailed.message)"
+            )
+        }
+    }
+}
+
+// ============================================================================
+// MARK: - Test doubles (file-private)
+// ============================================================================
+
+/// A signer whose ``toScVal()`` always throws, used to drive the
+/// ``OZSmartAccountAuthPayloadCodec/write(_:)`` signer-conversion failure
+/// branch. The conversion error surfaces wrapped as
+/// ``SmartAccountTransactionException/SigningFailed``.
+private struct _ThrowingSigner: OZSmartAccountSigner {
+
+    func toScVal() throws -> SCValXDR {
+        throw SmartAccountValidationException.invalidInput(
+            field: "signer",
+            reason: "synthetic conversion failure"
+        )
+    }
+
+    var uniqueKey: String { "throwing:signer" }
 }

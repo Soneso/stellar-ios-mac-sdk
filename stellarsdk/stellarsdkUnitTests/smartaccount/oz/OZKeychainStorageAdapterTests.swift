@@ -653,6 +653,508 @@ final class OZKeychainStorageAdapterTests: XCTestCase {
         let loaded = try await adapter.get(credentialId: "big")
         XCTAssertEqual(loaded?.publicKey.count, bigPayload.count)
     }
+
+    // ========================================================================
+    // Re-throw arms — inner keychain OSStatus failures propagate unchanged
+    // ========================================================================
+
+    func test_save_rethrows_storage_exception_when_add_fails() async throws {
+        // `keychainUpsert` throws `SmartAccountStorageException.WriteFailed` on a
+        // non-duplicate add status; `save` must re-throw it unwrapped.
+        let shim = ControllableShim()
+        shim.addStatus = { _ in errSecMissingEntitlement }
+        let adapter = OZKeychainStorageAdapter(serviceName: uniqueServiceName(), shim: shim)
+
+        do {
+            try await adapter.save(credential: fullCredential())
+            XCTFail("expected SmartAccountStorageException.WriteFailed")
+        } catch let error as SmartAccountStorageException.WriteFailed {
+            XCTAssertEqual(error.code, .storageWriteFailed)
+            XCTAssertTrue(error.message.contains("\(errSecMissingEntitlement)"))
+        }
+    }
+
+    func test_get_by_contract_rethrows_storage_exception_on_read_failure() async throws {
+        let shim = ControllableShim()
+        shim.copyStatus = { _ in errSecInteractionNotAllowed }
+        let adapter = OZKeychainStorageAdapter(serviceName: uniqueServiceName(), shim: shim)
+
+        do {
+            _ = try await adapter.getByContract(contractId: "CT")
+            XCTFail("expected SmartAccountStorageException.ReadFailed")
+        } catch let error as SmartAccountStorageException.ReadFailed {
+            XCTAssertEqual(error.code, .storageReadFailed)
+            XCTAssertTrue(error.message.contains("\(errSecInteractionNotAllowed)"))
+        }
+    }
+
+    func test_get_all_rethrows_storage_exception_on_read_failure() async throws {
+        let shim = ControllableShim()
+        shim.copyStatus = { _ in errSecInteractionNotAllowed }
+        let adapter = OZKeychainStorageAdapter(serviceName: uniqueServiceName(), shim: shim)
+
+        do {
+            _ = try await adapter.getAll()
+            XCTFail("expected SmartAccountStorageException.ReadFailed")
+        } catch let error as SmartAccountStorageException.ReadFailed {
+            XCTAssertEqual(error.code, .storageReadFailed)
+        }
+    }
+
+    func test_delete_rethrows_storage_exception_when_delete_fails() async throws {
+        let shim = ControllableShim()
+        shim.deleteStatus = { _ in errSecMissingEntitlement }
+        let adapter = OZKeychainStorageAdapter(serviceName: uniqueServiceName(), shim: shim)
+
+        do {
+            try await adapter.delete(credentialId: "cred-1")
+            XCTFail("expected SmartAccountStorageException.WriteFailed")
+        } catch let error as SmartAccountStorageException.WriteFailed {
+            XCTAssertEqual(error.code, .storageWriteFailed)
+            XCTAssertTrue(error.message.contains("\(errSecMissingEntitlement)"))
+        }
+    }
+
+    func test_update_rethrows_storage_exception_on_read_failure() async throws {
+        // The initial `readCredential` fails at the keychain layer with a
+        // `SmartAccountStorageException`; `update` re-throws it (it is neither a
+        // `SmartAccountCredentialException` nor the catch-all path).
+        let shim = ControllableShim()
+        shim.copyStatus = { _ in errSecInteractionNotAllowed }
+        let adapter = OZKeychainStorageAdapter(serviceName: uniqueServiceName(), shim: shim)
+
+        do {
+            try await adapter.update(
+                credentialId: "cred-1",
+                updates: OZStoredCredentialUpdate(nickname: "X")
+            )
+            XCTFail("expected SmartAccountStorageException.ReadFailed")
+        } catch let error as SmartAccountStorageException.ReadFailed {
+            XCTAssertEqual(error.code, .storageReadFailed)
+        }
+    }
+
+    func test_clear_rethrows_storage_exception_on_index_read_failure() async throws {
+        let shim = ControllableShim()
+        shim.copyStatus = { _ in errSecInteractionNotAllowed }
+        let adapter = OZKeychainStorageAdapter(serviceName: uniqueServiceName(), shim: shim)
+
+        do {
+            try await adapter.clear()
+            XCTFail("expected SmartAccountStorageException.ReadFailed")
+        } catch let error as SmartAccountStorageException.ReadFailed {
+            XCTAssertEqual(error.code, .storageReadFailed)
+        }
+    }
+
+    func test_save_session_rethrows_storage_exception_when_add_fails() async throws {
+        let shim = ControllableShim()
+        shim.addStatus = { _ in errSecMissingEntitlement }
+        let adapter = OZKeychainStorageAdapter(serviceName: uniqueServiceName(), shim: shim)
+
+        let session = OZStoredSession(
+            credentialId: "c1",
+            contractId: "CT",
+            connectedAt: 1_700_000_000_000,
+            expiresAt: 1_900_000_000_000
+        )
+        do {
+            try await adapter.saveSession(session)
+            XCTFail("expected SmartAccountStorageException.WriteFailed")
+        } catch let error as SmartAccountStorageException.WriteFailed {
+            XCTAssertEqual(error.code, .storageWriteFailed)
+            XCTAssertTrue(error.message.contains("\(errSecMissingEntitlement)"))
+        }
+    }
+
+    func test_get_session_rethrows_storage_exception_on_read_failure() async throws {
+        let shim = ControllableShim()
+        shim.copyStatus = { _ in errSecInteractionNotAllowed }
+        let adapter = OZKeychainStorageAdapter(serviceName: uniqueServiceName(), shim: shim)
+
+        do {
+            _ = try await adapter.getSession()
+            XCTFail("expected SmartAccountStorageException.ReadFailed")
+        } catch let error as SmartAccountStorageException.ReadFailed {
+            XCTAssertEqual(error.code, .storageReadFailed)
+            XCTAssertTrue(error.message.contains("\(errSecInteractionNotAllowed)"))
+        }
+    }
+
+    func test_clear_session_rethrows_storage_exception_when_delete_fails() async throws {
+        let shim = ControllableShim()
+        shim.deleteStatus = { _ in errSecMissingEntitlement }
+        let adapter = OZKeychainStorageAdapter(serviceName: uniqueServiceName(), shim: shim)
+
+        do {
+            try await adapter.clearSession()
+            XCTFail("expected SmartAccountStorageException.WriteFailed")
+        } catch let error as SmartAccountStorageException.WriteFailed {
+            XCTAssertEqual(error.code, .storageWriteFailed)
+            XCTAssertTrue(error.message.contains("\(errSecMissingEntitlement)"))
+        }
+    }
+
+    // ========================================================================
+    // Catch-all arms — non-storage errors wrapped into Read/WriteFailed
+    // ========================================================================
+
+    func test_save_wraps_decoding_error_from_index_into_write_failed() async throws {
+        // The credential upsert succeeds, then `readIndex` decodes a malformed
+        // index entry and throws a `DecodingError`. `save` wraps that
+        // non-storage error into `SmartAccountStorageException.WriteFailed`.
+        let store = RawBackedKeychain()
+        let service = uniqueServiceName()
+        store.put(service: service, account: OZStorageKeys.credentialIndexKey, raw: "{ not json")
+        let adapter = OZKeychainStorageAdapter(serviceName: service, shim: store.makeShim())
+
+        do {
+            try await adapter.save(credential: fullCredential(id: "cred-x"))
+            XCTFail("expected SmartAccountStorageException.WriteFailed")
+        } catch let error as SmartAccountStorageException.WriteFailed {
+            XCTAssertEqual(error.code, .storageWriteFailed)
+            XCTAssertTrue(error.message.contains("cred-x"))
+        }
+    }
+
+    func test_get_by_contract_wraps_decoding_error_into_read_failed() async throws {
+        let store = RawBackedKeychain()
+        let service = uniqueServiceName()
+        store.put(service: service, account: OZStorageKeys.credentialIndexKey, raw: "<<<not json>>>")
+        let adapter = OZKeychainStorageAdapter(serviceName: service, shim: store.makeShim())
+
+        do {
+            _ = try await adapter.getByContract(contractId: "CT")
+            XCTFail("expected SmartAccountStorageException.ReadFailed")
+        } catch let error as SmartAccountStorageException.ReadFailed {
+            XCTAssertEqual(error.code, .storageReadFailed)
+            XCTAssertTrue(error.message.contains("CT"))
+        }
+    }
+
+    func test_get_all_wraps_decoding_error_into_read_failed() async throws {
+        let store = RawBackedKeychain()
+        let service = uniqueServiceName()
+        store.put(service: service, account: OZStorageKeys.credentialIndexKey, raw: "}{")
+        let adapter = OZKeychainStorageAdapter(serviceName: service, shim: store.makeShim())
+
+        do {
+            _ = try await adapter.getAll()
+            XCTFail("expected SmartAccountStorageException.ReadFailed")
+        } catch let error as SmartAccountStorageException.ReadFailed {
+            XCTAssertEqual(error.code, .storageReadFailed)
+            XCTAssertTrue(error.message.contains("all credentials"))
+        }
+    }
+
+    func test_delete_wraps_decoding_error_from_index_into_write_failed() async throws {
+        // The keychain delete of the credential succeeds (idempotent), then
+        // `readIndex` hits a malformed index entry and throws a decoding error
+        // that `delete` wraps into `WriteFailed`.
+        let store = RawBackedKeychain()
+        let service = uniqueServiceName()
+        store.put(service: service, account: OZStorageKeys.credentialIndexKey, raw: "not-json")
+        let adapter = OZKeychainStorageAdapter(serviceName: service, shim: store.makeShim())
+
+        do {
+            try await adapter.delete(credentialId: "cred-z")
+            XCTFail("expected SmartAccountStorageException.WriteFailed")
+        } catch let error as SmartAccountStorageException.WriteFailed {
+            XCTAssertEqual(error.code, .storageWriteFailed)
+            XCTAssertTrue(error.message.contains("cred-z"))
+        }
+    }
+
+    func test_update_wraps_decoding_error_into_write_failed() async throws {
+        // The stored credential entry decodes to invalid JSON; `readCredential`
+        // throws a `DecodingError` which is neither a credential nor a storage
+        // exception, so `update` wraps it into `WriteFailed`.
+        let store = RawBackedKeychain()
+        let service = uniqueServiceName()
+        store.put(
+            service: service,
+            account: OZStorageKeys.credentialKeyPrefix + "cred-bad",
+            raw: "{ corrupt"
+        )
+        let adapter = OZKeychainStorageAdapter(serviceName: service, shim: store.makeShim())
+
+        do {
+            try await adapter.update(
+                credentialId: "cred-bad",
+                updates: OZStoredCredentialUpdate(nickname: "X")
+            )
+            XCTFail("expected SmartAccountStorageException.WriteFailed")
+        } catch let error as SmartAccountStorageException.WriteFailed {
+            XCTAssertEqual(error.code, .storageWriteFailed)
+            XCTAssertTrue(error.message.contains("cred-bad"))
+        }
+    }
+
+    func test_clear_wraps_decoding_error_from_index_into_write_failed() async throws {
+        let store = RawBackedKeychain()
+        let service = uniqueServiceName()
+        store.put(service: service, account: OZStorageKeys.credentialIndexKey, raw: "###")
+        let adapter = OZKeychainStorageAdapter(serviceName: service, shim: store.makeShim())
+
+        do {
+            try await adapter.clear()
+            XCTFail("expected SmartAccountStorageException.WriteFailed")
+        } catch let error as SmartAccountStorageException.WriteFailed {
+            XCTAssertEqual(error.code, .storageWriteFailed)
+            XCTAssertTrue(error.message.contains("clear all"))
+        }
+    }
+
+    func test_get_session_wraps_decoding_error_into_read_failed() async throws {
+        let store = RawBackedKeychain()
+        let service = uniqueServiceName()
+        store.put(service: service, account: OZStorageKeys.sessionKey, raw: "not-a-session")
+        let adapter = OZKeychainStorageAdapter(serviceName: service, shim: store.makeShim())
+
+        do {
+            _ = try await adapter.getSession()
+            XCTFail("expected SmartAccountStorageException.ReadFailed")
+        } catch let error as SmartAccountStorageException.ReadFailed {
+            XCTAssertEqual(error.code, .storageReadFailed)
+            XCTAssertTrue(error.message.contains("session"))
+        }
+    }
+
+    // ========================================================================
+    // keychainUpsert — duplicate-then-update and add default failure arms
+    // ========================================================================
+
+    func test_upsert_update_failure_throws_write_failed() async throws {
+        // `add` reports `errSecDuplicateItem`, routing to the `update` fallback,
+        // which then itself fails with a hard status. The adapter surfaces a
+        // `WriteFailed` carrying the update OSStatus.
+        let shim = ControllableShim()
+        shim.addStatus = { _ in errSecDuplicateItem }
+        shim.updateStatus = { _, _ in errSecInteractionNotAllowed }
+        let adapter = OZKeychainStorageAdapter(serviceName: uniqueServiceName(), shim: shim)
+
+        do {
+            try await adapter.save(credential: fullCredential(id: "dup"))
+            XCTFail("expected SmartAccountStorageException.WriteFailed")
+        } catch let error as SmartAccountStorageException.WriteFailed {
+            XCTAssertEqual(error.code, .storageWriteFailed)
+            XCTAssertTrue(error.message.contains("\(errSecInteractionNotAllowed)"))
+            XCTAssertTrue(error.message.contains("update"))
+        }
+    }
+
+    func test_upsert_duplicate_then_update_succeeds() async throws {
+        // Exercises the benign duplicate arm: `add` returns `errSecDuplicateItem`
+        // and `update` returns success, so the upsert completes without error.
+        let shim = ControllableShim()
+        shim.addStatus = { _ in errSecDuplicateItem }
+        shim.updateStatus = { _, _ in errSecSuccess }
+        // Reads must succeed with not-found so the index logic in `save` does not
+        // observe a hard failure (the index read/write also route through this
+        // shim and rely on the same duplicate-then-update path).
+        shim.copyStatus = { _ in errSecItemNotFound }
+        let adapter = OZKeychainStorageAdapter(serviceName: uniqueServiceName(), shim: shim)
+
+        try await adapter.save(credential: fullCredential(id: "dup-ok"))
+        XCTAssertGreaterThan(shim.updateCalls, 0)
+    }
+
+    func test_upsert_add_default_failure_throws_write_failed() async throws {
+        // A non-success, non-duplicate add status hits the `default` arm of the
+        // upsert switch and becomes a `WriteFailed` carrying the add OSStatus.
+        let shim = ControllableShim()
+        shim.addStatus = { _ in errSecNotAvailable }
+        let adapter = OZKeychainStorageAdapter(serviceName: uniqueServiceName(), shim: shim)
+
+        do {
+            try await adapter.save(credential: fullCredential(id: "add-fail"))
+            XCTFail("expected SmartAccountStorageException.WriteFailed")
+        } catch let error as SmartAccountStorageException.WriteFailed {
+            XCTAssertEqual(error.code, .storageWriteFailed)
+            XCTAssertTrue(error.message.contains("\(errSecNotAvailable)"))
+            XCTAssertTrue(error.message.contains("add"))
+        }
+    }
+
+    // ========================================================================
+    // keychainDelete — hard OSStatus failure arm
+    // ========================================================================
+
+    func test_keychain_delete_hard_status_throws_write_failed() async throws {
+        // A delete status that is neither success nor not-found must throw
+        // `WriteFailed`. Routed through `clearSession`, whose only keychain
+        // operation is a single delete.
+        let shim = ControllableShim()
+        shim.deleteStatus = { _ in errSecNotAvailable }
+        let adapter = OZKeychainStorageAdapter(serviceName: uniqueServiceName(), shim: shim)
+
+        do {
+            try await adapter.clearSession()
+            XCTFail("expected SmartAccountStorageException.WriteFailed")
+        } catch let error as SmartAccountStorageException.WriteFailed {
+            XCTAssertEqual(error.code, .storageWriteFailed)
+            XCTAssertTrue(error.message.contains("\(errSecNotAvailable)"))
+            XCTAssertTrue(error.message.contains("delete"))
+        }
+    }
+
+    // ========================================================================
+    // keychainRead — success status with a non-Data result yields nil
+    // ========================================================================
+
+    func test_keychain_read_success_with_non_data_result_returns_nil() async throws {
+        // `copyMatching` reports success but writes a non-`Data` value into the
+        // result pointer. The `resultRef as? Data` cast fails, so the read
+        // returns nil and `get` surfaces nil rather than throwing.
+        let shim = ControllableShim()
+        shim.copyStatus = { result in
+            if let result = result {
+                result.pointee = "not-data" as CFString
+            }
+            return errSecSuccess
+        }
+        let adapter = OZKeychainStorageAdapter(serviceName: uniqueServiceName(), shim: shim)
+
+        let loaded = try await adapter.get(credentialId: "any")
+        XCTAssertNil(loaded)
+    }
+}
+
+// ============================================================================
+// ControllableShim — per-primitive OSStatus and result injection
+// ============================================================================
+
+/// `OZSecItemShim` whose per-primitive behavior is fully driven by closures.
+/// Unlike `InMemoryKeychain`, it keeps no backing store; each handler returns a
+/// canned `OSStatus` and may populate the result pointer directly. Used to drive
+/// the adapter's keychain failure arms deterministically.
+@available(iOS 13.0, macOS 10.15, *)
+final class ControllableShim: OZSecItemShim, @unchecked Sendable {
+
+    private let lock = NSLock()
+
+    /// Returns the status for `add`. Defaults to success.
+    var addStatus: @Sendable (UnsafeMutablePointer<CFTypeRef?>?) -> OSStatus = { _ in errSecSuccess }
+    /// Returns the status for `copyMatching` and may populate the result pointer.
+    /// Defaults to not-found.
+    var copyStatus: @Sendable (UnsafeMutablePointer<CFTypeRef?>?) -> OSStatus = { _ in errSecItemNotFound }
+    /// Returns the status for `update`. Defaults to success.
+    var updateStatus: @Sendable (CFDictionary, CFDictionary) -> OSStatus = { _, _ in errSecSuccess }
+    /// Returns the status for `delete`. Defaults to success.
+    var deleteStatus: @Sendable (CFDictionary) -> OSStatus = { _ in errSecSuccess }
+
+    private(set) var updateCalls: Int = 0
+
+    func add(query: CFDictionary, result: UnsafeMutablePointer<CFTypeRef?>?) -> OSStatus {
+        lock.lock(); defer { lock.unlock() }
+        return addStatus(result)
+    }
+
+    func copyMatching(query: CFDictionary, result: UnsafeMutablePointer<CFTypeRef?>?) -> OSStatus {
+        lock.lock(); defer { lock.unlock() }
+        return copyStatus(result)
+    }
+
+    func update(query: CFDictionary, attributesToUpdate: CFDictionary) -> OSStatus {
+        lock.lock(); updateCalls += 1; defer { lock.unlock() }
+        return updateStatus(query, attributesToUpdate)
+    }
+
+    func delete(query: CFDictionary) -> OSStatus {
+        lock.lock(); defer { lock.unlock() }
+        return deleteStatus(query)
+    }
+}
+
+// ============================================================================
+// RawBackedKeychain — in-memory store that accepts pre-planted raw payloads
+// ============================================================================
+
+/// In-memory Keychain stand-in that lets tests plant arbitrary raw bytes at a
+/// `(service, account)` key before the adapter runs. Used to seed malformed
+/// JSON so the adapter's decode-failure (catch-all) arms can be exercised.
+/// Behaves like `InMemoryKeychain` for add / update / delete on keys the adapter
+/// writes itself.
+@available(iOS 13.0, macOS 10.15, *)
+final class RawBackedKeychain: @unchecked Sendable {
+
+    struct Key: Hashable {
+        let service: String
+        let account: String
+    }
+
+    private let lock = NSLock()
+    private var storage: [Key: Data] = [:]
+
+    /// Plants raw UTF-8 bytes at the given service/account, bypassing the
+    /// adapter's own serialization.
+    func put(service: String, account: String, raw: String) {
+        lock.lock(); defer { lock.unlock() }
+        storage[Key(service: service, account: account)] = raw.data(using: .utf8)!
+    }
+
+    func makeShim() -> OZSecItemShim {
+        let store = self
+        return FakeSecItemShim(
+            addHandler: { query, _ in store.add(query: query) },
+            copyMatchingHandler: { query, result in store.copyMatching(query: query, result: result) },
+            updateHandler: { query, attrs in store.update(query: query, attrs: attrs) },
+            deleteHandler: { query in store.delete(query: query) }
+        )
+    }
+
+    private func key(from query: CFDictionary) -> Key? {
+        let dict = query as NSDictionary
+        guard
+            let service = dict[kSecAttrService] as? String,
+            let account = dict[kSecAttrAccount] as? String
+        else {
+            return nil
+        }
+        return Key(service: service, account: account)
+    }
+
+    private func payload(from dict: CFDictionary) -> Data? {
+        let nsDict = dict as NSDictionary
+        return nsDict[kSecValueData] as? Data
+    }
+
+    private func add(query: CFDictionary) -> OSStatus {
+        guard let key = key(from: query), let payload = payload(from: query) else {
+            return errSecParam
+        }
+        lock.lock(); defer { lock.unlock() }
+        if storage[key] != nil { return errSecDuplicateItem }
+        storage[key] = payload
+        return errSecSuccess
+    }
+
+    private func copyMatching(
+        query: CFDictionary,
+        result: UnsafeMutablePointer<CFTypeRef?>?
+    ) -> OSStatus {
+        guard let key = key(from: query) else { return errSecParam }
+        lock.lock(); defer { lock.unlock() }
+        guard let stored = storage[key] else { return errSecItemNotFound }
+        if let result = result { result.pointee = stored as CFData }
+        return errSecSuccess
+    }
+
+    private func update(query: CFDictionary, attrs: CFDictionary) -> OSStatus {
+        guard let key = key(from: query) else { return errSecParam }
+        guard let payload = payload(from: attrs) else { return errSecParam }
+        lock.lock(); defer { lock.unlock() }
+        guard storage[key] != nil else { return errSecItemNotFound }
+        storage[key] = payload
+        return errSecSuccess
+    }
+
+    private func delete(query: CFDictionary) -> OSStatus {
+        guard let key = key(from: query) else { return errSecParam }
+        lock.lock(); defer { lock.unlock() }
+        guard storage.removeValue(forKey: key) != nil else { return errSecItemNotFound }
+        return errSecSuccess
+    }
 }
 
 // ============================================================================

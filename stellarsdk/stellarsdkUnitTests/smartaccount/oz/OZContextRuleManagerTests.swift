@@ -1304,4 +1304,197 @@ final class OZContextRuleManagerTests: XCTestCase {
         let rules = try await manager.getAllContextRules()
         XCTAssertEqual(0, rules.count, "getAllContextRules() with zero count must return empty array")
     }
+
+    // ========================================================================
+    // getAllContextRules — gap-skip on SimulationFailed (line 322)
+    // ========================================================================
+
+    /// `getAllContextRules` skips identifiers whose per-rule simulation reports
+    /// a ``SmartAccountTransactionException/SimulationFailed`` (a removed-rule
+    /// gap) and continues scanning. The script reports a count of 1, fails the
+    /// simulate for id=0 (the gap), and returns a payload for id=1, so the scan
+    /// must traverse the catch branch at id=0 and collect the rule at id=1.
+    func test_getAllContextRules_simulationFailedGap_isSkippedAndScanContinues() async throws {
+        let script = MockSorobanServerScript()
+        MockSorobanServer.activate(script: script)
+        defer {
+            MockSorobanServer.deactivate()
+            MockURLProtocol.reset()
+        }
+
+        let (kit, manager) = try connectedKitWithScriptedServer()
+        let deployer = try await kit.getDeployer()
+
+        // count query — 1 active rule.
+        script.setGetAccountResponse(accountId: deployer.accountId, sequence: 1)
+        script.enqueueSimulate(resultXdr: SCValXDR.u32(1).xdrEncoded ?? "")
+
+        // getContextRule(id: 0) — simulation error models a removed-rule gap.
+        script.setGetAccountResponse(accountId: deployer.accountId, sequence: 2)
+        script.enqueueSimulateError("rule 0 has been removed")
+
+        // getContextRule(id: 1) — the single surviving rule payload.
+        script.setGetAccountResponse(accountId: deployer.accountId, sequence: 3)
+        let ruleScVal = SCValXDR.u32(0x1234)
+        script.enqueueSimulate(resultXdr: ruleScVal.xdrEncoded ?? "")
+
+        let result = try await manager.getAllContextRules(maxScanId: 10)
+        XCTAssertEqual(result.count, 1, "Gap at id=0 must be skipped and id=1 collected")
+        if case .u32(let v) = result.first {
+            XCTAssertEqual(v, 0x1234)
+        } else {
+            XCTFail("Expected u32 rule scVal, got: \(String(describing: result.first))")
+        }
+    }
+
+    // ========================================================================
+    // resolveContextRuleIdsForEntry — two-arg overload (lines 367-374)
+    // ========================================================================
+
+    /// The two-argument
+    /// `resolveContextRuleIdsForEntry(entry:signers:)` overload must fetch the
+    /// rule list itself via `listContextRules()` and then delegate to the
+    /// three-argument form. The script returns a single Default rule so the
+    /// resolver's single-candidate fast path resolves to that rule's id.
+    func test_resolveContextRuleIdsForEntry_twoArgOverload_fetchesRulesThenResolves() async throws {
+        let script = MockSorobanServerScript()
+        MockSorobanServer.activate(script: script)
+        defer {
+            MockSorobanServer.deactivate()
+            MockURLProtocol.reset()
+        }
+
+        let (kit, manager) = try connectedKitWithScriptedServer()
+        let deployer = try await kit.getDeployer()
+
+        // listContextRules(): count = 1.
+        script.setGetAccountResponse(accountId: deployer.accountId, sequence: 1)
+        script.enqueueSimulate(resultXdr: SCValXDR.u32(1).xdrEncoded ?? "")
+
+        // rule at id=0 — a minimal Default rule with id field 42.
+        let ruleMap: SCValXDR = .map([
+            SCMapEntryXDR(key: .symbol("id"), val: .u32(42)),
+            SCMapEntryXDR(key: .symbol("name"), val: .string("DefaultRule")),
+            SCMapEntryXDR(key: .symbol("context_type"), val: .vec([.symbol("Default")])),
+            SCMapEntryXDR(key: .symbol("signers"), val: .vec([])),
+            SCMapEntryXDR(key: .symbol("signer_ids"), val: .vec([])),
+            SCMapEntryXDR(key: .symbol("policies"), val: .vec([])),
+            SCMapEntryXDR(key: .symbol("policy_ids"), val: .vec([])),
+            SCMapEntryXDR(key: .symbol("valid_until"), val: .void)
+        ])
+        script.setGetAccountResponse(accountId: deployer.accountId, sequence: 2)
+        script.enqueueSimulate(resultXdr: ruleMap.xdrEncoded ?? "")
+
+        let entry = try OZPipelineFixtures.addressCredentialsAuthEntry(
+            contractAddress: validContractAddress,
+            targetContract: validContractAddress,
+            targetFn: "noop"
+        )
+
+        let ids = try await manager.resolveContextRuleIdsForEntry(
+            entry: entry,
+            signers: []
+        )
+        XCTAssertEqual([UInt32(42)], ids, "two-arg overload must fetch rules and resolve the single Default candidate")
+    }
+
+    // ========================================================================
+    // resolveContextRuleIdsForEntry — Tier 3 with multiple candidates (lines 463-464)
+    // ========================================================================
+
+    /// Tier 3 (`selectedSubsetMatches.count == 1`) fires only when there are
+    /// multiple candidate rules for the context type, Tier 1 (exact) and Tier 2
+    /// (rule-subset-of-selected with no policies) both fail, and exactly one
+    /// candidate's signer set is a superset of the selected signers.
+    ///
+    /// Setup: two Default candidates.
+    /// - ruleBig: signers [A, B, C], no policies — selected [A, B] is a subset
+    ///   (Tier 3 match). Tier 1 fails (count mismatch). Tier 2 fails (rule
+    ///   signers are NOT a subset of selected).
+    /// - ruleOther: signers [A] plus a policy — Tier 2 excluded by the policy;
+    ///   it is also a Tier 3 superset only of subsets of {A}, not of [A, B],
+    ///   so it does not match selected [A, B].
+    func test_resolveContextRuleIds_tier3_multipleCandidates_uniqueSupersetSelected() async throws {
+        let signerA = try OZDelegatedSigner(address: validAccountAddress)
+        let signerB = try OZDelegatedSigner(address: "GBGWONUYEPTSADFMLRQSPRAPTWMGX5PMQXXHGSBVRF2KLUNVZT57SLVW")
+        let signerC = try OZDelegatedSigner(address: "GB33CUURS5XLLECMLSE2EMMDJBMZSVF27BW6PLS53OFTJMP46CZH3CVG")
+
+        let ruleBig = OZParsedContextRule(
+            id: 31,
+            contextType: .defaultRule,
+            name: "RuleBig",
+            signers: [signerA, signerB, signerC],
+            signerIds: [0, 1, 2],
+            policies: [],
+            policyIds: [],
+            validUntil: nil
+        )
+        let ruleOther = OZParsedContextRule(
+            id: 32,
+            contextType: .defaultRule,
+            name: "RuleOther",
+            signers: [signerA],
+            signerIds: [0],
+            policies: [validContractAddress],
+            policyIds: [0],
+            validUntil: nil
+        )
+
+        let entry = try OZPipelineFixtures.addressCredentialsAuthEntry(
+            contractAddress: validContractAddress,
+            targetContract: validContractAddress,
+            targetFn: "noop"
+        )
+        let (_, manager) = try connectedKit()
+        let ids = try await manager.resolveContextRuleIdsForEntry(
+            entry: entry,
+            signers: [signerA, signerB],
+            contextRules: [ruleBig, ruleOther]
+        )
+        XCTAssertEqual([UInt32(31)], ids, "Tier 3 must select the unique candidate whose signer set is a superset of the selected signers")
+    }
+
+    // ========================================================================
+    // collectInvocationContextTypes — contractFn unsupported address (lines 535-539, 586-589)
+    // ========================================================================
+
+    /// A `contractFn` invocation whose contract address is an unsupported
+    /// `SCAddressXDR` variant (a liquidity-pool id, neither account nor
+    /// contract) must surface a ``SmartAccountValidationException/InvalidInput``
+    /// from the `addressString(from:)` helper, wrapped by the contractFn arm of
+    /// `collectInvocationContextTypes`.
+    func test_collectInvocationContextTypes_contractFnUnsupportedAddress_throwsValidation() async throws {
+        let invokeArgs = InvokeContractArgsXDR(
+            contractAddress: .liquidityPoolId(WrappedData32(Data(repeating: 0x09, count: 32))),
+            functionName: "noop",
+            args: []
+        )
+        let function = SorobanAuthorizedFunctionXDR.contractFn(invokeArgs)
+        let invocation = SorobanAuthorizedInvocationXDR(function: function, subInvocations: [])
+        let credentials = SorobanAddressCredentialsXDR(
+            address: try SCAddressXDR(contractId: validContractAddress),
+            nonce: 0,
+            signatureExpirationLedger: 0,
+            signature: .void
+        )
+        let entry = SorobanAuthorizationEntryXDR(
+            credentials: .address(credentials),
+            rootInvocation: invocation
+        )
+
+        let (_, manager) = try connectedKit()
+        do {
+            _ = try await manager.resolveContextRuleIdsForEntry(
+                entry: entry,
+                signers: [],
+                contextRules: []
+            )
+            XCTFail("expected SmartAccountValidationException.InvalidInput for unsupported contractFn address")
+        } catch let error as SmartAccountValidationException.InvalidInput {
+            XCTAssertTrue(
+                error.message.contains("contractAddress") || error.message.contains("Unsupported"),
+                "expected the address-parse failure reason, got: \(error.message)"
+            )
+        }
+    }
 }

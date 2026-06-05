@@ -1511,4 +1511,260 @@ final class OZIndexerClientTests: XCTestCase {
             XCTFail("Unexpected error: \(error)")
         }
     }
+
+    // MARK: - Model memberwise inits (remaining stored-property assignment paths)
+
+    /// Constructs `OZContractDetailsResponse` via its memberwise init to exercise
+    /// the stored-property assignment body. The decode-based tests above always
+    /// route through the synthesized `Decodable` init, so the public memberwise
+    /// init body is only reached by direct construction.
+    func test_contractDetailsResponse_memberwiseInit_storesFields() {
+        let summary = OZIndexedContractSummary(
+            contractId: testContractId,
+            contextRuleCount: 1,
+            externalSignerCount: 1,
+            delegatedSignerCount: 0,
+            nativeSignerCount: 0,
+            firstSeenLedger: 10,
+            lastSeenLedger: 20,
+            contextRuleIds: [0]
+        )
+        let rule = OZIndexedContextRule(
+            contextRuleId: 0,
+            signers: [OZIndexedSigner(signerType: "Native")],
+            policies: []
+        )
+        let response = OZContractDetailsResponse(
+            contractId: testContractId,
+            summary: summary,
+            contextRules: [rule]
+        )
+        XCTAssertEqual(testContractId, response.contractId)
+        XCTAssertEqual(testContractId, response.summary.contractId)
+        XCTAssertEqual(1, response.contextRules.count)
+        XCTAssertEqual(0, response.contextRules[0].contextRuleId)
+    }
+
+    /// Constructs `OZIndexedContextRule` via its memberwise init.
+    func test_indexedContextRule_memberwiseInit_storesFields() {
+        let signer = OZIndexedSigner(signerType: "External", credentialId: "aabbccdd")
+        let policy = OZIndexedPolicy(policyAddress: testContractId)
+        let rule = OZIndexedContextRule(
+            contextRuleId: 7,
+            signers: [signer],
+            policies: [policy]
+        )
+        XCTAssertEqual(7, rule.contextRuleId)
+        XCTAssertEqual(1, rule.signers.count)
+        XCTAssertEqual("External", rule.signers[0].signerType)
+        XCTAssertEqual(1, rule.policies.count)
+        XCTAssertEqual(testContractId, rule.policies[0].policyAddress)
+    }
+
+    /// Constructs `OZIndexedSigner` via its memberwise init, covering all three
+    /// stored properties including the optional address and credential fields.
+    func test_indexedSigner_memberwiseInit_storesFields() {
+        let external = OZIndexedSigner(signerType: "External", credentialId: "deadbeef")
+        XCTAssertEqual("External", external.signerType)
+        XCTAssertNil(external.signerAddress)
+        XCTAssertEqual("deadbeef", external.credentialId)
+
+        let delegated = OZIndexedSigner(signerType: "Delegated", signerAddress: testAccountId)
+        XCTAssertEqual("Delegated", delegated.signerType)
+        XCTAssertEqual(testAccountId, delegated.signerAddress)
+        XCTAssertNil(delegated.credentialId)
+
+        let native = OZIndexedSigner(signerType: "Native")
+        XCTAssertEqual("Native", native.signerType)
+        XCTAssertNil(native.signerAddress)
+        XCTAssertNil(native.credentialId)
+    }
+
+    /// Constructs `OZIndexedPolicy` via its memberwise init, covering both the
+    /// default-nil install-params path and an explicit install-params dictionary.
+    func test_indexedPolicy_memberwiseInit_storesFields() {
+        let withoutParams = OZIndexedPolicy(policyAddress: testContractId)
+        XCTAssertEqual(testContractId, withoutParams.policyAddress)
+        XCTAssertNil(withoutParams.installParams)
+
+        let withParams = OZIndexedPolicy(
+            policyAddress: testContractId,
+            installParams: ["limit": .integer(1000)]
+        )
+        XCTAssertEqual(testContractId, withParams.policyAddress)
+        XCTAssertEqual(.integer(1000), withParams.installParams?["limit"])
+    }
+
+    /// Constructs `OZIndexerStatsResponse` via its memberwise init.
+    func test_indexerStatsResponse_memberwiseInit_storesFields() {
+        let stats = OZIndexerStats(
+            totalEvents: 1,
+            uniqueContracts: 2,
+            uniqueCredentials: 3,
+            firstLedger: 4,
+            lastLedger: 5,
+            eventTypes: []
+        )
+        let response = OZIndexerStatsResponse(stats: stats)
+        XCTAssertEqual(Int64(1), response.stats.totalEvents)
+        XCTAssertEqual(Int64(5), response.stats.lastLedger)
+    }
+
+    /// Constructs `OZIndexerStats` via its memberwise init, covering every
+    /// stored property assignment.
+    func test_indexerStats_memberwiseInit_storesFields() {
+        let eventType = OZEventTypeCount(eventType: "signer_added", count: 9)
+        let stats = OZIndexerStats(
+            totalEvents: 100,
+            uniqueContracts: 200,
+            uniqueCredentials: 300,
+            firstLedger: 400,
+            lastLedger: 500,
+            eventTypes: [eventType]
+        )
+        XCTAssertEqual(Int64(100), stats.totalEvents)
+        XCTAssertEqual(Int64(200), stats.uniqueContracts)
+        XCTAssertEqual(Int64(300), stats.uniqueCredentials)
+        XCTAssertEqual(Int64(400), stats.firstLedger)
+        XCTAssertEqual(Int64(500), stats.lastLedger)
+        XCTAssertEqual(1, stats.eventTypes.count)
+        XCTAssertEqual("signer_added", stats.eventTypes[0].eventType)
+    }
+
+    /// Constructs `OZEventTypeCount` via its memberwise init.
+    func test_eventTypeCount_memberwiseInit_storesFields() {
+        let eventType = OZEventTypeCount(eventType: "policy_added", count: 42)
+        XCTAssertEqual("policy_added", eventType.eventType)
+        XCTAssertEqual(Int64(42), eventType.count)
+    }
+
+    /// Constructs `OZIndexerHealthCheckResponse` via its memberwise init.
+    func test_healthCheckResponse_memberwiseInit_storesField() {
+        let response = OZIndexerHealthCheckResponse(status: "ok")
+        XCTAssertEqual("ok", response.status)
+    }
+
+    // MARK: - OZJSONValue decode branches
+
+    /// Decodes a `null` install-params value, covering the `.null` decode branch.
+    func test_jsonValue_decodesNull() throws {
+        let json = #"{"v": null}"#.data(using: .utf8)!
+        let wrapper = try JSONDecoder().decode([String: OZJSONValue].self, from: json)
+        XCTAssertEqual(.null, wrapper["v"])
+    }
+
+    /// Decodes a boolean value, covering the `.bool` decode branch.
+    func test_jsonValue_decodesBool() throws {
+        let json = #"{"v": true}"#.data(using: .utf8)!
+        let wrapper = try JSONDecoder().decode([String: OZJSONValue].self, from: json)
+        XCTAssertEqual(.bool(true), wrapper["v"])
+    }
+
+    /// Decodes an integer value, covering the `.integer` decode branch.
+    func test_jsonValue_decodesInteger() throws {
+        let json = #"{"v": 9007199254740993}"#.data(using: .utf8)!
+        let wrapper = try JSONDecoder().decode([String: OZJSONValue].self, from: json)
+        XCTAssertEqual(.integer(9007199254740993), wrapper["v"])
+    }
+
+    /// Decodes a fractional value, covering the `.double` decode branch.
+    func test_jsonValue_decodesDouble() throws {
+        let json = #"{"v": 1.5}"#.data(using: .utf8)!
+        let wrapper = try JSONDecoder().decode([String: OZJSONValue].self, from: json)
+        XCTAssertEqual(.double(1.5), wrapper["v"])
+    }
+
+    /// Decodes a string value, covering the `.string` decode branch.
+    func test_jsonValue_decodesString() throws {
+        let json = #"{"v": "hello"}"#.data(using: .utf8)!
+        let wrapper = try JSONDecoder().decode([String: OZJSONValue].self, from: json)
+        XCTAssertEqual(.string("hello"), wrapper["v"])
+    }
+
+    /// Decodes a heterogeneous array value, covering the `.array` decode branch
+    /// and recursion into the per-element decode.
+    func test_jsonValue_decodesArray() throws {
+        let json = #"{"v": [1, "two", true, null]}"#.data(using: .utf8)!
+        let wrapper = try JSONDecoder().decode([String: OZJSONValue].self, from: json)
+        XCTAssertEqual(
+            .array([.integer(1), .string("two"), .bool(true), .null]),
+            wrapper["v"]
+        )
+    }
+
+    /// Decodes a nested object value, covering the `.object` decode branch.
+    func test_jsonValue_decodesObject() throws {
+        let json = #"{"v": {"inner": 7}}"#.data(using: .utf8)!
+        let wrapper = try JSONDecoder().decode([String: OZJSONValue].self, from: json)
+        XCTAssertEqual(.object(["inner": .integer(7)]), wrapper["v"])
+    }
+
+    /// Decodes an `OZIndexedPolicy` whose `install_params` exercises every
+    /// `OZJSONValue` case in a single nested structure, then asserts the parsed
+    /// shape end to end.
+    func test_jsonValue_decodesNestedInstallParams() throws {
+        let json = """
+        {
+            "policy_address": "\(testContractId)",
+            "install_params": {
+                "limit": 1000000000,
+                "ratio": 0.25,
+                "label": "spending",
+                "enabled": true,
+                "fallback": null,
+                "signers": ["a", "b"],
+                "nested": {"k": 1}
+            }
+        }
+        """.data(using: .utf8)!
+        let policy = try JSONDecoder().decode(OZIndexedPolicy.self, from: json)
+        XCTAssertEqual(testContractId, policy.policyAddress)
+        let params = try XCTUnwrap(policy.installParams)
+        XCTAssertEqual(.integer(1000000000), params["limit"])
+        XCTAssertEqual(.double(0.25), params["ratio"])
+        XCTAssertEqual(.string("spending"), params["label"])
+        XCTAssertEqual(.bool(true), params["enabled"])
+        XCTAssertEqual(.null, params["fallback"])
+        XCTAssertEqual(.array([.string("a"), .string("b")]), params["signers"])
+        XCTAssertEqual(.object(["k": .integer(1)]), params["nested"])
+    }
+
+    // MARK: - OZJSONValue hash branches
+
+    /// Hashes one value of every `OZJSONValue` case so the per-case discriminant
+    /// combination in `hash(into:)` is exercised. Equal values must hash equally
+    /// and the dictionary lookups below force `Hashable` evaluation.
+    func test_jsonValue_hashCoversEveryCase() {
+        let values: [OZJSONValue] = [
+            .null,
+            .bool(true),
+            .integer(5),
+            .double(2.5),
+            .string("s"),
+            .array([.integer(1), .null]),
+            .object(["k": .string("v")]),
+        ]
+        // Insert every case into a Set: this routes each value through
+        // `hash(into:)` and `==`.
+        var set = Set<OZJSONValue>()
+        for value in values {
+            set.insert(value)
+            set.insert(value)
+        }
+        XCTAssertEqual(values.count, set.count, "Distinct cases must not collide in a Set")
+
+        // Equal values must produce equal hashes.
+        XCTAssertEqual(OZJSONValue.null.hashValue, OZJSONValue.null.hashValue)
+        XCTAssertEqual(OZJSONValue.double(2.5).hashValue, OZJSONValue.double(2.5).hashValue)
+        XCTAssertEqual(OZJSONValue.array([.integer(1)]).hashValue, OZJSONValue.array([.integer(1)]).hashValue)
+    }
+
+    /// The `.object` hash branch sorts keys before hashing so two dictionaries
+    /// with identical contents but different insertion order hash equally.
+    func test_jsonValue_objectHashIsKeyOrderIndependent() {
+        let a: OZJSONValue = .object(["x": .integer(1), "y": .integer(2)])
+        let b: OZJSONValue = .object(["y": .integer(2), "x": .integer(1)])
+        XCTAssertEqual(a, b)
+        XCTAssertEqual(a.hashValue, b.hashValue, "Object hash must be key-order independent")
+    }
 }

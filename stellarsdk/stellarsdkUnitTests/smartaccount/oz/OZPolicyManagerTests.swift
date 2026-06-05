@@ -771,6 +771,364 @@ final class OZPolicyManagerTests: XCTestCase {
     }
 
     // ========================================================================
+    // OZPolicyInstallParams.weightedThreshold — signer encoding failure (215-218)
+    // ========================================================================
+
+    /// A signer whose `toScVal()` always throws drives the catch block that
+    /// wraps the per-signer encoding failure into a field-tagged
+    /// `SmartAccountValidationException.InvalidInput`. The surfaced message must
+    /// reference the weighted-threshold encoding context and the original error
+    /// must be retained as the `cause`.
+    func test_weightedThreshold_signerToScValThrows_wrapsAsInvalidInput() throws {
+        let throwingSigner = PolicyThrowingSigner()
+        let params = OZPolicyInstallParams.weightedThreshold(
+            signerWeights: [OZSignerWeightEntry(signer: throwingSigner, weight: 10)],
+            threshold: 5
+        )
+        do {
+            _ = try params.toScVal()
+            XCTFail("expected SmartAccountValidationException.InvalidInput")
+        } catch let error as SmartAccountValidationException.InvalidInput {
+            XCTAssertEqual(error.code, .invalidInput)
+            XCTAssertTrue(
+                error.message.contains("Failed to encode signer for weighted threshold policy"),
+                "expected encoding-failure context in message, got: \(error.message)"
+            )
+            XCTAssertNotNil(error.cause, "original signer-encoding error must be retained as cause")
+        }
+    }
+
+    // ========================================================================
+    // OZPolicyInstallParams.spendingLimit — string-shape validation (253-313)
+    // ========================================================================
+
+    /// A whitespace-only spending-limit string trims to empty and must throw the
+    /// "greater than zero" validation error tagged to the `spendingLimit` field.
+    func test_spendingLimit_whitespaceOnlyString_throws() throws {
+        let params = OZPolicyInstallParams.spendingLimit(
+            spendingLimit: "   ",
+            periodLedgers: 17_280
+        )
+        do {
+            _ = try params.toScVal()
+            XCTFail("expected SmartAccountValidationException.InvalidInput")
+        } catch let error as SmartAccountValidationException.InvalidInput {
+            XCTAssertEqual(error.code, .invalidInput)
+            XCTAssertTrue(
+                error.message.contains("spendingLimit"),
+                "expected spendingLimit field in message, got: \(error.message)"
+            )
+            XCTAssertTrue(
+                error.message.contains("greater than zero"),
+                "expected greater-than-zero reason, got: \(error.message)"
+            )
+        }
+    }
+
+    /// An empty spending-limit string must throw the "greater than zero"
+    /// validation error before any regex evaluation.
+    func test_spendingLimit_emptyString_throws() throws {
+        let params = OZPolicyInstallParams.spendingLimit(
+            spendingLimit: "",
+            periodLedgers: 17_280
+        )
+        do {
+            _ = try params.toScVal()
+            XCTFail("expected SmartAccountValidationException.InvalidInput")
+        } catch let error as SmartAccountValidationException.InvalidInput {
+            XCTAssertTrue(
+                error.message.contains("greater than zero"),
+                "expected greater-than-zero reason, got: \(error.message)"
+            )
+        }
+    }
+
+    /// A spending-limit string carrying a decimal point passes the empty and
+    /// negative gates but fails the strict `^[0-9]+$` integer-shape regex. The
+    /// surfaced error must name the positive-integer-in-stroops constraint.
+    func test_spendingLimit_decimalPointString_throwsShapeError() throws {
+        let params = OZPolicyInstallParams.spendingLimit(
+            spendingLimit: "1.5",
+            periodLedgers: 17_280
+        )
+        do {
+            _ = try params.toScVal()
+            XCTFail("expected SmartAccountValidationException.InvalidInput")
+        } catch let error as SmartAccountValidationException.InvalidInput {
+            XCTAssertEqual(error.code, .invalidInput)
+            XCTAssertTrue(
+                error.message.contains("positive integer in stroops"),
+                "expected positive-integer-in-stroops reason, got: \(error.message)"
+            )
+        }
+    }
+
+    /// A non-digit (alphabetic) spending-limit string fails the strict integer
+    /// regex and surfaces the same positive-integer-in-stroops shape error.
+    func test_spendingLimit_alphabeticString_throwsShapeError() throws {
+        let params = OZPolicyInstallParams.spendingLimit(
+            spendingLimit: "12a3",
+            periodLedgers: 17_280
+        )
+        do {
+            _ = try params.toScVal()
+            XCTFail("expected SmartAccountValidationException.InvalidInput")
+        } catch let error as SmartAccountValidationException.InvalidInput {
+            XCTAssertTrue(
+                error.message.contains("positive integer in stroops"),
+                "expected positive-integer-in-stroops reason, got: \(error.message)"
+            )
+        }
+    }
+
+    // ========================================================================
+    // OZPolicyManager.removePolicyByAddress — address resolution (671-796)
+    // ========================================================================
+
+    /// A malformed policy address must be rejected by `requireContractAddress`
+    /// before any context-rule resolution or submission is attempted.
+    func test_removePolicyByAddress_invalidAddress_throws() async throws {
+        let (_, manager) = try connectedKit()
+        do {
+            _ = try await manager.removePolicyByAddress(
+                contextRuleId: 0,
+                policyAddress: "not-a-contract-address"
+            )
+            XCTFail("expected SmartAccountValidationException.InvalidAddress")
+        } catch let error as SmartAccountValidationException.InvalidAddress {
+            XCTAssertTrue(
+                error.message.contains("policyAddress"),
+                "expected policyAddress in message, got: \(error.message)"
+            )
+        }
+    }
+
+    /// The parser fast path: when a context-rule parser is wired, the manager
+    /// fetches and parses a single rule, locates the policy address in the
+    /// rule's `policies`, resolves the aligned `policyIds` entry, and proceeds
+    /// to `removePolicy`. The downstream submission fails at the non-routable
+    /// RPC endpoint, but the resolution path (parser `getContextRule` +
+    /// `parseContextRule`) is exercised and asserted.
+    func test_removePolicyByAddress_parserFastPath_resolvesAndForwards() async throws {
+        let kit = MockOZSmartAccountKit(config: try buildConfig())
+        kit.setConnectedState(credentialId: "cred", contractId: validContractC2)
+
+        let parsedRule = OZParsedContextRule(
+            id: 0,
+            contextType: .defaultRule,
+            name: "rule-0",
+            signers: [],
+            signerIds: [],
+            policies: [validVerifier],
+            policyIds: [11],
+            validUntil: nil
+        )
+        let parser = StubPolicyContextRuleParser(rule: parsedRule)
+        let manager = OZPolicyManager(kit: kit, contextRuleParser: parser)
+
+        do {
+            _ = try await manager.removePolicyByAddress(
+                contextRuleId: 0,
+                policyAddress: validVerifier
+            )
+            // No assertion on a successful return: the non-routable RPC endpoint
+            // makes a clean success impossible. The resolution path is what is
+            // under test.
+        } catch {
+            // Expected: submission fails at the RPC step after resolution.
+        }
+
+        XCTAssertEqual(parser.getContextRuleCalls, [0], "parser fast path must fetch exactly the requested rule")
+        XCTAssertEqual(parser.parseContextRuleCalls, 1, "parser fast path must parse the fetched rule once")
+    }
+
+    /// Parser fast path where the policy address is absent from the rule's
+    /// `policies` list must throw a `policyAddress`-tagged validation error
+    /// naming the not-found constraint, and must not reach submission.
+    func test_removePolicyByAddress_parserFastPath_policyNotFound_throws() async throws {
+        let kit = MockOZSmartAccountKit(config: try buildConfig())
+        kit.setConnectedState(credentialId: "cred", contractId: validContractC2)
+
+        let parsedRule = OZParsedContextRule(
+            id: 0,
+            contextType: .defaultRule,
+            name: "rule-0",
+            signers: [],
+            signerIds: [],
+            policies: [validContractC],
+            policyIds: [7],
+            validUntil: nil
+        )
+        let parser = StubPolicyContextRuleParser(rule: parsedRule)
+        let manager = OZPolicyManager(kit: kit, contextRuleParser: parser)
+
+        do {
+            _ = try await manager.removePolicyByAddress(
+                contextRuleId: 0,
+                policyAddress: validVerifier
+            )
+            XCTFail("expected SmartAccountValidationException.InvalidInput")
+        } catch let error as SmartAccountValidationException.InvalidInput {
+            XCTAssertTrue(
+                error.message.contains("policyAddress"),
+                "expected policyAddress field, got: \(error.message)"
+            )
+            XCTAssertTrue(
+                error.message.contains("not found"),
+                "expected not-found reason, got: \(error.message)"
+            )
+        }
+        XCTAssertEqual(parser.parseContextRuleCalls, 1, "rule must be parsed once before the policy lookup fails")
+    }
+
+    /// Parser fast path where `policies` and `policyIds` are misaligned (the
+    /// matched policy index falls outside `policyIds`) must surface the explicit
+    /// misalignment validation error rather than trapping with an out-of-bounds
+    /// access.
+    func test_removePolicyByAddress_parserFastPath_misalignedPolicyIds_throws() async throws {
+        let kit = MockOZSmartAccountKit(config: try buildConfig())
+        kit.setConnectedState(credentialId: "cred", contractId: validContractC2)
+
+        // Policy present at index 1, but policyIds has only one entry.
+        let parsedRule = OZParsedContextRule(
+            id: 0,
+            contextType: .defaultRule,
+            name: "rule-0",
+            signers: [],
+            signerIds: [],
+            policies: [validContractC, validVerifier],
+            policyIds: [3],
+            validUntil: nil
+        )
+        let parser = StubPolicyContextRuleParser(rule: parsedRule)
+        let manager = OZPolicyManager(kit: kit, contextRuleParser: parser)
+
+        do {
+            _ = try await manager.removePolicyByAddress(
+                contextRuleId: 0,
+                policyAddress: validVerifier
+            )
+            XCTFail("expected SmartAccountValidationException.InvalidInput")
+        } catch let error as SmartAccountValidationException.InvalidInput {
+            XCTAssertTrue(
+                error.message.contains("policyAddress"),
+                "expected policyAddress field, got: \(error.message)"
+            )
+            XCTAssertTrue(
+                error.message.contains("policyIds"),
+                "expected policyIds misalignment reason, got: \(error.message)"
+            )
+        }
+    }
+
+    /// Fallback path (no parser wired): the manager scans every rule via
+    /// `listContextRules`. When the requested context-rule id is absent from
+    /// the returned set, a `contextRuleId`-tagged not-found error is surfaced.
+    func test_removePolicyByAddress_fallback_ruleNotFound_throws() async throws {
+        let stub = StubContextRuleManager()
+        stub.listRulesResult = []
+        let kit = MockOZSmartAccountKit(
+            config: try buildConfig(),
+            contextRuleManager: stub
+        )
+        kit.setConnectedState(credentialId: "cred", contractId: validContractC2)
+        let manager = OZPolicyManager(kit: kit)
+
+        do {
+            _ = try await manager.removePolicyByAddress(
+                contextRuleId: 5,
+                policyAddress: validVerifier
+            )
+            XCTFail("expected SmartAccountValidationException.InvalidInput")
+        } catch let error as SmartAccountValidationException.InvalidInput {
+            XCTAssertTrue(
+                error.message.contains("contextRuleId"),
+                "expected contextRuleId field, got: \(error.message)"
+            )
+            XCTAssertTrue(
+                error.message.contains("not found"),
+                "expected not-found reason, got: \(error.message)"
+            )
+        }
+    }
+
+    /// Fallback path where the located rule does not list the supplied policy
+    /// address must throw the `policyAddress` not-found validation error.
+    func test_removePolicyByAddress_fallback_policyNotFoundOnRule_throws() async throws {
+        let stub = StubContextRuleManager()
+        stub.listRulesResult = [
+            OZParsedContextRule(
+                id: 2,
+                contextType: .defaultRule,
+                name: "rule-2",
+                signers: [],
+                signerIds: [],
+                policies: [validContractC],
+                policyIds: [9],
+                validUntil: nil
+            )
+        ]
+        let kit = MockOZSmartAccountKit(
+            config: try buildConfig(),
+            contextRuleManager: stub
+        )
+        kit.setConnectedState(credentialId: "cred", contractId: validContractC2)
+        let manager = OZPolicyManager(kit: kit)
+
+        do {
+            _ = try await manager.removePolicyByAddress(
+                contextRuleId: 2,
+                policyAddress: validVerifier
+            )
+            XCTFail("expected SmartAccountValidationException.InvalidInput")
+        } catch let error as SmartAccountValidationException.InvalidInput {
+            XCTAssertTrue(
+                error.message.contains("policyAddress"),
+                "expected policyAddress field, got: \(error.message)"
+            )
+            XCTAssertTrue(
+                error.message.contains("not found"),
+                "expected not-found reason, got: \(error.message)"
+            )
+        }
+    }
+
+    /// Fallback path that successfully locates the rule and resolves an aligned
+    /// `policyIds` entry forwards to `removePolicy`; the submission then fails at
+    /// the non-routable RPC endpoint. The resolution traversal (rule located,
+    /// policy index matched, aligned id returned) is what this exercises.
+    func test_removePolicyByAddress_fallback_resolvesAndForwards() async throws {
+        let stub = StubContextRuleManager()
+        stub.listRulesResult = [
+            OZParsedContextRule(
+                id: 4,
+                contextType: .defaultRule,
+                name: "rule-4",
+                signers: [],
+                signerIds: [],
+                policies: [validVerifier],
+                policyIds: [21],
+                validUntil: nil
+            )
+        ]
+        let kit = MockOZSmartAccountKit(
+            config: try buildConfig(),
+            contextRuleManager: stub
+        )
+        kit.setConnectedState(credentialId: "cred", contractId: validContractC2)
+        let manager = OZPolicyManager(kit: kit)
+
+        do {
+            _ = try await manager.removePolicyByAddress(
+                contextRuleId: 4,
+                policyAddress: validVerifier
+            )
+        } catch {
+            // Expected: submission fails at the RPC step after resolution.
+        }
+    }
+
+    // ========================================================================
     // Helpers
     // ========================================================================
 
@@ -949,5 +1307,56 @@ final class OZPolicyManagerTests: XCTestCase {
         } catch {
             // Expected: RPC fails at the non-routable endpoint.
         }
+    }
+}
+
+// ============================================================================
+// Test doubles
+// ============================================================================
+
+/// A signer whose `toScVal()` always throws. Drives the per-signer encoding
+/// failure branch of `OZPolicyInstallParams.weightedThreshold` so the catch
+/// block that wraps the failure into a field-tagged `InvalidInput` is covered.
+private struct PolicyThrowingSigner: OZSmartAccountSigner {
+
+    static let thrownReason = "synthetic-encode-failure"
+
+    func toScVal() throws -> SCValXDR {
+        throw SmartAccountValidationException.invalidInput(
+            field: "signer",
+            reason: PolicyThrowingSigner.thrownReason
+        )
+    }
+
+    var uniqueKey: String { "policy-throwing-signer" }
+}
+
+/// Minimal `OZContextRuleParser` test double returning a fixed parsed rule.
+///
+/// Exercises the parser fast path of `OZPolicyManager.resolvePolicyIdByAddress`
+/// without instantiating the full context-rule manager dependency graph.
+/// Records how many times each method is invoked so resolution tests can assert
+/// the fast path was taken.
+private final class StubPolicyContextRuleParser: OZContextRuleParser, @unchecked Sendable {
+
+    private let rule: OZParsedContextRule
+
+    private(set) var getContextRuleCalls: [UInt32] = []
+    private(set) var parseContextRuleCalls: Int = 0
+
+    init(rule: OZParsedContextRule) {
+        self.rule = rule
+    }
+
+    func getContextRule(contextRuleId: UInt32) async throws -> SCValXDR {
+        getContextRuleCalls.append(contextRuleId)
+        // The parsed rule is returned directly by parseContextRule below, so the
+        // raw ScVal carried here is a placeholder the stub does not interpret.
+        return SCValXDR.void
+    }
+
+    func parseContextRule(_ scVal: SCValXDR) throws -> OZParsedContextRule {
+        parseContextRuleCalls += 1
+        return rule
     }
 }

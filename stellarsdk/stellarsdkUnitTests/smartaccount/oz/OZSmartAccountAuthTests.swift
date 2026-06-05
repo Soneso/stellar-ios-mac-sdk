@@ -661,6 +661,72 @@ final class OZSmartAccountAuthTests: XCTestCase {
         XCTAssertEqual(payload.contextRuleIds, [42])
     }
 
+    // MARK: - signAuthEntry error branches
+
+    func testSignAuthEntry_throwsWhenSignerToScValFails() async throws {
+        // A signer whose toScVal() throws drives the "Failed to convert signer to SCVal"
+        // branch; signAuthEntry must wrap it in a SigningFailed.
+        let entry = try makeEntry()
+        let signer = ThrowingSignerStub()
+        do {
+            _ = try await OZSmartAccountAuth.signAuthEntry(
+                entry: entry,
+                signer: signer,
+                signature: OZPolicySignature.instance,
+                expirationLedger: 100
+            )
+            XCTFail("Expected throw")
+        } catch is SmartAccountTransactionException.SigningFailed {
+            // expected
+        } catch {
+            XCTFail("Unexpected error: \(error)")
+        }
+    }
+
+    func testSignAuthEntry_throwsWhenSignatureToAuthPayloadBytesFails() async throws {
+        // A valid signer with a signature whose toAuthPayloadBytes() throws drives the
+        // "Failed to encode signature bytes for auth payload" branch.
+        let entry = try makeEntry()
+        let signer = try OZDelegatedSigner(address: validAccountG)
+        let signature = ThrowingSignatureStub()
+        do {
+            _ = try await OZSmartAccountAuth.signAuthEntry(
+                entry: entry,
+                signer: signer,
+                signature: signature,
+                expirationLedger: 100
+            )
+            XCTFail("Expected throw")
+        } catch is SmartAccountTransactionException.SigningFailed {
+            // expected
+        } catch {
+            XCTFail("Unexpected error: \(error)")
+        }
+    }
+
+    // MARK: - addRawSignatureMapEntry non-bytes value
+
+    func testAddRawSignatureMapEntry_nonBytesValueIsXdrEncoded() throws {
+        // A non-.bytes signatureValue exercises the XDR-encode branch; the encoded bytes
+        // of the SCVal are stored as the signer's signature bytes.
+        let entry = try makeEntry()
+        let signer = try OZDelegatedSigner(address: validAccountG)
+        let value = SCValXDR.u32(5)
+        let result = try OZSmartAccountAuth.addRawSignatureMapEntry(
+            entry: entry,
+            signerKey: try signer.toScVal(),
+            signatureValue: value
+        )
+        guard case .address(let credentials) = result.credentials else {
+            XCTFail("Expected address credentials")
+            return
+        }
+        let payload = try OZSmartAccountAuthPayloadCodec.read(credentials.signature)
+        let expected = Data(try XDREncoder.encode(value))
+        XCTAssertEqual(payload.signers.count, 1)
+        XCTAssertEqual(payload.signers[0].signatureBytes, expected)
+    }
+
     // MARK: - Helpers
 
     private func makeEntry(nonce: Int64 = 100, expirationLedger: UInt32 = 0) throws -> SorobanAuthorizationEntryXDR {
@@ -686,5 +752,32 @@ final class OZSmartAccountAuthTests: XCTestCase {
             )
         )
         return SorobanAuthorizedInvocationXDR(function: function, subInvocations: [])
+    }
+}
+
+// MARK: - Local test doubles
+
+/// Signer whose `toScVal()` always throws, used to drive `signAuthEntry`'s signer-encoding
+/// error branch.
+private struct ThrowingSignerStub: OZSmartAccountSigner {
+    var uniqueKey: String { "throwing-signer-stub" }
+    func toScVal() throws -> SCValXDR {
+        throw SmartAccountValidationException.invalidInput(
+            field: "signer",
+            reason: "intentional test failure"
+        )
+    }
+}
+
+/// Signature whose `toAuthPayloadBytes()` always throws, used to drive `signAuthEntry`'s
+/// signature-encoding error branch. `toScVal()` is total and returns an empty map.
+private struct ThrowingSignatureStub: OZSmartAccountSignature {
+    func toScVal() -> SCValXDR {
+        return .map([])
+    }
+    func toAuthPayloadBytes() throws -> Data {
+        throw SmartAccountTransactionException.signingFailed(
+            reason: "intentional test failure"
+        )
     }
 }

@@ -869,6 +869,186 @@ final class OZSignerManagerTests: XCTestCase {
             // Expected: any error after guard-checks pass means the body was reached.
         }
     }
+
+    // ========================================================================
+    // MARK: - addNewPasskeySigner — non-WebAuthn registration error (lines 210-213)
+    // ========================================================================
+
+    /// When the WebAuthn provider's `register` throws an error that is NOT a
+    /// ``WebAuthnException``, `addNewPasskeySigner` must wrap it in
+    /// ``WebAuthnException/RegistrationFailed`` (the generic-catch branch),
+    /// preserving the underlying cause.
+    func test_addNewPasskeySigner_nonWebAuthnRegistrationError_wrapsAsRegistrationFailed() async throws {
+        let provider = RecordingWebAuthnProvider()
+        provider.enqueueRegisterError(_PlainError(detail: "authenticator hardware fault"))
+
+        let config = try OZSmartAccountConfig(
+            rpcUrl: "http://127.0.0.1:1",
+            networkPassphrase: Network.testnet.passphrase,
+            accountWasmHash: "a" + String(repeating: "0", count: 63),
+            webauthnVerifierAddress: validVerifier,
+            webauthnProvider: provider
+        )
+        let kit = MockOZSmartAccountKit(config: config)
+        kit.setConnectedState(
+            credentialId: "existing-cred",
+            contractId: validContractC2
+        )
+        let manager = OZSignerManager(kit: kit)
+
+        do {
+            _ = try await manager.addNewPasskeySigner(contextRuleId: 0, userName: "dave")
+            XCTFail("expected WebAuthnException.RegistrationFailed")
+        } catch is WebAuthnException.RegistrationFailed {
+            XCTAssertEqual(1, provider.registerCalls.count, "register must be called exactly once")
+        } catch {
+            XCTFail("Unexpected error: \(error)")
+        }
+    }
+
+    // ========================================================================
+    // MARK: - addNewPasskeySigner — credential persistence error mapping (lines 237-245)
+    // ========================================================================
+
+    /// When `createPendingCredential` throws a ``SmartAccountCredentialException``
+    /// after a successful registration, `addNewPasskeySigner` must rethrow that
+    /// exception unchanged (the `catch let error as SmartAccountCredentialException`
+    /// branch) without proceeding to on-chain submission.
+    func test_addNewPasskeySigner_credentialExceptionFromCreatePending_rethrows() async throws {
+        let provider = RecordingWebAuthnProvider()
+        provider.enqueueRegister(MockWebAuthnProvider.defaultRegistrationResult())
+
+        let credentialManager = _ThrowingCredentialManager(
+            error: SmartAccountCredentialException.invalid(reason: "synthetic credential failure")
+        )
+        let (kit, _) = try connectedKit()
+        let manager = OZSignerManager(
+            kit: kit,
+            webauthnProvider: provider,
+            credentialManager: credentialManager
+        )
+
+        do {
+            _ = try await manager.addNewPasskeySigner(contextRuleId: 0, userName: "erin")
+            XCTFail("expected SmartAccountCredentialException")
+        } catch is SmartAccountCredentialException {
+            XCTAssertEqual(1, provider.registerCalls.count, "register must be called once before credential save")
+            XCTAssertEqual(1, credentialManager.createPendingCalls)
+        } catch {
+            XCTFail("Unexpected error: \(error)")
+        }
+    }
+
+    /// When `createPendingCredential` throws a ``SmartAccountStorageException``,
+    /// `addNewPasskeySigner` must rethrow it unchanged (the
+    /// `catch let error as SmartAccountStorageException` branch).
+    func test_addNewPasskeySigner_storageExceptionFromCreatePending_rethrows() async throws {
+        let provider = RecordingWebAuthnProvider()
+        provider.enqueueRegister(MockWebAuthnProvider.defaultRegistrationResult())
+
+        let credentialManager = _ThrowingCredentialManager(
+            error: SmartAccountStorageException.writeFailed(key: "synthetic-key")
+        )
+        let (kit, _) = try connectedKit()
+        let manager = OZSignerManager(
+            kit: kit,
+            webauthnProvider: provider,
+            credentialManager: credentialManager
+        )
+
+        do {
+            _ = try await manager.addNewPasskeySigner(contextRuleId: 0, userName: "frank")
+            XCTFail("expected SmartAccountStorageException")
+        } catch is SmartAccountStorageException {
+            XCTAssertEqual(1, credentialManager.createPendingCalls)
+        } catch {
+            XCTFail("Unexpected error: \(error)")
+        }
+    }
+
+    /// When `createPendingCredential` throws a non-SmartAccount error (an
+    /// arbitrary `Error`), `addNewPasskeySigner` must wrap it in
+    /// ``SmartAccountStorageException/WriteFailed`` keyed by the base64url
+    /// credential id (the generic catch branch).
+    func test_addNewPasskeySigner_genericErrorFromCreatePending_wrapsAsWriteFailed() async throws {
+        let provider = RecordingWebAuthnProvider()
+        provider.enqueueRegister(MockWebAuthnProvider.defaultRegistrationResult())
+
+        let credentialManager = _ThrowingCredentialManager(
+            error: _PlainError(detail: "keychain unavailable")
+        )
+        let (kit, _) = try connectedKit()
+        let manager = OZSignerManager(
+            kit: kit,
+            webauthnProvider: provider,
+            credentialManager: credentialManager
+        )
+
+        do {
+            _ = try await manager.addNewPasskeySigner(contextRuleId: 0, userName: "grace")
+            XCTFail("expected SmartAccountStorageException.WriteFailed")
+        } catch is SmartAccountStorageException.WriteFailed {
+            XCTAssertEqual(1, credentialManager.createPendingCalls)
+        } catch {
+            XCTFail("Unexpected error: \(error)")
+        }
+    }
+
+    // ========================================================================
+    // MARK: - addNewPasskeySigner — full success path (lines 248-264)
+    // ========================================================================
+
+    /// A registration that succeeds, persists, emits the credential-created
+    /// event, and submits on-chain through the multi-signer recorder must return
+    /// an ``OZAddPasskeySignerResult`` carrying the base64url credential id, the
+    /// 65-byte public key, and the recorded transaction result. This exercises
+    /// the post-registration body (event emit, `addPasskey` delegation, and the
+    /// result construction) end-to-end without live RPC.
+    func test_addNewPasskeySigner_fullSuccess_returnsResult() async throws {
+        let provider = RecordingWebAuthnProvider()
+        let registration = MockWebAuthnProvider.defaultRegistrationResult()
+        provider.enqueueRegister(registration)
+
+        let storage = OZInMemoryStorageAdapter()
+        let config = try OZSmartAccountConfig(
+            rpcUrl: "http://127.0.0.1:1",
+            networkPassphrase: Network.testnet.passphrase,
+            accountWasmHash: "a" + String(repeating: "0", count: 63),
+            webauthnVerifierAddress: validVerifier,
+            webauthnProvider: provider,
+            storage: storage
+        )
+        let kit = MockOZSmartAccountKit(config: config)
+        kit.setConnectedState(
+            credentialId: "existing-cred",
+            contractId: validContractC2
+        )
+
+        // Route the on-chain add-signer submission through the recorder so the
+        // success path completes without touching the network.
+        let recorder = MockOZMultiSignerManager(kit: kit)
+        recorder.defaultResult = OZTransactionResult(success: true, hash: "feedface")
+        kit.multiSignerManagerOverride = recorder
+
+        let manager = OZSignerManager(kit: kit)
+
+        let result = try await manager.addNewPasskeySigner(
+            contextRuleId: 2,
+            userName: "heidi",
+            selectedSigners: [.wallet(accountId: validGAddr1)]
+        )
+
+        XCTAssertEqual(
+            result.credentialId,
+            registration.credentialId.base64URLEncodedString(),
+            "result credentialId must be the base64url encoding of the registration credential id"
+        )
+        XCTAssertEqual(result.publicKey, registration.publicKey, "result must carry the registration public key")
+        XCTAssertTrue(result.transactionResult.success)
+        XCTAssertEqual(result.transactionResult.hash, "feedface")
+        XCTAssertEqual(recorder.invocations.count, 1, "on-chain add-signer must route through the multi-signer submitter once")
+        XCTAssertEqual(provider.registerCalls.count, 1)
+    }
 }
 
 // ============================================================================
@@ -1001,5 +1181,52 @@ private final class _FailingStorageAdapter: OZStorageAdapter, @unchecked Sendabl
             throw SmartAccountStorageException.writeFailed(key: "session")
         }
     }
+}
+
+/// A plain `Error` that is not a ``SmartAccountException``. Used to drive the
+/// generic-catch branches in `addNewPasskeySigner` (non-WebAuthn registration
+/// error and non-SmartAccount credential-persistence error).
+private struct _PlainError: Error {
+    let detail: String
+}
+
+/// Credential manager double whose `createPendingCredential` always throws a
+/// configurable error. The remaining protocol methods are no-ops; the signer
+/// manager's new-passkey flow only reaches `createPendingCredential` before the
+/// failure surfaces. Records how many times `createPendingCredential` was
+/// invoked so tests can assert the failure originated there.
+private final class _ThrowingCredentialManager: OZCredentialManagerProtocol, @unchecked Sendable {
+
+    private let error: Error
+    private let lock = NSLock()
+    private var _createPendingCalls = 0
+
+    var createPendingCalls: Int {
+        lock.lock(); defer { lock.unlock() }
+        return _createPendingCalls
+    }
+
+    init(error: Error) {
+        self.error = error
+    }
+
+    func createPendingCredential(
+        credentialId: String,
+        publicKey: Data,
+        contractId: String,
+        nickname: String?,
+        transports: [String]?,
+        deviceType: String?,
+        backedUp: Bool?
+    ) async throws -> OZStoredCredential {
+        lock.withLock { _createPendingCalls += 1 }
+        throw error
+    }
+
+    func getCredential(credentialId: String) async throws -> OZStoredCredential? { nil }
+    func markDeploymentFailed(credentialId: String, error: String) async throws {}
+    func setPrimary(credentialId: String) async throws {}
+    func updateLastUsed(credentialId: String) async throws {}
+    func deleteCredential(credentialId: String) async throws {}
 }
 

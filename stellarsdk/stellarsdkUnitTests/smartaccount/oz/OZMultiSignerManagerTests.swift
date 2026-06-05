@@ -2219,8 +2219,1043 @@ extension OZMultiSignerManagerTests {
 }
 
 // ============================================================================
+// MARK: - Scripted full-pipeline coverage (passkey / ed25519 / wallet signing)
+// ============================================================================
+
+extension OZMultiSignerManagerTests {
+
+    private var pipelineContractId: String {
+        "CDCYWK73YTYFJZZSJ5V7EDFNHYBG4QN3VUNG2IGD27KJDDPNCZKBCBXK"
+    }
+
+    private var pipelineTargetContract: String {
+        "CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC"
+    }
+
+    /// Builds a 65-byte uncompressed secp256r1 public key fixture for passkey
+    /// `keyData`.
+    private func validPasskeyKeyData(seed: UInt8 = 0x42) -> Data {
+        var bytes = [UInt8](repeating: seed, count: SmartAccountConstants.secp256r1PublicKeySize)
+        bytes[0] = SmartAccountConstants.uncompressedPubkeyPrefix
+        return Data(bytes)
+    }
+
+    /// Returns a deterministic deployer keypair derived from the seed string so
+    /// the scripted `getAccount` response can be keyed on the same accountId.
+    private func deterministicDeployer(seed: UInt8) throws -> KeyPair {
+        let stellarSeed = try Seed(bytes: [UInt8](Data(repeating: seed, count: 32)))
+        return KeyPair(seed: stellarSeed)
+    }
+
+    /// Builds a kit + manager bound to a `MockSorobanServer`-backed RPC and a
+    /// `RecordingWebAuthnProvider` so the full signing pipeline can be driven.
+    private func scriptedKit(
+        script: MockSorobanServerScript,
+        deployer: KeyPair,
+        provider: WebAuthnProvider? = nil,
+        contractId: String? = nil,
+        signatureExpirationLedgers: Int = StellarProtocolConstants.ledgersPerHour
+    ) throws -> (MockOZSmartAccountKit, OZMultiSignerManager) {
+        let config = try OZSmartAccountConfig(
+            rpcUrl: "https://mock-rpc.invalid/rpc",
+            networkPassphrase: Network.testnet.passphrase,
+            accountWasmHash: "a" + String(repeating: "0", count: 63),
+            webauthnVerifierAddress: pipelineContractId,
+            deployerKeypair: deployer,
+            signatureExpirationLedgers: signatureExpirationLedgers,
+            webauthnProvider: provider
+        )
+        let liveServer = MockSorobanServer.makeMockedSorobanServer()
+        let kit = MockOZSmartAccountKit(config: config, sorobanServer: liveServer)
+        kit.configuredDeployer = deployer
+        kit.setConnectedState(
+            credentialId: "test-cred",
+            contractId: contractId ?? pipelineContractId
+        )
+        return (kit, OZMultiSignerManager(kit: kit))
+    }
+
+    // ------------------------------------------------------------------------
+    // Passkey signing pass — signEntryWithPasskeys (lines 744-821)
+    // ------------------------------------------------------------------------
+
+    /// A passkey signer with valid `keyData` and a configured WebAuthn provider
+    /// drives `signEntryWithPasskeys` to completion: the provider is prompted
+    /// with an `allowCredentials` list carrying the credential-id bytes, the
+    /// returned DER signature is normalised, wrapped, and attached to the
+    /// working entry. The pipeline then reaches re-simulation (scripted to fail)
+    /// confirming the passkey signing body executed.
+    func test_submitWithMultipleSigners_passkeySigning_promptsProviderAndAttachesSignature() async throws {
+        let script = MockSorobanServerScript()
+        MockSorobanServer.activate(script: script)
+        defer {
+            MockSorobanServer.deactivate()
+            MockURLProtocol.reset()
+        }
+
+        let deployer = try deterministicDeployer(seed: 0x21)
+        let provider = RecordingWebAuthnProvider()
+        let (kit, manager) = try scriptedKit(
+            script: script,
+            deployer: deployer,
+            provider: provider
+        )
+        _ = kit
+
+        script.setGetAccountResponse(accountId: deployer.accountId, sequence: 7)
+        let authEntry = try OZPipelineFixtures.addressCredentialsAuthEntry(
+            contractAddress: pipelineContractId,
+            targetContract: pipelineTargetContract,
+            targetFn: "noop"
+        )
+        script.enqueueSimulate(authEntries: [authEntry])
+        script.setGetLatestLedger(sequence: 1000)
+        provider.enqueueAuthenticate(
+            RecordingWebAuthnFixtures.authenticationResult(
+                credentialId: Data([0xAB, 0xCD])
+            )
+        )
+        // Re-simulation scripted to fail so the pipeline stops after signing.
+        script.enqueueSimulateError("re-simulation aborted after passkey signing")
+
+        let credentialIdBytes = Data([0xAB, 0xCD])
+        let signers: [OZSelectedSigner] = [
+            .passkey(
+                credentialId: "passkey-cred",
+                credentialIdBytes: credentialIdBytes,
+                keyData: validPasskeyKeyData()
+            )
+        ]
+        let hostFn = HostFunctionXDR.invokeContract(
+            InvokeContractArgsXDR(
+                contractAddress: try SCAddressXDR(contractId: pipelineTargetContract),
+                functionName: "noop",
+                args: []
+            )
+        )
+
+        do {
+            _ = try await manager.submitWithMultipleSigners(
+                hostFunction: hostFn,
+                selectedSigners: signers
+            )
+            XCTFail("expected SmartAccountTransactionException.SimulationFailed at re-simulation")
+        } catch is SmartAccountTransactionException.SimulationFailed {
+            // Expected: re-simulation scripted to fail after signing succeeded.
+        }
+
+        XCTAssertEqual(
+            provider.authenticateCalls.count, 1,
+            "the WebAuthn provider must be prompted exactly once for the single passkey signer"
+        )
+        let call = provider.authenticateCalls[0]
+        XCTAssertEqual(
+            call.allowCredentials?.count, 1,
+            "an allowCredentials list must be supplied when credentialIdBytes is present"
+        )
+        XCTAssertEqual(
+            call.allowCredentials?.first?.id, credentialIdBytes,
+            "the allowCredentials id must carry the supplied credentialIdBytes"
+        )
+    }
+
+    /// A passkey signer with `credentialIdBytes == nil` (empty Data) still drives
+    /// the signing pass; with no credential-id bytes the provider receives a nil
+    /// `allowCredentials` list (default credential discovery). This exercises the
+    /// `else` arm of the allowCredentials construction.
+    func test_submitWithMultipleSigners_passkeySigning_noCredentialIdBytes_passesNilAllowCredentials() async throws {
+        let script = MockSorobanServerScript()
+        MockSorobanServer.activate(script: script)
+        defer {
+            MockSorobanServer.deactivate()
+            MockURLProtocol.reset()
+        }
+
+        let deployer = try deterministicDeployer(seed: 0x22)
+        let provider = RecordingWebAuthnProvider()
+        let (_, manager) = try scriptedKit(
+            script: script,
+            deployer: deployer,
+            provider: provider
+        )
+
+        script.setGetAccountResponse(accountId: deployer.accountId, sequence: 7)
+        let authEntry = try OZPipelineFixtures.addressCredentialsAuthEntry(
+            contractAddress: pipelineContractId,
+            targetContract: pipelineTargetContract,
+            targetFn: "noop"
+        )
+        script.enqueueSimulate(authEntries: [authEntry])
+        script.setGetLatestLedger(sequence: 1000)
+        provider.enqueueAuthenticate(
+            RecordingWebAuthnFixtures.authenticationResult(credentialId: Data())
+        )
+        script.enqueueSimulateError("re-simulation aborted")
+
+        // A nil credentialIdBytes maps to a nil allowCredentials list.
+        let signers: [OZSelectedSigner] = [
+            .passkey(
+                credentialId: "passkey-cred",
+                credentialIdBytes: nil,
+                keyData: validPasskeyKeyData()
+            )
+        ]
+        let hostFn = HostFunctionXDR.invokeContract(
+            InvokeContractArgsXDR(
+                contractAddress: try SCAddressXDR(contractId: pipelineTargetContract),
+                functionName: "noop",
+                args: []
+            )
+        )
+
+        do {
+            _ = try await manager.submitWithMultipleSigners(
+                hostFunction: hostFn,
+                selectedSigners: signers
+            )
+            XCTFail("expected SmartAccountTransactionException.SimulationFailed at re-simulation")
+        } catch is SmartAccountTransactionException.SimulationFailed {
+            // Expected.
+        }
+
+        XCTAssertEqual(provider.authenticateCalls.count, 1)
+        XCTAssertNil(
+            provider.authenticateCalls[0].allowCredentials,
+            "nil credentialIdBytes must produce a nil allowCredentials list"
+        )
+    }
+
+    /// When the WebAuthn provider throws, `signEntryWithPasskeys` must wrap the
+    /// failure in `WebAuthnException.authenticationFailed` carrying the 1-based
+    /// signer index in the message.
+    func test_submitWithMultipleSigners_passkeyProviderThrows_wrapsAsAuthenticationFailed() async throws {
+        let script = MockSorobanServerScript()
+        MockSorobanServer.activate(script: script)
+        defer {
+            MockSorobanServer.deactivate()
+            MockURLProtocol.reset()
+        }
+
+        let deployer = try deterministicDeployer(seed: 0x23)
+        let provider = RecordingWebAuthnProvider()
+        let (_, manager) = try scriptedKit(
+            script: script,
+            deployer: deployer,
+            provider: provider
+        )
+
+        script.setGetAccountResponse(accountId: deployer.accountId, sequence: 7)
+        let authEntry = try OZPipelineFixtures.addressCredentialsAuthEntry(
+            contractAddress: pipelineContractId,
+            targetContract: pipelineTargetContract,
+            targetFn: "noop"
+        )
+        script.enqueueSimulate(authEntries: [authEntry])
+        script.setGetLatestLedger(sequence: 1000)
+        provider.enqueueAuthenticateError(
+            WebAuthnException.authenticationFailed(reason: "user cancelled the prompt")
+        )
+
+        let signers: [OZSelectedSigner] = [
+            .passkey(
+                credentialId: "passkey-cred",
+                credentialIdBytes: Data([0x01]),
+                keyData: validPasskeyKeyData()
+            )
+        ]
+        let hostFn = HostFunctionXDR.invokeContract(
+            InvokeContractArgsXDR(
+                contractAddress: try SCAddressXDR(contractId: pipelineTargetContract),
+                functionName: "noop",
+                args: []
+            )
+        )
+
+        do {
+            _ = try await manager.submitWithMultipleSigners(
+                hostFunction: hostFn,
+                selectedSigners: signers
+            )
+            XCTFail("expected WebAuthnException.authenticationFailed")
+        } catch let error as WebAuthnException.AuthenticationFailed {
+            XCTAssertTrue(
+                error.message.contains("passkey signer 1/1"),
+                "wrapped error must carry the 1-based signer position, got: \(error.message)"
+            )
+        }
+    }
+
+    /// A passkey signer present in the selected list while the kit config has no
+    /// WebAuthn provider must throw `SmartAccountValidationException.InvalidInput`
+    /// from the provider precondition inside `signEntryWithPasskeys`.
+    func test_submitWithMultipleSigners_passkeySigning_noWebauthnProvider_throwsInvalidInput() async throws {
+        let script = MockSorobanServerScript()
+        MockSorobanServer.activate(script: script)
+        defer {
+            MockSorobanServer.deactivate()
+            MockURLProtocol.reset()
+        }
+
+        let deployer = try deterministicDeployer(seed: 0x24)
+        // No provider supplied.
+        let (_, manager) = try scriptedKit(
+            script: script,
+            deployer: deployer,
+            provider: nil
+        )
+
+        script.setGetAccountResponse(accountId: deployer.accountId, sequence: 7)
+        let authEntry = try OZPipelineFixtures.addressCredentialsAuthEntry(
+            contractAddress: pipelineContractId,
+            targetContract: pipelineTargetContract,
+            targetFn: "noop"
+        )
+        script.enqueueSimulate(authEntries: [authEntry])
+        script.setGetLatestLedger(sequence: 1000)
+
+        let signers: [OZSelectedSigner] = [
+            .passkey(
+                credentialId: "passkey-cred",
+                credentialIdBytes: Data([0x01]),
+                keyData: validPasskeyKeyData()
+            )
+        ]
+        let hostFn = HostFunctionXDR.invokeContract(
+            InvokeContractArgsXDR(
+                contractAddress: try SCAddressXDR(contractId: pipelineTargetContract),
+                functionName: "noop",
+                args: []
+            )
+        )
+
+        do {
+            _ = try await manager.submitWithMultipleSigners(
+                hostFunction: hostFn,
+                selectedSigners: signers
+            )
+            XCTFail("expected SmartAccountValidationException.InvalidInput for missing provider")
+        } catch let error as SmartAccountValidationException.InvalidInput {
+            XCTAssertTrue(
+                error.message.lowercased().contains("webauthn provider"),
+                "error must reference the missing WebAuthn provider, got: \(error.message)"
+            )
+        }
+    }
+
+    // ------------------------------------------------------------------------
+    // Full submission success — resimulateAndSubmit (lines 1034-1042) and the
+    // best-effort updateLastUsed loop (lines 485-489) and the multiSignerTransfer
+    // recipient C-address branch (line 126).
+    // ------------------------------------------------------------------------
+
+    /// `multiSignerTransfer` with a C-address recipient drives the full pipeline
+    /// to a successful on-chain submission. This exercises:
+    /// - the recipient `hasPrefix("C")` branch (`SCAddressXDR(contractId:)`),
+    /// - `resimulateAndSubmit` reaching `submitMultiSignerTransaction`,
+    /// - the best-effort passkey `updateLastUsed` loop.
+    func test_multiSignerTransfer_recipientContractAddress_fullPipelineSucceeds() async throws {
+        let script = MockSorobanServerScript()
+        MockSorobanServer.activate(script: script)
+        defer {
+            MockSorobanServer.deactivate()
+            MockURLProtocol.reset()
+        }
+
+        let deployer = try deterministicDeployer(seed: 0x31)
+        let provider = RecordingWebAuthnProvider()
+        // Use a dedicated MockCredentialManager so the best-effort updateLastUsed
+        // call can be asserted.
+        let storage = OZInMemoryStorageAdapter()
+        let credentialManager = MockCredentialManager(storage: storage)
+        let config = try OZSmartAccountConfig(
+            rpcUrl: "https://mock-rpc.invalid/rpc",
+            networkPassphrase: Network.testnet.passphrase,
+            accountWasmHash: "a" + String(repeating: "0", count: 63),
+            webauthnVerifierAddress: pipelineContractId,
+            deployerKeypair: deployer,
+            webauthnProvider: provider,
+            storage: storage
+        )
+        let liveServer = MockSorobanServer.makeMockedSorobanServer()
+        let kit = MockOZSmartAccountKit(
+            config: config,
+            sorobanServer: liveServer,
+            credentialManager: credentialManager
+        )
+        kit.configuredDeployer = deployer
+        kit.setConnectedState(credentialId: "test-cred", contractId: pipelineContractId)
+        let manager = OZMultiSignerManager(kit: kit)
+
+        // Initial getAccount + simulate (one auth entry for the connected contract).
+        script.setGetAccountResponse(accountId: deployer.accountId, sequence: 11)
+        let authEntry = try OZPipelineFixtures.addressCredentialsAuthEntry(
+            contractAddress: pipelineContractId,
+            targetContract: pipelineTargetContract,
+            targetFn: "transfer"
+        )
+        script.enqueueSimulate(authEntries: [authEntry])
+        script.setGetLatestLedger(sequence: 1000)
+        provider.enqueueAuthenticate(
+            RecordingWebAuthnFixtures.authenticationResult(credentialId: Data([0x01]))
+        )
+        // Re-simulation succeeds; second getAccount for the re-simulation rebuild.
+        script.enqueueSimulate(authEntries: [], minResourceFee: 200)
+        // submitMultiSignerTransaction -> sendTransaction + poll.
+        script.setSendSuccess(
+            status: SendTransactionResponse.STATUS_PENDING,
+            hash: "transfer-hash"
+        )
+        script.enqueueGetTransactionResponse(
+            status: GetTransactionResponse.STATUS_SUCCESS,
+            ledger: 1002
+        )
+
+        let recipientContract = pipelineTargetContract
+        let signers: [OZSelectedSigner] = [
+            .passkey(
+                credentialId: "passkey-cred",
+                credentialIdBytes: Data([0x01]),
+                keyData: validPasskeyKeyData()
+            )
+        ]
+
+        let result = try await manager.multiSignerTransfer(
+            tokenContract: pipelineTargetContract,
+            recipient: recipientContract,
+            amount: "10",
+            selectedSigners: signers
+        )
+
+        XCTAssertTrue(result.success, "expected a successful submission, got error: \(result.error ?? "nil")")
+        XCTAssertEqual(result.hash, "transfer-hash")
+        XCTAssertEqual(script.sendCallCount, 1, "the signed transaction must be submitted exactly once")
+        XCTAssertEqual(
+            credentialManager.updateLastUsedCalls, ["passkey-cred"],
+            "the best-effort updateLastUsed loop must record the participating passkey credential"
+        )
+    }
+
+    /// The best-effort `updateLastUsed` loop must not derail submission when the
+    /// credential manager's storage write throws. The submission still succeeds.
+    func test_submitWithMultipleSigners_updateLastUsedThrows_doesNotDerailSubmission() async throws {
+        let script = MockSorobanServerScript()
+        MockSorobanServer.activate(script: script)
+        defer {
+            MockSorobanServer.deactivate()
+            MockURLProtocol.reset()
+        }
+
+        let deployer = try deterministicDeployer(seed: 0x32)
+        let provider = RecordingWebAuthnProvider()
+        let storage = OZInMemoryStorageAdapter()
+        let credentialManager = MockCredentialManager(storage: storage)
+        // Force updateLastUsed to throw so the catch arm runs.
+        credentialManager.throwOnUpdateLastUsed = SmartAccountValidationException.invalidInput(
+            field: "credentialId",
+            reason: "simulated storage failure"
+        )
+        let config = try OZSmartAccountConfig(
+            rpcUrl: "https://mock-rpc.invalid/rpc",
+            networkPassphrase: Network.testnet.passphrase,
+            accountWasmHash: "a" + String(repeating: "0", count: 63),
+            webauthnVerifierAddress: pipelineContractId,
+            deployerKeypair: deployer,
+            webauthnProvider: provider,
+            storage: storage
+        )
+        let liveServer = MockSorobanServer.makeMockedSorobanServer()
+        let kit = MockOZSmartAccountKit(
+            config: config,
+            sorobanServer: liveServer,
+            credentialManager: credentialManager
+        )
+        kit.configuredDeployer = deployer
+        kit.setConnectedState(credentialId: "test-cred", contractId: pipelineContractId)
+        let manager = OZMultiSignerManager(kit: kit)
+
+        script.setGetAccountResponse(accountId: deployer.accountId, sequence: 13)
+        let authEntry = try OZPipelineFixtures.addressCredentialsAuthEntry(
+            contractAddress: pipelineContractId,
+            targetContract: pipelineTargetContract,
+            targetFn: "noop"
+        )
+        script.enqueueSimulate(authEntries: [authEntry])
+        script.setGetLatestLedger(sequence: 1000)
+        provider.enqueueAuthenticate(
+            RecordingWebAuthnFixtures.authenticationResult(credentialId: Data([0x01]))
+        )
+        script.enqueueSimulate(authEntries: [], minResourceFee: 200)
+        script.setSendSuccess(
+            status: SendTransactionResponse.STATUS_PENDING,
+            hash: "best-effort-hash"
+        )
+        script.enqueueGetTransactionResponse(
+            status: GetTransactionResponse.STATUS_SUCCESS,
+            ledger: 1002
+        )
+
+        let signers: [OZSelectedSigner] = [
+            .passkey(
+                credentialId: "passkey-cred",
+                credentialIdBytes: Data([0x01]),
+                keyData: validPasskeyKeyData()
+            )
+        ]
+        let hostFn = HostFunctionXDR.invokeContract(
+            InvokeContractArgsXDR(
+                contractAddress: try SCAddressXDR(contractId: pipelineTargetContract),
+                functionName: "noop",
+                args: []
+            )
+        )
+
+        let result = try await manager.submitWithMultipleSigners(
+            hostFunction: hostFn,
+            selectedSigners: signers
+        )
+
+        XCTAssertTrue(result.success, "submission must succeed even when updateLastUsed throws")
+        XCTAssertEqual(
+            credentialManager.updateLastUsedCalls, ["passkey-cred"],
+            "updateLastUsed must have been attempted despite throwing"
+        )
+    }
+
+    // ------------------------------------------------------------------------
+    // Non-address credentials pass-through (lines 383-384)
+    // ------------------------------------------------------------------------
+
+    /// An auth entry whose credentials are `.sourceAccount` (not `.address`) is
+    /// appended unchanged and the loop continues. With only that entry and a
+    /// wallet signer that needs no extra entry, the pipeline reaches
+    /// re-simulation (scripted to fail), confirming the pass-through arm ran.
+    func test_submitWithMultipleSigners_sourceAccountCredentials_passThroughUnchanged() async throws {
+        let script = MockSorobanServerScript()
+        MockSorobanServer.activate(script: script)
+        defer {
+            MockSorobanServer.deactivate()
+            MockURLProtocol.reset()
+        }
+
+        let deployer = try deterministicDeployer(seed: 0x41)
+        let walletKeypair = try KeyPair.generateRandomKeyPair()
+        guard let walletSecret = walletKeypair.secretSeed else {
+            XCTFail("generated keypair must expose a secret seed")
+            return
+        }
+
+        let (kit, manager) = try scriptedKit(script: script, deployer: deployer)
+        let extMgr = OZExternalSignerManager(networkPassphrase: Network.testnet.passphrase)
+        kit.externalSignersOverride = extMgr
+        _ = try await extMgr.addFromSecret(secretKey: walletSecret)
+
+        script.setGetAccountResponse(accountId: deployer.accountId, sequence: 5)
+        // Source-account-credentials entry: not address-typed, so it is passed
+        // through unchanged by the signing loop.
+        let sourceEntry = try OZPipelineFixtures.sourceAccountAuthEntry(
+            targetContract: pipelineTargetContract,
+            targetFn: "noop"
+        )
+        script.enqueueSimulate(authEntries: [sourceEntry])
+        script.setGetLatestLedger(sequence: 1000)
+        // The wallet signer produces a delegated entry; re-simulation then fails.
+        script.enqueueSimulateError("re-simulation aborted for source-account pass-through test")
+
+        let signers: [OZSelectedSigner] = [.wallet(accountId: walletKeypair.accountId)]
+        let hostFn = HostFunctionXDR.invokeContract(
+            InvokeContractArgsXDR(
+                contractAddress: try SCAddressXDR(contractId: pipelineTargetContract),
+                functionName: "noop",
+                args: []
+            )
+        )
+
+        do {
+            _ = try await manager.submitWithMultipleSigners(
+                hostFunction: hostFn,
+                selectedSigners: signers
+            )
+            XCTFail("expected SmartAccountTransactionException.SimulationFailed at re-simulation")
+        } catch is SmartAccountTransactionException.SimulationFailed {
+            // Expected: re-simulation scripted to fail after the source-account
+            // entry was passed through unchanged.
+        } catch is SmartAccountValidationException.InvalidInput {
+            XCTFail("a registered in-memory wallet keypair must pass validation")
+        }
+    }
+
+    // ------------------------------------------------------------------------
+    // Caller-supplied resolveContextRuleIds callback (line 423)
+    // ------------------------------------------------------------------------
+
+    /// When a `resolveContextRuleIds` callback is supplied it is invoked per
+    /// entry instead of the kit's context-rule manager. The callback records the
+    /// entry index it received and returns a fixed rule-id set.
+    func test_submitWithMultipleSigners_resolveContextRuleIdsCallback_isInvoked() async throws {
+        let script = MockSorobanServerScript()
+        MockSorobanServer.activate(script: script)
+        defer {
+            MockSorobanServer.deactivate()
+            MockURLProtocol.reset()
+        }
+
+        let deployer = try deterministicDeployer(seed: 0x51)
+        let provider = RecordingWebAuthnProvider()
+        let (_, manager) = try scriptedKit(script: script, deployer: deployer, provider: provider)
+
+        script.setGetAccountResponse(accountId: deployer.accountId, sequence: 9)
+        let authEntry = try OZPipelineFixtures.addressCredentialsAuthEntry(
+            contractAddress: pipelineContractId,
+            targetContract: pipelineTargetContract,
+            targetFn: "noop"
+        )
+        script.enqueueSimulate(authEntries: [authEntry])
+        script.setGetLatestLedger(sequence: 1000)
+        provider.enqueueAuthenticate(
+            RecordingWebAuthnFixtures.authenticationResult(credentialId: Data([0x01]))
+        )
+        script.enqueueSimulateError("re-simulation aborted")
+
+        let observedIndices = ObservedIndexBox()
+        let resolver: OZResolveContextRuleIds = { _, index in
+            observedIndices.append(index)
+            return [3, 5]
+        }
+
+        let signers: [OZSelectedSigner] = [
+            .passkey(
+                credentialId: "passkey-cred",
+                credentialIdBytes: Data([0x01]),
+                keyData: validPasskeyKeyData()
+            )
+        ]
+        let hostFn = HostFunctionXDR.invokeContract(
+            InvokeContractArgsXDR(
+                contractAddress: try SCAddressXDR(contractId: pipelineTargetContract),
+                functionName: "noop",
+                args: []
+            )
+        )
+
+        do {
+            _ = try await manager.submitWithMultipleSigners(
+                hostFunction: hostFn,
+                selectedSigners: signers,
+                forceMethod: nil,
+                resolveContextRuleIds: resolver
+            )
+            XCTFail("expected SmartAccountTransactionException.SimulationFailed at re-simulation")
+        } catch is SmartAccountTransactionException.SimulationFailed {
+            // Expected.
+        }
+
+        XCTAssertEqual(
+            observedIndices.values, [0],
+            "the resolver callback must be invoked once with the zero-based entry index"
+        )
+    }
+
+    // ------------------------------------------------------------------------
+    // computeExpirationLedger UInt32 overflow (lines 659-661)
+    // ------------------------------------------------------------------------
+
+    /// A latest-ledger sequence plus the configured expiration window that
+    /// exceeds `UInt32.max` must throw `SmartAccountTransactionException.SimulationFailed`
+    /// from the `UInt32(exactly:)` overflow guard.
+    func test_submitWithMultipleSigners_expirationLedgerOverflow_throwsSimulationFailed() async throws {
+        let script = MockSorobanServerScript()
+        MockSorobanServer.activate(script: script)
+        defer {
+            MockSorobanServer.deactivate()
+            MockURLProtocol.reset()
+        }
+
+        let deployer = try deterministicDeployer(seed: 0x61)
+        let provider = RecordingWebAuthnProvider()
+        // A large expiration window so that latestLedger + window overflows UInt32.
+        let (_, manager) = try scriptedKit(
+            script: script,
+            deployer: deployer,
+            provider: provider,
+            signatureExpirationLedgers: Int(UInt32.max)
+        )
+
+        script.setGetAccountResponse(accountId: deployer.accountId, sequence: 3)
+        let authEntry = try OZPipelineFixtures.addressCredentialsAuthEntry(
+            contractAddress: pipelineContractId,
+            targetContract: pipelineTargetContract,
+            targetFn: "noop"
+        )
+        script.enqueueSimulate(authEntries: [authEntry])
+        // Latest ledger near UInt32.max so the sum overflows.
+        script.setGetLatestLedger(sequence: Int(UInt32.max) - 10)
+
+        let signers: [OZSelectedSigner] = [
+            .passkey(
+                credentialId: "passkey-cred",
+                credentialIdBytes: Data([0x01]),
+                keyData: validPasskeyKeyData()
+            )
+        ]
+        let hostFn = HostFunctionXDR.invokeContract(
+            InvokeContractArgsXDR(
+                contractAddress: try SCAddressXDR(contractId: pipelineTargetContract),
+                functionName: "noop",
+                args: []
+            )
+        )
+
+        do {
+            _ = try await manager.submitWithMultipleSigners(
+                hostFunction: hostFn,
+                selectedSigners: signers
+            )
+            XCTFail("expected SmartAccountTransactionException.SimulationFailed for ledger overflow")
+        } catch let error as SmartAccountTransactionException.SimulationFailed {
+            XCTAssertTrue(
+                error.message.contains("overflows UInt32"),
+                "error must describe the UInt32 overflow, got: \(error.message)"
+            )
+        }
+    }
+
+    // ------------------------------------------------------------------------
+    // Ed25519 signing pass — signEntryWithEd25519Signers success body
+    // (lines 878-895) and locallyVerifyEd25519 size guard (lines 918-921).
+    // ------------------------------------------------------------------------
+
+    /// An Ed25519 signer backed by a real in-memory keypair drives
+    /// `signEntryWithEd25519Signers` through local verification and signature
+    /// attachment. The pipeline then reaches re-simulation (scripted to fail),
+    /// confirming the success body (`OZEd25519Signature` wrapping +
+    /// `signAuthEntry`) ran.
+    func test_submitWithMultipleSigners_ed25519Signing_realKeypair_attachesSignature() async throws {
+        let script = MockSorobanServerScript()
+        MockSorobanServer.activate(script: script)
+        defer {
+            MockSorobanServer.deactivate()
+            MockURLProtocol.reset()
+        }
+
+        let deployer = try deterministicDeployer(seed: 0x71)
+        let (kit, manager) = try scriptedKit(script: script, deployer: deployer)
+        let extMgr = OZExternalSignerManager(networkPassphrase: Network.testnet.passphrase)
+        kit.externalSignersOverride = extMgr
+        let ed25519Seed = Data(0x00 ..< 0x20)
+        let pubKey = try await extMgr.addEd25519FromRawKey(
+            secretKeyBytes: ed25519Seed,
+            verifierAddress: pipelineContractId
+        )
+
+        script.setGetAccountResponse(accountId: deployer.accountId, sequence: 4)
+        let authEntry = try OZPipelineFixtures.addressCredentialsAuthEntry(
+            contractAddress: pipelineContractId,
+            targetContract: pipelineTargetContract,
+            targetFn: "noop"
+        )
+        script.enqueueSimulate(authEntries: [authEntry])
+        script.setGetLatestLedger(sequence: 1000)
+        script.enqueueSimulateError("re-simulation aborted after ed25519 signing")
+
+        let signers: [OZSelectedSigner] = [
+            .ed25519(verifierAddress: pipelineContractId, publicKey: pubKey)
+        ]
+        let hostFn = HostFunctionXDR.invokeContract(
+            InvokeContractArgsXDR(
+                contractAddress: try SCAddressXDR(contractId: pipelineTargetContract),
+                functionName: "noop",
+                args: []
+            )
+        )
+
+        do {
+            _ = try await manager.submitWithMultipleSigners(
+                hostFunction: hostFn,
+                selectedSigners: signers
+            )
+            XCTFail("expected SmartAccountTransactionException.SimulationFailed at re-simulation")
+        } catch is SmartAccountTransactionException.SimulationFailed {
+            // Expected: re-simulation scripted to fail after ed25519 signing.
+        } catch is SmartAccountValidationException.InvalidInput {
+            XCTFail("a registered Ed25519 keypair must pass validation and sign successfully")
+        }
+    }
+
+    /// `locallyVerifyEd25519` must throw `SmartAccountTransactionException.signingFailed`
+    /// when the signing source returns a signature of the wrong length. A wrong-size
+    /// adapter signature trips the size guard before the verify call.
+    func test_submitWithMultipleSigners_ed25519WrongSignatureSize_throwsSigningFailed() async throws {
+        let script = MockSorobanServerScript()
+        MockSorobanServer.activate(script: script)
+        defer {
+            MockSorobanServer.deactivate()
+            MockURLProtocol.reset()
+        }
+
+        let deployer = try deterministicDeployer(seed: 0x72)
+        let (kit, manager) = try scriptedKit(script: script, deployer: deployer)
+        let shortAdapter = FakeShortSignatureEd25519Adapter()
+        let extMgr = OZExternalSignerManager(
+            networkPassphrase: Network.testnet.passphrase,
+            ed25519Adapter: shortAdapter
+        )
+        kit.externalSignersOverride = extMgr
+        let ed25519Seed = Data(0x00 ..< 0x20)
+        let pubKey = try await extMgr.addEd25519FromRawKey(
+            secretKeyBytes: ed25519Seed,
+            verifierAddress: pipelineContractId
+        )
+
+        script.setGetAccountResponse(accountId: deployer.accountId, sequence: 4)
+        let authEntry = try OZPipelineFixtures.addressCredentialsAuthEntry(
+            contractAddress: pipelineContractId,
+            targetContract: pipelineTargetContract,
+            targetFn: "noop"
+        )
+        script.enqueueSimulate(authEntries: [authEntry])
+        script.setGetLatestLedger(sequence: 1000)
+
+        let signers: [OZSelectedSigner] = [
+            .ed25519(verifierAddress: pipelineContractId, publicKey: pubKey)
+        ]
+        let hostFn = HostFunctionXDR.invokeContract(
+            InvokeContractArgsXDR(
+                contractAddress: try SCAddressXDR(contractId: pipelineTargetContract),
+                functionName: "noop",
+                args: []
+            )
+        )
+
+        do {
+            _ = try await manager.submitWithMultipleSigners(
+                hostFunction: hostFn,
+                selectedSigners: signers
+            )
+            XCTFail("expected SmartAccountTransactionException.signingFailed for wrong signature size")
+        } catch let error as SmartAccountTransactionException.SigningFailed {
+            XCTAssertTrue(
+                error.message.contains("bytes for verifier"),
+                "error must describe the wrong signature length, got: \(error.message)"
+            )
+        }
+    }
+
+    // ------------------------------------------------------------------------
+    // Wallet direct-entry non-base64 signature and bad signer address
+    // (lines 1129-1131, 1139-1143) and authorizeInvocation equivalents
+    // (lines 1207-1209, 1217-1221).
+    // ------------------------------------------------------------------------
+
+    /// A wallet adapter that returns a non-base64 signature surfaces a
+    /// `SmartAccountTransactionException.signingFailed`. The external-signer
+    /// manager verifies the adapter signature and rejects the malformed value
+    /// before it reaches the smart-account credential shape.
+    func test_submitWithMultipleSigners_walletAdapterNonBase64Signature_throwsSigningFailed() async throws {
+        let script = MockSorobanServerScript()
+        MockSorobanServer.activate(script: script)
+        defer {
+            MockSorobanServer.deactivate()
+            MockURLProtocol.reset()
+        }
+
+        let deployer = try deterministicDeployer(seed: 0x81)
+        let walletKeypair = try KeyPair.generateRandomKeyPair()
+        let walletAddress = walletKeypair.accountId
+
+        let (kit, manager) = try scriptedKit(script: script, deployer: deployer)
+        let badAdapter = NonBase64WalletAdapter(address: walletAddress)
+        let extMgr = OZExternalSignerManager(
+            networkPassphrase: Network.testnet.passphrase,
+            walletAdapter: badAdapter
+        )
+        kit.externalSignersOverride = extMgr
+
+        script.setGetAccountResponse(accountId: deployer.accountId, sequence: 6)
+        // Direct wallet auth entry: credential address is the wallet G-address,
+        // routing through signWalletAddressAuthEntry.
+        let walletAuthEntry = try walletAddressAuthEntryLocal(
+            accountId: walletAddress,
+            targetContractId: pipelineTargetContract,
+            targetFn: "pay"
+        )
+        script.enqueueSimulate(authEntries: [walletAuthEntry])
+        script.setGetLatestLedger(sequence: 1000)
+
+        let signers: [OZSelectedSigner] = [.wallet(accountId: walletAddress)]
+        let hostFn = HostFunctionXDR.invokeContract(
+            InvokeContractArgsXDR(
+                contractAddress: try SCAddressXDR(contractId: pipelineTargetContract),
+                functionName: "pay",
+                args: []
+            )
+        )
+
+        do {
+            _ = try await manager.submitWithMultipleSigners(
+                hostFunction: hostFn,
+                selectedSigners: signers
+            )
+            XCTFail("expected SmartAccountTransactionException.signingFailed for non-base64 signature")
+        } catch let error as SmartAccountTransactionException.SigningFailed {
+            XCTAssertTrue(
+                error.message.lowercased().contains("base64"),
+                "error must describe the non-base64 signature, got: \(error.message)"
+            )
+        }
+    }
+
+    /// A wallet adapter that reports a signer address from which a `KeyPair`
+    /// cannot be derived surfaces a `SmartAccountTransactionException.signingFailed`
+    /// describing the derivation failure. The malformed address is rejected
+    /// during the external signer manager's verification step.
+    func test_submitWithMultipleSigners_walletAdapterBadSignerAddress_throwsSigningFailed() async throws {
+        let script = MockSorobanServerScript()
+        MockSorobanServer.activate(script: script)
+        defer {
+            MockSorobanServer.deactivate()
+            MockURLProtocol.reset()
+        }
+
+        let deployer = try deterministicDeployer(seed: 0x82)
+        let walletKeypair = try KeyPair.generateRandomKeyPair()
+        let walletAddress = walletKeypair.accountId
+
+        let (kit, manager) = try scriptedKit(script: script, deployer: deployer)
+        // Adapter returns a valid base64 signature but a non-decodable signer
+        // address so KeyPair(accountId:) fails.
+        let badAdapter = BadSignerAddressWalletAdapter(
+            claimedAddress: walletAddress,
+            reportedSignerAddress: "NOT_A_VALID_G_ADDRESS"
+        )
+        let extMgr = OZExternalSignerManager(
+            networkPassphrase: Network.testnet.passphrase,
+            walletAdapter: badAdapter
+        )
+        kit.externalSignersOverride = extMgr
+
+        script.setGetAccountResponse(accountId: deployer.accountId, sequence: 6)
+        let walletAuthEntry = try walletAddressAuthEntryLocal(
+            accountId: walletAddress,
+            targetContractId: pipelineTargetContract,
+            targetFn: "pay"
+        )
+        script.enqueueSimulate(authEntries: [walletAuthEntry])
+        script.setGetLatestLedger(sequence: 1000)
+
+        let signers: [OZSelectedSigner] = [.wallet(accountId: walletAddress)]
+        let hostFn = HostFunctionXDR.invokeContract(
+            InvokeContractArgsXDR(
+                contractAddress: try SCAddressXDR(contractId: pipelineTargetContract),
+                functionName: "pay",
+                args: []
+            )
+        )
+
+        do {
+            _ = try await manager.submitWithMultipleSigners(
+                hostFunction: hostFn,
+                selectedSigners: signers
+            )
+            XCTFail("expected SmartAccountTransactionException.signingFailed for bad signer address")
+        } catch is SmartAccountTransactionException.SigningFailed {
+            // Expected: the signer address cannot be turned into a KeyPair.
+        }
+    }
+}
+
+// ============================================================================
 // MARK: - Test helpers
 // ============================================================================
+
+/// Thread-safe collector for entry indices observed by a
+/// `resolveContextRuleIds` callback.
+private final class ObservedIndexBox: @unchecked Sendable {
+    private let lock = NSLock()
+    private var _values: [Int] = []
+    func append(_ value: Int) {
+        lock.lock(); defer { lock.unlock() }
+        _values.append(value)
+    }
+    var values: [Int] {
+        lock.lock(); defer { lock.unlock() }
+        return _values
+    }
+}
+
+/// Builds an `Address`-credentials authorization entry whose credential address
+/// is a Stellar `G…` account address (wallet signer direct-entry path), local
+/// to the scripted-pipeline extension.
+private func walletAddressAuthEntryLocal(
+    accountId: String,
+    targetContractId: String,
+    targetFn: String = "pay",
+    nonce: Int64 = 0,
+    expirationLedger: UInt32 = 0
+) throws -> SorobanAuthorizationEntryXDR {
+    let invokeArgs = InvokeContractArgsXDR(
+        contractAddress: try SCAddressXDR(contractId: targetContractId),
+        functionName: targetFn,
+        args: []
+    )
+    let invocation = SorobanAuthorizedInvocationXDR(
+        function: .contractFn(invokeArgs),
+        subInvocations: []
+    )
+    let credentials = SorobanAddressCredentialsXDR(
+        address: try SCAddressXDR(accountId: accountId),
+        nonce: nonce,
+        signatureExpirationLedger: expirationLedger,
+        signature: .void
+    )
+    return SorobanAuthorizationEntryXDR(
+        credentials: .address(credentials),
+        rootInvocation: invocation
+    )
+}
+
+/// `OZExternalEd25519SignerAdapter` that returns a too-short signature (32 bytes)
+/// while reporting `canSignFor` true for every pair. Drives the wrong-size guard
+/// in `locallyVerifyEd25519`.
+private final class FakeShortSignatureEd25519Adapter: OZExternalEd25519SignerAdapter, @unchecked Sendable {
+    func canSignFor(verifierAddress: String, publicKey: Data) -> Bool { return true }
+    func signAuthDigest(authDigest: Data, publicKey: Data) async throws -> Data {
+        return Data(repeating: 0x00, count: 32)
+    }
+}
+
+/// `OZExternalWalletAdapter` that claims `canSignFor` for one address and returns
+/// a non-base64 signature string. Used to drive the non-base64 signature guard.
+private final class NonBase64WalletAdapter: OZExternalWalletAdapter, @unchecked Sendable {
+    private let claimedAddress: String
+    init(address: String) { self.claimedAddress = address }
+    func canSignFor(address: String) -> Bool { return address == claimedAddress }
+    func connect() async throws -> OZConnectedWallet? { return nil }
+    func disconnect() async throws {}
+    func signAuthEntry(preimageXdr: String, options: OZSignAuthEntryOptions?) async throws -> OZSignAuthEntryResult {
+        // "!!!!" contains '!' which is not a valid base64 character.
+        return OZSignAuthEntryResult(signedAuthEntry: "!!!!not-base64!!!!", signerAddress: claimedAddress)
+    }
+    func getConnectedWallets() -> [OZConnectedWallet] { return [] }
+}
+
+/// `OZExternalWalletAdapter` that returns a valid base64 signature but reports a
+/// non-decodable signer address, driving the `KeyPair(accountId:)` failure path.
+private final class BadSignerAddressWalletAdapter: OZExternalWalletAdapter, @unchecked Sendable {
+    private let claimedAddress: String
+    private let reportedSignerAddress: String
+    init(claimedAddress: String, reportedSignerAddress: String) {
+        self.claimedAddress = claimedAddress
+        self.reportedSignerAddress = reportedSignerAddress
+    }
+    func canSignFor(address: String) -> Bool { return address == claimedAddress }
+    func connect() async throws -> OZConnectedWallet? { return nil }
+    func disconnect() async throws {}
+    func signAuthEntry(preimageXdr: String, options: OZSignAuthEntryOptions?) async throws -> OZSignAuthEntryResult {
+        let signature = Data(repeating: 0x00, count: 64).base64EncodedString()
+        return OZSignAuthEntryResult(signedAuthEntry: signature, signerAddress: reportedSignerAddress)
+    }
+    func getConnectedWallets() -> [OZConnectedWallet] { return [] }
+}
 
 /// Provides a stable `hashCode` accessor over `Hashable` so the equality tests
 /// can compare hash values without depending on a specific Swift runtime

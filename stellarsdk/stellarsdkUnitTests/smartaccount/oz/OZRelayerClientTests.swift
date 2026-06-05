@@ -1009,6 +1009,68 @@ final class OZRelayerClientTests: XCTestCase {
         XCTAssertEqual("abc123", response.hash)
     }
 
+    // MARK: - send: JSON decode failure
+
+    func testSend_malformedJsonBodyWithJsonContentType_returnsParseError() async throws {
+        // why: when the response carries a JSON `Content-Type` (so the
+        // content-type guard does not short-circuit) but the body is not a JSON
+        // object the decoder cannot build (here a top-level JSON array), the
+        // `JSONDecoder.decode(OZRelayerResponse.self, ...)` call throws. The
+        // client must map that throw into a failure response whose `error`
+        // names the parse failure and includes the (truncated) body — it must
+        // not propagate the exception.
+        installResponder(
+            body: "[1, 2, 3]",
+            statusCode: 200,
+            contentType: "application/json"
+        )
+        let session = makeMockSession()
+        let relayer = try OZRelayerClient(
+            relayerUrl: "https://relayer.example.com",
+            urlSession: session
+        )
+        defer { relayer.close() }
+
+        let response = await relayer.send(
+            hostFunction: createTestHostFunction(),
+            authEntries: [createTestAuthEntry()]
+        )
+        XCTAssertFalse(response.success)
+        XCTAssertNotNil(response.error)
+        XCTAssertTrue(
+            response.error!.contains("Failed to parse relayer response as JSON"),
+            "Surfaced error must name the JSON parse failure"
+        )
+        XCTAssertNil(response.errorCode)
+    }
+
+    func testSendXdr_malformedJsonBody_returnsParseError() async throws {
+        // why: the `sendXdr` path shares the same `performRequest` decode block;
+        // a non-decodable JSON body must surface as a parse-failure response
+        // rather than throwing.
+        installResponder(
+            body: "\"a bare json string\"",
+            statusCode: 200,
+            contentType: "application/json"
+        )
+        let session = makeMockSession()
+        let relayer = try OZRelayerClient(
+            relayerUrl: "https://relayer.example.com",
+            urlSession: session
+        )
+        defer { relayer.close() }
+
+        let response = await relayer.sendXdr(
+            transactionEnvelope: createTestTransactionEnvelope()
+        )
+        XCTAssertFalse(response.success)
+        XCTAssertNotNil(response.error)
+        XCTAssertTrue(
+            response.error!.contains("Failed to parse relayer response as JSON"),
+            "Surfaced error must name the JSON parse failure"
+        )
+    }
+
     // MARK: - send: strict success extraction
 
     func testSend_intSuccessFieldNotCoerced() async throws {

@@ -825,6 +825,260 @@ final class OZTransactionOperationsTests: XCTestCase {
     }
 
     // ========================================================================
+    // MARK: - scValToInt64 high-order-bit branches
+    // ========================================================================
+
+    func test_scValToInt64_hiZero_loExceedsInt64Max_returnsNil() {
+        // hi == 0 but lo > Int64.max: the value does not fit a signed Int64.
+        let parts = Int128PartsXDR(hi: 0, lo: UInt64(Int64.max) + 1)
+        XCTAssertNil(OZTransactionOperations.scValToInt64(.i128(parts)))
+    }
+
+    func test_scValToInt64_hiZero_loEqualsInt64Max_returnsValue() {
+        // Boundary: lo == Int64.max with hi == 0 is the largest representable
+        // positive value and must round-trip.
+        let parts = Int128PartsXDR(hi: 0, lo: UInt64(Int64.max))
+        XCTAssertEqual(OZTransactionOperations.scValToInt64(.i128(parts)), Int64.max)
+    }
+
+    func test_scValToInt64_hiMinusOne_negativeValue_returnsValue() {
+        // hi == -1 with a low-word bit pattern >= Int64.min's pattern decodes a
+        // negative Int64. -1 is encoded as hi == -1, lo == UInt64.max.
+        let parts = Int128PartsXDR(hi: -1, lo: UInt64.max)
+        XCTAssertEqual(OZTransactionOperations.scValToInt64(.i128(parts)), -1)
+    }
+
+    func test_scValToInt64_hiMinusOne_loBelowInt64MinPattern_returnsNil() {
+        // hi == -1 but lo below the Int64.min bit pattern cannot fit Int64.
+        let parts = Int128PartsXDR(hi: -1, lo: 0)
+        XCTAssertNil(OZTransactionOperations.scValToInt64(.i128(parts)))
+    }
+
+    func test_scValToInt64_hiMinusOne_loEqualsInt64MinPattern_returnsMin() {
+        // Boundary: lo == Int64.min's bit pattern with hi == -1 decodes Int64.min.
+        let parts = Int128PartsXDR(hi: -1, lo: UInt64(bitPattern: Int64.min))
+        XCTAssertEqual(OZTransactionOperations.scValToInt64(.i128(parts)), Int64.min)
+    }
+
+    // ========================================================================
+    // MARK: - amountToStroops Int64-overflow branch
+    // ========================================================================
+
+    func test_amountToStroops_exceedsInt64Range_throws() {
+        // A whole part with more digits than Int64 can hold (after the 7-digit
+        // fractional padding the combined string overflows Int64).
+        let huge = String(repeating: "9", count: 30)
+        XCTAssertThrowsError(try OZTransactionOperations.amountToStroops(huge)) { error in
+            guard let invalid = error as? SmartAccountValidationException.InvalidAmount else {
+                XCTFail("expected InvalidAmount, got \(error)")
+                return
+            }
+            XCTAssertTrue(invalid.message.contains("Int64"),
+                          "expected Int64-range message, got: \(invalid.message)")
+        }
+    }
+
+    func test_amountToStroops_tooManyFractionalDigits_throws() {
+        // Eight fractional digits exceeds the seven-decimal stroop precision.
+        XCTAssertThrowsError(try OZTransactionOperations.amountToStroops("1.123456789")) { error in
+            XCTAssertTrue(error is SmartAccountValidationException.InvalidAmount)
+        }
+    }
+
+    // ========================================================================
+    // MARK: - tryFromContextRuleSignerScVal static helper
+    // ========================================================================
+
+    func test_tryFromContextRuleSignerScVal_validExternalSigner_returnsKeyData() throws {
+        // Encode an external signer the same way the on-chain rule stores it,
+        // then assert the decode-side helper recovers the keyData bytes.
+        let keyData = Data(repeating: 0xAB, count: 65)
+        let signer = try OZExternalSigner(
+            verifierAddress: validContractAddress,
+            keyData: keyData
+        )
+        let scVal = try signer.toScVal()
+        let recovered = OZTransactionOperations.tryFromContextRuleSignerScVal(scVal)
+        XCTAssertEqual(recovered, keyData)
+    }
+
+    func test_tryFromContextRuleSignerScVal_notAVec_returnsNil() {
+        XCTAssertNil(OZTransactionOperations.tryFromContextRuleSignerScVal(.symbol("nope")))
+    }
+
+    func test_tryFromContextRuleSignerScVal_nilVec_returnsNil() {
+        XCTAssertNil(OZTransactionOperations.tryFromContextRuleSignerScVal(.vec(nil)))
+    }
+
+    func test_tryFromContextRuleSignerScVal_tooFewParts_returnsNil() {
+        let parts: [SCValXDR] = [.symbol("External"), .bytes(Data([0x01]))]
+        XCTAssertNil(OZTransactionOperations.tryFromContextRuleSignerScVal(.vec(parts)))
+    }
+
+    func test_tryFromContextRuleSignerScVal_wrongTagSymbol_returnsNil() throws {
+        let address = try SCAddressXDR(contractId: validContractAddress)
+        let parts: [SCValXDR] = [
+            .symbol("Native"),
+            .address(address),
+            .bytes(Data([0x01]))
+        ]
+        XCTAssertNil(OZTransactionOperations.tryFromContextRuleSignerScVal(.vec(parts)))
+    }
+
+    func test_tryFromContextRuleSignerScVal_firstElementNotSymbol_returnsNil() throws {
+        let address = try SCAddressXDR(contractId: validContractAddress)
+        let parts: [SCValXDR] = [
+            .u32(7),
+            .address(address),
+            .bytes(Data([0x01]))
+        ]
+        XCTAssertNil(OZTransactionOperations.tryFromContextRuleSignerScVal(.vec(parts)))
+    }
+
+    func test_tryFromContextRuleSignerScVal_thirdElementNotBytes_returnsNil() throws {
+        let address = try SCAddressXDR(contractId: validContractAddress)
+        let parts: [SCValXDR] = [
+            .symbol("External"),
+            .address(address),
+            .symbol("not-bytes")
+        ]
+        XCTAssertNil(OZTransactionOperations.tryFromContextRuleSignerScVal(.vec(parts)))
+    }
+
+    // ========================================================================
+    // MARK: - applySimulation relayer-mode branches
+    // ========================================================================
+
+    /// Builds a minimal transaction whose source account is the supplied
+    /// keypair so `applySimulation` can mutate its fee / soroban-data fields.
+    private func buildTransactionForApply() throws -> Transaction {
+        let kp = try KeyPair.generateRandomKeyPair()
+        let account = Account(keyPair: kp, sequenceNumber: 0)
+        let invokeArgs = InvokeContractArgsXDR(
+            contractAddress: try SCAddressXDR(contractId: validContractAddress),
+            functionName: "noop",
+            args: []
+        )
+        let op = InvokeHostFunctionOperation(
+            hostFunction: .invokeContract(invokeArgs),
+            auth: []
+        )
+        return try Transaction(
+            sourceAccount: account,
+            operations: [op],
+            memo: Memo.none
+        )
+    }
+
+    /// Decodes a `SimulateTransactionResponse` from a JSON-RPC `result`
+    /// dictionary so `applySimulation` can be exercised without a live RPC hop.
+    private func decodeSimulation(
+        minResourceFee: UInt32?,
+        transactionData: String? = nil
+    ) throws -> SimulateTransactionResponse {
+        var payload: [String: Any] = [
+            "latestLedger": NSNumber(value: 1000)
+        ]
+        if let fee = minResourceFee {
+            payload["minResourceFee"] = String(fee)
+        }
+        if let data = transactionData {
+            payload["transactionData"] = data
+        }
+        payload["results"] = [["auth": [String](), "xdr": SCValXDR.void.xdrEncoded ?? ""]]
+        let data = try JSONSerialization.data(withJSONObject: payload)
+        return try JSONDecoder().decode(SimulateTransactionResponse.self, from: data)
+    }
+
+    func test_applySimulation_relayerMode_setsFeeToMinResourceFee() throws {
+        let tx = try buildTransactionForApply()
+        let simulation = try decodeSimulation(minResourceFee: 250_000)
+        try OZTransactionOperations.applySimulation(
+            simulation: simulation,
+            transaction: tx,
+            signedAuthEntries: [],
+            relayerMode: true
+        )
+        // In relayer mode the fee is set (not added on top of base op fee) to
+        // exactly the minResourceFee so the relayer can fee-bump cleanly.
+        XCTAssertEqual(tx.fee, 250_000)
+    }
+
+    func test_applySimulation_nonRelayerMode_addsResourceFeeOnTopOfBase() throws {
+        let tx = try buildTransactionForApply()
+        let baseFee = tx.fee
+        let simulation = try decodeSimulation(minResourceFee: 90_000)
+        try OZTransactionOperations.applySimulation(
+            simulation: simulation,
+            transaction: tx,
+            signedAuthEntries: [],
+            relayerMode: false
+        )
+        XCTAssertEqual(tx.fee, baseFee + 90_000)
+    }
+
+    func test_applySimulation_relayerMode_missingMinResourceFee_throws() throws {
+        let tx = try buildTransactionForApply()
+        let simulation = try decodeSimulation(minResourceFee: nil)
+        XCTAssertThrowsError(
+            try OZTransactionOperations.applySimulation(
+                simulation: simulation,
+                transaction: tx,
+                signedAuthEntries: [],
+                relayerMode: true
+            )
+        ) { error in
+            XCTAssertTrue(error is SmartAccountTransactionException.SubmissionFailed)
+        }
+    }
+
+    func test_applySimulation_nonRelayerMode_missingMinResourceFee_doesNotThrow() throws {
+        // When not in relayer mode a missing minResourceFee is tolerated: the
+        // transaction keeps its base fee and no resource fee is added.
+        let tx = try buildTransactionForApply()
+        let baseFee = tx.fee
+        let simulation = try decodeSimulation(minResourceFee: nil)
+        XCTAssertNoThrow(
+            try OZTransactionOperations.applySimulation(
+                simulation: simulation,
+                transaction: tx,
+                signedAuthEntries: [],
+                relayerMode: false
+            )
+        )
+        XCTAssertEqual(tx.fee, baseFee)
+    }
+
+    // ========================================================================
+    // MARK: - SmartAccountException.messageOf
+    // ========================================================================
+
+    func test_messageOf_nil_returnsNil() {
+        XCTAssertNil(SmartAccountException.messageOf(nil))
+    }
+
+    func test_messageOf_smartAccountException_returnsTypedMessage() {
+        let err = SmartAccountValidationException.invalidInput(
+            field: "x",
+            reason: "bad value"
+        )
+        let message = SmartAccountException.messageOf(err)
+        XCTAssertNotNil(message)
+        XCTAssertTrue(message!.contains("bad value"),
+                      "expected the typed message, got: \(message ?? "nil")")
+    }
+
+    func test_messageOf_genericError_fallsBackToLocalizedDescription() {
+        let err = NSError(
+            domain: "test.domain",
+            code: 7,
+            userInfo: [NSLocalizedDescriptionKey: "localized failure text"]
+        )
+        let message = SmartAccountException.messageOf(err)
+        XCTAssertEqual(message, "localized failure text")
+    }
+
+    // ========================================================================
     // Helpers
     // ========================================================================
 

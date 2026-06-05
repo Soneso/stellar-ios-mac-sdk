@@ -218,6 +218,40 @@ final class SmartAccountUtilsTests: XCTestCase {
         XCTAssertEqual(parsed.s, Data([0x01]))
     }
 
+    func testParseDerSignature_rExceeds32BytesAfterStripping() {
+        // R is 33 non-zero bytes (no leading zero to strip). The post-strip length guard
+        // (r.count > 32) rejects before the curve-order comparison is reached.
+        var rContent = Data([0x01]) // first byte 0x01 keeps high bit clear, no DER zero-pad
+        rContent.append(Data(repeating: 0x11, count: 32)) // total 33 bytes
+        var der = Data([0x30])
+        let envelopeLen = 2 + rContent.count + 2 + 1
+        der.append(UInt8(envelopeLen))
+        der.append(0x02)
+        der.append(UInt8(rContent.count))
+        der.append(rContent)
+        der.append(contentsOf: [0x02, 0x01, 0x01])
+        XCTAssertThrowsError(try SmartAccountUtils.parseDerSignature(der)) { error in
+            XCTAssertTrue(error is SmartAccountValidationException.InvalidInput)
+        }
+    }
+
+    func testParseDerSignature_sExceeds32BytesAfterStripping() {
+        // Valid 1-byte R, then S is 33 non-zero bytes. The post-strip length guard
+        // (s.count > 32) rejects before the curve-order comparison is reached.
+        var sContent = Data([0x01])
+        sContent.append(Data(repeating: 0x11, count: 32)) // total 33 bytes
+        var der = Data([0x30])
+        let envelopeLen = 2 + 1 + 2 + sContent.count
+        der.append(UInt8(envelopeLen))
+        der.append(contentsOf: [0x02, 0x01, 0x01])
+        der.append(0x02)
+        der.append(UInt8(sContent.count))
+        der.append(sContent)
+        XCTAssertThrowsError(try SmartAccountUtils.parseDerSignature(der)) { error in
+            XCTAssertTrue(error is SmartAccountValidationException.InvalidInput)
+        }
+    }
+
     // MARK: - normalizeSignature
 
     func test_normalize_low_s_already_compact() throws {
