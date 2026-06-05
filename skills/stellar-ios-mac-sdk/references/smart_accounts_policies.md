@@ -614,7 +614,7 @@ SimpleThreshold     ->  map{ Symbol("threshold"): U32 }
 WeightedThreshold   ->  map{ Symbol("signer_weights"): map{ <signerScVal>: U32, ... },
                              Symbol("threshold"): U32 }          // inner map XDR-key sorted
 SpendingLimit       ->  map{ Symbol("period_ledgers"): U32,
-                             Symbol("spending_limit"): I128 }    // i128 in STROOPS
+                             Symbol("spending_limit"): I128 }    // i128 in BASE UNITS
 ```
 
 Build a SimpleThreshold install-param map and use it on either path:
@@ -642,7 +642,7 @@ _ = try await kit.policyManager.addPolicy(
 )
 ```
 
-For a SpendingLimit built inline, the `spending_limit` I128 is in STROOPS, not decimal XLM (the `addSpendingLimit` convenience method is the only one that accepts a decimal XLM string and multiplies for you). For the hand-built map, see the SpendingLimit example under [addContextRule](#addcontextrule).
+For a SpendingLimit built inline, the `spending_limit` I128 is in the token's base units (interpreted with 7 decimal places), not a decimal string (the `addSpendingLimit` convenience method is the only one that accepts a decimal string and multiplies for you). For the hand-built map, see the SpendingLimit example under [addContextRule](#addcontextrule).
 
 ### Finding policy contract addresses
 
@@ -789,8 +789,8 @@ _ = try await kit.policyManager.addSpendingLimit(
 ```
 
 ```swift
-// WRONG: spendingLimit = "10000000000"   — interpreted as 10 billion XLM (decimal string!)
-// CORRECT: spendingLimit = "1000"        — SDK converts to stroops internally
+// WRONG: spendingLimit = "10000000000"   — interpreted as 10 billion tokens (decimal string!)
+// CORRECT: spendingLimit = "1000"        — SDK converts to base units internally
 // WRONG: spendingLimit = 1000.0          — the parameter is a String, not a Double
 // CORRECT: spendingLimit = "1000"
 // WRONG: periodLedgers = 86400           — ~5 days at 5 s/ledger
@@ -800,7 +800,7 @@ _ = try await kit.policyManager.addSpendingLimit(
 // CORRECT: install on a callContract(target-token-SAC) rule
 ```
 
-For an amount whose stroops value exceeds `Int64.max`, the `addSpendingLimit` convenience method cannot help (it works through the internal encoder). Hand-build the install-param `SCValXDR` map shown above — `period_ledgers` as a `U32` and `spending_limit` as an `I128` via `SCValXDR.i128(stringValue:)`, which accepts the full 128-bit range as a stroops-denominated decimal-integer string — and pass it to the generic `addPolicy(installParams:)`.
+`addSpendingLimit` converts the decimal amount to an integer base-units string (interpreted with 7 decimal places) and encodes it via `SCValXDR.i128(stringValue:)`. To build the install params by hand instead, construct the `SCValXDR` map shown above — `period_ledgers` as a `U32` and `spending_limit` as an `I128` via `SCValXDR.i128(stringValue:)` (a base-units-denominated decimal-integer string) — and pass it to the generic `addPolicy(installParams:)`.
 
 ### addPolicy — generic
 
@@ -1043,7 +1043,7 @@ for signer in rule.signers {
 public func multiSignerTransfer(
     tokenContract: String,
     recipient: String,
-    amount: String,                       // decimal string, NOT stroops
+    amount: String,                       // decimal string, NOT base units
     selectedSigners: [OZSelectedSigner],
     forceMethod: OZSubmissionMethod? = nil,
     resolveContextRuleIds: OZResolveContextRuleIds? = nil

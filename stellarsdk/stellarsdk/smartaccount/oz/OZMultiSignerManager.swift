@@ -72,7 +72,7 @@ public class OZMultiSignerManager: OZManagerHelpers, @unchecked Sendable {
     /// 2. `requireStellarAddress(_:fieldName:)` over `recipient`.
     /// 3. Self-transfer guard (recipient must differ from the connected
     ///    contract id).
-    /// 4. Amount parsing via ``OZTransactionOperations/amountToStroops(_:)``.
+    /// 4. Amount parsing via ``OZTransactionOperations/amountToBaseUnits(_:)``.
     /// 5. `selectedSigners.isEmpty` — throws ``SmartAccountValidationException/InvalidInput``.
     /// 6. `tokenContract` validation.
     ///
@@ -81,7 +81,7 @@ public class OZMultiSignerManager: OZManagerHelpers, @unchecked Sendable {
     ///   - recipient: Recipient address (`G…` account or `C…` contract). Must
     ///     differ from the connected smart-account contract id.
     ///   - amount: Decimal XLM-style amount string (for example `"10"` or
-    ///     `"100.5"`). Parsed via ``OZTransactionOperations/amountToStroops(_:)``.
+    ///     `"100.5"`). Parsed via ``OZTransactionOperations/amountToBaseUnits(_:)``.
     ///   - selectedSigners: All signers that must sign, in collection order.
     ///     Must be non-empty.
     ///   - forceMethod: Optional submission-method override.
@@ -118,7 +118,7 @@ public class OZMultiSignerManager: OZManagerHelpers, @unchecked Sendable {
             )
         }
 
-        let stroops = try OZTransactionOperations.amountToStroops(amount)
+        let baseUnits = try OZTransactionOperations.amountToBaseUnits(amount)
 
         let fromAddress = try SCAddressXDR(contractId: connected.contractId)
         let toAddress: SCAddressXDR
@@ -131,7 +131,7 @@ public class OZMultiSignerManager: OZManagerHelpers, @unchecked Sendable {
         let targetArgs: [SCValXDR] = [
             .address(fromAddress),
             .address(toAddress),
-            .i128(stroops: stroops)
+            try OZTransactionOperations.baseUnitsToI128ScVal(baseUnits, amount: amount)
         ]
 
         return try await multiSignerContractCall(

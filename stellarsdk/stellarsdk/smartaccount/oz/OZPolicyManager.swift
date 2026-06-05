@@ -143,11 +143,10 @@ public enum OZPolicyInstallParams: Sendable {
     /// `periodLedgers`-ledger window.
     ///
     /// - Parameters:
-    ///   - spendingLimit: Maximum cumulative amount in stroops as a positive
-    ///     decimal integer string. Allows full I128 range — use this when the
-    ///     desired limit exceeds `Int64.max` stroops. Stroops are the protocol's
-    ///     atomic unit (one XLM is ten million stroops), so the string must
-    ///     contain only digits with no decimal point.
+    ///   - spendingLimit: Maximum cumulative amount in the token's base units as
+    ///     a positive decimal integer string. Base units are interpreted with
+    ///     7 decimal places (one whole token is ten million base units), so the
+    ///     string must contain only digits with no decimal point.
     ///   - periodLedgers: Rolling window length in ledgers (Stellar produces a
     ///     ledger approximately every five seconds). Must be greater than zero.
     case spendingLimit(spendingLimit: String, periodLedgers: UInt32)
@@ -266,7 +265,7 @@ public enum OZPolicyInstallParams: Sendable {
             }
 
             // Strict integer shape: digits only, no decimal point, no
-            // scientific notation. We treat the string as already in stroops.
+            // scientific notation. We treat the string as already in base units.
             let pattern = "^[0-9]+$"
             guard let regex = try? NSRegularExpression(pattern: pattern, options: []) else {
                 throw SmartAccountValidationException.invalidInput(
@@ -278,7 +277,7 @@ public enum OZPolicyInstallParams: Sendable {
             if regex.firstMatch(in: trimmed, options: [], range: nsRange) == nil {
                 throw SmartAccountValidationException.invalidInput(
                     field: "spendingLimit",
-                    reason: "Spending limit must be a positive integer in stroops, got: \(spendingLimit)"
+                    reason: "Spending limit must be a positive integer in base units, got: \(spendingLimit)"
                 )
             }
 
@@ -300,9 +299,7 @@ public enum OZPolicyInstallParams: Sendable {
             }
 
             // Convert the validated decimal-integer string to its i128 SCVal
-            // representation. This supports the full positive I128 range
-            // (`2^127 - 1`), which is essential for non-XLM tokens whose
-            // supply may exceed the `Int64` ceiling.
+            // representation.
             let limitScVal: SCValXDR
             do {
                 limitScVal = try SCValXDR.i128(stringValue: trimmed)
@@ -529,12 +526,11 @@ public final class OZPolicyManager: OZManagerHelpers, @unchecked Sendable {
     /// every five seconds; ``StellarProtocolConstants/ledgersPerHour`` supplies
     /// the canonical hour count, and ~17 280 ledgers approximates one day).
     ///
-    /// The amount is supplied as a positive decimal XLM string and converted to
-    /// stroops using the protocol-standard 7-decimal-place fixed-point shift
-    /// (one XLM equals ten million stroops). For amounts whose stroops value
-    /// exceeds the `Int64` ceiling (~9.2×10^18 stroops), construct the policy
-    /// directly via ``OZPolicyInstallParams/spendingLimit(spendingLimit:periodLedgers:)``
-    /// with a stroops-denominated decimal-integer string and pass it through
+    /// The amount is supplied as a positive decimal string and converted to the
+    /// token's base units using a fixed-point shift interpreted with 7 decimal
+    /// places (one whole token equals ten million base units). To supply a raw
+    /// base-units amount instead, build the policy via ``OZPolicyInstallParams/spendingLimit(spendingLimit:periodLedgers:)``
+    /// and pass it through
     /// ``addPolicy(contextRuleId:policyAddress:installParams:selectedSigners:forceMethod:)``.
     ///
     /// - Parameters:
@@ -542,8 +538,9 @@ public final class OZPolicyManager: OZManagerHelpers, @unchecked Sendable {
     ///     (zero is the default rule).
     ///   - policyAddress: Policy contract address (`C…` strkey).
     ///   - spendingLimit: Maximum cumulative amount per period as a positive
-    ///     decimal XLM string (for example `"100"` or `"0.5"`). Converted to
-    ///     stroops internally; up to seven fractional digits are accepted.
+    ///     decimal string (for example `"100"` or `"0.5"`). Converted to the
+    ///     token's base units internally (interpreted with 7 decimal places);
+    ///     up to seven fractional digits are accepted.
     ///   - periodLedgers: Rolling-window length in ledgers. Must be greater
     ///     than zero.
     ///   - selectedSigners: Optional multi-signer participants list.
@@ -560,11 +557,12 @@ public final class OZPolicyManager: OZManagerHelpers, @unchecked Sendable {
         selectedSigners: [OZSelectedSigner] = [],
         forceMethod: OZSubmissionMethod? = nil
     ) async throws -> OZTransactionResult {
-        // Convert the decimal XLM string to stroops using the same routine the
-        // transaction-operations layer uses for token transfers.
-        let stroops: Int64
+        // Convert the decimal string to base units using the same routine the
+        // transaction-operations layer uses for token transfers. The result is a
+        // non-negative integer base-units string.
+        let baseUnits: String
         do {
-            stroops = try OZTransactionOperations.amountToStroops(spendingLimit)
+            baseUnits = try OZTransactionOperations.amountToBaseUnits(spendingLimit)
         } catch let error as SmartAccountValidationException.InvalidAmount {
             // Re-surface as a field-tagged validation error so the message
             // refers to the policy parameter the caller supplied rather than
@@ -576,17 +574,8 @@ public final class OZPolicyManager: OZManagerHelpers, @unchecked Sendable {
             )
         }
 
-        // amountToStroops throws on non-positive inputs already, but defend
-        // here too so the constraint is local to this method as well.
-        if stroops <= 0 {
-            throw SmartAccountValidationException.invalidInput(
-                field: "spendingLimit",
-                reason: "Spending limit must be greater than zero, got: \(spendingLimit)"
-            )
-        }
-
         let params = OZPolicyInstallParams.spendingLimit(
-            spendingLimit: String(stroops),
+            spendingLimit: baseUnits,
             periodLedgers: periodLedgers
         )
         let installParams = try params.toScVal()

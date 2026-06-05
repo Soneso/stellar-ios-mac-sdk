@@ -748,56 +748,82 @@ final class OZTransactionOperationsTests: XCTestCase {
     }
 
     // ========================================================================
-    // MARK: - amountToStroops static helper coverage
+    // MARK: - amountToBaseUnits static helper coverage
     // ========================================================================
 
-    func test_amountToStroops_validInteger_returnsStroops() throws {
-        let stroops = try OZTransactionOperations.amountToStroops("10")
-        XCTAssertEqual(stroops, 100_000_000)
+    func test_amountToBaseUnits_validInteger_returnsBaseUnits() throws {
+        let baseUnits = try OZTransactionOperations.amountToBaseUnits("10")
+        XCTAssertEqual(baseUnits, "100000000")
     }
 
-    func test_amountToStroops_validFractional_returnsStroops() throws {
-        let stroops = try OZTransactionOperations.amountToStroops("0.5")
-        XCTAssertEqual(stroops, 5_000_000)
+    func test_amountToBaseUnits_validFractional_returnsBaseUnits() throws {
+        let baseUnits = try OZTransactionOperations.amountToBaseUnits("0.5")
+        XCTAssertEqual(baseUnits, "5000000")
     }
 
-    func test_amountToStroops_oneStroop_returnsOne() throws {
-        let stroops = try OZTransactionOperations.amountToStroops("0.0000001")
-        XCTAssertEqual(stroops, 1)
+    func test_amountToBaseUnits_oneBaseUnit_returnsOne() throws {
+        let baseUnits = try OZTransactionOperations.amountToBaseUnits("0.0000001")
+        XCTAssertEqual(baseUnits, "1")
     }
 
-    func test_amountToStroops_zero_throws() {
-        XCTAssertThrowsError(try OZTransactionOperations.amountToStroops("0")) { error in
+    func test_amountToBaseUnits_aboveInt64_returnsFullPrecisionString() throws {
+        // A value far beyond Int64.max must be preserved exactly as base units
+        // (10^25 -> 10^32 base units), not capped at Int64.
+        let baseUnits = try OZTransactionOperations.amountToBaseUnits("10000000000000000000000000")
+        XCTAssertEqual(baseUnits, "100000000000000000000000000000000")
+    }
+
+    func test_baseUnitsToI128ScVal_aboveInt64_encodesFullValue() throws {
+        // Base units beyond Int64.max encode into the i128 high word rather than
+        // overflowing or capping.
+        let scVal = try OZTransactionOperations.baseUnitsToI128ScVal(
+            "100000000000000000000000000000000", amount: "10000000000000000000000000")
+        XCTAssertTrue(scVal.isI128)
+    }
+
+    func test_baseUnitsToI128ScVal_exceedsI128Range_throwsInvalidAmount() {
+        // 2^127 (one past max i128) must be rejected, not silently truncated.
+        XCTAssertThrowsError(
+            try OZTransactionOperations.baseUnitsToI128ScVal(
+                "170141183460469231731687303715884105728",
+                amount: "170141183460469231731687303715884105728")
+        ) { error in
             XCTAssertTrue(error is SmartAccountValidationException.InvalidAmount)
         }
     }
 
-    func test_amountToStroops_belowOneStroop_throws() {
-        XCTAssertThrowsError(try OZTransactionOperations.amountToStroops("0.00000001")) { error in
+    func test_amountToBaseUnits_zero_throws() {
+        XCTAssertThrowsError(try OZTransactionOperations.amountToBaseUnits("0")) { error in
             XCTAssertTrue(error is SmartAccountValidationException.InvalidAmount)
         }
     }
 
-    func test_amountToStroops_scientific_throws() {
-        XCTAssertThrowsError(try OZTransactionOperations.amountToStroops("1e5")) { error in
+    func test_amountToBaseUnits_belowOneBaseUnit_throws() {
+        XCTAssertThrowsError(try OZTransactionOperations.amountToBaseUnits("0.00000001")) { error in
             XCTAssertTrue(error is SmartAccountValidationException.InvalidAmount)
         }
     }
 
-    func test_amountToStroops_empty_throws() {
-        XCTAssertThrowsError(try OZTransactionOperations.amountToStroops("")) { error in
+    func test_amountToBaseUnits_scientific_throws() {
+        XCTAssertThrowsError(try OZTransactionOperations.amountToBaseUnits("1e5")) { error in
             XCTAssertTrue(error is SmartAccountValidationException.InvalidAmount)
         }
     }
 
-    func test_amountToStroops_nonNumeric_throws() {
-        XCTAssertThrowsError(try OZTransactionOperations.amountToStroops("abc")) { error in
+    func test_amountToBaseUnits_empty_throws() {
+        XCTAssertThrowsError(try OZTransactionOperations.amountToBaseUnits("")) { error in
             XCTAssertTrue(error is SmartAccountValidationException.InvalidAmount)
         }
     }
 
-    func test_amountToStroops_negative_throws() {
-        XCTAssertThrowsError(try OZTransactionOperations.amountToStroops("-5")) { error in
+    func test_amountToBaseUnits_nonNumeric_throws() {
+        XCTAssertThrowsError(try OZTransactionOperations.amountToBaseUnits("abc")) { error in
+            XCTAssertTrue(error is SmartAccountValidationException.InvalidAmount)
+        }
+    }
+
+    func test_amountToBaseUnits_negative_throws() {
+        XCTAssertThrowsError(try OZTransactionOperations.amountToBaseUnits("-5")) { error in
             XCTAssertTrue(error is SmartAccountValidationException.InvalidAmount)
         }
     }
@@ -861,26 +887,20 @@ final class OZTransactionOperationsTests: XCTestCase {
     }
 
     // ========================================================================
-    // MARK: - amountToStroops Int64-overflow branch
+    // MARK: - amountToBaseUnits beyond Int64 (full precision)
     // ========================================================================
 
-    func test_amountToStroops_exceedsInt64Range_throws() {
-        // A whole part with more digits than Int64 can hold (after the 7-digit
-        // fractional padding the combined string overflows Int64).
+    func test_amountToBaseUnits_wholePartBeyondInt64_returnsFullPrecision() throws {
+        // A 30-digit whole part far exceeds Int64 but is preserved exactly:
+        // 30 nines -> 30 nines followed by 7 zeros in base units.
         let huge = String(repeating: "9", count: 30)
-        XCTAssertThrowsError(try OZTransactionOperations.amountToStroops(huge)) { error in
-            guard let invalid = error as? SmartAccountValidationException.InvalidAmount else {
-                XCTFail("expected InvalidAmount, got \(error)")
-                return
-            }
-            XCTAssertTrue(invalid.message.contains("Int64"),
-                          "expected Int64-range message, got: \(invalid.message)")
-        }
+        let baseUnits = try OZTransactionOperations.amountToBaseUnits(huge)
+        XCTAssertEqual(baseUnits, huge + "0000000")
     }
 
-    func test_amountToStroops_tooManyFractionalDigits_throws() {
-        // Eight fractional digits exceeds the seven-decimal stroop precision.
-        XCTAssertThrowsError(try OZTransactionOperations.amountToStroops("1.123456789")) { error in
+    func test_amountToBaseUnits_tooManyFractionalDigits_throws() {
+        // Eight fractional digits exceeds the seven-decimal base-unit precision.
+        XCTAssertThrowsError(try OZTransactionOperations.amountToBaseUnits("1.123456789")) { error in
             XCTAssertTrue(error is SmartAccountValidationException.InvalidAmount)
         }
     }

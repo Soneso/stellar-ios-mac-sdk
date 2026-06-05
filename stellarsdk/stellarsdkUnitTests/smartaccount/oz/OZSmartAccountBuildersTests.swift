@@ -602,7 +602,7 @@ final class OZSmartAccountBuildersTests: XCTestCase {
             spendingLimit: "100",
             periodLedgers: StellarProtocolConstants.ledgersPerDay
         )
-        XCTAssertEqual(params.spendingLimit, 1_000_000_000)
+        XCTAssertEqual(params.spendingLimit, "1000000000")
         XCTAssertEqual(params.periodLedgers, StellarProtocolConstants.ledgersPerDay)
     }
 

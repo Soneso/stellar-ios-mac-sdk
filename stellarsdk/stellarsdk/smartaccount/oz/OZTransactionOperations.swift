@@ -139,7 +139,8 @@ public final class OZTransactionOperations: OZManagerHelpers, @unchecked Sendabl
     ///
     /// Compatible with any SEP-41 token (native asset via the Stellar Asset
     /// Contract, or custom Soroban tokens). The decimal amount is converted to
-    /// stroops (7 decimal places) before submission. Delegates to
+    /// the token's base units (interpreted with 7 decimal places) before
+    /// submission. Delegates to
     /// ``contractCall(target:targetFn:targetArgs:forceMethod:resolveContextRuleIds:)``
     /// to drive the full simulate / sign / submit pipeline.
     ///
@@ -168,7 +169,7 @@ public final class OZTransactionOperations: OZManagerHelpers, @unchecked Sendabl
             )
         }
 
-        let stroops = try OZTransactionOperations.amountToStroops(amount)
+        let baseUnits = try OZTransactionOperations.amountToBaseUnits(amount)
 
         let fromAddress = try SCAddressXDR(contractId: connected.contractId)
         let toAddress: SCAddressXDR
@@ -181,7 +182,7 @@ public final class OZTransactionOperations: OZManagerHelpers, @unchecked Sendabl
         let targetArgs: [SCValXDR] = [
             .address(fromAddress),
             .address(toAddress),
-            .i128(stroops: stroops)
+            try OZTransactionOperations.baseUnitsToI128ScVal(baseUnits, amount: amount)
         ]
 
         return try await contractCall(
@@ -704,10 +705,12 @@ public final class OZTransactionOperations: OZManagerHelpers, @unchecked Sendabl
 
         let fromAddress = try SCAddressXDR(accountId: tempKeypair.accountId)
         let toAddress = try SCAddressXDR(contractId: connected.contractId)
+        let transferStroopsString = String(transferStroops)
         let functionArgs: [SCValXDR] = [
             .address(fromAddress),
             .address(toAddress),
-            .i128(stroops: transferStroops)
+            try OZTransactionOperations.baseUnitsToI128ScVal(
+                transferStroopsString, amount: transferStroopsString)
         ]
         let invokeArgs = InvokeContractArgsXDR(
             contractAddress: try SCAddressXDR(contractId: nativeTokenContract),
@@ -1168,15 +1171,16 @@ public final class OZTransactionOperations: OZManagerHelpers, @unchecked Sendabl
 
     // MARK: - Static helpers (visible for testing)
 
-    /// Parses a positive decimal XLM amount string and returns the value in
-    /// stroops. Rejects scientific notation, empty / non-numeric strings,
-    /// values <= 0, and values smaller than one stroop (`0.0000001`).
+    /// Parses a positive decimal amount string and returns the value in the
+    /// token's base units (interpreted with 7 decimal places). Rejects
+    /// scientific notation, empty / non-numeric strings, values <= 0, and
+    /// values smaller than one base unit (`0.0000001`).
     ///
     /// The smart-account flow requires a strict parser: the existing SDK
     /// `Operation.toXDRAmount` accepts zero and scientific notation, which are
     /// invalid for token transfers. Acceptable input shape is `^[0-9]+(\.[0-9]+)?$`
     /// with up to seven fractional digits and a positive result.
-    internal static func amountToStroops(_ amount: String) throws -> Int64 {
+    internal static func amountToBaseUnits(_ amount: String) throws -> String {
         let trimmed = amount.trimmingCharacters(in: .whitespacesAndNewlines)
         if trimmed.isEmpty {
             throw SmartAccountValidationException.invalidAmount(
@@ -1229,19 +1233,35 @@ public final class OZTransactionOperations: OZManagerHelpers, @unchecked Sendabl
             startingAt: 0
         )
         let combined = wholePart + paddedFraction
-        guard let stroops = Int64(combined) else {
-            throw SmartAccountValidationException.invalidAmount(
-                amount: amount,
-                reason: "Amount exceeds Int64 range"
-            )
-        }
-        if stroops <= 0 {
+        // Canonical non-negative integer string in base units (leading zeros removed).
+        // The range is validated where the value is encoded as i128.
+        let baseUnits = String(combined.drop(while: { $0 == "0" }))
+        if baseUnits.isEmpty {
             throw SmartAccountValidationException.invalidAmount(
                 amount: amount,
                 reason: "Amount must be greater than zero"
             )
         }
-        return stroops
+        return baseUnits
+    }
+
+    /// Encodes a non-negative integer base-units string as an `i128` `SCValXDR`,
+    /// surfacing an out-of-range value as a tagged validation error.
+    ///
+    /// - Parameters:
+    ///   - baseUnits: Amount in the token's base units as a non-negative decimal
+    ///     integer string.
+    ///   - amount: The original caller-supplied amount, used for error messages.
+    internal static func baseUnitsToI128ScVal(_ baseUnits: String, amount: String) throws -> SCValXDR {
+        do {
+            return try SCValXDR.i128(stringValue: baseUnits)
+        } catch {
+            throw SmartAccountValidationException.invalidAmount(
+                amount: amount,
+                reason: "Amount is outside the supported i128 range",
+                cause: error
+            )
+        }
     }
 
     /// Generates a cryptographically random 64-bit nonce. Reads 8 bytes from

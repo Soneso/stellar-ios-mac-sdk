@@ -354,14 +354,14 @@ final class OZPolicyManagerTests: XCTestCase {
             return XCTFail("expected i128 spending_limit")
         }
         XCTAssertEqual(parts.hi, 0, "Hi part must be 0 for positive values within Long range")
-        XCTAssertEqual(parts.lo, 10_000_000, "Lo part must match the stroops value")
+        XCTAssertEqual(parts.lo, 10_000_000, "Lo part must match the base-units value")
     }
 
     func test_spendingLimit_largeI128Value() throws {
-        // 1 billion XLM = 10_000_000_000_000_000 stroops.
-        let stroops = "10000000000000000"
+        // 1 billion whole tokens = 10_000_000_000_000_000 base units.
+        let baseUnits = "10000000000000000"
         let scVal = try OZPolicyInstallParams.spendingLimit(
-            spendingLimit: stroops,
+            spendingLimit: baseUnits,
             periodLedgers: UInt32(StellarProtocolConstants.ledgersPerDay)
         ).toScVal()
 
@@ -525,63 +525,63 @@ final class OZPolicyManagerTests: XCTestCase {
     }
 
     // ========================================================================
-    // amountToStroops — XLM conversion (8 cases)
+    // amountToBaseUnits — base-units conversion (8 cases)
     // ========================================================================
 
-    func test_amountToStroops_oneXlm() throws {
-        let stroops = try OZTransactionOperations.amountToStroops("1")
-        XCTAssertEqual(stroops, 10_000_000)
+    func test_amountToBaseUnits_oneToken() throws {
+        let baseUnits = try OZTransactionOperations.amountToBaseUnits("1")
+        XCTAssertEqual(baseUnits, "10000000")
     }
 
-    func test_amountToStroops_fractionalAmount() throws {
-        let stroops = try OZTransactionOperations.amountToStroops("0.5")
-        XCTAssertEqual(stroops, 5_000_000)
+    func test_amountToBaseUnits_fractionalAmount() throws {
+        let baseUnits = try OZTransactionOperations.amountToBaseUnits("0.5")
+        XCTAssertEqual(baseUnits, "5000000")
     }
 
-    func test_amountToStroops_largeAmount() throws {
-        let stroops = try OZTransactionOperations.amountToStroops("1000")
-        XCTAssertEqual(stroops, 10_000_000_000)
+    func test_amountToBaseUnits_largeAmount() throws {
+        let baseUnits = try OZTransactionOperations.amountToBaseUnits("1000")
+        XCTAssertEqual(baseUnits, "10000000000")
     }
 
-    func test_amountToStroops_emptyString_throws() throws {
+    func test_amountToBaseUnits_emptyString_throws() throws {
         do {
-            _ = try OZTransactionOperations.amountToStroops("")
+            _ = try OZTransactionOperations.amountToBaseUnits("")
             XCTFail("expected validation error")
         } catch is SmartAccountValidationException.InvalidAmount {
             // expected
         }
     }
 
-    func test_amountToStroops_whitespace_throws() throws {
+    func test_amountToBaseUnits_whitespace_throws() throws {
         do {
-            _ = try OZTransactionOperations.amountToStroops("   ")
+            _ = try OZTransactionOperations.amountToBaseUnits("   ")
             XCTFail("expected validation error")
         } catch is SmartAccountValidationException.InvalidAmount {
             // expected
         }
     }
 
-    func test_amountToStroops_nonNumeric_throws() throws {
+    func test_amountToBaseUnits_nonNumeric_throws() throws {
         do {
-            _ = try OZTransactionOperations.amountToStroops("abc")
+            _ = try OZTransactionOperations.amountToBaseUnits("abc")
             XCTFail("expected validation error")
         } catch is SmartAccountValidationException.InvalidAmount {
             // expected
         }
     }
 
-    func test_amountToStroops_scientificNotation_throws() throws {
+    func test_amountToBaseUnits_scientificNotation_throws() throws {
         do {
-            _ = try OZTransactionOperations.amountToStroops("1e7")
+            _ = try OZTransactionOperations.amountToBaseUnits("1e7")
             XCTFail("expected validation error")
         } catch is SmartAccountValidationException.InvalidAmount {
             // expected
         }
     }
 
-    func test_amountToStroops_decimalPrecision() throws {
-        let stroops = try OZTransactionOperations.amountToStroops("10.5")
-        XCTAssertEqual(stroops, 105_000_000)
+    func test_amountToBaseUnits_decimalPrecision() throws {
+        let baseUnits = try OZTransactionOperations.amountToBaseUnits("10.5")
+        XCTAssertEqual(baseUnits, "105000000")
     }
 
     // ========================================================================
@@ -593,7 +593,7 @@ final class OZPolicyManagerTests: XCTestCase {
             spendingLimit: "100",
             periodLedgers: 720
         )
-        XCTAssertEqual(params.spendingLimit, 1_000_000_000)
+        XCTAssertEqual(params.spendingLimit, "1000000000")
         XCTAssertEqual(params.periodLedgers, 720)
     }
 
@@ -610,11 +610,11 @@ final class OZPolicyManagerTests: XCTestCase {
     }
 
     // ========================================================================
-    // SCValXDR.i128(stroops:) — Int64 widening (1 case)
+    // OZTransactionOperations.baseUnitsToI128ScVal — i128 encoding (1 case)
     // ========================================================================
 
-    func test_scValI128Stroops_basicValue() throws {
-        let scVal = SCValXDR.i128(stroops: 10_000_000)
+    func test_scValI128BaseUnits_basicValue() throws {
+        let scVal = try OZTransactionOperations.baseUnitsToI128ScVal("10000000", amount: "1")
         guard case .i128(let parts) = scVal else {
             return XCTFail("expected i128")
         }
@@ -845,7 +845,7 @@ final class OZPolicyManagerTests: XCTestCase {
 
     /// A spending-limit string carrying a decimal point passes the empty and
     /// negative gates but fails the strict `^[0-9]+$` integer-shape regex. The
-    /// surfaced error must name the positive-integer-in-stroops constraint.
+    /// surfaced error must name the positive-integer-in-base-units constraint.
     func test_spendingLimit_decimalPointString_throwsShapeError() throws {
         let params = OZPolicyInstallParams.spendingLimit(
             spendingLimit: "1.5",
@@ -857,14 +857,14 @@ final class OZPolicyManagerTests: XCTestCase {
         } catch let error as SmartAccountValidationException.InvalidInput {
             XCTAssertEqual(error.code, .invalidInput)
             XCTAssertTrue(
-                error.message.contains("positive integer in stroops"),
-                "expected positive-integer-in-stroops reason, got: \(error.message)"
+                error.message.contains("positive integer in base units"),
+                "expected positive-integer-in-base-units reason, got: \(error.message)"
             )
         }
     }
 
     /// A non-digit (alphabetic) spending-limit string fails the strict integer
-    /// regex and surfaces the same positive-integer-in-stroops shape error.
+    /// regex and surfaces the same positive-integer-in-base-units shape error.
     func test_spendingLimit_alphabeticString_throwsShapeError() throws {
         let params = OZPolicyInstallParams.spendingLimit(
             spendingLimit: "12a3",
@@ -875,8 +875,8 @@ final class OZPolicyManagerTests: XCTestCase {
             XCTFail("expected SmartAccountValidationException.InvalidInput")
         } catch let error as SmartAccountValidationException.InvalidInput {
             XCTAssertTrue(
-                error.message.contains("positive integer in stroops"),
-                "expected positive-integer-in-stroops reason, got: \(error.message)"
+                error.message.contains("positive integer in base units"),
+                "expected positive-integer-in-base-units reason, got: \(error.message)"
             )
         }
     }
@@ -1149,23 +1149,23 @@ final class OZPolicyManagerTests: XCTestCase {
     }
 
     // ========================================================================
-    // MARK: - amountToStroops boundary cases
+    // MARK: - amountToBaseUnits boundary cases
     // ========================================================================
 
-    /// Sub-stroop amount strings (8 fractional digits) must be rejected. The
-    /// XLM precision floor is one stroop = `0.0000001`, so anything finer is
+    /// Sub-base-unit amount strings (8 fractional digits) must be rejected. The
+    /// precision floor is one base unit = `0.0000001`, so anything finer is
     /// a malformed amount.
-    func test_amountToStroops_subStroopAmount_throws() {
-        XCTAssertThrowsError(try OZTransactionOperations.amountToStroops("0.00000001")) { error in
+    func test_amountToBaseUnits_subBaseUnitAmount_throws() {
+        XCTAssertThrowsError(try OZTransactionOperations.amountToBaseUnits("0.00000001")) { error in
             XCTAssertTrue(error is SmartAccountValidationException.InvalidAmount)
         }
     }
 
-    /// `0.0000001` is the smallest representable XLM amount (one stroop).
+    /// `0.0000001` is the smallest representable amount (one base unit).
     /// The parser must accept it and return `1`.
-    func test_amountToStroops_maxPrecision_oneStroop() throws {
-        let stroops = try OZTransactionOperations.amountToStroops("0.0000001")
-        XCTAssertEqual(stroops, 1, "0.0000001 XLM is exactly one stroop")
+    func test_amountToBaseUnits_maxPrecision_oneBaseUnit() throws {
+        let baseUnits = try OZTransactionOperations.amountToBaseUnits("0.0000001")
+        XCTAssertEqual(baseUnits, "1", "0.0000001 is exactly one base unit")
     }
 
     /// Spending-limit convenience helpers must reject negative, zero, and
@@ -1190,29 +1190,30 @@ final class OZPolicyManagerTests: XCTestCase {
         }
     }
 
-    /// `Int64.max` stroops must round-trip through the I128 SCVal helper
-    /// without truncation. The high-64 bits of the result must be zero
-    /// because the value fits in the signed 64-bit range.
-    func test_stroopsToI128ScVal_maxLongValue_roundtrips() throws {
-        let scVal = SCValXDR.i128(stroops: Int64.max)
+    /// A value within the low 64-bit range must round-trip through the i128
+    /// SCVal helper without truncation. The high-64 bits must be zero because
+    /// the value fits in the low 64-bit word.
+    func test_baseUnitsToI128ScVal_maxLongValue_roundtrips() throws {
+        let scVal = try OZTransactionOperations.baseUnitsToI128ScVal(
+            "9223372036854775807", amount: "9223372036854775807")
         guard case .i128(let parts) = scVal else {
             return XCTFail("expected i128 SCVal, got \(scVal)")
         }
-        XCTAssertEqual(parts.lo, UInt64(Int64.max), "Int64.max stroops must occupy the lo 64 bits exactly")
-        XCTAssertEqual(parts.hi, 0, "Int64.max stroops must leave hi = 0 (positive value within Int64 range)")
+        XCTAssertEqual(parts.lo, UInt64(Int64.max), "value must occupy the lo 64 bits exactly")
+        XCTAssertEqual(parts.hi, 0, "value within the low 64-bit range must leave hi = 0")
     }
 
     // ========================================================================
-    // MARK: - amountToStroops additional boundary coverage
+    // MARK: - amountToBaseUnits additional boundary coverage
     // ========================================================================
 
     /// `"0"` is not a valid spending amount: the parser surfaces a strict
-    /// `SmartAccountValidationException.InvalidAmount` rather than returning zero stroops.
-    /// Zero-amount transactions are not legitimate XLM moves and must be
+    /// `SmartAccountValidationException.InvalidAmount` rather than returning zero base units.
+    /// Zero-amount transactions are not legitimate token moves and must be
     /// rejected upfront so downstream policy checks operate on a non-zero
     /// post-condition.
-    func test_amountToStroops_zeroAmount_throws() {
-        XCTAssertThrowsError(try OZTransactionOperations.amountToStroops("0")) { error in
+    func test_amountToBaseUnits_zeroAmount_throws() {
+        XCTAssertThrowsError(try OZTransactionOperations.amountToBaseUnits("0")) { error in
             XCTAssertTrue(error is SmartAccountValidationException.InvalidAmount,
                           "expected SmartAccountValidationException.InvalidAmount, got \(type(of: error))")
         }
@@ -1222,44 +1223,45 @@ final class OZPolicyManagerTests: XCTestCase {
     /// rejects the leading `-` sign and surfaces
     /// `SmartAccountValidationException.InvalidAmount` so the caller does not produce a
     /// signed-int wraparound at the I128 conversion boundary.
-    func test_amountToStroops_negativeAmount_throws() {
-        XCTAssertThrowsError(try OZTransactionOperations.amountToStroops("-1")) { error in
+    func test_amountToBaseUnits_negativeAmount_throws() {
+        XCTAssertThrowsError(try OZTransactionOperations.amountToBaseUnits("-1")) { error in
             XCTAssertTrue(error is SmartAccountValidationException.InvalidAmount,
                           "expected SmartAccountValidationException.InvalidAmount, got \(type(of: error))")
         }
     }
 
-    /// The maximum representable XLM amount that fits in `Int64` stroops is
-    /// `922337203685.4775807` (Int64.max stroops = 9_223_372_036_854_775_807).
-    /// The parser must accept this string and return `Int64.max` exactly,
-    /// proving the conversion arithmetic does not silently overflow at the
-    /// upper boundary.
-    func test_amountToStroops_extremelyLargeButValidAmount_roundtripsToInt64Max() throws {
-        let stroops = try OZTransactionOperations.amountToStroops("922337203685.4775807")
-        XCTAssertEqual(stroops, Int64.max,
-                       "Largest representable XLM amount must round-trip to Int64.max stroops")
+    /// The maximum representable amount that fits in `Int64` base units is
+    /// `922337203685.4775807` (Int64.max base units = 9_223_372_036_854_775_807).
+    /// The parser must accept this string and return `Int64.max` exactly.
+    /// Amounts beyond the `Int64` base-unit ceiling must be preserved
+    /// exactly, proving the conversion does not cap at `Int64`.
+    func test_amountToBaseUnits_beyondInt64_preservesFullValue() throws {
+        // 10^12 -> 10^19 base units, which exceeds Int64.max (~9.22 x 10^18).
+        let baseUnits = try OZTransactionOperations.amountToBaseUnits("1000000000000")
+        XCTAssertEqual(baseUnits, "10000000000000000000",
+                       "amounts beyond Int64.max base units must be preserved exactly")
     }
 
     /// Decimal-separator edge cases: leading-zero whole part (`"0.5"`) and a
     /// trailing-zero fractional part (`"1.5000000"`). Both are well-formed
     /// numeric strings within the seven-fractional-digit floor and must
-    /// round-trip to the same stroop value as the canonical forms (`"0.5"`
-    /// produces 5_000_000 stroops; `"1.5000000"` matches `"1.5"`'s
-    /// 15_000_000 stroops).
-    func test_amountToStroops_decimalSeparatorEdgeCases() throws {
-        let leadingZero = try OZTransactionOperations.amountToStroops("0.5")
-        XCTAssertEqual(leadingZero, 5_000_000,
-                       "0.5 XLM must be 5,000,000 stroops")
+    /// round-trip to the same base-unit value as the canonical forms (`"0.5"`
+    /// produces 5_000_000 base units; `"1.5000000"` matches `"1.5"`'s
+    /// 15_000_000 base units).
+    func test_amountToBaseUnits_decimalSeparatorEdgeCases() throws {
+        let leadingZero = try OZTransactionOperations.amountToBaseUnits("0.5")
+        XCTAssertEqual(leadingZero, "5000000",
+                       "0.5 must be 5,000,000 base units")
 
-        let trailingZeros = try OZTransactionOperations.amountToStroops("1.5000000")
-        XCTAssertEqual(trailingZeros, 15_000_000,
-                       "1.5000000 XLM must be 15,000,000 stroops (trailing zeros padded as expected)")
+        let trailingZeros = try OZTransactionOperations.amountToBaseUnits("1.5000000")
+        XCTAssertEqual(trailingZeros, "15000000",
+                       "1.5000000 must be 15,000,000 base units (trailing zeros padded as expected)")
 
         // Cross-check: trailing zeros must produce the same value as the
         // shorter canonical form.
-        let canonical = try OZTransactionOperations.amountToStroops("1.5")
+        let canonical = try OZTransactionOperations.amountToBaseUnits("1.5")
         XCTAssertEqual(trailingZeros, canonical,
-                       "1.5000000 and 1.5 must produce identical stroop values")
+                       "1.5000000 and 1.5 must produce identical base-unit values")
     }
 
     // ========================================================================
@@ -1292,7 +1294,7 @@ final class OZPolicyManagerTests: XCTestCase {
     // ========================================================================
 
     /// Exercises the `addSpendingLimit` body (lines 559-589): converts a
-    /// decimal XLM string to stroops, builds a spending-limit
+    /// decimal string to base units, builds a spending-limit
     /// `OZPolicyInstallParams`, and calls `addPolicy`. All guard-checks pass;
     /// the call fails at the first RPC step.
     func test_addSpendingLimit_validArgs_reachesAddPolicy() async throws {

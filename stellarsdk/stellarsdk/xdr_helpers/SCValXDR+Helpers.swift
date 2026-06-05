@@ -311,22 +311,6 @@ extension SCValXDR {
         return .i128(Int128PartsXDR(hi: Int64(bitPattern: parts.hi), lo: parts.lo))
     }
 
-    /// Creates an SCValXDR with i128 type from a stroops value.
-    ///
-    /// Widens an `Int64` stroops value to a signed 128-bit integer by sign-extending into
-    /// the high 64 bits: non-negative values produce `hi = 0`; negative values produce
-    /// `hi = -1` (all bits set, i.e. `UInt64.max` when interpreted as a bit pattern). This
-    /// widening is always exact — every `Int64` value fits within the i128 range without
-    /// loss.
-    ///
-    /// - Parameter stroops: Amount in stroops as `Int64`.
-    /// - Returns: An `SCValXDR.i128` value carrying the supplied amount.
-    public static func i128(stroops: Int64) -> SCValXDR {
-        let lo = UInt64(bitPattern: stroops)
-        let hi: Int64 = stroops < 0 ? -1 : 0
-        return .i128(Int128PartsXDR(hi: hi, lo: lo))
-    }
-
     /// Creates an SCValXDR with u256 type from a string representation of an unsigned 256-bit integer
     public static func u256(stringValue: String) throws -> SCValXDR {
         let parts = try bigInt256Parts(from: stringValue, signed: false)
@@ -414,7 +398,7 @@ extension SCValXDR {
     // MARK: - Private Helper Methods
 
     private static func bigInt128Parts(from string: String, signed: Bool) throws -> (hi: UInt64, lo: UInt64) {
-        let data = try stringToData(string, bitSize: 128, signed: signed)
+        let data = try bigIntStringToBytes(string, bitSize: 128, signed: signed)
         let bytes = [UInt8](data)
 
         var hi: UInt64 = 0
@@ -431,7 +415,7 @@ extension SCValXDR {
     }
 
     private static func bigInt256Parts(from string: String, signed: Bool) throws -> (hiHi: UInt64, hiLo: UInt64, loHi: UInt64, loLo: UInt64) {
-        let data = try stringToData(string, bitSize: 256, signed: signed)
+        let data = try bigIntStringToBytes(string, bitSize: 256, signed: signed)
         let bytes = [UInt8](data)
 
         var hiHi: UInt64 = 0
@@ -457,7 +441,13 @@ extension SCValXDR {
         return (hiHi, hiLo, loHi, loLo)
     }
 
-    private static func stringToData(_ string: String, bitSize: Int, signed: Bool) throws -> Data {
+    /// Parses a decimal integer string into its fixed-width, big-endian, two's-complement
+    /// byte representation (`bitSize / 8` bytes).
+    ///
+    /// Throws `StellarSDKError.invalidArgument` when the string is not a valid decimal
+    /// integer, when a negative value is supplied for an unsigned type, or when the value
+    /// does not fit the target width.
+    private static func bigIntStringToBytes(_ string: String, bitSize: Int, signed: Bool) throws -> Data {
         let trimmed = string.trimmingCharacters(in: .whitespacesAndNewlines)
 
         let isNegative = trimmed.hasPrefix("-")
@@ -493,6 +483,35 @@ extension SCValXDR {
             value = newValue
         }
 
+        // Reject values that do not fit the target width. `bytes` here is the
+        // big-endian magnitude (absolute value), minimal length, and non-empty
+        // (the "0" case returned earlier).
+        let byteSize = bitSize / 8
+        let fitsWidth: Bool
+        if !signed {
+            // Unsigned: negatives are invalid; the full width is representable.
+            fitsWidth = !isNegative && bytes.count <= byteSize
+        } else if bytes.count < byteSize {
+            fitsWidth = true
+        } else if bytes.count > byteSize {
+            fitsWidth = false
+        } else {
+            // Exactly byteSize magnitude bytes: the top bit decides.
+            let topBitSet = (bytes[0] & 0x80) != 0
+            if !topBitSet {
+                fitsWidth = true
+            } else if !isNegative {
+                fitsWidth = false
+            } else {
+                // Negative: only -2^(bitSize-1) is valid (magnitude 0x80 00..00).
+                fitsWidth = bytes[0] == 0x80 && bytes.dropFirst().allSatisfy { $0 == 0 }
+            }
+        }
+        guard fitsWidth else {
+            throw StellarSDKError.invalidArgument(
+                message: "Value out of range for \(signed ? "i" : "u")\(bitSize): \(string)")
+        }
+
         if isNegative && signed {
             bytes = bytes.map { ~$0 }
 
@@ -509,13 +528,10 @@ extension SCValXDR {
             }
         }
 
-        let byteSize = bitSize / 8
         if bytes.count < byteSize {
             let paddingByte: UInt8 = (isNegative && signed) ? 0xFF : 0x00
             let padding = Array(repeating: paddingByte, count: byteSize - bytes.count)
             bytes = padding + bytes
-        } else if bytes.count > byteSize {
-            bytes = Array(bytes.suffix(byteSize))
         }
 
         return Data(bytes)

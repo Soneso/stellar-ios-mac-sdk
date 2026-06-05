@@ -689,7 +689,7 @@ public struct OZTransactionResult {
 
 ### transfer
 
-SEP-41-compatible token transfer (XLM via the SAC, or any Soroban token). The decimal amount is converted to stroops internally.
+SEP-41-compatible token transfer (XLM via the SAC, or any Soroban token). The decimal amount is converted to the token's base units internally (interpreted with 7 decimal places).
 
 ```swift
 public func transfer(
@@ -717,7 +717,7 @@ if result.success {
 // WRONG: amount: 10 — must be a String
 // CORRECT: amount: "10"
 // WRONG: amount: "10500000" — that is 10.5 million XLM, not 10.5 XLM
-// CORRECT: amount: "10.5" — the SDK converts to stroops automatically
+// CORRECT: amount: "10.5" — the SDK converts to base units automatically
 // WRONG: transfer to the smart account's own contractId — throws SmartAccountValidationException
 // CORRECT: recipient must differ from the connected smart account address
 ```
@@ -743,14 +743,15 @@ Example — approve a token spender:
 ```swift
 let from    = try SCAddressXDR(contractId: smartAccountId)
 let spender = try SCAddressXDR(contractId: spenderContract)
-// 100 XLM in stroops as Int64 (1 XLM = 10_000_000 stroops).
-let stroops = 100 * StellarProtocolConstants.stroopsPerXlm
+// 100 XLM in stroops (1 XLM = 10_000_000 stroops). i128(stringValue:) accepts a
+// decimal-integer string.
+let stroops = String(100 * StellarProtocolConstants.stroopsPerXlm)
 
 let args: [SCValXDR] = [
     .address(from),
     .address(spender),
-    .i128(stroops: stroops),   // amount as i128 (Int64 stroops)
-    .u32(720)                  // expiration ledger
+    try SCValXDR.i128(stringValue: stroops),   // amount as i128
+    .u32(720)                                  // expiration ledger
 ]
 
 let result = try await kit.transactionOperations.contractCall(

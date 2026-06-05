@@ -590,7 +590,7 @@ public func transfer(
 ) async throws -> OZTransactionResult
 ```
 
-Transfers SEP-41-compatible tokens from the connected smart account to a recipient. The decimal amount is converted to stroops (seven decimal places) before submission. Compatible with native XLM via the Stellar Asset Contract and with any custom Soroban token implementing the SEP-41 interface. The recipient may be a `G…` account or a `C…` contract; the method rejects self-transfers.
+Transfers SEP-41-compatible tokens from the connected smart account to a recipient. The decimal amount is converted to the token's base units (interpreted with seven decimal places) before submission. Compatible with native XLM via the Stellar Asset Contract and with any custom Soroban token implementing the SEP-41 interface. The recipient may be a `G…` account or a `C…` contract; the method rejects self-transfers.
 
 Delegates to `contractCall(target:targetFn:targetArgs:forceMethod:resolveContextRuleIds:)` to drive the pipeline.
 
@@ -1247,9 +1247,7 @@ public func addSpendingLimit(
 ) async throws -> OZTransactionResult
 ```
 
-Installs a spending limit policy that caps cumulative spend within a rolling `periodLedgers`-ledger window (Stellar produces a ledger approximately every five seconds; one hour is `StellarProtocolConstants.ledgersPerHour`, one day is approximately 17 280 ledgers). The amount is supplied as a positive decimal XLM string and converted to stroops via the protocol-standard 7-decimal-place fixed-point shift (one XLM equals ten million stroops).
-
-For amounts whose stroops value exceeds the `Int64` ceiling (approximately 9.2x10^18 stroops), construct the policy directly via `OZPolicyInstallParams.spendingLimit(spendingLimit:periodLedgers:)` with a stroops-denominated decimal-integer string and pass it through `addPolicy(...)`.
+Installs a spending limit policy that caps cumulative spend within a rolling `periodLedgers`-ledger window (Stellar produces a ledger approximately every five seconds; one hour is `StellarProtocolConstants.ledgersPerHour`, one day is approximately 17 280 ledgers). The amount is supplied as a positive decimal string and converted to the token's base units via a fixed-point shift interpreted with 7 decimal places (one whole token equals ten million base units).
 
 **Throws**: `SmartAccountWalletException.NotConnected`, `SmartAccountValidationException`, `SmartAccountTransactionException`.
 
@@ -3094,15 +3092,13 @@ public struct OZWeightedThresholdParams: Sendable {
 }
 
 public struct OZSpendingLimitParams: Sendable, Hashable {
-    public let spendingLimit: Int64
+    public let spendingLimit: String
     public let periodLedgers: Int
     // initializer is internal — construct through OZSmartAccountBuilders.createSpendingLimitParams
 }
 ```
 
-These are the typed parameter structs returned by the corresponding `OZSmartAccountBuilders.create*Params(...)` methods. Use `OZSignerWeight` only via `OZSmartAccountBuilders.createWeightedThresholdParams(...)`; pass `OZSignerWeightEntry` to `addWeightedThreshold(...)` directly. `OZSpendingLimitParams`'s initializer is intentionally internal so callers always go through the builder for input validation and unit conversion (decimal XLM string → stroops via `Int64`).
-
-For amounts whose stroops value exceeds the `Int64` ceiling, encode the spending limit directly as `SCValXDR.i128(stringValue:)` and pass it through `OZPolicyManager.addPolicy(...)`.
+These are the typed parameter structs returned by the corresponding `OZSmartAccountBuilders.create*Params(...)` methods. Use `OZSignerWeight` only via `OZSmartAccountBuilders.createWeightedThresholdParams(...)`; pass `OZSignerWeightEntry` to `addWeightedThreshold(...)` directly. `OZSpendingLimitParams`'s initializer is intentionally internal so callers always go through the builder for input validation and unit conversion (decimal string → non-negative integer base-units string, interpreted with 7 decimal places). `spendingLimit` is a base-units-denominated decimal-integer string.
 
 ---
 

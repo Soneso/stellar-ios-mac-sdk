@@ -344,8 +344,8 @@ public enum OZSmartAccountBuilders {
     /// Creates spending limit policy parameters.
     ///
     /// Restricts how much can be transferred within the supplied period. The
-    /// `spendingLimit` is a decimal XLM string (for example `"100"` or `"10.5"`),
-    /// converted to stroops via `Operation.toXDRAmount(amount:)`.
+    /// `spendingLimit` is a decimal string (for example `"100"` or `"10.5"`),
+    /// converted to integer base units (interpreted with 7 decimal places).
     ///
     /// Common values for `periodLedgers` are `StellarProtocolConstants.ledgersPerHour` and
     /// `StellarProtocolConstants.ledgersPerDay`.
@@ -354,20 +354,23 @@ public enum OZSmartAccountBuilders {
     ///   - spendingLimit: Maximum amount allowed in the period as a decimal XLM string.
     ///   - periodLedgers: Number of ledgers in the period (must be >= 1).
     /// - Returns: Policy parameters for spending limit.
-    /// - Throws: `StellarSDKError.invalidArgument` when the spending-limit string is
-    ///           invalid; `SmartAccountValidationException.InvalidInput` when `periodLedgers < 1`.
+    /// - Throws: `SmartAccountValidationException.InvalidAmount` when the spending-limit
+    ///           string is invalid or out of i128 range;
+    ///           `SmartAccountValidationException.InvalidInput` when `periodLedgers < 1`.
     public static func createSpendingLimitParams(
         spendingLimit: String,
         periodLedgers: Int
     ) throws -> OZSpendingLimitParams {
-        let stroops = try Operation.toXDRAmount(amount: spendingLimit)
         if periodLedgers < 1 {
             throw SmartAccountValidationException.invalidInput(
                 field: "periodLedgers",
                 reason: "Period must be at least 1 ledger, got: \(periodLedgers)"
             )
         }
-        return OZSpendingLimitParams(spendingLimit: stroops, periodLedgers: periodLedgers)
+        let baseUnits = try OZTransactionOperations.amountToBaseUnits(spendingLimit)
+        // Validate the value fits the i128 range the policy contract expects.
+        _ = try OZTransactionOperations.baseUnitsToI128ScVal(baseUnits, amount: spendingLimit)
+        return OZSpendingLimitParams(spendingLimit: baseUnits, periodLedgers: periodLedgers)
     }
 }
 
@@ -440,17 +443,13 @@ public struct OZWeightedThresholdParams: Sendable {
 ///
 /// Restricts how much can be transferred within a given time period. Construct instances
 /// using `OZSmartAccountBuilders.createSpendingLimitParams`, which validates inputs and
-/// converts the spending limit from a decimal XLM string to stroops.
+/// converts the spending limit from a decimal string to base units (interpreted with
+/// 7 decimal places).
 public struct OZSpendingLimitParams: Sendable, Hashable {
 
-    /// Maximum amount allowed in the period, expressed in stroops as `Int64`.
-    ///
-    /// The `Int64` type covers all current XLM amounts: the total XLM supply is
-    /// approximately 5×10^17 stroops, well under `Int64.max` (~9.2×10^18 stroops). For
-    /// non-XLM tokens or hypothetical future supply increases that exceed this range, callers
-    /// should encode the spending limit directly as an `SCValXDR.i128(stringValue:)` and
-    /// construct the policy call arguments by hand rather than using this builder.
-    public let spendingLimit: Int64
+    /// Maximum amount allowed in the period, expressed in base units as a non-negative
+    /// decimal integer string.
+    public let spendingLimit: String
 
     /// Number of ledgers in the period (at least 1). On the Stellar network a ledger
     /// closes approximately every five seconds.
@@ -459,7 +458,7 @@ public struct OZSpendingLimitParams: Sendable, Hashable {
     /// Internal initializer invoked by `OZSmartAccountBuilders.createSpendingLimitParams`
     /// after validation; direct construction is intentionally not part of the public API
     /// so callers always go through the builder for input validation and unit conversion.
-    internal init(spendingLimit: Int64, periodLedgers: Int) {
+    internal init(spendingLimit: String, periodLedgers: Int) {
         self.spendingLimit = spendingLimit
         self.periodLedgers = periodLedgers
     }
