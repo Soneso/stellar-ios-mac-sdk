@@ -192,17 +192,6 @@ public enum OZSmartAccountAuth {
             )
         }
 
-        let signerKey: SCValXDR
-        do {
-            signerKey = try signer.toScVal()
-        } catch {
-            throw SmartAccountTransactionException.signingFailed(
-                reason: "Failed to convert signer to SCVal",
-                cause: error
-            )
-        }
-        _ = signerKey
-
         let sigXdrBytes: Data
         do {
             sigXdrBytes = try signature.toAuthPayloadBytes()

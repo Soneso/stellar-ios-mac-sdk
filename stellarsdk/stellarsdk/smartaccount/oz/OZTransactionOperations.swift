@@ -56,37 +56,6 @@ public struct OZTransactionResult: Sendable, Equatable, Hashable {
         self.ledger = ledger
         self.error = error
     }
-
-    /// Parameters left as their default sentinel preserve the current field value;
-    /// pass an explicit value (including `nil`) to override.
-    public func copy(
-        success: Bool? = nil,
-        hash: String?? = .none,
-        ledger: UInt32?? = .none,
-        error: String?? = .none
-    ) -> OZTransactionResult {
-        let resolvedHash: String?
-        switch hash {
-        case .none: resolvedHash = self.hash
-        case .some(let value): resolvedHash = value
-        }
-        let resolvedLedger: UInt32?
-        switch ledger {
-        case .none: resolvedLedger = self.ledger
-        case .some(let value): resolvedLedger = value
-        }
-        let resolvedError: String?
-        switch error {
-        case .none: resolvedError = self.error
-        case .some(let value): resolvedError = value
-        }
-        return OZTransactionResult(
-            success: success ?? self.success,
-            hash: resolvedHash,
-            ledger: resolvedLedger,
-            error: resolvedError
-        )
-    }
 }
 
 /// Callback that resolves the context rule identifiers to bind into the auth

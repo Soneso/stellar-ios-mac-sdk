@@ -585,31 +585,6 @@ final class OZPolicyManagerTests: XCTestCase {
     }
 
     // ========================================================================
-    // createSpendingLimitParams — convenience builder (2 cases)
-    // ========================================================================
-
-    func test_createSpendingLimitParams_valid() throws {
-        let params = try OZSmartAccountBuilders.createSpendingLimitParams(
-            spendingLimit: "100",
-            periodLedgers: 720
-        )
-        XCTAssertEqual(params.spendingLimit, "1000000000")
-        XCTAssertEqual(params.periodLedgers, 720)
-    }
-
-    func test_createSpendingLimitParams_zeroPeriod_throws() throws {
-        do {
-            _ = try OZSmartAccountBuilders.createSpendingLimitParams(
-                spendingLimit: "100",
-                periodLedgers: 0
-            )
-            XCTFail("expected validation error")
-        } catch is SmartAccountValidationException.InvalidInput {
-            // expected
-        }
-    }
-
-    // ========================================================================
     // OZTransactionOperations.baseUnitsToI128ScVal — i128 encoding (1 case)
     // ========================================================================
 
@@ -1170,7 +1145,7 @@ final class OZPolicyManagerTests: XCTestCase {
 
     /// Spending-limit convenience helpers must reject negative, zero, and
     /// non-numeric amount strings before reaching the host-function builder.
-    func test_createSpendingLimitParams_invalidAmount_throws() async {
+    func test_addSpendingLimit_invalidAmount_throws() async {
         let (_, manager) = try! connectedKit()
 
         for invalid in ["-1", "0", "abc", "1e5", ""] {

@@ -483,15 +483,6 @@ final class OZTransactionOperationsTests: XCTestCase {
         XCTAssertNotEqual(a, b)
     }
 
-    func test_transactionResult_copy() {
-        let original = OZTransactionResult(success: true, hash: "orig")
-        let modified = original.copy(success: false, error: "failed")
-        XCTAssertTrue(original.success)
-        XCTAssertFalse(modified.success)
-        XCTAssertEqual(modified.hash, "orig")
-        XCTAssertEqual(modified.error, "failed")
-    }
-
     // ========================================================================
     // MARK: - OZSubmissionMethod enum behavior
     // ========================================================================

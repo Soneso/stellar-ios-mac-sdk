@@ -207,7 +207,7 @@ Ends the active session. Clears the in-memory connection state under the kit's i
 public func close() async
 ```
 
-Releases the kit's HTTP-client, event-emitter, and manager resources, and clears any in-memory external signers (registered keypairs and Ed25519 keys); persisted external-wallet connections are retained. The kit must not be used after `close()`; the manager and operations accessors trap once released.
+Releases the kit's HTTP-client, event-emitter, and manager resources, and clears any in-memory external signers (registered keypairs and Ed25519 keys). The kit must not be used after `close()`; the manager and operations accessors trap once released.
 
 #### getDeployer()
 
@@ -590,7 +590,7 @@ public func transfer(
 ) async throws -> OZTransactionResult
 ```
 
-Transfers SEP-41-compatible tokens from the connected smart account to a recipient. The decimal amount is converted to the token's base units (interpreted with seven decimal places) before submission. Compatible with native XLM via the Stellar Asset Contract and with any custom Soroban token implementing the SEP-41 interface. The recipient may be a `G…` account or a `C…` contract; the method rejects self-transfers.
+Transfers SEP-41-compatible tokens from the connected smart account to a recipient. The decimal amount is converted to the token's base units (interpreted with 7 decimal places) before submission. Compatible with native XLM via the Stellar Asset Contract and with any custom Soroban token implementing the SEP-41 interface. The recipient may be a `G…` account or a `C…` contract; the method rejects self-transfers.
 
 Delegates to `contractCall(target:targetFn:targetArgs:forceMethod:resolveContextRuleIds:)` to drive the pipeline.
 
@@ -1247,7 +1247,7 @@ public func addSpendingLimit(
 ) async throws -> OZTransactionResult
 ```
 
-Installs a spending limit policy that caps cumulative spend within a rolling `periodLedgers`-ledger window (Stellar produces a ledger approximately every five seconds; one hour is `StellarProtocolConstants.ledgersPerHour`, one day is approximately 17 280 ledgers). The amount is supplied as a positive decimal string and converted to the token's base units via a fixed-point shift interpreted with 7 decimal places (one whole token equals ten million base units).
+Installs a spending limit policy that caps cumulative spend within a rolling `periodLedgers`-ledger window (Stellar produces a ledger approximately every five seconds; one hour is `StellarProtocolConstants.ledgersPerHour`, one day is approximately 17 280 ledgers). The amount is supplied as a positive decimal string and converted to the token's base units (interpreted with 7 decimal places).
 
 **Throws**: `SmartAccountWalletException.NotConnected`, `SmartAccountValidationException`, `SmartAccountTransactionException`.
 
@@ -1319,7 +1319,7 @@ public enum OZPolicyInstallParams: Sendable {
 }
 ```
 
-Installation parameters for the three built-in policy types. The `toScVal()` encoder is internal so consumers cannot accidentally produce malformed encodings; reach the on-chain `SCValXDR` shape through the matching convenience method on `OZPolicyManager` (which calls the internal encoder for you), or through `OZSmartAccountBuilders.create*Params(...)` for the typed parameter structs.
+Installation parameters for the three built-in policy types. The `toScVal()` encoder is internal so consumers cannot accidentally produce malformed encodings; reach the on-chain `SCValXDR` shape through the matching convenience method on `OZPolicyManager` (`addSimpleThreshold(...)`, `addWeightedThreshold(...)`, `addSpendingLimit(...)`), which calls the internal encoder for you.
 
 #### OZSignerWeightEntry
 
@@ -1333,8 +1333,6 @@ public struct OZSignerWeightEntry: Sendable {
 ```
 
 A single signer-weight pair used by `OZPolicyInstallParams.weightedThreshold` and by `addWeightedThreshold(...)`. Weight must be greater than zero — a zero-weight signer is indistinguishable from no signer at all and is rejected by the smart-account contract.
-
-The SDK ships a parallel struct `OZSignerWeight` (with `Int` weight) used by `OZSmartAccountBuilders.createWeightedThresholdParams(...)` for the typed parameter struct API. `OZSignerWeightEntry` and `OZSignerWeight` are distinct types and are not interchangeable; use `OZSignerWeightEntry` for direct calls into the policy manager and `OZSignerWeight` for the builder-produced parameter struct.
 
 ---
 
@@ -1482,14 +1480,11 @@ Manager for non-passkey signers used by multi-signer smart-account operations. C
 public init(
     networkPassphrase: String,
     walletAdapter: OZExternalWalletAdapter? = nil,
-    walletConnectionStorage: OZWalletConnectionStorage? = nil,
     ed25519Adapter: OZExternalEd25519SignerAdapter? = nil
 )
 ```
 
-`walletAdapter` enables wallet-based signers via `addFromWallet()`. `walletConnectionStorage` persists wallet-connection metadata for cross-launch restoration via `restoreConnections()`; when `nil`, the manager's wallet connections are in-memory only. `ed25519Adapter` provides out-of-process Ed25519 signing at construction time; in-memory keypairs are registered at runtime via `addEd25519FromRawKey(secretKeyBytes:verifierAddress:)`. Keypair signers are never persisted — secret material is reachable only through the in-memory `KeyPair` instance.
-
-The kit-owned instance (accessed via `kit.externalSigners`) is constructed with `walletConnectionStorage: nil`, so `restoreConnections()` is a no-op on that instance. For cross-launch wallet-connection persistence, the demo or application layer should construct its own `OZExternalSignerManager` with a non-`nil` storage.
+`walletAdapter` enables wallet-based signers; connected wallets are surfaced from the live adapter for the duration of the running process. `ed25519Adapter` provides out-of-process Ed25519 signing at construction time; in-memory keypairs are registered at runtime via `addEd25519FromRawKey(secretKeyBytes:verifierAddress:)`. Keypair signers are never persisted — secret material is reachable only through the in-memory `KeyPair` instance.
 
 All public methods are `async` (or `async throws`) due to actor isolation.
 
@@ -1510,16 +1505,6 @@ public func addFromSecret(secretKey: String) async throws -> String
 Decodes the supplied Stellar `S…` secret-key strkey into an in-memory `KeyPair` and registers it as a signer. Returns the corresponding `G…` account address.
 
 **Throws**: `SmartAccountSignerException.Invalid` when the secret key is malformed.
-
-#### addFromWallet()
-
-```swift
-public func addFromWallet() async throws -> OZConnectedWallet?
-```
-
-Prompts the configured `walletAdapter` to connect a new wallet and registers it as a signer. Returns the resulting `OZConnectedWallet` value, or `nil` if the adapter reports no connection. Persists the connection metadata into `walletConnectionStorage`.
-
-**Throws**: `SmartAccountConfigurationException.MissingConfig` when no wallet adapter is configured; `SmartAccountSignerException.Invalid` when the adapter reports a malformed connection.
 
 #### canSignFor(address:)
 
@@ -1572,7 +1557,7 @@ Signs a base64-encoded Soroban authorization preimage on behalf of the named sig
 public func remove(address: String) async throws
 ```
 
-Removes the signer registered for the supplied address, clearing any persisted wallet-connection metadata.
+Removes the signer registered for the supplied address. For wallet signers, calls the adapter's `disconnectByAddress(address:)`.
 
 **Throws**: `SmartAccountSignerException.NotFound` when no signer matches.
 
@@ -1582,17 +1567,7 @@ Removes the signer registered for the supplied address, clearing any persisted w
 public func removeAll() async throws
 ```
 
-Removes every registered signer: clears all in-memory keypair signers (registered via `addFromSecret`), clears all Ed25519 keypairs (registered via `addEd25519FromRawKey`), disconnects all external wallets, and removes all persisted wallet-connection records.
-
-#### restoreConnections()
-
-```swift
-public func restoreConnections() async throws -> [OZConnectedWallet]
-```
-
-Reads the persisted wallet connections from `walletConnectionStorage` and rebuilds the registered-signer set for the wallet-based signers. Idempotent within a single instance — the second invocation returns the same connection list without re-reading storage.
-
-**Throws**: `SmartAccountConfigurationException.MissingConfig` when no wallet adapter or no connection storage is configured.
+Removes every registered signer: clears all in-memory keypair signers (registered via `addFromSecret`), clears all Ed25519 keypairs (registered via `addEd25519FromRawKey`), and disconnects all external wallets.
 
 #### addEd25519FromRawKey(secretKeyBytes:verifierAddress:)
 
@@ -1758,35 +1733,13 @@ public struct OZExternalSignerInfo: Sendable, Codable, Equatable, Hashable {
 
 `walletName` and `walletId` are populated only when `type == .wallet`.
 
-#### OZWalletConnectionStorage
-
-```swift
-public protocol OZWalletConnectionStorage: Sendable {
-    func getItem(key: String) async throws -> String?
-    func setItem(key: String, value: String) async throws
-    func removeItem(key: String) async throws
-}
-```
-
-Simple key-value storage interface for persisting external wallet connections. Implementations must be safe to call from arbitrary concurrent contexts.
-
-#### OZInMemoryWalletConnectionStorage
-
-```swift
-public actor OZInMemoryWalletConnectionStorage: OZWalletConnectionStorage {
-    public init()
-}
-```
-
-In-memory implementation. Used when no `OZWalletConnectionStorage` is supplied to the manager. Data is not persisted across application restarts.
-
 #### OZConnectedWallet
 
 ```swift
 public struct OZConnectedWallet: Sendable, Equatable, Hashable
 ```
 
-Wallet-connection record returned by `addFromWallet()` and `restoreConnections()`.
+Connected-wallet record surfaced by the `OZExternalWalletAdapter` (`connect()`, `getConnectedWallets()`).
 
 #### OZSignAuthEntryOptions / OZSignAuthEntryResult
 
@@ -1963,7 +1916,7 @@ Every error path in the kit funnels into a `SmartAccountException` subclass so c
 > | 3002 | `.credentialAlreadyExists` | `UnvalidatedContext` |
 > | 3003 | `.credentialInvalid` | `ExternalVerificationFailed` |
 >
-> The table above shows only the two codes the SDK enum reuses. On chain, the smart-account contract's `SmartAccountError` spans `3000` and `3002`-`3016`; the WebAuthn verifier's `WebAuthnError` occupies `3110`-`3119`; and the built-in policy contracts occupy `3200`-`3227`. When inspecting an error code, first check the exception type to determine which namespace it belongs to. SDK-defined contract codes that the SDK interprets directly are declared in [`OZContractErrorCodes`](#ozcontracterrorcodes); see the [OpenZeppelin contracts source](https://github.com/OpenZeppelin/stellar-contracts/blob/main/packages/accounts/src/smart_account/mod.rs) for the full on-chain `SmartAccountError` enum, along with the `WebAuthnError` and policy error enums.
+> The table above shows only the two codes the SDK enum reuses. On chain, the smart-account contract's `SmartAccountError` spans `3000` and `3002`-`3016`; the WebAuthn verifier's `WebAuthnError` occupies `3110`-`3119`; and the built-in policy contracts occupy `3200`-`3227`. When inspecting an error code, first check the exception type to determine which namespace it belongs to. Named constants for a subset of these codes are provided in [`OZContractErrorCodes`](#ozcontracterrorcodes) — the SDK surfaces the raw error message but does not parse or map contract error codes itself; see the [OpenZeppelin contracts source](https://github.com/OpenZeppelin/stellar-contracts/blob/main/packages/accounts/src/smart_account/mod.rs) for the full on-chain `SmartAccountError` enum, along with the `WebAuthnError` and policy error enums.
 
 
 ```swift
@@ -2422,11 +2375,10 @@ public protocol OZExternalWalletAdapter: AnyObject, Sendable {
     func getConnectedWallets() -> [OZConnectedWallet]
     func canSignFor(address: String) -> Bool
     func getWalletForAddress(address: String) -> OZConnectedWallet?
-    func reconnect(walletId: String) async throws -> OZConnectedWallet?
 }
 ```
 
-Default protocol extension provides no-op implementations for `disconnectByAddress(address:)`, `getWalletForAddress(address:)`, and `reconnect(walletId:)`.
+Default protocol extension provides no-op implementations for `disconnectByAddress(address:)` and `getWalletForAddress(address:)`.
 
 The `signAuthEntry(preimageXdr:options:)` contract: the adapter receives the base64-encoded `HashIDPreimage` XDR, must base64-decode it, compute its SHA-256, sign with Ed25519, and return an `OZSignAuthEntryResult` carrying the base64-encoded 64-byte signature.
 
@@ -2989,10 +2941,10 @@ Codec for reading and writing `OZSmartAccountAuthPayload` to and from `SCValXDR`
 
 ```swift
 public enum OZBuilders {
-    public static func createDefaultContext() -> OZContextRuleType
-    public static func createCallContractContext(contractAddress: String) throws -> OZContextRuleType
-    public static func createCreateContractContext(wasmHashHex: String) throws -> OZContextRuleType
-    public static func createCreateContractContext(wasmHash: Data) throws -> OZContextRuleType
+    public static func createDefaultContextType() -> OZContextRuleType
+    public static func createCallContractContextType(contractAddress: String) throws -> OZContextRuleType
+    public static func createCreateContractContextType(wasmHashHex: String) throws -> OZContextRuleType
+    public static func createCreateContractContextType(wasmHash: Data) throws -> OZContextRuleType
 
     public static func collectUniqueSignersFromRules(
         rules: [OZParsedContextRule]
@@ -3002,10 +2954,10 @@ public enum OZBuilders {
 
 Type-safe constructors for `OZContextRuleType` plus a deduplication helper across parsed context rules.
 
-- `createDefaultContext()` — returns `OZContextRuleType.defaultRule`.
-- `createCallContractContext(contractAddress:)` — validates the supplied contract address (throws `SmartAccountValidationException.InvalidAddress` for malformed values) and returns `OZContextRuleType.callContract(contractAddress:)`.
-- `createCreateContractContext(wasmHashHex:)` — validates a 64-character hex WASM hash (an optional `0x` prefix is accepted and stripped) and returns `OZContextRuleType.createContract(wasmHash:)`. Throws `SmartAccountValidationException.InvalidInput` for malformed input.
-- `createCreateContractContext(wasmHash:)` — validates a 32-byte WASM hash and returns the matching enum case.
+- `createDefaultContextType()` — returns `OZContextRuleType.defaultRule`.
+- `createCallContractContextType(contractAddress:)` — validates the supplied contract address (throws `SmartAccountValidationException.InvalidAddress` for malformed values) and returns `OZContextRuleType.callContract(contractAddress:)`.
+- `createCreateContractContextType(wasmHashHex:)` — validates a 64-character hex WASM hash (an optional `0x` prefix is accepted and stripped) and returns `OZContextRuleType.createContract(wasmHash:)`. Throws `SmartAccountValidationException.InvalidInput` for malformed input.
+- `createCreateContractContextType(wasmHash:)` — validates a 32-byte WASM hash and returns the matching enum case.
 - `collectUniqueSignersFromRules(rules:)` — flattens the supplied rules' signers and returns a deduplicated list preserving the first occurrence of each signer (via `OZSmartAccountSigner.uniqueKey`).
 
 ### OZSmartAccountBuilders
@@ -3030,7 +2982,6 @@ public enum OZSmartAccountBuilders {
     public static func getCredentialIdStringFromSigner(signer: any OZSmartAccountSigner) -> String?
     public static func isDelegatedSigner(signer: any OZSmartAccountSigner) -> Bool
     public static func isExternalSigner(signer: any OZSmartAccountSigner) -> Bool
-    public static func describeSignerType(signer: any OZSmartAccountSigner) -> String
 
     // Signer matching
     public static func signerMatchesCredential(
@@ -3055,50 +3006,12 @@ public enum OZSmartAccountBuilders {
     public static func collectUniqueSigners(
         signers: [any OZSmartAccountSigner]
     ) -> [any OZSmartAccountSigner]
-
-    // Policy parameter builders
-    public static func createThresholdParams(threshold: Int) throws -> OZSimpleThresholdParams
-    public static func createWeightedThresholdParams(
-        threshold: Int,
-        signerWeights: [OZSignerWeight]
-    ) throws -> OZWeightedThresholdParams
-    public static func createSpendingLimitParams(
-        spendingLimit: String,
-        periodLedgers: Int
-    ) throws -> OZSpendingLimitParams
 }
 ```
 
-A `public enum` namespace of type-safe constructors and helpers for signers, signer inspection, and policy parameter structs. Signer builders forward to the corresponding `OZDelegatedSigner` / `OZExternalSigner` initializers and factories. The inspection helpers detect WebAuthn signers by their `keyData` shape (greater than 65 bytes — a 65-byte uncompressed public key followed by the credential id).
+A `public enum` namespace of type-safe constructors and helpers for signers and signer inspection. Signer builders forward to the corresponding `OZDelegatedSigner` / `OZExternalSigner` initializers and factories. The inspection helpers detect WebAuthn signers by their `keyData` shape (greater than 65 bytes — a 65-byte uncompressed public key followed by the credential id).
 
-#### Typed policy parameter structs
-
-```swift
-public struct OZSimpleThresholdParams: Sendable, Hashable {
-    public let threshold: Int
-    public init(threshold: Int)
-}
-
-public struct OZSignerWeight: Sendable {
-    public let signer: any OZSmartAccountSigner
-    public let weight: Int
-    public init(signer: any OZSmartAccountSigner, weight: Int)
-}
-
-public struct OZWeightedThresholdParams: Sendable {
-    public let threshold: Int
-    public let signerWeights: [OZSignerWeight]
-    public init(threshold: Int, signerWeights: [OZSignerWeight])
-}
-
-public struct OZSpendingLimitParams: Sendable, Hashable {
-    public let spendingLimit: String
-    public let periodLedgers: Int
-    // initializer is internal — construct through OZSmartAccountBuilders.createSpendingLimitParams
-}
-```
-
-These are the typed parameter structs returned by the corresponding `OZSmartAccountBuilders.create*Params(...)` methods. Use `OZSignerWeight` only via `OZSmartAccountBuilders.createWeightedThresholdParams(...)`; pass `OZSignerWeightEntry` to `addWeightedThreshold(...)` directly. `OZSpendingLimitParams`'s initializer is intentionally internal so callers always go through the builder for input validation and unit conversion (decimal string → non-negative integer base-units string, interpreted with 7 decimal places). `spendingLimit` is a base-units-denominated decimal-integer string.
+To install policies on a context rule, use `OZPolicyInstallParams` with `OZPolicyManager.addSimpleThreshold(...)`, `addWeightedThreshold(...)`, `addSpendingLimit(...)`, or `addPolicy(installParams:)`. The weighted-threshold path takes `OZSignerWeightEntry` values.
 
 ---
 

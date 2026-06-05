@@ -248,7 +248,6 @@ public struct OZStoredCredential: Sendable {
         backedUp: Bool? = nil
     )
 
-    public func copyWith(/* every field, all nil-defaulted */) -> OZStoredCredential
     public func applyUpdate(_ updates: OZStoredCredentialUpdate) -> OZStoredCredential
 }
 

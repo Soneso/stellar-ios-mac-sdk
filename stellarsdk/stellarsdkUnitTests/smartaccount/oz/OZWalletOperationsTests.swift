@@ -235,14 +235,6 @@ final class OZWalletOperationsTests: XCTestCase {
         XCTAssertNotEqual(a, c)
     }
 
-    func test_connectWalletOptions_copy() {
-        let original = OZConnectWalletOptions(fresh: true)
-        let copied = original.copy(prompt: true)
-        XCTAssertTrue(copied.fresh)
-        XCTAssertTrue(copied.prompt)
-        XCTAssertNil(copied.credentialId)
-    }
-
     // ========================================================================
     // MARK: - OZCreateWalletResult data-class behavior
     // ========================================================================
@@ -365,20 +357,6 @@ final class OZWalletOperationsTests: XCTestCase {
             nickname: "Bob"
         )
         XCTAssertNotEqual(a, b)
-    }
-
-    func test_createWalletResult_copy() {
-        let pk = testPublicKey()
-        let original = OZCreateWalletResult(
-            credentialId: "cred-1",
-            contractId: validContractAddress,
-            publicKey: pk,
-            signedTransactionXdr: "XDR"
-        )
-        let copied = original.copy(transactionHash: "new-hash", nickname: "Bob")
-        XCTAssertEqual(copied.transactionHash, "new-hash")
-        XCTAssertEqual(copied.nickname, "Bob")
-        XCTAssertEqual(copied.credentialId, "cred-1")
     }
 
     func test_createWalletResult_equality_notEqualToOtherInstance() {
@@ -551,13 +529,6 @@ final class OZWalletOperationsTests: XCTestCase {
         XCTAssertEqual(a, b)
         XCTAssertEqual(a.hashValue, b.hashValue)
         XCTAssertNotEqual(a, c)
-    }
-
-    func test_deployPendingResult_copy() {
-        let original = OZDeployPendingResult(contractId: validContractAddress, signedTransactionXdr: "xdr")
-        let copied = original.copy(transactionHash: "h")
-        XCTAssertEqual(copied.transactionHash, "h")
-        XCTAssertEqual(copied.signedTransactionXdr, "xdr")
     }
 
     // ========================================================================

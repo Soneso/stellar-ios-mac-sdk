@@ -16,11 +16,6 @@ final class OZExternalSignerManagerTests: XCTestCase {
 
     private let testNetworkPassphrase = Network.testnet.passphrase
 
-    /// Storage key under which the manager persists wallet connections.
-    /// Sourced from the production static so the tests automatically follow
-    /// any rename of the canonical key.
-    private let walletStorageKey = OZExternalSignerManager.walletStorageKey
-
     private let validAddress1 = "GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN5"
     private let validAddress2 = "GBBM6BKZPEHWYO3E3YKREDPQXMS4VK35YLNU7NFBRI26RAN7GI5POFBB"
     private let validAddress3 = "GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWHF"
@@ -34,13 +29,11 @@ final class OZExternalSignerManagerTests: XCTestCase {
     }
 
     private func makeManager(
-        walletAdapter: OZExternalWalletAdapter? = nil,
-        walletConnectionStorage: OZWalletConnectionStorage? = nil
+        walletAdapter: OZExternalWalletAdapter? = nil
     ) -> OZExternalSignerManager {
         return OZExternalSignerManager(
             networkPassphrase: testNetworkPassphrase,
-            walletAdapter: walletAdapter,
-            walletConnectionStorage: walletConnectionStorage
+            walletAdapter: walletAdapter
         )
     }
 
@@ -108,44 +101,6 @@ final class OZExternalSignerManagerTests: XCTestCase {
         XCTAssertEqual(all.count, 1)
     }
 
-    func test_addFromSecret_removesStaleWalletEntry() async throws {
-        let storage = OZInMemoryWalletConnectionStorage()
-        let keypair = try newKeypair()
-        let address = keypair.accountId
-
-        let adapter = FakeExternalWalletAdapter()
-        adapter.preset(wallet: OZConnectedWallet(
-            address: address,
-            walletId: "wallet-1",
-            walletName: "WalletOne"
-        ))
-
-        let manager = makeManager(
-            walletAdapter: adapter,
-            walletConnectionStorage: storage
-        )
-
-        // Establish a persisted wallet entry first.
-        adapter.nextConnect = OZConnectedWallet(
-            address: address,
-            walletId: "wallet-1",
-            walletName: "WalletOne"
-        )
-        _ = try await manager.addFromWallet()
-        let beforeJson = await storage.getItem(key: walletStorageKey)
-        XCTAssertNotNil(beforeJson, "wallet should be persisted to storage")
-        XCTAssertTrue(beforeJson!.contains(address))
-
-        // Now add a keypair for the same address; storage entry must be cleared.
-        _ = try await manager.addFromSecret(secretKey: keypair.secretSeed!)
-
-        let afterJson = await storage.getItem(key: walletStorageKey)
-        XCTAssertNil(
-            afterJson,
-            "wallet storage entry must be cleared when keypair takes precedence"
-        )
-    }
-
     func test_addFromSecret_concurrentCalls_serializedByActor() async throws {
         let manager = makeManager()
 
@@ -178,75 +133,6 @@ final class OZExternalSignerManagerTests: XCTestCase {
     }
 
     // ========================================================================
-    // E.2 — addFromWallet (4 cases)
-    // ========================================================================
-
-    func test_addFromWallet_noAdapter_throwsConfiguration() async throws {
-        let manager = makeManager()
-
-        do {
-            _ = try await manager.addFromWallet()
-            XCTFail("expected SmartAccountConfigurationException.MissingConfig")
-        } catch let error as SmartAccountConfigurationException.MissingConfig {
-            XCTAssertEqual(error.code, .missingConfig)
-            XCTAssertTrue(error.message.contains("walletAdapter"))
-        }
-    }
-
-    func test_addFromWallet_userCancelled_returnsNil() async throws {
-        let adapter = FakeExternalWalletAdapter()
-        adapter.nextConnect = nil // simulate user cancellation
-        let manager = makeManager(walletAdapter: adapter)
-
-        let result = try await manager.addFromWallet()
-        XCTAssertNil(result, "user cancellation must surface as nil, not as an error")
-    }
-
-    func test_addFromWallet_success_persistsToStorage() async throws {
-        let adapter = FakeExternalWalletAdapter()
-        let storage = OZInMemoryWalletConnectionStorage()
-        let wallet = OZConnectedWallet(
-            address: validAddress1,
-            walletId: "freighter",
-            walletName: "Freighter"
-        )
-        adapter.nextConnect = wallet
-        let manager = makeManager(
-            walletAdapter: adapter,
-            walletConnectionStorage: storage
-        )
-
-        let result = try await manager.addFromWallet()
-        XCTAssertEqual(result, wallet)
-
-        let json = await storage.getItem(key: walletStorageKey)
-        XCTAssertNotNil(json)
-        XCTAssertTrue(json!.contains(validAddress1))
-        XCTAssertTrue(json!.contains("freighter"))
-        XCTAssertTrue(json!.contains("Freighter"))
-    }
-
-    func test_addFromWallet_noStorage_doesNotPersist() async throws {
-        let adapter = FakeExternalWalletAdapter()
-        let wallet = OZConnectedWallet(
-            address: validAddress1,
-            walletId: "freighter",
-            walletName: "Freighter"
-        )
-        adapter.nextConnect = wallet
-        // No walletConnectionStorage configured.
-        let manager = makeManager(walletAdapter: adapter)
-
-        let result = try await manager.addFromWallet()
-        XCTAssertEqual(result, wallet)
-        // No way to verify storage state directly because none is configured.
-        // hasWalletAdapter remains true; adapter sees the connect call.
-        XCTAssertTrue(adapter.connectCallCount == 1)
-        let hasAdapter = await manager.hasWalletAdapter
-        XCTAssertTrue(hasAdapter)
-    }
-
-    // ========================================================================
     // E.3 — canSignFor (4 cases)
     // ========================================================================
 
@@ -261,14 +147,12 @@ final class OZExternalSignerManagerTests: XCTestCase {
 
     func test_canSignFor_walletExists_returnsTrue() async throws {
         let adapter = FakeExternalWalletAdapter()
-        let wallet = OZConnectedWallet(
+        adapter.preset(wallet: OZConnectedWallet(
             address: validAddress1,
             walletId: "wallet-1",
             walletName: "WalletOne"
-        )
-        adapter.nextConnect = wallet
+        ))
         let manager = makeManager(walletAdapter: adapter)
-        _ = try await manager.addFromWallet()
 
         let canSign = await manager.canSignFor(address: validAddress1)
         XCTAssertTrue(canSign)
@@ -627,30 +511,17 @@ final class OZExternalSignerManagerTests: XCTestCase {
 
     func test_remove_keypairAndWallet_removesBoth() async throws {
         let adapter = FakeExternalWalletAdapter()
-        let storage = OZInMemoryWalletConnectionStorage()
         let kp = try newKeypair()
         let address = kp.accountId
 
-        // Persist a wallet entry for the same address first.
-        adapter.nextConnect = OZConnectedWallet(
-            address: address,
-            walletId: "wallet-1",
-            walletName: "WalletOne"
-        )
-        let manager = makeManager(
-            walletAdapter: adapter,
-            walletConnectionStorage: storage
-        )
-        _ = try await manager.addFromWallet()
-        // Now add a keypair (this also clears storage).
-        _ = try await manager.addFromSecret(secretKey: kp.secretSeed!)
-
-        // Re-add wallet to storage manually (simulate a stale entry surviving).
+        // Register a wallet signer for the same address the keypair claims.
         adapter.preset(wallet: OZConnectedWallet(
             address: address,
             walletId: "wallet-1",
             walletName: "WalletOne"
         ))
+        let manager = makeManager(walletAdapter: adapter)
+        _ = try await manager.addFromSecret(secretKey: kp.secretSeed!)
 
         try await manager.remove(address: address)
 
@@ -682,7 +553,6 @@ final class OZExternalSignerManagerTests: XCTestCase {
 
     func test_removeAll_clearsAllAndDisconnects() async throws {
         let adapter = FakeExternalWalletAdapter()
-        let storage = OZInMemoryWalletConnectionStorage()
         adapter.preset(wallet: OZConnectedWallet(
             address: validAddress1,
             walletId: "w1",
@@ -694,13 +564,9 @@ final class OZExternalSignerManagerTests: XCTestCase {
             walletName: "WalletTwo"
         ))
 
-        let manager = makeManager(
-            walletAdapter: adapter,
-            walletConnectionStorage: storage
-        )
+        let manager = makeManager(walletAdapter: adapter)
         let kp = try newKeypair()
         _ = try await manager.addFromSecret(secretKey: kp.secretSeed!)
-        await storage.setItem(key: walletStorageKey, value: "[]")
 
         try await manager.removeAll()
 
@@ -711,43 +577,14 @@ final class OZExternalSignerManagerTests: XCTestCase {
         XCTAssertTrue(all.isEmpty, "removeAll() must leave both keypair and wallet bookkeeping empty")
     }
 
-    func test_removeAll_removesStorageKey() async throws {
-        let storage = OZInMemoryWalletConnectionStorage()
-        let adapter = FakeExternalWalletAdapter()
-        adapter.nextConnect = OZConnectedWallet(
-            address: validAddress1,
-            walletId: "wallet-1",
-            walletName: "WalletOne"
-        )
-        let manager = makeManager(
-            walletAdapter: adapter,
-            walletConnectionStorage: storage
-        )
-        _ = try await manager.addFromWallet()
-        let beforeJson = await storage.getItem(key: walletStorageKey)
-        XCTAssertNotNil(beforeJson)
-
-        try await manager.removeAll()
-
-        let afterJson = await storage.getItem(key: walletStorageKey)
-        XCTAssertNil(afterJson)
-    }
-
     func test_removeAll_clearsEd25519RegistrationsAlongsideWalletSigners() async throws {
         let adapter = FakeExternalWalletAdapter()
-        adapter.nextConnect = OZConnectedWallet(
+        adapter.preset(wallet: OZConnectedWallet(
             address: validAddress1,
             walletId: "w1",
             walletName: "WalletOne"
-        )
-        let storage = OZInMemoryWalletConnectionStorage()
-        let manager = makeManager(
-            walletAdapter: adapter,
-            walletConnectionStorage: storage
-        )
-
-        // Register one wallet signer.
-        _ = try await manager.addFromWallet()
+        ))
+        let manager = makeManager(walletAdapter: adapter)
 
         // Register one Ed25519 signer.
         let ed25519Seed = Data(0x00 ..< 0x20)
@@ -777,322 +614,6 @@ final class OZExternalSignerManagerTests: XCTestCase {
                        "removeAll() must clear the wallet signer")
         XCTAssertFalse(canSignEd25519After,
                        "removeAll() must clear the Ed25519 signer from ed25519Signers")
-    }
-
-    // ========================================================================
-    // E.7 — restoreConnections (5 cases)
-    // ========================================================================
-
-    func test_restoreConnections_idempotent_secondCallReturnsCurrent() async throws {
-        let storage = OZInMemoryWalletConnectionStorage()
-        await storage.setItem(
-            key: walletStorageKey,
-            value: """
-            [{"address":"\(validAddress1)","walletId":"freighter","walletName":"Freighter","connectedAt":1700000000000}]
-            """
-        )
-
-        let adapter = FakeExternalWalletAdapter()
-        adapter.reconnectResponse["freighter"] = OZConnectedWallet(
-            address: validAddress1,
-            walletId: "freighter",
-            walletName: "Freighter"
-        )
-
-        let manager = makeManager(
-            walletAdapter: adapter,
-            walletConnectionStorage: storage
-        )
-
-        let first = try await manager.restoreConnections()
-        XCTAssertEqual(first.count, 1)
-        XCTAssertEqual(adapter.reconnectCallCount, 1)
-
-        // Second call: must NOT re-read storage and must NOT call reconnect again.
-        let second = try await manager.restoreConnections()
-        XCTAssertEqual(adapter.reconnectCallCount, 1, "reconnect must not be called on idempotent re-entry")
-        // Second call returns whatever the adapter reports as currently connected.
-        XCTAssertEqual(second.map { $0.walletId }, ["freighter"])
-    }
-
-    func test_restoreConnections_noStorage_returnsEmpty() async throws {
-        let adapter = FakeExternalWalletAdapter()
-        let manager = makeManager(walletAdapter: adapter)
-
-        let result = try await manager.restoreConnections()
-        XCTAssertTrue(result.isEmpty)
-        XCTAssertEqual(adapter.reconnectCallCount, 0)
-    }
-
-    func test_restoreConnections_reconnectFailure_removesStaleEntry() async throws {
-        let storage = OZInMemoryWalletConnectionStorage()
-        await storage.setItem(
-            key: walletStorageKey,
-            value: """
-            [{"address":"\(validAddress1)","walletId":"alpha","walletName":"Alpha","connectedAt":1700000000000},\
-            {"address":"\(validAddress2)","walletId":"beta","walletName":"Beta","connectedAt":1700000001000}]
-            """
-        )
-
-        let adapter = FakeExternalWalletAdapter()
-        // Alpha succeeds; beta returns nil (treated as failure).
-        adapter.reconnectResponse["alpha"] = OZConnectedWallet(
-            address: validAddress1,
-            walletId: "alpha",
-            walletName: "Alpha"
-        )
-        adapter.reconnectResponse["beta"] = nil
-
-        let manager = makeManager(
-            walletAdapter: adapter,
-            walletConnectionStorage: storage
-        )
-
-        let restored = try await manager.restoreConnections()
-        XCTAssertEqual(restored.count, 1)
-        XCTAssertEqual(restored[0].walletId, "alpha")
-
-        // Storage must no longer contain the beta entry. The alpha entry was
-        // never removed (only failed entries get cleaned up).
-        let json = await storage.getItem(key: walletStorageKey)
-        XCTAssertNotNil(json)
-        XCTAssertTrue(json!.contains(validAddress1))
-        XCTAssertFalse(json!.contains(validAddress2), "stale entry must be purged")
-    }
-
-    func test_restoreConnections_reconnectSuccess_returnsRestored() async throws {
-        let storage = OZInMemoryWalletConnectionStorage()
-        await storage.setItem(
-            key: walletStorageKey,
-            value: """
-            [{"address":"\(validAddress1)","walletId":"alpha","walletName":"Alpha","connectedAt":1700000000000},\
-            {"address":"\(validAddress2)","walletId":"beta","walletName":"Beta","connectedAt":1700000001000}]
-            """
-        )
-
-        let adapter = FakeExternalWalletAdapter()
-        adapter.reconnectResponse["alpha"] = OZConnectedWallet(
-            address: validAddress1,
-            walletId: "alpha",
-            walletName: "Alpha"
-        )
-        adapter.reconnectResponse["beta"] = OZConnectedWallet(
-            address: validAddress2,
-            walletId: "beta",
-            walletName: "Beta"
-        )
-
-        let manager = makeManager(
-            walletAdapter: adapter,
-            walletConnectionStorage: storage
-        )
-
-        let restored = try await manager.restoreConnections()
-        XCTAssertEqual(restored.count, 2)
-        let walletIds = Set(restored.map { $0.walletId })
-        XCTAssertEqual(walletIds, Set(["alpha", "beta"]))
-    }
-
-    func test_restoreConnections_concurrentCalls_serializedByActor() async throws {
-        let storage = OZInMemoryWalletConnectionStorage()
-        await storage.setItem(
-            key: walletStorageKey,
-            value: """
-            [{"address":"\(validAddress1)","walletId":"freighter","walletName":"Freighter","connectedAt":1700000000000}]
-            """
-        )
-
-        let adapter = FakeExternalWalletAdapter()
-        adapter.reconnectResponse["freighter"] = OZConnectedWallet(
-            address: validAddress1,
-            walletId: "freighter",
-            walletName: "Freighter"
-        )
-
-        let manager = makeManager(
-            walletAdapter: adapter,
-            walletConnectionStorage: storage
-        )
-
-        // Fire many concurrent restoreConnections calls. Actor isolation must
-        // collapse the work so that reconnect is called at most once.
-        await withTaskGroup(of: Void.self) { group in
-            for _ in 0..<20 {
-                let manager = manager
-                group.addTask {
-                    _ = try? await manager.restoreConnections()
-                }
-            }
-        }
-
-        XCTAssertEqual(
-            adapter.reconnectCallCount,
-            1,
-            "concurrent restoreConnections must collapse to a single reconnect call"
-        )
-    }
-
-    // ========================================================================
-    // E.8 — JSON storage (5 cases)
-    // ========================================================================
-
-    func test_serializeWallets_emptyList_validJsonArray() async throws {
-        // Round-trip through storage: removing the last entry deletes the
-        // storage key entirely (so we never need to serialize an empty list).
-        let storage = OZInMemoryWalletConnectionStorage()
-        let adapter = FakeExternalWalletAdapter()
-        adapter.nextConnect = OZConnectedWallet(
-            address: validAddress1,
-            walletId: "w1",
-            walletName: "WalletOne"
-        )
-        let manager = makeManager(
-            walletAdapter: adapter,
-            walletConnectionStorage: storage
-        )
-        _ = try await manager.addFromWallet()
-
-        // Remove the single entry; storage key should be wiped, not left as "[]".
-        try await manager.remove(address: validAddress1)
-
-        let json = await storage.getItem(key: walletStorageKey)
-        XCTAssertNil(json, "removing the last entry must delete the storage key")
-
-        // Confirm that fresh-install state (no storage key) parses to empty.
-        let result = try await manager.restoreConnections()
-        XCTAssertTrue(result.isEmpty)
-    }
-
-    func test_serializeWallets_multipleEntries_correctOrder() async throws {
-        let storage = OZInMemoryWalletConnectionStorage()
-        let adapter = FakeExternalWalletAdapter()
-        let manager = makeManager(
-            walletAdapter: adapter,
-            walletConnectionStorage: storage
-        )
-
-        // Persist three wallets in a known order.
-        let wallets = [
-            OZConnectedWallet(address: validAddress1, walletId: "alpha", walletName: "Alpha"),
-            OZConnectedWallet(address: validAddress2, walletId: "beta", walletName: "Beta"),
-            OZConnectedWallet(address: validAddress3, walletId: "gamma", walletName: "Gamma")
-        ]
-        for wallet in wallets {
-            adapter.nextConnect = wallet
-            _ = try await manager.addFromWallet()
-        }
-
-        let json = await storage.getItem(key: walletStorageKey)
-        XCTAssertNotNil(json)
-
-        let data = json!.data(using: .utf8)!
-        let parsed = try JSONSerialization.jsonObject(with: data) as? [[String: Any]]
-        XCTAssertNotNil(parsed)
-        XCTAssertEqual(parsed?.count, 3)
-        XCTAssertEqual(parsed?[0]["walletId"] as? String, "alpha")
-        XCTAssertEqual(parsed?[1]["walletId"] as? String, "beta")
-        XCTAssertEqual(parsed?[2]["walletId"] as? String, "gamma")
-    }
-
-    func test_parseStoredWallets_validJson_returnsList() async throws {
-        let storage = OZInMemoryWalletConnectionStorage()
-        await storage.setItem(
-            key: walletStorageKey,
-            value: """
-            [{"address":"\(validAddress1)","walletId":"freighter","walletName":"Freighter","connectedAt":1700000000000},\
-            {"address":"\(validAddress2)","walletId":"lobstr","walletName":"LOBSTR","connectedAt":1700000001000}]
-            """
-        )
-
-        let adapter = FakeExternalWalletAdapter()
-        adapter.reconnectResponse["freighter"] = OZConnectedWallet(
-            address: validAddress1,
-            walletId: "freighter",
-            walletName: "Freighter"
-        )
-        adapter.reconnectResponse["lobstr"] = OZConnectedWallet(
-            address: validAddress2,
-            walletId: "lobstr",
-            walletName: "LOBSTR"
-        )
-
-        let manager = makeManager(
-            walletAdapter: adapter,
-            walletConnectionStorage: storage
-        )
-
-        let restored = try await manager.restoreConnections()
-        XCTAssertEqual(restored.count, 2)
-        let walletIds = Set(restored.map { $0.walletId })
-        XCTAssertEqual(walletIds, Set(["freighter", "lobstr"]))
-    }
-
-    func test_parseStoredWallets_malformedJson_returnsEmpty() async throws {
-        let storage = OZInMemoryWalletConnectionStorage()
-        await storage.setItem(key: walletStorageKey, value: "this is not json at all")
-
-        let adapter = FakeExternalWalletAdapter()
-        let manager = makeManager(
-            walletAdapter: adapter,
-            walletConnectionStorage: storage
-        )
-
-        // Must not throw; malformed input -> empty list.
-        let result = try await manager.restoreConnections()
-        XCTAssertTrue(result.isEmpty)
-        XCTAssertEqual(adapter.reconnectCallCount, 0)
-    }
-
-    func test_removeWalletFromStorage_lastEntry_deletesStorageKey() async throws {
-        let storage = OZInMemoryWalletConnectionStorage()
-        let adapter = FakeExternalWalletAdapter()
-        let manager = makeManager(
-            walletAdapter: adapter,
-            walletConnectionStorage: storage
-        )
-
-        adapter.nextConnect = OZConnectedWallet(
-            address: validAddress1,
-            walletId: "only",
-            walletName: "Only"
-        )
-        _ = try await manager.addFromWallet()
-        let beforeJson = await storage.getItem(key: walletStorageKey)
-        XCTAssertNotNil(beforeJson)
-
-        try await manager.remove(address: validAddress1)
-
-        let afterJson = await storage.getItem(key: walletStorageKey)
-        XCTAssertNil(
-            afterJson,
-            "removing the last persisted wallet must delete the storage key, not leave an empty array"
-        )
-    }
-
-    // ========================================================================
-    // Auxiliary coverage — OZInMemoryWalletConnectionStorage primitives
-    // ========================================================================
-
-    func test_inMemoryStorage_basicOperations() async throws {
-        let storage = OZInMemoryWalletConnectionStorage()
-
-        let empty = await storage.getItem(key: "k1")
-        XCTAssertNil(empty)
-
-        await storage.setItem(key: "k1", value: "v1")
-        let afterSet = await storage.getItem(key: "k1")
-        XCTAssertEqual(afterSet, "v1")
-
-        await storage.setItem(key: "k1", value: "v2")
-        let afterOverwrite = await storage.getItem(key: "k1")
-        XCTAssertEqual(afterOverwrite, "v2")
-
-        await storage.removeItem(key: "k1")
-        let afterRemove = await storage.getItem(key: "k1")
-        XCTAssertNil(afterRemove)
-
-        // Removing a non-existent key is a no-op.
-        await storage.removeItem(key: "missing")
     }
 
     // ========================================================================
@@ -1227,61 +748,6 @@ final class OZExternalSignerManagerTests: XCTestCase {
         XCTAssertNotNil(remainingInfo)
         XCTAssertFalse(removedCanSign)
         XCTAssertTrue(remainingCanSign)
-    }
-
-    /// Wallet names containing JSON-significant characters must round-trip
-    /// through the JSON storage layer without corruption.
-    func test_serializationRoundTrip_specialCharactersInWalletName() async throws {
-        let storage = OZInMemoryWalletConnectionStorage()
-        let adapter = FakeExternalWalletAdapter()
-        let manager = makeManager(
-            walletAdapter: adapter,
-            walletConnectionStorage: storage
-        )
-
-        let specialName = #"Wallet "Pro" / v1.0 \ alpha"#
-        let wallet = OZConnectedWallet(
-            address: validAddress1,
-            walletId: "special-id",
-            walletName: specialName
-        )
-        adapter.nextConnect = wallet
-        _ = try await manager.addFromWallet()
-
-        let json = await storage.getItem(key: walletStorageKey)
-        XCTAssertNotNil(json)
-
-        // Decode through JSONSerialization so escape sequences are
-        // unwrapped to the original characters.
-        let data = json!.data(using: .utf8)!
-        let parsed = try JSONSerialization.jsonObject(with: data) as? [[String: Any]]
-        XCTAssertEqual(parsed?.first?["walletName"] as? String, specialName)
-    }
-
-    /// Empty-string fields must round-trip correctly. The serializer must
-    /// not coerce empty strings to nil or omit them.
-    func test_serializationRoundTrip_emptyStringFields() async throws {
-        let storage = OZInMemoryWalletConnectionStorage()
-        let adapter = FakeExternalWalletAdapter()
-        let manager = makeManager(
-            walletAdapter: adapter,
-            walletConnectionStorage: storage
-        )
-
-        let wallet = OZConnectedWallet(
-            address: validAddress1,
-            walletId: "",
-            walletName: ""
-        )
-        adapter.nextConnect = wallet
-        _ = try await manager.addFromWallet()
-
-        let json = await storage.getItem(key: walletStorageKey)
-        XCTAssertNotNil(json)
-        let data = json!.data(using: .utf8)!
-        let parsed = try JSONSerialization.jsonObject(with: data) as? [[String: Any]]
-        XCTAssertEqual(parsed?.first?["walletId"] as? String, "")
-        XCTAssertEqual(parsed?.first?["walletName"] as? String, "")
     }
 
     // ========================================================================
@@ -1768,79 +1234,6 @@ final class OZExternalSignerManagerTests: XCTestCase {
     }
 
     // ========================================================================
-    // E.14 — restoreConnections transient reconnect error keeps entry
-    // ========================================================================
-
-    /// When `reconnect` throws (treated as transient), the stored entry must be
-    /// left intact so a later restore can retry. The throwing entry must not be
-    /// purged from storage, and only successfully reconnected wallets appear in
-    /// the result.
-    func test_restoreConnections_reconnectThrows_keepsStaleEntry() async throws {
-        let storage = OZInMemoryWalletConnectionStorage()
-        await storage.setItem(
-            key: walletStorageKey,
-            value: """
-            [{"address":"\(validAddress1)","walletId":"alpha","walletName":"Alpha","connectedAt":1700000000000},\
-            {"address":"\(validAddress2)","walletId":"beta","walletName":"Beta","connectedAt":1700000001000}]
-            """
-        )
-
-        let adapter = FakeExternalWalletAdapter()
-        // alpha reconnects fine; beta throws a transient error.
-        adapter.reconnectResponse["alpha"] = OZConnectedWallet(
-            address: validAddress1,
-            walletId: "alpha",
-            walletName: "Alpha"
-        )
-        struct TransientReconnectError: Error {}
-        adapter.reconnectErrors["beta"] = TransientReconnectError()
-
-        let manager = makeManager(
-            walletAdapter: adapter,
-            walletConnectionStorage: storage
-        )
-
-        let restored = try await manager.restoreConnections()
-        XCTAssertEqual(restored.count, 1)
-        XCTAssertEqual(restored[0].walletId, "alpha")
-
-        // Both entries must still be present: alpha was never removed and beta
-        // failed transiently, so it is left for a future retry.
-        let json = await storage.getItem(key: walletStorageKey)
-        XCTAssertNotNil(json)
-        XCTAssertTrue(json!.contains(validAddress1), "alpha must remain in storage")
-        XCTAssertTrue(
-            json!.contains(validAddress2),
-            "transiently-failing entry must NOT be purged from storage"
-        )
-    }
-
-    // ========================================================================
-    // E.16 — getStoredWallets storage-read failure returns empty
-    // ========================================================================
-
-    /// When the storage backend throws on read, `restoreConnections` (which
-    /// reads via getStoredWallets) must treat the failure as an empty store
-    /// rather than propagating the error.
-    func test_restoreConnections_storageReadThrows_returnsEmpty() async throws {
-        struct StorageReadError: Error {}
-        let storage = ThrowingWalletConnectionStorage(getError: StorageReadError())
-        let adapter = FakeExternalWalletAdapter()
-        let manager = makeManager(
-            walletAdapter: adapter,
-            walletConnectionStorage: storage
-        )
-
-        let result = try await manager.restoreConnections()
-        XCTAssertTrue(result.isEmpty, "storage read failure must yield an empty restore set")
-        XCTAssertEqual(
-            adapter.reconnectCallCount,
-            0,
-            "no reconnect attempts when the store read failed"
-        )
-    }
-
-    // ========================================================================
     // E.17 — describe(...) message-extraction branches
     // ========================================================================
 
@@ -1952,26 +1345,6 @@ private final class ThrowingEd25519SignerAdapter: OZExternalEd25519SignerAdapter
     }
 }
 
-/// ``OZWalletConnectionStorage`` whose `getItem` always throws. Used to drive
-/// the storage-read-failure path of `getStoredWallets`, which must swallow the
-/// error and behave as if the store were empty.
-private final class ThrowingWalletConnectionStorage: OZWalletConnectionStorage, @unchecked Sendable {
-
-    private let getError: Error
-
-    init(getError: Error) {
-        self.getError = getError
-    }
-
-    func getItem(key: String) async throws -> String? {
-        throw getError
-    }
-
-    func setItem(key: String, value: String) async throws {}
-
-    func removeItem(key: String) async throws {}
-}
-
 /// Error whose `localizedDescription` is the empty string, used to drive the
 /// `String(describing:)` fallback branch of the manager's private `describe`
 /// helper.
@@ -1996,18 +1369,12 @@ private final class FakeExternalWalletAdapter: OZExternalWalletAdapter, @uncheck
     private let queue = DispatchQueue(label: "FakeExternalWalletAdapter")
 
     var nextConnect: OZConnectedWallet?
-    var reconnectResponse: [String: OZConnectedWallet?] = [:]
-    /// Per-walletId errors thrown by `reconnect`. Takes precedence over
-    /// `reconnectResponse` for the same walletId, modeling a transient
-    /// reconnect failure (network outage, pop-up blocked, back-end overload).
-    var reconnectErrors: [String: Error] = [:]
     var nextSignAuthResult: OZSignAuthEntryResult?
     var signAuthError: Error?
 
     private(set) var connectCallCount = 0
     private(set) var disconnectCallCount = 0
     private(set) var disconnectByAddressCalls: [String] = []
-    private(set) var reconnectCallCount = 0
     private(set) var signAuthCallCount = 0
 
     struct SignAuthInvocation {
@@ -2076,19 +1443,5 @@ private final class FakeExternalWalletAdapter: OZExternalWalletAdapter, @uncheck
 
     func getWalletForAddress(address: String) -> OZConnectedWallet? {
         return queue.sync { presetWallets[address] }
-    }
-
-    func reconnect(walletId: String) async throws -> OZConnectedWallet? {
-        let snapshot: (Error?, OZConnectedWallet??) = queue.sync {
-            reconnectCallCount += 1
-            return (reconnectErrors[walletId], reconnectResponse[walletId])
-        }
-        if let error = snapshot.0 { throw error }
-        let response: OZConnectedWallet?? = snapshot.1
-        guard let resolved = response else { return nil }
-        if let wallet = resolved {
-            queue.sync { presetWallets[wallet.address] = wallet }
-        }
-        return resolved
     }
 }

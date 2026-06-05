@@ -275,7 +275,6 @@ public final class OZSmartAccountKit: OZSmartAccountKitProtocol, @unchecked Send
         self._externalSigners = OZExternalSignerManager(
             networkPassphrase: config.networkPassphrase,
             walletAdapter: config.externalWallet,
-            walletConnectionStorage: nil,
             ed25519Adapter: config.externalEd25519Adapter
         )
 

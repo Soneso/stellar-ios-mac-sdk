@@ -7,16 +7,14 @@
 
 import Foundation
 
-/// Builder utilities for OpenZeppelin smart-account signers and policy parameters.
+/// Builder utilities for OpenZeppelin smart-account signers.
 ///
 /// Provides type-safe constructors for creating signers and inspection helpers used by the
-/// higher-level smart-account managers, plus constructors for policy parameter structs used
-/// when installing policies on an OpenZeppelin Smart Account context rule. Includes:
+/// higher-level smart-account managers. Includes:
 /// - Signer builders for delegated, external, WebAuthn, and Ed25519 signers.
 /// - Signer inspection (type checks, type description, credential and address extraction).
 /// - Signer matching (by credential ID, by address, equality).
 /// - Signer deduplication.
-/// - Policy builders for simple threshold, weighted threshold, and spending limit policies.
 public enum OZSmartAccountBuilders {
 
     // ========================================================================
@@ -138,27 +136,6 @@ public enum OZSmartAccountBuilders {
         return signer is OZExternalSigner
     }
 
-    /// Returns a human-readable description of the signer type.
-    ///
-    /// - Parameter signer: Signer to describe.
-    /// - Returns: One of `"Stellar Account"`, `"Passkey (WebAuthn)"`, `"Ed25519"`, or
-    ///            `"External Verifier"`.
-    public static func describeSignerType(signer: any OZSmartAccountSigner) -> String {
-        if signer is OZDelegatedSigner {
-            return "Stellar Account"
-        }
-        guard let external = signer as? OZExternalSigner else {
-            return "External Verifier"
-        }
-        if external.keyData.count > SmartAccountConstants.secp256r1PublicKeySize {
-            return "Passkey (WebAuthn)"
-        }
-        if external.keyData.count == SmartAccountConstants.ed25519PublicKeySize {
-            return "Ed25519"
-        }
-        return "External Verifier"
-    }
-
     // ========================================================================
     // Signer matching
     // ========================================================================
@@ -258,208 +235,5 @@ public enum OZSmartAccountBuilders {
             }
         }
         return result
-    }
-
-    // ========================================================================
-    // Policy parameter builders
-    // ========================================================================
-
-    /// Creates simple threshold policy parameters.
-    ///
-    /// Simple threshold requires at least `threshold` of the signers on the context rule
-    /// to provide valid signatures.
-    ///
-    /// - Parameter threshold: Minimum number of signers required (must be >= 1).
-    /// - Returns: Policy parameters for simple threshold.
-    /// - Throws: `SmartAccountValidationException.InvalidInput` when `threshold < 1`.
-    public static func createThresholdParams(threshold: Int) throws -> OZSimpleThresholdParams {
-        if threshold < 1 {
-            throw SmartAccountValidationException.invalidInput(
-                field: "threshold",
-                reason: "Threshold must be at least 1, got: \(threshold)"
-            )
-        }
-        return OZSimpleThresholdParams(threshold: threshold)
-    }
-
-    /// Creates weighted threshold policy parameters.
-    ///
-    /// Each signer has a weight; authorisation succeeds when the sum of weights of
-    /// authenticated signers meets or exceeds `threshold`.
-    ///
-    /// Pass one `OZSignerWeight(signer:weight:)` value per signer; see `OZSignerWeight`
-    /// for why an ordered list is used instead of a dictionary. Example:
-    /// ```swift
-    /// let params = try OZSmartAccountBuilders.createWeightedThresholdParams(
-    ///     threshold: 2,
-    ///     signerWeights: [
-    ///         OZSignerWeight(signer: signerA, weight: 2),
-    ///         OZSignerWeight(signer: signerB, weight: 1),
-    ///     ]
-    /// )
-    /// ```
-    ///
-    /// - Parameters:
-    ///   - threshold: Total weight required for authorisation (must be >= 1).
-    ///   - signerWeights: Ordered list of signer-weight pairs (each weight must be >= 1).
-    /// - Returns: Policy parameters for weighted threshold.
-    /// - Throws: `SmartAccountValidationException.InvalidInput` when `threshold < 1`, when
-    ///           `signerWeights` is empty, when any weight is < 1, or when the total
-    ///           weight is less than `threshold`.
-    public static func createWeightedThresholdParams(
-        threshold: Int,
-        signerWeights: [OZSignerWeight]
-    ) throws -> OZWeightedThresholdParams {
-        if threshold < 1 {
-            throw SmartAccountValidationException.invalidInput(
-                field: "threshold",
-                reason: "Threshold must be at least 1, got: \(threshold)"
-            )
-        }
-        if signerWeights.isEmpty {
-            throw SmartAccountValidationException.invalidInput(
-                field: "signerWeights",
-                reason: "At least one signer weight must be provided"
-            )
-        }
-        var totalWeight = 0
-        for entry in signerWeights {
-            if entry.weight < 1 {
-                throw SmartAccountValidationException.invalidInput(
-                    field: "signerWeights",
-                    reason: "All weights must be positive integers, got: \(entry.weight)"
-                )
-            }
-            totalWeight += entry.weight
-        }
-        if totalWeight < threshold {
-            throw SmartAccountValidationException.invalidInput(
-                field: "signerWeights",
-                reason: "Sum of weights (\(totalWeight)) must be >= threshold (\(threshold))"
-            )
-        }
-        return OZWeightedThresholdParams(threshold: threshold, signerWeights: signerWeights)
-    }
-
-    /// Creates spending limit policy parameters.
-    ///
-    /// Restricts how much can be transferred within the supplied period. The
-    /// `spendingLimit` is a decimal string (for example `"100"` or `"10.5"`),
-    /// converted to integer base units (interpreted with 7 decimal places).
-    ///
-    /// Common values for `periodLedgers` are `StellarProtocolConstants.ledgersPerHour` and
-    /// `StellarProtocolConstants.ledgersPerDay`.
-    ///
-    /// - Parameters:
-    ///   - spendingLimit: Maximum amount allowed in the period as a decimal XLM string.
-    ///   - periodLedgers: Number of ledgers in the period (must be >= 1).
-    /// - Returns: Policy parameters for spending limit.
-    /// - Throws: `SmartAccountValidationException.InvalidAmount` when the spending-limit
-    ///           string is invalid or out of i128 range;
-    ///           `SmartAccountValidationException.InvalidInput` when `periodLedgers < 1`.
-    public static func createSpendingLimitParams(
-        spendingLimit: String,
-        periodLedgers: Int
-    ) throws -> OZSpendingLimitParams {
-        if periodLedgers < 1 {
-            throw SmartAccountValidationException.invalidInput(
-                field: "periodLedgers",
-                reason: "Period must be at least 1 ledger, got: \(periodLedgers)"
-            )
-        }
-        let baseUnits = try OZTransactionOperations.amountToBaseUnits(spendingLimit)
-        // Validate the value fits the i128 range the policy contract expects.
-        _ = try OZTransactionOperations.baseUnitsToI128ScVal(baseUnits, amount: spendingLimit)
-        return OZSpendingLimitParams(spendingLimit: baseUnits, periodLedgers: periodLedgers)
-    }
-}
-
-// ============================================================================
-// Policy parameter data structs
-// ============================================================================
-
-/// Parameters for a simple threshold policy on an OpenZeppelin Smart Account context rule.
-///
-/// Authorisation succeeds when at least `threshold` signers on the context rule provide
-/// valid signatures.
-public struct OZSimpleThresholdParams: Sendable, Hashable {
-
-    /// Minimum number of signers required (must be at least 1).
-    public let threshold: Int
-
-    /// Initializes new simple threshold parameters with the given `threshold`.
-    public init(threshold: Int) {
-        self.threshold = threshold
-    }
-}
-
-/// One signer-weight pair used by `OZWeightedThresholdParams`.
-///
-/// Each `OZSignerWeight` binds a single `OZSmartAccountSigner` to an integer weight. A
-/// weighted-threshold policy is parameterised by an ordered list of these pairs: callers
-/// pass `[OZSignerWeight(signer: s1, weight: 2), OZSignerWeight(signer: s2, weight: 1), ...]`
-/// to `OZSmartAccountBuilders.createWeightedThresholdParams`.
-///
-/// The list-of-pairs shape is used instead of a dictionary because Swift protocol
-/// existentials (`any OZSmartAccountSigner`) cannot satisfy the `Hashable` requirement
-/// needed for dictionary keys. The insertion order of the list is preserved through
-/// validation and is normalised by the codec's key-sort step at serialisation time, so
-/// the on-chain result is deterministic regardless of the order callers supply.
-public struct OZSignerWeight: Sendable {
-
-    /// Signer the weight applies to.
-    public let signer: any OZSmartAccountSigner
-
-    /// Weight assigned to the signer (must be >= 1).
-    public let weight: Int
-
-    /// Initializes a new signer-weight pair.
-    public init(signer: any OZSmartAccountSigner, weight: Int) {
-        self.signer = signer
-        self.weight = weight
-    }
-}
-
-/// Parameters for a weighted threshold policy on an OpenZeppelin Smart Account context rule.
-///
-/// Each signer has an integer weight; authorisation succeeds when the sum of weights of
-/// authenticated signers meets or exceeds `threshold`.
-public struct OZWeightedThresholdParams: Sendable {
-
-    /// Total weight required for authorisation (must be >= 1).
-    public let threshold: Int
-
-    /// Per-signer weights; each weight is at least 1.
-    public let signerWeights: [OZSignerWeight]
-
-    /// Initializes new weighted threshold parameters.
-    public init(threshold: Int, signerWeights: [OZSignerWeight]) {
-        self.threshold = threshold
-        self.signerWeights = signerWeights
-    }
-}
-
-/// Parameters for a spending-limit policy on an OpenZeppelin Smart Account context rule.
-///
-/// Restricts how much can be transferred within a given time period. Construct instances
-/// using `OZSmartAccountBuilders.createSpendingLimitParams`, which validates inputs and
-/// converts the spending limit from a decimal string to base units (interpreted with
-/// 7 decimal places).
-public struct OZSpendingLimitParams: Sendable, Hashable {
-
-    /// Maximum amount allowed in the period, expressed in base units as a non-negative
-    /// decimal integer string.
-    public let spendingLimit: String
-
-    /// Number of ledgers in the period (at least 1). On the Stellar network a ledger
-    /// closes approximately every five seconds.
-    public let periodLedgers: Int
-
-    /// Internal initializer invoked by `OZSmartAccountBuilders.createSpendingLimitParams`
-    /// after validation; direct construction is intentionally not part of the public API
-    /// so callers always go through the builder for input validation and unit conversion.
-    internal init(spendingLimit: String, periodLedgers: Int) {
-        self.spendingLimit = spendingLimit
-        self.periodLedgers = periodLedgers
     }
 }

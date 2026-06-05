@@ -7,10 +7,13 @@
 
 import Foundation
 
-/// Contract-level error codes returned by the OpenZeppelin smart account contract.
+/// Reference constants for a subset of the OpenZeppelin smart-account contract's
+/// on-chain error codes.
 ///
-/// These integer codes appear in failed transaction results and may be mapped to
-/// `SmartAccountException` subclasses by the SDK when interpreting on-chain errors.
+/// When the contract rejects a call, the code appears inside the message of a
+/// `SmartAccountTransactionException` (for example `Error(Contract, #3016)`). The SDK
+/// surfaces the raw error but does not parse or map contract error codes itself;
+/// callers can extract the code from the message and compare it against these constants.
 ///
 /// Error code range: `3xxx` (credential errors, aligned with the contract's `Error` enum).
 public enum OZContractErrorCodes {

@@ -320,14 +320,13 @@ public struct OZExternalSigner: OZSmartAccountSigner, Equatable, Hashable {
 `OZExternalSigner.webAuthn` packs `keyData = publicKey || credentialId`; `OZExternalSigner.ed25519` stores the 32-byte key directly. Inspect a parsed signer with the `OZSmartAccountBuilders` helpers:
 
 ```swift
-OZSmartAccountBuilders.describeSignerType(signer: s)            // "Stellar Account" / "Passkey (WebAuthn)" / "Ed25519" / "External Verifier"
 OZSmartAccountBuilders.getCredentialIdFromSigner(signer: s)     // Data?  (raw credential id, WebAuthn only)
 OZSmartAccountBuilders.getCredentialIdStringFromSigner(signer: s) // String? (Base64URL credential id)
 OZSmartAccountBuilders.signersEqual(a, b)                       // Bool
 OZSmartAccountBuilders.getSignerKey(signer: s)                  // String (== signer.uniqueKey)
 ```
 
-`describeSignerType` distinguishes the three `OZExternalSigner` shapes by `keyData.count`: `> 65` (secp256r1 pubkey 65 || credentialId) is WebAuthn; `== 32` is Ed25519; anything else is a generic external verifier.
+An `OZExternalSigner`'s shape is distinguished by `keyData.count`: `> 65` (secp256r1 pubkey 65 || credentialId) is WebAuthn; `== 32` is Ed25519; anything else is a generic external verifier.
 
 ### Listing unique signers across all rules
 
@@ -398,16 +397,16 @@ createContract  ->  vec([Symbol("CreateContract"), Bytes(wasmHash)])
 
 // WRONG: OZContextRuleType.createContract(wasmHash: "abcd...")   — that is a String, not Data
 // CORRECT: OZContextRuleType.createContract(wasmHash: wasmHashData)   // raw 32-byte Data
-//   or use OZBuilders.createCreateContractContext(wasmHashHex:) to convert hex.
+//   or use OZBuilders.createCreateContractContextType(wasmHashHex:) to convert hex.
 ```
 
 The `OZBuilders` static helpers wrap construction with validation:
 
 ```swift
-let defaultCtx = OZBuilders.createDefaultContext()                                  // .defaultRule
-let callCtx    = try OZBuilders.createCallContractContext(contractAddress: "CBCD...") // validates C-address
-let createCtx1 = try OZBuilders.createCreateContractContext(wasmHashHex: "abc123...") // 64 hex chars, 0x prefix optional
-let createCtx2 = try OZBuilders.createCreateContractContext(wasmHash: wasmHash32)      // Data, 32 bytes
+let defaultCtx = OZBuilders.createDefaultContextType()                                  // .defaultRule
+let callCtx    = try OZBuilders.createCallContractContextType(contractAddress: "CBCD...") // validates C-address
+let createCtx1 = try OZBuilders.createCreateContractContextType(wasmHashHex: "abc123...") // 64 hex chars, 0x prefix optional
+let createCtx2 = try OZBuilders.createCreateContractContextType(wasmHash: wasmHash32)      // Data, 32 bytes
 ```
 
 ### addContextRule
@@ -860,8 +859,6 @@ public enum OZPolicyInstallParams: Sendable {
 // CORRECT: kit.policyManager.addSimpleThreshold(contextRuleId: 0, policyAddress: "...", threshold: 2)
 //   or build the SCValXDR yourself and call addPolicy(installParams:).
 ```
-
-`OZSmartAccountBuilders.createThresholdParams(threshold:)`, `createWeightedThresholdParams(...)`, and `createSpendingLimitParams(...)` produce typed inspection-only param structs (`OZSimpleThresholdParams` etc.); they are not wired into `addPolicy` and exist only to diff/compare params locally.
 
 ### removePolicy — by id
 
@@ -1371,7 +1368,7 @@ do {
 }
 ```
 
-`OZContractErrorCodes` exposes only the five codes the SDK interprets directly — `mathOverflow` (3012), `keyDataTooLarge` (3013), `contextRuleIdsLengthMismatch` (3014), `nameTooLong` (3015), `unauthorizedSigner` (3016). Every other code in the 3000 / 3200 / 3210 / 3220 ranges is parsed from the message and mapped via the tables below.
+`OZContractErrorCodes` provides named constants for five of the contract error codes — `mathOverflow` (3012), `keyDataTooLarge` (3013), `contextRuleIdsLengthMismatch` (3014), `nameTooLong` (3015), `unauthorizedSigner` (3016). The SDK does not parse or map contract error codes; extract the code from the exception message yourself (as shown above) and compare it against these constants or the reference tables below.
 
 ---
 

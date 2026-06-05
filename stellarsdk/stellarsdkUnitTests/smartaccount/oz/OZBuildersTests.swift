@@ -10,20 +10,20 @@ import XCTest
 
 final class OZBuildersTests: XCTestCase {
 
-    // MARK: - createDefaultContext
+    // MARK: - createDefaultContextType
 
     func testCreateDefaultContext_returnsDefault() {
-        let result = OZBuilders.createDefaultContext()
+        let result = OZBuilders.createDefaultContextType()
         if case .defaultRule = result {} else {
             XCTFail("expected OZContextRuleType.defaultRule, got \(result)")
         }
     }
 
-    // MARK: - createCallContractContext
+    // MARK: - createCallContractContextType
 
     func testCreateCallContractContext_validAddress() throws {
         let address = "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM"
-        let result = try OZBuilders.createCallContractContext(contractAddress: address)
+        let result = try OZBuilders.createCallContractContextType(contractAddress: address)
         guard case let .callContract(contractAddress) = result else {
             return XCTFail("expected OZContextRuleType.callContract, got \(result)")
         }
@@ -32,7 +32,7 @@ final class OZBuildersTests: XCTestCase {
 
     func testCreateCallContractContext_invalidAddress_throws() {
         XCTAssertThrowsError(
-            try OZBuilders.createCallContractContext(contractAddress: "GABC...")
+            try OZBuilders.createCallContractContextType(contractAddress: "GABC...")
         ) { error in
             XCTAssertTrue(error is SmartAccountValidationException, "expected SmartAccountValidationException, got \(type(of: error))")
         }
@@ -40,17 +40,17 @@ final class OZBuildersTests: XCTestCase {
 
     func testCreateCallContractContext_emptyAddress_throws() {
         XCTAssertThrowsError(
-            try OZBuilders.createCallContractContext(contractAddress: "")
+            try OZBuilders.createCallContractContextType(contractAddress: "")
         ) { error in
             XCTAssertTrue(error is SmartAccountValidationException, "expected SmartAccountValidationException, got \(type(of: error))")
         }
     }
 
-    // MARK: - createCreateContractContext (hex)
+    // MARK: - createCreateContractContextType (hex)
 
     func testCreateCreateContractContext_validHex() throws {
         let hex = String(repeating: "a", count: 64)
-        let result = try OZBuilders.createCreateContractContext(wasmHashHex: hex)
+        let result = try OZBuilders.createCreateContractContextType(wasmHashHex: hex)
         guard case let .createContract(wasmHash) = result else {
             return XCTFail("expected OZContextRuleType.createContract, got \(result)")
         }
@@ -59,7 +59,7 @@ final class OZBuildersTests: XCTestCase {
 
     func testCreateCreateContractContext_validHexWith0xPrefix() throws {
         let hex = "0x" + String(repeating: "b", count: 64)
-        let result = try OZBuilders.createCreateContractContext(wasmHashHex: hex)
+        let result = try OZBuilders.createCreateContractContextType(wasmHashHex: hex)
         guard case let .createContract(wasmHash) = result else {
             return XCTFail("expected OZContextRuleType.createContract, got \(result)")
         }
@@ -68,7 +68,7 @@ final class OZBuildersTests: XCTestCase {
 
     func testCreateCreateContractContext_shortHex_throws() {
         XCTAssertThrowsError(
-            try OZBuilders.createCreateContractContext(wasmHashHex: "abc123")
+            try OZBuilders.createCreateContractContextType(wasmHashHex: "abc123")
         ) { error in
             XCTAssertTrue(error is SmartAccountValidationException, "expected SmartAccountValidationException, got \(type(of: error))")
         }
@@ -76,20 +76,20 @@ final class OZBuildersTests: XCTestCase {
 
     func testCreateCreateContractContext_longHex_throws() {
         XCTAssertThrowsError(
-            try OZBuilders.createCreateContractContext(wasmHashHex: String(repeating: "a", count: 66))
+            try OZBuilders.createCreateContractContextType(wasmHashHex: String(repeating: "a", count: 66))
         ) { error in
             XCTAssertTrue(error is SmartAccountValidationException, "expected SmartAccountValidationException, got \(type(of: error))")
         }
     }
 
-    // MARK: - createCreateContractContext (bytes)
+    // MARK: - createCreateContractContextType (bytes)
 
     func testCreateCreateContractContext_validBytes() throws {
         var bytes = Data(count: 32)
         for i in 0..<32 {
             bytes[i] = UInt8(i & 0xff)
         }
-        let result = try OZBuilders.createCreateContractContext(wasmHash: bytes)
+        let result = try OZBuilders.createCreateContractContextType(wasmHash: bytes)
         guard case let .createContract(wasmHash) = result else {
             return XCTFail("expected OZContextRuleType.createContract, got \(result)")
         }
@@ -98,7 +98,7 @@ final class OZBuildersTests: XCTestCase {
 
     func testCreateCreateContractContext_wrongSizeBytes_throws() {
         XCTAssertThrowsError(
-            try OZBuilders.createCreateContractContext(wasmHash: Data(count: 16))
+            try OZBuilders.createCreateContractContextType(wasmHash: Data(count: 16))
         ) { error in
             XCTAssertTrue(error is SmartAccountValidationException, "expected SmartAccountValidationException, got \(type(of: error))")
         }
@@ -234,13 +234,13 @@ final class OZBuildersTests: XCTestCase {
         XCTAssertEqual(rule, ruleCopy)
     }
 
-    // MARK: - createCreateContractContext invalid hex characters
+    // MARK: - createCreateContractContextType invalid hex characters
 
-    /// `createCreateContractContext(wasmHashHex:)` with a 64-character string
+    /// `createCreateContractContextType(wasmHashHex:)` with a 64-character string
     /// that contains non-hex characters must throw `SmartAccountValidationException.InvalidInput`.
-    func test_createCreateContractContext_invalidHexChars_throws() {
+    func test_createCreateContractContextType_invalidHexChars_throws() {
         XCTAssertThrowsError(
-            try OZBuilders.createCreateContractContext(
+            try OZBuilders.createCreateContractContextType(
                 wasmHashHex: String(repeating: "g", count: 64)
             )
         ) { error in

@@ -70,9 +70,9 @@ public enum OZExternalSignerType: String, Sendable, Codable, CaseIterable {
     /// Ed25519 keypair-based signer. Stored in memory only, never persisted.
     case keypair = "KEYPAIR"
 
-    /// External wallet signer (for example Freighter or LOBSTR). Connection
-    /// metadata can be persisted to ``OZWalletConnectionStorage`` for session
-    /// restoration via ``OZExternalSignerManager/restoreConnections()``.
+    /// External wallet signer (for example Freighter or LOBSTR). Connections are
+    /// surfaced from the live ``OZExternalWalletAdapter`` for the duration of the
+    /// running process.
     case wallet = "WALLET"
 }
 
@@ -105,7 +105,7 @@ public struct OZExternalSignerInfo: Sendable, Codable, Equatable, Hashable {
     /// Human-readable wallet name (only populated when ``type`` is ``OZExternalSignerType/wallet``).
     public let walletName: String?
 
-    /// Wallet identifier for reconnection (only populated when ``type`` is ``OZExternalSignerType/wallet``).
+    /// Wallet identifier (only populated when ``type`` is ``OZExternalSignerType/wallet``).
     public let walletId: String?
 
     /// Initializes a new ``OZExternalSignerInfo``.
@@ -114,7 +114,7 @@ public struct OZExternalSignerInfo: Sendable, Codable, Equatable, Hashable {
     ///   - address: The Stellar G-address of the signer.
     ///   - type: Whether this signer is a keypair or wallet.
     ///   - walletName: Optional human-readable wallet name (wallet signers only).
-    ///   - walletId: Optional wallet identifier for reconnection (wallet signers only).
+    ///   - walletId: Optional wallet identifier (wallet signers only).
     public init(
         address: String,
         type: OZExternalSignerType,
@@ -129,116 +129,27 @@ public struct OZExternalSignerInfo: Sendable, Codable, Equatable, Hashable {
 }
 
 
-/// Simple key-value storage interface for persisting external wallet connections.
-///
-/// Implementations must be safe to call from arbitrary concurrent contexts.
-/// Platform-specific implementations can use `UserDefaults`, the iOS Keychain,
-/// or any other persistent key-value store. The default in-memory fallback is
-/// ``OZInMemoryWalletConnectionStorage``.
-///
-/// Example implementation backed by `UserDefaults`:
-/// ```swift
-/// final class UserDefaultsWalletConnectionStorage: OZWalletConnectionStorage {
-///     private let defaults: UserDefaults
-///     init(defaults: UserDefaults = .standard) { self.defaults = defaults }
-///
-///     func getItem(key: String) async -> String? {
-///         defaults.string(forKey: key)
-///     }
-///
-///     func setItem(key: String, value: String) async {
-///         defaults.set(value, forKey: key)
-///     }
-///
-///     func removeItem(key: String) async {
-///         defaults.removeObject(forKey: key)
-///     }
-/// }
-/// ```
-public protocol OZWalletConnectionStorage: Sendable {
-
-    /// Retrieves a value by key.
-    ///
-    /// - Parameter key: The storage key.
-    /// - Returns: The stored value, or `nil` if the key does not exist.
-    func getItem(key: String) async throws -> String?
-
-    /// Stores a value for a key. Overwrites any existing value.
-    ///
-    /// - Parameters:
-    ///   - key: The storage key.
-    ///   - value: The value to store.
-    func setItem(key: String, value: String) async throws
-
-    /// Removes a value by key. No-op if the key does not exist.
-    ///
-    /// - Parameter key: The storage key to remove.
-    func removeItem(key: String) async throws
-}
-
-/// In-memory implementation of ``OZWalletConnectionStorage``.
-///
-/// Used as the default when no ``OZWalletConnectionStorage`` is provided to
-/// ``OZExternalSignerManager``. Data is not persisted across application
-/// restarts. Access is serialized via Swift actor isolation.
-public actor OZInMemoryWalletConnectionStorage: OZWalletConnectionStorage {
-
-    private var data: [String: String] = [:]
-
-    /// Creates an empty in-memory storage.
-    public init() {}
-
-    public func getItem(key: String) async -> String? {
-        return data[key]
-    }
-
-    public func setItem(key: String, value: String) async {
-        data[key] = value
-    }
-
-    public func removeItem(key: String) async {
-        data.removeValue(forKey: key)
-    }
-}
-
-
 /// Manager for external (non-passkey) signers in multi-signature smart-account operations.
 ///
 /// Maintains two signer kinds:
 /// - **Keypair signers** (``addFromSecret(secretKey:)``): held in memory only; secret-key
 ///   material is never persisted.
-/// - **Wallet signers** (``addFromWallet()``): connected through an ``OZExternalWalletAdapter``;
-///   connection metadata is persisted via ``OZWalletConnectionStorage`` and restored on the next
-///   launch via ``restoreConnections()``.
+/// - **Wallet signers**: surfaced from the live ``OZExternalWalletAdapter`` for the duration
+///   of the running process.
 ///
 /// Example:
 /// ```swift
 /// let address = try await manager.addFromSecret(secretKey: "SCZANGBA5YHT...")
-/// let wallet  = try await manager.addFromWallet()
 /// ```
 public actor OZExternalSignerManager {
-
-    /// Storage key under which the manager persists wallet connections in the
-    /// supplied ``OZWalletConnectionStorage``.
-    ///
-    /// Storage key for the persisted connected-wallet records.
-    /// The namespaced prefix (`oz_smart_account.`) avoids collisions with other
-    /// storage consumers sharing the same backing store.
-    static let walletStorageKey: String = "oz_smart_account.connected_wallets"
 
     private let addressLogPrefixCount = 8
 
     private let networkPassphrase: String
     private let walletAdapter: OZExternalWalletAdapter?
-    private let walletConnectionStorage: OZWalletConnectionStorage?
 
     /// Keypair-based signers keyed by G-address. Memory-only, never persisted.
     private var keypairSigners: [String: KeyPair] = [:]
-
-    /// Whether ``restoreConnections()`` has run successfully at least once on
-    /// this instance. Used to short-circuit subsequent calls so that storage
-    /// is read at most once per session.
-    private var restored: Bool = false
 
     // MARK: - Ed25519 state
 
@@ -269,29 +180,23 @@ public actor OZExternalSignerManager {
     ///   - walletAdapter: Optional wallet adapter. When `nil`, all wallet-related
     ///     operations either throw ``SmartAccountConfigurationException/MissingConfig`` or
     ///     return empty results.
-    ///   - walletConnectionStorage: Optional persistent storage for wallet
-    ///     connections. When `nil`, wallet connections live only for the
-    ///     duration of the running process.
     ///   - ed25519Adapter: Optional adapter for out-of-process Ed25519 signing.
     ///     When non-`nil`, consulted before the in-memory keypair registry for
     ///     every ``signEd25519AuthDigest(verifierAddress:publicKey:authDigest:)`` call.
     public init(
         networkPassphrase: String,
         walletAdapter: OZExternalWalletAdapter? = nil,
-        walletConnectionStorage: OZWalletConnectionStorage? = nil,
         ed25519Adapter: OZExternalEd25519SignerAdapter? = nil
     ) {
         self.networkPassphrase = networkPassphrase
         self.walletAdapter = walletAdapter
-        self.walletConnectionStorage = walletConnectionStorage
         self.ed25519Adapter = ed25519Adapter
     }
 
     /// Whether an external wallet adapter is configured.
     ///
     /// Returns `true` when the manager was initialized with a non-`nil`
-    /// ``OZExternalWalletAdapter``. Wallet-related operations
-    /// (``addFromWallet()``, ``restoreConnections()``) require this to be `true`.
+    /// ``OZExternalWalletAdapter``. Wallet-related operations require this to be `true`.
     public var hasWalletAdapter: Bool {
         return walletAdapter != nil
     }
@@ -306,9 +211,7 @@ public actor OZExternalSignerManager {
     ///
     /// If a signer with the same G-address already exists (either keypair or
     /// wallet), the keypair signer takes precedence and overwrites the existing
-    /// entry. Any persisted wallet connection for the same address is removed
-    /// from storage; without this cleanup the wallet would reappear on the
-    /// next ``restoreConnections()`` call.
+    /// entry.
     ///
     /// - Parameter secretKey: A valid Stellar secret key (S-address, 56 characters).
     /// - Returns: The derived G-address of the signer.
@@ -329,45 +232,7 @@ public actor OZExternalSignerManager {
         let address = keypair.accountId
         keypairSigners[address] = keypair
 
-        // why: keypair signers take precedence at sign time; clearing any wallet
-        // entry for this address from storage prevents a future
-        // restoreConnections() call from resurrecting the wallet entry and
-        // confusing getAll() with two entries for the same address.
-        try await removeWalletFromStorage(address: address)
-
         return address
-    }
-
-    /// Connects an external wallet and adds it as a signer.
-    ///
-    /// Delegates to the configured ``OZExternalWalletAdapter`` to prompt the user
-    /// for wallet authorization (for example by displaying a wallet-selection
-    /// modal). When the connection succeeds and ``OZWalletConnectionStorage`` is
-    /// configured, the connection metadata is persisted for later restoration
-    /// via ``restoreConnections()``.
-    ///
-    /// - Returns: The connected wallet info, or `nil` when the user cancelled
-    ///            the connection request.
-    /// - Throws: ``SmartAccountConfigurationException/MissingConfig`` when no wallet adapter
-    ///           is configured; rethrows any error raised by the adapter.
-    public func addFromWallet() async throws -> OZConnectedWallet? {
-
-        guard let adapter = walletAdapter else {
-            throw SmartAccountConfigurationException.missingConfig(
-                param: "walletAdapter: No wallet adapter configured. Pass an OZExternalWalletAdapter " +
-                       "to OZExternalSignerManager to enable wallet connections."
-            )
-        }
-
-        guard let wallet = try await adapter.connect() else {
-            return nil
-        }
-
-        if walletConnectionStorage != nil {
-            try await saveWalletToStorage(wallet: wallet)
-        }
-
-        return wallet
     }
 
     // MARK: - Query signers
@@ -583,37 +448,35 @@ public actor OZExternalSignerManager {
     /// Removes a signer by address.
     ///
     /// For keypair signers, removes the keypair from memory. For wallet
-    /// signers, removes the connection from storage and calls
-    /// ``OZExternalWalletAdapter/disconnectByAddress(address:)`` to release the
-    /// adapter's runtime state. Both paths run when present, so an address that
-    /// is somehow registered as both a keypair and a wallet is fully cleared.
+    /// signers, calls ``OZExternalWalletAdapter/disconnectByAddress(address:)``
+    /// to release the adapter's runtime state. Both paths run when present, so an
+    /// address that is somehow registered as both a keypair and a wallet is fully
+    /// cleared.
     ///
     /// - Parameter address: The G-address of the signer to remove.
-    /// - Throws: Rethrows any error raised by the adapter or storage layer.
+    /// - Throws: Rethrows any error raised by the adapter.
     public func remove(address: String) async throws {
 
         keypairSigners.removeValue(forKey: address)
 
         try await walletAdapter?.disconnectByAddress(address: address)
-        try await removeWalletFromStorage(address: address)
     }
 
     /// Removes all signers. Clears in-memory keypair signers, in-memory Ed25519
-    /// keypairs, disconnects all external wallets, and removes all persisted
-    /// wallet connections from storage. Failures propagate to the caller.
+    /// keypairs, and disconnects all external wallets. Failures propagate to the
+    /// caller.
     public func removeAll() async throws {
 
         keypairSigners.removeAll()
         ed25519Signers.removeAll()
 
         try await walletAdapter?.disconnect()
-        try await walletConnectionStorage?.removeItem(key: OZExternalSignerManager.walletStorageKey)
     }
 
     /// Drops in-memory keypair and Ed25519 signing secrets only. Unlike
-    /// `removeAll()`, this does NOT disconnect the external-wallet adapter and does
-    /// NOT remove persisted wallet connections from storage. Called by
-    /// `OZSmartAccountKit.close()` to release sensitive key material on teardown.
+    /// `removeAll()`, this does NOT disconnect the external-wallet adapter.
+    /// Called by `OZSmartAccountKit.close()` to release sensitive key material on
+    /// teardown.
     internal func clearInMemorySigners() {
         keypairSigners.removeAll()
         ed25519Signers.removeAll()
@@ -754,69 +617,6 @@ public actor OZExternalSignerManager {
         ed25519Signers.removeValue(forKey: storeKey)
     }
 
-    /// Restores previously connected wallets from storage.
-    ///
-    /// Reads stored wallet-connection metadata from ``OZWalletConnectionStorage``
-    /// and attempts to reconnect each wallet via
-    /// ``OZExternalWalletAdapter/reconnect(walletId:)``.
-    ///
-    /// Failure handling is differentiated:
-    /// - When `reconnect` returns `nil`, the entry is purged from storage
-    ///   because the adapter has reported the wallet as unavailable in a
-    ///   definitive way.
-    /// - When `reconnect` raises an error, the entry is left in storage on
-    ///   the assumption that the failure is transient (network outage,
-    ///   pop-up blocked, adapter back-end overload). The next session-reset
-    ///   path can re-attempt the restoration.
-    ///
-    /// This method is idempotent: subsequent calls after the first successful
-    /// restoration return the currently connected wallets without re-reading
-    /// storage. Idempotency is enforced via an actor-isolated flag, so two
-    /// concurrent callers cannot both perform the read-and-reconnect cycle.
-    ///
-    /// - Returns: List of successfully restored wallet connections.
-    /// - Throws: Rethrows storage failures during stale-entry cleanup.
-    public func restoreConnections() async throws -> [OZConnectedWallet] {
-
-        // why: actor isolation makes this check-and-set atomic; a second
-        // concurrent caller observes restored == true and short-circuits.
-        let alreadyRestored = restored
-        restored = true
-
-        if alreadyRestored {
-            return walletAdapter?.getConnectedWallets() ?? []
-        }
-
-        guard walletConnectionStorage != nil, let adapter = walletAdapter else {
-            return []
-        }
-
-        let stored = await getStoredWallets()
-        var restoredWallets: [OZConnectedWallet] = []
-
-        for savedWallet in stored {
-            do {
-                if let wallet = try await adapter.reconnect(walletId: savedWallet.walletId) {
-                    restoredWallets.append(wallet)
-                } else {
-                    // why: `reconnect` returning `nil` is a definitive
-                    // "wallet is not available" signal from the adapter
-                    // (the user revoked authorisation, the wallet was
-                    // uninstalled, or the wallet identifier was rotated).
-                    // Drop the stale entry so future runs do not keep
-                    // retrying the same dead connection.
-                    try await removeWalletFromStorage(address: savedWallet.address)
-                }
-            } catch {
-                // why: treat reconnect errors as transient (network outage, rate-limit, pop-up blocked).
-                // Purging on transient failure would break user sessions on a flaky network;
-                // the next restore call retries.
-            }
-        }
-
-        return restoredWallets
-    }
-
     // MARK: - Private helpers
 
     /// Signs an auth-entry preimage with an Ed25519 keypair.
@@ -856,128 +656,6 @@ public actor OZExternalSignerManager {
             signedAuthEntry: signatureBase64,
             signerAddress: address
         )
-    }
-
-    /// Stored wallet-connection record persisted to ``OZWalletConnectionStorage``.
-    ///
-    /// Internal implementation detail; never part of the manager's public
-    /// surface. Codable-synthesized JSON shape is the long-term wire format
-    /// for persisted external-wallet sessions.
-    internal struct StoredWalletConnection: Sendable, Codable, Equatable, Hashable {
-        let address: String
-        let walletId: String
-        let walletName: String
-        let connectedAt: Int64
-    }
-
-    /// Reads stored wallet connections from storage.
-    ///
-    /// Returns an empty list when storage is not configured, the key does not exist, or parsing fails.
-    private func getStoredWallets() async -> [StoredWalletConnection] {
-
-        guard let storage = walletConnectionStorage else { return [] }
-
-        do {
-            guard let data = try await storage.getItem(key: OZExternalSignerManager.walletStorageKey) else {
-                return []
-            }
-            return parseStoredWallets(jsonString: data)
-        } catch {
-            return []
-        }
-    }
-
-    /// Saves a wallet connection to storage.
-    ///
-    /// Performs upsert semantics: when a connection with the same address
-    /// already exists, it is replaced. The connection list is serialized as a
-    /// JSON array.
-    private func saveWalletToStorage(wallet: OZConnectedWallet) async throws {
-
-        guard let storage = walletConnectionStorage else { return }
-
-        var stored = await getStoredWallets()
-        stored.removeAll { $0.address == wallet.address }
-        stored.append(
-            StoredWalletConnection(
-                address: wallet.address,
-                walletId: wallet.walletId,
-                walletName: wallet.walletName,
-                connectedAt: currentTimeMillis()
-            )
-        )
-
-        let serialized = try serializeWallets(stored)
-        try await storage.setItem(key: OZExternalSignerManager.walletStorageKey, value: serialized)
-    }
-
-    /// Removes a wallet connection from storage by address.
-    ///
-    /// When no connections remain after the removal, deletes the storage key
-    /// entirely rather than writing an empty array. This keeps a fresh-install
-    /// representation indistinguishable from a fully-cleared store.
-    private func removeWalletFromStorage(address: String) async throws {
-
-        guard let storage = walletConnectionStorage else { return }
-
-        var stored = await getStoredWallets()
-        let originalCount = stored.count
-        stored.removeAll { $0.address == address }
-
-        if stored.count == originalCount {
-            return
-        }
-
-        if stored.isEmpty {
-            try await storage.removeItem(key: OZExternalSignerManager.walletStorageKey)
-        } else {
-            let serialized = try serializeWallets(stored)
-            try await storage.setItem(key: OZExternalSignerManager.walletStorageKey, value: serialized)
-        }
-    }
-
-    /// Serializes wallet connections to a JSON array string.
-    ///
-    /// Encodes a `[StoredWalletConnection]` to UTF-8 JSON via `JSONEncoder`,
-    /// then converts the resulting `Data` to `String`. The output is a flat
-    /// JSON array suitable for storage in any string-valued key-value store.
-    private func serializeWallets(_ wallets: [StoredWalletConnection]) throws -> String {
-
-        let encoder = JSONEncoder()
-        // why: ordering of object keys is irrelevant for the persisted
-        // shape; sorting them produces stable on-disk output across encoder
-        // versions, which keeps backward-compatibility checks deterministic.
-        encoder.outputFormatting = [.sortedKeys]
-
-        let data = try encoder.encode(wallets)
-        guard let string = String(data: data, encoding: .utf8) else {
-            throw SmartAccountTransactionException.signingFailed(
-                reason: "Failed to encode wallet connections to UTF-8 JSON"
-            )
-        }
-        return string
-    }
-
-    /// Parses wallet connections from a JSON array string.
-    ///
-    /// Parses atomically: when the JSON is malformed, returns an empty list
-    /// rather than partial results. Atomic-failure semantics are acceptable
-    /// because the serializer always produces valid JSON; encountering
-    /// malformed JSON indicates external corruption, not partial writes from
-    /// this manager.
-    private func parseStoredWallets(jsonString: String) -> [StoredWalletConnection] {
-
-        guard let data = jsonString.data(using: .utf8) else { return [] }
-
-        do {
-            return try JSONDecoder().decode([StoredWalletConnection].self, from: data)
-        } catch {
-            return []
-        }
-    }
-
-    private func currentTimeMillis() -> Int64 {
-        return Int64(Date().timeIntervalSince1970 * 1000.0)
     }
 
     /// Best-effort message extraction from an arbitrary error.

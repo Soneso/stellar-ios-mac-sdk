@@ -1047,13 +1047,6 @@ final class OZStorageAdapterTests: XCTestCase {
         )
         XCTAssertNil(result)
     }
-
-    /// `OZExternalWalletAdapter.reconnect` has a default that returns `nil`.
-    func test_externalWalletAdapter_reconnect_defaultReturnsNil() async throws {
-        let adapter = _NoOpExternalWalletAdapter()
-        let result = try await adapter.reconnect(walletId: "some-wallet-id")
-        XCTAssertNil(result)
-    }
 }
 
 // MARK: - _NoOpExternalWalletAdapter

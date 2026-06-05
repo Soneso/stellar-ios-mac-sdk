@@ -129,7 +129,7 @@ final class OZUserDefaultsStorageAdapterTests: XCTestCase {
         var credential = fullCredential()
         try await adapter.save(credential: credential)
 
-        credential = credential.copyWith(nickname: "Updated nickname")
+        credential = credential.applyUpdate(OZStoredCredentialUpdate(nickname: "Updated nickname"))
         try await adapter.save(credential: credential)
 
         let all = try await adapter.getAll()

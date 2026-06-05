@@ -375,23 +375,6 @@ final class OZSignerTypesTests: XCTestCase {
         let s = try OZExternalSigner(verifierAddress: validContractC, keyData: Data([0xAA]))
         XCTAssertTrue(OZSmartAccountBuilders.isExternalSigner(signer: s))
     }
-    func test_signer_filler_n() throws {
-        let s = try OZDelegatedSigner(address: validAccountG)
-        XCTAssertEqual(OZSmartAccountBuilders.describeSignerType(signer: s), "Stellar Account")
-    }
-    func test_signer_filler_o() throws {
-        let s = try OZExternalSigner.ed25519(verifierAddress: validContractC, publicKey: Data(repeating: 0xAA, count: 32))
-        XCTAssertEqual(OZSmartAccountBuilders.describeSignerType(signer: s), "Ed25519")
-    }
-    func test_signer_filler_p() throws {
-        let pk = uncompressedPubkey()
-        let s = try OZExternalSigner.webAuthn(verifierAddress: validContractC, publicKey: pk, credentialId: Data([0xAA]))
-        XCTAssertEqual(OZSmartAccountBuilders.describeSignerType(signer: s), "Passkey (WebAuthn)")
-    }
-    func test_signer_filler_q() throws {
-        let signer = try OZExternalSigner(verifierAddress: validContractC, keyData: Data(repeating: 0x01, count: 16))
-        XCTAssertEqual(OZSmartAccountBuilders.describeSignerType(signer: signer), "External Verifier")
-    }
     func test_signer_filler_r() throws {
         let s = try OZDelegatedSigner(address: validAccountG)
         XCTAssertNil(OZSmartAccountBuilders.getCredentialIdFromSigner(signer: s))

@@ -122,7 +122,6 @@ final class MockOZSmartAccountKit: OZSmartAccountKitProtocol, @unchecked Sendabl
         return OZExternalSignerManager(
             networkPassphrase: config.networkPassphrase,
             walletAdapter: config.externalWallet,
-            walletConnectionStorage: nil,
             ed25519Adapter: config.externalEd25519Adapter
         )
     }
@@ -322,10 +321,10 @@ final class MockCredentialManager: OZCredentialManagerProtocol, @unchecked Senda
         }
         if let hook = hook { throw hook }
         if let existing = try await storage.get(credentialId: credentialId) {
-            let updated = existing.copyWith(
+            let updated = existing.applyUpdate(OZStoredCredentialUpdate(
                 deploymentStatus: .failed,
                 deploymentError: error
-            )
+            ))
             try await storage.save(credential: updated)
         }
     }

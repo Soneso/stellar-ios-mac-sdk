@@ -75,34 +75,6 @@ public struct OZCreateWalletResult: Sendable, Hashable {
         hasher.combine(transactionHash)
         hasher.combine(nickname)
     }
-
-    public func copy(
-        credentialId: String? = nil,
-        contractId: String? = nil,
-        publicKey: Data? = nil,
-        signedTransactionXdr: String? = nil,
-        transactionHash: String?? = .none,
-        nickname: String?? = .none
-    ) -> OZCreateWalletResult {
-        let resolvedHash: String?
-        switch transactionHash {
-        case .none: resolvedHash = self.transactionHash
-        case .some(let value): resolvedHash = value
-        }
-        let resolvedNickname: String?
-        switch nickname {
-        case .none: resolvedNickname = self.nickname
-        case .some(let value): resolvedNickname = value
-        }
-        return OZCreateWalletResult(
-            credentialId: credentialId ?? self.credentialId,
-            contractId: contractId ?? self.contractId,
-            publicKey: publicKey ?? self.publicKey,
-            signedTransactionXdr: signedTransactionXdr ?? self.signedTransactionXdr,
-            transactionHash: resolvedHash,
-            nickname: resolvedNickname
-        )
-    }
 }
 
 /// Result of deploying a pending credential when retrying a failed or deferred wallet deployment.
@@ -126,23 +98,6 @@ public struct OZDeployPendingResult: Sendable, Equatable, Hashable {
         self.contractId = contractId
         self.signedTransactionXdr = signedTransactionXdr
         self.transactionHash = transactionHash
-    }
-
-    public func copy(
-        contractId: String? = nil,
-        signedTransactionXdr: String? = nil,
-        transactionHash: String?? = .none
-    ) -> OZDeployPendingResult {
-        let resolvedHash: String?
-        switch transactionHash {
-        case .none: resolvedHash = self.transactionHash
-        case .some(let value): resolvedHash = value
-        }
-        return OZDeployPendingResult(
-            contractId: contractId ?? self.contractId,
-            signedTransactionXdr: signedTransactionXdr ?? self.signedTransactionXdr,
-            transactionHash: resolvedHash
-        )
     }
 }
 
@@ -261,33 +216,6 @@ public struct OZConnectWalletOptions: Sendable, Equatable, Hashable {
         self.contractId = contractId
         self.fresh = fresh
         self.prompt = prompt
-    }
-
-    /// Returns a copy with the supplied fields replaced. Parameters left as their
-    /// default sentinel (`.none`) preserve the current field value; pass an explicit
-    /// value (including `nil`) to override.
-    public func copy(
-        credentialId: String?? = .none,
-        contractId: String?? = .none,
-        fresh: Bool? = nil,
-        prompt: Bool? = nil
-    ) -> OZConnectWalletOptions {
-        let resolvedCred: String?
-        switch credentialId {
-        case .none: resolvedCred = self.credentialId
-        case .some(let value): resolvedCred = value
-        }
-        let resolvedContract: String?
-        switch contractId {
-        case .none: resolvedContract = self.contractId
-        case .some(let value): resolvedContract = value
-        }
-        return OZConnectWalletOptions(
-            credentialId: resolvedCred,
-            contractId: resolvedContract,
-            fresh: fresh ?? self.fresh,
-            prompt: prompt ?? self.prompt
-        )
     }
 }
 

@@ -126,41 +126,6 @@ public struct OZStoredCredential: Sendable {
         self.backedUp = backedUp
     }
 
-    /// Returns a copy of this credential with the supplied fields replaced.
-    ///
-    /// Each parameter that is `nil` leaves the corresponding field unchanged. To
-    /// reset a value to `nil`, construct a new `OZStoredCredential` directly rather
-    /// than using `copyWith`.
-    public func copyWith(
-        credentialId: String? = nil,
-        publicKey: Data? = nil,
-        contractId: String? = nil,
-        deploymentStatus: OZCredentialDeploymentStatus? = nil,
-        deploymentError: String? = nil,
-        createdAt: Int64? = nil,
-        lastUsedAt: Int64? = nil,
-        nickname: String? = nil,
-        isPrimary: Bool? = nil,
-        transports: [String]? = nil,
-        deviceType: String? = nil,
-        backedUp: Bool? = nil
-    ) -> OZStoredCredential {
-        return OZStoredCredential(
-            credentialId: credentialId ?? self.credentialId,
-            publicKey: publicKey ?? self.publicKey,
-            contractId: contractId ?? self.contractId,
-            deploymentStatus: deploymentStatus ?? self.deploymentStatus,
-            deploymentError: deploymentError ?? self.deploymentError,
-            createdAt: createdAt ?? self.createdAt,
-            lastUsedAt: lastUsedAt ?? self.lastUsedAt,
-            nickname: nickname ?? self.nickname,
-            isPrimary: isPrimary ?? self.isPrimary,
-            transports: transports ?? self.transports,
-            deviceType: deviceType ?? self.deviceType,
-            backedUp: backedUp ?? self.backedUp
-        )
-    }
-
     /// Returns a new credential with non-nil fields from `updates` applied to this
     /// credential.
     ///
@@ -533,8 +498,7 @@ public struct OZConnectedWallet: Sendable, Equatable, Hashable {
     /// The Stellar G-address of the connected wallet.
     public let address: String
 
-    /// Unique wallet identifier (for example `"freighter"`, `"lobstr"`). Used for
-    /// reconnection via `OZExternalWalletAdapter.reconnect`.
+    /// Unique wallet identifier (for example `"freighter"`, `"lobstr"`).
     public let walletId: String
 
     /// Human-readable display name for the wallet (for example `"Freighter"`,
@@ -596,8 +560,8 @@ public struct OZSignAuthEntryResult: Sendable, Equatable, Hashable {
 /// Protocol for integrating external wallet adapters for multi-signer support.
 ///
 /// External wallet adapters enable signing with external wallets like Freighter or
-/// Albedo for multi-signature smart accounts. They handle wallet connection, signature
-/// collection, and wallet reconnection.
+/// Albedo for multi-signature smart accounts. They handle wallet connection and
+/// signature collection.
 ///
 /// Example implementation:
 /// ```swift
@@ -666,12 +630,6 @@ public protocol OZExternalWalletAdapter: AnyObject, Sendable {
     ///
     /// The default implementation returns `nil`.
     func getWalletForAddress(address: String) -> OZConnectedWallet?
-
-    /// Reconnects to a previously connected wallet by its wallet ID, returning the
-    /// reconnected wallet info, or `nil` if reconnection failed or is not supported.
-    ///
-    /// The default implementation returns `nil`.
-    func reconnect(walletId: String) async throws -> OZConnectedWallet?
 }
 
 public extension OZExternalWalletAdapter {
@@ -683,10 +641,6 @@ public extension OZExternalWalletAdapter {
     }
 
     func getWalletForAddress(address: String) -> OZConnectedWallet? {
-        return nil
-    }
-
-    func reconnect(walletId: String) async throws -> OZConnectedWallet? {
         return nil
     }
 }

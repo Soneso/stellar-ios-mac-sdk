@@ -213,7 +213,7 @@ public enum OZBuilders {
     /// `callContract` or `createContract` rule.
     ///
     /// - Returns: ``OZContextRuleType/defaultRule`` for default authorization.
-    public static func createDefaultContext() -> OZContextRuleType {
+    public static func createDefaultContextType() -> OZContextRuleType {
         return .defaultRule
     }
 
@@ -227,7 +227,7 @@ public enum OZBuilders {
     ///   for the supplied contract.
     /// - Throws: ``SmartAccountValidationException/InvalidAddress`` if the contract address
     ///   format is invalid.
-    public static func createCallContractContext(contractAddress: String) throws -> OZContextRuleType {
+    public static func createCallContractContextType(contractAddress: String) throws -> OZContextRuleType {
         try requireContractAddress(contractAddress, fieldName: "contractAddress")
         return .callContract(contractAddress: contractAddress)
     }
@@ -244,7 +244,7 @@ public enum OZBuilders {
     /// - Throws: ``SmartAccountValidationException/InvalidInput`` when the hex string is not
     ///   exactly 64 characters after stripping any `0x` prefix or when it
     ///   contains non-hex characters.
-    public static func createCreateContractContext(wasmHashHex: String) throws -> OZContextRuleType {
+    public static func createCreateContractContextType(wasmHashHex: String) throws -> OZContextRuleType {
         let cleanHash: String
         if wasmHashHex.hasPrefix("0x") {
             cleanHash = String(wasmHashHex.dropFirst(2))
@@ -280,7 +280,7 @@ public enum OZBuilders {
     ///   supplied hash.
     /// - Throws: ``SmartAccountValidationException/InvalidInput`` when `wasmHash` is not
     ///   exactly 32 bytes.
-    public static func createCreateContractContext(wasmHash: Data) throws -> OZContextRuleType {
+    public static func createCreateContractContextType(wasmHash: Data) throws -> OZContextRuleType {
         if wasmHash.count != 32 {
             throw SmartAccountValidationException.invalidInput(
                 field: "wasmHash",

@@ -652,7 +652,6 @@ let ed25519Signer = try OZSmartAccountBuilders.createEd25519Signer(
 let isPasskey: Bool   = OZSmartAccountBuilders.isExternalSigner(signer: passkey)
 let credId: Data?     = OZSmartAccountBuilders.getCredentialIdFromSigner(signer: passkey)
 let credIdStr: String? = OZSmartAccountBuilders.getCredentialIdStringFromSigner(signer: passkey) // Base64URL
-let typeLabel: String = OZSmartAccountBuilders.describeSignerType(signer: passkey)               // "Passkey (WebAuthn)"
 
 // Matching and dedup
 let matches = OZSmartAccountBuilders.signerMatchesCredentialId(signer: passkey, credentialId: "base64url-id")
@@ -999,7 +998,7 @@ This precedence ties into cleanup below: clearing the in-memory registry never t
 
 Any in-memory signing material you register on `kit.externalSigners` for a multi-signer submit (`addFromSecret` for delegated `G…` keys, `addEd25519FromRawKey` for Ed25519) MUST be cleared on BOTH success AND failure, so raw key material never persists across operations. Wrap the submit in do/catch (or `defer`) and clear on every path.
 
-The straightforward cleanup is `removeAll()`: it clears the in-memory delegated and Ed25519 keypair registries, disconnects every connected wallet adapter, and clears persisted wallet connections — one call covering everything you registered.
+The straightforward cleanup is `removeAll()`: it clears the in-memory delegated and Ed25519 keypair registries and disconnects every connected wallet adapter — one call covering everything you registered.
 
 ```swift
 // Register in-memory material, submit inside do/catch, clear on BOTH paths.
@@ -1072,7 +1071,6 @@ public actor OZExternalSignerManager {
     public var hasWalletAdapter: Bool { get }   // actor-isolated; access with await
 
     public func addFromSecret(secretKey: String) async throws -> String   // returns the derived G-address
-    public func addFromWallet() async throws -> OZConnectedWallet?          // nil if the user cancelled
     public func canSignFor(address: String) async -> Bool
     public func get(address: String) async -> OZExternalSignerInfo?
     public func getAll() async -> [OZExternalSignerInfo]
@@ -1080,7 +1078,6 @@ public actor OZExternalSignerManager {
     public func signAuthEntry(address: String, authEntry: String) async throws -> OZSignAuthEntryResult
     public func remove(address: String) async throws
     public func removeAll() async throws
-    public func restoreConnections() async throws -> [OZConnectedWallet]
 }
 ```
 
@@ -1116,23 +1113,9 @@ public enum OZExternalSignerType: String {
 }
 ```
 
-### addFromWallet and restoreConnections
-
-`addFromWallet` prompts the user through the configured `OZExternalWalletAdapter`. It throws `SmartAccountConfigurationException.MissingConfig` when no adapter is configured.
-
-`restoreConnections` reads persisted wallet-connection metadata and reconnects each entry via the adapter. Call it once at app launch — wallet signers are invisible to the adapter's `canSignFor` until restore runs.
-
-```swift
-// WRONG: call restoreConnections() lazily on the first multi-signer op
-// CORRECT: call it once at app launch
-_ = try await kit.externalSigners.restoreConnections()
-```
-
-The kit-owned manager uses an in-memory wallet-connection store. To persist external-wallet connections across launches, construct a standalone manager with a platform `OZWalletConnectionStorage` (see [Standalone construction](#standalone-construction-advanced)).
-
 ### OZExternalWalletAdapter (consumer-implemented `G…` custody)
 
-`config.externalWallet` takes an object you implement to bridge a real `G…` wallet (Freighter, LOBSTR, a WalletConnect bridge, etc.) into `kit.externalSigners`. The manager-level `signAuthEntry(address:authEntry:)` above is the SDK-side entry point; this protocol is the adapter side you write. Five members are required — `connect`, `disconnect`, `signAuthEntry`, `getConnectedWallets`, and `canSignFor`; the other three (`disconnectByAddress`, `getWalletForAddress`, `reconnect`) have default implementations.
+`config.externalWallet` takes an object you implement to bridge a real `G…` wallet (Freighter, LOBSTR, a WalletConnect bridge, etc.) into `kit.externalSigners`. The manager-level `signAuthEntry(address:authEntry:)` above is the SDK-side entry point; this protocol is the adapter side you write. Five members are required — `connect`, `disconnect`, `signAuthEntry`, `getConnectedWallets`, and `canSignFor`; the other two (`disconnectByAddress`, `getWalletForAddress`) have default implementations.
 
 ```swift
 public protocol OZExternalWalletAdapter: AnyObject, Sendable {
@@ -1146,12 +1129,11 @@ public protocol OZExternalWalletAdapter: AnyObject, Sendable {
     func getConnectedWallets() -> [OZConnectedWallet]
     func canSignFor(address: String) -> Bool
     func getWalletForAddress(address: String) -> OZConnectedWallet?  // default: nil
-    func reconnect(walletId: String) async throws -> OZConnectedWallet?  // default: nil
 }
 
 public struct OZConnectedWallet: Sendable, Equatable, Hashable {
     public let address: String      // G-address
-    public let walletId: String     // e.g. "freighter"; used by reconnect(walletId:)
+    public let walletId: String     // e.g. "freighter"
     public let walletName: String   // display name
     public init(address: String, walletId: String, walletName: String)
 }
@@ -1213,24 +1195,15 @@ public protocol OZExternalEd25519SignerAdapter: Sendable {
 
 ### Standalone construction (advanced)
 
-The multi-signer pipeline always uses `kit.externalSigners`. Construct a manager directly only for advanced use outside a kit — for example to supply a custom `OZWalletConnectionStorage` for cross-launch wallet-connection persistence.
+The multi-signer pipeline always uses `kit.externalSigners`. Construct a manager directly only for advanced use outside a kit.
 
 ```swift
 public init(
     networkPassphrase: String,
     walletAdapter: OZExternalWalletAdapter? = nil,
-    walletConnectionStorage: OZWalletConnectionStorage? = nil,
     ed25519Adapter: OZExternalEd25519SignerAdapter? = nil
 )
-
-public protocol OZWalletConnectionStorage: Sendable {
-    func getItem(key: String) async throws -> String?
-    func setItem(key: String, value: String) async throws
-    func removeItem(key: String) async throws
-}
 ```
-
-`OZInMemoryWalletConnectionStorage` is the default fallback (loses data on process exit). Implement `OZWalletConnectionStorage` with `UserDefaults` or the Keychain for persistence.
 
 ---
 
