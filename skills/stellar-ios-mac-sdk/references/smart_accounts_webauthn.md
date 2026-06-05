@@ -70,7 +70,7 @@ The relying-party identity (`rpId`, `rpName`) is set on `AppleWebAuthnProvider`,
 
 ## Common Interfaces
 
-The protocols and DTOs below are shared by every provider and adapter, shipped and custom. They are the source-of-truth signatures.
+The protocols and DTOs below are shared by every provider and adapter, shipped and custom.
 
 ### `WebAuthnProvider` protocol
 
@@ -128,7 +128,7 @@ public struct WebAuthnRegistrationResult: Equatable, Hashable, Sendable {
 // WRONG: result.publicKey.count == 33   — that is the compressed point form
 // CORRECT: result.publicKey.count == 65 && result.publicKey.first == 0x04
 //   If the platform returns COSE/SPKI/attestation bytes instead, populate `publicKey` with the
-//   raw bytes plus `attestationObject`; the SDK extracts the 65-byte key from the attestation.
+//   raw bytes plus `attestationObject`; `SmartAccountUtils.extractPublicKeyFromRegistration` derives the 65-byte key.
 ```
 
 ### `WebAuthnAuthenticationResult`
@@ -149,13 +149,7 @@ public struct WebAuthnAuthenticationResult: Equatable, Hashable, Sendable {
 }
 ```
 
-The kit normalizes the DER `signature` to the 64-byte compact low-S `r || s` form Soroban requires, via `SmartAccountUtils.normalizeSignature`. Providers return DER exactly as the platform delivers it — do **not** pre-normalize.
-
-```swift
-// WRONG: converting the DER signature to compact form inside the provider
-//   — the kit normalizes itself; double-normalization corrupts the signature.
-// CORRECT: return the authenticator's raw DER signature.
-```
+The kit normalizes the DER `signature` to the 64-byte compact low-S `r || s` form Soroban requires, via `SmartAccountUtils.normalizeSignature`. Providers return DER exactly as the platform delivers it — do **not** pre-normalize (double-normalization corrupts the signature).
 
 ### `WebAuthnAllowCredential`
 
@@ -225,7 +219,7 @@ Contract notes:
 ### `OZStoredCredential`, `OZStoredSession`, `OZStoredCredentialUpdate`
 
 ```swift
-public struct OZStoredCredential: Sendable, Equatable, Hashable {
+public struct OZStoredCredential: Sendable {
     public let credentialId: String                       // Base64URL-encoded
     public let publicKey: Data                            // 65-byte 0x04-prefixed secp256r1
     public let contractId: String?                        // C… strkey, nil until derived
@@ -307,10 +301,9 @@ Tests and ephemeral / throwaway use only. Process-memory, not persistent, not en
 
 ```swift
 let storage = OZInMemoryStorageAdapter()  // the OZSmartAccountConfig default
-
-// WRONG: shipping production with OZInMemoryStorageAdapter — credentials and session lost on restart.
-// CORRECT: production iOS/macOS apps inject OZKeychainStorageAdapter (or OZUserDefaultsStorageAdapter).
 ```
+
+Tests / ephemeral use only; inject a persistent adapter in production (see [Overview](#overview)).
 
 ---
 
@@ -346,7 +339,7 @@ public final class AppleWebAuthnProvider: NSObject, WebAuthnProvider, @unchecked
 }
 ```
 
-The initializer **throws**: `rpId` and `rpName` must be non-blank and `timeout` must be strictly positive, otherwise it throws `SmartAccountConfigurationException.invalidConfig`. `create(...)` is an ergonomic alternative that performs identical validation.
+The initializer **throws**: `rpId` and `rpName` must be non-blank and `timeout` must be strictly positive, otherwise it throws a `SmartAccountConfigurationException.InvalidConfig` (the nested catchable class), constructed via the `.invalidConfig(details:)` factory. `create(...)` is an ergonomic alternative that performs identical validation.
 
 ```swift
 let webAuthn = try AppleWebAuthnProvider(
@@ -385,22 +378,13 @@ The compiled `.entitlements` fragment:
 </array>
 ```
 
-Production builds MUST NOT ship the `?mode=developer` suffix in the `webcredentials:` Associated-Domains entitlement — it bypasses Apple's CDN and can fail in the field. Enforce it: add a Run Script build phase, gated on the Release configuration, that greps the built `.entitlements` for `?mode=developer` and fails the build (`exit 1`) if found. With manual signing, regenerate the provisioning profile after adding the capability, or the entitlement is silently dropped at install.
+Strip `?mode=developer` before Release — it bypasses Apple's CDN and can fail in the field; optionally enforce with a Release-only Run Script phase that fails the build if the built `.entitlements` still contains it. With manual signing, regenerate the provisioning profile after adding the capability, or the entitlement is silently dropped at install.
 
 ```xml
 <!-- WRONG: scheme included -->
 <string>webcredentials:https://wallet.example.com</string>
 <!-- CORRECT: bare domain -->
 <string>webcredentials:wallet.example.com</string>
-```
-
-```
-WRONG (production build shipped with developer mode still on):
-  webcredentials:wallet.example.com?mode=developer   — bypasses the CDN and can fail in the field
-CORRECT (production):
-  webcredentials:wallet.example.com
-CORRECT (Simulator / local iteration):
-  webcredentials:wallet.example.com?mode=developer
 ```
 
 ### Host apple-app-site-association
@@ -435,6 +419,7 @@ The `TEAM_ID.bundle.identifier` in the AASA file must exactly equal the team tha
 ### Storage adapters (iOS)
 
 ```swift
+@available(iOS 13.0, macOS 10.15, *)
 public final actor OZKeychainStorageAdapter: OZStorageAdapter {
     public static let defaultServiceName: String = "com.soneso.stellar.smartaccount"
     public init(serviceName: String = OZKeychainStorageAdapter.defaultServiceName, shim: OZSecItemShim = OZRealSecItemShim())
@@ -450,12 +435,11 @@ public final actor OZUserDefaultsStorageAdapter: OZStorageAdapter {
 - **`OZUserDefaultsStorageAdapter`** — scoped `UserDefaults(suiteName:)` storage. Suitable for non-production builds; **not encrypted at rest**. The initializer throws if `UserDefaults(suiteName:)` returns nil.
 - **`OZInMemoryStorageAdapter`** — process-memory only; not for production.
 
-`OZStoredCredential` holds **public** keys only (no secret material), so `OZUserDefaultsStorageAdapter` is technically adequate for the public data — but session tokens and contract IDs are still privacy-sensitive, so prefer `OZKeychainStorageAdapter` in production.
+See [Choosing an OZStorageAdapter](#choosing-an-ozstorageadapter) for the production-vs-test tradeoff.
 
 ```swift
 let storage = OZKeychainStorageAdapter()                          // default service name
-// or scope it:
-let storage = OZKeychainStorageAdapter(serviceName: "com.yourapp.stellar")
+let storage = OZKeychainStorageAdapter(serviceName: "com.yourapp.stellar")  // or scope it
 ```
 
 ### Full kit initialization (iOS)
@@ -491,7 +475,7 @@ func buildKit() throws -> OZSmartAccountKit {
 - **`ASAuthorizationError` 1004 (failed)** — AASA validation failed. Verify: the entitlement is present in the compiled `.app`; the AASA file is reachable as `application/json`; the provisioning profile includes Associated Domains; and during development the entitlement carries `?mode=developer`.
 - **`ASAuthorizationError` 1003 (not supported)** — Target cannot handle passkeys (older OS or missing hardware). Mapped to `WebAuthnException.NotSupported`.
 - **"Application is not associated with domain"** — AASA validation failure surfaced by `ASAuthorizationController`. Same checklist as 1004; switch to `?mode=developer` while iterating to bypass CDN caching.
-- **Passkeys on the Simulator** — Supported from Xcode 14 / iOS 16. Use `?mode=developer` so the Simulator fetches the AASA file directly. Simulator passkeys are local-only (not iCloud-synced) and cannot produce attestation statements; the SDK requests no attestation, so this does not block any flow. A signed build needs no extra entitlement for `OZKeychainStorageAdapter`; only a Simulator run without a provisioning profile (or an unsigned test binary) needs `keychain-access-groups` to reach the Keychain.
+- **Passkeys on the Simulator** — Supported from Xcode 14 / iOS 16. Use `?mode=developer` so the Simulator fetches the AASA file directly. Simulator passkeys are local-only (not iCloud-synced) and cannot produce attestation statements; the SDK requests no attestation, so this does not block any flow. A Simulator run without a provisioning profile needs `keychain-access-groups` to reach the Keychain (see [Storage adapters (macOS)](#storage-adapters-macos)).
 - **First-install delay** — On device, Apple's CDN may take up to a minute to fetch the association file. Retry `register()` after a short wait, or use `?mode=developer`.
 - **Credential not found on `authenticate()`** — No passkey exists for this `rpId` on the device. Create one first, or enable iCloud Keychain so a passkey synced from another device is available.
 
@@ -503,7 +487,7 @@ func buildKit() throws -> OZSmartAccountKit {
 
 ### Prerequisites
 
-- macOS 13.0+ (Ventura; the provider is gated `@available(macOS 13.0, *)`).
+- macOS 13.0+ (Ventura; the provider is gated `@available(iOS 16.0, macOS 13.0, *)`).
 - Xcode 14+.
 - An Apple Developer account.
 - A domain you control, served over HTTPS, hosting `apple-app-site-association`.
@@ -578,8 +562,6 @@ webAuthn.presentationContextProvider = WindowPresentationProvider()
 <true/>
 ```
 
-A signed app (including a sandboxed macOS app) uses the default keychain access group, so `OZKeychainStorageAdapter` works with **no** `keychain-access-groups` entitlement — the adapter never sets `kSecAttrAccessGroup`. That entitlement is only needed for unsigned test binaries / CI, and the iOS Simulator without a provisioning profile, where no default group is supplied. Add it solely in those test contexts, or have tests probe Keychain availability and fall back to `OZUserDefaultsStorageAdapter` / `OZInMemoryStorageAdapter`.
-
 macOS signing notes:
 
 - Associated Domains requires a **signed** app — Developer ID for distribution outside the Mac App Store, or App Store signing. Ad-hoc signed binaries fail the entitlement check.
@@ -629,7 +611,7 @@ CORRECT: use a real staging domain, or mkcert + /etc/hosts for local development
 
 ### Storage adapters (macOS)
 
-`OZKeychainStorageAdapter` and `OZUserDefaultsStorageAdapter` are the same classes as iOS. A signed app (including a sandboxed macOS app) reaches the Keychain via its default access group with no extra entitlement; only unsigned test binaries / CI need `keychain-access-groups` (fall back to `OZUserDefaultsStorageAdapter` there if it is constrained). Consider a distinct `serviceName` / `suiteName` on macOS to keep stores separate from an iOS companion app that shares the Bundle ID family.
+`OZKeychainStorageAdapter` and `OZUserDefaultsStorageAdapter` are the same adapters as iOS. A signed app (including a sandboxed macOS app) reaches the Keychain via its default access group with no extra entitlement; only unsigned test binaries / CI need `keychain-access-groups` (fall back to `OZUserDefaultsStorageAdapter` there if it is constrained). Consider a distinct `serviceName` / `suiteName` on macOS to keep stores separate from an iOS companion app that shares the Bundle ID family.
 
 ```swift
 let storage = OZKeychainStorageAdapter(serviceName: "com.yourapp.stellar.macos")
@@ -638,54 +620,16 @@ let storage = OZKeychainStorageAdapter(serviceName: "com.yourapp.stellar.macos")
 
 ### Full kit initialization (macOS)
 
-```swift
-import stellarsdk
-import AuthenticationServices
-import AppKit
-
-final class WindowPresentationProvider: NSObject,
-    ASAuthorizationControllerPresentationContextProviding {
-    func presentationAnchor(for controller: ASAuthorizationController) -> ASPresentationAnchor {
-        return NSApplication.shared.keyWindow
-            ?? NSApplication.shared.windows.first
-            ?? ASPresentationAnchor()
-    }
-}
-
-@available(macOS 13.0, *)
-func buildKit(anchorProvider: WindowPresentationProvider) throws -> OZSmartAccountKit {
-    let storage = OZKeychainStorageAdapter()
-    let webAuthn = try AppleWebAuthnProvider(
-        rpId: "wallet.example.com",
-        rpName: "My Stellar App"
-    )
-    webAuthn.presentationContextProvider = anchorProvider   // REQUIRED on macOS
-
-    let config = try OZSmartAccountConfig(
-        rpcUrl: "https://soroban-testnet.stellar.org",
-        networkPassphrase: Network.testnet.passphrase,
-        accountWasmHash: "<wasm-hash-hex>",
-        webauthnVerifierAddress: "<verifier-c-address>",
-        webauthnProvider: webAuthn,
-        storage: storage
-    )
-
-    return OZSmartAccountKit.create(config: config)
-}
-```
+Identical to the [iOS kit init](#full-kit-initialization-ios) above, plus set `webAuthn.presentationContextProvider = anchorProvider` before any sign call (see [`presentationContextProvider` is required on macOS](#presentationcontextprovider-is-required-on-macos)).
 
 ### Troubleshooting (macOS)
 
-- **`ASAuthorizationError` 1004 (failed)** — Three common causes, check in order:
-  1. **No presentation anchor.** `presentationContextProvider` is nil, or `presentationAnchor(for:)` returns a hidden/detached window. Set it before invoking any flow and return a visible `NSWindow`.
-  2. **Developer mode not enabled.** `sudo swcutil developer-mode -e true` was not run, or the app launched from Finder instead of Xcode with the debugger.
-  3. **AASA validation failed.** Associated Domains entitlement missing/misconfigured, AASA file unreachable, the file does not list the exact `TEAM_ID.bundle.identifier`, or the provisioning profile lacks the capability.
-- **Associated Domains ignored** — The system silently skips fetching AASA without Developer ID / App Store signing or App Sandbox. Enable App Sandbox (dev) or sign with Developer ID (distribution).
-- **`ASAuthorizationError` 1001 (canceled)** — User dismissed the sheet. Mapped to `WebAuthnException.Cancelled`.
-- **`ASAuthorizationError` 1003 (not supported)** — Unsupported OS version or a configuration that disables passkeys. Mapped to `WebAuthnException.NotSupported`.
-- **"Application is not associated with domain"** — Usually developer mode not enabled plus the AASA file not yet served from the public CDN. Enable developer mode and confirm Xcode-launched runs.
-- **Passkeys synced from iOS missing** — Verify iCloud Keychain is enabled on both devices, both are signed into the same Apple ID, and `rpId` matches exactly.
-- **Keychain access in tests / CI** — A signed app (including a sandboxed macOS app) uses its default keychain access group with no extra entitlement. If `OZKeychainStorageAdapter` throws unexpected `OSStatus`-derived `SmartAccountStorageException`s, the host is almost certainly an unsigned test binary / CI runner (or a Simulator run without a profile): add `keychain-access-groups` there, or fall back to `OZUserDefaultsStorageAdapter`.
+macOS shares the [iOS troubleshooting table](#troubleshooting-ios); the macOS-only deltas:
+
+- **`ASAuthorizationError` 1004** has two extra causes beyond AASA validation, check in order: (1) **no presentation anchor** — `presentationContextProvider` is nil or `presentationAnchor(for:)` returns a hidden/detached window; set it and return a visible `NSWindow`; (2) **developer mode not enabled** — `sudo swcutil developer-mode -e true` was not run, or the app launched from Finder instead of Xcode with the debugger.
+- **Associated Domains ignored** — the system silently skips fetching AASA without Developer ID / App Store signing or App Sandbox. Enable App Sandbox (dev) or sign with Developer ID (distribution).
+- **Passkeys synced from iOS missing** — verify iCloud Keychain is enabled on both devices, both are signed into the same Apple ID, and `rpId` matches exactly.
+- **Keychain access in tests / CI** — if `OZKeychainStorageAdapter` throws unexpected `OSStatus`-derived `SmartAccountStorageException`s, the host is almost certainly an unsigned test binary / CI runner (or a Simulator run without a profile); see [Storage adapters (macOS)](#storage-adapters-macos) for the `keychain-access-groups` rule and fallback.
 
 ---
 
@@ -695,8 +639,7 @@ func buildKit(anchorProvider: WindowPresentationProvider) throws -> OZSmartAccou
 |----------|-----|-------|
 | Production | `OZKeychainStorageAdapter` (encrypted, optional iCloud sync) | `OZKeychainStorageAdapter`, or `OZUserDefaultsStorageAdapter` per distribution constraints |
 | Non-production / quick local builds | `OZUserDefaultsStorageAdapter` (public data only) | `OZUserDefaultsStorageAdapter` with a dedicated suite |
-| Unit tests / ephemeral use | `OZInMemoryStorageAdapter` | `OZInMemoryStorageAdapter` |
-| Never in production | `OZInMemoryStorageAdapter` | `OZInMemoryStorageAdapter` |
+| Unit tests / ephemeral use (never in production) | `OZInMemoryStorageAdapter` | `OZInMemoryStorageAdapter` |
 
 `OZStoredCredential` contains **public keys only**, so the bar is lower than for private-key storage — but session tokens and contract IDs are privacy-sensitive. Prefer Keychain in production.
 
@@ -718,12 +661,12 @@ actor MyStorageAdapter: OZStorageAdapter {
 
     func save(credential: OZStoredCredential) async throws {
         do { try backend.upsert(credential) }
-        catch { throw SmartAccountStorageException.WriteFailed(message: "save failed", cause: error) }
+        catch { throw SmartAccountStorageException.writeFailed(key: credential.credentialId, cause: error) }
     }
 
     func get(credentialId: String) async throws -> OZStoredCredential? {
         do { return try backend.load(credentialId) }
-        catch { throw SmartAccountStorageException.ReadFailed(message: "read failed", cause: error) }
+        catch { throw SmartAccountStorageException.readFailed(key: credentialId, cause: error) }
     }
 
     func getByContract(contractId: String) async throws -> [OZStoredCredential] {
@@ -776,7 +719,7 @@ Contracts to satisfy:
 - **Partial `update`** — apply non-nil fields via `OZStoredCredential.applyUpdate(_:)`; never overwrite with nil; throw `SmartAccountCredentialException.notFound(credentialId:)` for unknown IDs.
 - **`clear`** — remove all credentials AND the session.
 - **Expired-session read** — `getSession()` returns nil when `OZStoredSession.isExpired`, and clears the stored row.
-- **Errors** — wrap failures in `SmartAccountStorageException.ReadFailed(message:cause:)` / `SmartAccountStorageException.WriteFailed(message:cause:)`.
+- **Errors** — wrap failures in `SmartAccountStorageException.readFailed(key:cause:)` / `SmartAccountStorageException.writeFailed(key:cause:)`.
 
 ---
 
@@ -788,7 +731,7 @@ Most apps use `AppleWebAuthnProvider`. Reasons to implement your own: a determin
 
 | Field | Requirement |
 |-------|-------------|
-| `WebAuthnRegistrationResult.publicKey` | 65 bytes, uncompressed secp256r1 (`0x04 \|\| X(32) \|\| Y(32)`). If the platform returns COSE/SPKI/attestation, supply the raw bytes plus `attestationObject` and the SDK extracts the key. |
+| `WebAuthnRegistrationResult.publicKey` | 65 bytes, uncompressed secp256r1 (`0x04 \|\| X(32) \|\| Y(32)`). If the platform returns COSE/SPKI/attestation, supply the raw bytes plus `attestationObject` and `SmartAccountUtils.extractPublicKeyFromRegistration` derives the key. |
 | `WebAuthnRegistrationResult.credentialId` | Raw bytes. The SDK Base64URL-encodes for storage. |
 | `WebAuthnRegistrationResult.attestationObject` | Raw CBOR object as delivered. Used by the SDK's fallback key extraction. |
 | `WebAuthnAuthenticationResult.signature` | DER-encoded ECDSA P-256. The SDK normalizes to 64-byte compact low-S. Do **not** pre-normalize. |

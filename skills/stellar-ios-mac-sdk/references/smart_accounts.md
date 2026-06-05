@@ -8,7 +8,7 @@ Standard import:
 import stellarsdk
 ```
 
-Every smart-account operation runs in an `async` context and most are `throws`. The kit, its operations modules, and several collaborators are reference types; `OZExternalSignerManager` and `OZInMemoryStorageAdapter` are Swift `actor`s, so calls into them require `await` even for synchronous-looking methods.
+Every smart-account operation runs in an `async` context and most are `throws`. The kit, its operations modules, and several collaborators are reference types; `OZExternalSignerManager` and every `OZStorageAdapter` implementation (`OZInMemoryStorageAdapter`, `OZUserDefaultsStorageAdapter`, `OZKeychainStorageAdapter`) are Swift `actor`s, so direct calls require `await` even for synchronous-looking methods.
 
 Related references:
 
@@ -61,11 +61,6 @@ Architecture. `OZSmartAccountKit.create(config:)` is the single entry point. The
 
 The config carries two platform adapters — a `WebAuthnProvider` and an `OZStorageAdapter` — plus two optional external-signer adapters: `OZExternalWalletAdapter` (`externalWallet`) for `G…` custody, and `OZExternalEd25519SignerAdapter` (`externalEd25519Adapter`) for Ed25519 custody. Internally the kit owns a `SorobanServer` (RPC), an optional `OZRelayerClient` (fee-bump), and an optional `OZIndexerClient` (credential lookup).
 
-```swift
-// WRONG: kit.walletOperations() — it is a property, not a method
-// CORRECT: kit.walletOperations — property access, no parentheses
-```
-
 The managers exposed through the protocol surface (`contextRuleManager`, `credentialManager`) are library-internal. Application code uses the concrete-typed accessors:
 
 ```swift
@@ -110,13 +105,6 @@ Public types live under two source areas: a protocol-agnostic `core` layer (sign
 // CORRECT: webauthnVerifierAddress: "CB26VN37..." — validated via isValidContractId()
 ```
 
-```swift
-// WRONG: C-address fixture "C0OO1...88..." — base32 alphabet is A-Z + 2-7 only.
-//        Digits 0, 1, 8, 9 are illegal; isValidContractId() returns false and the
-//        initializer throws SmartAccountConfigurationException.InvalidConfig with a generic message.
-// CORRECT: build C-address placeholders from A-Z + 2-7 exclusively.
-```
-
 ### Optional fields
 
 | Field | Type | Default | Notes |
@@ -132,13 +120,6 @@ Public types live under two source areas: a protocol-agnostic `core` layer (sign
 | `externalWallet` | `OZExternalWalletAdapter?` | `nil` | `G…` wallet adapter (adapter custody) injected into `externalSigners` |
 | `externalEd25519Adapter` | `OZExternalEd25519SignerAdapter?` | `nil` | Ed25519 adapter (adapter custody) injected into `externalSigners` |
 | `maxContextRuleScanId` | `UInt32` | `50` | Highest context-rule ID to scan when listing |
-
-```swift
-// WRONG: sessionExpiryMs: 7 — interpreted as 7 milliseconds, expires almost immediately
-// CORRECT: sessionExpiryMs: 7 * 24 * 60 * 60 * 1000 — milliseconds
-// WRONG: signatureExpirationLedgers: 3600 — 3600 ledgers is ~5 hours at 5s/ledger
-// CORRECT: signatureExpirationLedgers: StellarProtocolConstants.ledgersPerHour — ~1 hour
-```
 
 > **The default `OZInMemoryStorageAdapter` is tests-only.** It holds credentials in process memory; they are lost when the process exits, and the on-chain smart account becomes unreachable. Production apps pass a persistent adapter (`OZKeychainStorageAdapter` on Apple platforms). See [smart_accounts_webauthn.md](./smart_accounts_webauthn.md).
 
@@ -164,7 +145,7 @@ let config = try OZSmartAccountConfig(
 
 ### Builder alternative
 
-`OZSmartAccountConfig.builder(...)` is a fluent alternative to the direct initializer — same validation, same `throws`. Use it when chaining reads more clearly than a long argument list.
+`OZSmartAccountConfig.builder(...)` is a fluent alternative — `build()` calls the same validated, throwing initializer. Use it when chaining reads more clearly than a long argument list.
 
 ```swift
 let config = try OZSmartAccountConfig.builder(
@@ -172,15 +153,7 @@ let config = try OZSmartAccountConfig.builder(
     networkPassphrase: Network.testnet.passphrase,
     accountWasmHash: "86b49fe03f7df0ad1c2a28bd8361b923ab57096e09f397f92f0c00ae3bd06d28",
     webauthnVerifierAddress: "CB26VN37RCVNTHJZDEPK6IRO2MMTS3Z2IEO5JD5BINY2OOJ5KKJG7NKY"
-)
-    .sessionExpiryMs(86_400_000)                 // 1 day
-    .signatureExpirationLedgers(1440)            // ~2 hours
-    .relayerUrl("https://relayer.example.com")
-    .indexerUrl("https://indexer.example.com")
-    .webauthnProvider(myWebAuthnProvider)
-    .storage(OZKeychainStorageAdapter())
-    .externalWallet(myWalletAdapter)
-    .build()
+).webauthnProvider(myWebAuthnProvider).storage(OZKeychainStorageAdapter()).build()
 ```
 
 ### createDefaultDeployer
@@ -215,11 +188,6 @@ The kit exposes three synchronous read-only properties reflecting in-memory stat
 let connected: Bool      = kit.isConnected
 let credId: String?      = kit.credentialId   // Base64URL, no padding
 let contractId: String?  = kit.contractId     // C-address (56 chars)
-```
-
-```swift
-// WRONG: kit.credentialId returns hex — it does NOT; it is Base64URL without padding
-// CORRECT: credentialId is Base64URL-encoded (WebAuthn specification)
 ```
 
 After an app restart `isConnected` is always `false`. Call `kit.walletOperations.connectWallet()` to restore the session from storage.
@@ -294,7 +262,7 @@ public struct OZCreateWalletResult {
 | Flag | Meaning |
 |------|---------|
 | `autoSubmit` | Submit the deploy transaction immediately. When `false`, the result carries `signedTransactionXdr` only — submit later via `deployPendingCredential(...)`. |
-| `autoFund` | After deploy, fund the new smart account via Friendbot (**testnet only**). Requires `autoSubmit == true` and a non-`nil` `nativeTokenContract`. |
+| `autoFund` | After deploy, fund the new smart account via Friendbot (**testnet only**). Whenever `autoFund == true` you must pass a non-`nil` `nativeTokenContract` or the call throws `SmartAccountValidationException.InvalidInput`; once `webauthnProvider` is set this is the first validation, thrown before the WebAuthn ceremony or any network call. Funding only runs when `autoSubmit == true`; with `autoSubmit: false` the funding step is skipped (nothing is deployed yet). |
 
 Production coupling rule: drive `autoFund` from `autoSubmit` (you can only fund what you deploy), and pass `nativeTokenContract` ONLY when funding — `nil` otherwise:
 
@@ -598,7 +566,7 @@ public protocol OZSmartAccountSigner: Sendable {
 }
 ```
 
-Two concrete types implement it. This section documents the signer **types**; using them in context rules and multi-signer ceremonies is covered in [smart_accounts_policies.md](./smart_accounts_policies.md).
+Two concrete types implement it. Using them in context rules and multi-signer ceremonies is covered in [smart_accounts_policies.md](./smart_accounts_policies.md).
 
 ### OZDelegatedSigner
 
@@ -649,11 +617,9 @@ let signer = try OZExternalSigner.webAuthn(
 // CORRECT: OZExternalSigner.webAuthn(...) — camelCase static factory
 // WRONG: publicKey.count == 33 — that is the compressed format, rejected
 // CORRECT: publicKey.count == 65 and publicKey[0] == 0x04
-// WRONG: credentialId: Data("abc123_...".utf8) — pass the raw credential bytes
-// CORRECT: credentialId is the raw Data returned by the WebAuthn ceremony
 ```
 
-The factory validates the 65-byte size and `0x04` prefix; the stored `keyData` is `publicKey || credentialId`.
+The factory validates the 65-byte size, the `0x04` prefix, and that `credentialId` is non-empty raw Data from the WebAuthn ceremony (NOT Base64URL-encoded; an empty `credentialId` throws `SmartAccountValidationException.InvalidInput`); the stored `keyData` is `publicKey || credentialId`.
 
 ### OZExternalSigner.ed25519 (factory)
 
@@ -836,7 +802,7 @@ let result = try await kit.transactionOperations.submit(
 
 ### fundWallet
 
-Post-deploy testnet top-up helper. Generates a throwaway keypair, funds it via Friendbot, and transfers the balance (minus `OZConstants.friendbotReserveXlm`, currently 5 XLM) to the connected smart account via the native SAC. Works only on testnet — mainnet has no Friendbot.
+Post-deploy testnet top-up helper. Generates a throwaway keypair, funds it via Friendbot, and transfers the balance (minus `OZConstants.friendbotReserveXlm`, 5 XLM) to the connected smart account via the native SAC. Works only on testnet — mainnet has no Friendbot.
 
 ```swift
 public func fundWallet(
@@ -880,11 +846,7 @@ let result = try await kit.transactionOperations.transfer(
 
 When a relayer is configured, the SDK auto-selects the submission mode from the simulated auth entries; it is not caller-controllable.
 
-**Trust model.** The relayer receives the signed envelope (or host function + auth entries) and submits on the user's behalf. It cannot steal funds — signatures are bound to the auth payload. It can see every transaction in plaintext, censor/drop/delay submissions, and reorder them. For mainnet: use a relayer you operate or trust contractually, require HTTPS (pin where possible), and prefer direct RPC (`forceMethod: .rpc`) for high-value transfers when a delegated signer can pay the fee directly.
-
-### Transaction lifecycle
-
-Each `transfer` / `contractCall` / `executeAndSubmit` call simulates, prompts WebAuthn once per matching auth entry (usually one per transaction), re-simulates, submits, then polls for confirmation. Relayer vs RPC is auto-selected; override with `forceMethod`.
+**Trust model.** The relayer receives the signed envelope (or host function + auth entries) and submits on the user's behalf. It cannot steal funds — signatures are bound to the auth payload — but it can drop, delay, or observe submissions. For high-value mainnet transfers, prefer direct RPC (`forceMethod: .rpc`) when a delegated signer can pay the fee directly, and require HTTPS for the relayer endpoint.
 
 ---
 
@@ -1057,7 +1019,7 @@ try? await kit.externalSigners.removeAll()
 
 > `removeAll()` does NOT clear an Ed25519 adapter supplied via `config.externalEd25519Adapter` — adapter custody is immutable, set at construction. If you used adapter custody, clear the adapter's own key state separately (e.g. its `clearAll()`).
 
-When to prefer TARGETED removal instead — `remove(address:)` per delegated `G…` address and `removeEd25519(verifierAddress:publicKey:)` per Ed25519 identity: only when you must keep a live wallet-connector session alive across operations. `removeAll()` disconnects every wallet adapter, so if you registered an in-memory keypair while a wallet is also connected and you want that wallet to stay connected, remove just the keys you registered:
+Use TARGETED removal — `remove(address:)` per delegated `G…` address and `removeEd25519(verifierAddress:publicKey:)` per Ed25519 identity — when you must keep a live wallet session across operations: `removeAll()` disconnects every wallet adapter (and is distinct from `kit.disconnect()`, which only clears the connection session and leaves `externalSigners` untouched), so to keep a connected wallet alive remove just the keys you registered:
 
 ```swift
 // removeEd25519 has no throws, but OZExternalSignerManager is an actor, so the call still needs await.
@@ -1065,12 +1027,9 @@ try? await kit.externalSigners.remove(address: gAddress)
 await kit.externalSigners.removeEd25519(verifierAddress: ed25519Verifier, publicKey: ed25519PublicKey)
 ```
 
-> `removeAll()` is also the teardown counterpart to `restoreConnections()` for a full logout / reset of the external-signer manager. It is distinct from `kit.disconnect()`, which only clears the connection session and does NOT touch `externalSigners`.
-
-> Removed / never-existed symbols — these appear ONLY as traps, not as live API:
+> Symbols that do not exist (common mistakes) — these appear ONLY as traps, not as live API:
 > ```swift
-> // WRONG: config.externalSignerManager — there is no such config field
-> // WRONG: kit.externalSignerManager / kit.externalWallet — no such kit accessors
+> // WRONG: config.externalSignerManager / kit.externalWallet — no such fields/accessors
 > // WRONG: kit.externalSigners.setEd25519Adapter(...) — no such method
 > // WRONG: kit.externalSigners.ed25519Adapter = adapter — the adapter is an immutable init param
 > // CORRECT: supply the Ed25519 adapter via config.externalEd25519Adapter at kit construction;
@@ -1105,6 +1064,8 @@ let ed25519PublicKey = try await kit.externalSigners.addEd25519FromRawKey(
 
 ### Wallet-side API
 
+Every member below is actor-isolated: call all of them with `await` from the call site, including the non-async/non-throwing ones (`canSignFor`, `get`, `getAll`, `hasSigners`, `hasWalletAdapter`).
+
 ```swift
 public actor OZExternalSignerManager {
     public var hasWalletAdapter: Bool { get }   // actor-isolated; access with await
@@ -1136,12 +1097,6 @@ public struct OZSignAuthEntryResult {
     public let signedAuthEntry: String   // Base64 raw 64-byte Ed25519 signature
     public let signerAddress: String?
 }
-```
-
-```swift
-// WRONG: authEntry is hex — it must be Base64
-// CORRECT: authEntry is the Base64 of the HashIDPreimage::SorobanAuthorization XDR
-// WRONG: signedAuthEntry is DER — it is a raw 64-byte Ed25519 signature, Base64-encoded
 ```
 
 ### OZExternalSignerInfo and OZExternalSignerType
@@ -1176,7 +1131,7 @@ The kit-owned manager uses an in-memory wallet-connection store. To persist exte
 
 ### OZExternalWalletAdapter (consumer-implemented `G…` custody)
 
-`config.externalWallet` takes an object you implement to bridge a real `G…` wallet (Freighter, LOBSTR, a WalletConnect bridge, etc.) into `kit.externalSigners`. The manager-level `signAuthEntry(address:authEntry:)` above is the SDK-side entry point; this protocol is the adapter side you write. `connect`/`signAuthEntry` are the only required members — the rest have default implementations.
+`config.externalWallet` takes an object you implement to bridge a real `G…` wallet (Freighter, LOBSTR, a WalletConnect bridge, etc.) into `kit.externalSigners`. The manager-level `signAuthEntry(address:authEntry:)` above is the SDK-side entry point; this protocol is the adapter side you write. Five members are required — `connect`, `disconnect`, `signAuthEntry`, `getConnectedWallets`, and `canSignFor`; the other three (`disconnectByAddress`, `getWalletForAddress`, `reconnect`) have default implementations.
 
 ```swift
 public protocol OZExternalWalletAdapter: AnyObject, Sendable {
@@ -1209,8 +1164,6 @@ public struct OZSignAuthEntryOptions: Sendable, Equatable, Hashable {
 Inside `signAuthEntry`: Base64-decode `preimageXdr`, SHA-256 it, Ed25519-sign the 32-byte hash, and return the 64-byte raw signature as Base64 in `OZSignAuthEntryResult(signedAuthEntry:signerAddress:)`. The SDK handles auth-entry construction and signature wrapping; the adapter only produces the raw signature.
 
 ```swift
-// WRONG: return a DER signature, or sign the preimage bytes directly
-// CORRECT: SHA-256(preimage) → Ed25519-sign the 32-byte digest → Base64 of the 64-byte raw sig
 // WRONG: ignore options?.address when several wallets are connected
 // CORRECT: route to the wallet whose address == options?.address; throw if none matches
 ```
@@ -1234,17 +1187,14 @@ public func removeEd25519(verifierAddress: String, publicKey: Data)
 ```
 
 ```swift
-// WRONG: addEd25519FromRawKey is async — it is declared sync throws.
-//        But OZExternalSignerManager is an actor, so calling it still requires await:
-// WRONG: let pk = kit.externalSigners.addEd25519FromRawKey(...) — missing await, won't compile
-// CORRECT:
+// addEd25519FromRawKey is sync `throws`, but lives on the OZExternalSignerManager
+// actor, so call it with `try await`:
 let publicKey = try await kit.externalSigners.addEd25519FromRawKey(
     secretKeyBytes: rawSeedBytes,
     verifierAddress: "CDEF..."
 )
 
-// WRONG: canSignEd25519For is non-async, so call it directly — it is actor-isolated:
-// CORRECT:
+// canSignEd25519For is non-async but actor-isolated, so await it too:
 let canSign = await kit.externalSigners.canSignEd25519For(
     verifierAddress: "CDEF...",
     publicKey: publicKey
@@ -1515,11 +1465,7 @@ public struct OZIndexedPolicy {
 }
 ```
 
-```swift
-// WRONG: OZIndexedSigner.credentialId is Base64URL — the indexer returns HEX here
-// CORRECT: hex-encoded (no 0x). Convert to Base64URL before matching against the
-//          SDK's internal credential IDs.
-```
+To find contracts for a passkey, pass its Base64URL credential ID straight to `lookupByCredentialId(credentialId:)` — the client converts to hex internally. `OZIndexedSigner.credentialId` (hex, from indexer scans) is informational; the realistic flow never cross-compares the two encodings.
 
 ---
 
@@ -1553,7 +1499,7 @@ deployerAddr  = SCAddress::Account(deployerPublicKey)
 networkId     = SHA-256(networkPassphrase as UTF-8)
 preimage      = HashIDPreimage::ContractID { networkId, FromAddress { deployerAddr, salt } }
 contractBytes = SHA-256(XDR_encode(preimage))
-contractId    = StrKey.encodeContract(contractBytes)
+contractId    = contractBytes.encodeContractId()
 ```
 
 Use this for wallet discovery without an indexer: derive the address, then verify it exists via the RPC `getContractData` for the contract-instance ledger key.

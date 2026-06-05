@@ -1,5 +1,5 @@
 ---
-name: stellar-ios-sdk
+name: stellar-ios-mac-sdk
 description: Build Stellar blockchain applications in Swift using stellar-ios-mac-sdk. Use when generating Swift code for transaction building, signing, Horizon API queries, Soroban RPC, smart contract deployment and invocation, smart accounts (OpenZeppelin) with passkey / WebAuthn authentication, XDR encoding/decoding, and SEP protocol integration. Covers 26+ operations, 50 Horizon endpoints, 12 RPC methods, and 17 SEP implementations with Swift async/await and callback-based streaming patterns. Reach for it when the developer mentions Stellar, blockchain, passkey, smart wallet, or biometric signing on iOS or macOS. Full Swift 6 strict concurrency support (all types Sendable).
 license: Apache 2.0
 compatibility: Requires Swift 6.0+, iOS 15+, macOS 12+. Zero external dependencies.
@@ -266,7 +266,8 @@ let wasmHash = try await SorobanClient.install(
         rpcUrl: rpcUrl,
         network: Network.testnet,
         sourceAccountKeyPair: keyPair,
-        wasmBytes: wasmData
+        wasmBytes: wasmData,
+        enableServerLogging: false
     )
 )
 
@@ -309,7 +310,7 @@ For multi-auth workflows, low-level deploy/invoke, and contract authorization:
 
 ## 7. Smart Accounts (OpenZeppelin)
 
-Passkey-authenticated Soroban smart accounts: biometric (Face ID / Touch ID) auth, multiple signers (passkey / delegated / Ed25519), context rules, policies, and optional fee sponsoring via a relayer. Entry point: `OZSmartAccountKit.create(config:)` with `OZSmartAccountConfig` — requires `rpcUrl`, `networkPassphrase`, `accountWasmHash` (hex), `webauthnVerifierAddress` (C-address), plus a platform `webauthnProvider` and `storage`.
+Passkey-authenticated Soroban smart accounts: biometric (Face ID / Touch ID) auth, multiple signers (passkey / delegated / Ed25519), context rules, policies, and optional fee sponsoring via a relayer. Entry point: `OZSmartAccountKit.create(config:)`.
 
 - [Smart Accounts Guide](./references/smart_accounts.md) — kit config, wallet create/connect, signer types, transactions, credentials, events, `submit` / `fundWallet`, the `externalSigners` manager, indexer
 - [Context Rules & Policies](./references/smart_accounts_policies.md) — signer management, context rules, policies, multi-signer operations, common scenarios (recovery, rotation, `__check_auth` debugging), contract error codes
