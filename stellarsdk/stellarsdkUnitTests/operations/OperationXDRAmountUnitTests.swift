@@ -149,4 +149,76 @@ class OperationXDRAmountUnitTests: XCTestCase {
             }
         }
     }
+
+    // MARK: - String overload
+
+    func testStringOverload_validAmount_returnsStroops() throws {
+        let result = try Operation.toXDRAmount(amount: "100")
+        XCTAssertEqual(result, 1_000_000_000)
+    }
+
+    func testStringOverload_oneXlm_returns10_000_000() throws {
+        let result = try Operation.toXDRAmount(amount: "1")
+        XCTAssertEqual(result, 10_000_000)
+    }
+
+    func testStringOverload_fractionalAmount() throws {
+        let result = try Operation.toXDRAmount(amount: "0.5")
+        XCTAssertEqual(result, 5_000_000)
+    }
+
+    func testStringOverload_oneStroop() throws {
+        let result = try Operation.toXDRAmount(amount: "0.0000001")
+        XCTAssertEqual(result, 1)
+    }
+
+    func testStringOverload_invalidString_throws() {
+        XCTAssertThrowsError(try Operation.toXDRAmount(amount: "not-a-number")) { error in
+            guard let sdkError = error as? StellarSDKError else {
+                XCTFail("Expected StellarSDKError, got \(type(of: error))")
+                return
+            }
+            switch sdkError {
+            case .invalidArgument:
+                break
+            default:
+                XCTFail("Expected .invalidArgument, got \(sdkError)")
+            }
+        }
+    }
+
+    func testStringOverload_emptyString_throws() {
+        XCTAssertThrowsError(try Operation.toXDRAmount(amount: "")) { error in
+            guard let sdkError = error as? StellarSDKError else {
+                XCTFail("Expected StellarSDKError, got \(type(of: error))")
+                return
+            }
+            switch sdkError {
+            case .invalidArgument:
+                break
+            default:
+                XCTFail("Expected .invalidArgument, got \(sdkError)")
+            }
+        }
+    }
+
+    func testStringOverload_negativeString_throws() {
+        XCTAssertThrowsError(try Operation.toXDRAmount(amount: "-1")) { error in
+            guard let sdkError = error as? StellarSDKError else {
+                XCTFail("Expected StellarSDKError, got \(type(of: error))")
+                return
+            }
+            switch sdkError {
+            case .invalidArgument:
+                break
+            default:
+                XCTFail("Expected .invalidArgument, got \(sdkError)")
+            }
+        }
+    }
+
+    func testStringOverload_largeAmount() throws {
+        let result = try Operation.toXDRAmount(amount: "100000000")
+        XCTAssertEqual(result, 1_000_000_000_000_000)
+    }
 }

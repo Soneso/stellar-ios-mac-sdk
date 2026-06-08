@@ -13,6 +13,13 @@ Welcome to the documentation for the Stellar SDK for iOS and macOS. Whether you'
 - **[Error Handling](error-handling.md)** - Error types, result codes, and debugging
 - **[Soroban Guide](soroban.md)** - Smart contract interaction
 
+### Smart Accounts
+- **[Smart Accounts Overview](smart-accounts/README.md)** - OpenZeppelin smart account support (passkeys, multi-signer, policies, context rules)
+- **[Developer Onboarding](smart-accounts/onboarding.md)** - Concepts: signers, context rules, policies, deployer, relayer, verifier, indexer
+- **[API Reference](smart-accounts/api-reference.md)** - Every public symbol under `smartaccount/`
+- **[WebAuthn on iOS](smart-accounts/webauthn-ios.md)** - Associated Domains + AASA setup for iOS targets
+- **[WebAuthn on macOS](smart-accounts/webauthn-macos.md)** - Associated Domains + AASA setup for macOS targets
+
 ### Standards
 - **[SEP Implementations](sep/README.md)** - Stellar Ecosystem Proposal support
 

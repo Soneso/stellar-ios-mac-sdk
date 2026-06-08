@@ -1,0 +1,69 @@
+[
+  {
+    "description" : "single Ed25519 signer, verifierAddressAlpha, contextRuleIds=[0]",
+    "inputs" : {
+      "contextRuleIds" : [
+        0
+      ],
+      "invocationXdrBase64" : "AAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAARub29wAAAAAAAAAAA=",
+      "networkPassphrase" : "Test SDF Network ; September 2015",
+      "nonce" : 987654321,
+      "signatureExpirationLedger" : 500000
+    },
+    "outputs" : {
+      "authDigestSha256Hex" : "ce3f8c267c7d3a609b237b01fe7cc0926b5da96e70512411bf3855d16509e989",
+      "authPayloadSignatureScvalXdrBase64" : "AAAAEQAAAAEAAAACAAAADwAAABBjb250ZXh0X3J1bGVfaWRzAAAAEAAAAAEAAAABAAAAAwAAAAAAAAAPAAAAB3NpZ25lcnMAAAAAEQAAAAEAAAABAAAAEAAAAAEAAAADAAAADwAAAAhFeHRlcm5hbAAAABIAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAANAAAAIAOhB7\/zzhC+HXDdGOdLwJln5NYwm6UNXx3chmQSVTG4AAAADQAAAEA3zeBi5g\/Sa784mNtanL73S9mTzEivBuAlIVI6TcI4vXlX4q\/HEP2QPiokKQ2V1\/V9pRdJOhzwZT6IrYynKwUI",
+      "authPreimageXdrBase64" : "AAAACc7gMC1ZhE0yvcqRXIID3USzP7t+3BkFHqN6vt8o7NRyAAAAADreaLEAB6EgAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAARub29wAAAAAAAAAAA="
+    },
+    "signerInfo" : {
+      "publicKeyHex" : "03a107bff3ce10be1d70dd18e74bc09967e4d6309ba50d5f1ddc8664125531b8",
+      "secretKeyHex" : "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+      "verifierAddress" : "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM"
+    }
+  },
+  {
+    "description" : "two signers same verifier, contextRuleIds=[0,1]",
+    "inputs" : {
+      "contextRuleIds" : [
+        0,
+        1
+      ],
+      "invocationXdrBase64" : "AAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAARub29wAAAAAAAAAAA=",
+      "networkPassphrase" : "Test SDF Network ; September 2015",
+      "nonce" : 987654322,
+      "signatureExpirationLedger" : 500000
+    },
+    "outputs" : {
+      "authDigestSha256Hex" : "151b7933de4210857bbec405ce5cee01e12d368794d76140e7522c9dfc183f66",
+      "authPayloadSignatureScvalXdrBase64" : "AAAAEQAAAAEAAAACAAAADwAAABBjb250ZXh0X3J1bGVfaWRzAAAAEAAAAAEAAAACAAAAAwAAAAAAAAADAAAAAQAAAA8AAAAHc2lnbmVycwAAAAARAAAAAQAAAAEAAAAQAAAAAQAAAAMAAAAPAAAACEV4dGVybmFsAAAAEgAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAA0AAAAgA6EHv\/POEL4dcN0Y50vAmWfk1jCbpQ1fHdyGZBJVMbgAAAANAAAAQPxsHvw6OY1\/LAM+HbKjwHFCBQCTwbXd8N3qZ\/t6So2bwX9CPa1\/2izuZQY9zUbvpHQHvDAOvRKx3l4+k+78XwI=",
+      "authPreimageXdrBase64" : "AAAACc7gMC1ZhE0yvcqRXIID3USzP7t+3BkFHqN6vt8o7NRyAAAAADreaLIAB6EgAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAARub29wAAAAAAAAAAA="
+    },
+    "signerInfo" : {
+      "publicKeyHex" : "03a107bff3ce10be1d70dd18e74bc09967e4d6309ba50d5f1ddc8664125531b8",
+      "secretKeyHex" : "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+      "verifierAddress" : "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM"
+    }
+  },
+  {
+    "description" : "same pubkey different verifier (verifierAddressBeta), contextRuleIds=[0]",
+    "inputs" : {
+      "contextRuleIds" : [
+        0
+      ],
+      "invocationXdrBase64" : "AAAAAAAAAAHFiyv7xPBU5zJPa\/IMrT4CbkG7rRptIMPX1JGN7RZUEQAAAARub29wAAAAAAAAAAA=",
+      "networkPassphrase" : "Test SDF Network ; September 2015",
+      "nonce" : 987654323,
+      "signatureExpirationLedger" : 500000
+    },
+    "outputs" : {
+      "authDigestSha256Hex" : "fa2e78df5c38f9ffce1c1ec8899b7fa0c42b3283b13948d295b658914ca7c6bb",
+      "authPayloadSignatureScvalXdrBase64" : "AAAAEQAAAAEAAAACAAAADwAAABBjb250ZXh0X3J1bGVfaWRzAAAAEAAAAAEAAAABAAAAAwAAAAAAAAAPAAAAB3NpZ25lcnMAAAAAEQAAAAEAAAABAAAAEAAAAAEAAAADAAAADwAAAAhFeHRlcm5hbAAAABIAAAABxYsr+8TwVOcyT2vyDK0+Am5Bu60abSDD19SRje0WVBEAAAANAAAAIAOhB7\/zzhC+HXDdGOdLwJln5NYwm6UNXx3chmQSVTG4AAAADQAAAEBVmhSPV6FUnotz8QyMCPHw+XIZ\/8EyaBugrCCYS3qzMh5pdS73mcFh8+06ixn6WKKV0t+u0zz1uftH5NN7cjQK",
+      "authPreimageXdrBase64" : "AAAACc7gMC1ZhE0yvcqRXIID3USzP7t+3BkFHqN6vt8o7NRyAAAAADreaLMAB6EgAAAAAAAAAAHFiyv7xPBU5zJPa\/IMrT4CbkG7rRptIMPX1JGN7RZUEQAAAARub29wAAAAAAAAAAA="
+    },
+    "signerInfo" : {
+      "publicKeyHex" : "03a107bff3ce10be1d70dd18e74bc09967e4d6309ba50d5f1ddc8664125531b8",
+      "secretKeyHex" : "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+      "verifierAddress" : "CDCYWK73YTYFJZZSJ5V7EDFNHYBG4QN3VUNG2IGD27KJDDPNCZKBCBXK"
+    }
+  }
+]

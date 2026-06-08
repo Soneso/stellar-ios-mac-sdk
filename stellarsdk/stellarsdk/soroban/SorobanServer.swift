@@ -235,6 +235,15 @@ public class SorobanServer: @unchecked Sendable {
     private let endpoint: String
     /// JSON decoder instance for parsing RPC responses.
     private let jsonDecoder = JSONDecoder()
+    /// URL session used for every RPC request.
+    ///
+    /// Defaults to ``URLSession/shared`` so classes registered through
+    /// ``URLProtocol/registerClass(_:)`` (the SDK's unit-test mocking
+    /// convention) intercept traffic. A caller that needs an isolated
+    /// transport can inject a dedicated session and own its lifecycle
+    /// externally — this type does not invalidate any session it did not
+    /// create itself.
+    private let urlSession: URLSession
 
     /// HTTP header name for SDK version identification.
     static let clientVersionHeader = "X-Client-Version"
@@ -273,11 +282,30 @@ public class SorobanServer: @unchecked Sendable {
     
     /// Creates a new Soroban RPC client instance.
     ///
-    /// - Parameter endpoint: URL of the Soroban RPC server to connect to
-    public init(endpoint:String) {
+    /// - Parameters:
+    ///   - endpoint: URL of the Soroban RPC server to connect to.
+    ///   - urlSession: Optional URL session used for every RPC request.
+    ///     Defaults to ``URLSession/shared`` when nil; the shared session is
+    ///     the only configuration that consults classes registered through
+    ///     ``URLProtocol/registerClass(_:)``, which the SDK's unit tests
+    ///     rely on for HTTP mocking. Inject a dedicated session when a
+    ///     caller wants to own and invalidate the transport explicitly.
+    public init(endpoint: String, urlSession: URLSession? = nil) {
         self.endpoint = endpoint
+        self.urlSession = urlSession ?? URLSession.shared
     }
-    
+
+    /// Teardown hook invoked by composite owners (for example
+    /// ``OZSmartAccountKit``) as part of their close-ordering sequence.
+    ///
+    /// The base implementation is a no-op: ``SorobanServer`` does not own
+    /// the lifetime of its injected ``URLSession``. Composite owners that
+    /// need transport teardown should invalidate the session they injected
+    /// themselves. Subclasses may override to perform additional cleanup.
+    public func close() {
+        // Intentionally a no-op in the base class — see method documentation.
+    }
+
     /// General node health check request.
     /// See: https://soroban.stellar.org/api/methods/getHealth
     public func getHealth() async -> GetHealthResponseEnum {
@@ -863,7 +891,85 @@ public class SorobanServer: @unchecked Sendable {
             return .failure(error: error)
         }
     }
-    
+
+    /// Polls Soroban RPC for transaction completion until a final state is reached.
+    ///
+    /// Repeatedly calls `getTransaction` for the supplied hash. The poll loop returns as
+    /// soon as the transaction reaches any non-`NOT_FOUND` status (`SUCCESS` or `FAILED`).
+    /// If the transaction is still `NOT_FOUND` after `maxAttempts` attempts, the last
+    /// observed response is returned with its `NOT_FOUND` status preserved so callers can
+    /// surface a timeout to the user.
+    ///
+    /// Transient RPC failures during a poll attempt (network glitches, rate limiting) are
+    /// swallowed: polling continues, and only the most recent successful response is kept.
+    /// If every poll attempt produces a transient failure, the helper returns a
+    /// request-failed result so the caller is not left waiting on a never-resolving call.
+    ///
+    /// Argument validation: `maxAttempts` must be greater than zero. To preserve the
+    /// non-throwing convention used by `simulateTransaction`, `sendTransaction`, and
+    /// `getTransaction`, an invalid `maxAttempts` is reported as a `.failure` value rather
+    /// than a thrown error.
+    ///
+    /// - Parameters:
+    ///   - hash: Transaction hash returned by `sendTransaction`.
+    ///   - maxAttempts: Maximum number of polling attempts. Defaults to `30`.
+    ///   - sleepStrategy: Closure mapping the 1-indexed attempt number to a sleep duration in
+    ///     seconds. Defaults to a constant `1.0` second per attempt.
+    /// - Returns: A `GetTransactionResponseEnum` carrying either the final transaction
+    ///   response or an `.failure` describing why polling could not complete.
+    ///
+    /// Example:
+    /// ```swift
+    /// // Poll with defaults (30 attempts, 1 second each).
+    /// let response = await server.pollTransaction(hash: txHash)
+    ///
+    /// // Custom polling strategy with exponential-style backoff.
+    /// let custom = await server.pollTransaction(
+    ///     hash: txHash,
+    ///     maxAttempts: 60,
+    ///     sleepStrategy: { attempt in TimeInterval(attempt) * 0.5 }
+    /// )
+    /// ```
+    public func pollTransaction(
+        hash: String,
+        maxAttempts: Int = 30,
+        sleepStrategy: @Sendable (Int) -> TimeInterval = { _ in 1.0 }
+    ) async -> GetTransactionResponseEnum {
+        if maxAttempts <= 0 {
+            return .failure(error: .requestFailed(message: "maxAttempts must be greater than 0"))
+        }
+
+        var attempts = 0
+        var lastResponse: GetTransactionResponseEnum?
+
+        while attempts < maxAttempts {
+            let response = await getTransaction(transactionHash: hash)
+            // Only retain the most recent successful RPC response; transient failures
+            // are swallowed so a later attempt that succeeds wins, and an earlier
+            // success still surfaces if every subsequent attempt fails.
+            if case .success(let txResponse) = response {
+                lastResponse = response
+                if txResponse.status != GetTransactionResponse.STATUS_NOT_FOUND {
+                    return response
+                }
+            }
+
+            attempts += 1
+            if attempts < maxAttempts {
+                let sleepSeconds = sleepStrategy(attempts)
+                if sleepSeconds > 0 {
+                    let nanoseconds = UInt64(sleepSeconds * 1_000_000_000)
+                    try? await Task.sleep(nanoseconds: nanoseconds)
+                }
+            }
+        }
+
+        if let lastResponse = lastResponse {
+            return lastResponse
+        }
+        return .failure(error: .requestFailed(message: "pollTransaction: no response received"))
+    }
+
     /// The getTransactions method return a detailed list of transactions starting from
     /// the user specified starting point that you can paginate as long as the pages
     /// fall within the history retention of their corresponding RPC provider.
@@ -1072,7 +1178,7 @@ public class SorobanServer: @unchecked Sendable {
         }
 
         do {
-            let (data, response) = try await URLSession.shared.data(for: urlRequest)
+            let (data, response) = try await urlSession.data(for: urlRequest)
 
             if enableLogging {
                 let log = String(decoding: data, as: UTF8.self)

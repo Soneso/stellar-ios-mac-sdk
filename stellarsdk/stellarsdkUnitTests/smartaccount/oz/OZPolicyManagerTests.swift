@@ -1,0 +1,1413 @@
+//
+//  OZPolicyManagerTests.swift
+//  stellarsdkUnitTests
+//
+//  Copyright (c) 2026 Soneso. All rights reserved.
+//
+
+import XCTest
+@testable import stellarsdk
+
+/// Unit tests for `OZPolicyInstallParams` ScVal encoding and the supporting
+/// helpers exposed by `OZPolicyManager`.
+///
+/// These tests verify that the three policy types (`simpleThreshold`,
+/// `weightedThreshold`, `spendingLimit`) produce correct ScVal output
+/// compatible with the on-chain smart-account contracts and that the
+/// supporting amount-conversion helpers and host-function builders generate
+/// the byte-exact shapes the contract methods expect.
+///
+/// Network-dependent operations (the manager's add/remove flow that submits
+/// transactions through the kit's transaction operations) are exercised by
+/// integration tests; the unit-level coverage here focuses on argument
+/// preparation, validation, and routing decisions.
+final class OZPolicyManagerTests: XCTestCase {
+
+    private let validAddr1 = "GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7"
+    private let validAddr2 = "GBGWONUYEPTSADFMLRQSPRAPTWMGX5PMQXXHGSBVRF2KLUNVZT57SLVW"
+    private let validAddr3 = "GB33CUURS5XLLECMLSE2EMMDJBMZSVF27BW6PLS53OFTJMP46CZH3CVG"
+    private let validVerifier = "CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC"
+    private let validContractC =
+        "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM"
+    private let validContractC2 =
+        "CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC"
+
+    private func buildConfig() throws -> OZSmartAccountConfig {
+        return try OZSmartAccountConfig(
+            rpcUrl: "http://127.0.0.1:1",
+            networkPassphrase: Network.testnet.passphrase,
+            accountWasmHash: "a" + String(repeating: "0", count: 63),
+            webauthnVerifierAddress: validContractC
+        )
+    }
+
+    private func disconnectedKit() throws -> (MockOZSmartAccountKit, OZPolicyManager) {
+        let kit = MockOZSmartAccountKit(config: try buildConfig())
+        return (kit, OZPolicyManager(kit: kit))
+    }
+
+    private func connectedKit(
+        contractId: String? = nil
+    ) throws -> (MockOZSmartAccountKit, OZPolicyManager) {
+        let kit = MockOZSmartAccountKit(config: try buildConfig())
+        kit.setConnectedState(
+            credentialId: "test-credential-id",
+            contractId: contractId ?? validContractC2
+        )
+        return (kit, OZPolicyManager(kit: kit))
+    }
+
+    // ========================================================================
+    // SimpleThreshold — ScVal shape (5 cases)
+    // ========================================================================
+
+    func test_simpleThreshold_createsMapWithThresholdKey() throws {
+        let scVal = try OZPolicyInstallParams.simpleThreshold(threshold: 2).toScVal()
+
+        guard case .map(let entries) = scVal, let entries = entries else {
+            return XCTFail("expected map")
+        }
+        XCTAssertEqual(entries.count, 1, "SimpleThreshold map must have exactly 1 entry")
+        XCTAssertEqual(extractSymbolName(entries[0].key), "threshold")
+
+        guard case .u32(let v) = entries[0].val else {
+            return XCTFail("expected u32 threshold value")
+        }
+        XCTAssertEqual(v, 2)
+    }
+
+    func test_simpleThreshold_thresholdOfOne() throws {
+        let scVal = try OZPolicyInstallParams.simpleThreshold(threshold: 1).toScVal()
+        let entries = try extractMapEntries(scVal)
+        guard case .u32(let v) = entries[0].val else {
+            return XCTFail("expected u32 threshold value")
+        }
+        XCTAssertEqual(v, 1)
+    }
+
+    func test_simpleThreshold_largeThresholdValue() throws {
+        let scVal = try OZPolicyInstallParams.simpleThreshold(threshold: UInt32.max).toScVal()
+        let entries = try extractMapEntries(scVal)
+        guard case .u32(let v) = entries[0].val else {
+            return XCTFail("expected u32 threshold value")
+        }
+        XCTAssertEqual(v, UInt32.max)
+    }
+
+    func test_simpleThreshold_deterministicXdrEncoding() throws {
+        let a = try OZPolicyInstallParams.simpleThreshold(threshold: 5).toScVal()
+        let b = try OZPolicyInstallParams.simpleThreshold(threshold: 5).toScVal()
+
+        let encA = try Data(XDREncoder.encode(a))
+        let encB = try Data(XDREncoder.encode(b))
+        XCTAssertEqual(encA, encB, "Identical SimpleThreshold params must produce identical XDR")
+    }
+
+    func test_simpleThreshold_differentThresholdsDifferentXdr() throws {
+        let a = try OZPolicyInstallParams.simpleThreshold(threshold: 2).toScVal()
+        let b = try OZPolicyInstallParams.simpleThreshold(threshold: 3).toScVal()
+
+        let encA = try Data(XDREncoder.encode(a))
+        let encB = try Data(XDREncoder.encode(b))
+        XCTAssertNotEqual(encA, encB, "Different threshold values must produce different XDR")
+    }
+
+    // ========================================================================
+    // WeightedThreshold — ScVal shape (8 cases)
+    // ========================================================================
+
+    func test_weightedThreshold_createsMapWithCorrectKeys() throws {
+        let signer = try OZDelegatedSigner(address: validAddr1)
+        let scVal = try OZPolicyInstallParams.weightedThreshold(
+            signerWeights: [OZSignerWeightEntry(signer: signer, weight: 50)],
+            threshold: 100
+        ).toScVal()
+
+        guard case .map(let entries) = scVal, let entries = entries else {
+            return XCTFail("expected map")
+        }
+        XCTAssertEqual(entries.count, 2, "WeightedThreshold map must have exactly 2 entries")
+        XCTAssertEqual(extractSymbolName(entries[0].key), "signer_weights")
+        XCTAssertEqual(extractSymbolName(entries[1].key), "threshold")
+    }
+
+    func test_weightedThreshold_thresholdValueIsCorrect() throws {
+        let signer = try OZDelegatedSigner(address: validAddr1)
+        let scVal = try OZPolicyInstallParams.weightedThreshold(
+            signerWeights: [OZSignerWeightEntry(signer: signer, weight: 50)],
+            threshold: 100
+        ).toScVal()
+
+        let entries = try extractMapEntries(scVal)
+        let thresholdEntry = entries.first { extractSymbolName($0.key) == "threshold" }
+        XCTAssertNotNil(thresholdEntry)
+        guard case .u32(let v) = thresholdEntry!.val else {
+            return XCTFail("expected u32 threshold")
+        }
+        XCTAssertEqual(v, 100)
+    }
+
+    func test_weightedThreshold_signerWeightsInnerMapContainsCorrectEntries() throws {
+        let signer1 = try OZDelegatedSigner(address: validAddr1)
+        let signer2 = try OZDelegatedSigner(address: validAddr2)
+        let scVal = try OZPolicyInstallParams.weightedThreshold(
+            signerWeights: [
+                OZSignerWeightEntry(signer: signer1, weight: 60),
+                OZSignerWeightEntry(signer: signer2, weight: 40)
+            ],
+            threshold: 100
+        ).toScVal()
+
+        let entries = try extractMapEntries(scVal)
+        let signerWeightsEntry = entries.first { extractSymbolName($0.key) == "signer_weights" }
+        XCTAssertNotNil(signerWeightsEntry)
+        let inner = try extractMapEntries(signerWeightsEntry!.val)
+        XCTAssertEqual(inner.count, 2)
+
+        var observed = Set<UInt32>()
+        for entry in inner {
+            guard case .u32(let w) = entry.val else {
+                return XCTFail("expected u32 weight")
+            }
+            observed.insert(w)
+        }
+        XCTAssertTrue(observed.contains(60))
+        XCTAssertTrue(observed.contains(40))
+    }
+
+    func test_weightedThreshold_signerWeightsAreSortedByXdr() throws {
+        let signer1 = try OZDelegatedSigner(address: validAddr1)
+        let signer2 = try OZDelegatedSigner(address: validAddr2)
+        let signer3 = try OZDelegatedSigner(address: validAddr3)
+        // Insert reversed so the sort actually has work to do.
+        let scVal = try OZPolicyInstallParams.weightedThreshold(
+            signerWeights: [
+                OZSignerWeightEntry(signer: signer3, weight: 20),
+                OZSignerWeightEntry(signer: signer1, weight: 50),
+                OZSignerWeightEntry(signer: signer2, weight: 30)
+            ],
+            threshold: 100
+        ).toScVal()
+
+        let entries = try extractMapEntries(scVal)
+        let signerWeightsEntry = entries.first { extractSymbolName($0.key) == "signer_weights" }
+        XCTAssertNotNil(signerWeightsEntry)
+        let inner = try extractMapEntries(signerWeightsEntry!.val)
+        XCTAssertEqual(inner.count, 3)
+
+        for i in 0 ..< inner.count - 1 {
+            let cur = OZPolicyManager.scValToXdrBytes(inner[i].key)
+            let nxt = OZPolicyManager.scValToXdrBytes(inner[i + 1].key)
+            XCTAssertLessThan(
+                Data(cur).base16EncodedString(),
+                Data(nxt).base16EncodedString()
+            )
+        }
+    }
+
+    func test_weightedThreshold_withExternalSigners() throws {
+        let signer = try OZExternalSigner(
+            verifierAddress: validVerifier,
+            keyData: Data([0x01, 0x02, 0x03, 0x04])
+        )
+        let scVal = try OZPolicyInstallParams.weightedThreshold(
+            signerWeights: [OZSignerWeightEntry(signer: signer, weight: 75)],
+            threshold: 75
+        ).toScVal()
+
+        let entries = try extractMapEntries(scVal)
+        XCTAssertEqual(entries.count, 2)
+        XCTAssertEqual(extractSymbolName(entries[0].key), "signer_weights")
+        XCTAssertEqual(extractSymbolName(entries[1].key), "threshold")
+
+        let inner = try extractMapEntries(entries[0].val)
+        XCTAssertEqual(inner.count, 1)
+
+        // ExternalSigner encodes as a Vec; verify the discriminant.
+        guard case .vec = inner[0].key else {
+            return XCTFail("expected ExternalSigner key to be a Vec")
+        }
+        guard case .u32(let w) = inner[0].val else {
+            return XCTFail("expected u32 weight")
+        }
+        XCTAssertEqual(w, 75)
+    }
+
+    func test_weightedThreshold_mixedDelegatedAndExternalSigners() throws {
+        let delegated = try OZDelegatedSigner(address: validAddr1)
+        let external = try OZExternalSigner(
+            verifierAddress: validVerifier,
+            keyData: Data([0x01, 0x02, 0x03, 0x04])
+        )
+        let scVal = try OZPolicyInstallParams.weightedThreshold(
+            signerWeights: [
+                OZSignerWeightEntry(signer: delegated, weight: 60),
+                OZSignerWeightEntry(signer: external, weight: 40)
+            ],
+            threshold: 100
+        ).toScVal()
+
+        let entries = try extractMapEntries(scVal)
+        let inner = try extractMapEntries(entries[0].val)
+        XCTAssertEqual(inner.count, 2)
+
+        // Both signer kinds encode as a Vec; verify all keys are vec-shaped.
+        for entry in inner {
+            guard case .vec = entry.key else {
+                return XCTFail("expected Vec-shaped signer key")
+            }
+        }
+        // Verify ordering by XDR bytes.
+        for i in 0 ..< inner.count - 1 {
+            let cur = OZPolicyManager.scValToXdrBytes(inner[i].key)
+            let nxt = OZPolicyManager.scValToXdrBytes(inner[i + 1].key)
+            XCTAssertLessThan(
+                Data(cur).base16EncodedString(),
+                Data(nxt).base16EncodedString()
+            )
+        }
+    }
+
+    func test_weightedThreshold_emptySignerWeightsThrows() throws {
+        let params = OZPolicyInstallParams.weightedThreshold(
+            signerWeights: [],
+            threshold: 100
+        )
+        do {
+            _ = try params.toScVal()
+            XCTFail("expected validation error")
+        } catch let error as SmartAccountValidationException.InvalidInput {
+            XCTAssertTrue(
+                error.message.contains("at least one signer"),
+                "Error message should mention at least one signer requirement"
+            )
+        }
+    }
+
+    func test_weightedThreshold_deterministicRegardlessOfInsertionOrder() throws {
+        let signer1 = try OZDelegatedSigner(address: validAddr1)
+        let signer2 = try OZDelegatedSigner(address: validAddr2)
+
+        let a = try OZPolicyInstallParams.weightedThreshold(
+            signerWeights: [
+                OZSignerWeightEntry(signer: signer1, weight: 50),
+                OZSignerWeightEntry(signer: signer2, weight: 30)
+            ],
+            threshold: 80
+        ).toScVal()
+        let b = try OZPolicyInstallParams.weightedThreshold(
+            signerWeights: [
+                OZSignerWeightEntry(signer: signer2, weight: 30),
+                OZSignerWeightEntry(signer: signer1, weight: 50)
+            ],
+            threshold: 80
+        ).toScVal()
+
+        let encA = try Data(XDREncoder.encode(a))
+        let encB = try Data(XDREncoder.encode(b))
+        XCTAssertEqual(encA, encB, "Same signers in different order must produce identical XDR")
+    }
+
+    // ========================================================================
+    // SpendingLimit — ScVal shape (8 cases)
+    // ========================================================================
+
+    func test_spendingLimit_createsMapWithCorrectKeys() throws {
+        let scVal = try OZPolicyInstallParams.spendingLimit(
+            spendingLimit: "10000000",
+            periodLedgers: 17_280
+        ).toScVal()
+
+        guard case .map(let entries) = scVal, let entries = entries else {
+            return XCTFail("expected map")
+        }
+        XCTAssertEqual(entries.count, 2, "SpendingLimit map must have exactly 2 entries")
+        XCTAssertEqual(extractSymbolName(entries[0].key), "period_ledgers")
+        XCTAssertEqual(extractSymbolName(entries[1].key), "spending_limit")
+    }
+
+    func test_spendingLimit_periodLedgersIsU32() throws {
+        let scVal = try OZPolicyInstallParams.spendingLimit(
+            spendingLimit: "10000000",
+            periodLedgers: 17_280
+        ).toScVal()
+
+        let entries = try extractMapEntries(scVal)
+        let periodEntry = entries.first { extractSymbolName($0.key) == "period_ledgers" }
+        XCTAssertNotNil(periodEntry)
+        guard case .u32(let v) = periodEntry!.val else {
+            return XCTFail("expected u32 period_ledgers")
+        }
+        XCTAssertEqual(v, 17_280)
+    }
+
+    func test_spendingLimit_spendingLimitIsI128() throws {
+        let scVal = try OZPolicyInstallParams.spendingLimit(
+            spendingLimit: "10000000",
+            periodLedgers: 17_280
+        ).toScVal()
+
+        let entries = try extractMapEntries(scVal)
+        let limitEntry = entries.first { extractSymbolName($0.key) == "spending_limit" }
+        XCTAssertNotNil(limitEntry)
+        guard case .i128(let parts) = limitEntry!.val else {
+            return XCTFail("expected i128 spending_limit")
+        }
+        XCTAssertEqual(parts.hi, 0, "Hi part must be 0 for positive values within Long range")
+        XCTAssertEqual(parts.lo, 10_000_000, "Lo part must match the base-units value")
+    }
+
+    func test_spendingLimit_largeI128Value() throws {
+        // 1 billion whole tokens = 10_000_000_000_000_000 base units.
+        let baseUnits = "10000000000000000"
+        let scVal = try OZPolicyInstallParams.spendingLimit(
+            spendingLimit: baseUnits,
+            periodLedgers: UInt32(StellarProtocolConstants.ledgersPerDay)
+        ).toScVal()
+
+        let entries = try extractMapEntries(scVal)
+        let limitEntry = entries.first { extractSymbolName($0.key) == "spending_limit" }
+        XCTAssertNotNil(limitEntry)
+        guard case .i128(let parts) = limitEntry!.val else {
+            return XCTFail("expected i128 spending_limit")
+        }
+        XCTAssertEqual(parts.hi, 0)
+        XCTAssertEqual(parts.lo, 10_000_000_000_000_000)
+    }
+
+    func test_spendingLimit_zeroSpendingLimitThrows() throws {
+        let params = OZPolicyInstallParams.spendingLimit(
+            spendingLimit: "0",
+            periodLedgers: 17_280
+        )
+        do {
+            _ = try params.toScVal()
+            XCTFail("expected validation error")
+        } catch let error as SmartAccountValidationException.InvalidInput {
+            XCTAssertTrue(
+                error.message.contains("greater than zero"),
+                "Error message should mention spending limit must be greater than zero"
+            )
+        }
+    }
+
+    func test_spendingLimit_negativeSpendingLimitThrows() throws {
+        let params = OZPolicyInstallParams.spendingLimit(
+            spendingLimit: "-100",
+            periodLedgers: 17_280
+        )
+        do {
+            _ = try params.toScVal()
+            XCTFail("expected validation error")
+        } catch let error as SmartAccountValidationException.InvalidInput {
+            XCTAssertTrue(
+                error.message.contains("greater than zero"),
+                "Error message should mention spending limit must be greater than zero"
+            )
+        }
+    }
+
+    func test_spendingLimit_zeroPeriodLedgersThrows() throws {
+        let params = OZPolicyInstallParams.spendingLimit(
+            spendingLimit: "10000000",
+            periodLedgers: 0
+        )
+        do {
+            _ = try params.toScVal()
+            XCTFail("expected validation error")
+        } catch let error as SmartAccountValidationException.InvalidInput {
+            XCTAssertTrue(
+                error.message.contains("greater than zero"),
+                "Error message should mention period ledgers must be greater than zero"
+            )
+        }
+    }
+
+    func test_spendingLimit_deterministicXdrEncoding() throws {
+        let a = try OZPolicyInstallParams.spendingLimit(
+            spendingLimit: "50000000",
+            periodLedgers: 34_560
+        ).toScVal()
+        let b = try OZPolicyInstallParams.spendingLimit(
+            spendingLimit: "50000000",
+            periodLedgers: 34_560
+        ).toScVal()
+
+        let encA = try Data(XDREncoder.encode(a))
+        let encB = try Data(XDREncoder.encode(b))
+        XCTAssertEqual(encA, encB, "Identical SpendingLimit params must produce identical XDR")
+    }
+
+    // ========================================================================
+    // SpendingLimit — boundary period values (2 cases)
+    // ========================================================================
+
+    func test_spendingLimit_oneLedgerPeriod() throws {
+        let scVal = try OZPolicyInstallParams.spendingLimit(
+            spendingLimit: "1",
+            periodLedgers: 1
+        ).toScVal()
+
+        let entries = try extractMapEntries(scVal)
+        let periodEntry = entries.first { extractSymbolName($0.key) == "period_ledgers" }
+        let limitEntry = entries.first { extractSymbolName($0.key) == "spending_limit" }
+        XCTAssertNotNil(periodEntry)
+        XCTAssertNotNil(limitEntry)
+
+        guard case .u32(let p) = periodEntry!.val,
+              case .i128(let parts) = limitEntry!.val else {
+            return XCTFail("unexpected SCVal shape")
+        }
+        XCTAssertEqual(p, 1)
+        XCTAssertEqual(parts.hi, 0)
+        XCTAssertEqual(parts.lo, 1)
+    }
+
+    func test_spendingLimit_maxUInt32PeriodLedgers() throws {
+        let scVal = try OZPolicyInstallParams.spendingLimit(
+            spendingLimit: "1000000",
+            periodLedgers: UInt32.max
+        ).toScVal()
+
+        let entries = try extractMapEntries(scVal)
+        let periodEntry = entries.first { extractSymbolName($0.key) == "period_ledgers" }
+        XCTAssertNotNil(periodEntry)
+        guard case .u32(let p) = periodEntry!.val else {
+            return XCTFail("expected u32 period")
+        }
+        XCTAssertEqual(p, UInt32.max)
+    }
+
+    // ========================================================================
+    // Cross-policy-type verification (2 cases)
+    // ========================================================================
+
+    func test_allPolicyTypes_produceMapScVal() throws {
+        let signer = try OZDelegatedSigner(address: validAddr1)
+
+        let simple = try OZPolicyInstallParams.simpleThreshold(threshold: 2).toScVal()
+        let weighted = try OZPolicyInstallParams.weightedThreshold(
+            signerWeights: [OZSignerWeightEntry(signer: signer, weight: 50)],
+            threshold: 50
+        ).toScVal()
+        let spending = try OZPolicyInstallParams.spendingLimit(
+            spendingLimit: "10000000",
+            periodLedgers: 17_280
+        ).toScVal()
+
+        if case .map = simple { } else { XCTFail("simple should produce a map") }
+        if case .map = weighted { } else { XCTFail("weighted should produce a map") }
+        if case .map = spending { } else { XCTFail("spending should produce a map") }
+    }
+
+    func test_allPolicyTypes_produceDifferentXdr() throws {
+        let signer = try OZDelegatedSigner(address: validAddr1)
+
+        let simpleEnc = try Data(XDREncoder.encode(
+            try OZPolicyInstallParams.simpleThreshold(threshold: 2).toScVal()
+        ))
+        let weightedEnc = try Data(XDREncoder.encode(
+            try OZPolicyInstallParams.weightedThreshold(
+                signerWeights: [OZSignerWeightEntry(signer: signer, weight: 50)],
+                threshold: 50
+            ).toScVal()
+        ))
+        let spendingEnc = try Data(XDREncoder.encode(
+            try OZPolicyInstallParams.spendingLimit(
+                spendingLimit: "10000000",
+                periodLedgers: 17_280
+            ).toScVal()
+        ))
+
+        XCTAssertNotEqual(simpleEnc, weightedEnc)
+        XCTAssertNotEqual(simpleEnc, spendingEnc)
+        XCTAssertNotEqual(weightedEnc, spendingEnc)
+    }
+
+    // ========================================================================
+    // amountToBaseUnits — base-units conversion (8 cases)
+    // ========================================================================
+
+    func test_amountToBaseUnits_oneToken() throws {
+        let baseUnits = try OZTransactionOperations.amountToBaseUnits("1", decimals: 7)
+        XCTAssertEqual(baseUnits, "10000000")
+    }
+
+    func test_amountToBaseUnits_fractionalAmount() throws {
+        let baseUnits = try OZTransactionOperations.amountToBaseUnits("0.5", decimals: 7)
+        XCTAssertEqual(baseUnits, "5000000")
+    }
+
+    func test_amountToBaseUnits_largeAmount() throws {
+        let baseUnits = try OZTransactionOperations.amountToBaseUnits("1000", decimals: 7)
+        XCTAssertEqual(baseUnits, "10000000000")
+    }
+
+    func test_amountToBaseUnits_emptyString_throws() throws {
+        do {
+            _ = try OZTransactionOperations.amountToBaseUnits("", decimals: 7)
+            XCTFail("expected validation error")
+        } catch is SmartAccountValidationException.InvalidAmount {
+            // expected
+        }
+    }
+
+    func test_amountToBaseUnits_whitespace_throws() throws {
+        do {
+            _ = try OZTransactionOperations.amountToBaseUnits("   ", decimals: 7)
+            XCTFail("expected validation error")
+        } catch is SmartAccountValidationException.InvalidAmount {
+            // expected
+        }
+    }
+
+    func test_amountToBaseUnits_nonNumeric_throws() throws {
+        do {
+            _ = try OZTransactionOperations.amountToBaseUnits("abc", decimals: 7)
+            XCTFail("expected validation error")
+        } catch is SmartAccountValidationException.InvalidAmount {
+            // expected
+        }
+    }
+
+    func test_amountToBaseUnits_scientificNotation_throws() throws {
+        do {
+            _ = try OZTransactionOperations.amountToBaseUnits("1e7", decimals: 7)
+            XCTFail("expected validation error")
+        } catch is SmartAccountValidationException.InvalidAmount {
+            // expected
+        }
+    }
+
+    func test_amountToBaseUnits_decimalPrecision() throws {
+        let baseUnits = try OZTransactionOperations.amountToBaseUnits("10.5", decimals: 7)
+        XCTAssertEqual(baseUnits, "105000000")
+    }
+
+    // ========================================================================
+    // OZTransactionOperations.baseUnitsToI128ScVal — i128 encoding (1 case)
+    // ========================================================================
+
+    func test_scValI128BaseUnits_basicValue() throws {
+        let scVal = try OZTransactionOperations.baseUnitsToI128ScVal("10000000", amount: "1")
+        guard case .i128(let parts) = scVal else {
+            return XCTFail("expected i128")
+        }
+        XCTAssertEqual(parts.hi, 0)
+        XCTAssertEqual(parts.lo, 10_000_000)
+    }
+
+    // ========================================================================
+    // OZPolicyManager — addPolicy / removePolicy routing (3 cases)
+    // ========================================================================
+
+    /// Disconnected kit + addPolicy must throw `SmartAccountWalletException.NotConnected`
+    /// before performing any submission.
+    func test_addPolicy_notConnected_throws() async throws {
+        let (_, manager) = try disconnectedKit()
+        let installParams = try OZPolicyInstallParams
+            .simpleThreshold(threshold: 2)
+            .toScVal()
+        do {
+            _ = try await manager.addPolicy(
+                contextRuleId: 0,
+                policyAddress: validVerifier,
+                installParams: installParams
+            )
+            XCTFail("expected SmartAccountWalletException.NotConnected")
+        } catch let error as SmartAccountWalletException.NotConnected {
+            XCTAssertEqual(error.code, .walletNotConnected)
+        }
+    }
+
+    /// A non-empty `selectedSigners` list containing a wallet entry routes
+    /// through the kit's multi-signer manager, whose initial validation
+    /// rejects wallet-kind signers when the kit's config does not declare an
+    /// external wallet adapter. The check surfaces as
+    /// ``SmartAccountValidationException/InvalidInput`` naming the `selectedSigners`
+    /// field so callers can correct the kit configuration before retrying.
+    func test_addSimpleThreshold_walletSigner_withoutExternalWalletAdapter_throwsValidation() async throws {
+        let (_, manager) = try connectedKit()
+        do {
+            _ = try await manager.addSimpleThreshold(
+                contextRuleId: 0,
+                policyAddress: validVerifier,
+                threshold: 2,
+                selectedSigners: [.wallet(accountId: validAddr1)]
+            )
+            XCTFail("expected SmartAccountValidationException.InvalidInput")
+        } catch let error as SmartAccountValidationException.InvalidInput {
+            XCTAssertEqual(error.code, .invalidInput)
+            XCTAssertTrue(
+                error.message.contains("selectedSigners"),
+                "expected 'selectedSigners' in message, got: \(error.message)"
+            )
+        }
+    }
+
+    /// Connected kit + addPolicy with malformed policy address must throw
+    /// `SmartAccountValidationException.InvalidAddress` before any submission attempt.
+    func test_addPolicy_invalidPolicyAddress_throws() async throws {
+        let (_, manager) = try connectedKit()
+        let installParams = try OZPolicyInstallParams
+            .simpleThreshold(threshold: 2)
+            .toScVal()
+        do {
+            _ = try await manager.addPolicy(
+                contextRuleId: 0,
+                policyAddress: "not-a-stellar-address",
+                installParams: installParams
+            )
+            XCTFail("expected SmartAccountValidationException.InvalidAddress")
+        } catch let error as SmartAccountValidationException.InvalidAddress {
+            XCTAssertTrue(error.message.contains("policyAddress"))
+        }
+    }
+
+    /// Disconnected kit + removePolicy by id must throw
+    /// `SmartAccountWalletException.NotConnected`.
+    func test_removePolicy_byId_notConnected_throws() async throws {
+        let (_, manager) = try disconnectedKit()
+        do {
+            _ = try await manager.removePolicy(
+                contextRuleId: 0,
+                policyId: 1
+            )
+            XCTFail("expected SmartAccountWalletException.NotConnected")
+        } catch let error as SmartAccountWalletException.NotConnected {
+            XCTAssertEqual(error.code, .walletNotConnected)
+        }
+    }
+
+    // ========================================================================
+    // OZPolicyManager — buildAddPolicyFunction shape (1 case)
+    // ========================================================================
+
+    /// `add_policy` invocation must carry the contract address, the function
+    /// name `"add_policy"`, and the three positional arguments
+    /// `[u32 contextRuleId, address policyAddress, installParams]`.
+    func test_buildAddPolicyFunction_argShape() throws {
+        let installParams = try OZPolicyInstallParams
+            .simpleThreshold(threshold: 2)
+            .toScVal()
+        let hostFunction = try OZPolicyManager.buildAddPolicyFunction(
+            contractId: validContractC2,
+            contextRuleId: 7,
+            policyAddress: validVerifier,
+            installParams: installParams
+        )
+        guard case .invokeContract(let invokeArgs) = hostFunction else {
+            return XCTFail("expected invokeContract host function")
+        }
+        XCTAssertEqual(invokeArgs.functionName, "add_policy")
+        XCTAssertEqual(invokeArgs.args.count, 3)
+
+        guard case .u32(let ruleId) = invokeArgs.args[0] else {
+            return XCTFail("first arg must be u32 contextRuleId")
+        }
+        XCTAssertEqual(ruleId, 7)
+
+        guard case .address = invokeArgs.args[1] else {
+            return XCTFail("second arg must be address policyAddress")
+        }
+
+        // Third arg is the SCVal install params payload — verify it round-trips
+        // byte-equally with the input.
+        let inputBytes = try Data(XDREncoder.encode(installParams))
+        let outputBytes = try Data(XDREncoder.encode(invokeArgs.args[2]))
+        XCTAssertEqual(inputBytes, outputBytes)
+    }
+
+    // ========================================================================
+    // OZPolicyManager — buildRemovePolicyFunction shape (1 case)
+    // ========================================================================
+
+    /// `remove_policy` invocation must carry the contract address, the function
+    /// name `"remove_policy"`, and the two positional arguments
+    /// `[u32 contextRuleId, u32 policyId]`.
+    func test_buildRemovePolicyFunction_argShape() throws {
+        let hostFunction = try OZPolicyManager.buildRemovePolicyFunction(
+            contractId: validContractC2,
+            contextRuleId: 3,
+            policyId: 9
+        )
+        guard case .invokeContract(let invokeArgs) = hostFunction else {
+            return XCTFail("expected invokeContract host function")
+        }
+        XCTAssertEqual(invokeArgs.functionName, "remove_policy")
+        XCTAssertEqual(invokeArgs.args.count, 2)
+
+        guard case .u32(let ruleId) = invokeArgs.args[0],
+              case .u32(let policyId) = invokeArgs.args[1] else {
+            return XCTFail("expected two u32 args")
+        }
+        XCTAssertEqual(ruleId, 3)
+        XCTAssertEqual(policyId, 9)
+    }
+
+    // ========================================================================
+    // OZPolicyInstallParams.weightedThreshold — signer encoding failure (215-218)
+    // ========================================================================
+
+    /// A signer whose `toScVal()` always throws drives the catch block that
+    /// wraps the per-signer encoding failure into a field-tagged
+    /// `SmartAccountValidationException.InvalidInput`. The surfaced message must
+    /// reference the weighted-threshold encoding context and the original error
+    /// must be retained as the `cause`.
+    func test_weightedThreshold_signerToScValThrows_wrapsAsInvalidInput() throws {
+        let throwingSigner = PolicyThrowingSigner()
+        let params = OZPolicyInstallParams.weightedThreshold(
+            signerWeights: [OZSignerWeightEntry(signer: throwingSigner, weight: 10)],
+            threshold: 5
+        )
+        do {
+            _ = try params.toScVal()
+            XCTFail("expected SmartAccountValidationException.InvalidInput")
+        } catch let error as SmartAccountValidationException.InvalidInput {
+            XCTAssertEqual(error.code, .invalidInput)
+            XCTAssertTrue(
+                error.message.contains("Failed to encode signer for weighted threshold policy"),
+                "expected encoding-failure context in message, got: \(error.message)"
+            )
+            XCTAssertNotNil(error.cause, "original signer-encoding error must be retained as cause")
+        }
+    }
+
+    // ========================================================================
+    // OZPolicyInstallParams.spendingLimit — string-shape validation (253-313)
+    // ========================================================================
+
+    /// A whitespace-only spending-limit string trims to empty and must throw the
+    /// "greater than zero" validation error tagged to the `spendingLimit` field.
+    func test_spendingLimit_whitespaceOnlyString_throws() throws {
+        let params = OZPolicyInstallParams.spendingLimit(
+            spendingLimit: "   ",
+            periodLedgers: 17_280
+        )
+        do {
+            _ = try params.toScVal()
+            XCTFail("expected SmartAccountValidationException.InvalidInput")
+        } catch let error as SmartAccountValidationException.InvalidInput {
+            XCTAssertEqual(error.code, .invalidInput)
+            XCTAssertTrue(
+                error.message.contains("spendingLimit"),
+                "expected spendingLimit field in message, got: \(error.message)"
+            )
+            XCTAssertTrue(
+                error.message.contains("greater than zero"),
+                "expected greater-than-zero reason, got: \(error.message)"
+            )
+        }
+    }
+
+    /// An empty spending-limit string must throw the "greater than zero"
+    /// validation error before any regex evaluation.
+    func test_spendingLimit_emptyString_throws() throws {
+        let params = OZPolicyInstallParams.spendingLimit(
+            spendingLimit: "",
+            periodLedgers: 17_280
+        )
+        do {
+            _ = try params.toScVal()
+            XCTFail("expected SmartAccountValidationException.InvalidInput")
+        } catch let error as SmartAccountValidationException.InvalidInput {
+            XCTAssertTrue(
+                error.message.contains("greater than zero"),
+                "expected greater-than-zero reason, got: \(error.message)"
+            )
+        }
+    }
+
+    /// A spending-limit string carrying a decimal point passes the empty and
+    /// negative gates but fails the strict `^[0-9]+$` integer-shape regex. The
+    /// surfaced error must name the positive-integer-in-base-units constraint.
+    func test_spendingLimit_decimalPointString_throwsShapeError() throws {
+        let params = OZPolicyInstallParams.spendingLimit(
+            spendingLimit: "1.5",
+            periodLedgers: 17_280
+        )
+        do {
+            _ = try params.toScVal()
+            XCTFail("expected SmartAccountValidationException.InvalidInput")
+        } catch let error as SmartAccountValidationException.InvalidInput {
+            XCTAssertEqual(error.code, .invalidInput)
+            XCTAssertTrue(
+                error.message.contains("positive integer in base units"),
+                "expected positive-integer-in-base-units reason, got: \(error.message)"
+            )
+        }
+    }
+
+    /// A non-digit (alphabetic) spending-limit string fails the strict integer
+    /// regex and surfaces the same positive-integer-in-base-units shape error.
+    func test_spendingLimit_alphabeticString_throwsShapeError() throws {
+        let params = OZPolicyInstallParams.spendingLimit(
+            spendingLimit: "12a3",
+            periodLedgers: 17_280
+        )
+        do {
+            _ = try params.toScVal()
+            XCTFail("expected SmartAccountValidationException.InvalidInput")
+        } catch let error as SmartAccountValidationException.InvalidInput {
+            XCTAssertTrue(
+                error.message.contains("positive integer in base units"),
+                "expected positive-integer-in-base-units reason, got: \(error.message)"
+            )
+        }
+    }
+
+    // ========================================================================
+    // OZPolicyManager.removePolicyByAddress — address resolution (671-796)
+    // ========================================================================
+
+    /// A malformed policy address must be rejected by `requireContractAddress`
+    /// before any context-rule resolution or submission is attempted.
+    func test_removePolicyByAddress_invalidAddress_throws() async throws {
+        let (_, manager) = try connectedKit()
+        do {
+            _ = try await manager.removePolicyByAddress(
+                contextRuleId: 0,
+                policyAddress: "not-a-contract-address"
+            )
+            XCTFail("expected SmartAccountValidationException.InvalidAddress")
+        } catch let error as SmartAccountValidationException.InvalidAddress {
+            XCTAssertTrue(
+                error.message.contains("policyAddress"),
+                "expected policyAddress in message, got: \(error.message)"
+            )
+        }
+    }
+
+    /// The parser fast path: when a context-rule parser is wired, the manager
+    /// fetches and parses a single rule, locates the policy address in the
+    /// rule's `policies`, resolves the aligned `policyIds` entry, and proceeds
+    /// to `removePolicy`. The downstream submission fails at the non-routable
+    /// RPC endpoint, but the resolution path (parser `getContextRule` +
+    /// `parseContextRule`) is exercised and asserted.
+    func test_removePolicyByAddress_parserFastPath_resolvesAndForwards() async throws {
+        let kit = MockOZSmartAccountKit(config: try buildConfig())
+        kit.setConnectedState(credentialId: "cred", contractId: validContractC2)
+
+        let parsedRule = OZParsedContextRule(
+            id: 0,
+            contextType: .defaultRule,
+            name: "rule-0",
+            signers: [],
+            signerIds: [],
+            policies: [validVerifier],
+            policyIds: [11],
+            validUntil: nil
+        )
+        let parser = StubPolicyContextRuleParser(rule: parsedRule)
+        let manager = OZPolicyManager(kit: kit, contextRuleParser: parser)
+
+        do {
+            _ = try await manager.removePolicyByAddress(
+                contextRuleId: 0,
+                policyAddress: validVerifier
+            )
+            // No assertion on a successful return: the non-routable RPC endpoint
+            // makes a clean success impossible. The resolution path is what is
+            // under test.
+        } catch {
+            // Expected: submission fails at the RPC step after resolution.
+        }
+
+        XCTAssertEqual(parser.getContextRuleCalls, [0], "parser fast path must fetch exactly the requested rule")
+        XCTAssertEqual(parser.parseContextRuleCalls, 1, "parser fast path must parse the fetched rule once")
+    }
+
+    /// Parser fast path where the policy address is absent from the rule's
+    /// `policies` list must throw a `policyAddress`-tagged validation error
+    /// naming the not-found constraint, and must not reach submission.
+    func test_removePolicyByAddress_parserFastPath_policyNotFound_throws() async throws {
+        let kit = MockOZSmartAccountKit(config: try buildConfig())
+        kit.setConnectedState(credentialId: "cred", contractId: validContractC2)
+
+        let parsedRule = OZParsedContextRule(
+            id: 0,
+            contextType: .defaultRule,
+            name: "rule-0",
+            signers: [],
+            signerIds: [],
+            policies: [validContractC],
+            policyIds: [7],
+            validUntil: nil
+        )
+        let parser = StubPolicyContextRuleParser(rule: parsedRule)
+        let manager = OZPolicyManager(kit: kit, contextRuleParser: parser)
+
+        do {
+            _ = try await manager.removePolicyByAddress(
+                contextRuleId: 0,
+                policyAddress: validVerifier
+            )
+            XCTFail("expected SmartAccountValidationException.InvalidInput")
+        } catch let error as SmartAccountValidationException.InvalidInput {
+            XCTAssertTrue(
+                error.message.contains("policyAddress"),
+                "expected policyAddress field, got: \(error.message)"
+            )
+            XCTAssertTrue(
+                error.message.contains("not found"),
+                "expected not-found reason, got: \(error.message)"
+            )
+        }
+        XCTAssertEqual(parser.parseContextRuleCalls, 1, "rule must be parsed once before the policy lookup fails")
+    }
+
+    /// Parser fast path where `policies` and `policyIds` are misaligned (the
+    /// matched policy index falls outside `policyIds`) must surface the explicit
+    /// misalignment validation error rather than trapping with an out-of-bounds
+    /// access.
+    func test_removePolicyByAddress_parserFastPath_misalignedPolicyIds_throws() async throws {
+        let kit = MockOZSmartAccountKit(config: try buildConfig())
+        kit.setConnectedState(credentialId: "cred", contractId: validContractC2)
+
+        // Policy present at index 1, but policyIds has only one entry.
+        let parsedRule = OZParsedContextRule(
+            id: 0,
+            contextType: .defaultRule,
+            name: "rule-0",
+            signers: [],
+            signerIds: [],
+            policies: [validContractC, validVerifier],
+            policyIds: [3],
+            validUntil: nil
+        )
+        let parser = StubPolicyContextRuleParser(rule: parsedRule)
+        let manager = OZPolicyManager(kit: kit, contextRuleParser: parser)
+
+        do {
+            _ = try await manager.removePolicyByAddress(
+                contextRuleId: 0,
+                policyAddress: validVerifier
+            )
+            XCTFail("expected SmartAccountValidationException.InvalidInput")
+        } catch let error as SmartAccountValidationException.InvalidInput {
+            XCTAssertTrue(
+                error.message.contains("policyAddress"),
+                "expected policyAddress field, got: \(error.message)"
+            )
+            XCTAssertTrue(
+                error.message.contains("policyIds"),
+                "expected policyIds misalignment reason, got: \(error.message)"
+            )
+        }
+    }
+
+    /// Fallback path (no parser wired): the manager scans every rule via
+    /// `listContextRules`. When the requested context-rule id is absent from
+    /// the returned set, a `contextRuleId`-tagged not-found error is surfaced.
+    func test_removePolicyByAddress_fallback_ruleNotFound_throws() async throws {
+        let stub = StubContextRuleManager()
+        stub.listRulesResult = []
+        let kit = MockOZSmartAccountKit(
+            config: try buildConfig(),
+            contextRuleManager: stub
+        )
+        kit.setConnectedState(credentialId: "cred", contractId: validContractC2)
+        let manager = OZPolicyManager(kit: kit)
+
+        do {
+            _ = try await manager.removePolicyByAddress(
+                contextRuleId: 5,
+                policyAddress: validVerifier
+            )
+            XCTFail("expected SmartAccountValidationException.InvalidInput")
+        } catch let error as SmartAccountValidationException.InvalidInput {
+            XCTAssertTrue(
+                error.message.contains("contextRuleId"),
+                "expected contextRuleId field, got: \(error.message)"
+            )
+            XCTAssertTrue(
+                error.message.contains("not found"),
+                "expected not-found reason, got: \(error.message)"
+            )
+        }
+    }
+
+    /// Fallback path where the located rule does not list the supplied policy
+    /// address must throw the `policyAddress` not-found validation error.
+    func test_removePolicyByAddress_fallback_policyNotFoundOnRule_throws() async throws {
+        let stub = StubContextRuleManager()
+        stub.listRulesResult = [
+            OZParsedContextRule(
+                id: 2,
+                contextType: .defaultRule,
+                name: "rule-2",
+                signers: [],
+                signerIds: [],
+                policies: [validContractC],
+                policyIds: [9],
+                validUntil: nil
+            )
+        ]
+        let kit = MockOZSmartAccountKit(
+            config: try buildConfig(),
+            contextRuleManager: stub
+        )
+        kit.setConnectedState(credentialId: "cred", contractId: validContractC2)
+        let manager = OZPolicyManager(kit: kit)
+
+        do {
+            _ = try await manager.removePolicyByAddress(
+                contextRuleId: 2,
+                policyAddress: validVerifier
+            )
+            XCTFail("expected SmartAccountValidationException.InvalidInput")
+        } catch let error as SmartAccountValidationException.InvalidInput {
+            XCTAssertTrue(
+                error.message.contains("policyAddress"),
+                "expected policyAddress field, got: \(error.message)"
+            )
+            XCTAssertTrue(
+                error.message.contains("not found"),
+                "expected not-found reason, got: \(error.message)"
+            )
+        }
+    }
+
+    /// Fallback path that successfully locates the rule and resolves an aligned
+    /// `policyIds` entry forwards to `removePolicy`; the submission then fails at
+    /// the non-routable RPC endpoint. The resolution traversal (rule located,
+    /// policy index matched, aligned id returned) is what this exercises.
+    func test_removePolicyByAddress_fallback_resolvesAndForwards() async throws {
+        let stub = StubContextRuleManager()
+        stub.listRulesResult = [
+            OZParsedContextRule(
+                id: 4,
+                contextType: .defaultRule,
+                name: "rule-4",
+                signers: [],
+                signerIds: [],
+                policies: [validVerifier],
+                policyIds: [21],
+                validUntil: nil
+            )
+        ]
+        let kit = MockOZSmartAccountKit(
+            config: try buildConfig(),
+            contextRuleManager: stub
+        )
+        kit.setConnectedState(credentialId: "cred", contractId: validContractC2)
+        let manager = OZPolicyManager(kit: kit)
+
+        do {
+            _ = try await manager.removePolicyByAddress(
+                contextRuleId: 4,
+                policyAddress: validVerifier
+            )
+        } catch {
+            // Expected: submission fails at the RPC step after resolution.
+        }
+    }
+
+    // ========================================================================
+    // Helpers
+    // ========================================================================
+
+    private func extractMapEntries(_ scVal: SCValXDR) throws -> [SCMapEntryXDR] {
+        guard case .map(let entries) = scVal else {
+            XCTFail("expected SCValXDR.map, got \(scVal)")
+            throw NSError(domain: "OZPolicyManagerTests", code: 1)
+        }
+        return entries ?? []
+    }
+
+    private func extractSymbolName(_ scVal: SCValXDR) -> String {
+        guard case .symbol(let name) = scVal else {
+            XCTFail("expected SCValXDR.symbol, got \(scVal)")
+            return ""
+        }
+        return name
+    }
+
+    // ========================================================================
+    // MARK: - amountToBaseUnits boundary cases
+    // ========================================================================
+
+    /// Sub-base-unit amount strings (8 fractional digits) must be rejected. The
+    /// precision floor is one base unit = `0.0000001`, so anything finer is
+    /// a malformed amount.
+    func test_amountToBaseUnits_subBaseUnitAmount_throws() {
+        XCTAssertThrowsError(try OZTransactionOperations.amountToBaseUnits("0.00000001", decimals: 7)) { error in
+            XCTAssertTrue(error is SmartAccountValidationException.InvalidAmount)
+        }
+    }
+
+    /// `0.0000001` is the smallest representable amount (one base unit).
+    /// The parser must accept it and return `1`.
+    func test_amountToBaseUnits_maxPrecision_oneBaseUnit() throws {
+        let baseUnits = try OZTransactionOperations.amountToBaseUnits("0.0000001", decimals: 7)
+        XCTAssertEqual(baseUnits, "1", "0.0000001 is exactly one base unit")
+    }
+
+    /// Spending-limit convenience helpers must reject negative, zero, and
+    /// non-numeric amount strings before reaching the host-function builder.
+    func test_addSpendingLimit_invalidAmount_throws() async {
+        let (_, manager) = try! connectedKit()
+
+        for invalid in ["-1", "0", "abc", "1e5", ""] {
+            do {
+                _ = try await manager.addSpendingLimit(
+                    contextRuleId: 0,
+                    policyAddress: validContractC2,
+                    spendingLimit: invalid,
+                    periodLedgers: 17280
+                )
+                XCTFail("expected SmartAccountValidationException for spendingLimit=\(invalid)")
+            } catch is SmartAccountValidationException {
+                // expected
+            } catch {
+                XCTFail("expected SmartAccountValidationException for spendingLimit=\(invalid), got: \(error)")
+            }
+        }
+    }
+
+    /// A value within the low 64-bit range must round-trip through the i128
+    /// SCVal helper without truncation. The high-64 bits must be zero because
+    /// the value fits in the low 64-bit word.
+    func test_baseUnitsToI128ScVal_maxLongValue_roundtrips() throws {
+        let scVal = try OZTransactionOperations.baseUnitsToI128ScVal(
+            "9223372036854775807", amount: "9223372036854775807")
+        guard case .i128(let parts) = scVal else {
+            return XCTFail("expected i128 SCVal, got \(scVal)")
+        }
+        XCTAssertEqual(parts.lo, UInt64(Int64.max), "value must occupy the lo 64 bits exactly")
+        XCTAssertEqual(parts.hi, 0, "value within the low 64-bit range must leave hi = 0")
+    }
+
+    // ========================================================================
+    // MARK: - amountToBaseUnits additional boundary coverage
+    // ========================================================================
+
+    /// `"0"` is not a valid spending amount: the parser surfaces a strict
+    /// `SmartAccountValidationException.InvalidAmount` rather than returning zero base units.
+    /// Zero-amount transactions are not legitimate token moves and must be
+    /// rejected upfront so downstream policy checks operate on a non-zero
+    /// post-condition.
+    func test_amountToBaseUnits_zeroAmount_throws() {
+        XCTAssertThrowsError(try OZTransactionOperations.amountToBaseUnits("0", decimals: 7)) { error in
+            XCTAssertTrue(error is SmartAccountValidationException.InvalidAmount,
+                          "expected SmartAccountValidationException.InvalidAmount, got \(type(of: error))")
+        }
+    }
+
+    /// Negative amounts must be rejected upfront. The parser's strict regex
+    /// rejects the leading `-` sign and surfaces
+    /// `SmartAccountValidationException.InvalidAmount` so the caller does not produce a
+    /// signed-int wraparound at the I128 conversion boundary.
+    func test_amountToBaseUnits_negativeAmount_throws() {
+        XCTAssertThrowsError(try OZTransactionOperations.amountToBaseUnits("-1", decimals: 7)) { error in
+            XCTAssertTrue(error is SmartAccountValidationException.InvalidAmount,
+                          "expected SmartAccountValidationException.InvalidAmount, got \(type(of: error))")
+        }
+    }
+
+    /// The maximum representable amount that fits in `Int64` base units is
+    /// `922337203685.4775807` (Int64.max base units = 9_223_372_036_854_775_807).
+    /// The parser must accept this string and return `Int64.max` exactly.
+    /// Amounts beyond the `Int64` base-unit ceiling must be preserved
+    /// exactly, proving the conversion does not cap at `Int64`.
+    func test_amountToBaseUnits_beyondInt64_preservesFullValue() throws {
+        // 10^12 -> 10^19 base units, which exceeds Int64.max (~9.22 x 10^18).
+        let baseUnits = try OZTransactionOperations.amountToBaseUnits("1000000000000", decimals: 7)
+        XCTAssertEqual(baseUnits, "10000000000000000000",
+                       "amounts beyond Int64.max base units must be preserved exactly")
+    }
+
+    /// Decimal-separator edge cases: leading-zero whole part (`"0.5"`) and a
+    /// trailing-zero fractional part (`"1.5000000"`). Both are well-formed
+    /// numeric strings within the seven-fractional-digit floor and must
+    /// round-trip to the same base-unit value as the canonical forms (`"0.5"`
+    /// produces 5_000_000 base units; `"1.5000000"` matches `"1.5"`'s
+    /// 15_000_000 base units).
+    func test_amountToBaseUnits_decimalSeparatorEdgeCases() throws {
+        let leadingZero = try OZTransactionOperations.amountToBaseUnits("0.5", decimals: 7)
+        XCTAssertEqual(leadingZero, "5000000",
+                       "0.5 must be 5,000,000 base units")
+
+        let trailingZeros = try OZTransactionOperations.amountToBaseUnits("1.5000000", decimals: 7)
+        XCTAssertEqual(trailingZeros, "15000000",
+                       "1.5000000 must be 15,000,000 base units (trailing zeros padded as expected)")
+
+        // Cross-check: trailing zeros must produce the same value as the
+        // shorter canonical form.
+        let canonical = try OZTransactionOperations.amountToBaseUnits("1.5", decimals: 7)
+        XCTAssertEqual(trailingZeros, canonical,
+                       "1.5000000 and 1.5 must produce identical base-unit values")
+    }
+
+    // ========================================================================
+    // addWeightedThreshold body coverage
+    // ========================================================================
+
+    /// Exercises the `addWeightedThreshold` body (lines 514-527): builds a
+    /// `OZPolicyInstallParams.weightedThreshold`, converts it to ScVal, and calls
+    /// `addPolicy`. All guard-checks pass; the call fails at the first RPC
+    /// step (non-routable endpoint) so no submission is attempted, but the
+    /// body lines up to the first async hop are traversed.
+    func test_addWeightedThreshold_validArgs_reachesAddPolicy() async throws {
+        let (_, manager) = try connectedKit()
+        let signer = try OZDelegatedSigner(address: validAddr1)
+        do {
+            _ = try await manager.addWeightedThreshold(
+                contextRuleId: 0,
+                policyAddress: validVerifier,
+                signerWeights: [OZSignerWeightEntry(signer: signer, weight: 1)],
+                threshold: 1
+            )
+        } catch {
+            // Expected: RPC fails at the non-routable endpoint. The body
+            // (param construction + addPolicy forwarding) was traversed.
+        }
+    }
+
+    // ========================================================================
+    // addSpendingLimit body coverage
+    // ========================================================================
+
+    /// Exercises the `addSpendingLimit` body (lines 559-589): converts a
+    /// decimal string to base units, builds a spending-limit
+    /// `OZPolicyInstallParams`, and calls `addPolicy`. All guard-checks pass;
+    /// the call fails at the first RPC step.
+    func test_addSpendingLimit_validArgs_reachesAddPolicy() async throws {
+        let (_, manager) = try connectedKit()
+        do {
+            _ = try await manager.addSpendingLimit(
+                contextRuleId: 0,
+                policyAddress: validVerifier,
+                spendingLimit: "100",
+                periodLedgers: 1000
+            )
+        } catch {
+            // Expected: RPC fails at the non-routable endpoint.
+        }
+    }
+
+    /// `addSpendingLimit` accepts an explicit non-7 `decimals` value and uses it
+    /// for the base-units conversion. A six-decimal limit with seven fractional
+    /// digits exceeds the scale and is rejected before any RPC call.
+    func test_addSpendingLimit_explicitDecimals_tooManyFractionalDigits_throws() async throws {
+        let (_, manager) = try connectedKit()
+        do {
+            _ = try await manager.addSpendingLimit(
+                contextRuleId: 0,
+                policyAddress: validVerifier,
+                spendingLimit: "1.1234567",
+                periodLedgers: 1000,
+                decimals: 6
+            )
+            XCTFail("expected SmartAccountValidationException for a 7-digit fraction at decimals=6")
+        } catch let error as SmartAccountValidationException.InvalidInput {
+            // The error is re-tagged to the spendingLimit parameter.
+            XCTAssertTrue(error.message.contains("spendingLimit"))
+        }
+    }
+
+    /// `addSpendingLimit` with an explicit non-7 `decimals` value passes
+    /// validation and reaches `addPolicy` (which fails at the non-routable RPC).
+    func test_addSpendingLimit_explicitDecimals_reachesAddPolicy() async throws {
+        let (_, manager) = try connectedKit()
+        do {
+            _ = try await manager.addSpendingLimit(
+                contextRuleId: 0,
+                policyAddress: validVerifier,
+                spendingLimit: "1.5",
+                periodLedgers: 1000,
+                decimals: 6
+            )
+        } catch is SmartAccountValidationException {
+            XCTFail("a 1-fraction-digit limit at decimals=6 must pass validation")
+        } catch {
+            // Expected: RPC fails at the non-routable endpoint.
+        }
+    }
+
+    /// The spending-limit install params built from an explicit non-7 `decimals`
+    /// value must carry the i128 limit scaled by THAT value. `addSpendingLimit`
+    /// converts the decimal string with `amountToBaseUnits(_:decimals:)` and
+    /// feeds the result into `OZPolicyInstallParams.spendingLimit`, so the
+    /// install-params i128 for `"1.5"` at `decimals: 6` must be 1500000 base
+    /// units — not 15000000, which would indicate a hardcoded scale of 7.
+    func test_addSpendingLimit_explicitDecimals_installParamsCarryScaledI128() throws {
+        let baseUnits = try OZTransactionOperations.amountToBaseUnits("1.5", decimals: 6)
+        XCTAssertEqual(baseUnits, "1500000")
+
+        let scVal = try OZPolicyInstallParams.spendingLimit(
+            spendingLimit: baseUnits,
+            periodLedgers: 1000
+        ).toScVal()
+        guard case .map(let entries) = scVal, let entries = entries else {
+            return XCTFail("spending-limit install params must encode as an SCV_MAP")
+        }
+        let limitEntry = entries.first { entry in
+            if case .symbol(let key) = entry.key { return key == "spending_limit" }
+            return false
+        }
+        guard let limitEntry = limitEntry, case .i128(let parts) = limitEntry.val else {
+            return XCTFail("expected an i128 spending_limit entry")
+        }
+        XCTAssertEqual(parts.hi, 0, "1500000 fits in the i128 low word; hi must be 0")
+        XCTAssertEqual(
+            parts.lo, 1_500_000,
+            "\"1.5\" scaled by the explicit 6 decimals must encode to 1500000 base units"
+        )
+        XCTAssertNotEqual(
+            parts.lo, 15_000_000,
+            "15000000 would mean a hardcoded scale of 7 was used instead of the explicit 6"
+        )
+    }
+}
+
+// ============================================================================
+// Test doubles
+// ============================================================================
+
+/// A signer whose `toScVal()` always throws. Drives the per-signer encoding
+/// failure branch of `OZPolicyInstallParams.weightedThreshold` so the catch
+/// block that wraps the failure into a field-tagged `InvalidInput` is covered.
+private struct PolicyThrowingSigner: OZSmartAccountSigner {
+
+    static let thrownReason = "synthetic-encode-failure"
+
+    func toScVal() throws -> SCValXDR {
+        throw SmartAccountValidationException.invalidInput(
+            field: "signer",
+            reason: PolicyThrowingSigner.thrownReason
+        )
+    }
+
+    var uniqueKey: String { "policy-throwing-signer" }
+}
+
+/// Minimal `OZContextRuleParser` test double returning a fixed parsed rule.
+///
+/// Exercises the parser fast path of `OZPolicyManager.resolvePolicyIdByAddress`
+/// without instantiating the full context-rule manager dependency graph.
+/// Records how many times each method is invoked so resolution tests can assert
+/// the fast path was taken.
+private final class StubPolicyContextRuleParser: OZContextRuleParser, @unchecked Sendable {
+
+    private let rule: OZParsedContextRule
+
+    private(set) var getContextRuleCalls: [UInt32] = []
+    private(set) var parseContextRuleCalls: Int = 0
+
+    init(rule: OZParsedContextRule) {
+        self.rule = rule
+    }
+
+    func getContextRule(contextRuleId: UInt32) async throws -> SCValXDR {
+        getContextRuleCalls.append(contextRuleId)
+        // The parsed rule is returned directly by parseContextRule below, so the
+        // raw ScVal carried here is a placeholder the stub does not interpret.
+        return SCValXDR.void
+    }
+
+    func parseContextRule(_ scVal: SCValXDR) throws -> OZParsedContextRule {
+        parseContextRuleCalls += 1
+        return rule
+    }
+}

@@ -331,4 +331,68 @@ class SCValXDRBigIntUnitTests: XCTestCase {
             XCTFail("Expected i256 type")
         }
     }
+
+    // MARK: - Range Validation (overflow rejection)
+
+    /// Out-of-range values must throw rather than being silently truncated to
+    /// their low bytes. The boundary values themselves (max/min for each type)
+    /// are exercised by the round-trip tests above and must continue to succeed.
+
+    func testU128_negative_throws() {
+        XCTAssertThrowsError(try SCValXDR.u128(stringValue: "-1"))
+    }
+
+    func testU128_overMax_throws() {
+        // 2^128 (one past the maximum u128 of 2^128 - 1).
+        XCTAssertThrowsError(try SCValXDR.u128(
+            stringValue: "340282366920938463463374607431768211456"))
+    }
+
+    func testI128_overMax_throws() {
+        // 2^127 (one past the maximum i128 of 2^127 - 1).
+        XCTAssertThrowsError(try SCValXDR.i128(
+            stringValue: "170141183460469231731687303715884105728"))
+    }
+
+    func testI128_belowMin_throws() {
+        // -(2^127 + 1) (one below the minimum i128 of -2^127).
+        XCTAssertThrowsError(try SCValXDR.i128(
+            stringValue: "-170141183460469231731687303715884105729"))
+    }
+
+    func testI128_negativeFullWidthNotMin_throws() {
+        // -(2^128 - 1): a negative whose magnitude is exactly 16 bytes with the
+        // top bit set but is not the unique minimum 0x80 00..00, so it must be
+        // rejected rather than truncated.
+        XCTAssertThrowsError(try SCValXDR.i128(
+            stringValue: "-340282366920938463463374607431768211455"))
+    }
+
+    func testU256_negative_throws() {
+        XCTAssertThrowsError(try SCValXDR.u256(stringValue: "-1"))
+    }
+
+    func testU256_overMax_throws() {
+        // 2^256 (one past the maximum u256 of 2^256 - 1).
+        XCTAssertThrowsError(try SCValXDR.u256(
+            stringValue: "115792089237316195423570985008687907853269984665640564039457584007913129639936"))
+    }
+
+    func testI256_overMax_throws() {
+        // 2^255 (one past the maximum i256 of 2^255 - 1).
+        XCTAssertThrowsError(try SCValXDR.i256(
+            stringValue: "57896044618658097711785492504343953926634992332820282019728792003956564819968"))
+    }
+
+    func testI256_belowMin_throws() {
+        // -(2^255 + 1) (one below the minimum i256 of -2^255).
+        XCTAssertThrowsError(try SCValXDR.i256(
+            stringValue: "-57896044618658097711785492504343953926634992332820282019728792003956564819969"))
+    }
+
+    func testI128_magnitudeLongerThanWidth_throws() {
+        // A 50-digit value far exceeds 16 bytes; exercises the
+        // magnitude-longer-than-target-width rejection branch.
+        XCTAssertThrowsError(try SCValXDR.i128(stringValue: String(repeating: "9", count: 50)))
+    }
 }

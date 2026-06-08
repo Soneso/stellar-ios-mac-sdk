@@ -165,7 +165,7 @@ public class Operation: @unchecked Sendable {
         guard amount >= 0 else {
             throw StellarSDKError.invalidArgument(message: "Amount must be non-negative, got: \(amount)")
         }
-        let multiplied = amount * 10000000
+        let multiplied = amount * Decimal(StellarProtocolConstants.stroopsPerXlm)
         let maxStroops = Decimal(Int64.max)
         guard multiplied <= maxStroops else {
             throw StellarSDKError.invalidArgument(message: "Amount too large, exceeds Int64 range: \(amount)")
@@ -176,11 +176,30 @@ public class Operation: @unchecked Sendable {
 
         return rounded.int64Value
     }
-    
+
+    /// Converts a decimal amount string to stroops (1 XLM = 10,000,000 stroops).
+    ///
+    /// Parses `amount` as a `Decimal`, then delegates to `toXDRAmount(amount: Decimal)` for
+    /// the actual conversion. The `Decimal` overload applies non-negative and Int64-range
+    /// guards, and rounds using bankers rounding (rounds half to even).
+    ///
+    /// - Parameter amount: Amount in XLM as a decimal string (e.g. `"100"` or `"0.5"`).
+    /// - Returns: Amount in stroops as `Int64`.
+    /// - Throws: `StellarSDKError.invalidArgument` when the string cannot be parsed as a
+    ///           valid decimal number, or when the parsed value is out of the allowed range.
+    static func toXDRAmount(amount: String) throws -> Int64 {
+        guard let decimal = Decimal(string: amount) else {
+            throw StellarSDKError.invalidArgument(
+                message: "Invalid amount string — cannot parse as a decimal number: \(amount)"
+            )
+        }
+        return try toXDRAmount(amount: decimal)
+    }
+
     static func fromXDRAmount(_ xdrAmount:Int64) -> Decimal {
         var decimal = Decimal(xdrAmount)
-        decimal = decimal / 10000000
-        
+        decimal = decimal / Decimal(StellarProtocolConstants.stroopsPerXlm)
+
         return decimal
     }
 }

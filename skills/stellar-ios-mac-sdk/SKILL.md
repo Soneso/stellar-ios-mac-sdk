@@ -1,6 +1,6 @@
 ---
-name: stellar-ios-sdk
-description: Build Stellar blockchain applications in Swift using stellar-ios-mac-sdk. Use when generating Swift code for transaction building, signing, Horizon API queries, Soroban RPC, smart contract deployment and invocation, XDR encoding/decoding, and SEP protocol integration. Covers 26+ operations, 50 Horizon endpoints, 12 RPC methods, and 17 SEP implementations with Swift async/await and callback-based streaming patterns. Full Swift 6 strict concurrency support (all types Sendable).
+name: stellar-ios-mac-sdk
+description: Build Stellar blockchain applications in Swift using stellar-ios-mac-sdk. Use when generating Swift code for transaction building, signing, Horizon API queries, Soroban RPC, smart contract deployment and invocation, smart accounts (OpenZeppelin) with passkey / WebAuthn authentication, XDR encoding/decoding, and SEP protocol integration. Covers 26+ operations, 50 Horizon endpoints, 12 RPC methods, and 17 SEP implementations with Swift async/await and callback-based streaming patterns. Reach for it when the developer mentions Stellar, blockchain, passkey, smart wallet, or biometric signing on iOS or macOS. Full Swift 6 strict concurrency support (all types Sendable).
 license: Apache 2.0
 compatibility: Requires Swift 6.0+, iOS 15+, macOS 12+. Zero external dependencies.
 metadata:
@@ -266,7 +266,8 @@ let wasmHash = try await SorobanClient.install(
         rpcUrl: rpcUrl,
         network: Network.testnet,
         sourceAccountKeyPair: keyPair,
-        wasmBytes: wasmData
+        wasmBytes: wasmData,
+        enableServerLogging: false
     )
 )
 
@@ -307,7 +308,15 @@ let result = try await client.invokeMethod(
 For multi-auth workflows, low-level deploy/invoke, and contract authorization:
 [Smart Contracts Guide](./references/soroban_contracts.md)
 
-## 7. XDR Encoding & Decoding
+## 7. Smart Accounts (OpenZeppelin)
+
+Passkey-authenticated Soroban smart accounts: biometric (Face ID / Touch ID) auth, multiple signers (passkey / delegated / Ed25519), context rules, policies, and optional fee sponsoring via a relayer. Entry point: `OZSmartAccountKit.create(config:)`.
+
+- [Smart Accounts Guide](./references/smart_accounts.md) — kit config, wallet create/connect, signer types, transactions, credentials, events, `submit` / `fundWallet`, the `externalSigners` manager, indexer
+- [Context Rules & Policies](./references/smart_accounts_policies.md) — signer management, context rules, policies, multi-signer operations, common scenarios (recovery, rotation, `__check_auth` debugging), contract error codes
+- [WebAuthn Platform Setup](./references/smart_accounts_webauthn.md) — iOS and macOS WebAuthn providers and storage adapters, Associated Domains / AASA, cross-device passkeys
+
+## 8. XDR Encoding & Decoding
 
 XDR is Stellar's binary serialization format.
 
@@ -328,7 +337,7 @@ let addressVal = SCValXDR.address(try SCAddressXDR(accountId: "GABC...")) // SCA
 For all XdrSCVal types and encoding/decoding utilities:
 [XDR Reference](./references/xdr.md)
 
-## 8. Error Handling & Troubleshooting
+## 9. Error Handling & Troubleshooting
 
 ### Horizon Errors
 
@@ -371,19 +380,19 @@ case .destinationRequiresMemo:
 For comprehensive error catalog and solutions:
 [Troubleshooting Guide](./references/troubleshooting.md)
 
-## 9. Security Best Practices
+## 10. Security Best Practices
 
 Never hardcode secret seeds. Use iOS Keychain for storage. Always verify transaction details before signing. Validate network passphrases to prevent mainnet accidents.
 
 [Security Best Practices](./references/security.md)
 
-## 10. SEP Implementations
+## 11. SEP Implementations
 
 The SDK implements 17 Stellar Ecosystem Proposals (SEPs): SEP-01 (TOML), SEP-02 (Federation), SEP-05 (Key Derivation), SEP-10 (Web Auth), SEP-24 (Interactive deposit/withdrawal), and more.
 
 [SEP Implementations Reference](./references/sep.md)
 
-## 11. Advanced Features
+## 12. Advanced Features
 
 Multi-signature accounts, sponsored reserves, claimable balances, liquidity pools, muxed accounts (M-addresses), fee-bump transactions, path payments.
 
@@ -396,6 +405,9 @@ Multi-signature accounts, sponsored reserves, claimable balances, liquidity pool
 - [Horizon Streaming Guide](./references/horizon_streaming.md) - SSE patterns and reconnection
 - [RPC Reference](./references/rpc.md) - All 12 Soroban RPC methods
 - [Smart Contracts Guide](./references/soroban_contracts.md) - Contract deployment, invocation, auth
+- [Smart Accounts Guide](./references/smart_accounts.md) - OZ kit core: config, wallet create/connect, signer types, transactions, credentials, external signers, events, indexer
+- [Smart Accounts - Policies](./references/smart_accounts_policies.md) - Signer management, context rules, policies, multi-signer operations
+- [Smart Accounts - WebAuthn](./references/smart_accounts_webauthn.md) - WebAuthn providers and storage adapters for iOS and macOS
 - [XDR Guide](./references/xdr.md) - XDR encoding/decoding and debugging
 - [Troubleshooting Guide](./references/troubleshooting.md) - Error codes and solutions
 - [Security Best Practices](./references/security.md) - Keychain storage, transaction verification
