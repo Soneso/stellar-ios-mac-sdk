@@ -125,8 +125,8 @@ final class OZSmartAccountKitTests: XCTestCase {
         XCTAssertNotNil(kit.signerManager)
         XCTAssertNotNil(kit.policyManager)
         XCTAssertNotNil(kit.multiSignerManager)
-        XCTAssertNotNil(kit.contextRuleManagerConcrete)
-        XCTAssertNotNil(kit.credentialManagerConcrete)
+        XCTAssertNotNil(kit.contextRuleManager)
+        XCTAssertNotNil(kit.credentialManager)
         XCTAssertNotNil(kit.externalSigners)
     }
 
@@ -547,8 +547,8 @@ final class OZSmartAccountKitTests: XCTestCase {
         XCTAssertTrue(kit.signerManager === kit.signerManager)
         XCTAssertTrue(kit.policyManager === kit.policyManager)
         XCTAssertTrue(kit.multiSignerManager === kit.multiSignerManager)
-        XCTAssertTrue(kit.contextRuleManagerConcrete === kit.contextRuleManagerConcrete)
-        XCTAssertTrue(kit.credentialManagerConcrete === kit.credentialManagerConcrete)
+        XCTAssertTrue(kit.contextRuleManager === kit.contextRuleManager)
+        XCTAssertTrue(kit.credentialManager === kit.credentialManager)
         XCTAssertTrue(kit.events === kit.events)
     }
 
@@ -723,8 +723,8 @@ final class OZSmartAccountKitTests: XCTestCase {
         let config = try makeConfig()
         let kit = OZSmartAccountKit.create(config: config)
         let protocol_kit: OZSmartAccountKitProtocol = kit
-        XCTAssertNotNil(protocol_kit.credentialManager)
-        XCTAssertNotNil(protocol_kit.contextRuleManager)
+        XCTAssertNotNil(protocol_kit.credentialManagerProtocol)
+        XCTAssertNotNil(protocol_kit.contextRuleManagerProtocol)
         XCTAssertNotNil(protocol_kit.externalSigners)
         await kit.close()
     }

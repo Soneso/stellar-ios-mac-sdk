@@ -128,7 +128,7 @@ extension OZManagerHelpers {
     /// Best-effort credential lookup that returns `nil` instead of throwing.
     func safeGetCredential(credentialId: String) async -> OZStoredCredential? {
         do {
-            return try await kit.credentialManager.getCredential(
+            return try await kit.credentialManagerProtocol.getCredential(
                 credentialId: credentialId
             )
         } catch {

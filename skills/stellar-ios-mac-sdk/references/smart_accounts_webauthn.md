@@ -421,7 +421,7 @@ The `TEAM_ID.bundle.identifier` in the AASA file must exactly equal the team tha
 @available(iOS 13.0, macOS 10.15, *)
 public final actor OZKeychainStorageAdapter: OZStorageAdapter {
     public static let defaultServiceName: String = "com.soneso.stellar.smartaccount"
-    public init(serviceName: String = OZKeychainStorageAdapter.defaultServiceName, shim: OZSecItemShim = OZRealSecItemShim())
+    public init(serviceName: String = OZKeychainStorageAdapter.defaultServiceName)
 }
 
 public final actor OZUserDefaultsStorageAdapter: OZStorageAdapter {

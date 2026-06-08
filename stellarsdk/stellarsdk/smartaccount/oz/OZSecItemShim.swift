@@ -15,7 +15,7 @@ import Security
 /// tests can substitute a fake that returns deterministic `OSStatus` values
 /// (e.g. `errSecDuplicateItem` to drive the upsert fallback) without a real
 /// Keychain. `Sendable` so it can be held by the actor-isolated adapter.
-public protocol OZSecItemShim: Sendable {
+internal protocol OZSecItemShim: Sendable {
 
     func add(query: CFDictionary, result: UnsafeMutablePointer<CFTypeRef?>?) -> OSStatus
     func copyMatching(query: CFDictionary, result: UnsafeMutablePointer<CFTypeRef?>?) -> OSStatus
@@ -25,33 +25,33 @@ public protocol OZSecItemShim: Sendable {
 
 /// Default `OZSecItemShim` conformance that forwards every call to the
 /// Security framework's C functions unchanged.
-public struct OZRealSecItemShim: OZSecItemShim {
+internal struct OZRealSecItemShim: OZSecItemShim {
 
-    public init() {}
+    internal init() {}
 
     // LCOV_EXCL_START
-    public func add(
+    internal func add(
         query: CFDictionary,
         result: UnsafeMutablePointer<CFTypeRef?>?
     ) -> OSStatus {
         return SecItemAdd(query, result)
     }
 
-    public func copyMatching(
+    internal func copyMatching(
         query: CFDictionary,
         result: UnsafeMutablePointer<CFTypeRef?>?
     ) -> OSStatus {
         return SecItemCopyMatching(query, result)
     }
 
-    public func update(
+    internal func update(
         query: CFDictionary,
         attributesToUpdate: CFDictionary
     ) -> OSStatus {
         return SecItemUpdate(query, attributesToUpdate)
     }
 
-    public func delete(query: CFDictionary) -> OSStatus {
+    internal func delete(query: CFDictionary) -> OSStatus {
         return SecItemDelete(query)
     }
     // LCOV_EXCL_STOP

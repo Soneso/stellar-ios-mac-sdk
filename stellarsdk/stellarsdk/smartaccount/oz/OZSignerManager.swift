@@ -222,7 +222,7 @@ public final class OZSignerManager: OZManagerHelpers, @unchecked Sendable {
         // so the raw `publicKey` bytes pass through unchanged here.
         // `createPendingCredential` rejects wrong-length keys before persisting;
         // `addPasskey` then rejects wrong-prefix keys after persisting.
-        let credentialManager = credentialManagerOverride ?? kit.credentialManager
+        let credentialManager = credentialManagerOverride ?? kit.credentialManagerProtocol
         let credential: OZStoredCredential
         do {
             credential = try await credentialManager.createPendingCredential(

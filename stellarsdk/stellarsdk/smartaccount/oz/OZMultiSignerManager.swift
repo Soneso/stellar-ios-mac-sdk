@@ -378,7 +378,7 @@ public class OZMultiSignerManager: OZManagerHelpers, @unchecked Sendable {
 
         // Step 3a: pre-fetch the active context rules ONCE so the auth-entry
         // loop does not perform N additional RPC calls.
-        let contextRules = try await kit.contextRuleManager.listContextRules(maxScanId: nil)
+        let contextRules = try await kit.contextRuleManagerProtocol.listContextRules(maxScanId: nil)
 
         // Step 3b: build per-signer OZSmartAccountSigner instances. Hoisted
         // outside the auth-entry loop because the set is invariant across
@@ -436,7 +436,7 @@ public class OZMultiSignerManager: OZManagerHelpers, @unchecked Sendable {
             if let resolveContextRuleIds = resolveContextRuleIds {
                 resolvedContextRuleIds = try await resolveContextRuleIds(workingEntry, entryIndex)
             } else {
-                resolvedContextRuleIds = try await kit.contextRuleManager.resolveContextRuleIdsForEntry(
+                resolvedContextRuleIds = try await kit.contextRuleManagerProtocol.resolveContextRuleIdsForEntry(
                     entry: workingEntry,
                     signers: smartAccountSigners,
                     contextRules: contextRules
@@ -497,7 +497,7 @@ public class OZMultiSignerManager: OZManagerHelpers, @unchecked Sendable {
         for signer in selectedSigners {
             if case .passkey(let credentialId, _, _, _) = signer {
                 do {
-                    try await kit.credentialManager.updateLastUsed(credentialId: credentialId)
+                    try await kit.credentialManagerProtocol.updateLastUsed(credentialId: credentialId)
                 } catch {
                     // best-effort; the credential update is non-critical
                 }

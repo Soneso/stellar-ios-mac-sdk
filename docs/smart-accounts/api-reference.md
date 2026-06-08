@@ -131,13 +131,13 @@ public var signerManager: OZSignerManager { get }
 
 The [Signer Management](#signer-management) manager. Adds and removes WebAuthn, Ed25519, and delegated signers on a context rule.
 
-#### contextRuleManagerConcrete
+#### contextRuleManager
 
 ```swift
-public var contextRuleManagerConcrete: OZContextRuleManager { get }
+public var contextRuleManager: OZContextRuleManager { get }
 ```
 
-The concrete [Context Rule Management](#context-rule-management) manager. Use this accessor in code that needs the full public surface of the manager type (the alias `contextRuleManager` returns a protocol type that is internal to the SDK module and not accessible to consumers).
+The [Context Rule Management](#context-rule-management) manager.
 
 #### policyManager
 
@@ -147,13 +147,13 @@ public var policyManager: OZPolicyManager { get }
 
 The [Policy Management](#policy-management) manager. Installs and removes the built-in policy types (Simple Threshold, Weighted Threshold, Spending Limit) and exposes a generic entry point for custom policy contracts.
 
-#### credentialManagerConcrete
+#### credentialManager
 
 ```swift
-public var credentialManagerConcrete: OZCredentialManager { get }
+public var credentialManager: OZCredentialManager { get }
 ```
 
-The concrete [Credential Management](#credential-management) manager. Use this accessor in code that needs the full public surface of the manager type (the alias `credentialManager` returns a protocol type that is internal to the SDK module and not accessible to consumers).
+The [Credential Management](#credential-management) manager.
 
 #### multiSignerManager
 
@@ -735,7 +735,7 @@ Overrides the default automatic submission-method selection for a single call. `
 public final class OZCredentialManager: @unchecked Sendable { ... }
 ```
 
-Accessed via `kit.credentialManagerConcrete`. Persists, queries, updates, and deletes stored credentials, and reconciles local credential state against on-chain deployment status.
+Accessed via `kit.credentialManager`. Persists, queries, updates, and deletes stored credentials, and reconciles local credential state against on-chain deployment status.
 
 Stored credentials occupy two persistent states after creation: `pending` and `failed`. There is no `success` state — credentials are deleted from storage on successful deployment (or when a sync discovers the contract on-chain). Failed deployments can be retried by deleting the credential and re-creating one with the same identifier, or by calling `walletOperations.deployPendingCredential(...)`.
 
@@ -1061,7 +1061,7 @@ Equality uses constant-time comparison on `publicKey`.
 public final class OZContextRuleManager: @unchecked Sendable { ... }
 ```
 
-Accessed via `kit.contextRuleManagerConcrete`. Creates, lists, updates, and removes context rules on the connected smart-account contract. Contract limits enforced before submission:
+Accessed via `kit.contextRuleManager`. Creates, lists, updates, and removes context rules on the connected smart-account contract. Contract limits enforced before submission:
 
 - Maximum `OZConstants.maxSigners` (15) signers per rule.
 - Maximum `OZConstants.maxPolicies` (5) policies per rule.
@@ -2362,16 +2362,13 @@ Non-persistent in-memory adapter used as the default when no storage is supplied
 public final actor OZKeychainStorageAdapter: OZStorageAdapter {
     public static let defaultServiceName: String = "com.soneso.stellar.smartaccount"
 
-    public init(
-        serviceName: String = OZKeychainStorageAdapter.defaultServiceName,
-        shim: OZSecItemShim = OZRealSecItemShim()
-    )
+    public init(serviceName: String = OZKeychainStorageAdapter.defaultServiceName)
 }
 ```
 
-Apple Keychain Services adapter with `kSecAttrAccessibleAfterFirstUnlock`. Pass a custom `serviceName` to scope storage to a specific application or feature. The optional `shim` parameter is a test seam over the C `SecItem*` functions; production code accepts the default `OZRealSecItemShim()`.
+Apple Keychain Services adapter with `kSecAttrAccessibleAfterFirstUnlock`. Pass a custom `serviceName` to scope storage to a specific application or feature.
 
-The header docstring notes that iOS Simulator and unsigned macOS test binaries need a `keychain-access-groups` entitlement to access Keychain at all. Stored credentials contain only public-key material and metadata, so the adapter does not apply biometric `SecAccessControl` flags — there is no secret to protect at the storage layer.
+iOS Simulator and unsigned macOS test binaries need a `keychain-access-groups` entitlement to access Keychain. Stored credentials contain only public-key material and metadata, so the adapter does not apply biometric `SecAccessControl` flags.
 
 ### OZUserDefaultsStorageAdapter
 
@@ -2386,15 +2383,6 @@ public final actor OZUserDefaultsStorageAdapter: OZStorageAdapter {
 ```
 
 Scoped `UserDefaults` adapter. Throws if the supplied suite name cannot be resolved to a `UserDefaults` instance. The header docstring notes that `UserDefaults` writes plaintext property-list values to the app container and is therefore not encrypted at rest; apps storing sensitive data should prefer the Keychain adapter.
-
-### OZSecItemShim
-
-```swift
-public protocol OZSecItemShim: Sendable
-public struct OZRealSecItemShim: OZSecItemShim
-```
-
-Public test-seam protocol over the C `SecItem*` functions. Production code uses `OZRealSecItemShim`, which forwards directly to the system functions. Custom conformances exist for unit tests that exercise the Keychain adapter without touching the real Keychain.
 
 ### OZExternalWalletAdapter (protocol)
 

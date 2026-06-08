@@ -93,6 +93,8 @@ public final class OZSmartAccountKit: OZSmartAccountKitProtocol, @unchecked Send
 
     /// Wallet-operations module bound to this kit. Traps if accessed after `close()`.
     public var walletOperations: OZWalletOperations {
+        stateLock.lock()
+        defer { stateLock.unlock() }
         return _walletOperations
     }
     private var _walletOperations: OZWalletOperations!
@@ -101,6 +103,8 @@ public final class OZSmartAccountKit: OZSmartAccountKitProtocol, @unchecked Send
     ///
     /// Traps if accessed after `close()`.
     public var transactionOperations: OZTransactionOperations {
+        stateLock.lock()
+        defer { stateLock.unlock() }
         return _transactionOperations
     }
     private var _transactionOperations: OZTransactionOperations!
@@ -109,6 +113,8 @@ public final class OZSmartAccountKit: OZSmartAccountKitProtocol, @unchecked Send
     ///
     /// Traps if accessed after `close()`.
     public var signerManager: OZSignerManager {
+        stateLock.lock()
+        defer { stateLock.unlock() }
         return _signerManager
     }
     private var _signerManager: OZSignerManager!
@@ -117,55 +123,55 @@ public final class OZSmartAccountKit: OZSmartAccountKitProtocol, @unchecked Send
     ///
     /// Traps if accessed after `close()`.
     public var policyManager: OZPolicyManager {
+        stateLock.lock()
+        defer { stateLock.unlock() }
         return _policyManager
     }
     private var _policyManager: OZPolicyManager!
 
-    /// Context-rule manager bound to this kit.
+    /// Context-rule manager bound to this kit, typed to the internal protocol.
     ///
-    /// Exposed through the protocol surface consumed by sibling managers
-    /// and the operations modules. At runtime the property always holds
-    /// the concrete ``OZContextRuleManager`` constructed during kit
-    /// initialization.
+    /// Consumed by sibling managers and the operations modules. At runtime the
+    /// property always holds the concrete ``OZContextRuleManager`` constructed
+    /// during kit initialization.
     ///
     /// Traps if accessed after `close()`.
-    internal var contextRuleManager: OZContextRuleManagerProtocol {
+    internal var contextRuleManagerProtocol: OZContextRuleManagerProtocol {
+        stateLock.lock()
+        defer { stateLock.unlock() }
         return _contextRuleManager
     }
     private var _contextRuleManager: OZContextRuleManager!
 
-    /// Concrete-typed context-rule manager accessor.
-    ///
-    /// Exposes the concrete ``OZContextRuleManager`` API surface (which
-    /// extends the read-only protocol surface with mutation helpers used by
-    /// the kit's own composition graph).
+    /// Context-rule manager bound to this kit.
     ///
     /// Traps if accessed after `close()`.
-    public var contextRuleManagerConcrete: OZContextRuleManager {
+    public var contextRuleManager: OZContextRuleManager {
+        stateLock.lock()
+        defer { stateLock.unlock() }
         return _contextRuleManager
     }
 
-    /// Credential manager bound to this kit.
+    /// Credential manager bound to this kit, typed to the internal protocol.
     ///
-    /// Exposed through the protocol surface consumed by sibling managers
-    /// and the operations modules. At runtime the property always holds
-    /// the concrete ``OZCredentialManager`` constructed during kit
-    /// initialization.
+    /// Consumed by sibling managers and the operations modules. At runtime the
+    /// property always holds the concrete ``OZCredentialManager`` constructed
+    /// during kit initialization.
     ///
     /// Traps if accessed after `close()`.
-    internal var credentialManager: OZCredentialManagerProtocol {
+    internal var credentialManagerProtocol: OZCredentialManagerProtocol {
+        stateLock.lock()
+        defer { stateLock.unlock() }
         return _credentialManager
     }
     private var _credentialManager: OZCredentialManager!
 
-    /// Concrete-typed credential-manager accessor.
-    ///
-    /// Exposes the concrete ``OZCredentialManager`` API surface (which
-    /// extends the read-only protocol surface with bulk credential-listing
-    /// and sync helpers consumed by application code).
+    /// Credential manager bound to this kit.
     ///
     /// Traps if accessed after `close()`.
-    public var credentialManagerConcrete: OZCredentialManager {
+    public var credentialManager: OZCredentialManager {
+        stateLock.lock()
+        defer { stateLock.unlock() }
         return _credentialManager
     }
 
@@ -173,6 +179,8 @@ public final class OZSmartAccountKit: OZSmartAccountKitProtocol, @unchecked Send
     ///
     /// Traps if accessed after `close()`.
     public var multiSignerManager: OZMultiSignerManager {
+        stateLock.lock()
+        defer { stateLock.unlock() }
         return _multiSignerManager
     }
     private var _multiSignerManager: OZMultiSignerManager!
@@ -190,7 +198,9 @@ public final class OZSmartAccountKit: OZSmartAccountKitProtocol, @unchecked Send
     }
     private let _externalSigners: OZExternalSignerManager
 
-    // Guards the non-async accessors (isConnected, credentialId, contractId) without crossing an await.
+    // Serializes access to the mutable kit state — connected session
+    // (credential/contract id), cached deployer, close flag, and the manager
+    // backing stores. Acquired only in synchronous helpers; never held across an await.
     private let stateLock = NSLock()
 
     /// Currently connected credential identifier (Base64URL-encoded).
@@ -204,8 +214,7 @@ public final class OZSmartAccountKit: OZSmartAccountKitProtocol, @unchecked Send
     /// emitter.
     private var _closed: Bool = false
 
-    // Cached deployer keypair; unsynchronized — concurrent first callers may redundantly
-    // derive the key but the result is deterministic and idempotent.
+    // Cached deployer keypair; guarded by stateLock.
     private var cachedDeployer: KeyPair? = nil
 
     /// Indicates whether a wallet is currently connected.
@@ -425,8 +434,10 @@ public final class OZSmartAccountKit: OZSmartAccountKitProtocol, @unchecked Send
     }
 
     /// Releases strong references to every manager and operations module, breaking the
-    /// kit ↔ manager ARC cycle. Invoked only from ``close()``.
+    /// kit ↔ manager ARC cycle. Invoked only from ``close()``. Runs under `stateLock`
+    /// so concurrent accessor reads observe a consistently nil state.
     private func releaseManagerReferences() {
+        stateLock.lock()
         _walletOperations = nil
         _transactionOperations = nil
         _signerManager = nil
@@ -434,6 +445,7 @@ public final class OZSmartAccountKit: OZSmartAccountKitProtocol, @unchecked Send
         _contextRuleManager = nil
         _credentialManager = nil
         _multiSignerManager = nil
+        stateLock.unlock()
     }
 
     /// Returns the storage adapter used by the kit.
@@ -448,12 +460,31 @@ public final class OZSmartAccountKit: OZSmartAccountKitProtocol, @unchecked Send
     ///   fees when no relayer is configured.
     /// - Throws: ``SmartAccountConfigurationException/InvalidConfig`` when default deployer derivation fails.
     public func getDeployer() async throws -> KeyPair {
-        if let cached = cachedDeployer {
+        // NSLock cannot span an await; reads and writes are delegated to sync helpers.
+        if let cached = readCachedDeployer() {
             return cached
         }
+        // Derivation is deterministic — concurrent first callers may derive in parallel;
+        // the first writer wins and subsequent callers return the cached value.
         let deployer = try await config.effectiveDeployer()
-        cachedDeployer = deployer
+        storeCachedDeployerIfAbsent(deployer)
         return deployer
+    }
+
+    /// Returns the cached deployer under the state lock, or `nil` when not yet cached.
+    private func readCachedDeployer() -> KeyPair? {
+        stateLock.lock()
+        defer { stateLock.unlock() }
+        return cachedDeployer
+    }
+
+    /// Stores the deployer under the state lock only when no value is already cached.
+    private func storeCachedDeployerIfAbsent(_ deployer: KeyPair) {
+        stateLock.lock()
+        defer { stateLock.unlock() }
+        if cachedDeployer == nil {
+            cachedDeployer = deployer
+        }
     }
 
     // MARK: - Factory

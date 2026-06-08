@@ -26,8 +26,8 @@ final class MockOZSmartAccountKit: OZSmartAccountKitProtocol, @unchecked Sendabl
     var indexerClient: OZIndexerClient?
     var relayerClient: OZRelayerClient?
     let events: OZSmartAccountEventEmitter
-    let credentialManager: OZCredentialManagerProtocol
-    let contextRuleManager: OZContextRuleManagerProtocol
+    let credentialManagerProtocol: OZCredentialManagerProtocol
+    let contextRuleManagerProtocol: OZContextRuleManagerProtocol
 
     // MARK: - Connected state
 
@@ -170,8 +170,8 @@ final class MockOZSmartAccountKit: OZSmartAccountKitProtocol, @unchecked Sendabl
         self.indexerClient = indexerClient
         self.events = events ?? OZSmartAccountEventEmitter()
         self.storage = config.storage as? OZInMemoryStorageAdapter ?? OZInMemoryStorageAdapter()
-        self.credentialManager = credentialManager ?? MockCredentialManager(storage: self.storage)
-        self.contextRuleManager = contextRuleManager ?? StubContextRuleManager()
+        self.credentialManagerProtocol = credentialManager ?? MockCredentialManager(storage: self.storage)
+        self.contextRuleManagerProtocol = contextRuleManager ?? StubContextRuleManager()
     }
 
     func getStorage() -> OZStorageAdapter {

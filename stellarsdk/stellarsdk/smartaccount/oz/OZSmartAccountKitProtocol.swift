@@ -193,11 +193,11 @@ internal protocol OZSmartAccountKitProtocol: AnyObject, Sendable {
     var events: OZSmartAccountEventEmitter { get }
 
     /// Credential storage and metadata manager.
-    var credentialManager: OZCredentialManagerProtocol { get }
+    var credentialManagerProtocol: OZCredentialManagerProtocol { get }
 
     /// Context-rule manager used to introspect on-chain rules during the
     /// signing pass and to resolve rule identifiers for authorization entries.
-    var contextRuleManager: OZContextRuleManagerProtocol { get }
+    var contextRuleManagerProtocol: OZContextRuleManagerProtocol { get }
 
     /// Transaction-operations instance bound to this kit. Wallet operations
     /// delegate the funding flow to this pinned instance so a single

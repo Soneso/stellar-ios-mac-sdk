@@ -68,21 +68,10 @@ Managers covered here, all accessed as properties on `kit`:
 | Manager | Property | Type |
 |---------|----------|------|
 | Signer management | `kit.signerManager` | `OZSignerManager` |
-| Context rules | `kit.contextRuleManagerConcrete` | `OZContextRuleManager` |
+| Context rules | `kit.contextRuleManager` | `OZContextRuleManager` |
 | Policies | `kit.policyManager` | `OZPolicyManager` |
 | Multi-signer ceremonies | `kit.multiSignerManager` | `OZMultiSignerManager` |
 | External (non-passkey) custody | `kit.externalSigners` | `OZExternalSignerManager` |
-
-Two accessors carry a `Concrete` suffix because the unsuffixed alias returns an SDK-internal protocol type:
-
-```swift
-// WRONG: kit.contextRuleManager.listContextRules()
-//   — `contextRuleManager` returns a protocol type that is internal to the SDK
-//     module and not reachable from consumer code.
-// CORRECT: kit.contextRuleManagerConcrete.listContextRules()
-// Likewise for credentials:
-// CORRECT: kit.credentialManagerConcrete.getCredential(credentialId: ...)
-```
 
 Rule limits: `OZConstants.maxSigners` (15) signers, `OZConstants.maxPolicies` (5) policies per rule. A rule must have at least one signer or one policy.
 
@@ -237,7 +226,7 @@ public func removeSigner(
 ```
 
 ```swift
-let rules = try await kit.contextRuleManagerConcrete.listContextRules()
+let rules = try await kit.contextRuleManager.listContextRules()
 let rule  = rules.first { $0.id == 0 }!
 
 // signers and signerIds are positionally aligned
@@ -333,7 +322,7 @@ An `OZExternalSigner`'s shape is distinguished by `keyData.count`: `> 65` (secp2
 The same signer can sit on multiple rules and must appear once. For a flat unique list, use the ready-made helper:
 
 ```swift
-let rules = try await kit.contextRuleManagerConcrete.listContextRules()
+let rules = try await kit.contextRuleManager.listContextRules()
 let unique = OZSmartAccountBuilders.collectUniqueSigners(
     signers: rules.flatMap { $0.signers }
 )   // deduped by getSignerKey, first-occurrence order
@@ -364,7 +353,7 @@ for rule in rules {
 
 ## Context Rules
 
-`kit.contextRuleManagerConcrete` (`OZContextRuleManager`) creates, lists, parses, updates, and removes context rules.
+`kit.contextRuleManager` (`OZContextRuleManager`) creates, lists, parses, updates, and removes context rules.
 
 ### The Default rule
 
@@ -440,7 +429,7 @@ let spendingLimitParams = SCValXDR.map([
                   val: try SCValXDR.i128(stringValue: String(1000 * StellarProtocolConstants.stroopsPerXlm)))  // stroops
 ])
 
-let result = try await kit.contextRuleManagerConcrete.addContextRule(
+let result = try await kit.contextRuleManager.addContextRule(
     contextType: .callContract(contractAddress: "CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC"),
     name: "XlmDailyLimit",
     signers: [signerA, signerB],
@@ -486,7 +475,7 @@ public func getContextRulesCount() async throws -> UInt32
 `maxScanId` defaults to `nil`, so both `listContextRules()` and `listContextRules(maxScanId: 200)` are valid call styles (likewise for `getAllContextRules`).
 
 ```swift
-let rules = try await kit.contextRuleManagerConcrete.listContextRules()
+let rules = try await kit.contextRuleManager.listContextRules()
 for rule in rules {
     print("Rule #\(rule.id): \(rule.name) (\(rule.contextType))")
     print("  signers: \(rule.signers.count)  policies: \(rule.policies.count)")
@@ -510,7 +499,7 @@ public func updateName(
 ```
 
 ```swift
-_ = try await kit.contextRuleManagerConcrete.updateName(id: 1, name: "TokenTransfers")
+_ = try await kit.contextRuleManager.updateName(id: 1, name: "TokenTransfers")
 ```
 
 ### updateValidUntil
@@ -535,10 +524,10 @@ guard case .success(let latest) = await server.getLatestLedger() else {
     throw SmartAccountTransactionException.simulationFailed(reason: "could not read latest ledger")
 }
 let inAWeek = latest.sequence + UInt32(7 * StellarProtocolConstants.ledgersPerDay)
-_ = try await kit.contextRuleManagerConcrete.updateValidUntil(id: 1, validUntil: inAWeek)
+_ = try await kit.contextRuleManager.updateValidUntil(id: 1, validUntil: inAWeek)
 
 // Remove expiration
-_ = try await kit.contextRuleManagerConcrete.updateValidUntil(id: 1, validUntil: nil)
+_ = try await kit.contextRuleManager.updateValidUntil(id: 1, validUntil: nil)
 ```
 
 The contract skips a rule once its `validUntil` is past; evaluation falls back to matching non-expired rules (and Default). Expired rules persist on-chain until `removeContextRule`.
@@ -554,7 +543,7 @@ public func removeContextRule(
 ```
 
 ```swift
-_ = try await kit.contextRuleManagerConcrete.removeContextRule(id: 3)
+_ = try await kit.contextRuleManager.removeContextRule(id: 3)
 ```
 
 Do not remove rule `0` (Default) unless equivalent coverage already exists — the account needs at least one rule that matches every operation it performs.
@@ -626,7 +615,7 @@ let simpleThresholdParams = SCValXDR.map([
 
 // (a) create a rule WITH the policy in one submission:
 let signer = try OZDelegatedSigner(address: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ")
-_ = try await kit.contextRuleManagerConcrete.addContextRule(
+_ = try await kit.contextRuleManager.addContextRule(
     contextType: .callContract(contractAddress: "CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC"),
     name: "Governance2of3",
     signers: [signer],
@@ -773,14 +762,14 @@ let nativeSac = "CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC"
 
 // 1. Create a callContract rule that scopes the policy to the native XLM SAC.
 let signer = try OZDelegatedSigner(address: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ")
-_ = try await kit.contextRuleManagerConcrete.addContextRule(
+_ = try await kit.contextRuleManager.addContextRule(
     contextType: .callContract(contractAddress: nativeSac),
     name: "XlmDailyLimit",
     signers: [signer]
 )
 
 // 2. Install the spending-limit policy on that rule.
-let rules  = try await kit.contextRuleManagerConcrete.listContextRules()
+let rules  = try await kit.contextRuleManager.listContextRules()
 let ruleId = rules.last { $0.contextType == .callContract(contractAddress: nativeSac) }!.id
 _ = try await kit.policyManager.addSpendingLimit(
     contextRuleId: ruleId,
@@ -877,7 +866,7 @@ public func removePolicy(
 ```
 
 ```swift
-let rule = try await kit.contextRuleManagerConcrete.listContextRules().first { $0.id == 0 }!
+let rule = try await kit.contextRuleManager.listContextRules().first { $0.id == 0 }!
 if let policyId = rule.policyIds.first {
     _ = try await kit.policyManager.removePolicy(contextRuleId: 0, policyId: policyId)
 }
@@ -920,7 +909,7 @@ let newThreshold: UInt32 = 3
 // Re-fetch the raw rule SCVal immediately before the call — getContextRule(id:)
 // returns a raw SCValXDR (the on-chain ContextRule encoded), exactly what
 // set_threshold expects.
-let freshRule = try await kit.contextRuleManagerConcrete.getContextRule(id: 1)
+let freshRule = try await kit.contextRuleManager.getContextRule(id: 1)
 let smartAccount = SCValXDR.address(try SCAddressXDR(contractId: kit.contractId!))
 
 // Single-signer (connected passkey authorizes):
@@ -996,10 +985,10 @@ let good = OZSelectedSigner.passkey(
 
 ### Building OZSelectedSigner lists from on-chain rules
 
-Read `OZParsedContextRule.signers` and map each on-chain signer to the matching `OZSelectedSigner` case. Discriminate by concrete type and, for `OZExternalSigner`, by `keyData.count` against the live constants (never hard-code 65/32): `> secp256r1PublicKeySize` (65) is a passkey (keyData is `pubkey || credentialId`); `== ed25519PublicKeySize` (32) is an Ed25519 key. A passkey's `keyData` MUST be passed non-nil; recover its credential id with `OZSmartAccountBuilders.getCredentialIdStringFromSigner` / `getCredentialIdFromSigner` and its `transports` via `kit.credentialManagerConcrete.getCredential(credentialId:)?.transports`.
+Read `OZParsedContextRule.signers` and map each on-chain signer to the matching `OZSelectedSigner` case. Discriminate by concrete type and, for `OZExternalSigner`, by `keyData.count` against the live constants (never hard-code 65/32): `> secp256r1PublicKeySize` (65) is a passkey (keyData is `pubkey || credentialId`); `== ed25519PublicKeySize` (32) is an Ed25519 key. A passkey's `keyData` MUST be passed non-nil; recover its credential id with `OZSmartAccountBuilders.getCredentialIdStringFromSigner` / `getCredentialIdFromSigner` and its `transports` via `kit.credentialManager.getCredential(credentialId:)?.transports`.
 
 ```swift
-let rule = try await kit.contextRuleManagerConcrete
+let rule = try await kit.contextRuleManager
     .listContextRules()
     .first { $0.id == contextRuleId }!
 
@@ -1020,7 +1009,7 @@ for signer in rule.signers {
                 let credIdBytes = OZSmartAccountBuilders.getCredentialIdFromSigner(signer: signer),
                 let credIdStr   = OZSmartAccountBuilders.getCredentialIdStringFromSigner(signer: signer)
             else { continue }
-            let stored = try await kit.credentialManagerConcrete.getCredential(credentialId: credIdStr)
+            let stored = try await kit.credentialManager.getCredential(credentialId: credIdStr)
             selected.append(.passkey(
                 credentialId: credIdStr,
                 credentialIdBytes: credIdBytes,
@@ -1267,7 +1256,7 @@ guard addResult.success else {
 }
 
 // 5. Remove the old passkey, also authorized by the backup signer.
-let rule = try await kit.contextRuleManagerConcrete.listContextRules().first { $0.id == 0 }!
+let rule = try await kit.contextRuleManager.listContextRules().first { $0.id == 0 }!
 if let oldIdx = rule.signers.firstIndex(where: { signer in
     OZSmartAccountBuilders.getCredentialIdStringFromSigner(signer: signer) == oldCredentialIdBase64Url
 }) {
@@ -1316,7 +1305,7 @@ _ = try await kit.walletOperations.connectWallet(
 )
 
 // 4. Remove the old passkey (the new passkey authorizes, selectedSigners []).
-let rule = try await kit.contextRuleManagerConcrete.listContextRules().first { $0.id == 0 }!
+let rule = try await kit.contextRuleManager.listContextRules().first { $0.id == 0 }!
 guard let oldIdx = rule.signers.firstIndex(where: { signer in
     OZSmartAccountBuilders.getCredentialIdStringFromSigner(signer: signer) == oldCredentialId
 }) else {

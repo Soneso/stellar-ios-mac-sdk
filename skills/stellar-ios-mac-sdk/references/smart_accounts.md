@@ -53,22 +53,15 @@ Architecture. `OZSmartAccountKit.create(config:)` is the single entry point. The
 - `transactionOperations` (`OZTransactionOperations`)
 - `signerManager` (`OZSignerManager`)
 - `policyManager` (`OZPolicyManager`)
-- `contextRuleManagerConcrete` (`OZContextRuleManager`)
-- `credentialManagerConcrete` (`OZCredentialManager`)
+- `contextRuleManager` (`OZContextRuleManager`)
+- `credentialManager` (`OZCredentialManager`)
 - `multiSignerManager` (`OZMultiSignerManager`)
 - `externalSigners` (`OZExternalSignerManager`, non-optional actor)
 - `events` (`OZSmartAccountEventEmitter`)
 
 The config carries two platform adapters — a `WebAuthnProvider` and an `OZStorageAdapter` — plus two optional external-signer adapters: `OZExternalWalletAdapter` (`externalWallet`) for `G…` custody, and `OZExternalEd25519SignerAdapter` (`externalEd25519Adapter`) for Ed25519 custody. Internally the kit owns a `SorobanServer` (RPC), an optional `OZRelayerClient` (fee-bump), and an optional `OZIndexerClient` (credential lookup).
 
-The managers exposed through the protocol surface (`contextRuleManager`, `credentialManager`) are library-internal. Application code uses the concrete-typed accessors:
-
-```swift
-// WRONG: kit.credentialManager — internal protocol accessor, not visible to consumers
-// CORRECT: kit.credentialManagerConcrete — public, returns the concrete OZCredentialManager
-// WRONG: kit.contextRuleManager — internal
-// CORRECT: kit.contextRuleManagerConcrete — public
-```
+The `contextRuleManager` and `credentialManager` properties return the concrete manager types directly.
 
 ---
 
@@ -204,7 +197,7 @@ try await kit.disconnect()   // ends the session; kit stays alive for the next c
 
 `close()` is for final shutdown or replacing the kit, not for ending a session. It releases the HTTP resources the kit owns (Soroban RPC, indexer, relayer) and removes every listener on `events`. It does not clear session state — call `disconnect()` first when an active session is open. `close()` is idempotent.
 
-After `close()`, accessing the operations/manager properties (`walletOperations`, `transactionOperations`, `signerManager`, `policyManager`, `contextRuleManagerConcrete`, `credentialManagerConcrete`, `multiSignerManager`) **traps** — the kit nils its strong references to break the retain cycle. `externalSigners` and the config remain valid.
+After `close()`, accessing the operations/manager properties (`walletOperations`, `transactionOperations`, `signerManager`, `policyManager`, `contextRuleManager`, `credentialManager`, `multiSignerManager`) **traps** — the kit nils its strong references to break the retain cycle. `externalSigners` and the config remain valid.
 
 ```swift
 // WRONG: read kit.transactionOperations after `await kit.close()` — runtime trap
@@ -867,7 +860,7 @@ When a relayer is configured, the SDK auto-selects the submission mode from the 
 
 ## Credential Management
 
-`kit.credentialManagerConcrete` manages local credential storage. Credentials are WebAuthn passkeys with metadata about deployment state and usage.
+`kit.credentialManager` manages local credential storage. Credentials are WebAuthn passkeys with metadata about deployment state and usage.
 
 ### OZStoredCredential
 
@@ -908,7 +901,7 @@ After deployment succeeds, the credential is removed from storage. Reconnection 
 ### Common operations
 
 ```swift
-let cm = kit.credentialManagerConcrete
+let cm = kit.credentialManager
 
 // Save or upsert (overwrites existing by ID; no deployment metadata captured).
 let cred = try await cm.saveCredential(

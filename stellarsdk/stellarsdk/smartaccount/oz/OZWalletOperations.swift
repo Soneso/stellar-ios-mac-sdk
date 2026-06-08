@@ -244,7 +244,7 @@ public final class OZWalletOperations: OZManagerHelpers, @unchecked Sendable {
 
     /// Shortcut to the kit's credential manager.
     private var credentialManager: OZCredentialManagerProtocol {
-        return kit.credentialManager
+        return kit.credentialManagerProtocol
     }
 
     /// Creates a new smart-account wallet backed by a fresh WebAuthn credential.

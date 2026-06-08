@@ -352,7 +352,7 @@ public final class OZTransactionOperations: OZManagerHelpers, @unchecked Sendabl
 
         if !signedAuthEntries.isEmpty {
             do {
-                try await kit.credentialManager.updateLastUsed(
+                try await kit.credentialManagerProtocol.updateLastUsed(
                     credentialId: connected.credentialId
                 )
             } catch {
@@ -429,7 +429,7 @@ public final class OZTransactionOperations: OZManagerHelpers, @unchecked Sendabl
         // why: pre-fetch the active context rules ONCE so the signer pass
         // does not perform N additional RPC calls; the rule set is stable
         // throughout the signing pass.
-        let contextRules = try await kit.contextRuleManager.listContextRules(maxScanId: nil)
+        let contextRules = try await kit.contextRuleManagerProtocol.listContextRules(maxScanId: nil)
 
         var signedAuthEntries: [SorobanAuthorizationEntryXDR] = []
         signedAuthEntries.reserveCapacity(simulatedAuthEntries.count)
@@ -496,7 +496,7 @@ public final class OZTransactionOperations: OZManagerHelpers, @unchecked Sendabl
             if let resolveContextRuleIds = resolveContextRuleIds {
                 resolvedContextRuleIds = try await resolveContextRuleIds(entry, entryIndex)
             } else {
-                resolvedContextRuleIds = try await kit.contextRuleManager.resolveContextRuleIdsForEntry(
+                resolvedContextRuleIds = try await kit.contextRuleManagerProtocol.resolveContextRuleIdsForEntry(
                     entry: entry,
                     signers: [signer],
                     contextRules: contextRules
@@ -872,7 +872,7 @@ public final class OZTransactionOperations: OZManagerHelpers, @unchecked Sendabl
     private func findKeyDataFromContextRules(
         credentialIdBytes: Data
     ) async throws -> Data {
-        let allRules = try await kit.contextRuleManager.getAllContextRules(maxScanId: nil)
+        let allRules = try await kit.contextRuleManagerProtocol.getAllContextRules(maxScanId: nil)
         for ruleScVal in allRules {
             guard case .map(let mapEntries) = ruleScVal,
                   let mapEntries = mapEntries else {

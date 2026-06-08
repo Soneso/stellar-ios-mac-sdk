@@ -1698,8 +1698,8 @@ private final class _CredentialManagerTestKit: OZSmartAccountKitProtocol, @unche
     let externalSigners: OZExternalSignerManager
 
     private let _storage: OZStorageAdapter
-    let credentialManager: OZCredentialManagerProtocol
-    let contextRuleManager: OZContextRuleManagerProtocol
+    let credentialManagerProtocol: OZCredentialManagerProtocol
+    let contextRuleManagerProtocol: OZContextRuleManagerProtocol
     // Lazily constructed on first access to avoid circular init.
     private var _managers: (OZTransactionOperations, OZSignerManager, OZPolicyManager, OZMultiSignerManager)?
 
@@ -1711,8 +1711,8 @@ private final class _CredentialManagerTestKit: OZSmartAccountKitProtocol, @unche
         self.config = config
         self.sorobanServer = sorobanServer ?? SorobanServer(endpoint: "http://127.0.0.1:1")
         self._storage = storage
-        self.credentialManager = MockCredentialManager(storage: OZInMemoryStorageAdapter())
-        self.contextRuleManager = StubContextRuleManager()
+        self.credentialManagerProtocol = MockCredentialManager(storage: OZInMemoryStorageAdapter())
+        self.contextRuleManagerProtocol = StubContextRuleManager()
         self.externalSigners = OZExternalSignerManager(
             networkPassphrase: config.networkPassphrase
         )

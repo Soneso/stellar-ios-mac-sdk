@@ -68,17 +68,18 @@ public final actor OZKeychainStorageAdapter: OZStorageAdapter {
 
     /// Initializes a new `OZKeychainStorageAdapter`.
     ///
-    /// - Parameters:
-    ///   - serviceName: Keychain service identifier (`kSecAttrService`).
-    ///     Defaults to `OZKeychainStorageAdapter.defaultServiceName`.
-    ///   - shim: Optional `OZSecItemShim` to use for all Security framework
-    ///     calls. The default conformance forwards every call to the system
-    ///     `SecItem*` functions; tests substitute a fake to drive failure
-    ///     paths deterministically.
-    public init(
-        serviceName: String = OZKeychainStorageAdapter.defaultServiceName,
-        shim: OZSecItemShim = OZRealSecItemShim()
-    ) {
+    /// - Parameter serviceName: Keychain service identifier (`kSecAttrService`).
+    ///   Defaults to `OZKeychainStorageAdapter.defaultServiceName`.
+    public init(serviceName: String = OZKeychainStorageAdapter.defaultServiceName) {
+        self.serviceName = serviceName
+        self.shim = OZRealSecItemShim()
+    }
+
+    /// Internal initializer that injects a custom `OZSecItemShim`.
+    ///
+    /// Used by unit tests (via `@testable import`) to substitute a fake
+    /// shim and drive failure-mode `OSStatus` values without a real Keychain.
+    internal init(serviceName: String = OZKeychainStorageAdapter.defaultServiceName, shim: OZSecItemShim) {
         self.serviceName = serviceName
         self.shim = shim
     }

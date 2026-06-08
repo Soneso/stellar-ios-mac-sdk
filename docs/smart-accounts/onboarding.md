@@ -117,17 +117,17 @@ SDK methods:
 // Signer objects are created using OZDelegatedSigner(address: "GA7Q...") or
 // OZExternalSigner.webAuthn(...) — see the Signers section above and
 // the SDK guide for full construction details.
-try await kit.contextRuleManagerConcrete.addContextRule(
+try await kit.contextRuleManager.addContextRule(
     contextType: .callContract(contractAddress: "CBCD1234..."),
     name: "TokenTransfers",
     signers: [delegatedSigner, passkeySigner]
 )
 
 // Get count of active rules
-let count = try await kit.contextRuleManagerConcrete.getContextRulesCount()
+let count = try await kit.contextRuleManager.getContextRulesCount()
 
 // Get a specific rule by ID
-let rule = try await kit.contextRuleManagerConcrete.getContextRule(id: 0)
+let rule = try await kit.contextRuleManager.getContextRule(id: 0)
 ```
 
 ---
