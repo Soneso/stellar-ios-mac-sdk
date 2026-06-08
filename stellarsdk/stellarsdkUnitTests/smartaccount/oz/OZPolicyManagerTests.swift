@@ -529,23 +529,23 @@ final class OZPolicyManagerTests: XCTestCase {
     // ========================================================================
 
     func test_amountToBaseUnits_oneToken() throws {
-        let baseUnits = try OZTransactionOperations.amountToBaseUnits("1")
+        let baseUnits = try OZTransactionOperations.amountToBaseUnits("1", decimals: 7)
         XCTAssertEqual(baseUnits, "10000000")
     }
 
     func test_amountToBaseUnits_fractionalAmount() throws {
-        let baseUnits = try OZTransactionOperations.amountToBaseUnits("0.5")
+        let baseUnits = try OZTransactionOperations.amountToBaseUnits("0.5", decimals: 7)
         XCTAssertEqual(baseUnits, "5000000")
     }
 
     func test_amountToBaseUnits_largeAmount() throws {
-        let baseUnits = try OZTransactionOperations.amountToBaseUnits("1000")
+        let baseUnits = try OZTransactionOperations.amountToBaseUnits("1000", decimals: 7)
         XCTAssertEqual(baseUnits, "10000000000")
     }
 
     func test_amountToBaseUnits_emptyString_throws() throws {
         do {
-            _ = try OZTransactionOperations.amountToBaseUnits("")
+            _ = try OZTransactionOperations.amountToBaseUnits("", decimals: 7)
             XCTFail("expected validation error")
         } catch is SmartAccountValidationException.InvalidAmount {
             // expected
@@ -554,7 +554,7 @@ final class OZPolicyManagerTests: XCTestCase {
 
     func test_amountToBaseUnits_whitespace_throws() throws {
         do {
-            _ = try OZTransactionOperations.amountToBaseUnits("   ")
+            _ = try OZTransactionOperations.amountToBaseUnits("   ", decimals: 7)
             XCTFail("expected validation error")
         } catch is SmartAccountValidationException.InvalidAmount {
             // expected
@@ -563,7 +563,7 @@ final class OZPolicyManagerTests: XCTestCase {
 
     func test_amountToBaseUnits_nonNumeric_throws() throws {
         do {
-            _ = try OZTransactionOperations.amountToBaseUnits("abc")
+            _ = try OZTransactionOperations.amountToBaseUnits("abc", decimals: 7)
             XCTFail("expected validation error")
         } catch is SmartAccountValidationException.InvalidAmount {
             // expected
@@ -572,7 +572,7 @@ final class OZPolicyManagerTests: XCTestCase {
 
     func test_amountToBaseUnits_scientificNotation_throws() throws {
         do {
-            _ = try OZTransactionOperations.amountToBaseUnits("1e7")
+            _ = try OZTransactionOperations.amountToBaseUnits("1e7", decimals: 7)
             XCTFail("expected validation error")
         } catch is SmartAccountValidationException.InvalidAmount {
             // expected
@@ -580,7 +580,7 @@ final class OZPolicyManagerTests: XCTestCase {
     }
 
     func test_amountToBaseUnits_decimalPrecision() throws {
-        let baseUnits = try OZTransactionOperations.amountToBaseUnits("10.5")
+        let baseUnits = try OZTransactionOperations.amountToBaseUnits("10.5", decimals: 7)
         XCTAssertEqual(baseUnits, "105000000")
     }
 
@@ -1131,7 +1131,7 @@ final class OZPolicyManagerTests: XCTestCase {
     /// precision floor is one base unit = `0.0000001`, so anything finer is
     /// a malformed amount.
     func test_amountToBaseUnits_subBaseUnitAmount_throws() {
-        XCTAssertThrowsError(try OZTransactionOperations.amountToBaseUnits("0.00000001")) { error in
+        XCTAssertThrowsError(try OZTransactionOperations.amountToBaseUnits("0.00000001", decimals: 7)) { error in
             XCTAssertTrue(error is SmartAccountValidationException.InvalidAmount)
         }
     }
@@ -1139,7 +1139,7 @@ final class OZPolicyManagerTests: XCTestCase {
     /// `0.0000001` is the smallest representable amount (one base unit).
     /// The parser must accept it and return `1`.
     func test_amountToBaseUnits_maxPrecision_oneBaseUnit() throws {
-        let baseUnits = try OZTransactionOperations.amountToBaseUnits("0.0000001")
+        let baseUnits = try OZTransactionOperations.amountToBaseUnits("0.0000001", decimals: 7)
         XCTAssertEqual(baseUnits, "1", "0.0000001 is exactly one base unit")
     }
 
@@ -1188,7 +1188,7 @@ final class OZPolicyManagerTests: XCTestCase {
     /// rejected upfront so downstream policy checks operate on a non-zero
     /// post-condition.
     func test_amountToBaseUnits_zeroAmount_throws() {
-        XCTAssertThrowsError(try OZTransactionOperations.amountToBaseUnits("0")) { error in
+        XCTAssertThrowsError(try OZTransactionOperations.amountToBaseUnits("0", decimals: 7)) { error in
             XCTAssertTrue(error is SmartAccountValidationException.InvalidAmount,
                           "expected SmartAccountValidationException.InvalidAmount, got \(type(of: error))")
         }
@@ -1199,7 +1199,7 @@ final class OZPolicyManagerTests: XCTestCase {
     /// `SmartAccountValidationException.InvalidAmount` so the caller does not produce a
     /// signed-int wraparound at the I128 conversion boundary.
     func test_amountToBaseUnits_negativeAmount_throws() {
-        XCTAssertThrowsError(try OZTransactionOperations.amountToBaseUnits("-1")) { error in
+        XCTAssertThrowsError(try OZTransactionOperations.amountToBaseUnits("-1", decimals: 7)) { error in
             XCTAssertTrue(error is SmartAccountValidationException.InvalidAmount,
                           "expected SmartAccountValidationException.InvalidAmount, got \(type(of: error))")
         }
@@ -1212,7 +1212,7 @@ final class OZPolicyManagerTests: XCTestCase {
     /// exactly, proving the conversion does not cap at `Int64`.
     func test_amountToBaseUnits_beyondInt64_preservesFullValue() throws {
         // 10^12 -> 10^19 base units, which exceeds Int64.max (~9.22 x 10^18).
-        let baseUnits = try OZTransactionOperations.amountToBaseUnits("1000000000000")
+        let baseUnits = try OZTransactionOperations.amountToBaseUnits("1000000000000", decimals: 7)
         XCTAssertEqual(baseUnits, "10000000000000000000",
                        "amounts beyond Int64.max base units must be preserved exactly")
     }
@@ -1224,17 +1224,17 @@ final class OZPolicyManagerTests: XCTestCase {
     /// produces 5_000_000 base units; `"1.5000000"` matches `"1.5"`'s
     /// 15_000_000 base units).
     func test_amountToBaseUnits_decimalSeparatorEdgeCases() throws {
-        let leadingZero = try OZTransactionOperations.amountToBaseUnits("0.5")
+        let leadingZero = try OZTransactionOperations.amountToBaseUnits("0.5", decimals: 7)
         XCTAssertEqual(leadingZero, "5000000",
                        "0.5 must be 5,000,000 base units")
 
-        let trailingZeros = try OZTransactionOperations.amountToBaseUnits("1.5000000")
+        let trailingZeros = try OZTransactionOperations.amountToBaseUnits("1.5000000", decimals: 7)
         XCTAssertEqual(trailingZeros, "15000000",
                        "1.5000000 must be 15,000,000 base units (trailing zeros padded as expected)")
 
         // Cross-check: trailing zeros must produce the same value as the
         // shorter canonical form.
-        let canonical = try OZTransactionOperations.amountToBaseUnits("1.5")
+        let canonical = try OZTransactionOperations.amountToBaseUnits("1.5", decimals: 7)
         XCTAssertEqual(trailingZeros, canonical,
                        "1.5000000 and 1.5 must produce identical base-unit values")
     }
@@ -1284,6 +1284,80 @@ final class OZPolicyManagerTests: XCTestCase {
         } catch {
             // Expected: RPC fails at the non-routable endpoint.
         }
+    }
+
+    /// `addSpendingLimit` accepts an explicit non-7 `decimals` value and uses it
+    /// for the base-units conversion. A six-decimal limit with seven fractional
+    /// digits exceeds the scale and is rejected before any RPC call.
+    func test_addSpendingLimit_explicitDecimals_tooManyFractionalDigits_throws() async throws {
+        let (_, manager) = try connectedKit()
+        do {
+            _ = try await manager.addSpendingLimit(
+                contextRuleId: 0,
+                policyAddress: validVerifier,
+                spendingLimit: "1.1234567",
+                periodLedgers: 1000,
+                decimals: 6
+            )
+            XCTFail("expected SmartAccountValidationException for a 7-digit fraction at decimals=6")
+        } catch let error as SmartAccountValidationException.InvalidInput {
+            // The error is re-tagged to the spendingLimit parameter.
+            XCTAssertTrue(error.message.contains("spendingLimit"))
+        }
+    }
+
+    /// `addSpendingLimit` with an explicit non-7 `decimals` value passes
+    /// validation and reaches `addPolicy` (which fails at the non-routable RPC).
+    func test_addSpendingLimit_explicitDecimals_reachesAddPolicy() async throws {
+        let (_, manager) = try connectedKit()
+        do {
+            _ = try await manager.addSpendingLimit(
+                contextRuleId: 0,
+                policyAddress: validVerifier,
+                spendingLimit: "1.5",
+                periodLedgers: 1000,
+                decimals: 6
+            )
+        } catch is SmartAccountValidationException {
+            XCTFail("a 1-fraction-digit limit at decimals=6 must pass validation")
+        } catch {
+            // Expected: RPC fails at the non-routable endpoint.
+        }
+    }
+
+    /// The spending-limit install params built from an explicit non-7 `decimals`
+    /// value must carry the i128 limit scaled by THAT value. `addSpendingLimit`
+    /// converts the decimal string with `amountToBaseUnits(_:decimals:)` and
+    /// feeds the result into `OZPolicyInstallParams.spendingLimit`, so the
+    /// install-params i128 for `"1.5"` at `decimals: 6` must be 1500000 base
+    /// units — not 15000000, which would indicate a hardcoded scale of 7.
+    func test_addSpendingLimit_explicitDecimals_installParamsCarryScaledI128() throws {
+        let baseUnits = try OZTransactionOperations.amountToBaseUnits("1.5", decimals: 6)
+        XCTAssertEqual(baseUnits, "1500000")
+
+        let scVal = try OZPolicyInstallParams.spendingLimit(
+            spendingLimit: baseUnits,
+            periodLedgers: 1000
+        ).toScVal()
+        guard case .map(let entries) = scVal, let entries = entries else {
+            return XCTFail("spending-limit install params must encode as an SCV_MAP")
+        }
+        let limitEntry = entries.first { entry in
+            if case .symbol(let key) = entry.key { return key == "spending_limit" }
+            return false
+        }
+        guard let limitEntry = limitEntry, case .i128(let parts) = limitEntry.val else {
+            return XCTFail("expected an i128 spending_limit entry")
+        }
+        XCTAssertEqual(parts.hi, 0, "1500000 fits in the i128 low word; hi must be 0")
+        XCTAssertEqual(
+            parts.lo, 1_500_000,
+            "\"1.5\" scaled by the explicit 6 decimals must encode to 1500000 base units"
+        )
+        XCTAssertNotEqual(
+            parts.lo, 15_000_000,
+            "15000000 would mean a hardcoded scale of 7 was used instead of the explicit 6"
+        )
     }
 }
 

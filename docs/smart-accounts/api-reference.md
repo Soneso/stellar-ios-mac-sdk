@@ -586,15 +586,38 @@ public func transfer(
     tokenContract: String,
     recipient: String,
     amount: String,
+    decimals: Int? = nil,
     forceMethod: OZSubmissionMethod? = nil
 ) async throws -> OZTransactionResult
 ```
 
-Transfers SEP-41-compatible tokens from the connected smart account to a recipient. The decimal amount is converted to the token's base units (interpreted with 7 decimal places) before submission. Compatible with native XLM via the Stellar Asset Contract and with any custom Soroban token implementing the SEP-41 interface. The recipient may be a `G…` account or a `C…` contract; the method rejects self-transfers.
+Transfers SEP-41-compatible tokens from the connected smart account to a recipient. The decimal amount is converted to the token's base units before submission. When `decimals` is supplied it is used directly; when it is `nil` (default) the token's on-chain `decimals()` value is fetched automatically via `fetchTokenDecimals(tokenContract:)`. Supply `decimals` to avoid the extra RPC round trip when the scale is already known.
 
 Delegates to `contractCall(target:targetFn:targetArgs:forceMethod:resolveContextRuleIds:)` to drive the pipeline.
 
 **Throws**: `SmartAccountWalletException.NotConnected`, `SmartAccountValidationException` (invalid address, invalid amount, self-transfer), `SmartAccountTransactionException`, `WebAuthnException`.
+
+#### fetchTokenDecimals(...)
+
+```swift
+public func fetchTokenDecimals(tokenContract: String) async throws -> Int
+```
+
+Reads the `decimals()` value from a SEP-41 token contract by simulating the call and returning the reported `u32` scale.
+
+**Throws**: `SmartAccountValidationException` (invalid `tokenContract` address), `SmartAccountTransactionException` (simulation failure or a non-`u32` return value).
+
+#### amountToBaseUnits(_:decimals:)
+
+```swift
+public static func amountToBaseUnits(_ amount: String, decimals: Int) throws -> String
+```
+
+Converts a positive decimal amount string to its base-units representation scaled by `decimals` decimal places. Rejects scientific notation, empty or non-numeric strings, values less than or equal to zero, and values carrying more fractional digits than `decimals` allows. Returns the base-units amount as a decimal integer string with no leading zeros.
+
+**Parameters**: `amount` — positive decimal string (e.g. `"10"` or `"100.5"`); `decimals` — token decimal scale in `0...38`.
+
+**Throws**: `SmartAccountValidationException.InvalidAmount` when `amount` is invalid, negative, carries excess fractional precision, or the result falls outside the `i128` representable range.
 
 #### contractCall(...)
 
@@ -1242,12 +1265,13 @@ public func addSpendingLimit(
     policyAddress: String,
     spendingLimit: String,
     periodLedgers: UInt32,
+    decimals: Int = 7,
     selectedSigners: [OZSelectedSigner] = [],
     forceMethod: OZSubmissionMethod? = nil
 ) async throws -> OZTransactionResult
 ```
 
-Installs a spending limit policy that caps cumulative spend within a rolling `periodLedgers`-ledger window (Stellar produces a ledger approximately every five seconds; one hour is `StellarProtocolConstants.ledgersPerHour`, one day is approximately 17 280 ledgers). The amount is supplied as a positive decimal string and converted to the token's base units (interpreted with 7 decimal places).
+Installs a spending limit policy that caps cumulative spend within a rolling `periodLedgers`-ledger window (Stellar produces a ledger approximately every five seconds; one hour is `StellarProtocolConstants.ledgersPerHour`, one day is approximately 17 280 ledgers). The amount is supplied as a positive decimal string and converted to the token's base units using `decimals` (default 7). This method has no token-contract parameter, so it does not fetch the scale automatically.
 
 **Throws**: `SmartAccountWalletException.NotConnected`, `SmartAccountValidationException`, `SmartAccountTransactionException`.
 
@@ -1293,7 +1317,7 @@ public func addPolicy(
 ) async throws -> OZTransactionResult
 ```
 
-Generic policy installation. Use this method directly when installing a custom policy contract not covered by the three convenience helpers. The structure of `installParams` depends on the target policy contract; for the three built-in policy types, build an `OZPolicyInstallParams` value and call its `toScVal()` (the value is internal — prefer the convenience helpers).
+Generic policy installation. Use this method directly when installing a custom policy contract not covered by the three convenience helpers. The structure of `installParams` depends on the target policy contract; for the three built-in policy types, build an `OZPolicyInstallParams` value and call its `toScVal()` to obtain the encoded `SCValXDR` (prefer the convenience helpers, which call the encoder internally).
 
 **Throws**: `SmartAccountWalletException.NotConnected`, `SmartAccountValidationException` (when `policyAddress` is malformed), `SmartAccountTransactionException`.
 
@@ -1319,7 +1343,17 @@ public enum OZPolicyInstallParams: Sendable {
 }
 ```
 
-Installation parameters for the three built-in policy types. The `toScVal()` encoder is internal so consumers cannot accidentally produce malformed encodings; reach the on-chain `SCValXDR` shape through the matching convenience method on `OZPolicyManager` (`addSimpleThreshold(...)`, `addWeightedThreshold(...)`, `addSpendingLimit(...)`), which calls the internal encoder for you.
+Installation parameters for the three built-in policy types. Most callers should use the convenience methods on `OZPolicyManager` (`addSimpleThreshold(...)`, `addWeightedThreshold(...)`, `addSpendingLimit(...)`), which build and encode the params internally. Construct `OZPolicyInstallParams` directly and call `toScVal()` to obtain the encoded value for `addPolicy(installParams:)` when installing a custom policy contract.
+
+#### toScVal()
+
+```swift
+public func toScVal() throws -> SCValXDR
+```
+
+Encodes the installation parameters into the `Map`-shaped `SCValXDR` value the smart-account contract's `add_policy` method expects, with map key ordering normalized to satisfy Soroban's strict map-key ordering.
+
+**Throws**: `SmartAccountValidationException.InvalidInput` when the variant's parameters are invalid (zero threshold, empty signer weights, non-positive spending limit, zero period, or malformed spending-limit string).
 
 #### OZSignerWeightEntry
 
@@ -1355,13 +1389,14 @@ public func multiSignerTransfer(
     tokenContract: String,
     recipient: String,
     amount: String,
+    decimals: Int? = nil,
     selectedSigners: [OZSelectedSigner],
     forceMethod: OZSubmissionMethod? = nil,
     resolveContextRuleIds: OZResolveContextRuleIds? = nil
 ) async throws -> OZTransactionResult
 ```
 
-SEP-41 token transfer signed by an explicit list of signers. Validates the connection, the recipient address, the self-transfer guard, the amount, and that `selectedSigners` is non-empty before delegating to `multiSignerContractCall(...)`.
+SEP-41 token transfer signed by an explicit list of signers. Validates the connection, the recipient address, the self-transfer guard, the amount, and that `selectedSigners` is non-empty before delegating to `multiSignerContractCall(...)`. The amount is converted to base units using `decimals` when supplied, otherwise the token's on-chain `decimals()` value is fetched automatically via `fetchTokenDecimals(tokenContract:)`.
 
 **Throws**: `SmartAccountWalletException.NotConnected`, `SmartAccountValidationException`, `SmartAccountTransactionException`, `WebAuthnException`, `SmartAccountConfigurationException` (when wallet signers are supplied but no external-wallet adapter is configured).
 

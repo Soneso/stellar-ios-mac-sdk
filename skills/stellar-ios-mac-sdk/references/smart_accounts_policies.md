@@ -641,7 +641,7 @@ _ = try await kit.policyManager.addPolicy(
 )
 ```
 
-For a SpendingLimit built inline, the `spending_limit` I128 is in the token's base units (interpreted with 7 decimal places), not a decimal string (the `addSpendingLimit` convenience method is the only one that accepts a decimal string and multiplies for you). For the hand-built map, see the SpendingLimit example under [addContextRule](#addcontextrule).
+For a SpendingLimit built inline, the `spending_limit` I128 is in the token's raw base units, not a decimal string (the `addSpendingLimit` convenience method is the only one that accepts a decimal string and multiplies for you, using its `decimals` parameter — default 7). For the hand-built map, see the SpendingLimit example under [addContextRule](#addcontextrule).
 
 ### Finding policy contract addresses
 
@@ -748,12 +748,15 @@ Caps the cumulative amount transferred under the rule's context within a rolling
 public func addSpendingLimit(
     contextRuleId: UInt32,
     policyAddress: String,
-    spendingLimit: String,                 // decimal XLM-style string, e.g. "1000" or "10.5"
+    spendingLimit: String,                 // decimal string, e.g. "1000" or "10.5"
     periodLedgers: UInt32,                  // window in ledgers (~5 s each)
+    decimals: Int = 7,                      // token scale; default 7
     selectedSigners: [OZSelectedSigner] = [],
     forceMethod: OZSubmissionMethod? = nil
 ) async throws -> OZTransactionResult
 ```
+
+This method has no token-contract parameter, so it cannot fetch the scale automatically. The default `decimals` of 7 fits XLM and most Stellar assets. To target a token whose scale is not 7, fetch it first with `transactionOperations.fetchTokenDecimals(tokenContract:)` and pass it as `decimals`, or build the install params by hand (raw base units) and use the generic `addPolicy(installParams:)`.
 
 Ledger-count constants (no week constant — compute it):
 
@@ -799,7 +802,7 @@ _ = try await kit.policyManager.addSpendingLimit(
 // CORRECT: install on a callContract(target-token-SAC) rule
 ```
 
-`addSpendingLimit` converts the decimal amount to an integer base-units string (interpreted with 7 decimal places) and encodes it via `SCValXDR.i128(stringValue:)`. To build the install params by hand instead, construct the `SCValXDR` map shown above — `period_ledgers` as a `U32` and `spending_limit` as an `I128` via `SCValXDR.i128(stringValue:)` (a base-units-denominated decimal-integer string) — and pass it to the generic `addPolicy(installParams:)`.
+`addSpendingLimit` converts the decimal amount to an integer base-units string using `decimals` (default 7) and encodes it via `SCValXDR.i128(stringValue:)`. To build the install params by hand instead, construct the `SCValXDR` map shown above — `period_ledgers` as a `U32` and `spending_limit` as an `I128` via `SCValXDR.i128(stringValue:)` (a base-units-denominated decimal-integer string) — and pass it to the generic `addPolicy(installParams:)`.
 
 ### addPolicy — generic
 
@@ -1041,11 +1044,14 @@ public func multiSignerTransfer(
     tokenContract: String,
     recipient: String,
     amount: String,                       // decimal string, NOT base units
+    decimals: Int? = nil,                 // token scale; nil = fetch decimals() on-chain
     selectedSigners: [OZSelectedSigner],
     forceMethod: OZSubmissionMethod? = nil,
     resolveContextRuleIds: OZResolveContextRuleIds? = nil
 ) async throws -> OZTransactionResult
 ```
+
+The amount is converted to base units using `decimals` when supplied, otherwise the token's on-chain `decimals()` value is fetched automatically via `transactionOperations.fetchTokenDecimals(tokenContract:)`.
 
 Example — a 2-of-2 transfer with the connected passkey plus an external wallet:
 

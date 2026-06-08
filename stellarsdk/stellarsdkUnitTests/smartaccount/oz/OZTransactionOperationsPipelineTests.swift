@@ -1586,7 +1586,8 @@ final class OZTransactionOperationsPipelineTests: XCTestCase {
         _ = try await h.txOps.transfer(
             tokenContract: contractB,
             recipient: contractB,
-            amount: "1.5"
+            amount: "1.5",
+            decimals: 7
         )
         XCTAssertTrue(relayerCalled)
     }
@@ -1608,9 +1609,108 @@ final class OZTransactionOperationsPipelineTests: XCTestCase {
             tokenContract: contractB,
             recipient: contractB,
             amount: "1",
+            decimals: 7,
             forceMethod: .rpc
         )
         XCTAssertEqual(script.sendCallCount, 1)
+    }
+
+    // ========================================================================
+    // fetchTokenDecimals + automatic decimals resolution
+    // ========================================================================
+
+    func test_fetchTokenDecimals_returnsContractValue() async throws {
+        let h = try await buildPipelineHarness()
+        enqueueDeployerAccount(deployer: h.deployer)
+        script.enqueueSimulate(
+            authEntries: [],
+            resultXdr: SCValXDR.u32(6).xdrEncoded
+        )
+        let decimals = try await h.txOps.fetchTokenDecimals(tokenContract: contractB)
+        XCTAssertEqual(decimals, 6)
+    }
+
+    func test_fetchTokenDecimals_invalidAddress_throwsInvalidAddress() async throws {
+        let h = try await buildPipelineHarness()
+        do {
+            _ = try await h.txOps.fetchTokenDecimals(tokenContract: "not-a-contract")
+            XCTFail("expected SmartAccountValidationException.InvalidAddress")
+        } catch let error as SmartAccountValidationException.InvalidAddress {
+            XCTAssertTrue(error.message.contains("tokenContract"))
+        }
+    }
+
+    func test_fetchTokenDecimals_wrongReturnType_throwsSimulationFailed() async throws {
+        let h = try await buildPipelineHarness()
+        enqueueDeployerAccount(deployer: h.deployer)
+        // The token returns a symbol rather than a u32; the parser rejects it.
+        script.enqueueSimulate(
+            authEntries: [],
+            resultXdr: SCValXDR.symbol("not-a-u32").xdrEncoded
+        )
+        do {
+            _ = try await h.txOps.fetchTokenDecimals(tokenContract: contractB)
+            XCTFail("expected SmartAccountTransactionException.SimulationFailed")
+        } catch let error as SmartAccountTransactionException.SimulationFailed {
+            XCTAssertTrue(error.message.contains("u32"))
+        }
+    }
+
+    func test_fetchTokenDecimals_rpcError_throwsSimulationFailed() async throws {
+        let h = try await buildPipelineHarness()
+        enqueueDeployerAccount(deployer: h.deployer)
+        script.enqueueSimulateError("decimals simulation failed")
+        do {
+            _ = try await h.txOps.fetchTokenDecimals(tokenContract: contractB)
+            XCTFail("expected SmartAccountTransactionException.SimulationFailed")
+        } catch is SmartAccountTransactionException.SimulationFailed {
+            // expected
+        }
+    }
+
+    func test_transfer_nilDecimals_fetchesDecimalsThenSubmits() async throws {
+        let h = try await buildPipelineHarness()
+        // 1) getAccount + decimals simulate (u32 = 6) for the automatic fetch.
+        enqueueDeployerAccount(deployer: h.deployer)
+        script.enqueueSimulate(
+            authEntries: [],
+            resultXdr: SCValXDR.u32(6).xdrEncoded
+        )
+        // 2) transfer simulate + re-simulate + submit pipeline.
+        script.enqueueSimulate(authEntries: [])
+        script.enqueueSimulate(authEntries: [])
+        script.setSendSuccess(
+            status: SendTransactionResponse.STATUS_PENDING,
+            hash: "transfer-auto-decimals"
+        )
+        script.enqueueGetTransactionResponse(
+            status: GetTransactionResponse.STATUS_SUCCESS,
+            ledger: 1001
+        )
+        _ = try await h.txOps.transfer(
+            tokenContract: contractB,
+            recipient: contractB,
+            amount: "1.5",
+            forceMethod: .rpc
+        )
+        // Three simulate calls total: one for decimals, two for the transfer.
+        XCTAssertEqual(script.simulateCallCount, 3)
+        XCTAssertEqual(script.sendCallCount, 1)
+
+        // The fetched scale (u32 = 6) must be the one applied to the amount.
+        // The decimals fetch is the first simulate; the transfer host function
+        // (carrying the amount arg) is the second simulate.
+        let transferSimulateBody = script.simulateCalls[1]
+        let amount = try decodeTransferAmountI128(from: transferSimulateBody)
+        XCTAssertEqual(amount?.hi, 0, "1500000 fits in the i128 low word; hi must be 0")
+        XCTAssertEqual(
+            amount?.lo, 1_500_000,
+            "\"1.5\" scaled by the FETCHED 6 decimals must encode to 1500000 base units"
+        )
+        XCTAssertNotEqual(
+            amount?.lo, 15_000_000,
+            "15000000 would mean a hardcoded scale of 7 was used instead of the fetched 6"
+        )
     }
 
     func test_contractCall_singleSigner_relayerPath_engagesRelayer() async throws {
@@ -2960,6 +3060,47 @@ final class OZTransactionOperationsPipelineTests: XCTestCase {
             }
         }
         return nil
+    }
+
+    /// Decodes the `transfer(from,to,amount)` amount argument carried by a
+    /// JSON-RPC request body's transaction envelope.
+    ///
+    /// Reads `params.transaction` (the Base64 envelope), locates the first
+    /// `InvokeHostFunction` operation, asserts the host function is an
+    /// `invokeContract` call to `transfer`, and returns the i128 third argument
+    /// as `(hi, lo)`. The SEP-41 `transfer` signature is
+    /// `transfer(from: Address, to: Address, amount: i128)`, so `args[2]` is the
+    /// amount.
+    private func decodeTransferAmountI128(
+        from body: Data?,
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) throws -> Int128PartsXDR? {
+        guard let envelopeBase64 = extractEnvelopeBase64(from: body) else {
+            XCTFail("request body did not carry a transaction envelope", file: file, line: line)
+            return nil
+        }
+        let envelope = try TransactionEnvelopeXDR(xdr: envelopeBase64)
+        guard let op = firstInvokeHostFunctionOp(envelope: envelope) else {
+            XCTFail("envelope carried no InvokeHostFunction operation", file: file, line: line)
+            return nil
+        }
+        guard case .invokeContract(let invokeArgs) = op.hostFunction else {
+            XCTFail("host function is not an invokeContract call", file: file, line: line)
+            return nil
+        }
+        XCTAssertEqual(invokeArgs.functionName, "transfer",
+                       "expected the transfer host function", file: file, line: line)
+        guard invokeArgs.args.count == 3 else {
+            XCTFail("transfer must carry exactly 3 args (from, to, amount), got \(invokeArgs.args.count)",
+                    file: file, line: line)
+            return nil
+        }
+        guard case .i128(let parts) = invokeArgs.args[2] else {
+            XCTFail("transfer amount arg is not an i128", file: file, line: line)
+            return nil
+        }
+        return parts
     }
 
     /// Returns the per-envelope signature list.

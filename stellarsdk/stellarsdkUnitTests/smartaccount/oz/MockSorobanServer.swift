@@ -72,6 +72,13 @@ final class MockSorobanServerScript: @unchecked Sendable {
         scriptLock.lock(); defer { scriptLock.unlock() }
         return _simulateCalls.count
     }
+    /// Raw JSON-RPC `simulateTransaction` request bodies in call order. Tests
+    /// decode the `params.transaction` envelope to assert the simulated host
+    /// function's arguments (e.g. the `transfer` amount).
+    var simulateCalls: [Data] {
+        scriptLock.lock(); defer { scriptLock.unlock() }
+        return _simulateCalls
+    }
     var sendCallCount: Int {
         scriptLock.lock(); defer { scriptLock.unlock() }
         return _sendCalls.count

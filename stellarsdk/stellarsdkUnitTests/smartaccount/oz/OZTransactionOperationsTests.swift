@@ -127,7 +127,8 @@ final class OZTransactionOperationsTests: XCTestCase {
             _ = try await txOps.transfer(
                 tokenContract: validContractAddress,
                 recipient: validAccountAddress,
-                amount: "0"
+                amount: "0",
+                decimals: 7
             )
             XCTFail("expected SmartAccountValidationException.InvalidAmount")
         } catch is SmartAccountValidationException.InvalidAmount {
@@ -141,7 +142,8 @@ final class OZTransactionOperationsTests: XCTestCase {
             _ = try await txOps.transfer(
                 tokenContract: validContractAddress,
                 recipient: validAccountAddress,
-                amount: "-5"
+                amount: "-5",
+                decimals: 7
             )
             XCTFail("expected SmartAccountValidationException.InvalidAmount")
         } catch is SmartAccountValidationException.InvalidAmount {
@@ -155,7 +157,8 @@ final class OZTransactionOperationsTests: XCTestCase {
             _ = try await txOps.transfer(
                 tokenContract: validContractAddress,
                 recipient: validAccountAddress,
-                amount: "abc"
+                amount: "abc",
+                decimals: 7
             )
             XCTFail("expected SmartAccountValidationException.InvalidAmount")
         } catch is SmartAccountValidationException.InvalidAmount {
@@ -169,7 +172,8 @@ final class OZTransactionOperationsTests: XCTestCase {
             _ = try await txOps.transfer(
                 tokenContract: validContractAddress,
                 recipient: validAccountAddress,
-                amount: ""
+                amount: "",
+                decimals: 7
             )
             XCTFail("expected SmartAccountValidationException.InvalidAmount")
         } catch is SmartAccountValidationException.InvalidAmount {
@@ -183,7 +187,8 @@ final class OZTransactionOperationsTests: XCTestCase {
             _ = try await txOps.transfer(
                 tokenContract: validContractAddress,
                 recipient: validAccountAddress,
-                amount: "1e5"
+                amount: "1e5",
+                decimals: 7
             )
             XCTFail("expected SmartAccountValidationException.InvalidAmount")
         } catch is SmartAccountValidationException.InvalidAmount {
@@ -197,7 +202,8 @@ final class OZTransactionOperationsTests: XCTestCase {
             _ = try await txOps.transfer(
                 tokenContract: validContractAddress,
                 recipient: validAccountAddress,
-                amount: "0.00000001"
+                amount: "0.00000001",
+                decimals: 7
             )
             XCTFail("expected SmartAccountValidationException.InvalidAmount")
         } catch is SmartAccountValidationException.InvalidAmount {
@@ -212,6 +218,25 @@ final class OZTransactionOperationsTests: XCTestCase {
                 tokenContract: "not-a-contract",
                 recipient: validAccountAddress,
                 amount: "10"
+            )
+            XCTFail("expected SmartAccountValidationException.InvalidAddress")
+        } catch let error as SmartAccountValidationException.InvalidAddress {
+            // With nil decimals the token contract is validated up front by the
+            // automatic decimals fetch before any amount conversion or call.
+            XCTAssertTrue(error.message.contains("tokenContract"))
+        }
+    }
+
+    func test_transfer_explicitDecimals_invalidTokenContract_throws() async throws {
+        // With explicit decimals there is no automatic fetch; the invalid token
+        // contract surfaces from the downstream contract call as `target`.
+        let (_, txOps) = try connectedKit()
+        do {
+            _ = try await txOps.transfer(
+                tokenContract: "not-a-contract",
+                recipient: validAccountAddress,
+                amount: "10",
+                decimals: 7
             )
             XCTFail("expected SmartAccountValidationException.InvalidAddress")
         } catch let error as SmartAccountValidationException.InvalidAddress {
@@ -743,25 +768,88 @@ final class OZTransactionOperationsTests: XCTestCase {
     // ========================================================================
 
     func test_amountToBaseUnits_validInteger_returnsBaseUnits() throws {
-        let baseUnits = try OZTransactionOperations.amountToBaseUnits("10")
+        let baseUnits = try OZTransactionOperations.amountToBaseUnits("10", decimals: 7)
         XCTAssertEqual(baseUnits, "100000000")
     }
 
     func test_amountToBaseUnits_validFractional_returnsBaseUnits() throws {
-        let baseUnits = try OZTransactionOperations.amountToBaseUnits("0.5")
+        let baseUnits = try OZTransactionOperations.amountToBaseUnits("0.5", decimals: 7)
         XCTAssertEqual(baseUnits, "5000000")
     }
 
     func test_amountToBaseUnits_oneBaseUnit_returnsOne() throws {
-        let baseUnits = try OZTransactionOperations.amountToBaseUnits("0.0000001")
+        let baseUnits = try OZTransactionOperations.amountToBaseUnits("0.0000001", decimals: 7)
         XCTAssertEqual(baseUnits, "1")
     }
 
     func test_amountToBaseUnits_aboveInt64_returnsFullPrecisionString() throws {
         // A value far beyond Int64.max must be preserved exactly as base units
         // (10^25 -> 10^32 base units), not capped at Int64.
-        let baseUnits = try OZTransactionOperations.amountToBaseUnits("10000000000000000000000000")
+        let baseUnits = try OZTransactionOperations.amountToBaseUnits(
+            "10000000000000000000000000", decimals: 7)
         XCTAssertEqual(baseUnits, "100000000000000000000000000000000")
+    }
+
+    func test_amountToBaseUnits_sixDecimals_scalesBySix() throws {
+        let baseUnits = try OZTransactionOperations.amountToBaseUnits("1.5", decimals: 6)
+        XCTAssertEqual(baseUnits, "1500000")
+    }
+
+    func test_amountToBaseUnits_eighteenDecimals_scalesByEighteen() throws {
+        let baseUnits = try OZTransactionOperations.amountToBaseUnits("2", decimals: 18)
+        XCTAssertEqual(baseUnits, "2000000000000000000")
+    }
+
+    func test_amountToBaseUnits_zeroDecimals_integerAmount_returnsWhole() throws {
+        let baseUnits = try OZTransactionOperations.amountToBaseUnits("42", decimals: 0)
+        XCTAssertEqual(baseUnits, "42")
+    }
+
+    func test_amountToBaseUnits_zeroDecimals_fractionalAmount_throws() {
+        // decimals == 0 accepts integer amounts only; any fractional digit is
+        // rejected.
+        XCTAssertThrowsError(
+            try OZTransactionOperations.amountToBaseUnits("1.5", decimals: 0)
+        ) { error in
+            XCTAssertTrue(error is SmartAccountValidationException.InvalidAmount)
+        }
+    }
+
+    func test_amountToBaseUnits_tooManyFractionalDigitsForDecimals_throws() {
+        // Seven fractional digits with a six-decimal scale exceeds the token's
+        // precision and is rejected.
+        XCTAssertThrowsError(
+            try OZTransactionOperations.amountToBaseUnits("1.1234567", decimals: 6)
+        ) { error in
+            XCTAssertTrue(error is SmartAccountValidationException.InvalidAmount)
+        }
+    }
+
+    func test_amountToBaseUnits_negativeDecimals_throws() {
+        XCTAssertThrowsError(
+            try OZTransactionOperations.amountToBaseUnits("1", decimals: -1)
+        ) { error in
+            XCTAssertTrue(error is SmartAccountValidationException.InvalidAmount)
+        }
+    }
+
+    func test_amountToBaseUnits_decimalsAboveCap_throws() {
+        XCTAssertThrowsError(
+            try OZTransactionOperations.amountToBaseUnits(
+                "1", decimals: OZTransactionOperations.maxTokenDecimals + 1)
+        ) { error in
+            XCTAssertTrue(error is SmartAccountValidationException.InvalidAmount)
+        }
+    }
+
+    func test_amountToBaseUnits_zeroResultAtNonSevenDecimals_throws() {
+        // "0" must be rejected at any scale because the resulting base-units
+        // value is zero.
+        XCTAssertThrowsError(
+            try OZTransactionOperations.amountToBaseUnits("0", decimals: 6)
+        ) { error in
+            XCTAssertTrue(error is SmartAccountValidationException.InvalidAmount)
+        }
     }
 
     func test_baseUnitsToI128ScVal_aboveInt64_encodesFullValue() throws {
@@ -784,37 +872,37 @@ final class OZTransactionOperationsTests: XCTestCase {
     }
 
     func test_amountToBaseUnits_zero_throws() {
-        XCTAssertThrowsError(try OZTransactionOperations.amountToBaseUnits("0")) { error in
+        XCTAssertThrowsError(try OZTransactionOperations.amountToBaseUnits("0", decimals: 7)) { error in
             XCTAssertTrue(error is SmartAccountValidationException.InvalidAmount)
         }
     }
 
     func test_amountToBaseUnits_belowOneBaseUnit_throws() {
-        XCTAssertThrowsError(try OZTransactionOperations.amountToBaseUnits("0.00000001")) { error in
+        XCTAssertThrowsError(try OZTransactionOperations.amountToBaseUnits("0.00000001", decimals: 7)) { error in
             XCTAssertTrue(error is SmartAccountValidationException.InvalidAmount)
         }
     }
 
     func test_amountToBaseUnits_scientific_throws() {
-        XCTAssertThrowsError(try OZTransactionOperations.amountToBaseUnits("1e5")) { error in
+        XCTAssertThrowsError(try OZTransactionOperations.amountToBaseUnits("1e5", decimals: 7)) { error in
             XCTAssertTrue(error is SmartAccountValidationException.InvalidAmount)
         }
     }
 
     func test_amountToBaseUnits_empty_throws() {
-        XCTAssertThrowsError(try OZTransactionOperations.amountToBaseUnits("")) { error in
+        XCTAssertThrowsError(try OZTransactionOperations.amountToBaseUnits("", decimals: 7)) { error in
             XCTAssertTrue(error is SmartAccountValidationException.InvalidAmount)
         }
     }
 
     func test_amountToBaseUnits_nonNumeric_throws() {
-        XCTAssertThrowsError(try OZTransactionOperations.amountToBaseUnits("abc")) { error in
+        XCTAssertThrowsError(try OZTransactionOperations.amountToBaseUnits("abc", decimals: 7)) { error in
             XCTAssertTrue(error is SmartAccountValidationException.InvalidAmount)
         }
     }
 
     func test_amountToBaseUnits_negative_throws() {
-        XCTAssertThrowsError(try OZTransactionOperations.amountToBaseUnits("-5")) { error in
+        XCTAssertThrowsError(try OZTransactionOperations.amountToBaseUnits("-5", decimals: 7)) { error in
             XCTAssertTrue(error is SmartAccountValidationException.InvalidAmount)
         }
     }
@@ -885,13 +973,13 @@ final class OZTransactionOperationsTests: XCTestCase {
         // A 30-digit whole part far exceeds Int64 but is preserved exactly:
         // 30 nines -> 30 nines followed by 7 zeros in base units.
         let huge = String(repeating: "9", count: 30)
-        let baseUnits = try OZTransactionOperations.amountToBaseUnits(huge)
+        let baseUnits = try OZTransactionOperations.amountToBaseUnits(huge, decimals: 7)
         XCTAssertEqual(baseUnits, huge + "0000000")
     }
 
     func test_amountToBaseUnits_tooManyFractionalDigits_throws() {
         // Eight fractional digits exceeds the seven-decimal base-unit precision.
-        XCTAssertThrowsError(try OZTransactionOperations.amountToBaseUnits("1.123456789")) { error in
+        XCTAssertThrowsError(try OZTransactionOperations.amountToBaseUnits("1.123456789", decimals: 7)) { error in
             XCTAssertTrue(error is SmartAccountValidationException.InvalidAmount)
         }
     }

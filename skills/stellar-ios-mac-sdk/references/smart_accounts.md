@@ -688,15 +688,29 @@ public struct OZTransactionResult {
 
 ### transfer
 
-SEP-41-compatible token transfer (XLM via the SAC, or any Soroban token). The decimal amount is converted to the token's base units internally (interpreted with 7 decimal places).
+SEP-41-compatible token transfer (XLM via the SAC, or any Soroban token). The decimal amount is converted to the token's base units internally. When `decimals` is supplied it is used directly; when it is `nil` (default) the token's on-chain `decimals()` value is fetched automatically via `fetchTokenDecimals(tokenContract:)`. Supply `decimals` to skip the extra RPC round trip when the scale is already known.
 
 ```swift
 public func transfer(
     tokenContract: String,   // C-address of the token contract
     recipient: String,       // G-address or C-address
-    amount: String,          // decimal string, up to 7 places
+    amount: String,          // decimal string, up to `decimals` places
+    decimals: Int? = nil,    // token scale; nil = fetch decimals() on-chain
     forceMethod: OZSubmissionMethod? = nil
 ) async throws -> OZTransactionResult
+```
+
+Use `fetchTokenDecimals` to read a token's scale once and reuse it:
+
+```swift
+public func fetchTokenDecimals(tokenContract: String) async throws -> Int
+```
+
+```swift
+let decimals = try await kit.transactionOperations.fetchTokenDecimals(
+    tokenContract: "CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC"
+)
+// pass `decimals: decimals` to transfer / multiSignerTransfer to avoid re-fetching
 ```
 
 ```swift
@@ -715,8 +729,9 @@ if result.success {
 ```swift
 // WRONG: amount: 10 — must be a String
 // CORRECT: amount: "10"
-// WRONG: amount: "10500000" — that is 10.5 million XLM, not 10.5 XLM
+// WRONG: amount: "10500000" — that is 10.5 million tokens, not 10.5
 // CORRECT: amount: "10.5" — the SDK converts to base units automatically
+//          using the token's decimals (fetched on-chain when `decimals` is nil)
 // WRONG: transfer to the smart account's own contractId — throws SmartAccountValidationException
 // CORRECT: recipient must differ from the connected smart account address
 ```

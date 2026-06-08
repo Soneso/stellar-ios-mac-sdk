@@ -144,9 +144,9 @@ public enum OZPolicyInstallParams: Sendable {
     ///
     /// - Parameters:
     ///   - spendingLimit: Maximum cumulative amount in the token's base units as
-    ///     a positive decimal integer string. Base units are interpreted with
-    ///     7 decimal places (one whole token is ten million base units), so the
-    ///     string must contain only digits with no decimal point.
+    ///     a non-negative integer string (digits only, no decimal point). This is
+    ///     the raw on-chain amount already scaled by the token's `decimals`; the
+    ///     caller is responsible for that scaling.
     ///   - periodLedgers: Rolling window length in ledgers (Stellar produces a
     ///     ledger approximately every five seconds). Must be greater than zero.
     case spendingLimit(spendingLimit: String, periodLedgers: UInt32)
@@ -167,7 +167,7 @@ public enum OZPolicyInstallParams: Sendable {
     /// - Throws: ``SmartAccountValidationException/InvalidInput`` when the variant's
     ///   parameters are invalid (zero threshold, empty signer weights, non-positive
     ///   spending limit, zero period, or malformed spending-limit string).
-    internal func toScVal() throws -> SCValXDR {
+    public func toScVal() throws -> SCValXDR {
         switch self {
         case .simpleThreshold(let threshold):
             if threshold == 0 {
@@ -527,11 +527,7 @@ public final class OZPolicyManager: OZManagerHelpers, @unchecked Sendable {
     /// the canonical hour count, and ~17 280 ledgers approximates one day).
     ///
     /// The amount is supplied as a positive decimal string and converted to the
-    /// token's base units using a fixed-point shift interpreted with 7 decimal
-    /// places (one whole token equals ten million base units). To supply a raw
-    /// base-units amount instead, build the policy via ``OZPolicyInstallParams/spendingLimit(spendingLimit:periodLedgers:)``
-    /// and pass it through
-    /// ``addPolicy(contextRuleId:policyAddress:installParams:selectedSigners:forceMethod:)``.
+    /// token's base units using `decimals` (default 7).
     ///
     /// - Parameters:
     ///   - contextRuleId: Context-rule identifier the policy is being added to
@@ -539,10 +535,13 @@ public final class OZPolicyManager: OZManagerHelpers, @unchecked Sendable {
     ///   - policyAddress: Policy contract address (`C…` strkey).
     ///   - spendingLimit: Maximum cumulative amount per period as a positive
     ///     decimal string (for example `"100"` or `"0.5"`). Converted to the
-    ///     token's base units internally (interpreted with 7 decimal places);
-    ///     up to seven fractional digits are accepted.
+    ///     token's base units internally using `decimals`; up to `decimals`
+    ///     fractional digits are accepted.
     ///   - periodLedgers: Rolling-window length in ledgers. Must be greater
     ///     than zero.
+    ///   - decimals: The token's decimal scale used to convert `spendingLimit`
+    ///     to base units. Defaults to 7. This method has no token-contract
+    ///     parameter and therefore does not fetch the scale automatically.
     ///   - selectedSigners: Optional multi-signer participants list.
     ///   - forceMethod: Optional submission-method override.
     /// - Returns: An ``OZTransactionResult`` describing the on-chain outcome.
@@ -554,6 +553,7 @@ public final class OZPolicyManager: OZManagerHelpers, @unchecked Sendable {
         policyAddress: String,
         spendingLimit: String,
         periodLedgers: UInt32,
+        decimals: Int = 7,
         selectedSigners: [OZSelectedSigner] = [],
         forceMethod: OZSubmissionMethod? = nil
     ) async throws -> OZTransactionResult {
@@ -562,7 +562,7 @@ public final class OZPolicyManager: OZManagerHelpers, @unchecked Sendable {
         // non-negative integer base-units string.
         let baseUnits: String
         do {
-            baseUnits = try OZTransactionOperations.amountToBaseUnits(spendingLimit)
+            baseUnits = try OZTransactionOperations.amountToBaseUnits(spendingLimit, decimals: decimals)
         } catch let error as SmartAccountValidationException.InvalidAmount {
             // Re-surface as a field-tagged validation error so the message
             // refers to the policy parameter the caller supplied rather than

@@ -108,15 +108,20 @@ public final class OZTransactionOperations: OZManagerHelpers, @unchecked Sendabl
     ///
     /// Compatible with any SEP-41 token (native asset via the Stellar Asset
     /// Contract, or custom Soroban tokens). The decimal amount is converted to
-    /// the token's base units (interpreted with 7 decimal places) before
-    /// submission. Delegates to
+    /// the token's base units before submission: the `decimals` value is used
+    /// when supplied, otherwise the token's on-chain `decimals()` is fetched
+    /// automatically via ``fetchTokenDecimals(tokenContract:)``. Delegates to
     /// ``contractCall(target:targetFn:targetArgs:forceMethod:resolveContextRuleIds:)``
     /// to drive the full simulate / sign / submit pipeline.
     ///
     /// - Parameters:
     ///   - tokenContract: SEP-41 token contract address (`C…` strkey).
     ///   - recipient: Recipient address (`G…` account or `C…` contract).
-    ///   - amount: Decimal XLM-style string (for example `"10"` or `"100.5"`).
+    ///   - amount: Decimal amount string (for example `"10"` or `"100.5"`).
+    ///   - decimals: The token's decimal scale used to convert `amount` to base
+    ///     units. When `nil` (default) the value is fetched on-chain via
+    ///     ``fetchTokenDecimals(tokenContract:)``. Supply it to avoid the extra
+    ///     RPC round trip when the scale is already known.
     ///   - forceMethod: Optional submission-method override.
     /// - Returns: ``OZTransactionResult`` describing the on-chain outcome.
     /// - Throws: ``SmartAccountWalletException/NotConnected`` when no wallet is connected;
@@ -127,6 +132,7 @@ public final class OZTransactionOperations: OZManagerHelpers, @unchecked Sendabl
         tokenContract: String,
         recipient: String,
         amount: String,
+        decimals: Int? = nil,
         forceMethod: OZSubmissionMethod? = nil
     ) async throws -> OZTransactionResult {
         let connected = try kit.requireConnected()
@@ -138,7 +144,13 @@ public final class OZTransactionOperations: OZManagerHelpers, @unchecked Sendabl
             )
         }
 
-        let baseUnits = try OZTransactionOperations.amountToBaseUnits(amount)
+        let resolvedDecimals: Int
+        if let decimals = decimals {
+            resolvedDecimals = decimals
+        } else {
+            resolvedDecimals = try await fetchTokenDecimals(tokenContract: tokenContract)
+        }
+        let baseUnits = try OZTransactionOperations.amountToBaseUnits(amount, decimals: resolvedDecimals)
 
         let fromAddress = try SCAddressXDR(contractId: connected.contractId)
         let toAddress: SCAddressXDR
@@ -160,6 +172,35 @@ public final class OZTransactionOperations: OZManagerHelpers, @unchecked Sendabl
             targetArgs: targetArgs,
             forceMethod: forceMethod
         )
+    }
+
+    /// Reads the `decimals()` value from a SEP-41 token contract.
+    ///
+    /// Simulates the token contract's `decimals` function and returns the
+    /// reported `u32` scale.
+    ///
+    /// - Parameter tokenContract: SEP-41 token contract address (`C…` strkey).
+    /// - Returns: The token's decimal scale.
+    /// - Throws: ``SmartAccountValidationException`` when `tokenContract` is not
+    ///   a valid contract address; ``SmartAccountTransactionException`` when the
+    ///   simulation fails or the contract does not return a valid `u32` value.
+    public func fetchTokenDecimals(tokenContract: String) async throws -> Int {
+        try requireContractAddress(tokenContract, fieldName: "tokenContract")
+
+        let invokeArgs = InvokeContractArgsXDR(
+            contractAddress: try SCAddressXDR(contractId: tokenContract),
+            functionName: "decimals",
+            args: []
+        )
+        let hostFunction = HostFunctionXDR.invokeContract(invokeArgs)
+        let result = try await simulateAndExtractResult(hostFunction: hostFunction)
+
+        guard let decimals = OZTransactionOperations.scValToUInt32(result) else {
+            throw SmartAccountTransactionException.simulationFailed(
+                reason: "Token contract \(tokenContract) did not return a valid u32 decimals value"
+            )
+        }
+        return Int(decimals)
     }
 
     /// Calls an arbitrary function on an external contract directly from the
@@ -1138,18 +1179,44 @@ public final class OZTransactionOperations: OZManagerHelpers, @unchecked Sendabl
         }
     }
 
-    // MARK: - Static helpers (visible for testing)
+    // MARK: - Static helpers
 
-    /// Parses a positive decimal amount string and returns the value in the
-    /// token's base units (interpreted with 7 decimal places). Rejects
-    /// scientific notation, empty / non-numeric strings, values <= 0, and
-    /// values smaller than one base unit (`0.0000001`).
+    /// Maximum number of decimal places accepted by ``amountToBaseUnits(_:decimals:)``.
     ///
-    /// The smart-account flow requires a strict parser: the existing SDK
-    /// `Operation.toXDRAmount` accepts zero and scientific notation, which are
-    /// invalid for token transfers. Acceptable input shape is `^[0-9]+(\.[0-9]+)?$`
-    /// with up to seven fractional digits and a positive result.
-    internal static func amountToBaseUnits(_ amount: String) throws -> String {
+    /// `10^38` already exceeds the `i128` range used for token amounts, so a
+    /// larger scale could never produce a representable base-units value.
+    internal static let maxTokenDecimals: Int = 38
+
+    /// Converts a positive decimal amount string to its base-units representation
+    /// scaled by `decimals` decimal places.
+    ///
+    /// Rejects scientific notation, empty or non-numeric strings, values less than
+    /// or equal to zero, and values carrying more fractional digits than `decimals`
+    /// allows. Accepted shape: `^[0-9]+(\.[0-9]+)?$` with at most `decimals`
+    /// fractional digits and a result greater than zero.
+    ///
+    /// - Parameters:
+    ///   - amount: Positive decimal string (for example `"10"` or `"100.5"`).
+    ///   - decimals: The token's decimal scale. Must be in `0...maxTokenDecimals`.
+    ///     A value of `0` accepts only integer amounts and rejects any fractional digit.
+    /// - Returns: The base-units amount as a non-negative decimal integer string
+    ///   with no leading zeros (except the single digit `"0"`).
+    /// - Throws: ``SmartAccountValidationException/InvalidAmount`` when the input
+    ///   is invalid or out of the `i128` representable range.
+    public static func amountToBaseUnits(_ amount: String, decimals: Int) throws -> String {
+        if decimals < 0 {
+            throw SmartAccountValidationException.invalidAmount(
+                amount: amount,
+                reason: "Token decimals must not be negative"
+            )
+        }
+        if decimals > maxTokenDecimals {
+            throw SmartAccountValidationException.invalidAmount(
+                amount: amount,
+                reason: "Token decimals must not exceed \(maxTokenDecimals)"
+            )
+        }
+
         let trimmed = amount.trimmingCharacters(in: .whitespacesAndNewlines)
         if trimmed.isEmpty {
             throw SmartAccountValidationException.invalidAmount(
@@ -1189,15 +1256,15 @@ public final class OZTransactionOperations: OZManagerHelpers, @unchecked Sendabl
         let wholePart = String(parts[0])
         let fractionPart: String = parts.count > 1 ? String(parts[1]) : ""
 
-        if fractionPart.count > 7 {
+        if fractionPart.count > decimals {
             throw SmartAccountValidationException.invalidAmount(
                 amount: amount,
-                reason: "Amount has more than 7 fractional digits"
+                reason: "Amount has more than \(decimals) fractional digits"
             )
         }
 
         let paddedFraction = fractionPart.padding(
-            toLength: 7,
+            toLength: decimals,
             withPad: "0",
             startingAt: 0
         )
@@ -1317,6 +1384,16 @@ public final class OZTransactionOperations: OZManagerHelpers, @unchecked Sendabl
             return nil
         }
         return nil
+    }
+
+    /// Extracts a `UInt32` from an `SCValXDR.u32` value, used to parse a token
+    /// contract's `decimals()` return value. Returns `nil` when the supplied
+    /// ScVal is not a `u32`.
+    internal static func scValToUInt32(_ scVal: SCValXDR) -> UInt32? {
+        guard case .u32(let value) = scVal else {
+            return nil
+        }
+        return value
     }
 
     /// Formats a non-negative stroops amount as a decimal XLM string. Trims

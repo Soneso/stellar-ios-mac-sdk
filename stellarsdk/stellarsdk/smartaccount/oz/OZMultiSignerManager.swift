@@ -72,7 +72,7 @@ public class OZMultiSignerManager: OZManagerHelpers, @unchecked Sendable {
     /// 2. `requireStellarAddress(_:fieldName:)` over `recipient`.
     /// 3. Self-transfer guard (recipient must differ from the connected
     ///    contract id).
-    /// 4. Amount parsing via ``OZTransactionOperations/amountToBaseUnits(_:)``.
+    /// 4. Amount parsing via ``OZTransactionOperations/amountToBaseUnits(_:decimals:)``.
     /// 5. `selectedSigners.isEmpty` — throws ``SmartAccountValidationException/InvalidInput``.
     /// 6. `tokenContract` validation.
     ///
@@ -80,8 +80,13 @@ public class OZMultiSignerManager: OZManagerHelpers, @unchecked Sendable {
     ///   - tokenContract: SEP-41 token contract address (`C…` strkey).
     ///   - recipient: Recipient address (`G…` account or `C…` contract). Must
     ///     differ from the connected smart-account contract id.
-    ///   - amount: Decimal XLM-style amount string (for example `"10"` or
-    ///     `"100.5"`). Parsed via ``OZTransactionOperations/amountToBaseUnits(_:)``.
+    ///   - amount: Decimal amount string (for example `"10"` or
+    ///     `"100.5"`). Converted to base units using `decimals` when supplied,
+    ///     otherwise the token's on-chain `decimals()` is fetched automatically
+    ///     via ``OZTransactionOperations/fetchTokenDecimals(tokenContract:)``.
+    ///   - decimals: The token's decimal scale used to convert `amount` to base
+    ///     units. When `nil` (default) the value is fetched on-chain. Supply it
+    ///     to avoid the extra RPC round trip when the scale is already known.
     ///   - selectedSigners: All signers that must sign, in collection order.
     ///     Must be non-empty.
     ///   - forceMethod: Optional submission-method override.
@@ -99,6 +104,7 @@ public class OZMultiSignerManager: OZManagerHelpers, @unchecked Sendable {
         tokenContract: String,
         recipient: String,
         amount: String,
+        decimals: Int? = nil,
         selectedSigners: [OZSelectedSigner],
         forceMethod: OZSubmissionMethod? = nil,
         resolveContextRuleIds: OZResolveContextRuleIds? = nil
@@ -118,7 +124,15 @@ public class OZMultiSignerManager: OZManagerHelpers, @unchecked Sendable {
             )
         }
 
-        let baseUnits = try OZTransactionOperations.amountToBaseUnits(amount)
+        let resolvedDecimals: Int
+        if let decimals = decimals {
+            resolvedDecimals = decimals
+        } else {
+            resolvedDecimals = try await kit.transactionOperations.fetchTokenDecimals(
+                tokenContract: tokenContract
+            )
+        }
+        let baseUnits = try OZTransactionOperations.amountToBaseUnits(amount, decimals: resolvedDecimals)
 
         let fromAddress = try SCAddressXDR(contractId: connected.contractId)
         let toAddress: SCAddressXDR

@@ -302,6 +302,7 @@ final class OZMultiSignerManagerTests: XCTestCase {
                 tokenContract: validAccountAddress,
                 recipient: validAccountAddress,
                 amount: "10",
+                decimals: 7,
                 selectedSigners: [passkeySignerStub()]
             )
             XCTFail("expected SmartAccountValidationException.InvalidAddress")
@@ -319,6 +320,7 @@ final class OZMultiSignerManagerTests: XCTestCase {
                 tokenContract: "CABC",
                 recipient: validAccountAddress,
                 amount: "10",
+                decimals: 7,
                 selectedSigners: [passkeySignerStub()]
             )
             XCTFail("expected SmartAccountValidationException.InvalidAddress")
@@ -338,6 +340,7 @@ final class OZMultiSignerManagerTests: XCTestCase {
                 tokenContract: validTargetContract,
                 recipient: validAccountAddress,
                 amount: "10",
+                decimals: 7,
                 selectedSigners: []
             )
             XCTFail("expected SmartAccountValidationException.InvalidInput")
@@ -2623,6 +2626,7 @@ extension OZMultiSignerManagerTests {
             tokenContract: pipelineTargetContract,
             recipient: recipientContract,
             amount: "10",
+            decimals: 7,
             selectedSigners: signers
         )
 
@@ -3160,6 +3164,241 @@ extension OZMultiSignerManagerTests {
         } catch is SmartAccountTransactionException.SigningFailed {
             // Expected: the signer address cannot be turned into a KeyPair.
         }
+    }
+
+    // ------------------------------------------------------------------------
+    // multiSignerTransfer — decimals resolution (auto-fetch vs explicit)
+    // ------------------------------------------------------------------------
+
+    /// `multiSignerTransfer` with `decimals: nil` performs the automatic
+    /// `decimals()` fetch through `kit.transactionOperations.fetchTokenDecimals`,
+    /// then drives the multi-signer pipeline to a successful submission. The
+    /// extra decimals simulate raises the total simulate count to three (one
+    /// fetch + initial transfer simulate + re-simulate), and — critically — the
+    /// FETCHED scale (u32 = 6, not the SDK's classic 7) is the one applied to
+    /// the encoded transfer amount: `"1.5"` must encode to 1500000 base units.
+    func test_multiSignerTransfer_nilDecimals_fetchesDecimalsAndAppliesScale() async throws {
+        let script = MockSorobanServerScript()
+        MockSorobanServer.activate(script: script)
+        defer {
+            MockSorobanServer.deactivate()
+            MockURLProtocol.reset()
+        }
+
+        let deployer = try deterministicDeployer(seed: 0x44)
+        let provider = RecordingWebAuthnProvider()
+        let (kit, manager) = try scriptedKit(
+            script: script,
+            deployer: deployer,
+            provider: provider
+        )
+        _ = kit
+
+        // 1) decimals() fetch: getAccount + simulate returning u32 = 6.
+        script.setGetAccountResponse(accountId: deployer.accountId, sequence: 21)
+        script.enqueueSimulate(
+            authEntries: [],
+            resultXdr: SCValXDR.u32(6).xdrEncoded
+        )
+        // 2) transfer pipeline: initial simulate (carries the amount arg),
+        //    passkey signing, re-simulate, submit, poll.
+        let authEntry = try OZPipelineFixtures.addressCredentialsAuthEntry(
+            contractAddress: pipelineContractId,
+            targetContract: pipelineTargetContract,
+            targetFn: "transfer"
+        )
+        script.enqueueSimulate(authEntries: [authEntry])
+        script.setGetLatestLedger(sequence: 1000)
+        provider.enqueueAuthenticate(
+            RecordingWebAuthnFixtures.authenticationResult(credentialId: Data([0x02]))
+        )
+        script.enqueueSimulate(authEntries: [], minResourceFee: 200)
+        script.setSendSuccess(
+            status: SendTransactionResponse.STATUS_PENDING,
+            hash: "multi-auto-decimals"
+        )
+        script.enqueueGetTransactionResponse(
+            status: GetTransactionResponse.STATUS_SUCCESS,
+            ledger: 1002
+        )
+
+        let signers: [OZSelectedSigner] = [
+            .passkey(
+                credentialId: "passkey-cred",
+                credentialIdBytes: Data([0x02]),
+                keyData: validPasskeyKeyData()
+            )
+        ]
+
+        let result = try await manager.multiSignerTransfer(
+            tokenContract: pipelineTargetContract,
+            recipient: pipelineTargetContract,
+            amount: "1.5",
+            decimals: nil,
+            selectedSigners: signers
+        )
+
+        XCTAssertTrue(result.success, "expected success, got error: \(result.error ?? "nil")")
+        XCTAssertEqual(result.hash, "multi-auto-decimals")
+        // Three simulate calls: decimals fetch + initial transfer + re-simulate.
+        XCTAssertEqual(
+            script.simulateCallCount, 3,
+            "the nil-decimals path must perform the extra decimals() simulate"
+        )
+        XCTAssertEqual(script.sendCallCount, 1)
+
+        // The decimals fetch is the first simulate; the transfer host function
+        // (carrying the amount arg) is the second simulate.
+        let transferBody = script.simulateCalls[1]
+        let amount = try decodeMultiSignerTransferAmountI128(from: transferBody)
+        XCTAssertEqual(amount?.hi, 0, "1500000 fits in the i128 low word; hi must be 0")
+        XCTAssertEqual(
+            amount?.lo, 1_500_000,
+            "\"1.5\" scaled by the FETCHED 6 decimals must encode to 1500000 base units"
+        )
+        XCTAssertNotEqual(
+            amount?.lo, 15_000_000,
+            "15000000 would mean a hardcoded scale of 7 was used instead of the fetched 6"
+        )
+    }
+
+    /// `multiSignerTransfer` with an explicit `decimals` value uses it directly
+    /// and performs NO decimals() fetch: only the initial transfer simulate and
+    /// the re-simulate occur (two simulate calls). The supplied scale (6) is the
+    /// one applied to the encoded amount.
+    func test_multiSignerTransfer_explicitDecimals_skipsFetchAndAppliesScale() async throws {
+        let script = MockSorobanServerScript()
+        MockSorobanServer.activate(script: script)
+        defer {
+            MockSorobanServer.deactivate()
+            MockURLProtocol.reset()
+        }
+
+        let deployer = try deterministicDeployer(seed: 0x45)
+        let provider = RecordingWebAuthnProvider()
+        let (kit, manager) = try scriptedKit(
+            script: script,
+            deployer: deployer,
+            provider: provider
+        )
+        _ = kit
+
+        // No decimals() simulate is enqueued: the explicit value must bypass it.
+        script.setGetAccountResponse(accountId: deployer.accountId, sequence: 22)
+        let authEntry = try OZPipelineFixtures.addressCredentialsAuthEntry(
+            contractAddress: pipelineContractId,
+            targetContract: pipelineTargetContract,
+            targetFn: "transfer"
+        )
+        script.enqueueSimulate(authEntries: [authEntry])
+        script.setGetLatestLedger(sequence: 1000)
+        provider.enqueueAuthenticate(
+            RecordingWebAuthnFixtures.authenticationResult(credentialId: Data([0x03]))
+        )
+        script.enqueueSimulate(authEntries: [], minResourceFee: 200)
+        script.setSendSuccess(
+            status: SendTransactionResponse.STATUS_PENDING,
+            hash: "multi-explicit-decimals"
+        )
+        script.enqueueGetTransactionResponse(
+            status: GetTransactionResponse.STATUS_SUCCESS,
+            ledger: 1002
+        )
+
+        let signers: [OZSelectedSigner] = [
+            .passkey(
+                credentialId: "passkey-cred",
+                credentialIdBytes: Data([0x03]),
+                keyData: validPasskeyKeyData()
+            )
+        ]
+
+        let result = try await manager.multiSignerTransfer(
+            tokenContract: pipelineTargetContract,
+            recipient: pipelineTargetContract,
+            amount: "1.5",
+            decimals: 6,
+            selectedSigners: signers
+        )
+
+        XCTAssertTrue(result.success, "expected success, got error: \(result.error ?? "nil")")
+        // Only two simulate calls: initial transfer + re-simulate. No fetch.
+        XCTAssertEqual(
+            script.simulateCallCount, 2,
+            "an explicit decimals value must NOT trigger the decimals() fetch simulate"
+        )
+        XCTAssertEqual(script.sendCallCount, 1)
+
+        // With no fetch, the transfer host function is the FIRST simulate.
+        let transferBody = script.simulateCalls[0]
+        let amount = try decodeMultiSignerTransferAmountI128(from: transferBody)
+        XCTAssertEqual(amount?.hi, 0)
+        XCTAssertEqual(
+            amount?.lo, 1_500_000,
+            "\"1.5\" scaled by the explicit 6 decimals must encode to 1500000 base units"
+        )
+    }
+
+    // ------------------------------------------------------------------------
+    // Envelope-decoding helper (local to the scripted-pipeline extension)
+    // ------------------------------------------------------------------------
+
+    /// Decodes the `transfer(from,to,amount)` amount i128 carried by a JSON-RPC
+    /// `simulateTransaction` request body's transaction envelope. Reads
+    /// `params.transaction`, locates the first `InvokeHostFunction` operation,
+    /// asserts the host function is an `invokeContract` call to `transfer`, and
+    /// returns its i128 third argument (the amount) as `(hi, lo)`.
+    private func decodeMultiSignerTransferAmountI128(
+        from body: Data,
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) throws -> Int128PartsXDR? {
+        guard let json = try? JSONSerialization.jsonObject(with: body) as? [String: Any],
+              let params = json["params"] as? [String: Any],
+              let envelopeBase64 = params["transaction"] as? String else {
+            XCTFail("request body did not carry a transaction envelope", file: file, line: line)
+            return nil
+        }
+        let envelope = try TransactionEnvelopeXDR(xdr: envelopeBase64)
+        let operations: [OperationXDR]
+        switch envelope {
+        case .v0(let env): operations = env.tx.operations
+        case .v1(let env): operations = env.tx.operations
+        case .feeBump(let env):
+            if case .v1(let inner) = env.tx.innerTx {
+                operations = inner.tx.operations
+            } else {
+                XCTFail("fee-bump envelope did not wrap a v1 transaction", file: file, line: line)
+                return nil
+            }
+        }
+        var invoke: InvokeHostFunctionOpXDR?
+        for op in operations {
+            if case .invokeHostFunctionOp(let body) = op.body {
+                invoke = body
+                break
+            }
+        }
+        guard let invoke = invoke else {
+            XCTFail("envelope carried no InvokeHostFunction operation", file: file, line: line)
+            return nil
+        }
+        guard case .invokeContract(let invokeArgs) = invoke.hostFunction else {
+            XCTFail("host function is not an invokeContract call", file: file, line: line)
+            return nil
+        }
+        XCTAssertEqual(invokeArgs.functionName, "transfer",
+                       "expected the transfer host function", file: file, line: line)
+        guard invokeArgs.args.count == 3 else {
+            XCTFail("transfer must carry exactly 3 args (from, to, amount), got \(invokeArgs.args.count)",
+                    file: file, line: line)
+            return nil
+        }
+        guard case .i128(let parts) = invokeArgs.args[2] else {
+            XCTFail("transfer amount arg is not an i128", file: file, line: line)
+            return nil
+        }
+        return parts
     }
 }
 
