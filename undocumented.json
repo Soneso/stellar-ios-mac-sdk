@@ -323,6 +323,1329 @@
       "warning": "undocumented"
     },
     {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/core/SmartAccountErrors.swift",
+      "line": 27,
+      "symbol": "SmartAccountErrorCode.invalidConfig",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/core/SmartAccountErrors.swift",
+      "line": 28,
+      "symbol": "SmartAccountErrorCode.missingConfig",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/core/SmartAccountErrors.swift",
+      "line": 32,
+      "symbol": "SmartAccountErrorCode.walletNotConnected",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/core/SmartAccountErrors.swift",
+      "line": 33,
+      "symbol": "SmartAccountErrorCode.walletAlreadyExists",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/core/SmartAccountErrors.swift",
+      "line": 34,
+      "symbol": "SmartAccountErrorCode.walletNotFound",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/core/SmartAccountErrors.swift",
+      "line": 38,
+      "symbol": "SmartAccountErrorCode.credentialNotFound",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/core/SmartAccountErrors.swift",
+      "line": 39,
+      "symbol": "SmartAccountErrorCode.credentialAlreadyExists",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/core/SmartAccountErrors.swift",
+      "line": 40,
+      "symbol": "SmartAccountErrorCode.credentialInvalid",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/core/SmartAccountErrors.swift",
+      "line": 50,
+      "symbol": "SmartAccountErrorCode.webAuthnAuthenticationFailed",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/core/SmartAccountErrors.swift",
+      "line": 51,
+      "symbol": "SmartAccountErrorCode.webAuthnNotSupported",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/core/SmartAccountErrors.swift",
+      "line": 52,
+      "symbol": "SmartAccountErrorCode.webAuthnCancelled",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/core/SmartAccountErrors.swift",
+      "line": 56,
+      "symbol": "SmartAccountErrorCode.transactionSimulationFailed",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/core/SmartAccountErrors.swift",
+      "line": 57,
+      "symbol": "SmartAccountErrorCode.transactionSigningFailed",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/core/SmartAccountErrors.swift",
+      "line": 58,
+      "symbol": "SmartAccountErrorCode.transactionSubmissionFailed",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/core/SmartAccountErrors.swift",
+      "line": 65,
+      "symbol": "SmartAccountErrorCode.signerNotFound",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/core/SmartAccountErrors.swift",
+      "line": 66,
+      "symbol": "SmartAccountErrorCode.signerInvalid",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/core/SmartAccountErrors.swift",
+      "line": 73,
+      "symbol": "SmartAccountErrorCode.invalidAmount",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/core/SmartAccountErrors.swift",
+      "line": 74,
+      "symbol": "SmartAccountErrorCode.invalidInput",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/core/SmartAccountErrors.swift",
+      "line": 78,
+      "symbol": "SmartAccountErrorCode.storageReadFailed",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/core/SmartAccountErrors.swift",
+      "line": 79,
+      "symbol": "SmartAccountErrorCode.storageWriteFailed",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/core/SmartAccountErrors.swift",
+      "line": 86,
+      "symbol": "SmartAccountErrorCode.sessionInvalid",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/core/SmartAccountErrors.swift",
+      "line": 90,
+      "symbol": "SmartAccountErrorCode.indexerRequestFailed",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/core/SmartAccountErrors.swift",
+      "line": 91,
+      "symbol": "SmartAccountErrorCode.indexerTimeout",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/core/SmartAccountErrors.swift",
+      "line": 254,
+      "symbol": "SmartAccountConfigurationException.InvalidConfig.init(message:cause:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/core/SmartAccountErrors.swift",
+      "line": 262,
+      "symbol": "SmartAccountConfigurationException.MissingConfig.init(message:cause:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/core/SmartAccountErrors.swift",
+      "line": 267,
+      "symbol": "SmartAccountConfigurationException.invalidConfig(details:cause:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.static",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/core/SmartAccountErrors.swift",
+      "line": 271,
+      "symbol": "SmartAccountConfigurationException.missingConfig(param:cause:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.static",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/core/SmartAccountErrors.swift",
+      "line": 282,
+      "symbol": "SmartAccountWalletException.NotConnected.init(message:cause:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/core/SmartAccountErrors.swift",
+      "line": 290,
+      "symbol": "SmartAccountWalletException.AlreadyExists.init(message:cause:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/core/SmartAccountErrors.swift",
+      "line": 298,
+      "symbol": "SmartAccountWalletException.NotFound.init(message:cause:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/core/SmartAccountErrors.swift",
+      "line": 303,
+      "symbol": "SmartAccountWalletException.notConnected(details:cause:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.static",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/core/SmartAccountErrors.swift",
+      "line": 307,
+      "symbol": "SmartAccountWalletException.alreadyExists(identifier:cause:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.static",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/core/SmartAccountErrors.swift",
+      "line": 311,
+      "symbol": "SmartAccountWalletException.notFound(identifier:cause:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.static",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/core/SmartAccountErrors.swift",
+      "line": 322,
+      "symbol": "SmartAccountCredentialException.NotFound.init(message:cause:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/core/SmartAccountErrors.swift",
+      "line": 330,
+      "symbol": "SmartAccountCredentialException.AlreadyExists.init(message:cause:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/core/SmartAccountErrors.swift",
+      "line": 338,
+      "symbol": "SmartAccountCredentialException.Invalid.init(message:cause:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/core/SmartAccountErrors.swift",
+      "line": 346,
+      "symbol": "SmartAccountCredentialException.DeploymentFailed.init(message:cause:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/core/SmartAccountErrors.swift",
+      "line": 351,
+      "symbol": "SmartAccountCredentialException.notFound(credentialId:cause:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.static",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/core/SmartAccountErrors.swift",
+      "line": 355,
+      "symbol": "SmartAccountCredentialException.alreadyExists(credentialId:cause:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.static",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/core/SmartAccountErrors.swift",
+      "line": 359,
+      "symbol": "SmartAccountCredentialException.invalid(reason:cause:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.static",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/core/SmartAccountErrors.swift",
+      "line": 363,
+      "symbol": "SmartAccountCredentialException.deploymentFailed(reason:cause:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.static",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/core/SmartAccountErrors.swift",
+      "line": 374,
+      "symbol": "WebAuthnException.RegistrationFailed.init(message:cause:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/core/SmartAccountErrors.swift",
+      "line": 382,
+      "symbol": "WebAuthnException.AuthenticationFailed.init(message:cause:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/core/SmartAccountErrors.swift",
+      "line": 390,
+      "symbol": "WebAuthnException.NotSupported.init(message:cause:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/core/SmartAccountErrors.swift",
+      "line": 398,
+      "symbol": "WebAuthnException.Cancelled.init(message:cause:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/core/SmartAccountErrors.swift",
+      "line": 403,
+      "symbol": "WebAuthnException.registrationFailed(reason:cause:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.static",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/core/SmartAccountErrors.swift",
+      "line": 407,
+      "symbol": "WebAuthnException.authenticationFailed(reason:cause:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.static",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/core/SmartAccountErrors.swift",
+      "line": 411,
+      "symbol": "WebAuthnException.notSupported(details:cause:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.static",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/core/SmartAccountErrors.swift",
+      "line": 415,
+      "symbol": "WebAuthnException.cancelled(cause:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.static",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/core/SmartAccountErrors.swift",
+      "line": 426,
+      "symbol": "SmartAccountTransactionException.SimulationFailed.init(message:cause:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/core/SmartAccountErrors.swift",
+      "line": 434,
+      "symbol": "SmartAccountTransactionException.SigningFailed.init(message:cause:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/core/SmartAccountErrors.swift",
+      "line": 442,
+      "symbol": "SmartAccountTransactionException.SubmissionFailed.init(message:cause:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/core/SmartAccountErrors.swift",
+      "line": 450,
+      "symbol": "SmartAccountTransactionException.Timeout.init(message:cause:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/core/SmartAccountErrors.swift",
+      "line": 455,
+      "symbol": "SmartAccountTransactionException.simulationFailed(reason:cause:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.static",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/core/SmartAccountErrors.swift",
+      "line": 459,
+      "symbol": "SmartAccountTransactionException.signingFailed(reason:cause:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.static",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/core/SmartAccountErrors.swift",
+      "line": 463,
+      "symbol": "SmartAccountTransactionException.submissionFailed(reason:cause:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.static",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/core/SmartAccountErrors.swift",
+      "line": 467,
+      "symbol": "SmartAccountTransactionException.timeout(details:cause:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.static",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/core/SmartAccountErrors.swift",
+      "line": 478,
+      "symbol": "SmartAccountSignerException.NotFound.init(message:cause:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/core/SmartAccountErrors.swift",
+      "line": 486,
+      "symbol": "SmartAccountSignerException.Invalid.init(message:cause:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/core/SmartAccountErrors.swift",
+      "line": 491,
+      "symbol": "SmartAccountSignerException.notFound(signerId:cause:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.static",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/core/SmartAccountErrors.swift",
+      "line": 495,
+      "symbol": "SmartAccountSignerException.invalid(reason:cause:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.static",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/core/SmartAccountErrors.swift",
+      "line": 506,
+      "symbol": "SmartAccountValidationException.InvalidAddress.init(message:cause:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/core/SmartAccountErrors.swift",
+      "line": 514,
+      "symbol": "SmartAccountValidationException.InvalidAmount.init(message:cause:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/core/SmartAccountErrors.swift",
+      "line": 522,
+      "symbol": "SmartAccountValidationException.InvalidInput.init(message:cause:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/core/SmartAccountErrors.swift",
+      "line": 527,
+      "symbol": "SmartAccountValidationException.invalidAddress(address:cause:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.static",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/core/SmartAccountErrors.swift",
+      "line": 542,
+      "symbol": "SmartAccountValidationException.invalidInput(field:reason:cause:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.static",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/core/SmartAccountErrors.swift",
+      "line": 557,
+      "symbol": "SmartAccountStorageException.ReadFailed.init(message:cause:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/core/SmartAccountErrors.swift",
+      "line": 565,
+      "symbol": "SmartAccountStorageException.WriteFailed.init(message:cause:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/core/SmartAccountErrors.swift",
+      "line": 570,
+      "symbol": "SmartAccountStorageException.readFailed(key:cause:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.static",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/core/SmartAccountErrors.swift",
+      "line": 574,
+      "symbol": "SmartAccountStorageException.writeFailed(key:cause:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.static",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/core/SmartAccountErrors.swift",
+      "line": 585,
+      "symbol": "SmartAccountSessionException.Expired.init(message:cause:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/core/SmartAccountErrors.swift",
+      "line": 593,
+      "symbol": "SmartAccountSessionException.Invalid.init(message:cause:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/core/SmartAccountErrors.swift",
+      "line": 607,
+      "symbol": "SmartAccountSessionException.invalid(reason:cause:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.static",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/core/SmartAccountErrors.swift",
+      "line": 618,
+      "symbol": "SmartAccountIndexerException.RequestFailed.init(message:cause:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/core/SmartAccountErrors.swift",
+      "line": 626,
+      "symbol": "SmartAccountIndexerException.Timeout.init(message:cause:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/core/SmartAccountErrors.swift",
+      "line": 631,
+      "symbol": "SmartAccountIndexerException.requestFailed(reason:cause:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.static",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/core/SmartAccountErrors.swift",
+      "line": 635,
+      "symbol": "SmartAccountIndexerException.timeout(url:cause:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.static",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/core/WebAuthnAllowCredential.swift",
+      "line": 48,
+      "symbol": "WebAuthnAllowCredential.fromId(_:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.static",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/core/WebAuthnAllowCredential.swift",
+      "line": 52,
+      "symbol": "WebAuthnAllowCredential.fromIds(_:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.static",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/core/WebAuthnProvider.swift",
+      "line": 47,
+      "symbol": "WebAuthnAuthenticationResult.init(credentialId:authenticatorData:clientDataJSON:signature:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/core/WebAuthnProvider.swift",
+      "line": 116,
+      "symbol": "WebAuthnRegistrationResult.init(credentialId:publicKey:attestationObject:transports:deviceType:backedUp:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZBuilders.swift",
+      "line": 142,
+      "symbol": "OZParsedContextRule.init(id:contextType:name:signers:signerIds:policies:policyIds:validUntil:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZIndexerClient.swift",
+      "line": 95,
+      "symbol": "OZCredentialLookupResponse.credentialId",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZIndexerClient.swift",
+      "line": 96,
+      "symbol": "OZCredentialLookupResponse.contracts",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZIndexerClient.swift",
+      "line": 97,
+      "symbol": "OZCredentialLookupResponse.count",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZIndexerClient.swift",
+      "line": 99,
+      "symbol": "OZCredentialLookupResponse.init(credentialId:contracts:count:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZIndexerClient.swift",
+      "line": 124,
+      "symbol": "OZAddressLookupResponse.signerAddress",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZIndexerClient.swift",
+      "line": 125,
+      "symbol": "OZAddressLookupResponse.contracts",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZIndexerClient.swift",
+      "line": 126,
+      "symbol": "OZAddressLookupResponse.count",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZIndexerClient.swift",
+      "line": 128,
+      "symbol": "OZAddressLookupResponse.init(signerAddress:contracts:count:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZIndexerClient.swift",
+      "line": 154,
+      "symbol": "OZContractDetailsResponse.contractId",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZIndexerClient.swift",
+      "line": 155,
+      "symbol": "OZContractDetailsResponse.summary",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZIndexerClient.swift",
+      "line": 156,
+      "symbol": "OZContractDetailsResponse.contextRules",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZIndexerClient.swift",
+      "line": 158,
+      "symbol": "OZContractDetailsResponse.init(contractId:summary:contextRules:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZIndexerClient.swift",
+      "line": 173,
+      "symbol": "OZIndexedContractSummary.contractId",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZIndexerClient.swift",
+      "line": 174,
+      "symbol": "OZIndexedContractSummary.contextRuleCount",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZIndexerClient.swift",
+      "line": 175,
+      "symbol": "OZIndexedContractSummary.externalSignerCount",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZIndexerClient.swift",
+      "line": 176,
+      "symbol": "OZIndexedContractSummary.delegatedSignerCount",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZIndexerClient.swift",
+      "line": 177,
+      "symbol": "OZIndexedContractSummary.nativeSignerCount",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZIndexerClient.swift",
+      "line": 178,
+      "symbol": "OZIndexedContractSummary.firstSeenLedger",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZIndexerClient.swift",
+      "line": 179,
+      "symbol": "OZIndexedContractSummary.lastSeenLedger",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZIndexerClient.swift",
+      "line": 180,
+      "symbol": "OZIndexedContractSummary.contextRuleIds",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZIndexerClient.swift",
+      "line": 182,
+      "symbol": "OZIndexedContractSummary.init(contractId:contextRuleCount:externalSignerCount:delegatedSignerCount:nativeSignerCount:firstSeenLedger:lastSeenLedger:contextRuleIds:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZIndexerClient.swift",
+      "line": 240,
+      "symbol": "OZIndexedContextRule.contextRuleId",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZIndexerClient.swift",
+      "line": 241,
+      "symbol": "OZIndexedContextRule.signers",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZIndexerClient.swift",
+      "line": 242,
+      "symbol": "OZIndexedContextRule.policies",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZIndexerClient.swift",
+      "line": 244,
+      "symbol": "OZIndexedContextRule.init(contextRuleId:signers:policies:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZIndexerClient.swift",
+      "line": 275,
+      "symbol": "OZIndexedSigner.signerType",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZIndexerClient.swift",
+      "line": 276,
+      "symbol": "OZIndexedSigner.signerAddress",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZIndexerClient.swift",
+      "line": 277,
+      "symbol": "OZIndexedSigner.credentialId",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZIndexerClient.swift",
+      "line": 279,
+      "symbol": "OZIndexedSigner.init(signerType:signerAddress:credentialId:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZIndexerClient.swift",
+      "line": 300,
+      "symbol": "OZIndexedPolicy.policyAddress",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZIndexerClient.swift",
+      "line": 301,
+      "symbol": "OZIndexedPolicy.installParams",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZIndexerClient.swift",
+      "line": 303,
+      "symbol": "OZIndexedPolicy.init(policyAddress:installParams:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZIndexerClient.swift",
+      "line": 319,
+      "symbol": "OZIndexerStatsResponse.stats",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZIndexerClient.swift",
+      "line": 321,
+      "symbol": "OZIndexerStatsResponse.init(stats:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZIndexerClient.swift",
+      "line": 328,
+      "symbol": "OZIndexerStats.totalEvents",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZIndexerClient.swift",
+      "line": 329,
+      "symbol": "OZIndexerStats.uniqueContracts",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZIndexerClient.swift",
+      "line": 330,
+      "symbol": "OZIndexerStats.uniqueCredentials",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZIndexerClient.swift",
+      "line": 331,
+      "symbol": "OZIndexerStats.firstLedger",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZIndexerClient.swift",
+      "line": 332,
+      "symbol": "OZIndexerStats.lastLedger",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZIndexerClient.swift",
+      "line": 333,
+      "symbol": "OZIndexerStats.eventTypes",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZIndexerClient.swift",
+      "line": 335,
+      "symbol": "OZIndexerStats.init(totalEvents:uniqueContracts:uniqueCredentials:firstLedger:lastLedger:eventTypes:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZIndexerClient.swift",
+      "line": 373,
+      "symbol": "OZEventTypeCount.eventType",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZIndexerClient.swift",
+      "line": 374,
+      "symbol": "OZEventTypeCount.count",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZIndexerClient.swift",
+      "line": 376,
+      "symbol": "OZEventTypeCount.init(eventType:count:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZIndexerClient.swift",
+      "line": 398,
+      "symbol": "OZIndexerHealthCheckResponse.status",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZIndexerClient.swift",
+      "line": 400,
+      "symbol": "OZIndexerHealthCheckResponse.init(status:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZIndexerClient.swift",
+      "line": 414,
+      "symbol": "OZJSONValue.string(_:)",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZIndexerClient.swift",
+      "line": 415,
+      "symbol": "OZJSONValue.integer(_:)",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZIndexerClient.swift",
+      "line": 416,
+      "symbol": "OZJSONValue.double(_:)",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZIndexerClient.swift",
+      "line": 417,
+      "symbol": "OZJSONValue.bool(_:)",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZIndexerClient.swift",
+      "line": 418,
+      "symbol": "OZJSONValue.array(_:)",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZIndexerClient.swift",
+      "line": 419,
+      "symbol": "OZJSONValue.object(_:)",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZIndexerClient.swift",
+      "line": 420,
+      "symbol": "OZJSONValue.null",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZRelayerClient.swift",
+      "line": 17,
+      "symbol": "OZRelayerErrorCodes.INVALID_PARAMS",
+      "symbol_kind": "source.lang.swift.decl.var.static",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZRelayerClient.swift",
+      "line": 18,
+      "symbol": "OZRelayerErrorCodes.INVALID_XDR",
+      "symbol_kind": "source.lang.swift.decl.var.static",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZRelayerClient.swift",
+      "line": 19,
+      "symbol": "OZRelayerErrorCodes.POOL_CAPACITY",
+      "symbol_kind": "source.lang.swift.decl.var.static",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZRelayerClient.swift",
+      "line": 20,
+      "symbol": "OZRelayerErrorCodes.SIMULATION_FAILED",
+      "symbol_kind": "source.lang.swift.decl.var.static",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZRelayerClient.swift",
+      "line": 21,
+      "symbol": "OZRelayerErrorCodes.ONCHAIN_FAILED",
+      "symbol_kind": "source.lang.swift.decl.var.static",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZRelayerClient.swift",
+      "line": 22,
+      "symbol": "OZRelayerErrorCodes.INVALID_TIME_BOUNDS",
+      "symbol_kind": "source.lang.swift.decl.var.static",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZRelayerClient.swift",
+      "line": 23,
+      "symbol": "OZRelayerErrorCodes.FEE_LIMIT_EXCEEDED",
+      "symbol_kind": "source.lang.swift.decl.var.static",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZRelayerClient.swift",
+      "line": 24,
+      "symbol": "OZRelayerErrorCodes.UNAUTHORIZED",
+      "symbol_kind": "source.lang.swift.decl.var.static",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZRelayerClient.swift",
+      "line": 25,
+      "symbol": "OZRelayerErrorCodes.TIMEOUT",
+      "symbol_kind": "source.lang.swift.decl.var.static",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZRelayerClient.swift",
+      "line": 47,
+      "symbol": "OZRelayerResponse.success",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZRelayerClient.swift",
+      "line": 48,
+      "symbol": "OZRelayerResponse.transactionId",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZRelayerClient.swift",
+      "line": 49,
+      "symbol": "OZRelayerResponse.hash",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZRelayerClient.swift",
+      "line": 50,
+      "symbol": "OZRelayerResponse.status",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZRelayerClient.swift",
+      "line": 51,
+      "symbol": "OZRelayerResponse.error",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZRelayerClient.swift",
+      "line": 52,
+      "symbol": "OZRelayerResponse.errorCode",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZRelayerClient.swift",
+      "line": 61,
+      "symbol": "OZRelayerResponse.init(success:transactionId:hash:status:error:errorCode:details:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZSignerManager.swift",
+      "line": 33,
+      "symbol": "OZAddPasskeySignerResult.init(credentialId:publicKey:transactionResult:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountAuthPayload.swift",
+      "line": 42,
+      "symbol": "OZSmartAccountAuthPayload.init(signers:contextRuleIds:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountAuthPayload.swift",
+      "line": 71,
+      "symbol": "OZSmartAccountAuthPayload.SignerEntry.init(signer:signatureBytes:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountBuilders.swift",
+      "line": 131,
+      "symbol": "OZSmartAccountBuilders.isDelegatedSigner(signer:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.static",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountBuilders.swift",
+      "line": 135,
+      "symbol": "OZSmartAccountBuilders.isExternalSigner(signer:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.static",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountEvents.swift",
+      "line": 227,
+      "symbol": "OZSmartAccountEventType.walletConnected",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountEvents.swift",
+      "line": 228,
+      "symbol": "OZSmartAccountEventType.walletDisconnected",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountEvents.swift",
+      "line": 229,
+      "symbol": "OZSmartAccountEventType.credentialCreated",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountEvents.swift",
+      "line": 230,
+      "symbol": "OZSmartAccountEventType.credentialDeleted",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountEvents.swift",
+      "line": 231,
+      "symbol": "OZSmartAccountEventType.sessionExpired",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountEvents.swift",
+      "line": 232,
+      "symbol": "OZSmartAccountEventType.transactionSigned",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountEvents.swift",
+      "line": 233,
+      "symbol": "OZSmartAccountEventType.transactionSubmitted",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountEvents.swift",
+      "line": 234,
+      "symbol": "OZSmartAccountEventType.credentialSyncFailed",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountTypes.swift",
+      "line": 293,
+      "symbol": "OZSubmissionMethod.relayer",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountTypes.swift",
+      "line": 294,
+      "symbol": "OZSubmissionMethod.rpc",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZStorageAdapter.swift",
+      "line": 14,
+      "symbol": "OZCredentialDeploymentStatus.pending",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZStorageAdapter.swift",
+      "line": 16,
+      "symbol": "OZCredentialDeploymentStatus.failed",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZStorageAdapter.swift",
+      "line": 101,
+      "symbol": "OZStoredCredential.init(credentialId:publicKey:contractId:deploymentStatus:deploymentError:createdAt:lastUsedAt:nickname:isPrimary:transports:deviceType:backedUp:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZStorageAdapter.swift",
+      "line": 216,
+      "symbol": "OZStoredSession.credentialId",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZStorageAdapter.swift",
+      "line": 217,
+      "symbol": "OZStoredSession.contractId",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZStorageAdapter.swift",
+      "line": 218,
+      "symbol": "OZStoredSession.connectedAt",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZStorageAdapter.swift",
+      "line": 219,
+      "symbol": "OZStoredSession.expiresAt",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZStorageAdapter.swift",
+      "line": 221,
+      "symbol": "OZStoredSession.init(credentialId:contractId:connectedAt:expiresAt:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZStorageAdapter.swift",
+      "line": 260,
+      "symbol": "OZStoredCredentialUpdate.deploymentStatus",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZStorageAdapter.swift",
+      "line": 261,
+      "symbol": "OZStoredCredentialUpdate.deploymentError",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZStorageAdapter.swift",
+      "line": 262,
+      "symbol": "OZStoredCredentialUpdate.contractId",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZStorageAdapter.swift",
+      "line": 263,
+      "symbol": "OZStoredCredentialUpdate.lastUsedAt",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZStorageAdapter.swift",
+      "line": 264,
+      "symbol": "OZStoredCredentialUpdate.nickname",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZStorageAdapter.swift",
+      "line": 265,
+      "symbol": "OZStoredCredentialUpdate.isPrimary",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZStorageAdapter.swift",
+      "line": 266,
+      "symbol": "OZStoredCredentialUpdate.transports",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZStorageAdapter.swift",
+      "line": 267,
+      "symbol": "OZStoredCredentialUpdate.deviceType",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZStorageAdapter.swift",
+      "line": 268,
+      "symbol": "OZStoredCredentialUpdate.backedUp",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZStorageAdapter.swift",
+      "line": 270,
+      "symbol": "OZStoredCredentialUpdate.init(deploymentStatus:deploymentError:contractId:lastUsedAt:nickname:isPrimary:transports:deviceType:backedUp:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZTransactionOperations.swift",
+      "line": 48,
+      "symbol": "OZTransactionResult.init(success:hash:ledger:error:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZWalletOperations.swift",
+      "line": 38,
+      "symbol": "OZCreateWalletResult.init(credentialId:contractId:publicKey:signedTransactionXdr:transactionHash:nickname:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZWalletOperations.swift",
+      "line": 93,
+      "symbol": "OZDeployPendingResult.init(contractId:signedTransactionXdr:transactionHash:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZWalletOperations.swift",
+      "line": 149,
+      "symbol": "OZAuthenticatePasskeyResult.init(credentialId:signature:publicKey:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZWalletOperations.swift",
+      "line": 209,
+      "symbol": "OZConnectWalletOptions.init(credentialId:contractId:fresh:prompt:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
       "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/soroban/contract/SimulateHostFunctionResult.swift",
       "line": 23,
       "symbol": "SimulateHostFunctionResult.init(transactionData:returnedValue:auth:)",
