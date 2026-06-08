@@ -1,8 +1,8 @@
 # SEP-0047 (Contract Interface Discovery) Compatibility Matrix
 
-**Generated:** 2026-04-24
+**Generated:** 2026-06-08
 
-**SDK Version:** 3.4.7
+**SDK Version:** 3.5.0
 
 **SEP Version:** 0.1.0
 

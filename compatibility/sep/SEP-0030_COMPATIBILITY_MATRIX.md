@@ -1,8 +1,8 @@
 # SEP-0030 (Account Recovery: multi-party recovery of Stellar accounts) Compatibility Matrix
 
-**Generated:** 2026-04-24
+**Generated:** 2026-06-08
 
-**SDK Version:** 3.4.7
+**SDK Version:** 3.5.0
 
 **SEP Version:** 0.8.1
 

@@ -1,8 +1,8 @@
 # SEP-0048 (Contract Interface Specification) Compatibility Matrix
 
-**Generated:** 2026-04-24
+**Generated:** 2026-06-08
 
-**SDK Version:** 3.4.7
+**SDK Version:** 3.5.0
 
 **SEP Version:** 1.1.0
 
