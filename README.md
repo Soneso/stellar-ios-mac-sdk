@@ -92,9 +92,7 @@ This repository includes an [Agent Skill](https://agentskills.io) that teaches A
 
 ## Smart Accounts (Passkey) support
 
-This SDK ships first-class support for OpenZeppelin smart accounts on Stellar: WebAuthn passkey authentication via Apple's `AuthenticationServices`, multi-signer authorization, on-chain context rules, and policy contracts (threshold, weighted threshold, spending limit). An optional fee-bump relayer and credential indexer integrate transparently.
-
-See the [Smart Accounts documentation](docs/smart-accounts/README.md) for an overview, the [developer onboarding guide](docs/smart-accounts/onboarding.md) for conceptual material, the [API reference](docs/smart-accounts/api-reference.md) for every public symbol, and the per-platform WebAuthn setup guides: [iOS](docs/smart-accounts/webauthn-ios.md), [macOS](docs/smart-accounts/webauthn-macos.md).
+The SDK supports OpenZeppelin smart accounts on Stellar — passkey/WebAuthn authentication, multi-signer authorization, context rules, and policies. See the [Smart Accounts documentation](docs/smart-accounts/README.md) and the [demo app](https://github.com/Soneso/ios-oz-smartaccount-demo).
 
 ## Compatibility
 

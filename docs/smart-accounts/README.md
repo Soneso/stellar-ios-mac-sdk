@@ -4,6 +4,8 @@ The Smart Account Kit provides passkey-authenticated smart accounts on Stellar u
 
 New to smart accounts? Start with the [onboarding guide](onboarding.md) for background on how smart accounts, passkeys, and the on-chain contracts work.
 
+For a runnable iOS and macOS reference implementation, see the [demo app](https://github.com/Soneso/ios-oz-smartaccount-demo).
+
 ## Overview
 
 A smart account is a Soroban contract that replaces traditional Stellar key management with programmable authorization. Each smart account supports:
