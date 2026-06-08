@@ -694,6 +694,7 @@ class Generator < Xdrgen::Generators::Base
         name: base,
         format: TXREP_COMPACT_TYPES[base][:format],
         parse: TXREP_COMPACT_TYPES[base][:parse],
+        format_throws: TXREP_COMPACT_TYPES[base][:format_throws],
       }
     end
 
@@ -759,10 +760,12 @@ class Generator < Xdrgen::Generators::Base
         out.puts "lines.append(\"#{prefix_frag}: \\(TxRepHelper.bytesToHex(#{accessor}))\")"
       end
     when :compact
-      # Several format helpers (formatMuxedAccount, formatSignerKey, ...)
-      # throw on malformed input; mark all compact calls `try` uniformly so
-      # the struct toTxRep signature can be declared `throws`.
-      out.puts "lines.append(\"#{prefix_frag}: \\(try #{kind[:format]}(#{accessor}))\")"
+      # Prefix `try` only when the compact format helper can throw (per
+      # `format_throws` in TXREP_COMPACT_TYPES); a non-throwing helper would
+      # otherwise produce an unused-`try` warning.
+      call = "#{kind[:format]}(#{accessor})"
+      call = "try #{call}" if kind[:format_throws]
+      out.puts "lines.append(\"#{prefix_frag}: \\(#{call})\")"
     when :named
       out.puts "try #{accessor}.toTxRep(prefix: \"#{prefix_frag}\", lines: &lines)"
     when :array

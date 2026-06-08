@@ -1755,7 +1755,7 @@ final class OZMultiSignerManagerTests: XCTestCase {
 
         // Build a deterministic 32-byte auth digest (simulates the payload hash).
         let authDigest = Data(repeating: 0x42, count: 32)
-        let rawSig = Data(try keypair.sign([UInt8](authDigest)))
+        let rawSig = Data(keypair.sign([UInt8](authDigest)))
         XCTAssertEqual(rawSig.count, 64, "Ed25519 signature must be 64 bytes")
 
         let ed25519Sig = try OZEd25519Signature(publicKey: publicKey, signature: rawSig)

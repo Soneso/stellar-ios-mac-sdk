@@ -227,14 +227,14 @@ extension OperationBodyXDR {
       try val.toTxRep(prefix: "\(prefix).paymentOp", lines: &lines)
     case .pathPaymentStrictReceiveOp(let val):
       lines.append("\(prefix).type: PATH_PAYMENT_STRICT_RECEIVE")
-      lines.append("\(prefix).pathPaymentStrictReceiveOp.sendAsset: \(try TxRepHelper.formatAsset(val.sendAsset))")
+      lines.append("\(prefix).pathPaymentStrictReceiveOp.sendAsset: \(TxRepHelper.formatAsset(val.sendAsset))")
       lines.append("\(prefix).pathPaymentStrictReceiveOp.sendMax: \(val.sendMax)")
       lines.append("\(prefix).pathPaymentStrictReceiveOp.destination: \(try TxRepHelper.formatMuxedAccount(val.destination))")
-      lines.append("\(prefix).pathPaymentStrictReceiveOp.destAsset: \(try TxRepHelper.formatAsset(val.destinationAsset))")
+      lines.append("\(prefix).pathPaymentStrictReceiveOp.destAsset: \(TxRepHelper.formatAsset(val.destinationAsset))")
       lines.append("\(prefix).pathPaymentStrictReceiveOp.destAmount: \(val.destinationAmount)")
       lines.append("\(prefix).pathPaymentStrictReceiveOp.path.len: \(val.path.count)")
       for (i, item) in val.path.enumerated() {
-        lines.append("\(prefix).pathPaymentStrictReceiveOp.path[\(i)]: \(try TxRepHelper.formatAsset(item))")
+        lines.append("\(prefix).pathPaymentStrictReceiveOp.path[\(i)]: \(TxRepHelper.formatAsset(item))")
       }
     case .manageSellOfferOp(let val):
       lines.append("\(prefix).type: MANAGE_SELL_OFFER")
@@ -264,21 +264,21 @@ extension OperationBodyXDR {
       try val.toTxRep(prefix: "\(prefix).bumpSequenceOp", lines: &lines)
     case .manageBuyOfferOp(let val):
       lines.append("\(prefix).type: MANAGE_BUY_OFFER")
-      lines.append("\(prefix).manageBuyOfferOp.selling: \(try TxRepHelper.formatAsset(val.selling))")
-      lines.append("\(prefix).manageBuyOfferOp.buying: \(try TxRepHelper.formatAsset(val.buying))")
+      lines.append("\(prefix).manageBuyOfferOp.selling: \(TxRepHelper.formatAsset(val.selling))")
+      lines.append("\(prefix).manageBuyOfferOp.buying: \(TxRepHelper.formatAsset(val.buying))")
       lines.append("\(prefix).manageBuyOfferOp.buyAmount: \(val.amount)")
       try val.price.toTxRep(prefix: "\(prefix).manageBuyOfferOp.price", lines: &lines)
       lines.append("\(prefix).manageBuyOfferOp.offerID: \(val.offerID)")
     case .pathPaymentStrictSendOp(let val):
       lines.append("\(prefix).type: PATH_PAYMENT_STRICT_SEND")
-      lines.append("\(prefix).pathPaymentStrictSendOp.sendAsset: \(try TxRepHelper.formatAsset(val.sendAsset))")
+      lines.append("\(prefix).pathPaymentStrictSendOp.sendAsset: \(TxRepHelper.formatAsset(val.sendAsset))")
       lines.append("\(prefix).pathPaymentStrictSendOp.sendAmount: \(val.sendMax)")
       lines.append("\(prefix).pathPaymentStrictSendOp.destination: \(try TxRepHelper.formatMuxedAccount(val.destination))")
-      lines.append("\(prefix).pathPaymentStrictSendOp.destAsset: \(try TxRepHelper.formatAsset(val.destinationAsset))")
+      lines.append("\(prefix).pathPaymentStrictSendOp.destAsset: \(TxRepHelper.formatAsset(val.destinationAsset))")
       lines.append("\(prefix).pathPaymentStrictSendOp.destMin: \(val.destinationAmount)")
       lines.append("\(prefix).pathPaymentStrictSendOp.path.len: \(val.path.count)")
       for (i, item) in val.path.enumerated() {
-        lines.append("\(prefix).pathPaymentStrictSendOp.path[\(i)]: \(try TxRepHelper.formatAsset(item))")
+        lines.append("\(prefix).pathPaymentStrictSendOp.path[\(i)]: \(TxRepHelper.formatAsset(item))")
       }
     case .createClaimableBalanceOp(let val):
       lines.append("\(prefix).type: CREATE_CLAIMABLE_BALANCE")
@@ -288,7 +288,7 @@ extension OperationBodyXDR {
       try val.toTxRep(prefix: "\(prefix).claimClaimableBalanceOp", lines: &lines)
     case .beginSponsoringFutureReservesOp(let val):
       lines.append("\(prefix).type: BEGIN_SPONSORING_FUTURE_RESERVES")
-      lines.append("\(prefix).beginSponsoringFutureReservesOp.sponsoredID: \(try TxRepHelper.formatAccountId(val.sponsoredId))")
+      lines.append("\(prefix).beginSponsoringFutureReservesOp.sponsoredID: \(TxRepHelper.formatAccountId(val.sponsoredId))")
     case .endSponsoringFutureReserves:
       lines.append("\(prefix).type: END_SPONSORING_FUTURE_RESERVES")
     case .revokeSponsorshipOp(let val):
@@ -302,8 +302,8 @@ extension OperationBodyXDR {
       try val.toTxRep(prefix: "\(prefix).clawbackClaimableBalanceOp", lines: &lines)
     case .setTrustLineFlagsOp(let val):
       lines.append("\(prefix).type: SET_TRUST_LINE_FLAGS")
-      lines.append("\(prefix).setTrustLineFlagsOp.trustor: \(try TxRepHelper.formatAccountId(val.accountID))")
-      lines.append("\(prefix).setTrustLineFlagsOp.asset: \(try TxRepHelper.formatAsset(val.asset))")
+      lines.append("\(prefix).setTrustLineFlagsOp.trustor: \(TxRepHelper.formatAccountId(val.accountID))")
+      lines.append("\(prefix).setTrustLineFlagsOp.asset: \(TxRepHelper.formatAsset(val.asset))")
       lines.append("\(prefix).setTrustLineFlagsOp.clearFlags: \(val.clearFlags)")
       lines.append("\(prefix).setTrustLineFlagsOp.setFlags: \(val.setFlags)")
     case .liquidityPoolDepositOp(let val):

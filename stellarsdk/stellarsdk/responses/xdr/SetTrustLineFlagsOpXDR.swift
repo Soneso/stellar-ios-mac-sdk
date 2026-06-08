@@ -40,8 +40,8 @@ public struct SetTrustLineFlagsOpXDR: XDRCodable, Sendable {
 
 extension SetTrustLineFlagsOpXDR {
   public func toTxRep(prefix: String, lines: inout [String]) throws {
-    lines.append("\(prefix).trustor: \(try TxRepHelper.formatAccountId(self.accountID))")
-    lines.append("\(prefix).asset: \(try TxRepHelper.formatAsset(self.asset))")
+    lines.append("\(prefix).trustor: \(TxRepHelper.formatAccountId(self.accountID))")
+    lines.append("\(prefix).asset: \(TxRepHelper.formatAsset(self.asset))")
     lines.append("\(prefix).clearFlags: \(self.clearFlags)")
     lines.append("\(prefix).setFlags: \(self.setFlags)")
   }

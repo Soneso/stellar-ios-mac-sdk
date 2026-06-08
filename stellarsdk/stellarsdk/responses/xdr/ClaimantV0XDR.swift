@@ -27,7 +27,7 @@ public struct ClaimantV0XDR: XDRCodable, Sendable {
 
 extension ClaimantV0XDR {
   public func toTxRep(prefix: String, lines: inout [String]) throws {
-    lines.append("\(prefix).destination: \(try TxRepHelper.formatAccountId(self.accountID))")
+    lines.append("\(prefix).destination: \(TxRepHelper.formatAccountId(self.accountID))")
     try self.predicate.toTxRep(prefix: "\(prefix).predicate", lines: &lines)
   }
 

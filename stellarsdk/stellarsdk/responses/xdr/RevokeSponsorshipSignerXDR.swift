@@ -27,7 +27,7 @@ public struct RevokeSponsorshipSignerXDR: XDRCodable, Sendable {
 
 extension RevokeSponsorshipSignerXDR {
   public func toTxRep(prefix: String, lines: inout [String]) throws {
-    lines.append("\(prefix).accountID: \(try TxRepHelper.formatAccountId(self.accountID))")
+    lines.append("\(prefix).accountID: \(TxRepHelper.formatAccountId(self.accountID))")
     lines.append("\(prefix).signerKey: \(try TxRepHelper.formatSignerKey(self.signerKey))")
   }
 

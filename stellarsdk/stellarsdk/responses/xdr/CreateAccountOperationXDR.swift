@@ -27,7 +27,7 @@ public struct CreateAccountOperationXDR: XDRCodable, Sendable {
 
 extension CreateAccountOperationXDR {
   public func toTxRep(prefix: String, lines: inout [String]) throws {
-    lines.append("\(prefix).destination: \(try TxRepHelper.formatAccountId(self.destination))")
+    lines.append("\(prefix).destination: \(TxRepHelper.formatAccountId(self.destination))")
     lines.append("\(prefix).startingBalance: \(self.startingBalance)")
   }
 

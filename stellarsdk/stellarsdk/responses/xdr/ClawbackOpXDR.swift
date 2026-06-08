@@ -35,7 +35,7 @@ public struct ClawbackOpXDR: XDRCodable, Sendable {
 
 extension ClawbackOpXDR {
   public func toTxRep(prefix: String, lines: inout [String]) throws {
-    lines.append("\(prefix).asset: \(try TxRepHelper.formatAsset(self.asset))")
+    lines.append("\(prefix).asset: \(TxRepHelper.formatAsset(self.asset))")
     lines.append("\(prefix).from: \(try TxRepHelper.formatMuxedAccount(self.from))")
     lines.append("\(prefix).amount: \(self.amount)")
   }

@@ -35,8 +35,8 @@ public struct LiquidityPoolConstantProductParametersXDR: XDRCodable, Sendable {
 
 extension LiquidityPoolConstantProductParametersXDR {
   public func toTxRep(prefix: String, lines: inout [String]) throws {
-    lines.append("\(prefix).assetA: \(try TxRepHelper.formatAsset(self.assetA))")
-    lines.append("\(prefix).assetB: \(try TxRepHelper.formatAsset(self.assetB))")
+    lines.append("\(prefix).assetA: \(TxRepHelper.formatAsset(self.assetA))")
+    lines.append("\(prefix).assetB: \(TxRepHelper.formatAsset(self.assetB))")
     lines.append("\(prefix).fee: \(self.fee)")
   }
 

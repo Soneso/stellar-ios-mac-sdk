@@ -227,12 +227,14 @@ module TxRepTypes
   # ---------------------------------------------------------------------------
   #
   # Keyed by the RESOLVED Swift type name (after NAME_OVERRIDES / TYPE_OVERRIDES).
+  # `format_throws` is true when the format helper is declared `throws`; the
+  # generator emits `try` on the format call only for those entries.
   TXREP_COMPACT_TYPES = {
-    'PublicKey'            => { format: 'TxRepHelper.formatAccountId',       parse: 'TxRepHelper.parseAccountId'       },
-    'AllowTrustOpAssetXDR' => { format: 'TxRepHelper.formatAllowTrustAsset', parse: 'TxRepHelper.parseAllowTrustAsset' },
-    'AssetXDR'             => { format: 'TxRepHelper.formatAsset',           parse: 'TxRepHelper.parseAsset'           },
-    'MuxedAccountXDR'      => { format: 'TxRepHelper.formatMuxedAccount',    parse: 'TxRepHelper.parseMuxedAccount'    },
-    'SignerKeyXDR'         => { format: 'TxRepHelper.formatSignerKey',       parse: 'TxRepHelper.parseSignerKey'       },
+    'PublicKey'            => { format: 'TxRepHelper.formatAccountId',       parse: 'TxRepHelper.parseAccountId',       format_throws: false },
+    'AllowTrustOpAssetXDR' => { format: 'TxRepHelper.formatAllowTrustAsset', parse: 'TxRepHelper.parseAllowTrustAsset', format_throws: true  },
+    'AssetXDR'             => { format: 'TxRepHelper.formatAsset',           parse: 'TxRepHelper.parseAsset',           format_throws: false },
+    'MuxedAccountXDR'      => { format: 'TxRepHelper.formatMuxedAccount',    parse: 'TxRepHelper.parseMuxedAccount',    format_throws: true  },
+    'SignerKeyXDR'         => { format: 'TxRepHelper.formatSignerKey',       parse: 'TxRepHelper.parseSignerKey',       format_throws: true  },
   }.freeze
 
   # ---------------------------------------------------------------------------
