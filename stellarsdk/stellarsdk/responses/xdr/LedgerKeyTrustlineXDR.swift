@@ -27,7 +27,7 @@ public struct LedgerKeyTrustLineXDR: XDRCodable, Sendable {
 
 extension LedgerKeyTrustLineXDR {
   public func toTxRep(prefix: String, lines: inout [String]) throws {
-    lines.append("\(prefix).accountID: \(try TxRepHelper.formatAccountId(self.accountID))")
+    lines.append("\(prefix).accountID: \(TxRepHelper.formatAccountId(self.accountID))")
     try self.asset.toTxRep(prefix: "\(prefix).asset", lines: &lines)
   }
 

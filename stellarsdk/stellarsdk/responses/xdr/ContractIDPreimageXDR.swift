@@ -51,7 +51,7 @@ extension ContractIDPreimageXDR {
       try val.toTxRep(prefix: "\(prefix).fromAddress", lines: &lines)
     case .fromAsset(let val):
       lines.append("\(prefix).type: CONTRACT_ID_PREIMAGE_FROM_ASSET")
-      lines.append("\(prefix).fromAsset: \(try TxRepHelper.formatAsset(val))")
+      lines.append("\(prefix).fromAsset: \(TxRepHelper.formatAsset(val))")
     }
   }
 

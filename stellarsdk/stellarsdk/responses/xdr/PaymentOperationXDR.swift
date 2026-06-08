@@ -36,7 +36,7 @@ public struct PaymentOperationXDR: XDRCodable, Sendable {
 extension PaymentOperationXDR {
   public func toTxRep(prefix: String, lines: inout [String]) throws {
     lines.append("\(prefix).destination: \(try TxRepHelper.formatMuxedAccount(self.destination))")
-    lines.append("\(prefix).asset: \(try TxRepHelper.formatAsset(self.asset))")
+    lines.append("\(prefix).asset: \(TxRepHelper.formatAsset(self.asset))")
     lines.append("\(prefix).amount: \(self.amount)")
   }
 

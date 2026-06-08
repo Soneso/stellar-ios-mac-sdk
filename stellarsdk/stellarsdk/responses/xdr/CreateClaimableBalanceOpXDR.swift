@@ -35,7 +35,7 @@ public struct CreateClaimableBalanceOpXDR: XDRCodable, Sendable {
 
 extension CreateClaimableBalanceOpXDR {
   public func toTxRep(prefix: String, lines: inout [String]) throws {
-    lines.append("\(prefix).asset: \(try TxRepHelper.formatAsset(self.asset))")
+    lines.append("\(prefix).asset: \(TxRepHelper.formatAsset(self.asset))")
     lines.append("\(prefix).amount: \(self.amount)")
     lines.append("\(prefix).claimants.len: \(self.claimants.count)")
     for (i, item) in self.claimants.enumerated() {

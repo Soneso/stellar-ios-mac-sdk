@@ -69,7 +69,7 @@ extension SCAddressXDR {
     switch self {
     case .account(let val):
       lines.append("\(prefix).type: SC_ADDRESS_TYPE_ACCOUNT")
-      lines.append("\(prefix).accountId: \(try TxRepHelper.formatAccountId(val))")
+      lines.append("\(prefix).accountId: \(TxRepHelper.formatAccountId(val))")
     case .contract(let val):
       lines.append("\(prefix).type: SC_ADDRESS_TYPE_CONTRACT")
       lines.append("\(prefix).contractId: \(TxRepHelper.bytesToHex(val.wrapped))")

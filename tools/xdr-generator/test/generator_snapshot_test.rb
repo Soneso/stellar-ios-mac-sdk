@@ -8,12 +8,26 @@ class GeneratorSnapshotTest < Minitest::Test
   XDR_DIR      = File.expand_path("../../../xdr", __dir__)
 
   def setup
-    @output_dir = Dir.mktmpdir("xdr_gen_test_")
-    generate_all
+    @output_dir = self.class.shared_output_dir
   end
 
-  def teardown
-    FileUtils.rm_rf(@output_dir)
+  # Generates the full XDR output once for the entire suite. minitest builds a
+  # fresh instance per test method, so per-instance memoization cannot help; the
+  # shared output directory is built lazily on first use and removed after the run.
+  def self.shared_output_dir
+    @shared_output_dir ||= begin
+      dir = Dir.mktmpdir("xdr_gen_test_")
+      Dir.chdir(File.expand_path("../../..", __dir__)) do
+        Xdrgen::Compilation.new(
+          Dir.glob("xdr/*.x"),
+          output_dir: dir + "/",
+          generator: Generator,
+          namespace: "stellar",
+        ).compile
+      end
+      Minitest.after_run { FileUtils.rm_rf(dir) }
+      dir
+    end
   end
 
   # -- Configuration tests --
@@ -130,18 +144,6 @@ class GeneratorSnapshotTest < Minitest::Test
   end
 
   private
-
-  def generate_all
-    return if @generated
-    Dir.chdir(File.expand_path("../../..", __dir__))
-    Xdrgen::Compilation.new(
-      Dir.glob("xdr/*.x"),
-      output_dir: @output_dir + "/",
-      generator: Generator,
-      namespace: "stellar",
-    ).compile
-    @generated = true
-  end
 
   def assert_snapshot(filename)
     generated = File.join(@output_dir, filename)

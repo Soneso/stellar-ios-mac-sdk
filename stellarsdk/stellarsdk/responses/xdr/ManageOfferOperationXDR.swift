@@ -45,8 +45,8 @@ public struct ManageOfferOperationXDR: XDRCodable, Sendable {
 
 extension ManageOfferOperationXDR {
   public func toTxRep(prefix: String, lines: inout [String]) throws {
-    lines.append("\(prefix).selling: \(try TxRepHelper.formatAsset(self.selling))")
-    lines.append("\(prefix).buying: \(try TxRepHelper.formatAsset(self.buying))")
+    lines.append("\(prefix).selling: \(TxRepHelper.formatAsset(self.selling))")
+    lines.append("\(prefix).buying: \(TxRepHelper.formatAsset(self.buying))")
     lines.append("\(prefix).amount: \(self.amount)")
     try self.price.toTxRep(prefix: "\(prefix).price", lines: &lines)
     lines.append("\(prefix).offerID: \(self.offerID)")

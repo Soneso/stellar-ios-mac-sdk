@@ -157,7 +157,7 @@ extension SetOptionsOperationXDR {
   public func toTxRep(prefix: String, lines: inout [String]) throws {
     if let val = self.inflationDestination {
       lines.append("\(prefix).inflationDest._present: true")
-      lines.append("\(prefix).inflationDest: \(try TxRepHelper.formatAccountId(val))")
+      lines.append("\(prefix).inflationDest: \(TxRepHelper.formatAccountId(val))")
     } else {
       lines.append("\(prefix).inflationDest._present: false")
     }

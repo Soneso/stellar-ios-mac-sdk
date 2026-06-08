@@ -35,7 +35,7 @@ public struct AllowTrustOperationXDR: XDRCodable, Sendable {
 
 extension AllowTrustOperationXDR {
   public func toTxRep(prefix: String, lines: inout [String]) throws {
-    lines.append("\(prefix).trustor: \(try TxRepHelper.formatAccountId(self.trustor))")
+    lines.append("\(prefix).trustor: \(TxRepHelper.formatAccountId(self.trustor))")
     lines.append("\(prefix).asset: \(try TxRepHelper.formatAllowTrustAsset(self.asset))")
     lines.append("\(prefix).authorize: \(self.authorize)")
   }

@@ -50,14 +50,14 @@ public struct PathPaymentOperationXDR: XDRCodable, Sendable {
 
 extension PathPaymentOperationXDR {
   public func toTxRep(prefix: String, lines: inout [String]) throws {
-    lines.append("\(prefix).sendAsset: \(try TxRepHelper.formatAsset(self.sendAsset))")
+    lines.append("\(prefix).sendAsset: \(TxRepHelper.formatAsset(self.sendAsset))")
     lines.append("\(prefix).sendMax: \(self.sendMax)")
     lines.append("\(prefix).destination: \(try TxRepHelper.formatMuxedAccount(self.destination))")
-    lines.append("\(prefix).destAsset: \(try TxRepHelper.formatAsset(self.destinationAsset))")
+    lines.append("\(prefix).destAsset: \(TxRepHelper.formatAsset(self.destinationAsset))")
     lines.append("\(prefix).destAmount: \(self.destinationAmount)")
     lines.append("\(prefix).path.len: \(self.path.count)")
     for (i, item) in self.path.enumerated() {
-      lines.append("\(prefix).path[\(i)]: \(try TxRepHelper.formatAsset(item))")
+      lines.append("\(prefix).path[\(i)]: \(TxRepHelper.formatAsset(item))")
     }
   }
 

@@ -23,7 +23,7 @@ public struct BeginSponsoringFutureReservesOpXDR: XDRCodable, Sendable {
 
 extension BeginSponsoringFutureReservesOpXDR {
   public func toTxRep(prefix: String, lines: inout [String]) throws {
-    lines.append("\(prefix).sponsoredID: \(try TxRepHelper.formatAccountId(self.sponsoredId))")
+    lines.append("\(prefix).sponsoredID: \(TxRepHelper.formatAccountId(self.sponsoredId))")
   }
 
   public static func fromTxRep(_ map: [String: String], prefix: String) throws -> BeginSponsoringFutureReservesOpXDR {
