@@ -8,7 +8,7 @@ import Foundation
 /// and an optional array of nested delegate descriptors. The SDK converts descriptors into
 /// `SorobanDelegateSignatureXDR` values, sorts every array by ascending XDR-byte order,
 /// and rejects within-array duplicate addresses.
-public struct SorobanDelegateDescriptor {
+public struct SorobanDelegateDescriptor: Sendable {
 
     /// Stellar address as a strkey (`G…` for account, `C…` for contract).
     public let address: String
@@ -147,23 +147,32 @@ internal enum DelegateLookupResult {
 ///   - nodes: Delegate array to search (modified in place).
 ///   - targetAddress: XDR address to match.
 ///   - signature: Signature element to append.
+///   - depth: Current recursion depth; callers should omit this (defaults to 0).
 /// - Returns: `.found` when at least one node matched, `.notFound` otherwise.
+/// - Throws: `StellarSDKError.invalidArgument` when nesting exceeds 128 levels.
 @discardableResult
 internal func appendSignatureToMatchingDelegates(
     nodes: inout [SorobanDelegateSignatureXDR],
     targetAddress: SCAddressXDR,
-    signature: SCValXDR
-) -> DelegateLookupResult {
+    signature: SCValXDR,
+    depth: Int = 0
+) throws -> DelegateLookupResult {
+    guard depth <= 128 else {
+        throw StellarSDKError.invalidArgument(
+            message: "Delegate tree nesting exceeds the maximum allowed depth (128)"
+        )
+    }
     var anyFound = false
     for i in nodes.indices {
         if sorobanAddressXDREqual(nodes[i].address, targetAddress) {
             nodes[i].appendSignature(signature: signature)
             anyFound = true
         }
-        let result = appendSignatureToMatchingDelegates(
+        let result = try appendSignatureToMatchingDelegates(
             nodes: &nodes[i].nestedDelegates,
             targetAddress: targetAddress,
-            signature: signature
+            signature: signature,
+            depth: depth + 1
         )
         if result == .found {
             anyFound = true

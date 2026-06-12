@@ -58,7 +58,7 @@ public final class MethodOptions: Sendable {
     /// Request protocol-27 V2 credential arms in the simulation response. Default false.
     ///
     /// When `true`, the simulation request includes `"authV2": true`, which instructs a
-    /// protocol-27 RPC to return `ADDRESS_V2` or `ADDRESS_WITH_DELEGATES` credential arms.
+    /// protocol-27 RPC to return `ADDRESS_V2` credential arms.
     /// The key is omitted entirely when `false`. Emitting V2 on a pre-27 network invalidates
     /// the transaction. RPC servers without protocol-27 support silently ignore this flag and
     /// return legacy `ADDRESS` entries.

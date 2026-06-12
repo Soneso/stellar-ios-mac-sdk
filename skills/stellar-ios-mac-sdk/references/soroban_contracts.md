@@ -648,6 +648,9 @@ Behavior:
 ```swift
 import stellarsdk
 
+// simResponse = unwrapped simulate result; topLevelKeyPair/delegateKeyPair = your signers;
+// latestLedger = unwrapped server.getLatestLedger() (.sequence used for expiration).
+
 // Simulation returned an ADDRESS or ADDRESS_V2 entry
 let entry = simResponse.sorobanAuth![0]
 
@@ -657,13 +660,17 @@ var delegated = try SorobanAuthorizationEntryXDR.withDelegates(
     expirationLedger: latestLedger.sequence + 100
 )
 
-// Top-level signature (optional: skip for the delegates-only pattern)
+// Top-level signature (optional: skip for the delegates-only pattern).
+// Multiple classical (G) signatures on one node must be added in ascending public-key order.
 try delegated.sign(signer: topLevelKeyPair, network: Network.testnet)
 
 // Delegate signature, routed to the matching node
 try delegated.sign(signer: delegateKeyPair, network: Network.testnet, forAddress: delegateKeyPair.accountId)
 
 transaction.setSorobanAuth(auth: [delegated])
+
+// Re-simulate with the delegated entry attached and use the returned resources before
+// submitting; the initial simulation does not include the delegate authorization.
 ```
 
 ## Error Handling

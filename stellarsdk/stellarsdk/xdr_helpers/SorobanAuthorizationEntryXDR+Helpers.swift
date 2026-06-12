@@ -87,6 +87,9 @@ extension SorobanAuthorizationEntryXDR {
     /// callers must supply signatures in ascending public-key order when G-address
     /// verification requires it (the host enforces strict ordering and a 20-signature cap).
     ///
+    /// Calling `sign` repeatedly for the same signer and node appends repeatedly; callers
+    /// must not double-sign, as duplicate signature elements cause host verification to fail.
+    ///
     /// **Void top-level signature**
     ///
     /// A void top-level signature is legitimate for `WITH_DELEGATES` entries where only
@@ -122,7 +125,9 @@ extension SorobanAuthorizationEntryXDR {
 
         // Stamp expiration into credentials before hashing.
         if let expLedger = signatureExpirationLedger {
-            guard var creds = credentials.addressCredentials else { return }
+            guard var creds = credentials.addressCredentials else {
+                throw StellarSDKError.invalidArgument(message: "signing requires address-type credentials")
+            }
             creds.signatureExpirationLedger = expLedger
             credentials = try credentials.withAddressCredentials(creds)
         }
@@ -151,7 +156,7 @@ extension SorobanAuthorizationEntryXDR {
 
             // Check delegate nodes (only present for WITH_DELEGATES).
             if case .addressWithDelegates(var withDelegates) = credentials {
-                let result = appendSignatureToMatchingDelegates(
+                let result = try appendSignatureToMatchingDelegates(
                     nodes: &withDelegates.delegates,
                     targetAddress: targetAddress,
                     signature: sigVal
@@ -169,7 +174,9 @@ extension SorobanAuthorizationEntryXDR {
             }
         } else {
             // Sign the top-level credential node.
-            guard var creds = credentials.addressCredentials else { return }
+            guard var creds = credentials.addressCredentials else {
+                throw StellarSDKError.invalidArgument(message: "signing requires address-type credentials")
+            }
             creds.appendSignature(signature: sigVal)
             credentials = try credentials.withAddressCredentials(creds)
         }

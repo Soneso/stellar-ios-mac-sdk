@@ -400,7 +400,7 @@ public final class AssembledTransaction: @unchecked Sendable {
                     }
                 }
                 // Delegate nodes: depth-first.
-                collectUnsignedDelegates(nodes: withDelegates.delegates, into: &needed, includeAlreadySigned: includeAlreadySigned)
+                try collectUnsignedDelegates(nodes: withDelegates.delegates, into: &needed, includeAlreadySigned: includeAlreadySigned)
             }
         }
         return needed
@@ -408,18 +408,26 @@ public final class AssembledTransaction: @unchecked Sendable {
 
     /// Recursively collects the strkey addresses of unsigned (or all, when
     /// `includeAlreadySigned` is true) delegate nodes into `result`.
+    ///
+    /// - Throws: `StellarSDKError.invalidArgument` when nesting exceeds 128 levels.
     private func collectUnsignedDelegates(
         nodes: [SorobanDelegateSignatureXDR],
         into result: inout [String],
-        includeAlreadySigned: Bool
-    ) {
+        includeAlreadySigned: Bool,
+        depth: Int = 0
+    ) throws {
+        guard depth <= 128 else {
+            throw StellarSDKError.invalidArgument(
+                message: "Delegate tree nesting exceeds the maximum allowed depth (128)"
+            )
+        }
         for node in nodes {
             if includeAlreadySigned || node.signature.type() == SCValType.void.rawValue {
                 if let signer = node.address.accountId ?? node.address.contractId {
                     result.append(signer)
                 }
             }
-            collectUnsignedDelegates(nodes: node.nestedDelegates, into: &result, includeAlreadySigned: includeAlreadySigned)
+            try collectUnsignedDelegates(nodes: node.nestedDelegates, into: &result, includeAlreadySigned: includeAlreadySigned, depth: depth + 1)
         }
     }
     
@@ -603,20 +611,24 @@ public final class AssembledTransaction: @unchecked Sendable {
         return false
     }
 
-    /// Returns `true` when every delegate node in the tree (depth-first) carries a non-void signature.
-    private func allDelegatesSigned(nodes: [SorobanDelegateSignatureXDR]) -> Bool {
+    /// Returns `true` when every delegate node in the tree (depth-first) carries a non-void
+    /// signature. Returns `false` when nesting exceeds 128 levels (treated as unsigned).
+    private func allDelegatesSigned(nodes: [SorobanDelegateSignatureXDR], depth: Int = 0) -> Bool {
+        guard depth <= 128 else { return false }
         for node in nodes {
             if node.signature.type() == SCValType.void.rawValue { return false }
-            if !allDelegatesSigned(nodes: node.nestedDelegates) { return false }
+            if !allDelegatesSigned(nodes: node.nestedDelegates, depth: depth + 1) { return false }
         }
         return true
     }
 
     /// Returns `true` when any node in the delegate tree has the given account ID.
-    private func delegateTreeContainsAccountId(nodes: [SorobanDelegateSignatureXDR], accountId: String) -> Bool {
+    /// Returns `false` when nesting exceeds 128 levels (safe default: no match reported).
+    private func delegateTreeContainsAccountId(nodes: [SorobanDelegateSignatureXDR], accountId: String, depth: Int = 0) -> Bool {
+        guard depth <= 128 else { return false }
         for node in nodes {
             if node.address.accountId == accountId { return true }
-            if delegateTreeContainsAccountId(nodes: node.nestedDelegates, accountId: accountId) { return true }
+            if delegateTreeContainsAccountId(nodes: node.nestedDelegates, accountId: accountId, depth: depth + 1) { return true }
         }
         return false
     }

@@ -1019,6 +1019,280 @@ final class SorobanP27AuthUnitTests: XCTestCase {
         XCTAssertThrowsError(try scAddressXDR(fromStrkey: "not-a-strkey"))
     }
 
+    // MARK: - Gap 1: forAddress routing with DISTINCT top-level and delegate addresses
+
+    /// Verifies that sign(forAddress:) routes to the DELEGATE node exclusively when the
+    /// supplied address matches the delegate but not the top-level credentials.
+    ///
+    /// The test uses key A for the top-level and key B for the single delegate (A != B).
+    /// Signing forAddress: B must populate the delegate's signature vector while leaving
+    /// the top-level signature as .void.  Signing forAddress: nil (top-level) afterwards
+    /// must populate the top-level, with both signatures verifying against the same hash.
+    func testForAddressDistinctKeypairs_delegateSignedTopLevelVoid() throws {
+        let keyA = try KeyPair(secretSeed: GoldenVectors.signerSeed)
+        let keyB = try KeyPair.generateRandomKeyPair()
+        // keyA must differ from keyB to prove routing correctness.
+        XCTAssertNotEqual(keyA.accountId, keyB.accountId)
+
+        // Build a V2-arm entry whose credentials address is keyA.
+        let sourceEntry = try makeTestEntry(
+            credentialsAddress: keyA.accountId,
+            invocationContractId: GoldenVectors.contractId,
+            nonce: GoldenVectors.nonce,
+            expirationLedger: GoldenVectors.expirationLedger,
+            credentialArm: .v2
+        )
+        // Wrap with a single delegate: keyB.
+        var treeEntry = try SorobanAuthorizationEntryXDR.withDelegates(
+            entry: sourceEntry,
+            delegates: [SorobanDelegateDescriptor(address: keyB.accountId)],
+            expirationLedger: GoldenVectors.expirationLedger
+        )
+
+        // Build the canonical payload hash before any signing.
+        let preimage = try treeEntry.buildPreimage(network: GoldenVectors.network)
+        let encoded = try XDREncoder.encode(preimage)
+        let payloadHash = Data(bytes: encoded, count: encoded.count).sha256Hash
+
+        // Sign as delegate (keyB): must land in the delegate node, top-level stays void.
+        try treeEntry.sign(signer: keyB, network: GoldenVectors.network,
+                           signatureExpirationLedger: GoldenVectors.expirationLedger,
+                           forAddress: keyB.accountId)
+
+        guard case .addressWithDelegates(let afterDelegateSigned) = treeEntry.credentials else {
+            XCTFail("Expected WITH_DELEGATES credentials"); return
+        }
+        XCTAssertTrue(afterDelegateSigned.addressCredentials.signature.isVoid,
+                      "Top-level must remain void after signing forAddress: keyB")
+        guard let delegateVec = afterDelegateSigned.delegates.first?.signature.vec else {
+            XCTFail("Delegate node must have a vec signature after signing"); return
+        }
+        XCTAssertEqual(delegateVec.count, 1, "Delegate must have exactly one signature element")
+
+        // Sign top-level (keyA, forAddress: nil).
+        try treeEntry.sign(signer: keyA, network: GoldenVectors.network,
+                           signatureExpirationLedger: GoldenVectors.expirationLedger)
+
+        guard case .addressWithDelegates(let fullySignedWD) = treeEntry.credentials else {
+            XCTFail("Expected WITH_DELEGATES credentials"); return
+        }
+        guard let topVec = fullySignedWD.addressCredentials.signature.vec,
+              let topSigEntry = topVec.first,
+              let topSigMap = topSigEntry.map,
+              let topSigRecord = topSigMap.first(where: { $0.key.symbol == "signature" }),
+              let topSigBytes = topSigRecord.val.bytes else {
+            XCTFail("Cannot extract top-level signature"); return
+        }
+        guard let delegateNode = fullySignedWD.delegates.first,
+              let delVec = delegateNode.signature.vec,
+              let delSigEntry = delVec.first,
+              let delSigMap = delSigEntry.map,
+              let delSigRecord = delSigMap.first(where: { $0.key.symbol == "signature" }),
+              let delSigBytes = delSigRecord.val.bytes else {
+            XCTFail("Cannot extract delegate signature"); return
+        }
+
+        // Both signatures must verify against the SAME payload hash.
+        let topVerified = try keyA.verify(
+            signature: [UInt8](topSigBytes),
+            message: [UInt8](payloadHash)
+        )
+        XCTAssertTrue(topVerified, "Top-level signature must verify against the shared preimage hash")
+
+        let delVerified = try keyB.verify(
+            signature: [UInt8](delSigBytes),
+            message: [UInt8](payloadHash)
+        )
+        XCTAssertTrue(delVerified, "Delegate signature must verify against the shared preimage hash")
+    }
+
+    /// Verifies sign(forAddress: delegateAddress) when the top-level is a CONTRACT address
+    /// (not a G-address matching any keypair) and the sole delegate is a G-address.
+    /// The delegate node must receive the signature; there is no top-level to sign.
+    func testForAddressDistinctKeypairs_contractTopLevel_delegateIsSoleGAddress() throws {
+        let delegateKey = try KeyPair.generateRandomKeyPair()
+        // Top-level is a C-address (a contract); the delegate is the signer's G-address.
+        let topContractEntry = try makeContractEntry(
+            contractId: GoldenVectors.contractId,
+            nonce: 77,
+            expirationLedger: 500
+        )
+        var treeEntry = try SorobanAuthorizationEntryXDR.withDelegates(
+            entry: topContractEntry,
+            delegates: [SorobanDelegateDescriptor(address: delegateKey.accountId)],
+            expirationLedger: 500
+        )
+
+        // Top-level is a contract address — there is no G-address top-level match.
+        // sign(forAddress: delegateKey.accountId) must route to the delegate.
+        try treeEntry.sign(signer: delegateKey, network: GoldenVectors.network,
+                           signatureExpirationLedger: 500,
+                           forAddress: delegateKey.accountId)
+
+        guard case .addressWithDelegates(let wd) = treeEntry.credentials else {
+            XCTFail("Expected WITH_DELEGATES credentials"); return
+        }
+        // Top-level (contract): its signature storage is irrelevant for this test,
+        // but it must NOT have received a vec signature as a side-effect.
+        XCTAssertTrue(wd.addressCredentials.signature.isVoid,
+                      "Contract top-level must remain void — contracts do not sign via ed25519")
+
+        // Delegate must carry exactly one signature element.
+        guard let delegateVec = wd.delegates.first?.signature.vec else {
+            XCTFail("Delegate node must have a vec signature after signing"); return
+        }
+        XCTAssertEqual(delegateVec.count, 1,
+                       "Delegate must have exactly one signature element after forAddress sign")
+    }
+
+    // MARK: - Gap 4: entry-level TxRep roundtrip for V2 and WITH_DELEGATES
+
+    /// Verifies that a full SorobanAuthorizationEntryXDR with .addressV2 credentials
+    /// produces byte-identical XDR after toTxRep → fromTxRep → re-encode.
+    func testEntryLevelTxRepRoundtrip_addressV2() throws {
+        let entry = try makeTestEntry(
+            credentialsAddress: GoldenVectors.signerAccountId,
+            invocationContractId: GoldenVectors.contractId,
+            nonce: GoldenVectors.nonce,
+            expirationLedger: GoldenVectors.expirationLedger,
+            credentialArm: .v2
+        )
+
+        var lines: [String] = []
+        try entry.toTxRep(prefix: "entry", lines: &lines)
+        XCTAssertFalse(lines.isEmpty, "toTxRep must produce output for a V2 entry")
+
+        var map: [String: String] = [:]
+        for line in lines {
+            if let range = line.range(of: ": ") {
+                let key = String(line[..<range.lowerBound])
+                let value = String(line[range.upperBound...])
+                map[key] = value
+            }
+        }
+
+        let restored = try SorobanAuthorizationEntryXDR.fromTxRep(map, prefix: "entry")
+        let originalB64 = try Data(XDREncoder.encode(entry)).base64EncodedString()
+        let restoredB64 = try Data(XDREncoder.encode(restored)).base64EncodedString()
+        XCTAssertEqual(restoredB64, originalB64,
+                       "ADDRESS_V2 SorobanAuthorizationEntryXDR TxRep roundtrip must be byte-identical")
+    }
+
+    /// Verifies that a full SorobanAuthorizationEntryXDR with .addressWithDelegates
+    /// credentials (non-empty delegates array, including a nested delegate) produces
+    /// byte-identical XDR after toTxRep → fromTxRep → re-encode.
+    func testEntryLevelTxRepRoundtrip_withDelegates_nonEmptyNested() throws {
+        let sourceEntry = try makeTestEntry(
+            credentialsAddress: GoldenVectors.signerAccountId,
+            invocationContractId: GoldenVectors.contractId,
+            nonce: GoldenVectors.nonce,
+            expirationLedger: GoldenVectors.expirationLedger,
+            credentialArm: .v2
+        )
+        // Build: top-level signer is keyA (signerAccountId), delegate is the contract (C-address),
+        // with a nested delegate of keyA again (same address at different nesting levels is valid).
+        let outerDelegateDescriptor = SorobanDelegateDescriptor(
+            address: GoldenVectors.contractId,
+            nestedDelegates: [
+                SorobanDelegateDescriptor(address: GoldenVectors.signerAccountId)
+            ]
+        )
+        let treeEntry = try SorobanAuthorizationEntryXDR.withDelegates(
+            entry: sourceEntry,
+            delegates: [outerDelegateDescriptor],
+            expirationLedger: GoldenVectors.expirationLedger
+        )
+
+        var lines: [String] = []
+        try treeEntry.toTxRep(prefix: "entry", lines: &lines)
+        XCTAssertFalse(lines.isEmpty, "toTxRep must produce output for WITH_DELEGATES entry")
+
+        // Verify delegates.len is present and > 0.
+        let delegatesLenLine = lines.first { $0.contains("credentials.addressWithDelegates.delegates.len") }
+        XCTAssertNotNil(delegatesLenLine, "TxRep must contain a delegates.len line")
+        XCTAssertTrue(delegatesLenLine?.contains("1") == true, "delegates.len must be 1")
+
+        var map: [String: String] = [:]
+        for line in lines {
+            if let range = line.range(of: ": ") {
+                let key = String(line[..<range.lowerBound])
+                let value = String(line[range.upperBound...])
+                map[key] = value
+            }
+        }
+
+        let restored = try SorobanAuthorizationEntryXDR.fromTxRep(map, prefix: "entry")
+        let originalB64 = try Data(XDREncoder.encode(treeEntry)).base64EncodedString()
+        let restoredB64 = try Data(XDREncoder.encode(restored)).base64EncodedString()
+        XCTAssertEqual(restoredB64, originalB64,
+                       "WITH_DELEGATES SorobanAuthorizationEntryXDR TxRep roundtrip must be byte-identical")
+    }
+
+    // MARK: - Gap 6: decode depth guard rejects an over-deep tree
+
+    /// Constructs a linear chain of SorobanDelegateSignatureXDR nodes deeper than the
+    /// XDRDecoder depth limit, encodes it to XDR, and asserts that decoding throws
+    /// XDRDecoder.Error.maxDecodingDepthExceeded.  A shallow tree (10 levels) must decode
+    /// cleanly to confirm the guard fires at the limit, not earlier.
+    ///
+    /// Depth accounting: the decoder increments its counter on each call to
+    /// `decode<T: XDRDecodable>()`. A node at chain level N is decoded at depth 2+N from the
+    /// outer `SorobanAddressCredentialsWithDelegatesXDR` call.  The guard triggers when
+    /// depth > 128, which requires N > 126 (i.e. 127+ levels in the chain).
+    /// Using 130 levels provides a comfortable margin.
+    func testXDRDecodeDepthGuardRejectsOverDeepTree() throws {
+        let contractAddr = try SCAddressXDR(contractId: GoldenVectors.contractId)
+
+        // Safe tree: 10 levels — must decode without error.
+        let safeDepth = 10
+        var safeNode = SorobanDelegateSignatureXDR(
+            address: contractAddr, signature: .void, nestedDelegates: []
+        )
+        for _ in 0..<safeDepth {
+            safeNode = SorobanDelegateSignatureXDR(
+                address: contractAddr, signature: .void, nestedDelegates: [safeNode]
+            )
+        }
+        let safeWrapper = SorobanAddressCredentialsWithDelegatesXDR(
+            addressCredentials: SorobanAddressCredentialsXDR(
+                address: contractAddr, nonce: 1, signatureExpirationLedger: 100, signature: .void
+            ),
+            delegates: [safeNode]
+        )
+        let safeBytes = try XDREncoder.encode(safeWrapper)
+        XCTAssertNoThrow(
+            try SorobanAddressCredentialsWithDelegatesXDR(from: XDRDecoder(data: safeBytes)),
+            "Decoding a depth-\(safeDepth) tree must succeed"
+        )
+
+        // Over-deep tree: 130 nested levels, comfortably beyond maxDecodingDepth (128).
+        let overDeepCount = 130
+        var deepNode = SorobanDelegateSignatureXDR(
+            address: contractAddr, signature: .void, nestedDelegates: []
+        )
+        for _ in 0..<overDeepCount {
+            deepNode = SorobanDelegateSignatureXDR(
+                address: contractAddr, signature: .void, nestedDelegates: [deepNode]
+            )
+        }
+        let deepWrapper = SorobanAddressCredentialsWithDelegatesXDR(
+            addressCredentials: SorobanAddressCredentialsXDR(
+                address: contractAddr, nonce: 2, signatureExpirationLedger: 200, signature: .void
+            ),
+            delegates: [deepNode]
+        )
+        let deepBytes = try XDREncoder.encode(deepWrapper)
+
+        XCTAssertThrowsError(
+            try SorobanAddressCredentialsWithDelegatesXDR(from: XDRDecoder(data: deepBytes))
+        ) { error in
+            guard case XDRDecoder.Error.maxDecodingDepthExceeded = error else {
+                XCTFail("Expected XDRDecoder.Error.maxDecodingDepthExceeded for over-deep tree, got \(error)")
+                return
+            }
+        }
+    }
+
     // MARK: - appendSignatureToMatchingDelegates: match only in nested delegates
 
     /// Exercises lines 169-170 in `appendSignatureToMatchingDelegates`: a node's address
@@ -1047,7 +1321,7 @@ final class SorobanP27AuthUnitTests: XCTestCase {
         // The target is the nested account address; the outer node is different.
         let sig = SCValXDR.bytes(Data(repeating: 0xBE, count: 64))
         var nodes = [outerNode]
-        let result = appendSignatureToMatchingDelegates(
+        let result = try appendSignatureToMatchingDelegates(
             nodes: &nodes,
             targetAddress: nestedAddress,
             signature: sig

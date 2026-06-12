@@ -570,11 +570,16 @@ Rules enforced by the host and handled by the SDK builder:
 import stellarsdk
 
 let topLevelKeyPair = try KeyPair(secretSeed: "STOPLEVEL...")
-let delegateKeyPair = try KeyPair(secretSeed: "SDELEGATE...")
-// delegateKeyPair.accountId == "GCZHXL5HXQX5ABDM26LHYRCQZ5OJFHLOPLZX47WEBP3V2PF5AVFK2A5D"
+let delegateKeyPair = try KeyPair(secretSeed: "SDELEGATE...") // a delegate signer's account
+
+// Unwrap the simulation result bound above
+guard case .success(let sim) = simEnum else { return }
 
 // Simulation returned an ADDRESS or ADDRESS_V2 entry
 let entry = sim.sorobanAuth![0]
+
+// Latest ledger, used to set the signature expiration
+guard case .success(let latestLedger) = await server.getLatestLedger() else { return }
 
 // Build the WITH_DELEGATES entry; the builder sorts delegate arrays and
 // resets the top-level signature to void
@@ -586,7 +591,10 @@ var delegated = try SorobanAuthorizationEntryXDR.withDelegates(
     expirationLedger: latestLedger.sequence + 100
 )
 
-// Top-level signer (skip this for the delegates-only pattern)
+// Top-level signer (skip this for the delegates-only pattern).
+// When one node needs multiple classical (G-address) signatures, add them in
+// ascending public-key order -- the host requires that order and the SDK
+// appends signatures in the order you call sign.
 try delegated.sign(signer: topLevelKeyPair, network: Network.testnet)
 
 // Delegate signer: forAddress routes the signature into the matching node
@@ -597,6 +605,14 @@ try delegated.sign(
 )
 
 transaction.setSorobanAuth(auth: [delegated])
+
+// The first simulation did not include the delegate authorization, so its
+// resources are understated. Re-simulate with the delegated entry attached and
+// apply the returned transaction data before submitting:
+//   let reEnum = await server.simulateTransaction(
+//       simulateTxRequest: SimulateTransactionRequest(transaction: transaction))
+//   guard case .success(let reSim) = reEnum, let txData = reSim.transactionData else { return }
+//   transaction.setSorobanTransactionData(data: txData)
 ```
 
 `SorobanDelegateDescriptor` supports nesting via `nestedDelegates` and accepts a pre-built `signature` (default `.void`) for nodes signed externally, such as contract addresses. `forAddress` matches every node in the tree (top-level or delegate, depth-first) and throws when no node matches.

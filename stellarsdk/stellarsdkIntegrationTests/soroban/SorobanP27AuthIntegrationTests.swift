@@ -63,6 +63,20 @@ final class SorobanP27AuthIntegrationTests: XCTestCase {
         try await submitWithAddressV2CredentialsOnP27Testnet()
     }
 
+    // MARK: - Standalone network-free tests (run independently of testnet)
+
+    /// ADDRESS_V2 credentials must survive XDR encode/decode without mutation.
+    /// Standalone version: runs without network, independent of testnet availability.
+    func testAddressV2XDRRoundtrip() throws {
+        try addressV2XDRRoundtrip()
+    }
+
+    /// buildPreimage() must produce .sorobanAuthorizationWithAddress for ADDRESS_V2.
+    /// Standalone version: runs without network, independent of testnet availability.
+    func testAddressV2PreimageUsesWithAddressEnvelopeType() throws {
+        try addressV2PreimageUsesWithAddressEnvelopeType()
+    }
+
     // MARK: - XDR round-trip (no network)
 
     /// ADDRESS_V2 credentials must survive XDR encode/decode without mutation.

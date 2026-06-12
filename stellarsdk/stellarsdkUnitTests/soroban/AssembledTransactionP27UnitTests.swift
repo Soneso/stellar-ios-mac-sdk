@@ -856,6 +856,266 @@ final class AssembledTransactionP27UnitTests: XCTestCase {
         }
     }
 
+    // MARK: - Gap 2: missingPrivateKey for ADDRESS_V2 and WITH_DELEGATES arms
+
+    /// Verifies that signAuthEntries throws AssembledTransactionError.missingPrivateKey when
+    /// the signer is a public-key-only KeyPair and no callback is provided, for the
+    /// .addressV2 arm.
+    func testSignAuthEntries_addressV2_publicKeyOnlySigner_throwsMissingPrivateKey() async throws {
+        setupGetLatestLedgerMock()
+
+        // Build a V2 entry whose credential address matches the public-key-only signer.
+        let publicOnlySigner = try KeyPair(accountId: keyPair.accountId)
+        XCTAssertNil(publicOnlySigner.privateKey, "Expected nil privateKey on public-key-only KeyPair")
+
+        let creds = SorobanAddressCredentialsXDR(
+            address: try SCAddressXDR(accountId: publicOnlySigner.accountId),
+            nonce: 55,
+            signatureExpirationLedger: 0,
+            signature: SCValXDR.void
+        )
+        let entry = SorobanAuthorizationEntryXDR(
+            credentials: SorobanCredentialsXDR.addressV2(creds),
+            rootInvocation: makeRootInvocation()
+        )
+        let tx = try makeTransactionWithEntry(entry)
+        let at = makeAssembledTransaction(tx: tx)
+
+        do {
+            try await at.signAuthEntries(signerKeyPair: publicOnlySigner, validUntilLedgerSeq: 1_000_000)
+            XCTFail("Expected AssembledTransactionError.missingPrivateKey for ADDRESS_V2 arm with public-key-only signer")
+        } catch AssembledTransactionError.missingPrivateKey {
+            // Expected: the ADDRESS_V2 arm must throw missingPrivateKey when no callback provided.
+        }
+    }
+
+    /// Verifies that signAuthEntries throws AssembledTransactionError.missingPrivateKey when
+    /// the signer is a public-key-only KeyPair and no callback is provided, for the
+    /// .addressWithDelegates arm (top-level address matches the signer).
+    func testSignAuthEntries_withDelegates_publicKeyOnlySigner_throwsMissingPrivateKey() async throws {
+        setupGetLatestLedgerMock()
+
+        let publicOnlySigner = try KeyPair(accountId: keyPair.accountId)
+        XCTAssertNil(publicOnlySigner.privateKey, "Expected nil privateKey on public-key-only KeyPair")
+
+        // Top-level address matches the public-key-only signer.
+        let topCreds = SorobanAddressCredentialsXDR(
+            address: try SCAddressXDR(accountId: publicOnlySigner.accountId),
+            nonce: 77,
+            signatureExpirationLedger: 0,
+            signature: SCValXDR.void
+        )
+        let unrelatedDelegate = SorobanDelegateSignatureXDR(
+            address: try SCAddressXDR(contractId: mockContractId),
+            signature: .void,
+            nestedDelegates: []
+        )
+        let withDelegates = SorobanAddressCredentialsWithDelegatesXDR(
+            addressCredentials: topCreds,
+            delegates: [unrelatedDelegate]
+        )
+        let entry = SorobanAuthorizationEntryXDR(
+            credentials: .addressWithDelegates(withDelegates),
+            rootInvocation: makeRootInvocation()
+        )
+        let tx = try makeTransactionWithEntry(entry)
+        let at = makeAssembledTransaction(tx: tx)
+
+        do {
+            try await at.signAuthEntries(signerKeyPair: publicOnlySigner, validUntilLedgerSeq: 1_000_000)
+            XCTFail("Expected AssembledTransactionError.missingPrivateKey for WITH_DELEGATES arm with public-key-only signer")
+        } catch AssembledTransactionError.missingPrivateKey {
+            // Expected: the WITH_DELEGATES arm must throw missingPrivateKey when no callback provided.
+        }
+    }
+
+    // MARK: - Gap 3: delegate-only callback routing (contract top-level, G-address delegate)
+
+    /// Verifies that when the top-level address is a CONTRACT (C-address) and the sole
+    /// delegate is a G-address matching the signer, signAuthEntries routes the entry through
+    /// the authorizeEntryCallback and the callback receives a .addressWithDelegates entry.
+    /// This proves that delegateMatches routing (not topLevelMatches) fires the callback.
+    func testSignAuthEntries_withDelegates_contractTopLevel_delegateMatchesSigner_callbackFired() async throws {
+        setupGetLatestLedgerMock()
+
+        // Top-level is a contract (C-address) — never matches the signer's G-address.
+        let contractTopLevelAddr = try SCAddressXDR(contractId: mockContractId)
+        // The sole delegate is the signer's G-address.
+        let delegateAddr = try SCAddressXDR(accountId: keyPair.accountId)
+        let delegateNode = SorobanDelegateSignatureXDR(
+            address: delegateAddr,
+            signature: .void,
+            nestedDelegates: []
+        )
+        let topCreds = SorobanAddressCredentialsXDR(
+            address: contractTopLevelAddr,
+            nonce: 99,
+            signatureExpirationLedger: 0,
+            signature: SCValXDR.void
+        )
+        let withDelegates = SorobanAddressCredentialsWithDelegatesXDR(
+            addressCredentials: topCreds,
+            delegates: [delegateNode]
+        )
+        let entry = SorobanAuthorizationEntryXDR(
+            credentials: .addressWithDelegates(withDelegates),
+            rootInvocation: makeRootInvocation()
+        )
+        let tx = try makeTransactionWithEntry(entry)
+        let at = makeAssembledTransaction(tx: tx)
+
+        var callbackInvokeCount = 0
+        var receivedEntry: SorobanAuthorizationEntryXDR?
+        try await at.signAuthEntries(
+            signerKeyPair: keyPair,
+            authorizeEntryCallback: { entry, _ in
+                callbackInvokeCount += 1
+                receivedEntry = entry
+                return entry
+            },
+            validUntilLedgerSeq: 1_000_000
+        )
+
+        XCTAssertEqual(callbackInvokeCount, 1,
+                       "Callback must be invoked exactly once via the delegateMatches routing path")
+
+        guard let received = receivedEntry else {
+            XCTFail("Callback must receive the WITH_DELEGATES entry"); return
+        }
+        if case .addressWithDelegates = received.credentials {
+            // arm preserved — expected
+        } else {
+            XCTFail("Callback must receive a .addressWithDelegates entry, got \(received.credentials)")
+        }
+    }
+
+    // MARK: - Gap 5: MethodOptions.authV2 threads through simulate() into JSON-RPC request
+
+    /// Verifies that MethodOptions(authV2: true) causes simulate() to include
+    /// "authV2": true in the JSON-RPC request body sent to the server.
+    ///
+    /// URLProtocol delivers the body via httpBodyStream (not httpBody) once a request enters
+    /// the protocol pipeline, so both paths are checked.
+    func testSimulate_withAuthV2True_sendsAuthV2InRequest() async throws {
+        var capturedBodyData: Data?
+
+        let handler: MockHandler = { mock, request in
+            // URLProtocol puts the POST body into httpBodyStream, not httpBody.
+            if let data = request.httpBody {
+                capturedBodyData = data
+            } else if let stream = request.httpBodyStream {
+                capturedBodyData = stream.readfully()
+            }
+            mock.statusCode = 200
+            return self.makeMinimalSimulateResponse()
+        }
+        ServerMock.add(mock: RequestMock(
+            host: "soroban-testnet.stellar.org",
+            path: "*",
+            httpMethod: "POST",
+            mockHandler: handler
+        ))
+
+        let methodOptions = MethodOptions(authV2: true)
+        let opts = AssembledTransactionOptions(
+            clientOptions: clientOptions,
+            methodOptions: methodOptions,
+            method: "test"
+        )
+        let at = AssembledTransaction(options: opts)
+        at.tx = try makeMockTransaction()
+
+        try await at.simulate()
+
+        guard let bodyData = capturedBodyData,
+              let jsonObj = try? JSONSerialization.jsonObject(with: bodyData) as? [String: Any],
+              let params = jsonObj["params"] as? [String: Any] else {
+            XCTFail("Could not read or parse the captured JSON-RPC request body")
+            return
+        }
+
+        guard let authV2Val = params["authV2"] as? Bool else {
+            XCTFail("'authV2' key must be present in params when MethodOptions(authV2: true) is used; got params keys: \(params.keys.sorted())")
+            return
+        }
+        XCTAssertTrue(authV2Val, "authV2 value must be true")
+    }
+
+    /// Verifies that the default MethodOptions() causes simulate() to omit the "authV2"
+    /// key entirely from the JSON-RPC request body.
+    func testSimulate_defaultMethodOptions_authV2KeyAbsent() async throws {
+        var capturedBodyData: Data?
+
+        let handler: MockHandler = { mock, request in
+            if let data = request.httpBody {
+                capturedBodyData = data
+            } else if let stream = request.httpBodyStream {
+                capturedBodyData = stream.readfully()
+            }
+            mock.statusCode = 200
+            return self.makeMinimalSimulateResponse()
+        }
+        ServerMock.add(mock: RequestMock(
+            host: "soroban-testnet.stellar.org",
+            path: "*",
+            httpMethod: "POST",
+            mockHandler: handler
+        ))
+
+        let opts = AssembledTransactionOptions(
+            clientOptions: clientOptions,
+            methodOptions: MethodOptions(),
+            method: "test"
+        )
+        let at = AssembledTransaction(options: opts)
+        at.tx = try makeMockTransaction()
+
+        try await at.simulate()
+
+        guard let bodyData = capturedBodyData,
+              let jsonObj = try? JSONSerialization.jsonObject(with: bodyData) as? [String: Any],
+              let params = jsonObj["params"] as? [String: Any] else {
+            XCTFail("Could not read or parse the captured JSON-RPC request body")
+            return
+        }
+
+        XCTAssertNil(params["authV2"],
+                     "authV2 key must be ABSENT from params when MethodOptions uses the default (false)")
+    }
+
+    // MARK: - Gap 5 helper: minimal simulate response
+
+    private func makeMinimalSimulateResponse() -> String {
+        let transactionData = SorobanTransactionDataXDR(
+            resources: SorobanResourcesXDR(
+                footprint: LedgerFootprintXDR(readOnly: [], readWrite: []),
+                instructions: 100,
+                diskReadBytes: 0,
+                writeBytes: 0
+            ),
+            resourceFee: 100
+        )
+        let txDataXdr = transactionData.xdrEncoded!
+        let returnValueXdr = SCValXDR.void.xdrEncoded!
+        return """
+        {
+            "jsonrpc": "2.0",
+            "id": "1",
+            "result": {
+                "latestLedger": 1000000,
+                "transactionData": "\(txDataXdr)",
+                "minResourceFee": "100",
+                "results": [
+                    {
+                        "auth": [],
+                        "xdr": "\(returnValueXdr)"
+                    }
+                ]
+            }
+        }
+        """
+    }
+
     private func setupGetLatestLedgerMock() {
         let handler: MockHandler = { mock, _ in
             mock.statusCode = 200

@@ -8,6 +8,9 @@ extension SorobanAddressCredentialsXDR {
     /// When it is already a vector, the new element is appended in call order. The vector
     /// is never re-sorted; callers are responsible for supplying signatures in the order
     /// required by the host (ascending public-key order for G-address verification).
+    ///
+    /// This operation is not idempotent: signing the same node twice with the same key
+    /// produces a duplicate signature element, which the host rejects.
     public mutating func appendSignature(signature: SCValXDR) {
         var sigs = [SCValXDR]()
         if let oldSigs = self.signature.vec {
@@ -23,6 +26,9 @@ extension SorobanDelegateSignatureXDR {
     /// Appends `signature` to this delegate node's signature vector using the same
     /// semantics as `SorobanAddressCredentialsXDR.appendSignature`: `.void` becomes a
     /// one-element vector; an existing vector grows in call order without resorting.
+    ///
+    /// This operation is not idempotent: signing the same node twice with the same key
+    /// produces a duplicate signature element, which the host rejects.
     public mutating func appendSignature(signature: SCValXDR) {
         var sigs = [SCValXDR]()
         if let oldSigs = self.signature.vec {
