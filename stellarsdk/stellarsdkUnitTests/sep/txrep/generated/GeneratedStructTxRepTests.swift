@@ -617,6 +617,17 @@ static func parseTxRepLines(_ lines: [String]) -> [String: String] {
         XCTAssertEqual(backB64, originalB64, "TxRep roundtrip mismatch for SignerXDR")
     }
 
+    func test_SorobanAddressCredentialsWithDelegatesXDR_roundtrip() throws {
+        let original: SorobanAddressCredentialsWithDelegatesXDR = SorobanAddressCredentialsWithDelegatesXDR(addressCredentials: SorobanAddressCredentialsXDR(address: .account(try PublicKey([UInt8](repeating: 0xAB, count: 32))), nonce: Int64(1234567), signatureExpirationLedger: UInt32(42), signature: .void), delegates: [])
+        var lines: [String] = []
+        try original.toTxRep(prefix: "k", lines: &lines)
+        let map = Self.parseTxRepLines(lines)
+        let back = try SorobanAddressCredentialsWithDelegatesXDR.fromTxRep(map, prefix: "k")
+        let originalB64 = try Data(XDREncoder.encode(original)).base64EncodedString()
+        let backB64 = try Data(XDREncoder.encode(back)).base64EncodedString()
+        XCTAssertEqual(backB64, originalB64, "TxRep roundtrip mismatch for SorobanAddressCredentialsWithDelegatesXDR")
+    }
+
     func test_SorobanAddressCredentialsXDR_roundtrip() throws {
         let original: SorobanAddressCredentialsXDR = SorobanAddressCredentialsXDR(address: .account(try PublicKey([UInt8](repeating: 0xAB, count: 32))), nonce: Int64(1234567), signatureExpirationLedger: UInt32(42), signature: .void)
         var lines: [String] = []
@@ -648,6 +659,17 @@ static func parseTxRepLines(_ lines: [String]) -> [String: String] {
         let originalB64 = try Data(XDREncoder.encode(original)).base64EncodedString()
         let backB64 = try Data(XDREncoder.encode(back)).base64EncodedString()
         XCTAssertEqual(backB64, originalB64, "TxRep roundtrip mismatch for SorobanAuthorizedInvocationXDR")
+    }
+
+    func test_SorobanDelegateSignatureXDR_roundtrip() throws {
+        let original: SorobanDelegateSignatureXDR = SorobanDelegateSignatureXDR(address: .account(try PublicKey([UInt8](repeating: 0xAB, count: 32))), signature: .void, nestedDelegates: [])
+        var lines: [String] = []
+        try original.toTxRep(prefix: "k", lines: &lines)
+        let map = Self.parseTxRepLines(lines)
+        let back = try SorobanDelegateSignatureXDR.fromTxRep(map, prefix: "k")
+        let originalB64 = try Data(XDREncoder.encode(original)).base64EncodedString()
+        let backB64 = try Data(XDREncoder.encode(back)).base64EncodedString()
+        XCTAssertEqual(backB64, originalB64, "TxRep roundtrip mismatch for SorobanDelegateSignatureXDR")
     }
 
     func test_SorobanResourcesExtV0_roundtrip() throws {

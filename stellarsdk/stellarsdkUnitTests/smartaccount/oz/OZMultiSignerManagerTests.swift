@@ -3400,6 +3400,84 @@ extension OZMultiSignerManagerTests {
         }
         return parts
     }
+
+    // ========================================================================
+    // Protocol 27: WITH_DELEGATES guard in submitWithMultipleSigners
+    // ========================================================================
+
+    /// When the initial simulation returns a WITH_DELEGATES auth entry,
+    /// `submitWithMultipleSigners` must throw `SmartAccountTransactionException.SigningFailed`
+    /// from the early-reject guard (OZMultiSignerManager lines 407-411).
+    func test_submitWithMultipleSigners_withDelegatesAuthEntry_throwsSigningFailed() async throws {
+        let script = MockSorobanServerScript()
+        MockSorobanServer.activate(script: script)
+        defer {
+            MockSorobanServer.deactivate()
+            MockURLProtocol.reset()
+        }
+
+        let deployer = try deterministicDeployer(seed: 0x31)
+        let (kit, manager) = try scriptedKit(script: script, deployer: deployer)
+
+        script.setGetAccountResponse(accountId: deployer.accountId, sequence: 1)
+
+        // Simulate returns a WITH_DELEGATES-credentials entry.
+        let innerCreds = SorobanAddressCredentialsXDR(
+            address: try SCAddressXDR(contractId: pipelineContractId),
+            nonce: 0,
+            signatureExpirationLedger: 0,
+            signature: .void
+        )
+        let withDelegates = SorobanAddressCredentialsWithDelegatesXDR(
+            addressCredentials: innerCreds,
+            delegates: []
+        )
+        let invocation = SorobanAuthorizedInvocationXDR(
+            function: .contractFn(InvokeContractArgsXDR(
+                contractAddress: try SCAddressXDR(contractId: pipelineTargetContract),
+                functionName: "noop",
+                args: []
+            )),
+            subInvocations: []
+        )
+        let delegatesEntry = SorobanAuthorizationEntryXDR(
+            credentials: .addressWithDelegates(withDelegates),
+            rootInvocation: invocation
+        )
+        script.enqueueSimulate(authEntries: [delegatesEntry])
+        script.setGetLatestLedger(sequence: 1000)
+
+        let hostFn = HostFunctionXDR.invokeContract(
+            InvokeContractArgsXDR(
+                contractAddress: try SCAddressXDR(contractId: pipelineTargetContract),
+                functionName: "noop",
+                args: []
+            )
+        )
+        // Use an Ed25519 signer so validateSignerSet passes without a passkey provider.
+        let ed25519Seed = Data(0x10 ..< 0x30)
+        let extMgr = OZExternalSignerManager(
+            networkPassphrase: Network.testnet.passphrase
+        )
+        let ed25519PublicKey = try await extMgr.addEd25519FromRawKey(
+            secretKeyBytes: ed25519Seed,
+            verifierAddress: pipelineContractId
+        )
+        kit.externalSignersOverride = extMgr
+
+        let signers: [OZSelectedSigner] = [
+            .ed25519(verifierAddress: pipelineContractId, publicKey: ed25519PublicKey)
+        ]
+        do {
+            _ = try await manager.submitWithMultipleSigners(
+                hostFunction: hostFn,
+                selectedSigners: signers
+            )
+            XCTFail("Expected SmartAccountTransactionException.SigningFailed for WITH_DELEGATES auth entry")
+        } catch is SmartAccountTransactionException.SigningFailed {
+            // expected: WITH_DELEGATES entries cannot be auto-signed
+        }
+    }
 }
 
 // ============================================================================

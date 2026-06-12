@@ -425,7 +425,7 @@ struct SorobanTransactionMetaExtV1
     // transactions, this will be `0` for failed transactions.
     int64 totalRefundableResourceFeeCharged;
     // Amount (in stroops) that has been charged for rent.
-    // This is a part of `totalNonRefundableResourceFeeCharged`.
+    // This is a part of `totalRefundableResourceFeeCharged`.
     int64 rentFeeCharged;
 };
 

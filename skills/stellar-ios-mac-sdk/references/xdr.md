@@ -294,6 +294,31 @@ let dataBase64 = txData.xdrEncoded!
 let decodedData = try SorobanTransactionDataXDR(fromBase64: dataBase64)
 ```
 
+## Soroban Authorization Credentials
+
+`SorobanCredentialsXDR` is a union with four arms:
+
+```swift
+case sourceAccount
+case address(SorobanAddressCredentialsXDR)                            // legacy, default
+case addressV2(SorobanAddressCredentialsXDR)                          // protocol 27
+case addressWithDelegates(SorobanAddressCredentialsWithDelegatesXDR)  // protocol 27
+```
+
+`SorobanAddressCredentialsWithDelegatesXDR` carries `addressCredentials: SorobanAddressCredentialsXDR` and `delegates: [SorobanDelegateSignatureXDR]`; `SorobanDelegateSignatureXDR` is recursive (`address: SCAddressXDR`, `signature: SCValXDR`, `nestedDelegates: [SorobanDelegateSignatureXDR]`).
+
+Helper accessors on `SorobanCredentialsXDR`:
+
+```swift
+var address: SorobanAddressCredentialsXDR? { get }             // legacy .address arm ONLY; nil for V2/WITH_DELEGATES
+var addressCredentials: SorobanAddressCredentialsXDR? { get }  // any address arm; nil for .sourceAccount
+func withAddressCredentials(_ c: SorobanAddressCredentialsXDR) throws -> SorobanCredentialsXDR  // arm-preserving write-back
+```
+
+The signing preimage is selected by arm: `.address` uses `HashIDPreimageXDR.sorobanAuthorization` (`EnvelopeType.sorobanAuthorization`); `.addressV2` and `.addressWithDelegates` use `HashIDPreimageXDR.sorobanAuthorizationWithAddress` (`EnvelopeType.sorobanAuthorizationWithAddress` = 10, protocol 27), which additionally binds the top-level credential address. Build preimages via `SorobanAuthorizationEntryXDR.buildPreimage(network:)` -- see [soroban_contracts.md](./soroban_contracts.md) for signing and delegated authorization.
+
+The V2 and WITH_DELEGATES arms are opt-in; emitting them on a pre-protocol-27 network invalidates the transaction.
+
 ## Ledger Key Construction
 
 Ledger keys identify specific entries in the Stellar ledger. Used with `SorobanServer.getLedgerEntries`.

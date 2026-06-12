@@ -17,11 +17,23 @@ import Foundation
 /// - transaction: The transaction to simulate (must contain InvokeHostFunction operation)
 /// - resourceConfig: Optional resource budget configuration (default: 3000000 instruction leeway)
 /// - authMode: Authorization simulation mode (protocol 23+)
+/// - authV2: Request protocol-27 V2 credential arms in the simulation response (default false)
 ///
 /// Authorization modes (protocol 23+):
 /// - "enforce": Strict authorization checking (default)
 /// - "record": Record auth entries without enforcing
 /// - "record_allow_nonroot": Allow non-root authorization
+///
+/// **`authV2` flag**
+///
+/// When `authV2` is `true`, the key `"authV2": true` is included as a sibling of
+/// `"transaction"` in the JSON-RPC params. The key is omitted entirely when `false`
+/// (never sent as `"authV2": false`). Emitting V2 credential arms on a network below
+/// protocol 27 invalidates the transaction, so this flag defaults to `false`.
+///
+/// RPC servers that do not support `authV2` silently ignore the key and return legacy
+/// `ADDRESS` credential arms. The caller must detect V2 support by inspecting the
+/// credential arm of the returned entries, not by expecting an error.
 ///
 /// Example:
 /// ```swift
@@ -47,19 +59,27 @@ public final class SimulateTransactionRequest: @unchecked Sendable {
 
     /// Support for non-root authorization. Only available for protocol >= 23
     /// Possible values: "enforce" | "record" | "record_allow_nonroot"
-    public let authMode:String?
+    public let authMode: String?
 
-    
+    /// Request protocol-27 V2 credential arms in the simulation response.
+    ///
+    /// When `true`, `"authV2": true` is included in the JSON-RPC params. The key is
+    /// omitted entirely when `false`. Requires protocol 27; emitting V2 on older networks
+    /// invalidates the transaction. RPC servers without support silently ignore this flag
+    /// and return legacy `ADDRESS` entries.
+    public let authV2: Bool
+
     /// Creates a request for simulating Soroban transaction execution.
-    public init(transaction:Transaction, resourceConfig:ResourceConfig? = nil, authMode:String? = nil) {
+    public init(transaction: Transaction, resourceConfig: ResourceConfig? = nil, authMode: String? = nil, authV2: Bool = false) {
         self.transaction = transaction
         self.resourceConfig = resourceConfig
         self.authMode = authMode
+        self.authV2 = authV2
     }
-    
+
     /// Builds JSON-RPC request parameters from the simulation configuration.
-    public func buildRequestParams() -> [String : Any] {
-        var result: [String : Any] = [:]
+    public func buildRequestParams() -> [String: Any] {
+        var result: [String: Any] = [:]
         result["transaction"] = try? transaction.encodedEnvelope()
         if let rC = resourceConfig {
             result["resourceConfig"] = rC.buildRequestParams()
@@ -67,6 +87,9 @@ public final class SimulateTransactionRequest: @unchecked Sendable {
         if let authMode = authMode {
             result["authMode"] = authMode
         }
-        return result;
+        if authV2 {
+            result["authV2"] = true
+        }
+        return result
     }
 }

@@ -392,7 +392,8 @@ let methodOptions = MethodOptions(
     fee: 10000,             // 10000 stroops
     timeoutInSeconds: 60,   // 1 minute validity
     simulate: true,         // auto-simulate (default)
-    restore: true           // auto-restore archived entries
+    restore: true,          // auto-restore archived entries
+    authV2: false           // opt-in: request protocol-27 V2 credential arms (default false)
 )
 
 let result = try await client.invokeMethod(
@@ -401,6 +402,8 @@ let result = try await client.invokeMethod(
     methodOptions: methodOptions
 )
 ```
+
+`authV2: true` adds `"authV2": true` to the simulation request so a protocol-27 RPC returns `ADDRESS_V2` credential arms; the key is omitted when `false`. Legacy `ADDRESS` remains the default and fully valid; emitting V2 arms on a pre-protocol-27 network invalidates the transaction. RPC servers without support silently ignore the flag and return legacy `ADDRESS` entries -- detect support by inspecting the credential arm of the returned entries, never by expecting an error.
 
 ## Low-Level API: InvokeHostFunctionOperation
 
@@ -608,6 +611,59 @@ try await tx.signAuthEntries(
         return try SorobanAuthorizationEntryXDR(fromBase64: signedBase64)
     }
 )
+```
+
+### Protocol 27 Credential Arms and Delegated Authorization (CAP-71)
+
+`SorobanCredentialsXDR` has four arms: `.sourceAccount`, `.address` (legacy, default), `.addressV2`, and `.addressWithDelegates` (both protocol 27). The new arms are opt-in; emitting them on a pre-protocol-27 network invalidates the transaction.
+
+Key signatures:
+
+```swift
+// extension SorobanCredentialsXDR
+var addressCredentials: SorobanAddressCredentialsXDR? { get }  // inner credentials of any address arm; nil for .sourceAccount
+func withAddressCredentials(_ c: SorobanAddressCredentialsXDR) throws -> SorobanCredentialsXDR  // arm-preserving write-back
+
+// extension SorobanAuthorizationEntryXDR
+func buildPreimage(network: Network) throws -> HashIDPreimageXDR
+mutating func sign(signer: KeyPair, network: Network, signatureExpirationLedger: UInt32? = nil, forAddress: String? = nil) throws
+static func withDelegates(entry: SorobanAuthorizationEntryXDR, delegates: [SorobanDelegateDescriptor], expirationLedger: UInt32) throws -> SorobanAuthorizationEntryXDR
+
+// Recursive delegate descriptor
+public struct SorobanDelegateDescriptor {
+    public init(address: String, signature: SCValXDR = .void, nestedDelegates: [SorobanDelegateDescriptor] = [])
+}
+```
+
+Behavior:
+
+- `sign` handles all three address arms, preserves the arm on write-back, and stamps `signatureExpirationLedger` into the credentials before hashing. `forAddress: nil` signs the top-level node; a non-nil strkey routes the signature into every matching node (top-level or delegate, depth-first) and throws when no node matches.
+- `withDelegates` builds a `WITH_DELEGATES` entry from an `ADDRESS`/`ADDRESS_V2` entry: it sorts every delegate array by XDR-encoded address bytes (host requirement -- never sort by strkey), throws on within-array duplicates, copies address and nonce, stamps the expiration, and resets the top-level signature to `.void`.
+- One payload per entry: every signer in the tree (top-level and delegates at any depth) signs the same hash, bound to the top-level credential address. Delegates carry no nonce and no expiration.
+- A void top-level signature is the legitimate delegates-only pattern; `signAndSend` treats a `WITH_DELEGATES` entry as satisfied when every delegate node carries a signature.
+- `needsNonInvokerSigningBy` reports the address of every node with a void signature, including each unsigned delegate node.
+- `signAuthEntries(signerKeyPair:)` matches the signer against the top-level address and all delegate nodes and routes signatures via `forAddress` internally.
+- Simulation never returns `WITH_DELEGATES` entries; clients assemble the tree with `withDelegates`.
+
+```swift
+import stellarsdk
+
+// Simulation returned an ADDRESS or ADDRESS_V2 entry
+let entry = simResponse.sorobanAuth![0]
+
+var delegated = try SorobanAuthorizationEntryXDR.withDelegates(
+    entry: entry,
+    delegates: [SorobanDelegateDescriptor(address: delegateKeyPair.accountId)],
+    expirationLedger: latestLedger.sequence + 100
+)
+
+// Top-level signature (optional: skip for the delegates-only pattern)
+try delegated.sign(signer: topLevelKeyPair, network: Network.testnet)
+
+// Delegate signature, routed to the matching node
+try delegated.sign(signer: delegateKeyPair, network: Network.testnet, forAddress: delegateKeyPair.accountId)
+
+transaction.setSorobanAuth(auth: [delegated])
 ```
 
 ## Error Handling

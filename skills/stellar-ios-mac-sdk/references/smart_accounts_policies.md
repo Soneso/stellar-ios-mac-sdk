@@ -1189,7 +1189,7 @@ let edPublicKey = try await kit.externalSigners.addEd25519FromRawKey(
 let edSigner = OZSelectedSigner.ed25519(verifierAddress: ed25519Verifier, publicKey: edPublicKey)
 ```
 
-A wallet adapter (`config.externalWallet`) receives the Base64-encoded `HashIDPreimage::SorobanAuthorization` XDR, SHA-256-hashes it, Ed25519-signs it, and returns the 64-byte signature; the SDK assembles the signed auth entry.
+A wallet adapter (`config.externalWallet`) receives the Base64-encoded `HashIDPreimage` XDR (envelope type follows the entry's credential arm: `SorobanAuthorization` for legacy `ADDRESS`, `SorobanAuthorizationWithAddress` for protocol-27 `ADDRESS_V2`), SHA-256-hashes it, Ed25519-signs it, and returns the 64-byte signature; the SDK assembles the signed auth entry.
 
 If a passkey signer cancels its biometric prompt, the call fails fast (`WebAuthnException.Cancelled`); remaining signers are not prompted.
 

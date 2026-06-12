@@ -1332,6 +1332,28 @@ static func parseTxRepLines(_ lines: [String]) -> [String: String] {
         XCTAssertEqual(backB64, originalB64, "TxRep roundtrip mismatch for SorobanCredentialsXDR.address")
     }
 
+    func test_SorobanCredentialsXDR_addressV2() throws {
+        let original: SorobanCredentialsXDR = .addressV2(SorobanAddressCredentialsXDR(address: .account(try PublicKey([UInt8](repeating: 0xAB, count: 32))), nonce: Int64(1234567), signatureExpirationLedger: UInt32(42), signature: .void))
+        var lines: [String] = []
+        try original.toTxRep(prefix: "k", lines: &lines)
+        let map = Self.parseTxRepLines(lines)
+        let back = try SorobanCredentialsXDR.fromTxRep(map, prefix: "k")
+        let originalB64 = try Data(XDREncoder.encode(original)).base64EncodedString()
+        let backB64 = try Data(XDREncoder.encode(back)).base64EncodedString()
+        XCTAssertEqual(backB64, originalB64, "TxRep roundtrip mismatch for SorobanCredentialsXDR.addressV2")
+    }
+
+    func test_SorobanCredentialsXDR_addressWithDelegates() throws {
+        let original: SorobanCredentialsXDR = .addressWithDelegates(SorobanAddressCredentialsWithDelegatesXDR(addressCredentials: SorobanAddressCredentialsXDR(address: .account(try PublicKey([UInt8](repeating: 0xAB, count: 32))), nonce: Int64(1234567), signatureExpirationLedger: UInt32(42), signature: .void), delegates: []))
+        var lines: [String] = []
+        try original.toTxRep(prefix: "k", lines: &lines)
+        let map = Self.parseTxRepLines(lines)
+        let back = try SorobanCredentialsXDR.fromTxRep(map, prefix: "k")
+        let originalB64 = try Data(XDREncoder.encode(original)).base64EncodedString()
+        let backB64 = try Data(XDREncoder.encode(back)).base64EncodedString()
+        XCTAssertEqual(backB64, originalB64, "TxRep roundtrip mismatch for SorobanCredentialsXDR.addressWithDelegates")
+    }
+
     func test_SorobanCredentialsXDR_sourceAccount() throws {
         let original: SorobanCredentialsXDR = .sourceAccount
         var lines: [String] = []

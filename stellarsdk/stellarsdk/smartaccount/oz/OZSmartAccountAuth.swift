@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import CommonCrypto
 
 /// Authentication helpers for OpenZeppelin smart-account authorization entries.
 ///
@@ -77,34 +76,49 @@ public enum OZSmartAccountAuth {
     /// Builds the authorisation payload hash for signing.
     ///
     /// Computes the hash that must be signed to authorise a Soroban operation; the hash is
-    /// used as the WebAuthn challenge when collecting biometric signatures. The entry must
-    /// have address credentials.
+    /// used as the WebAuthn challenge when collecting biometric signatures. All three
+    /// address-credential arms are supported (`ADDRESS`, `ADDRESS_V2`,
+    /// `ADDRESS_WITH_DELEGATES`). The preimage is built via
+    /// `SorobanAuthorizationEntryXDR.buildPreimage(network:)`, which selects
+    /// `ENVELOPE_TYPE_SOROBAN_AUTHORIZATION` for the legacy `ADDRESS` arm and
+    /// `ENVELOPE_TYPE_SOROBAN_AUTHORIZATION_WITH_ADDRESS` (protocol 27) for the V2 and
+    /// WITH_DELEGATES arms.
     ///
-    /// The preimage is constructed as
-    /// `HashIDPreimage::SorobanAuthorization { networkId, nonce, signatureExpirationLedger,
-    /// invocation }` and the returned value is `SHA-256(XDR_encode(preimage))`.
+    /// The returned value is `SHA-256(XDR_encode(preimage))`.
     ///
     /// - Parameters:
-    ///   - entry: Authorisation entry to build the payload hash for.
-    ///   - expirationLedger: Ledger number at which the signature expires.
+    ///   - entry: Authorisation entry to build the payload hash for. Must have address credentials.
+    ///   - expirationLedger: Ledger number at which the signature expires; stamped into a
+    ///     temporary copy of the credentials before the preimage is built.
     ///   - networkPassphrase: Network passphrase.
     /// - Returns: 32-byte SHA-256 hash of the authorisation payload.
-    /// - Throws: `SmartAccountTransactionException.SigningFailed` when credentials are not address
-    ///           type or when XDR encoding fails.
+    /// - Throws: `SmartAccountTransactionException.SigningFailed` when credentials are not an
+    ///           address type or when XDR encoding fails.
     public static func buildAuthPayloadHash(
         entry: SorobanAuthorizationEntryXDR,
         expirationLedger: UInt32,
         networkPassphrase: String
     ) async throws -> Data {
-        guard case .address(let credentials) = entry.credentials else {
+        guard var creds = entry.credentials.addressCredentials else {
             throw SmartAccountTransactionException.signingFailed(
-                reason: "Credentials must be of type address to build auth payload hash"
+                reason: "Credentials must be of an address type to build auth payload hash"
             )
         }
+        // Stamp the expiration into a temporary copy so the preimage reflects the
+        // final expiration value without mutating the caller's entry.
+        creds.signatureExpirationLedger = expirationLedger
+        var stampedEntry = entry
+        do {
+            stampedEntry.credentials = try entry.credentials.withAddressCredentials(creds)
+        } catch {
+            throw SmartAccountTransactionException.signingFailed(
+                reason: "Failed to stamp expiration ledger into credentials",
+                cause: error
+            )
+        }
+
         return try await hashAuthPreimage(
-            nonce: credentials.nonce,
-            expirationLedger: expirationLedger,
-            invocation: entry.rootInvocation,
+            entry: stampedEntry,
             networkPassphrase: networkPassphrase
         )
     }
@@ -112,9 +126,11 @@ public enum OZSmartAccountAuth {
     /// Builds the authorisation payload hash for source-account credentials.
     ///
     /// Used when converting source-account credentials to address credentials, typically
-    /// for relayer fee sponsoring. The preimage is constructed identically to
-    /// `buildAuthPayloadHash` but uses the supplied `nonce` and `expirationLedger` instead
-    /// of reading them from existing credentials.
+    /// for relayer fee sponsoring. A temporary legacy `ADDRESS` preimage is constructed
+    /// from the supplied `nonce` and `expirationLedger` combined with the entry's root
+    /// invocation. The legacy `ENVELOPE_TYPE_SOROBAN_AUTHORIZATION` arm is used because the
+    /// replacement credentials are always classical `ADDRESS` credentials (a stock Stellar
+    /// account signing on behalf of the temp keypair).
     ///
     /// - Parameters:
     ///   - entry: Authorisation entry whose root invocation is bound into the preimage.
@@ -129,10 +145,22 @@ public enum OZSmartAccountAuth {
         expirationLedger: UInt32,
         networkPassphrase: String
     ) async throws -> Data {
-        return try await hashAuthPreimage(
+        // Build a temporary ADDRESS entry so buildPreimage can derive the legacy preimage.
+        // The address field is not part of the legacy preimage (ENVELOPE_TYPE_SOROBAN_AUTHORIZATION
+        // does not include an address), so a zero-byte placeholder key is sufficient here.
+        let zeroKey = try PublicKey([UInt8](repeating: 0, count: 32))
+        let tempCreds = SorobanAddressCredentialsXDR(
+            address: SCAddressXDR.account(zeroKey),
             nonce: nonce,
-            expirationLedger: expirationLedger,
-            invocation: entry.rootInvocation,
+            signatureExpirationLedger: expirationLedger,
+            signature: .void
+        )
+        let tempEntry = SorobanAuthorizationEntryXDR(
+            credentials: .address(tempCreds),
+            rootInvocation: entry.rootInvocation
+        )
+        return try await hashAuthPreimage(
+            entry: tempEntry,
             networkPassphrase: networkPassphrase
         )
     }
@@ -186,9 +214,9 @@ public enum OZSmartAccountAuth {
             )
         }
 
-        guard case .address(let credentialsCopy) = entryCopy.credentials else {
+        guard var credentialsCopy = entryCopy.credentials.addressCredentials else {
             throw SmartAccountTransactionException.signingFailed(
-                reason: "Credentials must be of type address to sign auth entry"
+                reason: "Credentials must be of an address type to sign auth entry"
             )
         }
 
@@ -219,14 +247,20 @@ public enum OZSmartAccountAuth {
 
         let payloadScVal = try OZSmartAccountAuthPayloadCodec.write(updatedPayload)
 
-        let updatedCredentials = SorobanAddressCredentialsXDR(
-            address: credentialsCopy.address,
-            nonce: credentialsCopy.nonce,
-            signatureExpirationLedger: expirationLedger,
-            signature: payloadScVal
-        )
+        credentialsCopy.signatureExpirationLedger = expirationLedger
+        credentialsCopy.signature = payloadScVal
+
+        let updatedEntryCredentials: SorobanCredentialsXDR
+        do {
+            updatedEntryCredentials = try entryCopy.credentials.withAddressCredentials(credentialsCopy)
+        } catch {
+            throw SmartAccountTransactionException.signingFailed(
+                reason: "Failed to write back updated credentials",
+                cause: error
+            )
+        }
         return SorobanAuthorizationEntryXDR(
-            credentials: .address(updatedCredentials),
+            credentials: updatedEntryCredentials,
             rootInvocation: entryCopy.rootInvocation
         )
     }
@@ -258,9 +292,9 @@ public enum OZSmartAccountAuth {
         signatureValue: SCValXDR,
         contextRuleIds: [UInt32] = []
     ) throws -> SorobanAuthorizationEntryXDR {
-        guard case .address(let credentials) = entry.credentials else {
+        guard var credentials = entry.credentials.addressCredentials else {
             throw SmartAccountTransactionException.signingFailed(
-                reason: "Credentials must be of type address to add signature map entry"
+                reason: "Credentials must be of an address type to add signature map entry"
             )
         }
 
@@ -296,15 +330,19 @@ public enum OZSmartAccountAuth {
         )
 
         let payloadScVal = try OZSmartAccountAuthPayloadCodec.write(updatedPayload)
+        credentials.signature = payloadScVal
 
-        let updatedCredentials = SorobanAddressCredentialsXDR(
-            address: credentials.address,
-            nonce: credentials.nonce,
-            signatureExpirationLedger: credentials.signatureExpirationLedger,
-            signature: payloadScVal
-        )
+        let updatedEntryCredentials: SorobanCredentialsXDR
+        do {
+            updatedEntryCredentials = try entry.credentials.withAddressCredentials(credentials)
+        } catch {
+            throw SmartAccountTransactionException.signingFailed(
+                reason: "Failed to write back updated credentials",
+                cause: error
+            )
+        }
         return SorobanAuthorizationEntryXDR(
-            credentials: .address(updatedCredentials),
+            credentials: updatedEntryCredentials,
             rootInvocation: entry.rootInvocation
         )
     }
@@ -313,26 +351,30 @@ public enum OZSmartAccountAuth {
     // Helper functions
     // ========================================================================
 
-    /// Hashes a Soroban authorisation preimage.
+    /// Hashes the Soroban authorisation preimage for `entry`.
     ///
-    /// Constructs `HashIDPreimage::SorobanAuthorization` from the given parameters,
-    /// XDR-encodes it, and returns `SHA-256(encoded bytes)`. Used by both
-    /// `buildAuthPayloadHash` and `buildSourceAccountAuthPayloadHash`.
+    /// Delegates preimage construction to `SorobanAuthorizationEntryXDR.buildPreimage(network:)`,
+    /// which selects the correct envelope type from the credential arm:
+    /// `ENVELOPE_TYPE_SOROBAN_AUTHORIZATION` for `ADDRESS`; and
+    /// `ENVELOPE_TYPE_SOROBAN_AUTHORIZATION_WITH_ADDRESS` for `ADDRESS_V2` and
+    /// `ADDRESS_WITH_DELEGATES`. Returns `SHA-256(XDR_encode(preimage))`.
+    ///
+    /// The credentials in `entry` must already carry the final `signatureExpirationLedger`
+    /// value before this method is called.
     private static func hashAuthPreimage(
-        nonce: Int64,
-        expirationLedger: UInt32,
-        invocation: SorobanAuthorizedInvocationXDR,
+        entry: SorobanAuthorizationEntryXDR,
         networkPassphrase: String
     ) async throws -> Data {
-        let networkIdBytes = networkPassphrase.sha256Hash
-
-        let authPreimage = HashIDPreimageSorobanAuthorizationXDR(
-            networkID: HashXDR(networkIdBytes),
-            nonce: nonce,
-            signatureExpirationLedger: expirationLedger,
-            invocation: invocation
-        )
-        let preimage = HashIDPreimageXDR.sorobanAuthorization(authPreimage)
+        let network = Network.custom(passphrase: networkPassphrase)
+        let preimage: HashIDPreimageXDR
+        do {
+            preimage = try entry.buildPreimage(network: network)
+        } catch {
+            throw SmartAccountTransactionException.signingFailed(
+                reason: "Failed to build auth preimage",
+                cause: error
+            )
+        }
 
         let encodedPreimage: Data
         do {

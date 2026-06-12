@@ -619,6 +619,8 @@ NAME_OVERRIDES = {
   "HashIDPreimageContractID"           => "HashIDPreimageContractIDXDR",
   # HashIDPreimageSorobanAuthorization struct
   "HashIDPreimageSorobanAuthorization" => "HashIDPreimageSorobanAuthorizationXDR",
+  # HashIDPreimageSorobanAuthorizationWithAddress struct
+  "HashIDPreimageSorobanAuthorizationWithAddress" => "HashIDPreimageSorobanAuthorizationWithAddressXDR",
   # OperationID struct (nested in HashIDPreimage)
   "OperationID"                        => "OperationID",
   # RevokeID struct (nested in HashIDPreimage)

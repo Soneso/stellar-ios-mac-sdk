@@ -6,6 +6,8 @@ import Foundation
 public enum SorobanCredentialsType: Int32, XDRCodable, Equatable, Sendable {
   case sourceAccount = 0
   case address = 1
+  case addressV2 = 2
+  case addressWithDelegates = 3
 }
 
 extension SorobanCredentialsType {
@@ -13,6 +15,8 @@ extension SorobanCredentialsType {
     switch self {
     case .sourceAccount: return "SOROBAN_CREDENTIALS_SOURCE_ACCOUNT"
     case .address: return "SOROBAN_CREDENTIALS_ADDRESS"
+    case .addressV2: return "SOROBAN_CREDENTIALS_ADDRESS_V2"
+    case .addressWithDelegates: return "SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES"
     }
   }
 
@@ -20,6 +24,8 @@ extension SorobanCredentialsType {
     switch name {
     case "SOROBAN_CREDENTIALS_SOURCE_ACCOUNT": return .sourceAccount
     case "SOROBAN_CREDENTIALS_ADDRESS": return .address
+    case "SOROBAN_CREDENTIALS_ADDRESS_V2": return .addressV2
+    case "SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES": return .addressWithDelegates
     default:
       let prefix = "SorobanCredentialsType#"
       if name.hasPrefix(prefix), let v = Int32(name.dropFirst(prefix.count)), let parsed = SorobanCredentialsType(rawValue: v) {

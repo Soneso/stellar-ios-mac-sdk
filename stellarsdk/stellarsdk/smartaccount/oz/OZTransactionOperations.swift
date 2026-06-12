@@ -435,9 +435,28 @@ public final class OZTransactionOperations: OZManagerHelpers, @unchecked Sendabl
         signedAuthEntries.reserveCapacity(simulatedAuthEntries.count)
 
         for (entryIndex, entry) in simulatedAuthEntries.enumerated() {
-            guard case .address(let addressCreds) = entry.credentials else {
+            // Source-account entries do not need client-side signing; pass through unchanged.
+            if case .sourceAccount = entry.credentials {
                 signedAuthEntries.append(entry)
                 continue
+            }
+
+            // WITH_DELEGATES entries require caller-assembled delegate signatures and cannot
+            // be auto-signed by this pipeline. The caller must sign each delegate node via
+            // SorobanAuthorizationEntryXDR.sign(forAddress:) before submission.
+            if case .addressWithDelegates = entry.credentials {
+                throw SmartAccountTransactionException.signingFailed(
+                    reason: "Authorization entry carries WITH_DELEGATES credentials. " +
+                        "Delegated entries must be signed per delegate node via " +
+                        "SorobanAuthorizationEntryXDR.sign(forAddress:) before submission."
+                )
+            }
+
+            guard let addressCreds = entry.credentials.addressCredentials else {
+                // Unknown credential arm; fail fast rather than silently skipping.
+                throw SmartAccountTransactionException.signingFailed(
+                    reason: "Authorization entry has unrecognised credentials and cannot be signed"
+                )
             }
 
             let entryAddress = OZAddressStrKey.fromXdr(addressCreds.address)
@@ -982,7 +1001,7 @@ public final class OZTransactionOperations: OZManagerHelpers, @unchecked Sendabl
                 )
             case .address(let credentials):
                 // Clone the entry via XDR round-trip so the caller's instance is
-                // never mutated.
+                // never mutated. Preserve the `.address` arm on write-back.
                 let cloned = try OZTransactionOperations.cloneAuthEntry(entry)
                 let payloadHash = try await OZSmartAccountAuth.buildAuthPayloadHash(
                     entry: cloned,
@@ -994,17 +1013,42 @@ public final class OZTransactionOperations: OZManagerHelpers, @unchecked Sendabl
                     publicKey: Data(tempKeypair.publicKey.bytes),
                     signature: signature
                 )
-                let updatedCredentials = SorobanAddressCredentialsXDR(
-                    address: credentials.address,
-                    nonce: credentials.nonce,
-                    signatureExpirationLedger: expirationLedger,
-                    signature: signatureVec
-                )
+                var updatedCredentials = credentials
+                updatedCredentials.signatureExpirationLedger = expirationLedger
+                updatedCredentials.signature = signatureVec
                 result.append(
                     SorobanAuthorizationEntryXDR(
                         credentials: .address(updatedCredentials),
                         rootInvocation: cloned.rootInvocation
                     )
+                )
+            case .addressV2(let credentials):
+                // ADDRESS_V2 entries are handled identically to ADDRESS, preserving the V2 arm.
+                var cloned = try OZTransactionOperations.cloneAuthEntry(entry)
+                let payloadHash = try await OZSmartAccountAuth.buildAuthPayloadHash(
+                    entry: cloned,
+                    expirationLedger: expirationLedger,
+                    networkPassphrase: kit.config.networkPassphrase
+                )
+                let signature = Data(tempKeypair.sign([UInt8](payloadHash)))
+                let signatureVec = OZTransactionOperations.classicalEd25519SignatureScVal(
+                    publicKey: Data(tempKeypair.publicKey.bytes),
+                    signature: signature
+                )
+                var updatedCredentials = credentials
+                updatedCredentials.signatureExpirationLedger = expirationLedger
+                updatedCredentials.signature = signatureVec
+                cloned.credentials = .addressV2(updatedCredentials)
+                result.append(cloned)
+            case .addressWithDelegates:
+                // WITH_DELEGATES entries cannot be auto-signed by this funding flow:
+                // which signer covers which delegate node is caller policy, not SDK policy.
+                // The caller must assemble and sign delegate nodes via
+                // SorobanAuthorizationEntryXDR.sign(forAddress:) before submission.
+                throw StellarSDKError.invalidArgument(
+                    message: "convertAndSignAuthEntries: ADDRESS_WITH_DELEGATES entries " +
+                        "cannot be auto-signed by the funding flow. " +
+                        "Sign each delegate node via SorobanAuthorizationEntryXDR.sign(forAddress:) before submission."
                 )
             }
         }
