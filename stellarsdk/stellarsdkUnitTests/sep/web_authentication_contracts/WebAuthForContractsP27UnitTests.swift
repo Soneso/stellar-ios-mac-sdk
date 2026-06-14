@@ -185,53 +185,81 @@ final class WebAuthForContractsP27UnitTests: XCTestCase {
 
     // MARK: - Validation: ADDRESS_V2 entry accepted
 
-    /// validateChallenge must accept an ADDRESS_V2 entry (e.g. server entry signed with V2).
+    /// validateChallenge accepts a correctly signed ADDRESS_V2 server entry and rejects the
+    /// same entry when its server signature is replaced with a structurally valid but wrong
+    /// signature. The negative control proves the acceptance is gated on real signature
+    /// verification over the V2 (WITH_ADDRESS) preimage, not on a vacuous pass.
     func testValidateChallengeAcceptsAddressV2ServerEntry() throws {
         let webAuth = try makeWebAuth()
         let serverKeyPair = try KeyPair(secretSeed: serverPrivateKey)
 
-        // Server entry: ADDRESS_V2, signed.
+        // Server entry: ADDRESS_V2, signed by the real server key.
         let serverEntry = try makeChallengeEntry(
             credentialsAddress: serverPublicKey,
             arm: .v2,
             signWith: serverKeyPair
         )
+        // Confirm the entry is ADDRESS_V2 and carries a non-empty signature.
+        guard case .addressV2(let v2Creds) = serverEntry.credentials else {
+            return XCTFail("Server entry must carry .addressV2 credentials")
+        }
+        XCTAssertFalse(v2Creds.signature.vec?.isEmpty ?? true, "Server entry must be signed")
+
         // Client entry: legacy.
         let clientEntry = try makeChallengeEntry(credentialsAddress: clientContractId, arm: .legacy)
 
-        // Must not throw — ADDRESS_V2 is accepted.
-        XCTAssertNoThrow(
-            try webAuth.validateChallenge(
-                authEntries: [serverEntry, clientEntry],
-                clientAccountId: clientContractId,
-                homeDomain: serverDomain
-            )
+        // Correctly signed V2 entry is accepted.
+        try webAuth.validateChallenge(
+            authEntries: [serverEntry, clientEntry],
+            clientAccountId: clientContractId,
+            homeDomain: serverDomain
+        )
+
+        // Negative control: a wrong signature for the same V2 entry must be rejected.
+        let wrongServerEntry = try makeWrongSignatureServerEntry(arm: .v2)
+        assertInvalidServerSignature(
+            webAuth: webAuth,
+            authEntries: [wrongServerEntry, clientEntry]
         )
     }
 
-    /// validateChallenge must accept a WITH_DELEGATES (empty delegates) server entry.
+    /// validateChallenge accepts a correctly signed WITH_DELEGATES (empty delegates) server
+    /// entry and rejects the same entry when its server signature is wrong. The negative
+    /// control proves the acceptance is gated on signature verification over the WITH_ADDRESS
+    /// preimage for this arm.
     func testValidateChallengeAcceptsWithDelegatesServerEntry() throws {
         let webAuth = try makeWebAuth()
         let serverKeyPair = try KeyPair(secretSeed: serverPrivateKey)
 
-        // Server entry: WITH_DELEGATES (empty), signed.
+        // Server entry: WITH_DELEGATES (empty), signed by the real server key.
         let serverEntry = try makeChallengeEntry(
             credentialsAddress: serverPublicKey,
             arm: .withDelegates,
             signWith: serverKeyPair
         )
+        guard case .addressWithDelegates(let wd) = serverEntry.credentials else {
+            return XCTFail("Server entry must carry .addressWithDelegates credentials")
+        }
+        XCTAssertFalse(wd.addressCredentials.signature.vec?.isEmpty ?? true, "Server entry must be signed")
+
         let clientEntry = try makeChallengeEntry(credentialsAddress: clientContractId, arm: .legacy)
 
-        XCTAssertNoThrow(
-            try webAuth.validateChallenge(
-                authEntries: [serverEntry, clientEntry],
-                clientAccountId: clientContractId,
-                homeDomain: serverDomain
-            )
+        try webAuth.validateChallenge(
+            authEntries: [serverEntry, clientEntry],
+            clientAccountId: clientContractId,
+            homeDomain: serverDomain
+        )
+
+        let wrongServerEntry = try makeWrongSignatureServerEntry(arm: .withDelegates)
+        assertInvalidServerSignature(
+            webAuth: webAuth,
+            authEntries: [wrongServerEntry, clientEntry]
         )
     }
 
-    /// validateChallenge must accept a legacy ADDRESS server entry (existing behavior preserved).
+    /// validateChallenge accepts a correctly signed legacy ADDRESS server entry and rejects
+    /// the same entry when its server signature is wrong. The negative control proves the
+    /// legacy acceptance is gated on signature verification over the legacy preimage.
     func testValidateChallengeAcceptsLegacyServerEntry() throws {
         let webAuth = try makeWebAuth()
         let serverKeyPair = try KeyPair(secretSeed: serverPrivateKey)
@@ -241,15 +269,63 @@ final class WebAuthForContractsP27UnitTests: XCTestCase {
             arm: .legacy,
             signWith: serverKeyPair
         )
+        guard case .address(let legacyCreds) = serverEntry.credentials else {
+            return XCTFail("Server entry must carry .address credentials")
+        }
+        XCTAssertFalse(legacyCreds.signature.vec?.isEmpty ?? true, "Server entry must be signed")
+
         let clientEntry = try makeChallengeEntry(credentialsAddress: clientContractId, arm: .legacy)
 
-        XCTAssertNoThrow(
+        try webAuth.validateChallenge(
+            authEntries: [serverEntry, clientEntry],
+            clientAccountId: clientContractId,
+            homeDomain: serverDomain
+        )
+
+        let wrongServerEntry = try makeWrongSignatureServerEntry(arm: .legacy)
+        assertInvalidServerSignature(
+            webAuth: webAuth,
+            authEntries: [wrongServerEntry, clientEntry]
+        )
+    }
+
+    // MARK: - Helper: negative control for server-signature verification
+
+    /// Builds a server challenge entry whose signature is structurally valid but produced by a
+    /// key other than the server signing key. Validation must reject it with
+    /// `invalidServerSignature`, which is what distinguishes real verification from a vacuous pass.
+    private func makeWrongSignatureServerEntry(arm: CredentialArm27) throws -> SorobanAuthorizationEntryXDR {
+        // A different keypair signs over the correct preimage, so the structure is valid but
+        // the signature does not match the server signing key the validator checks against.
+        let wrongSigner = try KeyPair.generateRandomKeyPair()
+        var entry = try makeChallengeEntry(
+            credentialsAddress: serverPublicKey,
+            arm: arm
+        )
+        try entry.sign(signer: wrongSigner, network: .testnet)
+        return entry
+    }
+
+    private func assertInvalidServerSignature(
+        webAuth: WebAuthForContracts,
+        authEntries: [SorobanAuthorizationEntryXDR],
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) {
+        XCTAssertThrowsError(
             try webAuth.validateChallenge(
-                authEntries: [serverEntry, clientEntry],
+                authEntries: authEntries,
                 clientAccountId: clientContractId,
                 homeDomain: serverDomain
-            )
-        )
+            ),
+            file: file,
+            line: line
+        ) { error in
+            guard case ContractChallengeValidationError.invalidServerSignature = error else {
+                XCTFail("Expected invalidServerSignature, got: \(error)", file: file, line: line)
+                return
+            }
+        }
     }
 
     // MARK: - Verification: V2 signed over wrong (legacy) preimage is rejected
@@ -511,12 +587,12 @@ final class WebAuthForContractsP27UnitTests: XCTestCase {
         XCTAssertEqual(wd.delegates.count, 1, "Delegates array must survive credential write-back")
     }
 
-    // MARK: - signAuthorizationEntries: client-domain keypair branch with non-nil expiration (line 668)
+    // MARK: - signAuthorizationEntries: client-domain keypair branch with non-nil expiration
 
-    /// signAuthorizationEntries must stamp the expiration into the credentials (line 668) and
+    /// signAuthorizationEntries must stamp the expiration into the credentials and
     /// preserve the ADDRESS_V2 arm when the entry belongs to the client-domain keypair.
     ///
-    /// Conditions that reach line 668:
+    /// Conditions:
     ///   - credentialsAddress matches clientDomainKeyPair.accountId
     ///   - signatureExpirationLedger is non-nil
     func testSignAuthorizationEntries_clientDomainKeyPair_v2_stampsExpirationAndPreservesArm() async throws {
@@ -547,18 +623,18 @@ final class WebAuthForContractsP27UnitTests: XCTestCase {
             return
         }
         XCTAssertEqual(creds.signatureExpirationLedger, 3_000_000,
-                       "Expiration must be stamped into the V2 credentials via withAddressCredentials (line 668)")
+                       "Expiration must be stamped into the V2 credentials via withAddressCredentials")
         if case .void = creds.signature {
             XCTFail("Entry must carry a signature after signing with clientDomainKeyPair")
         }
     }
 
-    // MARK: - signAuthorizationEntries: client-domain callback branch with non-nil expiration (line 683)
+    // MARK: - signAuthorizationEntries: client-domain callback branch with non-nil expiration
 
-    /// signAuthorizationEntries must stamp the expiration into the credentials (line 683) before
+    /// signAuthorizationEntries must stamp the expiration into the credentials before
     /// handing the entry to the signing callback, and preserve the ADDRESS_V2 arm.
     ///
-    /// Conditions that reach line 683:
+    /// Conditions:
     ///   - credentialsAddress matches clientDomainAccountId
     ///   - clientDomainSigningCallback is non-nil
     ///   - signatureExpirationLedger is non-nil
@@ -597,14 +673,14 @@ final class WebAuthForContractsP27UnitTests: XCTestCase {
 
         XCTAssertEqual(signedEntries.count, 1, "Client-domain entry must be returned from callback")
         XCTAssertEqual(callbackReceivedExpiration, 4_000_000,
-                       "Callback must receive the entry with expiration already stamped (line 683)")
+                       "Callback must receive the entry with expiration already stamped")
         guard case .addressV2 = signedEntries[0].credentials else {
             XCTFail("ADDRESS_V2 arm must be preserved through the client-domain callback branch")
             return
         }
     }
 
-    // MARK: - signAuthorizationEntries: legacy arm preservation (regression)
+    // MARK: - signAuthorizationEntries: legacy arm preservation
 
     func testSignAuthorizationEntriesPreservesLegacyArm() async throws {
         let webAuth = try makeWebAuth()

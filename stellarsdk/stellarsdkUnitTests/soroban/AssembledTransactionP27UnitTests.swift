@@ -116,7 +116,7 @@ final class AssembledTransactionP27UnitTests: XCTestCase {
         XCTAssertTrue(opts.authV2)
     }
 
-    // MARK: - needsNonInvokerSigningBy: ADDRESS arm (regression)
+    // MARK: - needsNonInvokerSigningBy: ADDRESS arm
 
     func testNeedsNonInvokerSigningBy_legacyAddress_unsigned() throws {
         let tx = try makeTransactionWithAddressEntry(arm: .address, signed: false)
@@ -515,6 +515,10 @@ final class AssembledTransactionP27UnitTests: XCTestCase {
     }
 
     private func makeTransactionWithEntry(_ entry: SorobanAuthorizationEntryXDR) throws -> Transaction {
+        try makeTransactionWithEntries([entry])
+    }
+
+    private func makeTransactionWithEntries(_ entries: [SorobanAuthorizationEntryXDR]) throws -> Transaction {
         let account = Account(keyPair: keyPair, sequenceNumber: 12345)
         let op = InvokeHostFunctionOperation(
             hostFunction: HostFunctionXDR.invokeContract(
@@ -524,7 +528,7 @@ final class AssembledTransactionP27UnitTests: XCTestCase {
                     args: []
                 )
             ),
-            auth: [entry],
+            auth: entries,
             sourceAccountId: nil
         )
         return try Transaction(sourceAccount: account, operations: [op], memo: Memo.none)
@@ -605,7 +609,7 @@ final class AssembledTransactionP27UnitTests: XCTestCase {
 
     // MARK: - delegateTreeContainsAccountId recursive path
 
-    /// Exercises the recursive call in `delegateTreeContainsAccountId` (line 619):
+    /// Exercises the recursive call in `delegateTreeContainsAccountId`:
     /// the signing signer address matches only in the second level of a 2-level delegate tree.
     /// `needsNonInvokerSigningBy` must report the nested (unsigned) delegate address.
     func testNeedsNonInvokerSigningBy_nestedDelegate_reportedUnsigned() throws {
@@ -655,7 +659,7 @@ final class AssembledTransactionP27UnitTests: XCTestCase {
 
     /// Exercises `delegateTreeContainsAccountId` via `signAuthEntries`: signer address is found
     /// only in the second level of the delegate tree (nested delegate), triggering the recursive
-    /// call on line 619 in AssembledTransaction.swift.
+    /// call in AssembledTransaction.swift.
     func testSignAuthEntries_nestedDelegateSigner_routedCorrectly() async throws {
         setupGetLatestLedgerMock()
 
@@ -721,7 +725,7 @@ final class AssembledTransactionP27UnitTests: XCTestCase {
         }
     }
 
-    /// Exercises lines 620-621 in `delegateTreeContainsAccountId`: when the signer address
+    /// Exercises the path in `delegateTreeContainsAccountId`: when the signer address
     /// is not present in any delegate node, the function exhausts the array and returns `false`.
     /// The entry is then skipped (signAuthEntries continues to the next entry).
     func testSignAuthEntries_withDelegates_nonMatchingSigner_skipsEntry() async throws {
@@ -775,7 +779,7 @@ final class AssembledTransactionP27UnitTests: XCTestCase {
 
     // MARK: - signAuthEntries authorizeEntryCallback paths
 
-    /// Exercises the `authorizeEntryCallback` path for the `.addressV2` arm (lines 537-538).
+    /// Exercises the `authorizeEntryCallback` path for the `.addressV2` arm.
     /// When a callback is provided, signAuthEntries must route the V2 entry through the callback
     /// rather than directly calling `entry.sign`.
     func testSignAuthEntries_addressV2_withCallback_routesThroughCallback() async throws {
@@ -806,7 +810,7 @@ final class AssembledTransactionP27UnitTests: XCTestCase {
         }
     }
 
-    /// Exercises the `authorizeEntryCallback` path for the `.addressWithDelegates` arm (lines 563-564).
+    /// Exercises the `authorizeEntryCallback` path for the `.addressWithDelegates` arm.
     /// When a callback is provided, signAuthEntries must route the WITH_DELEGATES entry through the
     /// callback for any signer that matches the entry (top-level or delegate).
     func testSignAuthEntries_withDelegates_withCallback_routesThroughCallback() async throws {
@@ -987,6 +991,132 @@ final class AssembledTransactionP27UnitTests: XCTestCase {
         } else {
             XCTFail("Callback must receive a .addressWithDelegates entry, got \(received.credentials)")
         }
+    }
+
+    // MARK: - signAuthEntries: callback receives the stamped expiration
+
+    /// The signer stamps `signatureExpirationLedger` onto the entry's credentials BEFORE
+    /// handing it to `authorizeEntryCallback`. The entry observed inside the callback must
+    /// already carry the requested expiration, not the stale value stored in the credentials.
+    ///
+    /// Uses the legacy `.address` arm. The fixture starts with `signatureExpirationLedger == 0`;
+    /// the callback captures the entry and the captured value must equal the requested ledger.
+    func testSignAuthEntries_callbackReceivesStampedExpiration() async throws {
+        setupGetLatestLedgerMock()
+
+        let creds = SorobanAddressCredentialsXDR(
+            address: try SCAddressXDR(accountId: keyPair.accountId),
+            nonce: 31,
+            signatureExpirationLedger: 0,
+            signature: SCValXDR.void
+        )
+        let entry = SorobanAuthorizationEntryXDR(
+            credentials: SorobanCredentialsXDR.address(creds),
+            rootInvocation: makeRootInvocation()
+        )
+        // Sanity: fixture starts at expiration 0.
+        XCTAssertEqual(entry.credentials.addressCredentials?.signatureExpirationLedger, 0,
+                       "Fixture must start with signatureExpirationLedger == 0")
+
+        let tx = try makeTransactionWithEntry(entry)
+        let at = makeAssembledTransaction(tx: tx)
+
+        let requestedExpiration: UInt32 = 1_000_000
+        var capturedExpiration: UInt32?
+        try await at.signAuthEntries(
+            signerKeyPair: keyPair,
+            authorizeEntryCallback: { received, _ in
+                capturedExpiration = received.credentials.addressCredentials?.signatureExpirationLedger
+                return received
+            },
+            validUntilLedgerSeq: requestedExpiration
+        )
+
+        XCTAssertEqual(
+            capturedExpiration, requestedExpiration,
+            "The callback must observe the stamped signatureExpirationLedger, not the stale value"
+        )
+    }
+
+    // MARK: - signAuthEntries: callback must not corrupt a sibling entry signed by another party
+
+    /// `signAuthEntries` signs only the entries whose address matches the signer; the matching
+    /// guard gates the callback. An entry already signed by a different party must be left
+    /// byte-identical, and the callback must fire exactly once for the single matching entry.
+    func testSignAuthEntries_callbackDoesNotModifySiblingSignedByAnotherParty() async throws {
+        setupGetLatestLedgerMock()
+
+        let keyPairA = try KeyPair.generateRandomKeyPair()
+        let keyPairB = try KeyPair.generateRandomKeyPair()
+
+        // Entry A: already signed by keyPairA (non-void signature).
+        let credsA = SorobanAddressCredentialsXDR(
+            address: try SCAddressXDR(accountId: keyPairA.accountId),
+            nonce: 11,
+            signatureExpirationLedger: 1_000_000,
+            signature: SCValXDR.void
+        )
+        var entryA = SorobanAuthorizationEntryXDR(
+            credentials: SorobanCredentialsXDR.address(credsA),
+            rootInvocation: makeRootInvocation()
+        )
+        try entryA.sign(signer: keyPairA, network: network)
+        // Confirm entry A is now signed.
+        XCTAssertNotEqual(
+            entryA.credentials.addressCredentials?.signature.type(), SCValType.void.rawValue,
+            "Entry A must be signed before the call"
+        )
+        guard let entryABefore = entryA.xdrEncoded else {
+            return XCTFail("Could not encode entry A to base64 XDR")
+        }
+
+        // Entry B: void, addressed to keyPairB (the signer in this call).
+        let credsB = SorobanAddressCredentialsXDR(
+            address: try SCAddressXDR(accountId: keyPairB.accountId),
+            nonce: 22,
+            signatureExpirationLedger: 0,
+            signature: SCValXDR.void
+        )
+        let entryB = SorobanAuthorizationEntryXDR(
+            credentials: SorobanCredentialsXDR.address(credsB),
+            rootInvocation: makeRootInvocation()
+        )
+
+        let tx = try makeTransactionWithEntries([entryA, entryB])
+        let at = makeAssembledTransaction(tx: tx)
+
+        var callbackInvokeCount = 0
+        try await at.signAuthEntries(
+            signerKeyPair: keyPairB,
+            authorizeEntryCallback: { received, net in
+                callbackInvokeCount += 1
+                var toSign = received
+                try toSign.sign(signer: keyPairB, network: net)
+                return toSign
+            },
+            validUntilLedgerSeq: 1_000_000
+        )
+
+        let ops = at.tx!.operations
+        let invokeOp = ops.first as! InvokeHostFunctionOperation
+        let resultEntryA = invokeOp.auth[0]
+        let resultEntryB = invokeOp.auth[1]
+
+        // Entry A must be byte-identical: the callback must never touch a non-matching sibling.
+        XCTAssertEqual(
+            resultEntryA.xdrEncoded, entryABefore,
+            "Sibling entry signed by another party must be byte-identical after the call"
+        )
+        // Entry B must have been routed through the callback and signed.
+        XCTAssertNotEqual(
+            resultEntryB.credentials.addressCredentials?.signature.type(), SCValType.void.rawValue,
+            "Matching entry B must be signed by the callback"
+        )
+        // The callback must fire exactly once: only the matching entry reaches it.
+        XCTAssertEqual(
+            callbackInvokeCount, 1,
+            "Callback must be invoked exactly once for the single matching entry"
+        )
     }
 
     // MARK: - Gap 5: MethodOptions.authV2 threads through simulate() into JSON-RPC request

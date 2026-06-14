@@ -1,11 +1,11 @@
 //
-//  OZBatchD1P27Tests.swift
+//  OZP27AuthTests.swift
 //  stellarsdkUnitTests
 //
 //  Copyright (c) 2026 Soneso. All rights reserved.
 //
-//  Tests for Batch D1 of the Protocol 27 update: credential-arm handling and preimage
-//  construction in the OZ smart-account signing paths.
+//  Credential-arm handling and preimage construction in the OZ smart-account
+//  signing paths under Protocol 27.
 //
 
 import XCTest
@@ -81,7 +81,7 @@ private enum GoldenVector {
 
 // MARK: - Payload hash / preimage tests
 
-final class OZBatchD1P27PayloadHashTests: XCTestCase {
+final class OZP27PayloadHashTests: XCTestCase {
 
     // MARK: Golden-vector test
 
@@ -178,7 +178,7 @@ final class OZBatchD1P27PayloadHashTests: XCTestCase {
 
 // MARK: - signAuthEntry arm-preservation tests
 
-final class OZBatchD1P27SignAuthEntryArmTests: XCTestCase {
+final class OZP27SignAuthEntryArmTests: XCTestCase {
 
     private let testNetwork = GoldenVector.network
 
@@ -282,7 +282,7 @@ final class OZBatchD1P27SignAuthEntryArmTests: XCTestCase {
 
 // MARK: - addRawSignatureMapEntry arm-preservation tests
 
-final class OZBatchD1P27AddRawEntryTests: XCTestCase {
+final class OZP27AddRawEntryTests: XCTestCase {
 
     // MARK: ADDRESS arm preserved
 
@@ -327,16 +327,16 @@ final class OZBatchD1P27AddRawEntryTests: XCTestCase {
 
 // MARK: - convertAndSignAuthEntries arm and error tests
 
-/// Tests that verify the Batch B helpers (`addressCredentials`, `withAddressCredentials`,
+/// Verifies that the credential helpers (`addressCredentials`, `withAddressCredentials`,
 /// `buildPreimage`) behave correctly for the WITH_DELEGATES and ADDRESS_V2 arms — these
 /// are the invariants that the OZTransactionOperations signing loop relies on.
-final class OZBatchD1P27ConvertSignTests: XCTestCase {
+final class OZP27ConvertSignTests: XCTestCase {
 
     // MARK: WITH_DELEGATES exposes addressCredentials and has correct arm
 
     /// WITH_DELEGATES entries expose their inner address credentials via `addressCredentials`.
-    /// This verifies the Batch B helper works correctly for the WITH_DELEGATES arm, which the
-    /// signing loop uses to detect and reject (with a descriptive error) these entries.
+    /// The signing loop uses this accessor to detect WITH_DELEGATES entries and reject them
+    /// with a descriptive error.
     func test_withDelegatesEntry_exposesAddressCredentials() throws {
         let delegatesEntry = try GoldenVector.makeAddressWithDelegatesEntry()
 
@@ -355,9 +355,8 @@ final class OZBatchD1P27ConvertSignTests: XCTestCase {
     // MARK: ADDRESS_V2 arm preserved through convertAndSignAuthEntries
 
     /// In the funding flow, ADDRESS_V2 entries are handled like ADDRESS but with the V2 arm
-    /// preserved on write-back. This test confirms that the Batch B `withAddressCredentials`
-    /// helper preserves the V2 arm, which is the invariant the convertAndSignAuthEntries
-    /// code relies on.
+    /// preserved on write-back. This confirms that `withAddressCredentials` preserves the V2
+    /// arm, which is the invariant the convertAndSignAuthEntries code relies on.
     func test_withAddressCredentials_v2ArmPreserved() throws {
         let entry = try GoldenVector.makeAddressV2Entry()
         guard let creds = entry.credentials.addressCredentials else {
@@ -415,9 +414,9 @@ final class OZBatchD1P27ConvertSignTests: XCTestCase {
 
 // MARK: - Preimage builder arm-selection tests
 
-/// Tests that the Batch B `buildPreimage(network:)` builder selects the correct envelope
-/// type for each credential arm, independently of the higher-level signing paths.
-final class OZBatchD1P27PreimageBuilderTests: XCTestCase {
+/// Verifies that `buildPreimage(network:)` selects the correct envelope type for each
+/// credential arm, independently of the higher-level signing paths.
+final class OZP27PreimageBuilderTests: XCTestCase {
 
     private let network = Network.testnet
 
