@@ -47,19 +47,18 @@ public final class SimulateTransactionRequest: @unchecked Sendable {
 
     /// Support for non-root authorization. Only available for protocol >= 23
     /// Possible values: "enforce" | "record" | "record_allow_nonroot"
-    public let authMode:String?
+    public let authMode: String?
 
-    
     /// Creates a request for simulating Soroban transaction execution.
-    public init(transaction:Transaction, resourceConfig:ResourceConfig? = nil, authMode:String? = nil) {
+    public init(transaction: Transaction, resourceConfig: ResourceConfig? = nil, authMode: String? = nil) {
         self.transaction = transaction
         self.resourceConfig = resourceConfig
         self.authMode = authMode
     }
-    
+
     /// Builds JSON-RPC request parameters from the simulation configuration.
-    public func buildRequestParams() -> [String : Any] {
-        var result: [String : Any] = [:]
+    public func buildRequestParams() -> [String: Any] {
+        var result: [String: Any] = [:]
         result["transaction"] = try? transaction.encodedEnvelope()
         if let rC = resourceConfig {
             result["resourceConfig"] = rC.buildRequestParams()
@@ -67,6 +66,6 @@ public final class SimulateTransactionRequest: @unchecked Sendable {
         if let authMode = authMode {
             result["authMode"] = authMode
         }
-        return result;
+        return result
     }
 }

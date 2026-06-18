@@ -767,32 +767,23 @@ final class OZTransactionOperationsPipelineTests: XCTestCase {
             ledger: 1001
         )
 
-        do {
-            _ = try await h.txOps.fundWallet(nativeTokenContract: contractA)
-        } catch {
-            // The temp-keypair account-fetch path may surface a typed
-            // exception because the placeholder accountId does not match the
-            // generated temp keypair (the production code uses
-            // KeyPair.generateRandomKeyPair() which we cannot intercept).
-            // The test's primary contract is the void-credentials conversion
-            // step, which we assert below regardless of the final outcome.
-            // The Friendbot reachability check is the authoritative signal:
-            // if the fixture installed the friendbot handler successfully,
-            // any post-friendbot failure is a temp-keypair mismatch, not a
-            // conversion bug.
-            return
-        }
+        // The mock answers the temp-keypair account fetch from its default
+        // getLedgerEntries payload (the SDK builds the Account from whatever
+        // entry is returned and reads only the sequence number), so the funding
+        // path runs to completion and the conversion assertions run unconditionally.
+        _ = try await h.txOps.fundWallet(nativeTokenContract: contractA)
 
-        // If the path completed end-to-end the sent transaction must carry
-        // address-credentials with a non-zero nonce (the conversion
-        // generated it) — verify on the captured envelope.
-        let envelope = try TransactionEnvelopeXDR(
-            xdr: extractEnvelopeBase64(from: script.sendCalls.last)!
+        // The sent transaction must carry address-credentials with a non-zero
+        // nonce (the void-to-address conversion generated it) — verify on the
+        // captured envelope.
+        let sentEnvelopeBase64 = try XCTUnwrap(
+            extractEnvelopeBase64(from: script.sendCalls.last),
+            "fundWallet must have submitted a transaction"
         )
+        let envelope = try TransactionEnvelopeXDR(xdr: sentEnvelopeBase64)
         let signed = try firstSorobanAuthEntry(envelope: envelope)
         guard case .address(let creds) = signed.credentials else {
-            XCTFail("conversion did not produce address credentials")
-            return
+            return XCTFail("conversion did not produce address credentials")
         }
         XCTAssertNotEqual(creds.nonce, 0, "fresh nonce must be non-zero")
     }
@@ -2072,8 +2063,7 @@ final class OZTransactionOperationsPipelineTests: XCTestCase {
     ///
     /// When the credential is not in local storage and `getAllContextRules()`
     /// returns an empty list, `findKeyDataFromContextRules` must throw
-    /// `SmartAccountCredentialException.NotFound`. This covers lines 975–1007 in
-    /// `OZTransactionOperations.swift`.
+    /// `SmartAccountCredentialException.NotFound`.
     ///
     /// Setup: connected kit with a webauthn provider (required by signing
     /// pass), no credential stored (so the storage hit returns nil), and a
@@ -2149,8 +2139,7 @@ final class OZTransactionOperationsPipelineTests: XCTestCase {
     ///
     /// When `latestLedger.sequence` is near `UInt32.max` and the configured
     /// `signatureExpirationLedgers` causes the sum to overflow `UInt32`, the
-    /// guard must throw `SmartAccountTransactionException.SimulationFailed`. Covered lines:
-    /// 422–425 in `OZTransactionOperations.swift`.
+    /// guard must throw `SmartAccountTransactionException.SimulationFailed`.
     ///
     /// Implementation approach: script `getLatestLedger` to return a sequence
     /// so high that adding `signatureExpirationLedgers` overflows. The config
@@ -2922,34 +2911,25 @@ final class OZTransactionOperationsPipelineTests: XCTestCase {
             ledger: 1001
         )
 
-        do {
-            _ = try await h.txOps.fundWallet(nativeTokenContract: contractA)
-        } catch {
-            // The unpredictable temp-keypair account fetch may surface a typed
-            // exception; the conversion-branch coverage is the contract here.
-            // If the path failed before assembling the envelope there is
-            // nothing further to assert.
-            return
-        }
+        // The mock answers the temp-keypair account fetch from its default
+        // getLedgerEntries payload, so the funding path runs to completion and
+        // the conversion assertions run unconditionally.
+        _ = try await h.txOps.fundWallet(nativeTokenContract: contractA)
 
-        // If the path completed, the sent envelope's first auth entry must
-        // carry address credentials with the classical Ed25519 signature shape
-        // (Vec([Map])) and the simulator-supplied nonce preserved.
-        guard let lastSend = script.sendCalls.last,
-              let envelopeBase64 = extractEnvelopeBase64(from: lastSend) else {
-            return
-        }
+        // The sent envelope's first auth entry must carry address credentials
+        // with the classical Ed25519 signature shape (Vec([Map])) and the
+        // simulator-supplied nonce preserved.
+        let lastSend = try XCTUnwrap(script.sendCalls.last, "fundWallet must have submitted a transaction")
+        let envelopeBase64 = try XCTUnwrap(extractEnvelopeBase64(from: lastSend), "sent transaction must carry an envelope")
         let envelope = try TransactionEnvelopeXDR(xdr: envelopeBase64)
         let signed = try firstSorobanAuthEntry(envelope: envelope)
         guard case .address(let creds) = signed.credentials else {
-            XCTFail("expected address credentials after conversion")
-            return
+            return XCTFail("expected address credentials after conversion")
         }
         XCTAssertEqual(creds.nonce, suppliedNonce,
                        "address-credentials conversion must preserve the simulator nonce")
         guard case .vec = creds.signature else {
-            XCTFail("expected classical Ed25519 Vec-wrapped signature shape")
-            return
+            return XCTFail("expected classical Ed25519 Vec-wrapped signature shape")
         }
     }
 
@@ -2982,6 +2962,177 @@ final class OZTransactionOperationsPipelineTests: XCTestCase {
         } catch is SmartAccountTransactionException.SubmissionFailed {
             // expected: either the funding-submission failure lift or the
             // unpredictable temp-keypair fetch failure; both are SubmissionFailed.
+        }
+    }
+
+    // ========================================================================
+    // Protocol 27: signAuthEntries WITH_DELEGATES and unknown-arm guards
+    // ========================================================================
+
+    /// Simulating a transaction that returns a WITH_DELEGATES auth entry drives the signing
+    /// loop's early-reject guard in `signAuthEntries`.
+    /// The pipeline must throw `SmartAccountTransactionException.SigningFailed` immediately.
+    func test_submit_withDelegatesAuthEntry_throwsSigningFailed() async throws {
+        let h = try await buildPipelineHarness()
+
+        enqueueDeployerAccount(deployer: h.deployer)
+        // Simulate returns a WITH_DELEGATES entry matching the connected contract.
+        let innerCreds = SorobanAddressCredentialsXDR(
+            address: try SCAddressXDR(contractId: contractA),
+            nonce: 0,
+            signatureExpirationLedger: 0,
+            signature: .void
+        )
+        let withDelegates = SorobanAddressCredentialsWithDelegatesXDR(
+            addressCredentials: innerCreds,
+            delegates: []
+        )
+        let invocation = SorobanAuthorizedInvocationXDR(
+            function: .contractFn(InvokeContractArgsXDR(
+                contractAddress: try SCAddressXDR(contractId: contractB),
+                functionName: "noop",
+                args: []
+            )),
+            subInvocations: []
+        )
+        let delegatesEntry = SorobanAuthorizationEntryXDR(
+            credentials: .addressWithDelegates(withDelegates),
+            rootInvocation: invocation
+        )
+        script.enqueueSimulate(authEntries: [delegatesEntry])
+        script.setGetLatestLedger(sequence: 1000)
+
+        let hostFn = HostFunctionXDR.invokeContract(
+            InvokeContractArgsXDR(
+                contractAddress: try SCAddressXDR(contractId: contractB),
+                functionName: "noop",
+                args: []
+            )
+        )
+        do {
+            _ = try await h.txOps.submit(hostFunction: hostFn, auth: [])
+            XCTFail("Expected SmartAccountTransactionException.SigningFailed for WITH_DELEGATES entry")
+        } catch is SmartAccountTransactionException.SigningFailed {
+            // expected: WITH_DELEGATES entries cannot be auto-signed
+        }
+    }
+
+    // ========================================================================
+    // Protocol 27: fundWallet convertAndSignAuthEntries ADDRESS_V2 branch
+    // ========================================================================
+
+    /// When the funding-transfer simulation returns an ADDRESS_V2 entry,
+    /// `convertAndSignAuthEntries` must process it through the `.addressV2` branch,
+    /// sign it with the temp keypair using the classical Ed25519 shape,
+    /// and preserve the V2 arm on write-back.
+    func test_fundWallet_convertsAddressV2Credentials_preservesV2Arm() async throws {
+        let h = try await buildPipelineHarness()
+        installCustomURLHandler(script: script, friendbotSucceeds: true)
+
+        enqueueDeployerAccount(deployer: h.deployer)
+        let balance = SCValXDR.i128(Int128PartsXDR(hi: 0, lo: 200_000_000))
+        script.enqueueSimulate(authEntries: [], resultXdr: balance.xdrEncoded)
+        let tempPlaceholderKp = try KeyPair.generateRandomKeyPair()
+        script.setGetAccountResponse(accountId: tempPlaceholderKp.accountId, sequence: 1)
+
+        // Funding-transfer simulation returns an ADDRESS_V2-credentials entry.
+        let v2Creds = SorobanAddressCredentialsXDR(
+            address: try SCAddressXDR(contractId: contractB),
+            nonce: 0x7777_8888,
+            signatureExpirationLedger: 0,
+            signature: .void
+        )
+        let v2Invocation = SorobanAuthorizedInvocationXDR(
+            function: .contractFn(InvokeContractArgsXDR(
+                contractAddress: try SCAddressXDR(contractId: contractA),
+                functionName: "fund",
+                args: []
+            )),
+            subInvocations: []
+        )
+        let v2Entry = SorobanAuthorizationEntryXDR(
+            credentials: .addressV2(v2Creds),
+            rootInvocation: v2Invocation
+        )
+        script.enqueueSimulate(authEntries: [v2Entry])
+        script.setGetLatestLedger(sequence: 1000)
+        script.enqueueSimulate(authEntries: [])
+        script.setSendSuccess(
+            status: SendTransactionResponse.STATUS_PENDING,
+            hash: "fund-v2-hash"
+        )
+        script.enqueueGetTransactionResponse(
+            status: GetTransactionResponse.STATUS_SUCCESS,
+            ledger: 1001
+        )
+
+        // The mock answers the temp-keypair account fetch from its default
+        // getLedgerEntries payload, so the funding path runs to completion and
+        // the V2-arm assertions run unconditionally.
+        _ = try await h.txOps.fundWallet(nativeTokenContract: contractA)
+
+        // The sent envelope's auth entry must carry the V2 arm with a classical
+        // Ed25519 signature shape (Vec([Map])).
+        let lastSend = try XCTUnwrap(script.sendCalls.last, "fundWallet must have submitted a transaction")
+        let envelopeBase64 = try XCTUnwrap(extractEnvelopeBase64(from: lastSend), "sent transaction must carry an envelope")
+        let envelope = try TransactionEnvelopeXDR(xdr: envelopeBase64)
+        let signed = try firstSorobanAuthEntry(envelope: envelope)
+        guard case .addressV2(let creds) = signed.credentials else {
+            return XCTFail("ADDRESS_V2 arm must be preserved through the funding conversion, got \(signed.credentials)")
+        }
+        guard case .vec = creds.signature else {
+            return XCTFail("expected classical Ed25519 Vec-wrapped signature shape for V2 entry")
+        }
+    }
+
+    /// The `convertAndSignAuthEntries` funding flow must throw `StellarSDKError.invalidArgument`
+    /// when an ADDRESS_WITH_DELEGATES entry appears in the funding-transfer simulation result.
+    /// Delegated entries require manual assembly.
+    func test_fundWallet_withDelegatesCredentials_throwsInvalidArgument() async throws {
+        let h = try await buildPipelineHarness()
+        installCustomURLHandler(script: script, friendbotSucceeds: true)
+
+        enqueueDeployerAccount(deployer: h.deployer)
+        let balance = SCValXDR.i128(Int128PartsXDR(hi: 0, lo: 200_000_000))
+        script.enqueueSimulate(authEntries: [], resultXdr: balance.xdrEncoded)
+        let tempPlaceholderKp = try KeyPair.generateRandomKeyPair()
+        script.setGetAccountResponse(accountId: tempPlaceholderKp.accountId, sequence: 1)
+
+        // Funding-transfer simulation returns a WITH_DELEGATES entry.
+        let innerCreds = SorobanAddressCredentialsXDR(
+            address: try SCAddressXDR(contractId: contractB),
+            nonce: 0,
+            signatureExpirationLedger: 0,
+            signature: .void
+        )
+        let withDelegatesPayload = SorobanAddressCredentialsWithDelegatesXDR(
+            addressCredentials: innerCreds,
+            delegates: []
+        )
+        let fundInvocation = SorobanAuthorizedInvocationXDR(
+            function: .contractFn(InvokeContractArgsXDR(
+                contractAddress: try SCAddressXDR(contractId: contractA),
+                functionName: "fund",
+                args: []
+            )),
+            subInvocations: []
+        )
+        let delegatesEntry = SorobanAuthorizationEntryXDR(
+            credentials: .addressWithDelegates(withDelegatesPayload),
+            rootInvocation: fundInvocation
+        )
+        script.enqueueSimulate(authEntries: [delegatesEntry])
+        script.setGetLatestLedger(sequence: 1000)
+
+        do {
+            _ = try await h.txOps.fundWallet(nativeTokenContract: contractA)
+            XCTFail("Expected throw for WITH_DELEGATES in fundWallet flow")
+        } catch is StellarSDKError {
+            // expected: StellarSDKError.invalidArgument from the WITH_DELEGATES guard
+        } catch is SmartAccountTransactionException.SubmissionFailed {
+            // also acceptable: the exception may be wrapped by the funding path
+        } catch is SmartAccountTransactionException.SigningFailed {
+            // also acceptable
         }
     }
 

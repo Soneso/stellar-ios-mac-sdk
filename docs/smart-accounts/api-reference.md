@@ -1445,7 +1445,7 @@ public func submitWithMultipleSigners(
 ) async throws -> OZTransactionResult
 ```
 
-Shared low-level multi-signer signing pipeline. Validates the complete signer set, simulates the host function to discover authorization entries, signs every matching entry with every supplied signer, re-simulates so the resource fees reflect the real signature payload size, and submits the final envelope. The three higher-level entry points delegate here; the signer, policy, and context-rule managers also reach this method internally when a non-empty `selectedSigners` list is supplied to one of their state-changing methods.
+Shared low-level multi-signer signing pipeline. Validates the complete signer set, simulates the host function to discover authorization entries, signs every matching entry with every supplied signer, re-simulates so the resource fees reflect the real signature payload size, and submits the final envelope. Entries with legacy `ADDRESS` or protocol-27 `ADDRESS_V2` credentials are signed with the arm preserved; entries carrying `ADDRESS_WITH_DELEGATES` credentials are rejected with `SigningFailed` — delegated entries must be signed per delegate node via `SorobanAuthorizationEntryXDR.sign(forAddress:)` before submission. The three higher-level entry points delegate here; the signer, policy, and context-rule managers also reach this method internally when a non-empty `selectedSigners` list is supplied to one of their state-changing methods.
 
 Validation order: connection check, per-wallet-signer reachability via `kit.externalSigners.canSignFor(address:)` (covers both in-memory keypairs and the configured wallet adapter), per-passkey-signer `keyData` precondition (every passkey entry must carry pre-fetched `keyData` so context-rule resolution and signature binding can run without an extra on-chain lookup), per-Ed25519-signer registration check via `kit.externalSigners.canSignEd25519For(verifierAddress:publicKey:)` and public-key length enforcement (must be 32 bytes), initial simulation surface error, re-simulation surface error.
 
@@ -2403,7 +2403,7 @@ public protocol OZExternalWalletAdapter: AnyObject, Sendable {
 
 Default protocol extension provides no-op implementations for `disconnectByAddress(address:)` and `getWalletForAddress(address:)`.
 
-The `signAuthEntry(preimageXdr:options:)` contract: the adapter receives the base64-encoded `HashIDPreimage` XDR, must base64-decode it, compute its SHA-256, sign with Ed25519, and return an `OZSignAuthEntryResult` carrying the base64-encoded 64-byte signature.
+The `signAuthEntry(preimageXdr:options:)` contract: the adapter receives the base64-encoded `HashIDPreimage` XDR, must base64-decode it, compute its SHA-256, sign with Ed25519, and return an `OZSignAuthEntryResult` carrying the base64-encoded 64-byte signature. The preimage envelope type follows the auth entry's credential arm (`SorobanAuthorization` for legacy `ADDRESS` entries; `SorobanAuthorizationWithAddress` for protocol-27 `ADDRESS_V2` entries); adapters that hash-and-sign the raw bytes need no arm-specific handling.
 
 ---
 
@@ -2909,7 +2909,7 @@ public enum OZSmartAccountAuth {
 ```
 
 - `buildAuthDigest(signaturePayload:contextRuleIds:)` — computes `SHA-256(signaturePayload || contextRuleIds.toXDR())`.
-- `buildAuthPayloadHash(entry:expirationLedger:networkPassphrase:)` — computes the `HashIDPreimage::SorobanAuthorization` hash that must be signed to authorize an entry with address credentials.
+- `buildAuthPayloadHash(entry:expirationLedger:networkPassphrase:)` — computes the auth-payload hash that must be signed to authorize an entry with address credentials. The preimage envelope type follows the entry's credential arm: `HashIDPreimage::SorobanAuthorization` for the legacy `ADDRESS` arm; `HashIDPreimage::SorobanAuthorizationWithAddress` (protocol 27) for the `ADDRESS_V2` and `ADDRESS_WITH_DELEGATES` arms.
 - `buildSourceAccountAuthPayloadHash(entry:nonce:expirationLedger:networkPassphrase:)` — variant for source-account credentials, typically used when converting them to address credentials for relayer fee sponsoring.
 - `signAuthEntry(entry:signer:signature:expirationLedger:contextRuleIds:)` — attaches a pre-computed signature to an authorization entry. Does NOT perform cryptographic signing. Returns a fresh entry; when `contextRuleIds` is non-empty it overrides any existing identifiers in the payload.
 - `addRawSignatureMapEntry(entry:signerKey:signatureValue:contextRuleIds:)` — adds a raw key/value entry to the auth entry's signature map. Used for delegated-signer placeholders where the value is `Bytes` rather than a signature.

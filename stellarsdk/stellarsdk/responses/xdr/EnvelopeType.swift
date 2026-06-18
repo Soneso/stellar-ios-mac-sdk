@@ -14,6 +14,7 @@ public enum EnvelopeType: Int32, XDRCodable, Equatable, Sendable {
   case poolRevokeOpId = 7
   case contractId = 8
   case sorobanAuthorization = 9
+  case sorobanAuthorizationWithAddress = 10
 }
 
 extension EnvelopeType {
@@ -29,6 +30,7 @@ extension EnvelopeType {
     case .poolRevokeOpId: return "ENVELOPE_TYPE_POOL_REVOKE_OP_ID"
     case .contractId: return "ENVELOPE_TYPE_CONTRACT_ID"
     case .sorobanAuthorization: return "ENVELOPE_TYPE_SOROBAN_AUTHORIZATION"
+    case .sorobanAuthorizationWithAddress: return "ENVELOPE_TYPE_SOROBAN_AUTHORIZATION_WITH_ADDRESS"
     }
   }
 
@@ -44,6 +46,7 @@ extension EnvelopeType {
     case "ENVELOPE_TYPE_POOL_REVOKE_OP_ID": return .poolRevokeOpId
     case "ENVELOPE_TYPE_CONTRACT_ID": return .contractId
     case "ENVELOPE_TYPE_SOROBAN_AUTHORIZATION": return .sorobanAuthorization
+    case "ENVELOPE_TYPE_SOROBAN_AUTHORIZATION_WITH_ADDRESS": return .sorobanAuthorizationWithAddress
     default:
       let prefix = "EnvelopeType#"
       if name.hasPrefix(prefix), let v = Int32(name.dropFirst(prefix.count)), let parsed = EnvelopeType(rawValue: v) {

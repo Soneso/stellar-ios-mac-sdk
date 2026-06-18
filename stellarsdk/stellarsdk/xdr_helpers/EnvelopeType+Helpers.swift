@@ -15,4 +15,5 @@ extension EnvelopeType {
     public static let ENVELOPE_TYPE_POOL_REVOKE_OP_ID: Int32 = EnvelopeType.poolRevokeOpId.rawValue
     public static let ENVELOPE_TYPE_CONTRACT_ID: Int32 = EnvelopeType.contractId.rawValue
     public static let ENVELOPE_TYPE_SOROBAN_AUTHORIZATION: Int32 = EnvelopeType.sorobanAuthorization.rawValue
+    public static let ENVELOPE_TYPE_SOROBAN_AUTHORIZATION_WITH_ADDRESS: Int32 = EnvelopeType.sorobanAuthorizationWithAddress.rawValue
 }

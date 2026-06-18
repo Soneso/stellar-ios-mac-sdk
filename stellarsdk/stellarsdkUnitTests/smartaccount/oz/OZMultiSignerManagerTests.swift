@@ -2279,7 +2279,7 @@ extension OZMultiSignerManagerTests {
     }
 
     // ------------------------------------------------------------------------
-    // Passkey signing pass — signEntryWithPasskeys (lines 744-821)
+    // Passkey signing pass — signEntryWithPasskeys
     // ------------------------------------------------------------------------
 
     /// A passkey signer with valid `keyData` and a configured WebAuthn provider
@@ -2546,9 +2546,8 @@ extension OZMultiSignerManagerTests {
     }
 
     // ------------------------------------------------------------------------
-    // Full submission success — resimulateAndSubmit (lines 1034-1042) and the
-    // best-effort updateLastUsed loop (lines 485-489) and the multiSignerTransfer
-    // recipient C-address branch (line 126).
+    // Full submission success — resimulateAndSubmit and the best-effort
+    // updateLastUsed loop and the multiSignerTransfer recipient C-address branch.
     // ------------------------------------------------------------------------
 
     /// `multiSignerTransfer` with a C-address recipient drives the full pipeline
@@ -2726,7 +2725,7 @@ extension OZMultiSignerManagerTests {
     }
 
     // ------------------------------------------------------------------------
-    // Non-address credentials pass-through (lines 383-384)
+    // Non-address credentials pass-through
     // ------------------------------------------------------------------------
 
     /// An auth entry whose credentials are `.sourceAccount` (not `.address`) is
@@ -2789,7 +2788,7 @@ extension OZMultiSignerManagerTests {
     }
 
     // ------------------------------------------------------------------------
-    // Caller-supplied resolveContextRuleIds callback (line 423)
+    // Caller-supplied resolveContextRuleIds callback
     // ------------------------------------------------------------------------
 
     /// When a `resolveContextRuleIds` callback is supplied it is invoked per
@@ -2860,7 +2859,7 @@ extension OZMultiSignerManagerTests {
     }
 
     // ------------------------------------------------------------------------
-    // computeExpirationLedger UInt32 overflow (lines 659-661)
+    // computeExpirationLedger UInt32 overflow
     // ------------------------------------------------------------------------
 
     /// A latest-ledger sequence plus the configured expiration window that
@@ -2925,7 +2924,7 @@ extension OZMultiSignerManagerTests {
 
     // ------------------------------------------------------------------------
     // Ed25519 signing pass — signEntryWithEd25519Signers success body
-    // (lines 878-895) and locallyVerifyEd25519 size guard (lines 918-921).
+    // and locallyVerifyEd25519 size guard.
     // ------------------------------------------------------------------------
 
     /// An Ed25519 signer backed by a real in-memory keypair drives
@@ -3046,8 +3045,7 @@ extension OZMultiSignerManagerTests {
 
     // ------------------------------------------------------------------------
     // Wallet direct-entry non-base64 signature and bad signer address
-    // (lines 1129-1131, 1139-1143) and authorizeInvocation equivalents
-    // (lines 1207-1209, 1217-1221).
+    // and the authorizeInvocation equivalents.
     // ------------------------------------------------------------------------
 
     /// A wallet adapter that returns a non-base64 signature surfaces a
@@ -3399,6 +3397,84 @@ extension OZMultiSignerManagerTests {
             return nil
         }
         return parts
+    }
+
+    // ========================================================================
+    // Protocol 27: WITH_DELEGATES guard in submitWithMultipleSigners
+    // ========================================================================
+
+    /// When the initial simulation returns a WITH_DELEGATES auth entry,
+    /// `submitWithMultipleSigners` must throw `SmartAccountTransactionException.SigningFailed`
+    /// from the early-reject guard.
+    func test_submitWithMultipleSigners_withDelegatesAuthEntry_throwsSigningFailed() async throws {
+        let script = MockSorobanServerScript()
+        MockSorobanServer.activate(script: script)
+        defer {
+            MockSorobanServer.deactivate()
+            MockURLProtocol.reset()
+        }
+
+        let deployer = try deterministicDeployer(seed: 0x31)
+        let (kit, manager) = try scriptedKit(script: script, deployer: deployer)
+
+        script.setGetAccountResponse(accountId: deployer.accountId, sequence: 1)
+
+        // Simulate returns a WITH_DELEGATES-credentials entry.
+        let innerCreds = SorobanAddressCredentialsXDR(
+            address: try SCAddressXDR(contractId: pipelineContractId),
+            nonce: 0,
+            signatureExpirationLedger: 0,
+            signature: .void
+        )
+        let withDelegates = SorobanAddressCredentialsWithDelegatesXDR(
+            addressCredentials: innerCreds,
+            delegates: []
+        )
+        let invocation = SorobanAuthorizedInvocationXDR(
+            function: .contractFn(InvokeContractArgsXDR(
+                contractAddress: try SCAddressXDR(contractId: pipelineTargetContract),
+                functionName: "noop",
+                args: []
+            )),
+            subInvocations: []
+        )
+        let delegatesEntry = SorobanAuthorizationEntryXDR(
+            credentials: .addressWithDelegates(withDelegates),
+            rootInvocation: invocation
+        )
+        script.enqueueSimulate(authEntries: [delegatesEntry])
+        script.setGetLatestLedger(sequence: 1000)
+
+        let hostFn = HostFunctionXDR.invokeContract(
+            InvokeContractArgsXDR(
+                contractAddress: try SCAddressXDR(contractId: pipelineTargetContract),
+                functionName: "noop",
+                args: []
+            )
+        )
+        // Use an Ed25519 signer so validateSignerSet passes without a passkey provider.
+        let ed25519Seed = Data(0x10 ..< 0x30)
+        let extMgr = OZExternalSignerManager(
+            networkPassphrase: Network.testnet.passphrase
+        )
+        let ed25519PublicKey = try await extMgr.addEd25519FromRawKey(
+            secretKeyBytes: ed25519Seed,
+            verifierAddress: pipelineContractId
+        )
+        kit.externalSignersOverride = extMgr
+
+        let signers: [OZSelectedSigner] = [
+            .ed25519(verifierAddress: pipelineContractId, publicKey: ed25519PublicKey)
+        ]
+        do {
+            _ = try await manager.submitWithMultipleSigners(
+                hostFunction: hostFn,
+                selectedSigners: signers
+            )
+            XCTFail("Expected SmartAccountTransactionException.SigningFailed for WITH_DELEGATES auth entry")
+        } catch is SmartAccountTransactionException.SigningFailed {
+            // expected: WITH_DELEGATES entries cannot be auto-signed
+        }
     }
 }
 

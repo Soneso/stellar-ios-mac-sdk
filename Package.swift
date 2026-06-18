@@ -50,6 +50,7 @@ let package = Package(
                 .copy("soroban/soroban_hello_world_contract.wasm"),
                 .copy("soroban/soroban_token_contract.wasm"),
                 .copy("soroban/soroban_auth_contract.wasm"),
+                .copy("soroban/soroban_modular_account_contract.wasm"),
                 .copy("soroban/soroban_atomic_swap_contract.wasm"),
                 .copy("soroban/soroban_events_contract.wasm"),
                 .copy("web_authenticator_contracts/wasm/sep_45_account.wasm")

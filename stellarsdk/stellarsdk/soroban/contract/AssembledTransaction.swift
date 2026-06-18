@@ -226,7 +226,7 @@ public final class AssembledTransaction: @unchecked Sendable {
     }
 
     /// Simulates the transaction to calculate resource requirements and validate execution.
-    public func simulate(restore:Bool? = nil) async throws {
+    public func simulate(restore: Bool? = nil) async throws {
         if tx == nil {
             if raw == nil {
                 throw AssembledTransactionError.notYetAssembled(message: "Transaction has not yet been assembled; call 'AssembledTransaction.build' first.")
@@ -235,7 +235,8 @@ public final class AssembledTransaction: @unchecked Sendable {
         }
         let shouldRestore = restore ?? options.methodOptions.restore
         simulationResult = nil
-        let simulationResponseEnum = await server.simulateTransaction(simulateTxRequest: SimulateTransactionRequest(transaction: tx!))
+        let simRequest = SimulateTransactionRequest(transaction: tx!)
+        let simulationResponseEnum = await server.simulateTransaction(simulateTxRequest: simRequest)
         switch simulationResponseEnum {
         case .success(let response):
             simulationResponse = response
@@ -305,8 +306,13 @@ public final class AssembledTransaction: @unchecked Sendable {
         }
         
         let allNeededSigners = try needsNonInvokerSigningBy()
-        let neededAccountSigners = allNeededSigners.filter { !$0.starts(with: "C") }
-        if !neededAccountSigners.isEmpty {
+        // Filter out top-level addresses of WITH_DELEGATES entries where every delegate
+        // node already carries a signature: the void top-level is the legitimate
+        // delegates-only pattern and must not block the send flow.
+        let unsatisfiedSigners = allNeededSigners.filter { address in
+            !address.starts(with: "C") && !isTopLevelVoidCoveredByDelegates(address: address)
+        }
+        if !unsatisfiedSigners.isEmpty {
             throw AssembledTransactionError.multipleSignersRequired(message: "Transaction requires signatures from multiple signers. See `needsNonInvokerSigningBy` for details.")
         }
 
@@ -342,8 +348,25 @@ public final class AssembledTransaction: @unchecked Sendable {
 
     }
 
-    /// Returns account IDs that need to sign authorization entries for multi-auth workflows.
-    public func needsNonInvokerSigningBy(includeAlreadySigned:Bool = false) throws -> [String] {
+    /// Returns the addresses of every node whose signature is void, across all authorization entries.
+    ///
+    /// **All three credential arms are supported** (`ADDRESS`, `ADDRESS_V2`,
+    /// `ADDRESS_WITH_DELEGATES`). For `WITH_DELEGATES` entries, the top-level address and
+    /// every unsigned delegate node (depth-first) are reported individually. A top-level
+    /// signature alongside delegates is a legal pattern, so the top-level address is always
+    /// included when its signature is void, even when delegates are present.
+    ///
+    /// **`WITH_DELEGATES` send precheck**: `sign()` and `signAndSend()` treat a
+    /// `WITH_DELEGATES` entry as satisfied when every delegate node in the tree carries a
+    /// non-void signature, regardless of the void top-level. Do not block the send flow
+    /// solely because this method reports the top-level address of a fully-delegate-signed
+    /// entry.
+    ///
+    /// `.sourceAccount` entries are ignored (they carry no explicit signer address).
+    ///
+    /// - Parameter includeAlreadySigned: When `true`, includes addresses whose signature is
+    ///   non-void. Defaults to `false`.
+    public func needsNonInvokerSigningBy(includeAlreadySigned: Bool = false) throws -> [String] {
         guard let transaction = tx else {
             throw AssembledTransactionError.notYetSimulated(message: "Transaction has not yet been simulated")
         }
@@ -351,21 +374,61 @@ public final class AssembledTransaction: @unchecked Sendable {
         if ops.isEmpty {
             throw AssembledTransactionError.unexpectedTxType(message: "Unexpected Transaction type; no operations found.")
         }
-        var needed:[String] = []
+        var needed: [String] = []
         guard let invokeHostFuncOp = ops.first as? InvokeHostFunctionOperation else {
             return needed
         }
         let authEntries = invokeHostFuncOp.auth
         for entry in authEntries {
-            if let addressCredentials = entry.credentials.address {
-                if includeAlreadySigned || addressCredentials.signature.type() == SCValType.void.rawValue {
-                    if let signer = addressCredentials.address.accountId ?? addressCredentials.address.contractId {
+            switch entry.credentials {
+            case .sourceAccount:
+                // Source-account entries do not carry an explicit signer address.
+                break
+            case .address(let creds), .addressV2(let creds):
+                if includeAlreadySigned || creds.signature.type() == SCValType.void.rawValue {
+                    if let signer = creds.address.accountId ?? creds.address.contractId {
                         needed.append(signer)
                     }
                 }
+            case .addressWithDelegates(let withDelegates):
+                let creds = withDelegates.addressCredentials
+                // Top-level node: always report when void (top-level signature alongside
+                // delegates is legal; the caller decides which nodes to sign).
+                if includeAlreadySigned || creds.signature.type() == SCValType.void.rawValue {
+                    if let signer = creds.address.accountId ?? creds.address.contractId {
+                        needed.append(signer)
+                    }
+                }
+                // Delegate nodes: depth-first.
+                try collectUnsignedDelegates(nodes: withDelegates.delegates, into: &needed, includeAlreadySigned: includeAlreadySigned)
             }
         }
         return needed
+    }
+
+    /// Recursively collects the strkey addresses of unsigned (or all, when
+    /// `includeAlreadySigned` is true) delegate nodes into `result`.
+    ///
+    /// - Throws: `StellarSDKError.invalidArgument` when nesting exceeds 128 levels.
+    private func collectUnsignedDelegates(
+        nodes: [SorobanDelegateSignatureXDR],
+        into result: inout [String],
+        includeAlreadySigned: Bool,
+        depth: Int = 0
+    ) throws {
+        guard depth <= 128 else {
+            throw StellarSDKError.invalidArgument(
+                message: "Delegate tree nesting exceeds the maximum allowed depth (128)"
+            )
+        }
+        for node in nodes {
+            if includeAlreadySigned || node.signature.type() == SCValType.void.rawValue {
+                if let signer = node.address.accountId ?? node.address.contractId {
+                    result.append(signer)
+                }
+            }
+            try collectUnsignedDelegates(nodes: node.nestedDelegates, into: &result, includeAlreadySigned: includeAlreadySigned, depth: depth + 1)
+        }
     }
     
     /// Determines if this is a read-only call requiring no signatures or network submission.
@@ -407,14 +470,28 @@ public final class AssembledTransaction: @unchecked Sendable {
         return simulationResult!
     }
 
-    /// Signs authorization entries for multi-party transactions using keypair or callback.
-    public func signAuthEntries(signerKeyPair:KeyPair, authorizeEntryCallback:((_:SorobanAuthorizationEntryXDR, _:Network) async throws -> SorobanAuthorizationEntryXDR)? = nil, validUntilLedgerSeq:UInt32? = nil) async throws {
+    /// Signs authorization entries for multi-party transactions using a keypair or callback.
+    ///
+    /// Handles all three credential arms (`ADDRESS`, `ADDRESS_V2`, `ADDRESS_WITH_DELEGATES`).
+    /// The credential arm is preserved on write-back; no arm coercion is performed.
+    ///
+    /// **Delegate routing**: For `WITH_DELEGATES` entries the signer address is matched
+    /// against the top-level address AND every delegate node (depth-first) via the
+    /// `forAddress` routing in `SorobanAuthorizationEntryXDR.sign`. When the signer matches
+    /// a delegate node, the signature lands in that node; the top-level is left untouched
+    /// unless the signer's address also matches the top-level.
+    ///
+    /// **Skipping policy**: `.sourceAccount` entries are skipped silently; they are
+    /// authorized by the transaction-envelope signer, not by auth-entry signing. An entry
+    /// whose top-level address and delegate tree both differ from the signer is also silently
+    /// skipped (multi-party transactions carry entries for different signers).
+    public func signAuthEntries(signerKeyPair: KeyPair, authorizeEntryCallback: ((_ entry: SorobanAuthorizationEntryXDR, _ network: Network) async throws -> SorobanAuthorizationEntryXDR)? = nil, validUntilLedgerSeq: UInt32? = nil) async throws {
         let signerAddress = signerKeyPair.accountId
-        
+
         guard let transaction = tx else {
             throw AssembledTransactionError.notYetSimulated(message: "Transaction has not yet been simulated")
         }
-        
+
         var expirationLedger = validUntilLedgerSeq
         if expirationLedger == nil {
             let latestLedgerResponseEnum = await server.getLatestLedger()
@@ -425,39 +502,135 @@ public final class AssembledTransaction: @unchecked Sendable {
                 throw error
             }
         }
-        
+
         let ops = transaction.operations
         if ops.isEmpty {
             throw AssembledTransactionError.unexpectedTxType(message: "Unexpected Transaction type; no operations found.")
         }
-        
+
         guard let invokeHostFuncOp = ops.first as? InvokeHostFunctionOperation else {
             throw AssembledTransactionError.unexpectedTxType(message: "Unexpected Transaction type; no invoke host function operations found.")
         }
+
         var authEntries = invokeHostFuncOp.auth
-        for i in 0..<authEntries.count{
+        for i in 0..<authEntries.count {
             var entry = authEntries[i]
-            var addressCredentials = entry.credentials.address
-            if addressCredentials == nil || addressCredentials?.address.accountId == nil || addressCredentials?.address.accountId != signerAddress {
+
+            switch entry.credentials {
+            case .sourceAccount:
+                // Source-account entries are authorized by the transaction envelope signer;
+                // they carry no explicit address to match against.
                 continue
-            }
-            addressCredentials!.signatureExpirationLedger = expirationLedger!
-            entry.credentials = SorobanCredentialsXDR.address(addressCredentials!)
-            if let callback = authorizeEntryCallback {
-                let signed = try await callback(entry, options.clientOptions.network)
-                authEntries[i] = signed
-            } else {
-                if signerKeyPair.privateKey == nil {
-                    throw AssembledTransactionError.missingPrivateKey(message: "Signer keypair requires private key if no authorization callback provided")
+
+            case .address(let creds):
+                guard creds.address.accountId == signerAddress else { continue }
+                var updatedCreds = creds
+                updatedCreds.signatureExpirationLedger = expirationLedger!
+                entry.credentials = .address(updatedCreds)
+                if let callback = authorizeEntryCallback {
+                    authEntries[i] = try await callback(entry, options.clientOptions.network)
+                } else {
+                    if signerKeyPair.privateKey == nil {
+                        throw AssembledTransactionError.missingPrivateKey(message: "Signer keypair requires private key if no authorization callback provided")
+                    }
+                    try entry.sign(signer: signerKeyPair, network: options.clientOptions.network)
+                    authEntries[i] = entry
                 }
-                try entry.sign(signer: signerKeyPair, network: options.clientOptions.network)
-                authEntries[i] = entry
+
+            case .addressV2(let creds):
+                guard creds.address.accountId == signerAddress else { continue }
+                var updatedCreds = creds
+                updatedCreds.signatureExpirationLedger = expirationLedger!
+                entry.credentials = .addressV2(updatedCreds)
+                if let callback = authorizeEntryCallback {
+                    authEntries[i] = try await callback(entry, options.clientOptions.network)
+                } else {
+                    if signerKeyPair.privateKey == nil {
+                        throw AssembledTransactionError.missingPrivateKey(message: "Signer keypair requires private key if no authorization callback provided")
+                    }
+                    try entry.sign(signer: signerKeyPair, network: options.clientOptions.network)
+                    authEntries[i] = entry
+                }
+
+            case .addressWithDelegates(let withDelegates):
+                // Determine whether this signer is relevant to this entry: the signer must
+                // match the top-level address or at least one delegate node.
+                let topLevelMatches = withDelegates.addressCredentials.address.accountId == signerAddress
+                let delegateMatches = delegateTreeContainsAccountId(nodes: withDelegates.delegates, accountId: signerAddress)
+                guard topLevelMatches || delegateMatches else { continue }
+
+                // Stamp the expiration on the top-level credentials before signing.
+                var updatedCreds = withDelegates.addressCredentials
+                updatedCreds.signatureExpirationLedger = expirationLedger!
+                let updatedWithDelegates = SorobanAddressCredentialsWithDelegatesXDR(
+                    addressCredentials: updatedCreds,
+                    delegates: withDelegates.delegates
+                )
+                entry.credentials = .addressWithDelegates(updatedWithDelegates)
+
+                if let callback = authorizeEntryCallback {
+                    authEntries[i] = try await callback(entry, options.clientOptions.network)
+                } else {
+                    if signerKeyPair.privateKey == nil {
+                        throw AssembledTransactionError.missingPrivateKey(message: "Signer keypair requires private key if no authorization callback provided")
+                    }
+                    // sign(forAddress:) routes the signature into every matching node,
+                    // top-level or delegate, depth-first.
+                    try entry.sign(signer: signerKeyPair, network: options.clientOptions.network, forAddress: signerAddress)
+                    authEntries[i] = entry
+                }
             }
         }
+
         guard let transaction = tx else {
             throw AssembledTransactionError.notYetSimulated(message: "Transaction has not yet been simulated")
         }
         transaction.setSorobanAuth(auth: authEntries)
+    }
+
+    /// Returns `true` when a `WITH_DELEGATES` entry's top-level address is void but every
+    /// delegate node in the tree carries a non-void signature.
+    ///
+    /// This is the legitimate delegates-only pattern: the top-level signer opted out and
+    /// all delegates have signed. The send precheck must not block on such an entry.
+    private func isTopLevelVoidCoveredByDelegates(address: String) -> Bool {
+        guard let transaction = tx else { return false }
+        guard let invokeHostFuncOp = transaction.operations.first as? InvokeHostFunctionOperation else { return false }
+
+        for entry in invokeHostFuncOp.auth {
+            guard case .addressWithDelegates(let withDelegates) = entry.credentials else { continue }
+            let creds = withDelegates.addressCredentials
+            guard creds.address.accountId == address else { continue }
+            // Only applicable when the top-level is void.
+            guard creds.signature.type() == SCValType.void.rawValue else { continue }
+            // Entry is covered when it has at least one delegate and all are signed.
+            if !withDelegates.delegates.isEmpty && allDelegatesSigned(nodes: withDelegates.delegates) {
+                return true
+            }
+        }
+        return false
+    }
+
+    /// Returns `true` when every delegate node in the tree (depth-first) carries a non-void
+    /// signature. Returns `false` when nesting exceeds 128 levels (treated as unsigned).
+    private func allDelegatesSigned(nodes: [SorobanDelegateSignatureXDR], depth: Int = 0) -> Bool {
+        guard depth <= 128 else { return false }
+        for node in nodes {
+            if node.signature.type() == SCValType.void.rawValue { return false }
+            if !allDelegatesSigned(nodes: node.nestedDelegates, depth: depth + 1) { return false }
+        }
+        return true
+    }
+
+    /// Returns `true` when any node in the delegate tree has the given account ID.
+    /// Returns `false` when nesting exceeds 128 levels (safe default: no match reported).
+    private func delegateTreeContainsAccountId(nodes: [SorobanDelegateSignatureXDR], accountId: String, depth: Int = 0) -> Bool {
+        guard depth <= 128 else { return false }
+        for node in nodes {
+            if node.address.accountId == accountId { return true }
+            if delegateTreeContainsAccountId(nodes: node.nestedDelegates, accountId: accountId, depth: depth + 1) { return true }
+        }
+        return false
     }
     
     private func pollStatus(transactionId:String) async throws -> GetTransactionResponse {

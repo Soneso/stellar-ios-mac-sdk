@@ -8,6 +8,7 @@ public enum HashIDPreimageXDR: XDRCodable, Sendable {
   case revokeId(RevokeID)
   case contractID(HashIDPreimageContractIDXDR)
   case sorobanAuthorization(HashIDPreimageSorobanAuthorizationXDR)
+  case sorobanAuthorizationWithAddress(HashIDPreimageSorobanAuthorizationWithAddressXDR)
 
   public init(from decoder: Decoder) throws {
     var container = try decoder.unkeyedContainer()
@@ -26,6 +27,9 @@ public enum HashIDPreimageXDR: XDRCodable, Sendable {
     case EnvelopeType.sorobanAuthorization.rawValue:
       let val = try container.decode(HashIDPreimageSorobanAuthorizationXDR.self)
       self = .sorobanAuthorization(val)
+    case EnvelopeType.sorobanAuthorizationWithAddress.rawValue:
+      let val = try container.decode(HashIDPreimageSorobanAuthorizationWithAddressXDR.self)
+      self = .sorobanAuthorizationWithAddress(val)
     default:
       throw StellarSDKError.xdrDecodingError(message: "Unknown HashIDPreimageXDR discriminant: \(discriminant)")
     }
@@ -37,6 +41,7 @@ public enum HashIDPreimageXDR: XDRCodable, Sendable {
     case .revokeId: return EnvelopeType.poolRevokeOpId.rawValue
     case .contractID: return EnvelopeType.contractId.rawValue
     case .sorobanAuthorization: return EnvelopeType.sorobanAuthorization.rawValue
+    case .sorobanAuthorizationWithAddress: return EnvelopeType.sorobanAuthorizationWithAddress.rawValue
     }
   }
 
@@ -52,6 +57,8 @@ public enum HashIDPreimageXDR: XDRCodable, Sendable {
     case .contractID(let val):
       try container.encode(val)
     case .sorobanAuthorization(let val):
+      try container.encode(val)
+    case .sorobanAuthorizationWithAddress(let val):
       try container.encode(val)
     }
   }

@@ -305,7 +305,7 @@ let result = try await client.invokeMethod(
 )
 ```
 
-For multi-auth workflows, low-level deploy/invoke, and contract authorization:
+For multi-auth workflows, low-level deploy/invoke, contract authorization, and protocol-27 (CAP-71) credential arms and delegated authorization:
 [Smart Contracts Guide](./references/soroban_contracts.md)
 
 ## 7. Smart Accounts (OpenZeppelin)

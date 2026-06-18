@@ -393,9 +393,29 @@ public class OZMultiSignerManager: OZManagerHelpers, @unchecked Sendable {
 
         for (entryIndex, entry) in simulationResult.authEntries.enumerated() {
             try Task.checkCancellation()
-            guard case .address(let addressCreds) = entry.credentials else {
+
+            // Source-account entries do not need client-side signing; pass through unchanged.
+            if case .sourceAccount = entry.credentials {
                 signedAuthEntries.append(entry)
                 continue
+            }
+
+            // WITH_DELEGATES entries require caller-assembled delegate signatures and cannot
+            // be auto-signed by this pipeline. The caller must sign each delegate node via
+            // SorobanAuthorizationEntryXDR.sign(forAddress:) before submission.
+            if case .addressWithDelegates = entry.credentials {
+                throw SmartAccountTransactionException.signingFailed(
+                    reason: "Authorization entry carries WITH_DELEGATES credentials. " +
+                        "Delegated entries must be signed per delegate node via " +
+                        "SorobanAuthorizationEntryXDR.sign(forAddress:) before submission."
+                )
+            }
+
+            guard let addressCreds = entry.credentials.addressCredentials else {
+                // Unknown credential arm; fail fast rather than silently skipping.
+                throw SmartAccountTransactionException.signingFailed(
+                    reason: "Authorization entry has unrecognised credentials and cannot be signed"
+                )
             }
 
             let entryAddressString = OZAddressStrKey.fromXdr(addressCreds.address)
@@ -718,22 +738,17 @@ public class OZMultiSignerManager: OZManagerHelpers, @unchecked Sendable {
     /// Returns a clone of `entry` with `signatureExpirationLedger` rewritten
     /// to `expirationLedger` so the per-entry signing pass receives a fresh
     /// instance whose expiration matches the value bound into the digest.
+    ///
+    /// The credential arm is preserved: `ADDRESS_V2` and `ADDRESS_WITH_DELEGATES`
+    /// entries are stamped via `withAddressCredentials`, never coerced to `ADDRESS`.
     private func cloneAndStampExpirationLedger(
         entry: SorobanAuthorizationEntryXDR,
         expirationLedger: UInt32
     ) throws -> SorobanAuthorizationEntryXDR {
         var workingEntry = try OZTransactionOperations.cloneAuthEntry(entry)
-        if case .address(let creds) = workingEntry.credentials {
-            let updated = SorobanAddressCredentialsXDR(
-                address: creds.address,
-                nonce: creds.nonce,
-                signatureExpirationLedger: expirationLedger,
-                signature: creds.signature
-            )
-            workingEntry = SorobanAuthorizationEntryXDR(
-                credentials: .address(updated),
-                rootInvocation: workingEntry.rootInvocation
-            )
+        if var creds = workingEntry.credentials.addressCredentials {
+            creds.signatureExpirationLedger = expirationLedger
+            workingEntry.credentials = try workingEntry.credentials.withAddressCredentials(creds)
         }
         return workingEntry
     }
@@ -1085,16 +1100,17 @@ public class OZMultiSignerManager: OZManagerHelpers, @unchecked Sendable {
         }
     }
 
-    /// Signs an auth entry whose `Address` credentials match a wallet signer
-    /// directly, routing through the kit's external-signer manager.
+    /// Signs an auth entry whose address credentials match a wallet signer directly,
+    /// routing through the kit's external-signer manager.
     ///
-    /// The signature is formatted as the classical Stellar
-    /// `Vec([Map({"public_key": Bytes, "signature": Bytes})])` shape. The
-    /// preimage construction reuses the EXISTING entry nonce and the supplied
-    /// expiration ledger.
+    /// All three address-credential arms are supported; the credential arm is preserved
+    /// on write-back. The signature is formatted as the classical Stellar
+    /// `Vec([Map({"public_key": Bytes, "signature": Bytes})])` shape. The preimage is
+    /// built via `SorobanAuthorizationEntryXDR.buildPreimage(network:)`, which selects
+    /// the correct envelope type from the credential arm.
     ///
     /// - Parameters:
-    ///   - entry: The unsigned auth entry whose `Address` credentials reference
+    ///   - entry: The unsigned auth entry whose address credentials reference
     ///     `walletAddress`.
     ///   - walletAddress: The Stellar `G…` address of the wallet signer.
     ///   - expirationLedger: Ledger sequence at which the signature expires.
@@ -1105,26 +1121,39 @@ public class OZMultiSignerManager: OZManagerHelpers, @unchecked Sendable {
         walletAddress: String,
         expirationLedger: UInt32
     ) async throws -> SorobanAuthorizationEntryXDR {
-        // Clone the entry via XDR round-trip so the caller's instance is
-        // never mutated, and stamp the new expiration ledger on the cloned
-        // address credentials.
-        let cloned = try OZTransactionOperations.cloneAuthEntry(entry)
-        guard case .address(let credentials) = cloned.credentials else {
+        // Clone the entry via XDR round-trip so the caller's instance is never mutated,
+        // then stamp the new expiration ledger while preserving the credential arm.
+        var cloned = try OZTransactionOperations.cloneAuthEntry(entry)
+
+        guard var credentials = cloned.credentials.addressCredentials else {
             throw SmartAccountTransactionException.signingFailed(
-                reason: "Expected Address credentials on wallet auth entry for \(walletAddress)"
+                reason: "Expected address credentials on wallet auth entry for \(walletAddress)"
+            )
+        }
+        credentials.signatureExpirationLedger = expirationLedger
+        do {
+            cloned.credentials = try cloned.credentials.withAddressCredentials(credentials)
+        } catch {
+            throw SmartAccountTransactionException.signingFailed(
+                reason: "Failed to stamp expiration ledger on wallet auth entry for \(walletAddress): " +
+                    (SmartAccountException.messageOf(error) ?? "unknown"),
+                cause: error
             )
         }
 
-        let preimage = HashIDPreimageSorobanAuthorizationXDR(
-            networkID: HashXDR(kit.config.networkPassphrase.sha256Hash),
-            nonce: credentials.nonce,
-            signatureExpirationLedger: expirationLedger,
-            invocation: cloned.rootInvocation
-        )
-        let preimageXdr = HashIDPreimageXDR.sorobanAuthorization(preimage)
+        let preimage: HashIDPreimageXDR
+        do {
+            preimage = try cloned.buildPreimage(network: .custom(passphrase: kit.config.networkPassphrase))
+        } catch {
+            throw SmartAccountTransactionException.signingFailed(
+                reason: "Failed to build wallet auth preimage for \(walletAddress): " +
+                    (SmartAccountException.messageOf(error) ?? "unknown"),
+                cause: error
+            )
+        }
         let preimageBytes: [UInt8]
         do {
-            preimageBytes = try XDREncoder.encode(preimageXdr)
+            preimageBytes = try XDREncoder.encode(preimage)
         } catch {
             throw SmartAccountTransactionException.signingFailed(
                 reason: "Failed to XDR-encode wallet auth preimage: " +
@@ -1163,13 +1192,19 @@ public class OZMultiSignerManager: OZManagerHelpers, @unchecked Sendable {
             signature: signatureBytes
         )
 
+        credentials.signature = signatureScVal
+        let updatedEntryCredentials: SorobanCredentialsXDR
+        do {
+            updatedEntryCredentials = try cloned.credentials.withAddressCredentials(credentials)
+        } catch {
+            throw SmartAccountTransactionException.signingFailed(
+                reason: "Failed to write back signed credentials for wallet entry \(walletAddress): " +
+                    (SmartAccountException.messageOf(error) ?? "unknown"),
+                cause: error
+            )
+        }
         return SorobanAuthorizationEntryXDR(
-            credentials: .address(SorobanAddressCredentialsXDR(
-                address: credentials.address,
-                nonce: credentials.nonce,
-                signatureExpirationLedger: expirationLedger,
-                signature: signatureScVal
-            )),
+            credentials: updatedEntryCredentials,
             rootInvocation: cloned.rootInvocation
         )
     }
@@ -1178,7 +1213,9 @@ public class OZMultiSignerManager: OZManagerHelpers, @unchecked Sendable {
 
     /// Builds and signs a delegated wallet auth entry for `walletAddress` via the
     /// kit's external-signer manager. Produces the `Vec([Map({public_key, signature})])`
-    /// credential shape.
+    /// credential shape using the legacy `ADDRESS` arm; delegated wallet entries are
+    /// always classical Stellar accounts, not smart accounts, so the legacy preimage
+    /// (`ENVELOPE_TYPE_SOROBAN_AUTHORIZATION`) is correct here.
     /// - Throws: ``SmartAccountTransactionException/SigningFailed``.
     private static func authorizeInvocation(
         walletAddress: String,
@@ -1191,14 +1228,29 @@ public class OZMultiSignerManager: OZManagerHelpers, @unchecked Sendable {
         // requires unique nonces per credentials value within an envelope.
         let nonce = try OZTransactionOperations.generateNonce()
 
-        let networkIdBytes = networkPassphrase.sha256Hash
-        let authPreimage = HashIDPreimageSorobanAuthorizationXDR(
-            networkID: HashXDR(networkIdBytes),
+        // Build the entry with legacy ADDRESS credentials so buildPreimage selects
+        // ENVELOPE_TYPE_SOROBAN_AUTHORIZATION, matching the classical wallet signing shape.
+        let addressCreds = SorobanAddressCredentialsXDR(
+            address: try SCAddressXDR(accountId: walletAddress),
             nonce: nonce,
             signatureExpirationLedger: validUntilLedger,
-            invocation: invocation
+            signature: .void
         )
-        let preimage = HashIDPreimageXDR.sorobanAuthorization(authPreimage)
+        let unsignedEntry = SorobanAuthorizationEntryXDR(
+            credentials: .address(addressCreds),
+            rootInvocation: invocation
+        )
+
+        let preimage: HashIDPreimageXDR
+        do {
+            preimage = try unsignedEntry.buildPreimage(network: .custom(passphrase: networkPassphrase))
+        } catch {
+            throw SmartAccountTransactionException.signingFailed(
+                reason: "Failed to build delegated wallet auth preimage: " +
+                    (SmartAccountException.messageOf(error) ?? "unknown"),
+                cause: error
+            )
+        }
 
         let preimageBytes: [UInt8]
         do {

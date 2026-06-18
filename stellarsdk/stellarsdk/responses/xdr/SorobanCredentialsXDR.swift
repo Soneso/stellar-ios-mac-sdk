@@ -6,6 +6,8 @@ import Foundation
 public enum SorobanCredentialsXDR: XDRCodable, Sendable {
   case sourceAccount
   case address(SorobanAddressCredentialsXDR)
+  case addressV2(SorobanAddressCredentialsXDR)
+  case addressWithDelegates(SorobanAddressCredentialsWithDelegatesXDR)
 
   public init(from decoder: Decoder) throws {
     var container = try decoder.unkeyedContainer()
@@ -17,6 +19,12 @@ public enum SorobanCredentialsXDR: XDRCodable, Sendable {
     case SorobanCredentialsType.address.rawValue:
       let val = try container.decode(SorobanAddressCredentialsXDR.self)
       self = .address(val)
+    case SorobanCredentialsType.addressV2.rawValue:
+      let val = try container.decode(SorobanAddressCredentialsXDR.self)
+      self = .addressV2(val)
+    case SorobanCredentialsType.addressWithDelegates.rawValue:
+      let val = try container.decode(SorobanAddressCredentialsWithDelegatesXDR.self)
+      self = .addressWithDelegates(val)
     default:
       throw StellarSDKError.xdrDecodingError(message: "Unknown SorobanCredentialsXDR discriminant: \(discriminant)")
     }
@@ -26,6 +34,8 @@ public enum SorobanCredentialsXDR: XDRCodable, Sendable {
     switch self {
     case .sourceAccount: return SorobanCredentialsType.sourceAccount.rawValue
     case .address: return SorobanCredentialsType.address.rawValue
+    case .addressV2: return SorobanCredentialsType.addressV2.rawValue
+    case .addressWithDelegates: return SorobanCredentialsType.addressWithDelegates.rawValue
     }
   }
 
@@ -37,6 +47,10 @@ public enum SorobanCredentialsXDR: XDRCodable, Sendable {
     case .sourceAccount:
       break
     case .address(let val):
+      try container.encode(val)
+    case .addressV2(let val):
+      try container.encode(val)
+    case .addressWithDelegates(let val):
       try container.encode(val)
     }
   }
@@ -50,6 +64,12 @@ extension SorobanCredentialsXDR {
     case .address(let val):
       lines.append("\(prefix).type: SOROBAN_CREDENTIALS_ADDRESS")
       try val.toTxRep(prefix: "\(prefix).address", lines: &lines)
+    case .addressV2(let val):
+      lines.append("\(prefix).type: SOROBAN_CREDENTIALS_ADDRESS_V2")
+      try val.toTxRep(prefix: "\(prefix).addressV2", lines: &lines)
+    case .addressWithDelegates(let val):
+      lines.append("\(prefix).type: SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES")
+      try val.toTxRep(prefix: "\(prefix).addressWithDelegates", lines: &lines)
     }
   }
 
@@ -64,6 +84,12 @@ extension SorobanCredentialsXDR {
     case "SOROBAN_CREDENTIALS_ADDRESS":
       let val = try SorobanAddressCredentialsXDR.fromTxRep(map, prefix: "\(prefix).address")
       return .address(val)
+    case "SOROBAN_CREDENTIALS_ADDRESS_V2":
+      let val = try SorobanAddressCredentialsXDR.fromTxRep(map, prefix: "\(prefix).addressV2")
+      return .addressV2(val)
+    case "SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES":
+      let val = try SorobanAddressCredentialsWithDelegatesXDR.fromTxRep(map, prefix: "\(prefix).addressWithDelegates")
+      return .addressWithDelegates(val)
     default:
       throw TxRepError.invalidValue(key: discKey)
     }

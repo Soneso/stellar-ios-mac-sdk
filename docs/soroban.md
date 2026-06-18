@@ -517,6 +517,97 @@ try await tx.signAuthEntries(
 let response = try await tx.signAndSend()
 ```
 
+### Protocol 27 Credentials (CAP-71)
+
+Protocol 27 adds two address-credential arms to `SorobanCredentialsXDR`:
+
+- `.addressV2` -- carries the same `SorobanAddressCredentialsXDR` body as the legacy `.address` arm, but the signature payload additionally binds the credential address.
+- `.addressWithDelegates` -- address credentials plus a tree of delegate signatures, allowing additional addresses to co-sign one authorization entry.
+
+The legacy `.address` arm remains the default everywhere and stays fully valid. The new arms are opt-in: emitting them on a network below protocol 27 invalidates the transaction.
+
+All signing APIs (`signAuthEntries`, `SorobanAuthorizationEntryXDR.sign`, SEP-45) support all three arms and preserve the arm on write-back. `needsNonInvokerSigningBy` reports the address of every node whose signature is void, including each unsigned delegate node of a `WITH_DELEGATES` entry.
+
+#### Delegated Authorization
+
+A `WITH_DELEGATES` entry lets delegate addresses co-sign a single authorization entry. Simulation never returns `WITH_DELEGATES` entries; clients assemble the tree from an `ADDRESS` or `ADDRESS_V2` entry using `SorobanAuthorizationEntryXDR.withDelegates`.
+
+Rules enforced by the host and handled by the SDK builder:
+
+- Every delegate array must be sorted ascending by the XDR-encoded bytes of the delegate address, with no duplicates within one array. The builder sorts automatically and throws on duplicates -- always construct trees through `withDelegates` rather than assembling the XDR by hand.
+- Every signer in the tree -- top-level and delegates at any depth -- signs the same payload, which is bound to the top-level credential address. Delegates carry no nonce and no expiration; only the top-level credentials do.
+- A void top-level signature is legitimate when the delegates sign (delegates-only pattern).
+
+```swift
+import stellarsdk
+
+let server = SorobanServer(endpoint: "https://soroban-testnet.stellar.org")
+let topLevelKeyPair = try KeyPair(secretSeed: "STOPLEVEL...")
+let delegateKeyPair = try KeyPair(secretSeed: "SDELEGATE...") // a delegate signer's account
+
+// Build and simulate the invocation to obtain its authorization entry
+let invokeOp = try InvokeHostFunctionOperation.forInvokingContract(
+    contractId: "CCONTRACT...",
+    functionName: "increment",
+    functionArguments: []
+)
+guard case .success(let account) = await server.getAccount(accountId: topLevelKeyPair.accountId) else { return }
+let transaction = try Transaction(
+    sourceAccount: account,
+    operations: [invokeOp],
+    memo: nil
+)
+let simEnum = await server.simulateTransaction(
+    simulateTxRequest: SimulateTransactionRequest(transaction: transaction)
+)
+guard case .success(let sim) = simEnum else { return }
+
+// Simulation returns an ADDRESS entry; withDelegates also accepts an ADDRESS_V2 entry
+let entry = sim.sorobanAuth![0]
+
+// Latest ledger, used to set the signature expiration
+guard case .success(let latestLedger) = await server.getLatestLedger() else { return }
+
+// Build the WITH_DELEGATES entry; the builder sorts delegate arrays and
+// resets the top-level signature to void
+var delegated = try SorobanAuthorizationEntryXDR.withDelegates(
+    entry: entry,
+    delegates: [
+        SorobanDelegateDescriptor(address: delegateKeyPair.accountId)
+    ],
+    expirationLedger: latestLedger.sequence + 100
+)
+
+// Top-level signer (skip this for the delegates-only pattern).
+// When one node needs multiple classical (G-address) signatures, add them in
+// ascending public-key order -- the host requires that order and the SDK
+// appends signatures in the order you call sign.
+try delegated.sign(signer: topLevelKeyPair, network: Network.testnet)
+
+// Delegate signer: forAddress routes the signature into the matching node
+try delegated.sign(
+    signer: delegateKeyPair,
+    network: Network.testnet,
+    forAddress: delegateKeyPair.accountId
+)
+
+transaction.setSorobanAuth(auth: [delegated])
+
+// Re-simulate in enforcing mode before submitting. The first (recording) simulation does not
+// run the authorizing account's __check_auth, so it understates the resource fee and — for a
+// custom (contract) account whose __check_auth reads storage or calls into delegates — omits the
+// footprint entries that authorization touches. Re-simulate with the signed entry attached and
+// authMode "enforce", then apply the returned data, keeping the signed auth:
+//   let reEnum = await server.simulateTransaction(
+//       simulateTxRequest: SimulateTransactionRequest(transaction: transaction, authMode: "enforce"))
+//   guard case .success(let reSim) = reEnum, let txData = reSim.transactionData else { return }
+//   transaction.setSorobanTransactionData(data: txData)
+//   if let fee = reSim.minResourceFee { transaction.addResourceFee(resourceFee: fee) }
+//   transaction.setSorobanAuth(auth: [delegated])
+```
+
+`SorobanDelegateDescriptor` supports nesting via `nestedDelegates` and accepts a pre-built `signature` (default `.void`) for nodes signed externally, such as contract addresses. `forAddress` matches every node in the tree (top-level or delegate, depth-first) and throws when no node matches.
+
 ## Type Conversions
 
 Convert between Swift native types and Soroban XDR values.
@@ -1195,18 +1286,21 @@ guard case .success(let latestLedger) = latestLedgerEnum else { return }
 
 if var authEntries = auth {
     for i in 0..<authEntries.count {
-        // Set signature expiration (~50 seconds at 5s/ledger)
-        authEntries[i].credentials.addressCredentials?.signatureExpirationLedger =
-            latestLedger.sequence + 10
-
-        // Sign the entry
-        try authEntries[i].sign(signer: signerKeyPair, network: Network.testnet)
+        // Sign the entry. The expiration (~50 seconds at 5s/ledger) is stamped
+        // into the credentials before the signature payload is hashed.
+        try authEntries[i].sign(
+            signer: signerKeyPair,
+            network: Network.testnet,
+            signatureExpirationLedger: latestLedger.sequence + 10
+        )
     }
 
     // Set signed auth on transaction
     transaction.setSorobanAuth(auth: authEntries)
 }
 ```
+
+`sign` supports all three address-credential arms (`ADDRESS`, `ADDRESS_V2`, `ADDRESS_WITH_DELEGATES`) and preserves the arm on write-back. See [Protocol 27 Credentials](#protocol-27-credentials-cap-71) for the V2 and delegated variants.
 
 > **Tip**: Contract IDs must be C-prefixed strkey format.
 

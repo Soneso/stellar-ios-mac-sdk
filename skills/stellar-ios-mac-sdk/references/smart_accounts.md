@@ -797,7 +797,7 @@ public func submit(
 ) async throws -> OZTransactionResult
 ```
 
-The SDK simulates the host function, signs auth entries whose address matches the connected smart account, re-simulates (WebAuthn signatures are larger than the simulation placeholders), and submits. Pass an empty `auth` array in most cases — simulation discovers the entries. Pre-supplied entries are forwarded unchanged.
+The SDK simulates the host function, signs auth entries whose address matches the connected smart account, re-simulates (WebAuthn signatures are larger than the simulation placeholders), and submits. Pass an empty `auth` array in most cases — simulation discovers the entries. Pre-supplied entries are forwarded unchanged. The pipeline signs legacy `ADDRESS` and protocol-27 `ADDRESS_V2` entries (arm preserved); entries carrying `ADDRESS_WITH_DELEGATES` credentials are rejected with `SigningFailed` — sign delegated entries per node via `SorobanAuthorizationEntryXDR.sign(forAddress:)` before submission.
 
 ```swift
 // WRONG: kit.transactionOperations.submit(hostFunction: hf) — auth is a required parameter
@@ -1096,7 +1096,7 @@ public actor OZExternalSignerManager {
 
 `addFromSecret` keypairs are held in memory only and never persisted. A keypair signer takes precedence over a wallet signer with the same `G…` address. `canSignFor` checks keypair signers first, then the wallet adapter. `getAll` lists keypair signers first, then wallet signers deduplicated by address (keypair wins). Throws `SmartAccountSignerException.Invalid` on a bad seed.
 
-`signAuthEntry` signs a Base64-encoded `HashIDPreimage::SorobanAuthorization` XDR: keypair signers SHA-256-hash the preimage and Ed25519-sign locally; wallet signers delegate to the adapter.
+`signAuthEntry` signs a Base64-encoded `HashIDPreimage` XDR (`SorobanAuthorization` for legacy `ADDRESS` entries, `SorobanAuthorizationWithAddress` for protocol-27 `ADDRESS_V2` entries): keypair signers SHA-256-hash the preimage and Ed25519-sign locally; wallet signers delegate to the adapter.
 
 ```swift
 public struct OZSignAuthEntryResult {

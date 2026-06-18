@@ -35,15 +35,20 @@ public extension XDRDecodable {
 }
 
 /// The actual binary decoder class.
-// @unchecked Sendable: Mutable cursor used during decoding. Single-owner, not shared across threads.
+// @unchecked Sendable: Mutable cursor and depth counter used during decoding. Single-owner, not shared across threads.
 public class XDRDecoder: @unchecked Sendable {
     fileprivate let data: [UInt8]
     fileprivate var cursor = 0
-    
+
+    /// Maximum nesting depth for XDRDecodable inits. Guards against unbounded recursive
+    /// structures (e.g. deeply nested delegate trees) that would overflow the native stack.
+    private static let maxDecodingDepth = 128
+    private var depth = 0
+
     public init(data: [UInt8]) {
         self.data = data
     }
-    
+
     public init(data: Data) {
         self.data = data.map { $0 }
     }
@@ -92,6 +97,11 @@ public extension XDRDecoder {
         /// Attempted to decode a `String` but the encoded `String` data was not valid
         /// UTF-8.
         case invalidUTF8([UInt8])
+
+        /// Decoding nesting depth exceeded the limit. Guards against unbounded recursive
+        /// XDR structures (e.g. deeply nested delegate trees) that would overflow the
+        /// native call stack.
+        case maxDecodingDepthExceeded
     }
 }
 
@@ -129,6 +139,12 @@ public extension XDRDecoder {
             return try decode(Bool.self) as! T
             
         case let binaryT as XDRDecodable.Type:
+            depth += 1
+            guard depth <= XDRDecoder.maxDecodingDepth else {
+                depth -= 1
+                throw Error.maxDecodingDepthExceeded
+            }
+            defer { depth -= 1 }
             return try binaryT.init(fromBinary: self) as! T
             
         default:

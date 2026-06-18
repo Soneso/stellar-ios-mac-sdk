@@ -188,6 +188,8 @@ module TxRepTypes
     'SorobanCredentials',
     'SorobanCredentialsType',
     'SorobanAddressCredentials',
+    'SorobanAddressCredentialsWithDelegates',
+    'SorobanDelegateSignature',
     'SorobanAuthorizedInvocation',
     'SorobanAuthorizedFunction',
     'SorobanAuthorizedFunctionType',

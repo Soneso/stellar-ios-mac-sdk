@@ -145,6 +145,9 @@ let transaction = try Transaction(
     memo: Memo.none
 )
 
+// init(transaction:Transaction, resourceConfig:ResourceConfig? = nil, authMode:String? = nil)
+// - resourceConfig: resource budget (instructionLeeway)
+// - authMode: "enforce" | "record" | "record_allow_nonroot" (protocol 23+)
 let request = SimulateTransactionRequest(transaction: transaction)
 let simResponse = await server.simulateTransaction(simulateTxRequest: request)
 switch simResponse {

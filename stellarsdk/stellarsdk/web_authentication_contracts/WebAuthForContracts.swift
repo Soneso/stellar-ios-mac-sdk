@@ -571,9 +571,10 @@ public final class WebAuthForContracts: @unchecked Sendable {
                 }
             }
 
-            // Check which entry this is (server, client, or client domain)
-            guard case .address(let addressCredentials) = entry.credentials else {
-                throw ContractChallengeValidationError.invalidArgs(message: "Invalid credentials type")
+            // Check which entry this is (server, client, or client domain).
+            // All three address-credential arms are accepted; source-account credentials are rejected.
+            guard let addressCredentials = entry.credentials.addressCredentials else {
+                throw ContractChallengeValidationError.invalidArgs(message: "Authorization entry has source-account credentials; an address-type credential is required")
             }
 
             let credentialsAddressStr = try addressToString(address: addressCredentials.address)
@@ -633,8 +634,8 @@ public final class WebAuthForContracts: @unchecked Sendable {
         var signedEntries: [SorobanAuthorizationEntryXDR] = []
 
         for var entry in authEntries {
-            guard case .address(var addressCredentials) = entry.credentials else {
-                // Not an address credential, add as-is
+            // Source-account credentials carry no address and cannot be signed here; pass through.
+            guard let addressCredentials = entry.credentials.addressCredentials else {
                 signedEntries.append(entry)
                 continue
             }
@@ -643,13 +644,14 @@ public final class WebAuthForContracts: @unchecked Sendable {
 
             // Sign client entry
             if credentialsAddressStr == clientAccountId {
-                // Set signature expiration ledger if provided
+                // Stamp expiration before signing; withAddressCredentials preserves the credential arm.
                 if let expirationLedger = signatureExpirationLedger {
-                    addressCredentials.signatureExpirationLedger = expirationLedger
-                    entry.credentials = .address(addressCredentials)
+                    var creds = addressCredentials
+                    creds.signatureExpirationLedger = expirationLedger
+                    entry.credentials = try entry.credentials.withAddressCredentials(creds)
                 }
 
-                // Sign with all provided signers
+                // Sign with all provided signers; arm is preserved by entry.sign().
                 for signer in signers {
                     try entry.sign(signer: signer, network: network)
                 }
@@ -661,8 +663,9 @@ public final class WebAuthForContracts: @unchecked Sendable {
             if let clientDomainKeyPair = clientDomainKeyPair,
                credentialsAddressStr == clientDomainKeyPair.accountId {
                 if let expirationLedger = signatureExpirationLedger {
-                    addressCredentials.signatureExpirationLedger = expirationLedger
-                    entry.credentials = .address(addressCredentials)
+                    var creds = addressCredentials
+                    creds.signatureExpirationLedger = expirationLedger
+                    entry.credentials = try entry.credentials.withAddressCredentials(creds)
                 }
                 try entry.sign(signer: clientDomainKeyPair, network: network)
                 signedEntries.append(entry)
@@ -673,10 +676,11 @@ public final class WebAuthForContracts: @unchecked Sendable {
             if let clientDomainSigningCallback = clientDomainSigningCallback,
                let clientDomainAccountId = clientDomainAccountId,
                credentialsAddressStr == clientDomainAccountId {
-                // Set signature expiration ledger before sending to callback
+                // Stamp expiration before handing off to the callback.
                 if let expirationLedger = signatureExpirationLedger {
-                    addressCredentials.signatureExpirationLedger = expirationLedger
-                    entry.credentials = .address(addressCredentials)
+                    var creds = addressCredentials
+                    creds.signatureExpirationLedger = expirationLedger
+                    entry.credentials = try entry.credentials.withAddressCredentials(creds)
                 }
                 let signedEntry = try await clientDomainSigningCallback(entry)
                 signedEntries.append(signedEntry)
@@ -835,23 +839,18 @@ public final class WebAuthForContracts: @unchecked Sendable {
     }
 
     /// Verifies server signature on authorization entry.
+    ///
+    /// Accepts all three address-credential arms. The preimage is built via the shared
+    /// builder, which selects the correct envelope type for the credential arm.
     private func verifyServerSignature(entry: SorobanAuthorizationEntryXDR) -> Bool {
         do {
-            guard case .address(let addressCredentials) = entry.credentials else {
+            // All three address arms are accepted; source-account credentials are rejected.
+            guard let addressCredentials = entry.credentials.addressCredentials else {
                 return false
             }
 
-            // Build authorization preimage
-            let networkId = WrappedData32(network.passphrase.sha256Hash)
-
-            let authPreimage = HashIDPreimageSorobanAuthorizationXDR(
-                networkID: networkId,
-                nonce: addressCredentials.nonce,
-                signatureExpirationLedger: addressCredentials.signatureExpirationLedger,
-                invocation: entry.rootInvocation
-            )
-
-            let preimage = HashIDPreimageXDR.sorobanAuthorization(authPreimage)
+            // Build the preimage using the shared builder; the arm determines the envelope type.
+            let preimage = try entry.buildPreimage(network: network)
             let encodedBytes = try XDREncoder.encode(preimage)
             let payload = Data(encodedBytes).sha256Hash
 

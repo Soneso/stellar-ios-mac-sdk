@@ -493,6 +493,15 @@ static func parseTxRepLines(_ lines: [String]) -> [String: String] {
         XCTAssertEqual(decoded, original, "TxRep roundtrip failed for EnvelopeType.sorobanAuthorization")
     }
 
+    func test_EnvelopeType_ENVELOPE_TYPE_SOROBAN_AUTHORIZATION_WITH_ADDRESS() throws {
+        let original: EnvelopeType = .sorobanAuthorizationWithAddress
+        var lines: [String] = []
+        try original.toTxRep(prefix: "k", lines: &lines)
+        let map = Self.parseTxRepLines(lines)
+        let decoded = try EnvelopeType.fromTxRep(map, prefix: "k")
+        XCTAssertEqual(decoded, original, "TxRep roundtrip failed for EnvelopeType.sorobanAuthorizationWithAddress")
+    }
+
     func test_EnvelopeType_ENVELOPE_TYPE_TX() throws {
         let original: EnvelopeType = .tx
         var lines: [String] = []
@@ -1490,6 +1499,24 @@ static func parseTxRepLines(_ lines: [String]) -> [String: String] {
         let map = Self.parseTxRepLines(lines)
         let decoded = try SorobanCredentialsType.fromTxRep(map, prefix: "k")
         XCTAssertEqual(decoded, original, "TxRep roundtrip failed for SorobanCredentialsType.address")
+    }
+
+    func test_SorobanCredentialsType_SOROBAN_CREDENTIALS_ADDRESS_V2() throws {
+        let original: SorobanCredentialsType = .addressV2
+        var lines: [String] = []
+        try original.toTxRep(prefix: "k", lines: &lines)
+        let map = Self.parseTxRepLines(lines)
+        let decoded = try SorobanCredentialsType.fromTxRep(map, prefix: "k")
+        XCTAssertEqual(decoded, original, "TxRep roundtrip failed for SorobanCredentialsType.addressV2")
+    }
+
+    func test_SorobanCredentialsType_SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES() throws {
+        let original: SorobanCredentialsType = .addressWithDelegates
+        var lines: [String] = []
+        try original.toTxRep(prefix: "k", lines: &lines)
+        let map = Self.parseTxRepLines(lines)
+        let decoded = try SorobanCredentialsType.fromTxRep(map, prefix: "k")
+        XCTAssertEqual(decoded, original, "TxRep roundtrip failed for SorobanCredentialsType.addressWithDelegates")
     }
 
     func test_SorobanCredentialsType_SOROBAN_CREDENTIALS_SOURCE_ACCOUNT() throws {
