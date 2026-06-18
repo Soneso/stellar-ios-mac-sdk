@@ -593,13 +593,17 @@ try delegated.sign(
 
 transaction.setSorobanAuth(auth: [delegated])
 
-// The first simulation did not include the delegate authorization, so its
-// resources are understated. Re-simulate with the delegated entry attached and
-// apply the returned transaction data before submitting:
+// Re-simulate in enforcing mode before submitting. The first (recording) simulation does not
+// run the authorizing account's __check_auth, so it understates the resource fee and — for a
+// custom (contract) account whose __check_auth reads storage or calls into delegates — omits the
+// footprint entries that authorization touches. Re-simulate with the signed entry attached and
+// authMode "enforce", then apply the returned data, keeping the signed auth:
 //   let reEnum = await server.simulateTransaction(
-//       simulateTxRequest: SimulateTransactionRequest(transaction: transaction))
+//       simulateTxRequest: SimulateTransactionRequest(transaction: transaction, authMode: "enforce"))
 //   guard case .success(let reSim) = reEnum, let txData = reSim.transactionData else { return }
 //   transaction.setSorobanTransactionData(data: txData)
+//   if let fee = reSim.minResourceFee { transaction.addResourceFee(resourceFee: fee) }
+//   transaction.setSorobanAuth(auth: [delegated])
 ```
 
 `SorobanDelegateDescriptor` supports nesting via `nestedDelegates` and accepts a pre-built `signature` (default `.void`) for nodes signed externally, such as contract addresses. `forAddress` matches every node in the tree (top-level or delegate, depth-first) and throws when no node matches.

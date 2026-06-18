@@ -666,8 +666,9 @@ try delegated.sign(signer: delegateKeyPair, network: Network.testnet, forAddress
 
 transaction.setSorobanAuth(auth: [delegated])
 
-// Re-simulate with the delegated entry attached and use the returned resources before
-// submitting; the initial simulation does not include the delegate authorization.
+// Re-simulate in enforcing mode (SimulateTransactionRequest(transaction:, authMode: "enforce"))
+// and apply the returned resources before submitting: the recording simulation does not run
+// __check_auth, so for a custom (contract) account it omits the footprint its authorization reads.
 ```
 
 ## Error Handling
