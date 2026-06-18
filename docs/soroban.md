@@ -528,34 +528,6 @@ The legacy `.address` arm remains the default everywhere and stays fully valid. 
 
 All signing APIs (`signAuthEntries`, `SorobanAuthorizationEntryXDR.sign`, SEP-45) support all three arms and preserve the arm on write-back. `needsNonInvokerSigningBy` reports the address of every node whose signature is void, including each unsigned delegate node of a `WITH_DELEGATES` entry.
 
-#### Requesting V2 Entries from Simulation
-
-Set `authV2` to request `ADDRESS_V2` credential arms in the simulation response. RPC servers without support silently ignore the flag and return legacy `ADDRESS` entries -- detect support by inspecting the credential arm of the returned entries, never by expecting an error.
-
-```swift
-import stellarsdk
-
-// Contract client: opt in via MethodOptions
-let tx = try await client.buildInvokeMethodTx(
-    name: "swap",
-    args: args,
-    methodOptions: MethodOptions(authV2: true)
-)
-
-// Detect whether the RPC honored the flag
-let entries = try tx.getSimulationData().auth ?? []
-let gotV2 = entries.contains { entry in
-    if case .addressV2 = entry.credentials { return true }
-    return false
-}
-
-// Low-level: opt in on the request
-let request = SimulateTransactionRequest(transaction: transaction, authV2: true)
-let simEnum = await server.simulateTransaction(simulateTxRequest: request)
-```
-
-When `authV2` is `false` (the default), the key is omitted from the JSON-RPC params entirely.
-
 #### Delegated Authorization
 
 A `WITH_DELEGATES` entry lets delegate addresses co-sign a single authorization entry. Simulation never returns `WITH_DELEGATES` entries; clients assemble the tree from an `ADDRESS` or `ADDRESS_V2` entry using `SorobanAuthorizationEntryXDR.withDelegates`.
@@ -569,13 +541,28 @@ Rules enforced by the host and handled by the SDK builder:
 ```swift
 import stellarsdk
 
+let server = SorobanServer(endpoint: "https://soroban-testnet.stellar.org")
 let topLevelKeyPair = try KeyPair(secretSeed: "STOPLEVEL...")
 let delegateKeyPair = try KeyPair(secretSeed: "SDELEGATE...") // a delegate signer's account
 
-// Unwrap the simulation result bound above
+// Build and simulate the invocation to obtain its authorization entry
+let invokeOp = try InvokeHostFunctionOperation.forInvokingContract(
+    contractId: "CCONTRACT...",
+    functionName: "increment",
+    functionArguments: []
+)
+guard case .success(let account) = await server.getAccount(accountId: topLevelKeyPair.accountId) else { return }
+let transaction = try Transaction(
+    sourceAccount: account,
+    operations: [invokeOp],
+    memo: nil
+)
+let simEnum = await server.simulateTransaction(
+    simulateTxRequest: SimulateTransactionRequest(transaction: transaction)
+)
 guard case .success(let sim) = simEnum else { return }
 
-// Simulation returned an ADDRESS or ADDRESS_V2 entry
+// Simulation returns an ADDRESS entry; withDelegates also accepts an ADDRESS_V2 entry
 let entry = sim.sorobanAuth![0]
 
 // Latest ledger, used to set the signature expiration

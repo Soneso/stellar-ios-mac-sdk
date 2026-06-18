@@ -46,74 +46,31 @@ final class AssembledTransactionP27UnitTests: XCTestCase {
         super.tearDown()
     }
 
-    // MARK: - SimulateTransactionRequest authV2 param tests
+    // MARK: - SimulateTransactionRequest param serialization
 
-    /// authV2 key must be absent when the default (false) is used.
-    func testBuildRequestParams_authV2AbsentByDefault() throws {
-        let tx = try makeMockTransaction()
-        let request = SimulateTransactionRequest(transaction: tx)
-        let params = request.buildRequestParams()
-        XCTAssertNil(params["authV2"], "authV2 key must be absent when not opted in")
-    }
-
-    /// authV2 key must be absent when explicitly set to false.
-    func testBuildRequestParams_authV2AbsentWhenExplicitlyFalse() throws {
-        let tx = try makeMockTransaction()
-        let request = SimulateTransactionRequest(transaction: tx, authV2: false)
-        let params = request.buildRequestParams()
-        XCTAssertNil(params["authV2"], "authV2 key must be absent when explicitly false")
-    }
-
-    /// authV2 key must be present as boolean true when opted in.
-    func testBuildRequestParams_authV2PresentAsBooleanTrueWhenOptedIn() throws {
-        let tx = try makeMockTransaction()
-        let request = SimulateTransactionRequest(transaction: tx, authV2: true)
-        let params = request.buildRequestParams()
-        guard let val = params["authV2"] else {
-            return XCTFail("authV2 key must be present when opted in")
-        }
-        guard let boolVal = val as? Bool else {
-            return XCTFail("authV2 must be a Bool, got \(type(of: val))")
-        }
-        XCTAssertTrue(boolVal, "authV2 value must be true")
-    }
-
-    /// Existing params (transaction, resourceConfig, authMode) are unaffected by authV2.
-    func testBuildRequestParams_existingParamsUnaffected() throws {
+    /// All request params (transaction, resourceConfig, authMode) serialize together.
+    func testBuildRequestParams_existingParamsSerialized() throws {
         let tx = try makeMockTransaction()
         let resourceConfig = ResourceConfig(instructionLeeway: 3_000_000)
         let request = SimulateTransactionRequest(
             transaction: tx,
             resourceConfig: resourceConfig,
-            authMode: "record",
-            authV2: true
+            authMode: "record"
         )
         let params = request.buildRequestParams()
         XCTAssertNotNil(params["transaction"], "transaction key must be present")
         XCTAssertNotNil(params["resourceConfig"], "resourceConfig key must be present")
         XCTAssertEqual(params["authMode"] as? String, "record", "authMode must be preserved")
-        XCTAssertTrue(params["authV2"] as? Bool == true, "authV2 must be present")
     }
 
-    // MARK: - MethodOptions authV2 opt-in
+    // MARK: - MethodOptions params
 
-    func testMethodOptions_authV2DefaultFalse() {
-        let opts = MethodOptions()
-        XCTAssertFalse(opts.authV2, "authV2 must default to false")
-    }
-
-    func testMethodOptions_authV2ExplicitTrue() {
-        let opts = MethodOptions(authV2: true)
-        XCTAssertTrue(opts.authV2)
-    }
-
-    func testMethodOptions_existingParamsUnaffectedByAuthV2() {
-        let opts = MethodOptions(fee: 5000, timeoutInSeconds: 120, simulate: false, restore: true, authV2: true)
+    func testMethodOptions_paramsSet() {
+        let opts = MethodOptions(fee: 5000, timeoutInSeconds: 120, simulate: false, restore: true)
         XCTAssertEqual(opts.fee, 5000)
         XCTAssertEqual(opts.timeoutInSeconds, 120)
         XCTAssertFalse(opts.simulate)
         XCTAssertTrue(opts.restore)
-        XCTAssertTrue(opts.authV2)
     }
 
     // MARK: - needsNonInvokerSigningBy: ADDRESS arm
@@ -1117,133 +1074,6 @@ final class AssembledTransactionP27UnitTests: XCTestCase {
             callbackInvokeCount, 1,
             "Callback must be invoked exactly once for the single matching entry"
         )
-    }
-
-    // MARK: - Gap 5: MethodOptions.authV2 threads through simulate() into JSON-RPC request
-
-    /// Verifies that MethodOptions(authV2: true) causes simulate() to include
-    /// "authV2": true in the JSON-RPC request body sent to the server.
-    ///
-    /// URLProtocol delivers the body via httpBodyStream (not httpBody) once a request enters
-    /// the protocol pipeline, so both paths are checked.
-    func testSimulate_withAuthV2True_sendsAuthV2InRequest() async throws {
-        var capturedBodyData: Data?
-
-        let handler: MockHandler = { mock, request in
-            // URLProtocol puts the POST body into httpBodyStream, not httpBody.
-            if let data = request.httpBody {
-                capturedBodyData = data
-            } else if let stream = request.httpBodyStream {
-                capturedBodyData = stream.readfully()
-            }
-            mock.statusCode = 200
-            return self.makeMinimalSimulateResponse()
-        }
-        ServerMock.add(mock: RequestMock(
-            host: "soroban-testnet.stellar.org",
-            path: "*",
-            httpMethod: "POST",
-            mockHandler: handler
-        ))
-
-        let methodOptions = MethodOptions(authV2: true)
-        let opts = AssembledTransactionOptions(
-            clientOptions: clientOptions,
-            methodOptions: methodOptions,
-            method: "test"
-        )
-        let at = AssembledTransaction(options: opts)
-        at.tx = try makeMockTransaction()
-
-        try await at.simulate()
-
-        guard let bodyData = capturedBodyData,
-              let jsonObj = try? JSONSerialization.jsonObject(with: bodyData) as? [String: Any],
-              let params = jsonObj["params"] as? [String: Any] else {
-            XCTFail("Could not read or parse the captured JSON-RPC request body")
-            return
-        }
-
-        guard let authV2Val = params["authV2"] as? Bool else {
-            XCTFail("'authV2' key must be present in params when MethodOptions(authV2: true) is used; got params keys: \(params.keys.sorted())")
-            return
-        }
-        XCTAssertTrue(authV2Val, "authV2 value must be true")
-    }
-
-    /// Verifies that the default MethodOptions() causes simulate() to omit the "authV2"
-    /// key entirely from the JSON-RPC request body.
-    func testSimulate_defaultMethodOptions_authV2KeyAbsent() async throws {
-        var capturedBodyData: Data?
-
-        let handler: MockHandler = { mock, request in
-            if let data = request.httpBody {
-                capturedBodyData = data
-            } else if let stream = request.httpBodyStream {
-                capturedBodyData = stream.readfully()
-            }
-            mock.statusCode = 200
-            return self.makeMinimalSimulateResponse()
-        }
-        ServerMock.add(mock: RequestMock(
-            host: "soroban-testnet.stellar.org",
-            path: "*",
-            httpMethod: "POST",
-            mockHandler: handler
-        ))
-
-        let opts = AssembledTransactionOptions(
-            clientOptions: clientOptions,
-            methodOptions: MethodOptions(),
-            method: "test"
-        )
-        let at = AssembledTransaction(options: opts)
-        at.tx = try makeMockTransaction()
-
-        try await at.simulate()
-
-        guard let bodyData = capturedBodyData,
-              let jsonObj = try? JSONSerialization.jsonObject(with: bodyData) as? [String: Any],
-              let params = jsonObj["params"] as? [String: Any] else {
-            XCTFail("Could not read or parse the captured JSON-RPC request body")
-            return
-        }
-
-        XCTAssertNil(params["authV2"],
-                     "authV2 key must be ABSENT from params when MethodOptions uses the default (false)")
-    }
-
-    // MARK: - Gap 5 helper: minimal simulate response
-
-    private func makeMinimalSimulateResponse() -> String {
-        let transactionData = SorobanTransactionDataXDR(
-            resources: SorobanResourcesXDR(
-                footprint: LedgerFootprintXDR(readOnly: [], readWrite: []),
-                instructions: 100,
-                diskReadBytes: 0,
-                writeBytes: 0
-            ),
-            resourceFee: 100
-        )
-        let txDataXdr = transactionData.xdrEncoded!
-        let returnValueXdr = SCValXDR.void.xdrEncoded!
-        return """
-        {
-            "jsonrpc": "2.0",
-            "id": "1",
-            "result": {
-                "latestLedger": 1000000,
-                "transactionData": "\(txDataXdr)",
-                "minResourceFee": "100",
-                "results": [
-                    {
-                        "auth": [],
-                        "xdr": "\(returnValueXdr)"
-                    }
-                ]
-            }
-        }
-        """
     }
 
     private func setupGetLatestLedgerMock() {

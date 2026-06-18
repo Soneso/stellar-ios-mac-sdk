@@ -182,8 +182,8 @@ final class SorobanP27AuthIntegrationTests: XCTestCase {
         let assembledTx = try await client.buildInvokeMethodTx(name: methodName, args: args)
 
         // Rewrite any ADDRESS auth entry whose credential address matches the invoker
-        // to ADDRESS_V2 — this simulates what the network would return when authV2=true
-        // is requested but the RPC flag is unavailable on the current testnet.
+        // to ADDRESS_V2 client-side — simulation returns legacy ADDRESS entries, so the
+        // V2 credential arm is assembled by the caller to exercise the V2 signing path.
         try rewriteAddressToV2(assembledTx: assembledTx, signerAccountId: invokerAccountId)
 
         // Sign with ADDRESS_V2 credentials.

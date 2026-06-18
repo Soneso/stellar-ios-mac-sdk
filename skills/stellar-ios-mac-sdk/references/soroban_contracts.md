@@ -392,8 +392,7 @@ let methodOptions = MethodOptions(
     fee: 10000,             // 10000 stroops
     timeoutInSeconds: 60,   // 1 minute validity
     simulate: true,         // auto-simulate (default)
-    restore: true,          // auto-restore archived entries
-    authV2: false           // opt-in: request protocol-27 V2 credential arms (default false)
+    restore: true           // auto-restore archived entries
 )
 
 let result = try await client.invokeMethod(
@@ -402,8 +401,6 @@ let result = try await client.invokeMethod(
     methodOptions: methodOptions
 )
 ```
-
-`authV2: true` adds `"authV2": true` to the simulation request so a protocol-27 RPC returns `ADDRESS_V2` credential arms; the key is omitted when `false`. Legacy `ADDRESS` remains the default and fully valid; emitting V2 arms on a pre-protocol-27 network invalidates the transaction. RPC servers without support silently ignore the flag and return legacy `ADDRESS` entries -- detect support by inspecting the credential arm of the returned entries, never by expecting an error.
 
 ## Low-Level API: InvokeHostFunctionOperation
 
