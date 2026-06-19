@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          stellarsdk 3.5.0 Docs
+          stellarsdk 3.6.0 Docs
         </a>
          (94% documented)
       </p>
@@ -2155,6 +2155,9 @@
                 <a class="nav-group-task-link" href="../Structs/SimulateTransactionResult.html">SimulateTransactionResult</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/SorobanDelegateDescriptor.html">SorobanDelegateDescriptor</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/SorobanRpcError.html">SorobanRpcError</a>
               </li>
               <li class="nav-group-task">
@@ -2428,7 +2431,7 @@ you can provide a callback function for signing the auth entry:</p>
 transaction is invoked by yet another party, check out in the SorobanClientTest.atomicSwapTest()</p>
 
               <div class="slightly-smaller">
-                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/AssembledTransaction.swift#L178-L515">Show on GitHub</a>
+                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/AssembledTransaction.swift#L178-L688">Show on GitHub</a>
               </div>
           </div>
         </section>
@@ -2711,7 +2714,7 @@ transaction is invoked by yet another party, check out in the SorobanClientTest.
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/AssembledTransaction.swift#L229-L276">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/AssembledTransaction.swift#L229-L277">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2744,7 +2747,7 @@ transaction is invoked by yet another party, check out in the SorobanClientTest.
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/AssembledTransaction.swift#L279-L282">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/AssembledTransaction.swift#L280-L283">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2777,7 +2780,7 @@ transaction is invoked by yet another party, check out in the SorobanClientTest.
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/AssembledTransaction.swift#L285-L290">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/AssembledTransaction.swift#L286-L291">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2807,7 +2810,7 @@ transaction is invoked by yet another party, check out in the SorobanClientTest.
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/AssembledTransaction.swift#L293-L322">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/AssembledTransaction.swift#L294-L328">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2841,7 +2844,7 @@ Returns the final transaction status including success/failure and return value.
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/AssembledTransaction.swift#L326-L343">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/AssembledTransaction.swift#L332-L349">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2859,7 +2862,21 @@ Returns the final transaction status including success/failure and return value.
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Returns account IDs that need to sign authorization entries for multi-auth workflows.</p>
+                        <p>Returns the addresses of every node whose signature is void, across all authorization entries.</p>
+
+<p><strong>All three credential arms are supported</strong> (<code>ADDRESS</code>, <code>ADDRESS_V2</code>,
+<code>ADDRESS_WITH_DELEGATES</code>). For <code>WITH_DELEGATES</code> entries, the top-level address and
+every unsigned delegate node (depth-first) are reported individually. A top-level
+signature alongside delegates is a legal pattern, so the top-level address is always
+included when its signature is void, even when delegates are present.</p>
+
+<p><strong><code>WITH_DELEGATES</code> send precheck</strong>: <code>sign()</code> and <code>signAndSend()</code> treat a
+<code>WITH_DELEGATES</code> entry as satisfied when every delegate node in the tree carries a
+non-void signature, regardless of the void top-level. Do not block the send flow
+solely because this method reports the top-level address of a fully-delegate-signed
+entry.</p>
+
+<p><code>.sourceAccount</code> entries are ignored (they carry no explicit signer address).</p>
 
                       </div>
                       <div class="declaration">
@@ -2870,8 +2887,28 @@ Returns the final transaction status including success/failure and return value.
 
                         </div>
                       </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>includeAlreadySigned</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>When <code>true</code>, includes addresses whose signature is
+non-void. Defaults to <code>false</code>.</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/AssembledTransaction.swift#L346-L369">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/AssembledTransaction.swift#L369-L407">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2902,7 +2939,7 @@ Returns true if the call has no auth entries and writes no ledger data.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/AssembledTransaction.swift#L373-L378">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/AssembledTransaction.swift#L436-L441">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2933,7 +2970,7 @@ Throws if transaction has not been simulated or simulation failed.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/AssembledTransaction.swift#L382-L408">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/AssembledTransaction.swift#L445-L471">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2954,19 +2991,33 @@ Throws if transaction has not been simulated or simulation failed.</p>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Signs authorization entries for multi-party transactions using keypair or callback.</p>
+                        <p>Signs authorization entries for multi-party transactions using a keypair or callback.</p>
+
+<p>Handles all three credential arms (<code>ADDRESS</code>, <code>ADDRESS_V2</code>, <code>ADDRESS_WITH_DELEGATES</code>).
+The credential arm is preserved on write-back; no arm coercion is performed.</p>
+
+<p><strong>Delegate routing</strong>: For <code>WITH_DELEGATES</code> entries the signer address is matched
+against the top-level address AND every delegate node (depth-first) via the
+<code>forAddress</code> routing in <code>SorobanAuthorizationEntryXDR.sign</code>. When the signer matches
+a delegate node, the signature lands in that node; the top-level is left untouched
+unless the signer&rsquo;s address also matches the top-level.</p>
+
+<p><strong>Skipping policy</strong>: <code>.sourceAccount</code> entries are skipped silently; they are
+authorized by the transaction-envelope signer, not by auth-entry signing. An entry
+whose top-level address and delegate tree both differ from the signer is also silently
+skipped (multi-party transactions carry entries for different signers).</p>
 
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">signAuthEntries</span><span class="p">(</span><span class="nv">signerKeyPair</span><span class="p">:</span> <span class="kt"><a href="../Classes/KeyPair.html">KeyPair</a></span><span class="p">,</span> <span class="nv">authorizeEntryCallback</span><span class="p">:</span> <span class="p">((</span><span class="kt">SorobanAuthorizationEntryXDR</span><span class="p">,</span> <span class="kt"><a href="../Enums/Network.html">Network</a></span><span class="p">)</span> <span class="k">async</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt">SorobanAuthorizationEntryXDR</span><span class="p">)?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">validUntilLedgerSeq</span><span class="p">:</span> <span class="kt">UInt32</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span> <span class="k">async</span> <span class="k">throws</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">signAuthEntries</span><span class="p">(</span><span class="nv">signerKeyPair</span><span class="p">:</span> <span class="kt"><a href="../Classes/KeyPair.html">KeyPair</a></span><span class="p">,</span> <span class="nv">authorizeEntryCallback</span><span class="p">:</span> <span class="p">((</span><span class="n">_</span> <span class="nv">entry</span><span class="p">:</span> <span class="kt">SorobanAuthorizationEntryXDR</span><span class="p">,</span> <span class="n">_</span> <span class="nv">network</span><span class="p">:</span> <span class="kt"><a href="../Enums/Network.html">Network</a></span><span class="p">)</span> <span class="k">async</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt">SorobanAuthorizationEntryXDR</span><span class="p">)?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">validUntilLedgerSeq</span><span class="p">:</span> <span class="kt">UInt32</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span> <span class="k">async</span> <span class="k">throws</span></code></pre>
 
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/AssembledTransaction.swift#L411-L461">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/AssembledTransaction.swift#L488-L589">Show on GitHub</a>
                       </div>
                     </section>
                   </div>

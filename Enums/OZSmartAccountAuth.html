@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          stellarsdk 3.5.0 Docs
+          stellarsdk 3.6.0 Docs
         </a>
          (94% documented)
       </p>
@@ -2155,6 +2155,9 @@
                 <a class="nav-group-task-link" href="../Structs/SimulateTransactionResult.html">SimulateTransactionResult</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/SorobanDelegateDescriptor.html">SorobanDelegateDescriptor</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/SorobanRpcError.html">SorobanRpcError</a>
               </li>
               <li class="nav-group-task">
@@ -2315,7 +2318,7 @@ existing signatures and ordering map entries deterministically.</li>
 </code></pre>
 
               <div class="slightly-smaller">
-                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountAuth.swift#L36-L348">Show on GitHub</a>
+                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountAuth.swift#L35-L390">Show on GitHub</a>
               </div>
           </div>
         </section>
@@ -2400,7 +2403,7 @@ different rule set.</p>
                         <p>32-byte SHA-256 auth digest.</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountAuth.swift#L54-L75">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountAuth.swift#L53-L74">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2424,16 +2427,19 @@ different rule set.</p>
                         <p>Builds the authorisation payload hash for signing.</p>
 
 <p>Computes the hash that must be signed to authorise a Soroban operation; the hash is
-used as the WebAuthn challenge when collecting biometric signatures. The entry must
-have address credentials.</p>
+used as the WebAuthn challenge when collecting biometric signatures. All three
+address-credential arms are supported (<code>ADDRESS</code>, <code>ADDRESS_V2</code>,
+<code>ADDRESS_WITH_DELEGATES</code>). The preimage is built via
+<code>SorobanAuthorizationEntryXDR.buildPreimage(network:)</code>, which selects
+<code>ENVELOPE_TYPE_SOROBAN_AUTHORIZATION</code> for the legacy <code>ADDRESS</code> arm and
+<code>ENVELOPE_TYPE_SOROBAN_AUTHORIZATION_WITH_ADDRESS</code> (protocol 27) for the V2 and
+WITH_DELEGATES arms.</p>
 
-<p>The preimage is constructed as
-<code>HashIDPreimage::SorobanAuthorization { networkId, nonce, signatureExpirationLedger,
-invocation }</code> and the returned value is <code>SHA-256(XDR_encode(preimage))</code>.</p>
+<p>The returned value is <code>SHA-256(XDR_encode(preimage))</code>.</p>
 <div class="aside aside-throws">
     <p class="aside-title">Throws</p>
-    <code><a href="../Classes/SmartAccountTransactionException/SigningFailed.html">SmartAccountTransactionException.SigningFailed</a></code> when credentials are not address
-      type or when XDR encoding fails.
+    <code><a href="../Classes/SmartAccountTransactionException/SigningFailed.html">SmartAccountTransactionException.SigningFailed</a></code> when credentials are not an
+      address type or when XDR encoding fails.
 
 </div>
 
@@ -2462,7 +2468,7 @@ invocation }</code> and the returned value is <code>SHA-256(XDR_encode(preimage)
                               </td>
                               <td>
                                 <div>
-                                  <p>Authorisation entry to build the payload hash for.</p>
+                                  <p>Authorisation entry to build the payload hash for. Must have address credentials.</p>
                                 </div>
                               </td>
                             </tr>
@@ -2474,7 +2480,8 @@ invocation }</code> and the returned value is <code>SHA-256(XDR_encode(preimage)
                               </td>
                               <td>
                                 <div>
-                                  <p>Ledger number at which the signature expires.</p>
+                                  <p>Ledger number at which the signature expires; stamped into a
+temporary copy of the credentials before the preimage is built.</p>
                                 </div>
                               </td>
                             </tr>
@@ -2498,7 +2505,7 @@ invocation }</code> and the returned value is <code>SHA-256(XDR_encode(preimage)
                         <p>32-byte SHA-256 hash of the authorisation payload.</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountAuth.swift#L94-L110">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountAuth.swift#L97-L124">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2522,9 +2529,11 @@ invocation }</code> and the returned value is <code>SHA-256(XDR_encode(preimage)
                         <p>Builds the authorisation payload hash for source-account credentials.</p>
 
 <p>Used when converting source-account credentials to address credentials, typically
-for relayer fee sponsoring. The preimage is constructed identically to
-<code>buildAuthPayloadHash</code> but uses the supplied <code>nonce</code> and <code>expirationLedger</code> instead
-of reading them from existing credentials.</p>
+for relayer fee sponsoring. A temporary legacy <code>ADDRESS</code> preimage is constructed
+from the supplied <code>nonce</code> and <code>expirationLedger</code> combined with the entry&rsquo;s root
+invocation. The legacy <code>ENVELOPE_TYPE_SOROBAN_AUTHORIZATION</code> arm is used because the
+replacement credentials are always classical <code>ADDRESS</code> credentials (a stock Stellar
+account signing on behalf of the temp keypair).</p>
 <div class="aside aside-throws">
     <p class="aside-title">Throws</p>
     <code><a href="../Classes/SmartAccountTransactionException/SigningFailed.html">SmartAccountTransactionException.SigningFailed</a></code> when XDR encoding fails.
@@ -2605,7 +2614,7 @@ of reading them from existing credentials.</p>
                         <p>32-byte SHA-256 hash of the authorisation payload.</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountAuth.swift#L126-L138">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountAuth.swift#L142-L166">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2727,7 +2736,7 @@ payload; otherwise the existing value is preserved.</p>
                         <p>A new authorisation entry with the signature attached.</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountAuth.swift#L161-L232">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountAuth.swift#L189-L266">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2834,7 +2843,7 @@ The input entry is never mutated; a new entry with the updated payload is return
                         <p>A new authorisation entry with the map entry added.</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountAuth.swift#L255-L310">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountAuth.swift#L289-L348">Show on GitHub</a>
                       </div>
                     </section>
                   </div>

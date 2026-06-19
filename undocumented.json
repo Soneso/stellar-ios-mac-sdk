@@ -1724,56 +1724,56 @@
     },
     {
       "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/utils/xdrCodable/XDRDecoder.swift",
-      "line": 43,
+      "line": 48,
       "symbol": "XDRDecoder.init(data:)",
       "symbol_kind": "source.lang.swift.decl.function.method.instance",
       "warning": "undocumented"
     },
     {
       "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/utils/xdrCodable/XDRDecoder.swift",
-      "line": 47,
+      "line": 52,
       "symbol": "XDRDecoder.init(data:)",
       "symbol_kind": "source.lang.swift.decl.function.method.instance",
       "warning": "undocumented"
     },
     {
       "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/utils/xdrCodable/XDRDecoder.swift",
-      "line": 55,
+      "line": 60,
       "symbol": "XDRDecoder.decode(_:data:)",
       "symbol_kind": "source.lang.swift.decl.function.method.static",
       "warning": "undocumented"
     },
     {
       "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/utils/xdrCodable/XDRDecoder.swift",
-      "line": 59,
+      "line": 64,
       "symbol": "XDRDecoder.decode(_:data:)",
       "symbol_kind": "source.lang.swift.decl.function.method.static",
       "warning": "undocumented"
     },
     {
       "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/utils/xdrCodable/XDRDecoder.swift",
-      "line": 100,
+      "line": 110,
       "symbol": "XDRDecoder.decode(_:)",
       "symbol_kind": "source.lang.swift.decl.function.method.instance",
       "warning": "undocumented"
     },
     {
       "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/utils/xdrCodable/XDRDecoder.swift",
-      "line": 108,
+      "line": 118,
       "symbol": "XDRDecoder.decode(_:)",
       "symbol_kind": "source.lang.swift.decl.function.method.instance",
       "warning": "undocumented"
     },
     {
       "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/utils/xdrCodable/XDRDecoder.swift",
-      "line": 114,
+      "line": 124,
       "symbol": "XDRDecoder.decode(_:)",
       "symbol_kind": "source.lang.swift.decl.function.method.instance",
       "warning": "undocumented"
     },
     {
       "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/utils/xdrCodable/XDRDecoder.swift",
-      "line": 120,
+      "line": 130,
       "symbol": "XDRDecoder.decode(_:)",
       "symbol_kind": "source.lang.swift.decl.function.method.instance",
       "warning": "undocumented"
@@ -1852,6 +1852,13 @@
       "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/utils/xdrCodable/XDREncoder.swift",
       "line": 83,
       "symbol": "XDREncoder.encode(_:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/xdr_helpers/SorobanDelegateTreeXDR+Helpers.swift",
+      "line": 25,
+      "symbol": "SorobanDelegateDescriptor.init(address:signature:nestedDelegates:)",
       "symbol_kind": "source.lang.swift.decl.function.method.instance",
       "warning": "undocumented"
     },

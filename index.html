@@ -20,7 +20,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="index.html">
-          stellarsdk 3.5.0 Docs
+          stellarsdk 3.6.0 Docs
         </a>
          (94% documented)
       </p>
@@ -2150,6 +2150,9 @@
                 <a class="nav-group-task-link" href="Structs/SimulateTransactionResult.html">SimulateTransactionResult</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/SorobanDelegateDescriptor.html">SorobanDelegateDescriptor</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Structs/SorobanRpcError.html">SorobanRpcError</a>
               </li>
               <li class="nav-group-task">
@@ -2281,10 +2284,10 @@
 <p>Build and sign Stellar transactions, query <a href="https://developers.stellar.org/docs/data/apis/horizon">Horizon</a>, and interact with <a href="https://developers.stellar.org/docs/build/smart-contracts/overview">Soroban</a> smart contracts via RPC. Communicate with anchors and external services using built-in support for 17 SEPs.</p>
 <h2 id='installation' class='heading'>Installation</h2>
 <h3 id='swift-package-manager' class='heading'>Swift Package Manager</h3>
-<pre class="highlight swift"><code><span class="o">.</span><span class="nf">package</span><span class="p">(</span><span class="nv">name</span><span class="p">:</span> <span class="s">"stellarsdk"</span><span class="p">,</span> <span class="nv">url</span><span class="p">:</span> <span class="s">"git@github.com:Soneso/stellar-ios-mac-sdk.git"</span><span class="p">,</span> <span class="nv">from</span><span class="p">:</span> <span class="s">"3.5.0"</span><span class="p">),</span>
+<pre class="highlight swift"><code><span class="o">.</span><span class="nf">package</span><span class="p">(</span><span class="nv">name</span><span class="p">:</span> <span class="s">"stellarsdk"</span><span class="p">,</span> <span class="nv">url</span><span class="p">:</span> <span class="s">"git@github.com:Soneso/stellar-ios-mac-sdk.git"</span><span class="p">,</span> <span class="nv">from</span><span class="p">:</span> <span class="s">"3.6.0"</span><span class="p">),</span>
 </code></pre>
 <h3 id='cocoapods' class='heading'>CocoaPods</h3>
-<pre class="highlight ruby"><code><span class="n">pod</span> <span class="s1">'stellar-ios-mac-sdk'</span><span class="p">,</span> <span class="s1">'~&gt; 3.5.0'</span>
+<pre class="highlight ruby"><code><span class="n">pod</span> <span class="s1">'stellar-ios-mac-sdk'</span><span class="p">,</span> <span class="s1">'~&gt; 3.6.0'</span>
 </code></pre>
 
 <p>Requires iOS 13+, macOS 10.15+, Swift 5.7+.</p>
@@ -2371,9 +2374,7 @@
 <p><a href="https://soneso.github.io/stellar-ios-mac-sdk/">API reference</a></p>
 <h2 id='smart-accounts-passkey-support' class='heading'>Smart Accounts (Passkey) support</h2>
 
-<p>This SDK ships first-class support for OpenZeppelin smart accounts on Stellar: WebAuthn passkey authentication via Apple&rsquo;s <code>AuthenticationServices</code>, multi-signer authorization, on-chain context rules, and policy contracts (threshold, weighted threshold, spending limit). An optional fee-bump relayer and credential indexer integrate transparently.</p>
-
-<p>See the <a href="docs/smart-accounts/README.md">Smart Accounts documentation</a> for an overview, the <a href="docs/smart-accounts/onboarding.md">developer onboarding guide</a> for conceptual material, the <a href="docs/smart-accounts/api-reference.md">API reference</a> for every public symbol, and the per-platform WebAuthn setup guides: <a href="docs/smart-accounts/webauthn-ios.md">iOS</a>, <a href="docs/smart-accounts/webauthn-macos.md">macOS</a>.</p>
+<p>The SDK supports OpenZeppelin smart accounts on Stellar — passkey/WebAuthn authentication, multi-signer authorization, context rules, and policies. See the <a href="docs/smart-accounts/README.md">Smart Accounts documentation</a> and the <a href="https://github.com/Soneso/ios-oz-smartaccount-demo">demo app</a>.</p>
 <h2 id='compatibility' class='heading'>Compatibility</h2>
 
 <ul>

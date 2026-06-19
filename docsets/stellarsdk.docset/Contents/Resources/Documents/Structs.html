@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="index.html">
-          stellarsdk 3.5.0 Docs
+          stellarsdk 3.6.0 Docs
         </a>
          (94% documented)
       </p>
@@ -2151,6 +2151,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Structs/SimulateTransactionResult.html">SimulateTransactionResult</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/SorobanDelegateDescriptor.html">SorobanDelegateDescriptor</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Structs/SorobanRpcError.html">SorobanRpcError</a>
@@ -10957,6 +10960,55 @@ to obtain a JWT token.</p>
                       </div>
                       <div class="slightly-smaller">
                         <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/web_authentication_contracts/WebAuthForContractsResponse.swift#L55-L103">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+              </ul>
+            </div>
+            <div class="task-group">
+              <div class="task-name-container">
+                <a name="/Delegate%20descriptor"></a>
+                <a name="//apple_ref/swift/Section/Delegate descriptor" class="dashAnchor"></a>
+                <div class="section-name-container">
+                  <a class="section-name-link" href="#/Delegate%20descriptor"></a>
+                  <h3 class="section-name"><span>Delegate descriptor</span>
+</h3>
+                </div>
+              </div>
+              <ul class="item-container">
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10stellarsdk25SorobanDelegateDescriptorV"></a>
+                    <a name="//apple_ref/swift/Struct/SorobanDelegateDescriptor" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk25SorobanDelegateDescriptorV">SorobanDelegateDescriptor</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Descriptor for one node in a CAP-71 delegate tree.</p>
+
+<p>Callers supply an address strkey, an optional pre-built signature (defaults to <code>.void</code>),
+and an optional array of nested delegate descriptors. The SDK converts descriptors into
+<code>SorobanDelegateSignatureXDR</code> values, sorts every array by ascending XDR-byte order,
+and rejects within-array duplicate addresses.</p>
+
+                        <a href="Structs/SorobanDelegateDescriptor.html" class="slightly-smaller">See more</a>
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">SorobanDelegateDescriptor</span> <span class="p">:</span> <span class="kt">Sendable</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/xdr_helpers/SorobanDelegateTreeXDR+Helpers.swift#L11-L34">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
