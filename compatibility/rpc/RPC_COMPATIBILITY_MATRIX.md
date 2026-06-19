@@ -1,16 +1,16 @@
 # Soroban RPC vs iOS/macOS SDK Compatibility Matrix
 
-**RPC Version:** v26.0.0 (released 2026-04-03)  
-**RPC Source:** [v26.0.0](https://github.com/stellar/stellar-rpc/releases/tag/v26.0.0)  
-**SDK Version:** 3.5.0  
-**Generated:** 2026-06-08 16:20:18
+**RPC Version:** v27.0.0 (released 2026-06-11)  
+**RPC Source:** [v27.0.0](https://github.com/stellar/stellar-rpc/releases/tag/v27.0.0)  
+**SDK Version:** 3.6.0  
+**Generated:** 2026-06-19 01:34:15
 
 ## Overall Coverage
 
-**Coverage:** 100.0%
+**Coverage:** 91.7%
 
-- **Fully Supported:** 12/12
-- **Partially Supported:** 0/12
+- **Fully Supported:** 11/12
+- **Partially Supported:** 1/12
 - **Not Supported:** 0/12
 
 ## Method Comparison
@@ -22,7 +22,7 @@
 | getTransaction | Full | `getTransaction(transactionHash:)` | GetTransactionResponse | Full support including protocol 23+ events field, computed properties. |
 | getTransactions | Full | `getTransactions(startLedger:, paginationOptions:)` | GetTransactionsResponse | Full pagination support with cursor and limit. |
 | sendTransaction | Full | `sendTransaction(transaction:)` | SendTransactionResponse | Full support for all response fields including diagnosticEvents, errorResult. |
-| simulateTransaction | Full | `simulateTransaction(simulateTxRequest:)` | SimulateTransactionResponse | Supports transaction, resourceConfig (instructionLeeway), and authMode (protocol 23+). |
+| simulateTransaction | Partial | `simulateTransaction(simulateTxRequest:)` | SimulateTransactionResponse | Missing params: useUpgradedAuth |
 
 ### Ledger Methods
 
@@ -64,7 +64,7 @@ Detailed breakdown of parameter support per method.
 | getTransactions | 2 | 2 | - |
 | getVersionInfo | 0 | 0 | - |
 | sendTransaction | 1 | 1 | - |
-| simulateTransaction | 3 | 3 | - |
+| simulateTransaction | 4 | 3 | useUpgradedAuth |
 
 ## Response Field Coverage
 
