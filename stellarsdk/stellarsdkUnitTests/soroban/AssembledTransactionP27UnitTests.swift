@@ -46,31 +46,74 @@ final class AssembledTransactionP27UnitTests: XCTestCase {
         super.tearDown()
     }
 
-    // MARK: - SimulateTransactionRequest param serialization
+    // MARK: - SimulateTransactionRequest useUpgradedAuth param tests
 
-    /// All request params (transaction, resourceConfig, authMode) serialize together.
-    func testBuildRequestParams_existingParamsSerialized() throws {
+    /// useUpgradedAuth key must be absent when the default (false) is used.
+    func testBuildRequestParams_useUpgradedAuthAbsentByDefault() throws {
+        let tx = try makeMockTransaction()
+        let request = SimulateTransactionRequest(transaction: tx)
+        let params = request.buildRequestParams()
+        XCTAssertNil(params["useUpgradedAuth"], "useUpgradedAuth key must be absent when not opted in")
+    }
+
+    /// useUpgradedAuth key must be absent when explicitly set to false.
+    func testBuildRequestParams_useUpgradedAuthAbsentWhenExplicitlyFalse() throws {
+        let tx = try makeMockTransaction()
+        let request = SimulateTransactionRequest(transaction: tx, useUpgradedAuth: false)
+        let params = request.buildRequestParams()
+        XCTAssertNil(params["useUpgradedAuth"], "useUpgradedAuth key must be absent when explicitly false")
+    }
+
+    /// useUpgradedAuth key must be present as boolean true when opted in.
+    func testBuildRequestParams_useUpgradedAuthPresentAsBooleanTrueWhenOptedIn() throws {
+        let tx = try makeMockTransaction()
+        let request = SimulateTransactionRequest(transaction: tx, useUpgradedAuth: true)
+        let params = request.buildRequestParams()
+        guard let val = params["useUpgradedAuth"] else {
+            return XCTFail("useUpgradedAuth key must be present when opted in")
+        }
+        guard let boolVal = val as? Bool else {
+            return XCTFail("useUpgradedAuth must be a Bool, got \(type(of: val))")
+        }
+        XCTAssertTrue(boolVal, "useUpgradedAuth value must be true")
+    }
+
+    /// Existing params (transaction, resourceConfig, authMode) are unaffected by useUpgradedAuth.
+    func testBuildRequestParams_existingParamsUnaffected() throws {
         let tx = try makeMockTransaction()
         let resourceConfig = ResourceConfig(instructionLeeway: 3_000_000)
         let request = SimulateTransactionRequest(
             transaction: tx,
             resourceConfig: resourceConfig,
-            authMode: "record"
+            authMode: "record",
+            useUpgradedAuth: true
         )
         let params = request.buildRequestParams()
         XCTAssertNotNil(params["transaction"], "transaction key must be present")
         XCTAssertNotNil(params["resourceConfig"], "resourceConfig key must be present")
         XCTAssertEqual(params["authMode"] as? String, "record", "authMode must be preserved")
+        XCTAssertTrue(params["useUpgradedAuth"] as? Bool == true, "useUpgradedAuth must be present")
     }
 
-    // MARK: - MethodOptions params
+    // MARK: - MethodOptions useUpgradedAuth opt-in
 
-    func testMethodOptions_paramsSet() {
-        let opts = MethodOptions(fee: 5000, timeoutInSeconds: 120, simulate: false, restore: true)
+    func testMethodOptions_useUpgradedAuthDefaultFalse() {
+        let opts = MethodOptions()
+        XCTAssertFalse(opts.useUpgradedAuth, "useUpgradedAuth must default to false")
+    }
+
+    func testMethodOptions_useUpgradedAuthExplicitTrue() {
+        let opts = MethodOptions(useUpgradedAuth: true)
+        XCTAssertTrue(opts.useUpgradedAuth)
+    }
+
+    func testMethodOptions_existingParamsUnaffectedByUseUpgradedAuth() {
+        let opts = MethodOptions(fee: 5000, timeoutInSeconds: 120, simulate: false, restore: true, useUpgradedAuth: true)
         XCTAssertEqual(opts.fee, 5000)
         XCTAssertEqual(opts.timeoutInSeconds, 120)
         XCTAssertFalse(opts.simulate)
         XCTAssertTrue(opts.restore)
+        XCTAssertTrue(opts.useUpgradedAuth)
     }
 
     // MARK: - needsNonInvokerSigningBy: ADDRESS arm
@@ -1074,6 +1117,133 @@ final class AssembledTransactionP27UnitTests: XCTestCase {
             callbackInvokeCount, 1,
             "Callback must be invoked exactly once for the single matching entry"
         )
+    }
+
+    // MARK: - Gap 5: MethodOptions.useUpgradedAuth threads through simulate() into JSON-RPC request
+
+    /// Verifies that MethodOptions(useUpgradedAuth: true) causes simulate() to include
+    /// "useUpgradedAuth": true in the JSON-RPC request body sent to the server.
+    ///
+    /// URLProtocol delivers the body via httpBodyStream (not httpBody) once a request enters
+    /// the protocol pipeline, so both paths are checked.
+    func testSimulate_withUseUpgradedAuthTrue_sendsUseUpgradedAuthInRequest() async throws {
+        var capturedBodyData: Data?
+
+        let handler: MockHandler = { mock, request in
+            // URLProtocol puts the POST body into httpBodyStream, not httpBody.
+            if let data = request.httpBody {
+                capturedBodyData = data
+            } else if let stream = request.httpBodyStream {
+                capturedBodyData = stream.readfully()
+            }
+            mock.statusCode = 200
+            return self.makeMinimalSimulateResponse()
+        }
+        ServerMock.add(mock: RequestMock(
+            host: "soroban-testnet.stellar.org",
+            path: "*",
+            httpMethod: "POST",
+            mockHandler: handler
+        ))
+
+        let methodOptions = MethodOptions(useUpgradedAuth: true)
+        let opts = AssembledTransactionOptions(
+            clientOptions: clientOptions,
+            methodOptions: methodOptions,
+            method: "test"
+        )
+        let at = AssembledTransaction(options: opts)
+        at.tx = try makeMockTransaction()
+
+        try await at.simulate()
+
+        guard let bodyData = capturedBodyData,
+              let jsonObj = try? JSONSerialization.jsonObject(with: bodyData) as? [String: Any],
+              let params = jsonObj["params"] as? [String: Any] else {
+            XCTFail("Could not read or parse the captured JSON-RPC request body")
+            return
+        }
+
+        guard let useUpgradedAuthVal = params["useUpgradedAuth"] as? Bool else {
+            XCTFail("'useUpgradedAuth' key must be present in params when MethodOptions(useUpgradedAuth: true) is used; got params keys: \(params.keys.sorted())")
+            return
+        }
+        XCTAssertTrue(useUpgradedAuthVal, "useUpgradedAuth value must be true")
+    }
+
+    /// Verifies that the default MethodOptions() causes simulate() to omit the "useUpgradedAuth"
+    /// key entirely from the JSON-RPC request body.
+    func testSimulate_defaultMethodOptions_useUpgradedAuthKeyAbsent() async throws {
+        var capturedBodyData: Data?
+
+        let handler: MockHandler = { mock, request in
+            if let data = request.httpBody {
+                capturedBodyData = data
+            } else if let stream = request.httpBodyStream {
+                capturedBodyData = stream.readfully()
+            }
+            mock.statusCode = 200
+            return self.makeMinimalSimulateResponse()
+        }
+        ServerMock.add(mock: RequestMock(
+            host: "soroban-testnet.stellar.org",
+            path: "*",
+            httpMethod: "POST",
+            mockHandler: handler
+        ))
+
+        let opts = AssembledTransactionOptions(
+            clientOptions: clientOptions,
+            methodOptions: MethodOptions(),
+            method: "test"
+        )
+        let at = AssembledTransaction(options: opts)
+        at.tx = try makeMockTransaction()
+
+        try await at.simulate()
+
+        guard let bodyData = capturedBodyData,
+              let jsonObj = try? JSONSerialization.jsonObject(with: bodyData) as? [String: Any],
+              let params = jsonObj["params"] as? [String: Any] else {
+            XCTFail("Could not read or parse the captured JSON-RPC request body")
+            return
+        }
+
+        XCTAssertNil(params["useUpgradedAuth"],
+                     "useUpgradedAuth key must be ABSENT from params when MethodOptions uses the default (false)")
+    }
+
+    // MARK: - Gap 5 helper: minimal simulate response
+
+    private func makeMinimalSimulateResponse() -> String {
+        let transactionData = SorobanTransactionDataXDR(
+            resources: SorobanResourcesXDR(
+                footprint: LedgerFootprintXDR(readOnly: [], readWrite: []),
+                instructions: 100,
+                diskReadBytes: 0,
+                writeBytes: 0
+            ),
+            resourceFee: 100
+        )
+        let txDataXdr = transactionData.xdrEncoded!
+        let returnValueXdr = SCValXDR.void.xdrEncoded!
+        return """
+        {
+            "jsonrpc": "2.0",
+            "id": "1",
+            "result": {
+                "latestLedger": 1000000,
+                "transactionData": "\(txDataXdr)",
+                "minResourceFee": "100",
+                "results": [
+                    {
+                        "auth": [],
+                        "xdr": "\(returnValueXdr)"
+                    }
+                ]
+            }
+        }
+        """
     }
 
     private func setupGetLatestLedgerMock() {

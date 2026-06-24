@@ -179,7 +179,13 @@ final class SorobanP27AuthIntegrationTests: XCTestCase {
 
         // Build the transaction; at this point auth entries carry legacy ADDRESS credentials
         // as returned by the RPC simulate endpoint.
-        let assembledTx = try await client.buildInvokeMethodTx(name: methodName, args: args)
+        //
+        // useUpgradedAuth: true requests ADDRESS_V2 credential arms from the RPC. A supporting
+        // RPC records V2 in recording mode, but the flag is silently ignored until a release
+        // ships it (stellar-rpc #783 merged 2026-06-23, unreleased), so the client-side rewrite
+        // below stays as the fallback that exercises the V2 signing path.
+        let assembledTx = try await client.buildInvokeMethodTx(name: methodName, args: args,
+                                                               methodOptions: MethodOptions(useUpgradedAuth: true))
 
         // Rewrite any ADDRESS auth entry whose credential address matches the invoker
         // to ADDRESS_V2 client-side — simulation returns legacy ADDRESS entries, so the

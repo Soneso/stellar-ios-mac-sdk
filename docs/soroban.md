@@ -528,6 +528,34 @@ The legacy `.address` arm remains the default everywhere and stays fully valid. 
 
 All signing APIs (`signAuthEntries`, `SorobanAuthorizationEntryXDR.sign`, SEP-45) support all three arms and preserve the arm on write-back. `needsNonInvokerSigningBy` reports the address of every node whose signature is void, including each unsigned delegate node of a `WITH_DELEGATES` entry.
 
+#### Requesting V2 Entries from Simulation
+
+Set `useUpgradedAuth` to request `ADDRESS_V2` credential arms in the simulation response. A supporting RPC records V2 arms in recording mode; RPC servers without support silently ignore the flag and return legacy `ADDRESS` entries. Detect whether the flag was honored by inspecting the credential arm of the returned entries, never by expecting an error.
+
+```swift
+import stellarsdk
+
+// Contract client: opt in via MethodOptions
+let tx = try await client.buildInvokeMethodTx(
+    name: "swap",
+    args: args,
+    methodOptions: MethodOptions(useUpgradedAuth: true)
+)
+
+// Detect whether the RPC honored the flag
+let entries = try tx.getSimulationData().auth ?? []
+let gotV2 = entries.contains { entry in
+    if case .addressV2 = entry.credentials { return true }
+    return false
+}
+
+// Low-level: opt in on the request
+let request = SimulateTransactionRequest(transaction: transaction, useUpgradedAuth: true)
+let simEnum = await server.simulateTransaction(simulateTxRequest: request)
+```
+
+When `useUpgradedAuth` is `false` (the default), the key is omitted from the JSON-RPC params entirely.
+
 #### Delegated Authorization
 
 A `WITH_DELEGATES` entry lets delegate addresses co-sign a single authorization entry. Simulation never returns `WITH_DELEGATES` entries; clients assemble the tree from an `ADDRESS` or `ADDRESS_V2` entry using `SorobanAuthorizationEntryXDR.withDelegates`.
