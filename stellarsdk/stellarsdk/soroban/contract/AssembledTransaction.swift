@@ -235,7 +235,7 @@ public final class AssembledTransaction: @unchecked Sendable {
         }
         let shouldRestore = restore ?? options.methodOptions.restore
         simulationResult = nil
-        let simRequest = SimulateTransactionRequest(transaction: tx!)
+        let simRequest = SimulateTransactionRequest(transaction: tx!, useUpgradedAuth: options.methodOptions.useUpgradedAuth)
         let simulationResponseEnum = await server.simulateTransaction(simulateTxRequest: simRequest)
         switch simulationResponseEnum {
         case .success(let response):
