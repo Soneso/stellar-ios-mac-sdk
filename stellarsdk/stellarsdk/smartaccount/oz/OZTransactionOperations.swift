@@ -856,9 +856,9 @@ public final class OZTransactionOperations: OZManagerHelpers, @unchecked Sendabl
     ///   - accountId: The temporary funding account's `G...` address.
     ///   - pollIntervalMs: Delay between polls in milliseconds, clamped to a
     ///     minimum of 1 ms to avoid a busy-loop. Defaults to
-    ///     ``OZConstants/friendbotVisibilityPollIntervalMs``.
+    ///     ``OZConstants/rpcVisibilityPollIntervalMs``.
     ///   - timeoutSeconds: Overall wall-clock budget in seconds. Defaults to
-    ///     ``OZConstants/friendbotVisibilityTimeoutSeconds``.
+    ///     ``OZConstants/rpcVisibilityTimeoutSeconds``.
     /// - Returns: The funding account, now visible to the Soroban RPC, with its
     ///   current sequence number.
     /// - Throws: ``SmartAccountTransactionException/Timeout`` when the account
@@ -866,8 +866,8 @@ public final class OZTransactionOperations: OZManagerHelpers, @unchecked Sendabl
     ///   surrounding task is cancelled.
     internal func waitForAccountVisibleToRpc(
         accountId: String,
-        pollIntervalMs: Int = OZConstants.friendbotVisibilityPollIntervalMs,
-        timeoutSeconds: Double = Double(OZConstants.friendbotVisibilityTimeoutSeconds)
+        pollIntervalMs: Int = OZConstants.rpcVisibilityPollIntervalMs,
+        timeoutSeconds: Double = Double(OZConstants.rpcVisibilityTimeoutSeconds)
     ) async throws -> Account {
         let pollIntervalNanos = UInt64(max(1, pollIntervalMs)) * 1_000_000
         let deadline = Date().addingTimeInterval(timeoutSeconds)
@@ -906,6 +906,132 @@ public final class OZTransactionOperations: OZManagerHelpers, @unchecked Sendabl
             details: reason,
             cause: lastTransientError
         )
+    }
+
+    /// Polls the Soroban RPC for a freshly deployed smart-account contract's
+    /// instance ledger entry until it is visible, then returns.
+    ///
+    /// The deploy transaction may confirm on Horizon a ledger or more before the
+    /// Soroban RPC's simulation endpoint observes the new contract instance.
+    /// Simulating the funding flow against the contract before its instance
+    /// entry is visible fails; this poll gates the funding flow on the contract
+    /// actually being present, replacing a single fixed propagation delay that
+    /// fails under slower-than-expected testnet propagation.
+    ///
+    /// Visibility is detected structurally, without string-matching:
+    /// ``SorobanServer/getLedgerEntries(base64EncodedKeys:)`` is queried for the
+    /// contract's persistent instance ledger entry (the ``ContractDataEntryXDR``
+    /// keyed by ``SCValXDR/ledgerKeyContractInstance`` under
+    /// ``ContractDataDurability/persistent``, the exact key the funding flow's
+    /// simulation later reads). An empty `entries` array means the entry is not
+    /// yet applied on the ledger the RPC has observed and drives another poll; a
+    /// present entry means the contract is visible and the wait returns. Any RPC
+    /// transport failure is treated as a transient error: it is retried up to
+    /// the deadline and, when the contract never becomes visible, surfaced as
+    /// the timeout cause. The wait is cooperatively cancellable through Swift
+    /// task cancellation.
+    ///
+    /// - Parameters:
+    ///   - contractId: The deployed smart-account contract address (`C...`
+    ///     strkey).
+    ///   - pollIntervalMs: Delay between polls in milliseconds, clamped to a
+    ///     minimum of 1 ms to avoid a busy-loop. Defaults to
+    ///     ``OZConstants/rpcVisibilityPollIntervalMs``.
+    ///   - timeoutSeconds: Overall wall-clock budget in seconds. Defaults to
+    ///     ``OZConstants/rpcVisibilityTimeoutSeconds``.
+    /// - Throws: ``SmartAccountTransactionException/Timeout`` when the contract
+    ///   is not visible within `timeoutSeconds`;
+    ///   ``SmartAccountValidationException/InvalidAddress`` when `contractId`
+    ///   cannot be encoded into a ledger key; `CancellationError` when the
+    ///   surrounding task is cancelled.
+    internal func waitForContractVisibleToRpc(
+        contractId: String,
+        pollIntervalMs: Int = OZConstants.rpcVisibilityPollIntervalMs,
+        timeoutSeconds: Double = Double(OZConstants.rpcVisibilityTimeoutSeconds)
+    ) async throws {
+        let ledgerKeyBase64 = try OZTransactionOperations.contractInstanceLedgerKey(
+            contractId: contractId
+        )
+        let pollIntervalNanos = UInt64(max(1, pollIntervalMs)) * 1_000_000
+        let deadline = Date().addingTimeInterval(timeoutSeconds)
+        var lastTransientError: SorobanRpcRequestError?
+
+        while true {
+            try Task.checkCancellation()
+
+            switch await kit.sorobanServer.getLedgerEntries(
+                base64EncodedKeys: [ledgerKeyBase64]
+            ) {
+            case .success(let response):
+                // A present instance entry means the RPC has applied the ledger
+                // carrying the deployed contract; an empty result is the
+                // structural "not visible yet" signal and simply drives another
+                // poll.
+                if !response.entries.isEmpty {
+                    return
+                }
+            case .failure(let error):
+                // Every RPC transport failure is a transient error retained as
+                // the eventual timeout cause; the not-visible signal is the
+                // empty-entries success above, never a failure.
+                lastTransientError = error
+            }
+
+            if Date() >= deadline {
+                break
+            }
+            try await Task.sleep(nanoseconds: pollIntervalNanos)
+        }
+
+        let timeoutText = OZTransactionOperations.describeSeconds(timeoutSeconds)
+        var reason =
+            "Deployed contract \(contractId) not visible to the Soroban RPC " +
+            "within \(timeoutText)s after deployment; testnet propagation may " +
+            "be delayed. Retry shortly."
+        if let lastTransientError = lastTransientError {
+            reason += " Last RPC error: \(rpcErrorMessage(lastTransientError))."
+        }
+        throw SmartAccountTransactionException.timeout(
+            details: reason,
+            cause: lastTransientError
+        )
+    }
+
+    /// Builds the Base64-encoded `LedgerKey` for a contract's persistent
+    /// instance ledger entry: the ``ContractDataEntryXDR`` keyed by
+    /// ``SCValXDR/ledgerKeyContractInstance`` under
+    /// ``ContractDataDurability/persistent``. This is the entry the Soroban RPC
+    /// reports for a deployed contract; probing it via
+    /// ``SorobanServer/getLedgerEntries(base64EncodedKeys:)`` is the visibility
+    /// signal for ``waitForContractVisibleToRpc(contractId:pollIntervalMs:timeoutSeconds:)``.
+    ///
+    /// Mirrors the key ``SorobanServer/getContractData(contractId:key:durability:)``
+    /// constructs internally so the visibility probe queries the exact entry the
+    /// funding flow's simulation later reads.
+    ///
+    /// - Throws: ``SmartAccountValidationException/InvalidAddress`` when
+    ///   `contractId` is not a valid contract address or its ledger key cannot
+    ///   be XDR-encoded.
+    internal static func contractInstanceLedgerKey(contractId: String) throws -> String {
+        let contractAddress: SCAddressXDR
+        do {
+            contractAddress = try SCAddressXDR(contractId: contractId)
+        } catch {
+            throw SmartAccountValidationException.invalidAddress(
+                address: contractId,
+                cause: error
+            )
+        }
+        let contractDataKey = LedgerKeyContractDataXDR(
+            contract: contractAddress,
+            key: .ledgerKeyContractInstance,
+            durability: .persistent
+        )
+        let ledgerKey = LedgerKeyXDR.contractData(contractDataKey)
+        guard let ledgerKeyBase64 = ledgerKey.xdrEncoded else {
+            throw SmartAccountValidationException.invalidAddress(address: contractId)
+        }
+        return ledgerKeyBase64
     }
 
     /// Simulates a host function in isolation and returns the parsed `SCValXDR`

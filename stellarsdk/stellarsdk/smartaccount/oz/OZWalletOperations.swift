@@ -398,6 +398,7 @@ public final class OZWalletOperations: OZManagerHelpers, @unchecked Sendable {
         if autoSubmit {
             transactionHash = try await signAndSubmitDeploy(
                 deployTransaction: built.transaction,
+                contractId: contractId,
                 credentialIdBase64url: credentialIdBase64url,
                 autoFund: autoFund,
                 nativeTokenContract: nativeTokenContract,
@@ -482,6 +483,9 @@ public final class OZWalletOperations: OZManagerHelpers, @unchecked Sendable {
     ///
     /// - Parameters:
     ///   - deployTransaction: Built and signed deploy transaction.
+    ///   - contractId: Deterministic address of the contract this deploy
+    ///     creates; used to gate funding on the contract becoming visible to
+    ///     the Soroban RPC.
     ///   - credentialIdBase64url: Base64URL-encoded credential identifier for
     ///     credential-manager bookkeeping.
     ///   - autoFund: Whether to fund the wallet via Friendbot after the deploy
@@ -493,6 +497,7 @@ public final class OZWalletOperations: OZManagerHelpers, @unchecked Sendable {
     ///   ``WebAuthnException``.
     private func signAndSubmitDeploy(
         deployTransaction: Transaction,
+        contractId: String,
         credentialIdBase64url: String,
         autoFund: Bool,
         nativeTokenContract: String?,
@@ -512,10 +517,15 @@ public final class OZWalletOperations: OZManagerHelpers, @unchecked Sendable {
                 )
             }
             // why: the deploy transaction may be confirmed on Horizon before
-            // Soroban RPC's simulation endpoint observes the new contract
-            // instance; wait for the next ledger close (~5s on testnet) before
-            // the funding flow simulates against the contract.
-            try await Task.sleep(nanoseconds: 5_000_000_000)
+            // the Soroban RPC's simulation endpoint observes the new contract
+            // instance; poll the RPC until the contract's instance ledger entry
+            // is visible rather than assuming a single fixed propagation delay,
+            // which fails whenever testnet propagation is slower than the guess
+            // and the funding flow then simulates against a not-yet-applied
+            // contract.
+            try await transactionOperations.waitForContractVisibleToRpc(
+                contractId: contractId
+            )
             _ = try await transactionOperations.fundWallet(
                 nativeTokenContract: tokenContract,
                 forceMethod: forceMethod
@@ -1002,7 +1012,16 @@ public final class OZWalletOperations: OZManagerHelpers, @unchecked Sendable {
                     reason: "nativeTokenContract is required when autoFund is true"
                 )
             }
-            try await Task.sleep(nanoseconds: 5_000_000_000)
+            // why: the deploy transaction may be confirmed on Horizon before
+            // the Soroban RPC's simulation endpoint observes the new contract
+            // instance; poll the RPC until the contract's instance ledger entry
+            // is visible rather than assuming a single fixed propagation delay,
+            // which fails whenever testnet propagation is slower than the guess
+            // and the funding flow then simulates against a not-yet-applied
+            // contract.
+            try await transactionOperations.waitForContractVisibleToRpc(
+                contractId: contractId
+            )
             _ = try await transactionOperations.fundWallet(
                 nativeTokenContract: tokenContract,
                 forceMethod: forceMethod

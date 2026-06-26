@@ -1010,6 +1010,196 @@ final class OZTransactionOperationsPipelineTests: XCTestCase {
     }
 
     // ========================================================================
+    // waitForContractVisibleToRpc - deployed-contract propagation poll
+    // ========================================================================
+
+    func test_waitForContractVisibleToRpc_pollsUntilVisible_thenProceeds() async throws {
+        let h = try await buildPipelineHarness()
+
+        // The first two polls report the contract's instance entry is not yet
+        // on the ledger the RPC has applied (empty getLedgerEntries); the third
+        // poll observes the persistent ContractData instance entry.
+        script.enqueueGetLedgerEntriesResponse(
+            OZPipelineFixtures.emptyGetLedgerEntriesResponse()
+        )
+        script.enqueueGetLedgerEntriesResponse(
+            OZPipelineFixtures.emptyGetLedgerEntriesResponse()
+        )
+        let visible = try XCTUnwrap(
+            try OZPipelineFixtures.validGetContractDataResponse(contractId: contractB)
+        )
+        script.enqueueGetLedgerEntriesResponse(visible)
+
+        let start = Date()
+        try await h.txOps.waitForContractVisibleToRpc(
+            contractId: contractB,
+            pollIntervalMs: 40,
+            timeoutSeconds: 5
+        )
+        let elapsed = Date().timeIntervalSince(start)
+
+        XCTAssertEqual(
+            script.getLedgerEntriesCallCount, 3,
+            "expected two not-visible polls followed by one visible poll"
+        )
+        // Two inter-poll sleeps of 40 ms must have elapsed before the contract
+        // was observed, proving the helper waits between attempts rather than
+        // spinning.
+        XCTAssertGreaterThanOrEqual(
+            elapsed, 0.07,
+            "the poll must wait between attempts rather than busy-looping"
+        )
+    }
+
+    func test_waitForContractVisibleToRpc_visibleOnFirstPoll_returnsWithoutSleeping() async throws {
+        let h = try await buildPipelineHarness()
+
+        // The contract is visible on the very first probe. With a 2 s poll
+        // interval, a helper that slept after a successful poll would block for
+        // ~2 s; the helper must return immediately because it returns before
+        // ever reaching the inter-poll sleep. This pins "did not sleep after
+        // success" deterministically rather than via a fragile timing window.
+        let visible = try XCTUnwrap(
+            try OZPipelineFixtures.validGetContractDataResponse(contractId: contractB)
+        )
+        script.enqueueGetLedgerEntriesResponse(visible)
+
+        let start = Date()
+        try await h.txOps.waitForContractVisibleToRpc(
+            contractId: contractB,
+            pollIntervalMs: 2000,
+            timeoutSeconds: 30
+        )
+        let elapsed = Date().timeIntervalSince(start)
+
+        XCTAssertEqual(
+            script.getLedgerEntriesCallCount, 1,
+            "a contract visible on the first probe must be observed in one poll"
+        )
+        XCTAssertLessThan(
+            elapsed, 1.0,
+            "the helper must not sleep after observing the contract as visible"
+        )
+    }
+
+    func test_waitForContractVisibleToRpc_neverVisible_throwsClearTimeout() async throws {
+        let h = try await buildPipelineHarness()
+
+        // Every poll reports the contract instance is missing.
+        script.setEmptyGetLedgerEntriesResponse()
+
+        do {
+            try await h.txOps.waitForContractVisibleToRpc(
+                contractId: contractB,
+                pollIntervalMs: 30,
+                timeoutSeconds: 0.2
+            )
+            XCTFail("expected SmartAccountTransactionException.Timeout")
+        } catch let error as SmartAccountTransactionException.Timeout {
+            XCTAssertTrue(
+                error.message.contains(contractB),
+                "timeout message should name the deployed contract: \(error.message)"
+            )
+            XCTAssertTrue(
+                error.message.contains("not visible to the Soroban RPC"),
+                "timeout message should describe the visibility failure: \(error.message)"
+            )
+            XCTAssertTrue(
+                error.message.contains("Retry shortly"),
+                "timeout message should advise a retry: \(error.message)"
+            )
+            // A pure not-visible timeout has no underlying transient failure:
+            // the contract simply never appeared. Pinning the absence of a cause
+            // and of the transient-error suffix guards against a regression that
+            // misclassifies the expected empty-entries signal as a transient
+            // RPC error.
+            XCTAssertNil(
+                error.cause,
+                "a not-visible timeout must carry no underlying cause: \(String(describing: error.cause))"
+            )
+            XCTAssertFalse(
+                error.message.contains("Last RPC error:"),
+                "a not-visible timeout must not append a transient RPC error: \(error.message)"
+            )
+        }
+        XCTAssertGreaterThanOrEqual(
+            script.getLedgerEntriesCallCount, 1,
+            "the helper must poll at least once before timing out"
+        )
+    }
+
+    func test_waitForContractVisibleToRpc_transientRpcError_surfacedAsTimeoutCause() async throws {
+        let h = try await buildPipelineHarness()
+
+        // No scripted getLedgerEntries response: the mock answers every probe
+        // with a JSON-RPC error envelope, exercising the transient-error retry
+        // path (distinct from the empty-entries "not visible yet" signal).
+        do {
+            try await h.txOps.waitForContractVisibleToRpc(
+                contractId: contractB,
+                pollIntervalMs: 30,
+                timeoutSeconds: 0.2
+            )
+            XCTFail("expected SmartAccountTransactionException.Timeout")
+        } catch let error as SmartAccountTransactionException.Timeout {
+            XCTAssertTrue(
+                error.message.contains("not visible to the Soroban RPC"),
+                "timeout message should describe the visibility failure: \(error.message)"
+            )
+            XCTAssertTrue(
+                error.message.contains("Last RPC error:"),
+                "a transient RPC error must be surfaced as the timeout cause: \(error.message)"
+            )
+            XCTAssertNotNil(
+                error.cause,
+                "a transient-error timeout must retain the transient RPC error as its cause"
+            )
+        }
+    }
+
+    func test_waitForContractVisibleToRpc_cancellation_throwsCancellationError() async throws {
+        let h = try await buildPipelineHarness()
+
+        // Never visible, with a long poll interval so the task parks in
+        // Task.sleep while we cancel it.
+        script.setEmptyGetLedgerEntriesResponse()
+
+        let contractId = contractB
+        let task = Task {
+            try await h.txOps.waitForContractVisibleToRpc(
+                contractId: contractId,
+                pollIntervalMs: 1000,
+                timeoutSeconds: 30
+            )
+        }
+        // Let the first poll run and the helper enter its inter-poll sleep,
+        // then cancel cooperatively.
+        try await Task.sleep(nanoseconds: 100_000_000)
+        task.cancel()
+
+        do {
+            _ = try await task.value
+            XCTFail("expected CancellationError")
+        } catch is CancellationError {
+            // expected: cancellation must not be converted into a Timeout or
+            // recorded as a transient RPC error.
+        }
+    }
+
+    func test_contractInstanceLedgerKey_invalidContractId_throwsInvalidAddress() {
+        do {
+            _ = try OZTransactionOperations.contractInstanceLedgerKey(
+                contractId: "not-a-contract"
+            )
+            XCTFail("expected SmartAccountValidationException.InvalidAddress")
+        } catch is SmartAccountValidationException.InvalidAddress {
+            // expected: a malformed contract id cannot be encoded into a key
+        } catch {
+            XCTFail("expected InvalidAddress, got \(error)")
+        }
+    }
+
+    // ========================================================================
     // Relayer-vs-RPC
     // ========================================================================
 

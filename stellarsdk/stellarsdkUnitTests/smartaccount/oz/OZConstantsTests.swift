@@ -26,12 +26,12 @@ final class OZConstantsTests: XCTestCase {
         XCTAssertEqual(OZConstants.friendbotReserveXlm, 5)
     }
 
-    func test_FRIENDBOT_VISIBILITY_POLL_INTERVAL_MS_equals_1500() {
-        XCTAssertEqual(OZConstants.friendbotVisibilityPollIntervalMs, 1500)
+    func test_RPC_VISIBILITY_POLL_INTERVAL_MS_equals_1500() {
+        XCTAssertEqual(OZConstants.rpcVisibilityPollIntervalMs, 1500)
     }
 
-    func test_FRIENDBOT_VISIBILITY_TIMEOUT_SECONDS_equals_45() {
-        XCTAssertEqual(OZConstants.friendbotVisibilityTimeoutSeconds, 45)
+    func test_RPC_VISIBILITY_TIMEOUT_SECONDS_equals_45() {
+        XCTAssertEqual(OZConstants.rpcVisibilityTimeoutSeconds, 45)
     }
 
     func test_DEFAULT_TIMEOUT_SECONDS_equals_30() {
@@ -68,8 +68,8 @@ final class OZConstantsTests: XCTestCase {
             OZConstants.defaultIndexerTimeoutMs,
             OZConstants.defaultRelayerTimeoutMs,
             OZConstants.friendbotReserveXlm,
-            OZConstants.friendbotVisibilityPollIntervalMs,
-            OZConstants.friendbotVisibilityTimeoutSeconds,
+            OZConstants.rpcVisibilityPollIntervalMs,
+            OZConstants.rpcVisibilityTimeoutSeconds,
             OZConstants.defaultTimeoutSeconds,
             OZConstants.maxSigners,
             OZConstants.maxPolicies,
