@@ -285,8 +285,18 @@ public struct AnchorTransaction: Decodable , Sendable {
     public init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         id = try values.decode(String.self, forKey: .id)
-        kind = AnchorTransactionKind(rawValue:try values.decode(String.self, forKey: .kind))!
-        status = AnchorTransactionStatus(rawValue: try values.decode(String.self, forKey: .status))!
+        let kindRawValue = try values.decode(String.self, forKey: .kind)
+        guard let decodedKind = AnchorTransactionKind(rawValue: kindRawValue) else {
+            throw DecodingError.dataCorruptedError(forKey: .kind, in: values,
+                debugDescription: "Unknown anchor transaction kind '\(kindRawValue)'")
+        }
+        kind = decodedKind
+        let statusRawValue = try values.decode(String.self, forKey: .status)
+        guard let decodedStatus = AnchorTransactionStatus(rawValue: statusRawValue) else {
+            throw DecodingError.dataCorruptedError(forKey: .status, in: values,
+                debugDescription: "Unknown anchor transaction status '\(statusRawValue)'")
+        }
+        status = decodedStatus
         statusEta = try values.decodeIfPresent(Int.self, forKey: .statusEta)
         moreInfoUrl = try values.decodeIfPresent(String.self, forKey: .moreInfoUrl)
         amountIn = try values.decodeIfPresent(String.self, forKey: .amountIn)

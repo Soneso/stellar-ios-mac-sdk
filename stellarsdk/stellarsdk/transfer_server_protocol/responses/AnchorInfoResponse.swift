@@ -433,22 +433,28 @@ public struct AnchorFeeInfo: Decodable , Sendable {
     public let enabled: Bool
     /// Indicates whether authentication is required to access the fee endpoint.
     public let authenticationRequired:Bool?
-    
+    /// Optional. A description of how the fee is calculated, to be shown to the user. This is
+    /// especially relevant when the GET /fee endpoint is not supported and fees cannot be
+    /// modeled with fixed and percentage values per asset.
+    public let description:String?
+
     /// Properties to encode and decode
     private enum CodingKeys: String, CodingKey {
         case enabled
         case authenticationRequired = "authentication_required"
+        case description
     }
-    
+
     /**
      Initializer - creates a new instance by decoding from the given decoder.
-     
+
      - Parameter decoder: The decoder containing the data
      */
     public init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         enabled = try values.decode(Bool.self, forKey: .enabled)
         authenticationRequired = try values.decodeIfPresent(Bool.self, forKey: .authenticationRequired)
+        description = try values.decodeIfPresent(String.self, forKey: .description)
     }
 }
 

@@ -654,6 +654,50 @@ final class TransferServerProtocolUnitTests: XCTestCase {
         XCTAssertFalse(response.transaction!.authenticationRequired!)
     }
 
+    // MARK: - AnchorFeeInfo Tests
+
+    func testAnchorFeeInfoDecodingWithDescription() throws {
+        let description = "Fees vary from 3 to 7 percent based on the the assets transacted and method by which funds are delivered to or collected by the anchor."
+        let json = """
+        {
+            "fee": {
+                "enabled": false,
+                "authentication_required": true,
+                "description": "\(description)"
+            }
+        }
+        """
+
+        let data = json.data(using: .utf8)!
+        let decoder = JSONDecoder()
+        let response = try decoder.decode(AnchorInfoResponse.self, from: data)
+
+        XCTAssertNotNil(response.fee)
+        XCTAssertFalse(response.fee!.enabled)
+        XCTAssertTrue(response.fee!.authenticationRequired!)
+        XCTAssertEqual(response.fee!.description, description)
+    }
+
+    func testAnchorFeeInfoDecodingWithoutDescription() throws {
+        let json = """
+        {
+            "fee": {
+                "enabled": true,
+                "authentication_required": false
+            }
+        }
+        """
+
+        let data = json.data(using: .utf8)!
+        let decoder = JSONDecoder()
+        let response = try decoder.decode(AnchorInfoResponse.self, from: data)
+
+        XCTAssertNotNil(response.fee)
+        XCTAssertTrue(response.fee!.enabled)
+        XCTAssertFalse(response.fee!.authenticationRequired!)
+        XCTAssertNil(response.fee!.description)
+    }
+
     // MARK: - DepositAsset Tests
 
     func testDepositAssetDecodingWithEnabledTrue() throws {
@@ -1025,6 +1069,104 @@ final class TransferServerProtocolUnitTests: XCTestCase {
         let instruction = transaction.instructions?["organization.bank_number"]
         XCTAssertEqual(instruction?.value, "121122676")
         XCTAssertEqual(instruction?.description, "US bank routing number")
+    }
+
+    func testAnchorTransactionDecodingUnknownStatusThrows() throws {
+        let json = """
+        {
+            "id": "82fhs729f63dh0v4",
+            "kind": "deposit",
+            "status": "not_a_real_status",
+            "started_at": "2017-03-20T17:05:32.000Z"
+        }
+        """
+
+        let data = json.data(using: .utf8)!
+        let decoder = JSONDecoder()
+
+        XCTAssertThrowsError(try decoder.decode(AnchorTransaction.self, from: data)) { error in
+            guard case let DecodingError.dataCorrupted(context) = error else {
+                XCTFail("Expected DecodingError.dataCorrupted, got \(error)")
+                return
+            }
+            XCTAssertTrue(context.debugDescription.contains("not_a_real_status"),
+                          "Expected debug description to mention the unknown status value, got: \(context.debugDescription)")
+        }
+    }
+
+    func testAnchorTransactionDecodingUnknownKindThrows() throws {
+        let json = """
+        {
+            "id": "82fhs729f63dh0v4",
+            "kind": "not_a_real_kind",
+            "status": "completed",
+            "started_at": "2017-03-20T17:05:32.000Z"
+        }
+        """
+
+        let data = json.data(using: .utf8)!
+        let decoder = JSONDecoder()
+
+        XCTAssertThrowsError(try decoder.decode(AnchorTransaction.self, from: data)) { error in
+            guard case let DecodingError.dataCorrupted(context) = error else {
+                XCTFail("Expected DecodingError.dataCorrupted, got \(error)")
+                return
+            }
+            XCTAssertTrue(context.debugDescription.contains("not_a_real_kind"),
+                          "Expected debug description to mention the unknown kind value, got: \(context.debugDescription)")
+        }
+    }
+
+    func testAnchorTransactionDecodingValidKindAndStatusSucceeds() throws {
+        let json = """
+        {
+            "id": "82fhs729f63dh0v4",
+            "kind": "withdrawal-exchange",
+            "status": "pending_user_transfer_start",
+            "started_at": "2017-03-20T17:05:32.000Z"
+        }
+        """
+
+        let data = json.data(using: .utf8)!
+        let decoder = JSONDecoder()
+        let transaction = try decoder.decode(AnchorTransaction.self, from: data)
+
+        XCTAssertEqual(transaction.id, "82fhs729f63dh0v4")
+        XCTAssertEqual(transaction.kind, .withdrawalExchange)
+        XCTAssertEqual(transaction.status, .pendingUserTransferStart)
+    }
+
+    func testAnchorTransactionsResponseDecodingUnknownStatusThrows() throws {
+        let json = """
+        {
+            "transactions": [
+                {
+                    "id": "82fhs729f63dh0v4",
+                    "kind": "deposit",
+                    "status": "pending_external",
+                    "started_at": "2017-03-20T17:05:32.000Z"
+                },
+                {
+                    "id": "72fhs729f63dh0v1",
+                    "kind": "deposit",
+                    "status": "totally_unknown_status",
+                    "started_at": "2017-03-20T17:00:02.000Z"
+                }
+            ]
+        }
+        """
+
+        let data = json.data(using: .utf8)!
+        let decoder = JSONDecoder()
+
+        XCTAssertThrowsError(try decoder.decode(AnchorTransactionsResponse.self, from: data)) { error in
+            guard case let DecodingError.dataCorrupted(context) = error else {
+                XCTFail("Expected DecodingError.dataCorrupted, got \(error)")
+                return
+            }
+            XCTAssertTrue(context.debugDescription.contains("totally_unknown_status"),
+                          "Expected debug description to mention the unknown status value, got: \(context.debugDescription)")
+        }
     }
 
     // MARK: - AnchorTransactionsResponse Tests
