@@ -696,13 +696,17 @@ public final class OZTransactionOperations: OZManagerHelpers, @unchecked Sendabl
             )
         }
 
-        // why: wait for Friendbot propagation to Soroban RPC state. The
-        // Horizon submission confirms in milliseconds but Soroban RPC may not
-        // observe the new account ledger entry until the next ledger close
-        // (~5 seconds on testnet).
-        try await Task.sleep(nanoseconds: 5_000_000_000)
-
-        let tempAccount = try await fetchAccount(accountId: tempKeypair.accountId)
+        // why: Friendbot confirms on Horizon within milliseconds, but the
+        // Soroban RPC may not observe the new account's ledger entry until a
+        // later ledger close. Poll the RPC until the temp account is visible
+        // rather than assuming a single fixed propagation delay; a fixed wait
+        // fails whenever testnet propagation is slower than the guess, because
+        // the balance simulation below would then read a not-yet-applied
+        // account entry and throw `Error(Contract, #6)` "account entry is
+        // missing".
+        let tempAccount = try await waitForAccountVisibleToRpc(
+            accountId: tempKeypair.accountId
+        )
 
         let reserveStroopsInt64: Int64 =
             Int64(OZConstants.friendbotReserveXlm) * StellarProtocolConstants.stroopsPerXlm
@@ -826,6 +830,82 @@ public final class OZTransactionOperations: OZManagerHelpers, @unchecked Sendabl
         }
 
         return OZTransactionOperations.formatXlmAmount(stroops: transferStroops)
+    }
+
+    /// Polls the Soroban RPC for a Friendbot-funded temporary account's ledger
+    /// entry until it is visible, then returns the resolved account.
+    ///
+    /// Friendbot confirms the funding on Horizon within milliseconds, but the
+    /// Soroban RPC may not observe the new account's ledger entry until a later
+    /// ledger close. Simulating the native SAC's `balance(<temp account>)`
+    /// before the entry is visible fails with `Error(Contract, #6)`
+    /// "account entry is missing"; this poll gates the balance simulation on the
+    /// account actually being present, replacing a single fixed propagation
+    /// delay that fails under slower-than-expected testnet propagation.
+    ///
+    /// ``SorobanServer/getAccount(accountId:)`` reports a not-yet-visible
+    /// account as a `.requestFailed` carrying
+    /// ``SorobanServer/accountNotFoundMessage``; that outcome drives another
+    /// poll. Any other RPC failure is treated as a transient error: it is
+    /// retried up to the deadline and, when the account never becomes visible,
+    /// surfaced as the timeout cause. The successfully resolved account is
+    /// returned so the caller can reuse it without a second round-trip. The
+    /// wait is cooperatively cancellable through Swift task cancellation.
+    ///
+    /// - Parameters:
+    ///   - accountId: The temporary funding account's `G...` address.
+    ///   - pollIntervalMs: Delay between polls in milliseconds, clamped to a
+    ///     minimum of 1 ms to avoid a busy-loop. Defaults to
+    ///     ``OZConstants/friendbotVisibilityPollIntervalMs``.
+    ///   - timeoutSeconds: Overall wall-clock budget in seconds. Defaults to
+    ///     ``OZConstants/friendbotVisibilityTimeoutSeconds``.
+    /// - Returns: The funding account, now visible to the Soroban RPC, with its
+    ///   current sequence number.
+    /// - Throws: ``SmartAccountTransactionException/Timeout`` when the account
+    ///   is not visible within `timeoutSeconds`; `CancellationError` when the
+    ///   surrounding task is cancelled.
+    internal func waitForAccountVisibleToRpc(
+        accountId: String,
+        pollIntervalMs: Int = OZConstants.friendbotVisibilityPollIntervalMs,
+        timeoutSeconds: Double = Double(OZConstants.friendbotVisibilityTimeoutSeconds)
+    ) async throws -> Account {
+        let pollIntervalNanos = UInt64(max(1, pollIntervalMs)) * 1_000_000
+        let deadline = Date().addingTimeInterval(timeoutSeconds)
+        var lastTransientError: SorobanRpcRequestError?
+
+        while true {
+            try Task.checkCancellation()
+
+            switch await kit.sorobanServer.getAccount(accountId: accountId) {
+            case .success(let account):
+                return account
+            case .failure(let error):
+                // "account not found yet" is the expected propagation case and
+                // simply drives another poll; every other failure is a
+                // transient RPC error retained as the eventual timeout cause.
+                if !OZTransactionOperations.isAccountNotVisibleError(error) {
+                    lastTransientError = error
+                }
+            }
+
+            if Date() >= deadline {
+                break
+            }
+            try await Task.sleep(nanoseconds: pollIntervalNanos)
+        }
+
+        let timeoutText = OZTransactionOperations.describeSeconds(timeoutSeconds)
+        var reason =
+            "Funding account \(accountId) not visible to the Soroban RPC within " +
+            "\(timeoutText)s after Friendbot funding; testnet propagation may be " +
+            "delayed. Retry shortly."
+        if let lastTransientError = lastTransientError {
+            reason += " Last RPC error: \(rpcErrorMessage(lastTransientError))."
+        }
+        throw SmartAccountTransactionException.timeout(
+            details: reason,
+            cause: lastTransientError
+        )
     }
 
     /// Simulates a host function in isolation and returns the parsed `SCValXDR`
@@ -1428,6 +1508,30 @@ public final class OZTransactionOperations: OZManagerHelpers, @unchecked Sendabl
             return nil
         }
         return nil
+    }
+
+    /// Returns `true` when a ``SorobanServer/getAccount(accountId:)`` failure
+    /// denotes an account not yet present on the ledger applied by the RPC,
+    /// rather than a transport or protocol error. `getAccount` reports a missing
+    /// account entry as a `.requestFailed` carrying
+    /// ``SorobanServer/accountNotFoundMessage``; matching that single shared
+    /// constant keeps this classification in lockstep with the message
+    /// `getAccount` actually emits. Every other failure shape is treated as a
+    /// transient RPC error.
+    internal static func isAccountNotVisibleError(_ error: SorobanRpcRequestError) -> Bool {
+        if case .requestFailed(let message) = error {
+            return message == SorobanServer.accountNotFoundMessage
+        }
+        return false
+    }
+
+    /// Formats a seconds value for human-readable error text, dropping the
+    /// fractional component when the value is a whole number of seconds.
+    internal static func describeSeconds(_ seconds: Double) -> String {
+        if seconds == seconds.rounded(.towardZero) {
+            return String(Int(seconds))
+        }
+        return String(seconds)
     }
 
     /// Extracts a `UInt32` from an `SCValXDR.u32` value, used to parse a token

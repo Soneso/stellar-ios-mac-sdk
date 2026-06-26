@@ -855,6 +855,161 @@ final class OZTransactionOperationsPipelineTests: XCTestCase {
     }
 
     // ========================================================================
+    // waitForAccountVisibleToRpc - Friendbot propagation poll
+    // ========================================================================
+
+    func test_waitForAccountVisibleToRpc_pollsUntilVisible_thenProceeds() async throws {
+        let h = try await buildPipelineHarness()
+        let temp = try KeyPair.generateRandomKeyPair()
+
+        // The first two polls report the account is not yet on the ledger the
+        // RPC has applied (empty getLedgerEntries -> "could not find account");
+        // the third poll sees it.
+        script.enqueueGetLedgerEntriesResponse(
+            OZPipelineFixtures.emptyGetLedgerEntriesResponse()
+        )
+        script.enqueueGetLedgerEntriesResponse(
+            OZPipelineFixtures.emptyGetLedgerEntriesResponse()
+        )
+        script.setGetAccountResponse(accountId: temp.accountId, sequence: 7)
+
+        let start = Date()
+        let resolved = try await h.txOps.waitForAccountVisibleToRpc(
+            accountId: temp.accountId,
+            pollIntervalMs: 40,
+            timeoutSeconds: 5
+        )
+        let elapsed = Date().timeIntervalSince(start)
+
+        // The helper returns the now-visible account so the caller can reuse it
+        // without a second RPC round-trip.
+        XCTAssertEqual(
+            resolved.keyPair.accountId, temp.accountId,
+            "the resolved account must be the one that became visible"
+        )
+        XCTAssertEqual(
+            resolved.sequenceNumber, 7,
+            "the resolved account must carry the sequence number the RPC reported"
+        )
+        XCTAssertEqual(
+            script.getLedgerEntriesCallCount, 3,
+            "expected two not-found polls followed by one visible poll"
+        )
+        // Two inter-poll sleeps of 40 ms must have elapsed before the account
+        // was observed, proving the helper waits between attempts rather than
+        // spinning.
+        XCTAssertGreaterThanOrEqual(
+            elapsed, 0.07,
+            "the poll must wait between attempts rather than busy-looping"
+        )
+    }
+
+    func test_waitForAccountVisibleToRpc_neverVisible_throwsClearTimeout() async throws {
+        let h = try await buildPipelineHarness()
+        let temp = try KeyPair.generateRandomKeyPair()
+
+        // Every poll reports the account is missing.
+        script.setEmptyGetLedgerEntriesResponse()
+
+        do {
+            _ = try await h.txOps.waitForAccountVisibleToRpc(
+                accountId: temp.accountId,
+                pollIntervalMs: 30,
+                timeoutSeconds: 0.2
+            )
+            XCTFail("expected SmartAccountTransactionException.Timeout")
+        } catch let error as SmartAccountTransactionException.Timeout {
+            XCTAssertTrue(
+                error.message.contains(temp.accountId),
+                "timeout message should name the funding account: \(error.message)"
+            )
+            XCTAssertTrue(
+                error.message.contains("not visible to the Soroban RPC"),
+                "timeout message should describe the visibility failure: \(error.message)"
+            )
+            XCTAssertTrue(
+                error.message.contains("Retry shortly"),
+                "timeout message should advise a retry: \(error.message)"
+            )
+            // A pure not-found timeout has no underlying transient failure: the
+            // account simply never appeared. Pinning the absence of a cause and
+            // of the transient-error suffix guards against a regression that
+            // misclassifies the expected not-found signal as a transient RPC
+            // error.
+            XCTAssertNil(
+                error.cause,
+                "a not-found timeout must carry no underlying cause: \(String(describing: error.cause))"
+            )
+            XCTAssertFalse(
+                error.message.contains("Last RPC error:"),
+                "a not-found timeout must not append a transient RPC error: \(error.message)"
+            )
+        }
+        XCTAssertGreaterThanOrEqual(
+            script.getLedgerEntriesCallCount, 1,
+            "the helper must poll at least once before timing out"
+        )
+    }
+
+    func test_waitForAccountVisibleToRpc_transientRpcError_surfacedAsTimeoutCause() async throws {
+        let h = try await buildPipelineHarness()
+        let temp = try KeyPair.generateRandomKeyPair()
+
+        // No scripted getLedgerEntries response: the mock answers every
+        // getAccount with a JSON-RPC error envelope, exercising the
+        // transient-error retry path (distinct from "account not found yet").
+        do {
+            _ = try await h.txOps.waitForAccountVisibleToRpc(
+                accountId: temp.accountId,
+                pollIntervalMs: 30,
+                timeoutSeconds: 0.2
+            )
+            XCTFail("expected SmartAccountTransactionException.Timeout")
+        } catch let error as SmartAccountTransactionException.Timeout {
+            XCTAssertTrue(
+                error.message.contains("not visible to the Soroban RPC"),
+                "timeout message should describe the visibility failure: \(error.message)"
+            )
+            XCTAssertTrue(
+                error.message.contains("Last RPC error:"),
+                "a transient RPC error must be surfaced as the timeout cause: \(error.message)"
+            )
+            XCTAssertNotNil(
+                error.cause,
+                "a transient-error timeout must retain the transient RPC error as its cause"
+            )
+        }
+    }
+
+    func test_waitForAccountVisibleToRpc_cancellation_throwsCancellationError() async throws {
+        let h = try await buildPipelineHarness()
+        let temp = try KeyPair.generateRandomKeyPair()
+
+        // Never visible, with a long poll interval so the task parks in
+        // Task.sleep while we cancel it.
+        script.setEmptyGetLedgerEntriesResponse()
+
+        let task = Task {
+            try await h.txOps.waitForAccountVisibleToRpc(
+                accountId: temp.accountId,
+                pollIntervalMs: 1000,
+                timeoutSeconds: 30
+            )
+        }
+        // Let the first poll run and the helper enter its inter-poll sleep,
+        // then cancel cooperatively.
+        try await Task.sleep(nanoseconds: 100_000_000)
+        task.cancel()
+
+        do {
+            _ = try await task.value
+            XCTFail("expected CancellationError")
+        } catch is CancellationError {
+            // expected: Task.sleep / checkCancellation honour cancellation
+        }
+    }
+
+    // ========================================================================
     // Relayer-vs-RPC
     // ========================================================================
 

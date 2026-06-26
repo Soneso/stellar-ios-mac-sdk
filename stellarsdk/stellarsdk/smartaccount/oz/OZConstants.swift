@@ -23,6 +23,19 @@ public enum OZConstants {
     /// transferring Friendbot funds to a smart account wallet.
     public static let friendbotReserveXlm: Int = 5
 
+    /// Interval in milliseconds between Soroban RPC polls while waiting for a
+    /// Friendbot-funded temporary account to become visible to the RPC during
+    /// ``OZTransactionOperations/fundWallet(nativeTokenContract:forceMethod:)``.
+    public static let friendbotVisibilityPollIntervalMs: Int = 1500
+
+    /// Overall timeout in seconds for a Friendbot-funded temporary account to
+    /// become visible to the Soroban RPC during
+    /// ``OZTransactionOperations/fundWallet(nativeTokenContract:forceMethod:)``.
+    /// Friendbot confirms on Horizon within milliseconds, but the Soroban RPC
+    /// may lag by one or more ledger closes; polling absorbs that variable
+    /// propagation delay rather than assuming a single fixed wait.
+    public static let friendbotVisibilityTimeoutSeconds: Int = 45
+
     /// Default timeout for transaction submission and polling in seconds.
     public static let defaultTimeoutSeconds: Int = 30
 

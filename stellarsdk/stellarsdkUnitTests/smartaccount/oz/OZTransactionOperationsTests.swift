@@ -1178,6 +1178,56 @@ final class OZTransactionOperationsTests: XCTestCase {
     }
 
     // ========================================================================
+    // MARK: - isAccountNotVisibleError not-found classification
+    // ========================================================================
+
+    func test_isAccountNotVisibleError_notFoundSignal_returnsTrue() {
+        // The exact failure shape `getAccount(accountId:)` emits for an account
+        // whose ledger entry is absent. This must classify as not-yet-visible so
+        // the funding poll keeps retrying rather than aborting on a transient
+        // error. Pinning `true` here fails immediately if the detection were
+        // broken to always return false.
+        let error = SorobanRpcRequestError.requestFailed(
+            message: SorobanServer.accountNotFoundMessage
+        )
+        XCTAssertTrue(OZTransactionOperations.isAccountNotVisibleError(error))
+    }
+
+    func test_isAccountNotVisibleError_matchesGetAccountLiteral() {
+        // The shared constant carries the exact text `getAccount` returns for an
+        // absent account, so a not-found result is recognised whether a caller
+        // matches the constant or the raw message.
+        XCTAssertEqual(SorobanServer.accountNotFoundMessage, "could not find account")
+        let error = SorobanRpcRequestError.requestFailed(message: "could not find account")
+        XCTAssertTrue(OZTransactionOperations.isAccountNotVisibleError(error))
+    }
+
+    func test_isAccountNotVisibleError_otherRequestFailedMessage_returnsFalse() {
+        // A different `.requestFailed` message (for example the invalid-accountId
+        // path) is a genuine failure, not a not-yet-visible account, and must be
+        // treated as transient.
+        let error = SorobanRpcRequestError.requestFailed(message: "invalid accountId")
+        XCTAssertFalse(OZTransactionOperations.isAccountNotVisibleError(error))
+    }
+
+    func test_isAccountNotVisibleError_errorResponse_returnsFalse() {
+        // A JSON-RPC error envelope is a transport/protocol failure, never the
+        // expected not-found signal.
+        let error = SorobanRpcRequestError.errorResponse(
+            error: SorobanRpcError(code: -32603, message: "internal error")
+        )
+        XCTAssertFalse(OZTransactionOperations.isAccountNotVisibleError(error))
+    }
+
+    func test_isAccountNotVisibleError_parsingFailure_returnsFalse() {
+        let error = SorobanRpcRequestError.parsingResponseFailed(
+            message: "bad json",
+            responseData: Data()
+        )
+        XCTAssertFalse(OZTransactionOperations.isAccountNotVisibleError(error))
+    }
+
+    // ========================================================================
     // Helpers
     // ========================================================================
 
