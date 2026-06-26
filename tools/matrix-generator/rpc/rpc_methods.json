@@ -3,10 +3,10 @@
     "source": "stellar-rpc",
     "repository": "https://github.com/stellar/stellar-rpc",
     "version": "v27.0.0",
-    "extracted_date": "2026-06-19",
+    "extracted_date": "2026-06-26",
     "total_methods": 12,
     "protocol": "JSON-RPC 2.0",
-    "protocol_definitions": "https://github.com/stellar/go-stellar-sdk/tree/main/protocols/rpc"
+    "protocol_definitions": "https://github.com/stellar/go-stellar-sdk/tree/v0.6.0/protocols/rpc"
   },
   "methods": {
     "getHealth": {
@@ -1084,13 +1084,6 @@
             "name": "xdrFormat",
             "type": "string",
             "description": "Output format (xdr or json)",
-            "required": false,
-            "default": null
-          },
-          {
-            "name": "useUpgradedAuth",
-            "type": "boolean",
-            "description": "Parameter: useUpgradedAuth",
             "required": false,
             "default": null
           }

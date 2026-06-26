@@ -3,14 +3,14 @@
 **RPC Version:** v27.0.0 (released 2026-06-11)  
 **RPC Source:** [v27.0.0](https://github.com/stellar/stellar-rpc/releases/tag/v27.0.0)  
 **SDK Version:** 3.6.0  
-**Generated:** 2026-06-19 01:34:15
+**Generated:** 2026-06-26 14:17:43
 
 ## Overall Coverage
 
-**Coverage:** 91.7%
+**Coverage:** 100.0%
 
-- **Fully Supported:** 11/12
-- **Partially Supported:** 1/12
+- **Fully Supported:** 12/12
+- **Partially Supported:** 0/12
 - **Not Supported:** 0/12
 
 ## Method Comparison
@@ -22,7 +22,7 @@
 | getTransaction | Full | `getTransaction(transactionHash:)` | GetTransactionResponse | Full support including protocol 23+ events field, computed properties. |
 | getTransactions | Full | `getTransactions(startLedger:, paginationOptions:)` | GetTransactionsResponse | Full pagination support with cursor and limit. |
 | sendTransaction | Full | `sendTransaction(transaction:)` | SendTransactionResponse | Full support for all response fields including diagnosticEvents, errorResult. |
-| simulateTransaction | Partial | `simulateTransaction(simulateTxRequest:)` | SimulateTransactionResponse | Missing params: useUpgradedAuth |
+| simulateTransaction | Full | `simulateTransaction(simulateTxRequest:)` | SimulateTransactionResponse | Supports transaction, resourceConfig (instructionLeeway), and authMode (protocol 23+). |
 
 ### Ledger Methods
 
@@ -64,7 +64,7 @@ Detailed breakdown of parameter support per method.
 | getTransactions | 2 | 2 | - |
 | getVersionInfo | 0 | 0 | - |
 | sendTransaction | 1 | 1 | - |
-| simulateTransaction | 4 | 3 | useUpgradedAuth |
+| simulateTransaction | 3 | 3 | - |
 
 ## Response Field Coverage
 

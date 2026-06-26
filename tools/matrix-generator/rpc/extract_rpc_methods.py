@@ -513,6 +513,29 @@ class GitHubFetcher:
                 print(f"Warning: Failed to fetch release version: {e}")
             return "unknown"
 
+    def get_latest_go_stellar_sdk_release(self) -> str:
+        """Fetch the latest go-stellar-sdk release tag (the protocols module is
+        versioned as vX.Y.Z). Protocol param definitions are read from this released
+        ref instead of main, so fields not yet in a released RPC are not measured."""
+        url = f"{GITHUB_API_BASE}/repos/stellar/go-stellar-sdk/releases"
+        try:
+            response = self.session.get(url, timeout=30)
+            response.raise_for_status()
+            releases = response.json()
+            for release in releases:
+                tag_name = release.get("tag_name", "")
+                if re.fullmatch(r"v\d+\.\d+\.\d+", tag_name):
+                    if self.verbose:
+                        print(f"Latest go-stellar-sdk release: {tag_name}")
+                    return tag_name
+            if self.verbose:
+                print("Warning: No go-stellar-sdk release found, falling back to main")
+            return "main"
+        except requests.RequestException as e:
+            if self.verbose:
+                print(f"Warning: Failed to fetch go-stellar-sdk release: {e}")
+            return "main"
+
     def get_latest_commit_hash(self, branch: str = DEFAULT_BRANCH) -> str:
         """Fetch the latest commit hash for a branch."""
         url = f"{GITHUB_API_BASE}/repos/{REPO_OWNER}/{REPO_NAME}/commits/{branch}"
@@ -858,6 +881,10 @@ class RPCMethodExtractor:
         # Try to fetch protocol files (they may or may not exist depending on version)
         self._fetch_protocol_files(rpc_version)
 
+        # Protocol param definitions live in go-stellar-sdk. Read them from its latest
+        # release (not main) so unreleased fields are not measured against the SDK.
+        go_sdk_version = self.fetcher.get_latest_go_stellar_sdk_release()
+
         # Extract all methods
         methods = {}
         for method_name, file_names in KNOWN_METHODS.items():
@@ -866,7 +893,7 @@ class RPCMethodExtractor:
                 file_names = [file_names]
 
             try:
-                method_spec = self._extract_method(method_name, file_names, rpc_version)
+                method_spec = self._extract_method(method_name, file_names, rpc_version, go_sdk_version)
                 methods[method_name] = method_spec.to_dict()
             except Exception as e:
                 if self.verbose:
@@ -883,7 +910,7 @@ class RPCMethodExtractor:
                 "extracted_date": datetime.now().strftime("%Y-%m-%d"),
                 "total_methods": len(methods),
                 "protocol": "JSON-RPC 2.0",
-                "protocol_definitions": "https://github.com/stellar/go-stellar-sdk/tree/main/protocols/rpc"
+                "protocol_definitions": f"https://github.com/stellar/go-stellar-sdk/tree/{go_sdk_version}/protocols/rpc"
             },
             "methods": methods
         }
@@ -933,7 +960,7 @@ class RPCMethodExtractor:
             if self.verbose:
                 print(f"Protocol files loaded successfully")
 
-    def _extract_method(self, method_name: str, file_names: list[str], rpc_version: str) -> MethodSpec:
+    def _extract_method(self, method_name: str, file_names: list[str], rpc_version: str, go_sdk_version: str = "main") -> MethodSpec:
         """Extract a single method specification."""
         # Try all possible combinations of directory and file name
         go_source = None
@@ -957,7 +984,7 @@ class RPCMethodExtractor:
             raise last_error if last_error else RuntimeError(f"Failed to fetch any of {file_names}")
 
         # Fetch protocol file from go-stellar-sdk for accurate request struct parsing
-        protocol_source = self.fetcher.fetch_go_stellar_sdk_protocol_file(method_name, ref="main")
+        protocol_source = self.fetcher.fetch_go_stellar_sdk_protocol_file(method_name, ref=go_sdk_version)
         if protocol_source:
             # Combine with existing protocol source
             if self.parser.protocol_source:
