@@ -447,6 +447,7 @@ class TransferServerServiceUnitTests: XCTestCase {
             }
             
             XCTAssertFalse(info.fee!.enabled)
+            XCTAssertEqual("Fees vary from 3 to 7 percent based on the the assets transacted and method by which funds are delivered to or collected by the anchor.", info.fee!.description)
             XCTAssertTrue(info.transactions!.enabled)
             XCTAssertTrue(info.transactions!.authenticationRequired!)
             XCTAssertTrue(info.features!.accountCreation)
