@@ -27,6 +27,13 @@ internal struct ConnectedState: Sendable, Equatable, Hashable {
         self.credentialId = credentialId
         self.contractId = contractId
     }
+
+    /// `true` when this state was produced by a headless
+    /// ``OZWalletOperations/connectToContract(contractId:)`` connection, which
+    /// records ``OZConstants/headlessCredentialIdSentinel`` in place of a real
+    /// passkey credential. The single-passkey submit path consults this to
+    /// reject headless callers up front.
+    var isHeadless: Bool { credentialId == OZConstants.headlessCredentialIdSentinel }
 }
 
 // MARK: - Credential Manager Protocol

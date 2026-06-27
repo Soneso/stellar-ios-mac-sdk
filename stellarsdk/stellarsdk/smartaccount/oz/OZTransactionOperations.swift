@@ -326,6 +326,19 @@ public final class OZTransactionOperations: OZManagerHelpers, @unchecked Sendabl
         resolveContextRuleIds: OZResolveContextRuleIds? = nil
     ) async throws -> OZTransactionResult {
         let connected = try kit.requireConnected()
+        // why: a headless connection records the empty credential sentinel and
+        // is operable only through the multi-signer / external-signer pipeline.
+        // The single-passkey path below reads `connected.credentialId`; refuse
+        // it up front so a misrouted headless call fails clearly here rather
+        // than late and confusingly inside the credential lookup or the
+        // WebAuthn-provider guard.
+        if connected.isHeadless {
+            throw SmartAccountValidationException.invalidInput(
+                field: "selectedSigners",
+                reason: "This kit is connected headlessly (no passkey); use the " +
+                    "multi-signer pipeline with explicit selectedSigners for headless operations."
+            )
+        }
         let deployer = try await kit.getDeployer()
         let deployerAccount = try await fetchAccount(accountId: deployer.accountId)
 
