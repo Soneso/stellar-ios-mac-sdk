@@ -587,4 +587,137 @@ class WebAuthenticatorTestCase: XCTestCase {
             }
         }
     }
+
+    // MARK: - isValidChallenge time bounds validation
+
+    // The following tests exercise the public isValidChallenge directly with
+    // server-signed SEP-10 challenge transactions. Every check other than the
+    // time bounds (home domain, web auth domain, operations, source accounts,
+    // sequence number, memo, signature) is satisfied, so the assertion isolates
+    // the time bounds rule: a challenge with no time bounds, or with an infinite
+    // (zero) max time, must be rejected with .invalidTimeBounds.
+
+    /// Produces a 64 character SEP-10 nonce (48 random bytes, base64 encoded).
+    private func challengeNonce() -> Data {
+        var bytes = [UInt8](repeating: 0, count: 48)
+        let status = SecRandomCopyBytes(kSecRandomDefault, bytes.count, &bytes)
+        XCTAssertEqual(status, errSecSuccess)
+        return Data(Data(bytes).base64EncodedString().utf8)
+    }
+
+    /// Builds a valid, server-signed SEP-10 challenge envelope that uses the
+    /// caller supplied preconditions. The server key, home domain and web auth
+    /// domain match the harness configuration so the only variable under test is
+    /// the supplied preconditions / time bounds.
+    private func buildServerSignedChallenge(preconditions: TransactionPreconditions, userAccountId: String) -> TransactionEnvelopeXDR {
+        let serverKeyPair = try! KeyPair(secretSeed: serverPrivateKey)
+        let transactionAccount = Account(keyPair: serverKeyPair, sequenceNumber: -1)
+
+        let webAuthDomain = URLComponents(string: authServer)!.host!
+
+        let operation1 = ManageDataOperation(sourceAccountId: userAccountId, name: "\(domain) auth", data: challengeNonce())
+        let operation2 = ManageDataOperation(sourceAccountId: serverKeyPair.accountId, name: "web_auth_domain", data: Data(webAuthDomain.utf8))
+
+        let transaction = try! Transaction(sourceAccount: transactionAccount, operations: [operation1, operation2], memo: Memo.none, preconditions: preconditions)
+        try! transaction.sign(keyPair: serverKeyPair, network: .testnet)
+
+        return try! TransactionEnvelopeXDR(xdr: transaction.encodedEnvelope())
+    }
+
+    /// Runs the supplied challenge envelope through the public isValidChallenge
+    /// using the harness server key and grace period, returning the result.
+    private func isValidChallengeResult(for envelope: TransactionEnvelopeXDR, userAccountId: String) -> ChallengeValidationResponseEnum {
+        let webAuthenticator = WebAuthenticator(authEndpoint: authServer, network: .testnet, serverSigningKey: serverPublicKey, serverHomeDomain: domain)
+        return webAuthenticator.isValidChallenge(transactionEnvelopeXDR: envelope, userAccountId: userAccountId, serverSigningKey: serverPublicKey, timeBoundsGracePeriod: webAuthenticator.gracePeriod)
+    }
+
+    func testIsValidChallengeMissingTimeBoundsFails() {
+        let userKeyPair = try! KeyPair.generateRandomKeyPair()
+
+        // No time bounds and no other CAP-21 fields encodes as PreconditionsXDR.none.
+        let preconditions = TransactionPreconditions()
+        let envelope = buildServerSignedChallenge(preconditions: preconditions, userAccountId: userKeyPair.accountId)
+        XCTAssertEqual(envelope.cond.type(), PreconditionType.none.rawValue)
+
+        switch isValidChallengeResult(for: envelope, userAccountId: userKeyPair.accountId) {
+        case .success:
+            XCTFail("challenge without time bounds must be rejected")
+        case .failure(let error):
+            XCTAssertEqual(error, .invalidTimeBounds)
+        }
+    }
+
+    func testIsValidChallengeInfiniteMaxTimeFails() {
+        let userKeyPair = try! KeyPair.generateRandomKeyPair()
+
+        let now = UInt64(Date().timeIntervalSince1970)
+        // maxTime 0 means the challenge never expires and could be replayed.
+        let timeBounds = TimeBounds(minTime: now, maxTime: 0)
+        let preconditions = TransactionPreconditions(timeBounds: timeBounds)
+        let envelope = buildServerSignedChallenge(preconditions: preconditions, userAccountId: userKeyPair.accountId)
+        XCTAssertEqual(envelope.cond.type(), PreconditionType.time.rawValue)
+
+        switch isValidChallengeResult(for: envelope, userAccountId: userKeyPair.accountId) {
+        case .success:
+            XCTFail("challenge with infinite max time must be rejected")
+        case .failure(let error):
+            XCTAssertEqual(error, .invalidTimeBounds)
+        }
+    }
+
+    func testIsValidChallengeValidV1TimeBoundsSucceeds() {
+        let userKeyPair = try! KeyPair.generateRandomKeyPair()
+
+        let now = UInt64(Date().timeIntervalSince1970)
+        let timeBounds = TimeBounds(minTime: now, maxTime: now + 300)
+        let preconditions = TransactionPreconditions(timeBounds: timeBounds)
+        let envelope = buildServerSignedChallenge(preconditions: preconditions, userAccountId: userKeyPair.accountId)
+        XCTAssertEqual(envelope.cond.type(), PreconditionType.time.rawValue)
+
+        switch isValidChallengeResult(for: envelope, userAccountId: userKeyPair.accountId) {
+        case .success:
+            break
+        case .failure(let error):
+            XCTFail("challenge with valid v1 time bounds must pass, got \(error)")
+        }
+    }
+
+    func testIsValidChallengeValidTimeBoundsInV2PreconditionSucceeds() {
+        let userKeyPair = try! KeyPair.generateRandomKeyPair()
+
+        let now = UInt64(Date().timeIntervalSince1970)
+        let timeBounds = TimeBounds(minTime: now, maxTime: now + 300)
+        // A non-zero minSeqLedgerGap forces TransactionPreconditions.toXdr() to
+        // emit PreconditionsXDR.v2, carrying the time bounds inside the v2
+        // precondition. This proves the time bounds resolution is V2-safe.
+        let preconditions = TransactionPreconditions(timeBounds: timeBounds, minSeqLedgerGap: 1)
+        let envelope = buildServerSignedChallenge(preconditions: preconditions, userAccountId: userKeyPair.accountId)
+        XCTAssertEqual(envelope.cond.type(), PreconditionType.v2.rawValue)
+
+        switch isValidChallengeResult(for: envelope, userAccountId: userKeyPair.accountId) {
+        case .success:
+            break
+        case .failure(let error):
+            XCTFail("challenge with valid time bounds inside a v2 precondition must pass, got \(error)")
+        }
+    }
+
+    func testIsValidChallengeInfiniteMaxTimeInV2PreconditionFails() {
+        let userKeyPair = try! KeyPair.generateRandomKeyPair()
+
+        let now = UInt64(Date().timeIntervalSince1970)
+        // Infinite (zero) max time carried inside a v2 precondition: the bounds
+        // are resolved from the v2 precondition and rejected, not skipped.
+        let timeBounds = TimeBounds(minTime: now, maxTime: 0)
+        let preconditions = TransactionPreconditions(timeBounds: timeBounds, minSeqLedgerGap: 1)
+        let envelope = buildServerSignedChallenge(preconditions: preconditions, userAccountId: userKeyPair.accountId)
+        XCTAssertEqual(envelope.cond.type(), PreconditionType.v2.rawValue)
+
+        switch isValidChallengeResult(for: envelope, userAccountId: userKeyPair.accountId) {
+        case .success:
+            XCTFail("challenge with infinite max time in a v2 precondition must be rejected")
+        case .failure(let error):
+            XCTAssertEqual(error, .invalidTimeBounds)
+        }
+    }
 }

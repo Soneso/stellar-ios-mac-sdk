@@ -32,7 +32,7 @@ public enum ChallengeValidationError: Error, Sendable {
     case invalidOperationCount
     /// The home domain in the challenge does not match the expected domain.
     case invalidHomeDomain
-    /// The transaction time bounds are invalid or expired.
+    /// The transaction time bounds are missing, infinite, invalid, or expired.
     case invalidTimeBounds
     /// The server signature on the challenge transaction is invalid.
     case invalidSignature
@@ -510,15 +510,21 @@ public final class WebAuthenticator: Sendable {
                 return .failure(error: .invalidOperationCount)
             }
             
-            if let minTime = transactionEnvelopeXDR.txTimeBounds?.minTime, let maxTime = transactionEnvelopeXDR.txTimeBounds?.maxTime {
-                let currentTimestamp = Date().timeIntervalSince1970
-                var grace:UInt64 = 0
-                if let pgrace = timeBoundsGracePeriod {
-                    grace = pgrace
-                }
-                if (currentTimestamp < TimeInterval(minTime - grace)) || (currentTimestamp > TimeInterval(maxTime + grace)) {
-                    return .failure(error: .invalidTimeBounds)
-                }
+            // check timebounds: a challenge with no time bounds, or with an
+            // infinite (zero) max time, is never time-limited and could be
+            // replayed indefinitely, so reject it instead of skipping the check.
+            // Resolving the preconditions yields the bounds whether they are
+            // carried as a v1 time precondition or inside a v2 precondition.
+            guard let timeBounds = TransactionPreconditions(preconditions: transactionEnvelopeXDR.cond).timeBounds else {
+                return .failure(error: .invalidTimeBounds)
+            }
+            if timeBounds.maxTime == 0 {
+                return .failure(error: .invalidTimeBounds)
+            }
+            let currentTimestamp = Date().timeIntervalSince1970
+            let grace = TimeInterval(timeBoundsGracePeriod ?? 0)
+            if (currentTimestamp < TimeInterval(timeBounds.minTime) - grace) || (currentTimestamp > TimeInterval(timeBounds.maxTime) + grace) {
+                return .failure(error: .invalidTimeBounds)
             }
             
             // the envelope must have one signature and it must be valid: transaction signed by the server
