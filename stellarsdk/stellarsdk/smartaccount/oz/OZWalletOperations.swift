@@ -802,7 +802,7 @@ public final class OZWalletOperations: OZManagerHelpers, @unchecked Sendable {
         await safeClearSession()
 
         kit.setConnectedState(
-            credentialId: OZConstants.headlessCredentialIdSentinel,
+            credentialId: nil,
             contractId: contractId
         )
         kit.events.emit(.walletConnectedHeadless(contractId: contractId))
@@ -1128,11 +1128,10 @@ public final class OZWalletOperations: OZManagerHelpers, @unchecked Sendable {
             )
         }
 
-        // A blank credential id collides with the headless sentinel
-        // (``OZConstants/headlessCredentialIdSentinel``). Reject it so a passkey
-        // connect can never produce a sentinel-equal connected state and trip
-        // the headless guard on the single-passkey submit path. Headless
-        // callers use ``connectToContract(contractId:)`` instead.
+        // An empty credential id is not a valid WebAuthn credential. Reject a
+        // blank or whitespace-only id up front so the cascade only ever runs
+        // against a real Base64URL credential. Headless callers use
+        // ``connectToContract(contractId:)`` instead.
         if let credentialId = credentialId,
            credentialId.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             throw SmartAccountValidationException.invalidInput(
@@ -1149,10 +1148,9 @@ public final class OZWalletOperations: OZManagerHelpers, @unchecked Sendable {
 
         // A pure-padding credential id (for example "==") is neither empty nor
         // whitespace, so it slips past the blank check above, yet padding
-        // stripping collapses it to the empty headless sentinel here. Reject the
-        // normalised-empty form too so the empty credential id stays reserved
-        // for the headless path and a passkey connect can never adopt the
-        // sentinel and trip the headless guard on the single-passkey submit path.
+        // stripping collapses it to the empty string here. An empty credential
+        // id is not a valid WebAuthn credential, so reject the normalised-empty
+        // form too.
         if let credentialId = credentialId, credentialId.isEmpty {
             throw SmartAccountValidationException.invalidInput(
                 field: "credentialId",

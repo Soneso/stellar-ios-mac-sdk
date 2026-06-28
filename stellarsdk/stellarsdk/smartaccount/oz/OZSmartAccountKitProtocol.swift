@@ -12,28 +12,29 @@ import Foundation
 /// The connected state of an OpenZeppelin Smart Account Kit.
 ///
 /// Returned by ``OZSmartAccountKitProtocol/requireConnected()`` after a successful
-/// wallet connection. Identifies the credential and contract address bound to the
-/// active session.
+/// wallet connection. Identifies the contract address bound to the active session
+/// and the passkey credential, when one is present.
 internal struct ConnectedState: Sendable, Equatable, Hashable {
 
-    /// WebAuthn credential ID (Base64URL-encoded, no padding).
-    let credentialId: String
+    /// WebAuthn credential ID (Base64URL-encoded, no padding), or `nil` for a
+    /// headless ``OZWalletOperations/connectToContract(contractId:)`` connection
+    /// bound to the contract without a passkey credential.
+    let credentialId: String?
 
     /// Smart account contract address (`C…` strkey).
     let contractId: String
 
     /// Initializes a new `ConnectedState`.
-    init(credentialId: String, contractId: String) {
+    init(credentialId: String?, contractId: String) {
         self.credentialId = credentialId
         self.contractId = contractId
     }
 
-    /// `true` when this state was produced by a headless
-    /// ``OZWalletOperations/connectToContract(contractId:)`` connection, which
-    /// records ``OZConstants/headlessCredentialIdSentinel`` in place of a real
-    /// passkey credential. The single-passkey submit path consults this to
+    /// `true` when this state carries no passkey credential — a headless
+    /// ``OZWalletOperations/connectToContract(contractId:)`` connection bound to
+    /// the contract alone. The single-passkey submit path consults this to
     /// reject headless callers up front.
-    var isHeadless: Bool { credentialId == OZConstants.headlessCredentialIdSentinel }
+    var isHeadless: Bool { credentialId == nil }
 }
 
 // MARK: - Credential Manager Protocol
@@ -225,17 +226,19 @@ internal protocol OZSmartAccountKitProtocol: AnyObject, Sendable {
 
     /// Returns the connected wallet identity.
     ///
-    /// - Returns: ``ConnectedState`` carrying the active credential and contract
-    ///   identifiers.
+    /// - Returns: ``ConnectedState`` carrying the contract identifier and the
+    ///   active credential when one is present (`nil` credential for a headless
+    ///   connection).
     /// - Throws: ``SmartAccountWalletException/NotConnected`` when no wallet is connected.
     func requireConnected() throws -> ConnectedState
 
     /// Records the connected state on the kit.
     ///
     /// - Parameters:
-    ///   - credentialId: Base64URL-encoded credential identifier.
+    ///   - credentialId: Base64URL-encoded credential identifier, or `nil` for a
+    ///     headless connection bound to the contract alone.
     ///   - contractId: Smart account contract address.
-    func setConnectedState(credentialId: String, contractId: String)
+    func setConnectedState(credentialId: String?, contractId: String)
 
     /// Signer manager bound to this kit. Exposed through the protocol so
     /// sibling managers and tests can resolve it without holding a typed

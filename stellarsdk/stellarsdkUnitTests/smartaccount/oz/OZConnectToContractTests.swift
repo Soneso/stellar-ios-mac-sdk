@@ -117,15 +117,53 @@ final class OZConnectToContractTests: XCTestCase {
         XCTAssertEqual(result.contractId, contractA)
         XCTAssertEqual(h.kit.currentConnectedState?.contractId, contractA)
         XCTAssertEqual(h.kit.setConnectedStateInvocations.last?.contractId, contractA)
-        XCTAssertEqual(
+        XCTAssertNil(
             h.kit.setConnectedStateInvocations.last?.credentialId,
-            "",
-            "headless connect must record the empty credential sentinel"
+            "headless connect must record a nil credential id"
         )
-        XCTAssertEqual(
-            h.kit.currentConnectedState?.credentialId,
-            OZConstants.headlessCredentialIdSentinel
+        XCTAssertNil(h.kit.currentConnectedState?.credentialId)
+        XCTAssertEqual(h.kit.currentConnectedState?.isHeadless, true)
+    }
+
+    /// Drives the headless connect through a REAL ``OZSmartAccountKit`` (not the
+    /// test double) and asserts the public connection surface: the kit reports
+    /// connected, exposes the bound contract id, exposes a nil credential id
+    /// through the public getter, and reports the connection as headless.
+    func test_connectToContract_realKit_exposesHeadlessPublicState() async throws {
+        let storage = OZInMemoryStorageAdapter()
+        let config = try OZSmartAccountConfig(
+            rpcUrl: "https://mock-rpc.invalid/rpc",
+            networkPassphrase: Network.testnet.passphrase,
+            accountWasmHash: "a" + String(repeating: "0", count: 63),
+            webauthnVerifierAddress: contractA,
+            webauthnProvider: nil,
+            storage: storage
         )
+        let kit = OZSmartAccountKit(
+            config: config,
+            storage: storage,
+            sorobanServer: MockSorobanServer.makeMockedSorobanServer(),
+            relayerClient: nil,
+            indexerClient: nil
+        )
+
+        try script.setGetContractDataResponse(contractId: contractA)
+
+        let result = try await kit.walletOperations.connectToContract(contractId: contractA)
+
+        XCTAssertEqual(result.contractId, contractA)
+        XCTAssertTrue(
+            kit.isConnected,
+            "a headless connection must report the real kit as connected"
+        )
+        XCTAssertEqual(kit.contractId, contractA)
+        XCTAssertNil(
+            kit.credentialId,
+            "the public credentialId getter must return nil for a headless connection"
+        )
+        XCTAssertTrue(kit.isHeadless, "a contract-only connection must report as headless")
+
+        await kit.close()
     }
 
     // MARK: - 2. On-chain existence check
@@ -413,15 +451,14 @@ final class OZConnectToContractTests: XCTestCase {
     // MARK: - 11. Real multi-signer pipeline never reads the connected credential
 
     /// Credential boundary, proven against the REAL ``OZMultiSignerManager`` with
-    /// no recording override. After a headless connect records the empty
-    /// credential sentinel, an Ed25519-signed ``multiSignerContractCall`` drives
-    /// the production signing pipeline end-to-end to submission against the
-    /// scripted Soroban server. The pipeline reads only
-    /// ``ConnectedState/contractId`` and never ``ConnectedState/credentialId``,
-    /// so a sentinel-credential connection submits cleanly and `updateLastUsed`
-    /// (the sole consumer of the connected credential) is never invoked. This is
-    /// the practical proof of the boundary that the mocked routing check in
-    /// test 10 cannot give.
+    /// no recording override. After a headless connect records a nil credential,
+    /// an Ed25519-signed ``multiSignerContractCall`` drives the production signing
+    /// pipeline end-to-end to submission against the scripted Soroban server. The
+    /// pipeline reads only ``ConnectedState/contractId`` and never
+    /// ``ConnectedState/credentialId``, so a headless connection submits cleanly
+    /// and `updateLastUsed` (the sole consumer of the connected credential) is
+    /// never invoked. This is the practical proof of the boundary that the mocked
+    /// routing check in test 10 cannot give.
     func test_connectToContract_thenRealMultiSignerPipeline_neverReadsConnectedCredential() async throws {
         let storage = OZInMemoryStorageAdapter()
         let deployer = try deterministicDeployer(seed: 0x5A)
@@ -447,10 +484,14 @@ final class OZConnectToContractTests: XCTestCase {
         //    existence probe (the single getLedgerEntries result).
         try script.setGetContractDataResponse(contractId: contractA)
         _ = try await walletOps.connectToContract(contractId: contractA)
-        XCTAssertEqual(
+        XCTAssertNil(
             kit.currentConnectedState?.credentialId,
-            OZConstants.headlessCredentialIdSentinel,
-            "precondition: the connection must hold the empty credential sentinel"
+            "precondition: a headless connection must hold no credential id"
+        )
+        XCTAssertEqual(
+            kit.currentConnectedState?.isHeadless,
+            true,
+            "precondition: the connection must be headless"
         )
 
         // 2) Register an in-memory Ed25519 external signer whose verifier is the
@@ -494,7 +535,7 @@ final class OZConnectToContractTests: XCTestCase {
 
         XCTAssertTrue(
             result.success,
-            "the multi-signer pipeline must submit cleanly on a sentinel-credential " +
+            "the multi-signer pipeline must submit cleanly on a headless " +
                 "connection, got error: \(result.error ?? "nil")"
         )
         XCTAssertEqual(result.hash, "headless-multisigner-hash")
@@ -507,16 +548,20 @@ final class OZConnectToContractTests: XCTestCase {
             credentialManager.updateLastUsedCalls.isEmpty,
             "the real multi-signer pipeline must never read connected.credentialId; " +
                 "updateLastUsed is its only consumer and must stay uninvoked for a " +
-                "sentinel-credential connection"
+                "headless connection"
+        )
+        XCTAssertNil(
+            kit.currentConnectedState?.credentialId,
+            "the connection must remain headless throughout the submission"
         )
         XCTAssertEqual(
-            kit.currentConnectedState?.credentialId,
-            OZConstants.headlessCredentialIdSentinel,
+            kit.currentConnectedState?.isHeadless,
+            true,
             "the connection must remain headless throughout the submission"
         )
     }
 
-    // MARK: - Hardening: passkey connect cannot adopt the headless sentinel
+    // MARK: - Hardening: passkey connect cannot adopt the empty credential id
 
     func test_connectWithCredentials_emptyCredentialId_throwsValidation() async throws {
         let h = try makeHarness()
@@ -541,8 +586,8 @@ final class OZConnectToContractTests: XCTestCase {
 
         // A pure-padding credential id is neither empty nor whitespace, so it
         // clears the blank check, but Base64URL padding stripping collapses it to
-        // the empty headless sentinel. It must be rejected so a passkey connect
-        // can never adopt the sentinel and trip the headless guard.
+        // the empty string. An empty credential id is not a valid WebAuthn
+        // credential and must be rejected.
         do {
             _ = try await h.walletOps.connectWallet(
                 options: OZConnectWalletOptions(credentialId: "==")

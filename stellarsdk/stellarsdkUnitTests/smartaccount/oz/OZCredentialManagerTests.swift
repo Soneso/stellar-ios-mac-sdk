@@ -1743,7 +1743,7 @@ private final class _CredentialManagerTestKit: OZSmartAccountKitProtocol, @unche
         throw SmartAccountWalletException.notConnected(details: "Test kit is always disconnected")
     }
 
-    func setConnectedState(credentialId: String, contractId: String) {}
+    func setConnectedState(credentialId: String?, contractId: String) {}
 }
 
 // MARK: - _TypedThrowingStorage

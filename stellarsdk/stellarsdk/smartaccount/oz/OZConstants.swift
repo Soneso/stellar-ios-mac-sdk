@@ -74,14 +74,4 @@ public enum OZConstants {
     /// or error message; any larger payload is treated as a protocol failure
     /// and surfaces as `OZRelayerResponse(success: false, ...)`.
     public static let maxRelayerResponseBytes: Int = 256 * 1024
-
-    /// Credential id recorded for a headless (credential-less) connection.
-    ///
-    /// `ConnectedState.credentialId` is non-optional; the empty sentinel
-    /// preserves that invariant for a connection made through
-    /// ``OZWalletOperations/connectToContract(contractId:)``. The single-passkey
-    /// submit path refuses to run against this sentinel (see the headless guard
-    /// in ``OZTransactionOperations/submit(hostFunction:auth:forceMethod:resolveContextRuleIds:)``);
-    /// the multi-signer pipeline never reads it.
-    internal static let headlessCredentialIdSentinel = ""
 }
