@@ -26,6 +26,14 @@ final class OZConstantsTests: XCTestCase {
         XCTAssertEqual(OZConstants.friendbotReserveXlm, 5)
     }
 
+    func test_RPC_VISIBILITY_POLL_INTERVAL_MS_equals_1500() {
+        XCTAssertEqual(OZConstants.rpcVisibilityPollIntervalMs, 1500)
+    }
+
+    func test_RPC_VISIBILITY_TIMEOUT_SECONDS_equals_45() {
+        XCTAssertEqual(OZConstants.rpcVisibilityTimeoutSeconds, 45)
+    }
+
     func test_DEFAULT_TIMEOUT_SECONDS_equals_30() {
         XCTAssertEqual(OZConstants.defaultTimeoutSeconds, 30)
     }
@@ -50,21 +58,31 @@ final class OZConstantsTests: XCTestCase {
         XCTAssertEqual(OZConstants.clientName, "ios-stellar-sdk")
     }
 
-    func test_OZConstants_exposes_exactly_10_public_constants() {
-        // Each named constant must be reachable; reading every one and ensuring the
-        // collection size is exactly 10 catches accidental additions or removals.
-        let values: [Any] = [
+    func test_OZConstants_publicSurface_isReachable() {
+        // Referencing every public constant in one place makes a rename or
+        // removal fail to compile here. This is a hand-maintained inventory, not
+        // an automatic guard: adding a constant without listing it does NOT fail
+        // this test, so the list must be updated alongside the public surface.
+        _ = [
             OZConstants.defaultSessionExpiryMs,
             OZConstants.defaultIndexerTimeoutMs,
             OZConstants.defaultRelayerTimeoutMs,
             OZConstants.friendbotReserveXlm,
+            OZConstants.rpcVisibilityPollIntervalMs,
+            OZConstants.rpcVisibilityTimeoutSeconds,
             OZConstants.defaultTimeoutSeconds,
             OZConstants.maxSigners,
             OZConstants.maxPolicies,
             OZConstants.clientNameHeader,
             OZConstants.clientVersionHeader,
             OZConstants.clientName,
-        ]
-        XCTAssertEqual(values.count, 10)
+            OZConstants.maxIndexerResponseBytes,
+            OZConstants.maxRelayerResponseBytes,
+        ] as [Any]
+
+        // The byte-size limits have no dedicated value test above, so pin them
+        // directly rather than leaving the assertion tautological.
+        XCTAssertEqual(OZConstants.maxIndexerResponseBytes, 1 * 1024 * 1024)
+        XCTAssertEqual(OZConstants.maxRelayerResponseBytes, 256 * 1024)
     }
 }

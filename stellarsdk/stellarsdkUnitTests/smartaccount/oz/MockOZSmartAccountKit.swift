@@ -143,8 +143,8 @@ final class MockOZSmartAccountKit: OZSmartAccountKitProtocol, @unchecked Sendabl
     let storage: OZInMemoryStorageAdapter
 
     /// Records the last `setConnectedState` invocation so tests can assert
-    /// state writes occurred.
-    private(set) var setConnectedStateInvocations: [(credentialId: String, contractId: String)] = []
+    /// state writes occurred. The credential id is `nil` for a headless connection.
+    private(set) var setConnectedStateInvocations: [(credentialId: String?, contractId: String)] = []
 
     // MARK: - Initialization
 
@@ -191,16 +191,15 @@ final class MockOZSmartAccountKit: OZSmartAccountKitProtocol, @unchecked Sendabl
     func requireConnected() throws -> ConnectedState {
         stateLock.lock()
         defer { stateLock.unlock() }
-        guard let credentialId = connectedCredentialId,
-              let contractId = connectedContractId else {
+        guard let contractId = connectedContractId else {
             throw SmartAccountWalletException.notConnected(
                 details: "No wallet connected"
             )
         }
-        return ConnectedState(credentialId: credentialId, contractId: contractId)
+        return ConnectedState(credentialId: connectedCredentialId, contractId: contractId)
     }
 
-    func setConnectedState(credentialId: String, contractId: String) {
+    func setConnectedState(credentialId: String?, contractId: String) {
         stateLock.lock()
         connectedCredentialId = credentialId
         connectedContractId = contractId
@@ -214,11 +213,10 @@ final class MockOZSmartAccountKit: OZSmartAccountKitProtocol, @unchecked Sendabl
     var currentConnectedState: ConnectedState? {
         stateLock.lock()
         defer { stateLock.unlock() }
-        guard let credentialId = connectedCredentialId,
-              let contractId = connectedContractId else {
+        guard let contractId = connectedContractId else {
             return nil
         }
-        return ConnectedState(credentialId: credentialId, contractId: contractId)
+        return ConnectedState(credentialId: connectedCredentialId, contractId: contractId)
     }
 
     var isConnected: Bool {

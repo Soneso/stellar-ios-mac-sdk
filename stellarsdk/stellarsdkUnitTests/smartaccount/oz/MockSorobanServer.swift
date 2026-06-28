@@ -99,6 +99,13 @@ final class MockSorobanServerScript: @unchecked Sendable {
         scriptLock.lock(); defer { scriptLock.unlock() }
         return _getLedgerEntriesCalls.count
     }
+    /// Raw JSON-RPC `getLedgerEntries` request bodies in call order. Tests
+    /// decode `params.keys` to assert which ledger key was probed (for example
+    /// the contract-instance key the deploy-flow visibility poll queries).
+    var getLedgerEntriesCalls: [Data] {
+        scriptLock.lock(); defer { scriptLock.unlock() }
+        return _getLedgerEntriesCalls
+    }
 
     // MARK: - Script API
 

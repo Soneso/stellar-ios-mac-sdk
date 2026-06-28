@@ -101,6 +101,20 @@ public struct OZDeployPendingResult: Sendable, Equatable, Hashable {
     }
 }
 
+/// Outcome of a headless ``OZWalletOperations/connectToContract(contractId:)``.
+///
+/// Carries the verified smart-account contract address. No credential is
+/// involved in a headless connection.
+public struct OZConnectToContractResult: Sendable, Equatable, Hashable {
+
+    /// Smart account contract address (`C…` strkey) the kit connected to.
+    public let contractId: String
+
+    public init(contractId: String) {
+        self.contractId = contractId
+    }
+}
+
 /// Outcome of a connect-wallet operation.
 ///
 /// `connectWallet(options:)` returns one of three results:
@@ -398,6 +412,7 @@ public final class OZWalletOperations: OZManagerHelpers, @unchecked Sendable {
         if autoSubmit {
             transactionHash = try await signAndSubmitDeploy(
                 deployTransaction: built.transaction,
+                contractId: contractId,
                 credentialIdBase64url: credentialIdBase64url,
                 autoFund: autoFund,
                 nativeTokenContract: nativeTokenContract,
@@ -482,6 +497,9 @@ public final class OZWalletOperations: OZManagerHelpers, @unchecked Sendable {
     ///
     /// - Parameters:
     ///   - deployTransaction: Built and signed deploy transaction.
+    ///   - contractId: Deterministic address of the contract this deploy
+    ///     creates; used to gate funding on the contract becoming visible to
+    ///     the Soroban RPC.
     ///   - credentialIdBase64url: Base64URL-encoded credential identifier for
     ///     credential-manager bookkeeping.
     ///   - autoFund: Whether to fund the wallet via Friendbot after the deploy
@@ -493,6 +511,7 @@ public final class OZWalletOperations: OZManagerHelpers, @unchecked Sendable {
     ///   ``WebAuthnException``.
     private func signAndSubmitDeploy(
         deployTransaction: Transaction,
+        contractId: String,
         credentialIdBase64url: String,
         autoFund: Bool,
         nativeTokenContract: String?,
@@ -512,10 +531,15 @@ public final class OZWalletOperations: OZManagerHelpers, @unchecked Sendable {
                 )
             }
             // why: the deploy transaction may be confirmed on Horizon before
-            // Soroban RPC's simulation endpoint observes the new contract
-            // instance; wait for the next ledger close (~5s on testnet) before
-            // the funding flow simulates against the contract.
-            try await Task.sleep(nanoseconds: 5_000_000_000)
+            // the Soroban RPC's simulation endpoint observes the new contract
+            // instance; poll the RPC until the contract's instance ledger entry
+            // is visible rather than assuming a single fixed propagation delay,
+            // which fails whenever testnet propagation is slower than the guess
+            // and the funding flow then simulates against a not-yet-applied
+            // contract.
+            try await transactionOperations.waitForContractVisibleToRpc(
+                contractId: contractId
+            )
             _ = try await transactionOperations.fundWallet(
                 nativeTokenContract: tokenContract,
                 forceMethod: forceMethod
@@ -734,6 +758,56 @@ public final class OZWalletOperations: OZManagerHelpers, @unchecked Sendable {
             contractId: finalContractId,
             restoredFromSession: false
         )
+    }
+
+    /// Connects the kit to an already-deployed smart account by contract address,
+    /// with no passkey credential.
+    ///
+    /// Intended for headless callers — an autonomous signer (the reference agent)
+    /// or a backend service — that operate the account through the multi-signer /
+    /// external-signer pipeline (non-empty `selectedSigners`) and never present a
+    /// passkey. Unlike ``connectWallet(options:)``, this does not run a WebAuthn
+    /// ceremony, does not consult the credential manager, and does not persist a
+    /// session; it also clears any previously saved session so a later silent
+    /// reconnect cannot resurrect a stale passkey session.
+    ///
+    /// After a headless connect the single-passkey paths
+    /// (``OZTransactionOperations/submit(hostFunction:auth:forceMethod:resolveContextRuleIds:)``,
+    /// ``OZTransactionOperations/transfer(tokenContract:recipient:amount:decimals:forceMethod:)``,
+    /// ``OZTransactionOperations/contractCall(target:targetFn:targetArgs:forceMethod:resolveContextRuleIds:)``,
+    /// ``OZTransactionOperations/executeAndSubmit(target:targetFn:targetArgs:forceMethod:resolveContextRuleIds:)``,
+    /// and any manager call left at the default empty `selectedSigners`) are NOT
+    /// usable: they require a passkey credential and throw a clear error from the
+    /// headless guard. Operate through `kit.multiSignerManager` or the sibling
+    /// managers with an explicit non-empty `selectedSigners` list.
+    ///
+    /// The contract address is validated and its on-chain existence is verified
+    /// before the connected state is set.
+    ///
+    /// - Parameter contractId: Smart account contract address (`C…` strkey).
+    /// - Returns: ``OZConnectToContractResult`` carrying the verified `contractId`.
+    /// - Throws: ``SmartAccountValidationException/InvalidAddress`` when `contractId`
+    ///   is not a valid contract address; ``SmartAccountWalletException/NotFound``
+    ///   when no contract instance exists at the address;
+    ///   ``SmartAccountTransactionException`` when the RPC existence check fails for
+    ///   transport reasons.
+    public func connectToContract(contractId: String) async throws -> OZConnectToContractResult {
+        try requireContractAddress(contractId, fieldName: "contractId")
+
+        try await verifyContractExists(contractId: contractId)
+
+        // Drop any pre-existing passkey session so a later silent
+        // `connectWallet()` restore cannot resurrect a state that contradicts
+        // the in-memory headless connection. Best-effort by design.
+        await safeClearSession()
+
+        kit.setConnectedState(
+            credentialId: nil,
+            contractId: contractId
+        )
+        kit.events.emit(.walletConnectedHeadless(contractId: contractId))
+
+        return OZConnectToContractResult(contractId: contractId)
     }
 
     /// Authenticates with a passkey without connecting to a wallet.
@@ -1002,7 +1076,16 @@ public final class OZWalletOperations: OZManagerHelpers, @unchecked Sendable {
                     reason: "nativeTokenContract is required when autoFund is true"
                 )
             }
-            try await Task.sleep(nanoseconds: 5_000_000_000)
+            // why: the deploy transaction may be confirmed on Horizon before
+            // the Soroban RPC's simulation endpoint observes the new contract
+            // instance; poll the RPC until the contract's instance ledger entry
+            // is visible rather than assuming a single fixed propagation delay,
+            // which fails whenever testnet propagation is slower than the guess
+            // and the funding flow then simulates against a not-yet-applied
+            // contract.
+            try await transactionOperations.waitForContractVisibleToRpc(
+                contractId: contractId
+            )
             _ = try await transactionOperations.fundWallet(
                 nativeTokenContract: tokenContract,
                 forceMethod: forceMethod
@@ -1045,11 +1128,35 @@ public final class OZWalletOperations: OZManagerHelpers, @unchecked Sendable {
             )
         }
 
+        // An empty credential id is not a valid WebAuthn credential. Reject a
+        // blank or whitespace-only id up front so the cascade only ever runs
+        // against a real Base64URL credential. Headless callers use
+        // ``connectToContract(contractId:)`` instead.
+        if let credentialId = credentialId,
+           credentialId.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            throw SmartAccountValidationException.invalidInput(
+                field: "credentialId",
+                reason: "credentialId must not be empty or blank"
+            )
+        }
+
         // Normalise caller-supplied Base64URL credential id by stripping any
         // trailing `=` padding so storage-key lookups, connected-state writes,
         // event payloads, and the saved session all use the canonical unpadded
         // form produced by ``Data.base64URLEncodedString()``.
         let credentialId = credentialId.map(OZSmartAccountBuilders.strippedBase64URLPadding)
+
+        // A pure-padding credential id (for example "==") is neither empty nor
+        // whitespace, so it slips past the blank check above, yet padding
+        // stripping collapses it to the empty string here. An empty credential
+        // id is not a valid WebAuthn credential, so reject the normalised-empty
+        // form too.
+        if let credentialId = credentialId, credentialId.isEmpty {
+            throw SmartAccountValidationException.invalidInput(
+                field: "credentialId",
+                reason: "credentialId must not be empty or blank"
+            )
+        }
 
         var finalContractId: String? = contractId
 

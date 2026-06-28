@@ -38,6 +38,17 @@ public enum OZSmartAccountEvent: Sendable, Equatable, Hashable {
     ///   - credentialId: The Base64URL-encoded credential ID.
     case walletConnected(contractId: String, credentialId: String)
 
+    /// Emitted when a credential-less headless connection is established via
+    /// ``OZWalletOperations/connectToContract(contractId:)``.
+    ///
+    /// A headless connection attaches the kit to an already-deployed smart
+    /// account by contract address alone, with no passkey credential. Unlike
+    /// ``walletConnected(contractId:credentialId:)`` it carries only the
+    /// contract id, so listeners never receive a meaningless empty credential.
+    ///
+    /// - Parameter contractId: The smart account contract address (`C…` strkey).
+    case walletConnectedHeadless(contractId: String)
+
     /// Emitted when a wallet is disconnected.
     ///
     /// This event is fired when `disconnect()` is called. The session is cleared,
@@ -122,6 +133,8 @@ public enum OZSmartAccountEvent: Sendable, Equatable, Hashable {
         switch self {
         case .walletConnected:
             return OZSmartAccountEventType.walletConnected.tag
+        case .walletConnectedHeadless:
+            return OZSmartAccountEventType.walletConnectedHeadless.tag
         case .walletDisconnected:
             return OZSmartAccountEventType.walletDisconnected.tag
         case .credentialCreated:
@@ -149,6 +162,8 @@ public enum OZSmartAccountEvent: Sendable, Equatable, Hashable {
         switch (lhs, rhs) {
         case let (.walletConnected(lc, li), .walletConnected(rc, ri)):
             return lc == rc && li == ri
+        case let (.walletConnectedHeadless(lc), .walletConnectedHeadless(rc)):
+            return lc == rc
         case let (.walletDisconnected(lc), .walletDisconnected(rc)):
             return lc == rc
         case let (.credentialCreated(lc), .credentialCreated(rc)):
@@ -180,6 +195,8 @@ public enum OZSmartAccountEvent: Sendable, Equatable, Hashable {
         case let .walletConnected(contractId, credentialId):
             hasher.combine(contractId)
             hasher.combine(credentialId)
+        case let .walletConnectedHeadless(contractId):
+            hasher.combine(contractId)
         case let .walletDisconnected(contractId):
             hasher.combine(contractId)
         case let .credentialCreated(credential):
@@ -225,6 +242,7 @@ public enum OZSmartAccountEvent: Sendable, Equatable, Hashable {
 /// ```
 public enum OZSmartAccountEventType: String, Sendable, CaseIterable {
     case walletConnected = "WalletConnected"
+    case walletConnectedHeadless = "WalletConnectedHeadless"
     case walletDisconnected = "WalletDisconnected"
     case credentialCreated = "CredentialCreated"
     case credentialDeleted = "CredentialDeleted"

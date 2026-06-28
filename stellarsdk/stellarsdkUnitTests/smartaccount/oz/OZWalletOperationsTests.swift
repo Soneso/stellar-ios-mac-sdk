@@ -1086,6 +1086,24 @@ final class OZWalletOperationsTests: XCTestCase {
         return nil
     }
 
+    /// Independently builds the Base64 `LedgerKey` for a contract's persistent
+    /// instance ledger entry (the ContractData entry keyed by the
+    /// contract-instance marker). Constructed from the raw XDR types rather than
+    /// the production helper so a wiring assertion against this value pins the
+    /// exact key the visibility poll must probe, not whatever key the production
+    /// code happens to build.
+    private func contractInstanceKeyBase64(contractId: String) throws -> String {
+        let address = try SCAddressXDR(contractId: contractId)
+        let ledgerKey = LedgerKeyXDR.contractData(
+            LedgerKeyContractDataXDR(
+                contract: address,
+                key: .ledgerKeyContractInstance,
+                durability: .persistent
+            )
+        )
+        return try XCTUnwrap(ledgerKey.xdrEncoded)
+    }
+
     // ========================================================================
     // MARK: - createWallet happy paths
     // ========================================================================
@@ -1537,6 +1555,181 @@ final class OZWalletOperationsTests: XCTestCase {
         XCTAssertEqual(kit.currentConnectedState?.contractId, derivedContractId)
         let remaining = try await storage.get(credentialId: pipelineCredentialIdB64Url)
         XCTAssertNil(remaining)
+    }
+
+    func test_deployPendingCredential_autoFund_invokesContractVisibilityPoll() async throws {
+        let script = activatePipelineRpc()
+        defer { deactivatePipelineRpc() }
+
+        let provider = RecordingWebAuthnProvider()
+        let deployer = try pipelineDeployer()
+        let storage = OZInMemoryStorageAdapter()
+        let config = try pipelineConfig(provider: provider, deployer: deployer, storage: storage)
+        let kit = MockOZSmartAccountKit(
+            config: config,
+            sorobanServer: MockSorobanServer.makeMockedSorobanServer()
+        )
+        kit.configuredDeployer = deployer
+
+        let credentialIdBytes = try Data(base64URLEncoded: pipelineCredentialIdB64Url)
+        let derivedContractId = try SmartAccountUtils.deriveContractAddress(
+            credentialId: credentialIdBytes,
+            deployerPublicKey: deployer.accountId,
+            networkPassphrase: Network.testnet.passphrase
+        )
+        let stored = OZStoredCredential(
+            credentialId: pipelineCredentialIdB64Url,
+            publicKey: generatorPointPublicKey(),
+            contractId: derivedContractId
+        )
+        try await storage.save(credential: stored)
+
+        // The deploy build fetches the deployer account and the contract
+        // visibility poll probes getLedgerEntries; the shared default returns a
+        // non-empty (deployer-account) entry, so the poll observes the contract
+        // as visible on its first probe and the flow proceeds to funding.
+        enqueueDeployerAccount(script, deployer: deployer)
+        script.enqueueSimulate(authEntries: [], minResourceFee: 50_000)
+        script.setSendSuccess(
+            status: SendTransactionResponse.STATUS_PENDING,
+            hash: "pending-deploy-hash"
+        )
+        script.setGetTransactionDefault(
+            payload: OZPipelineFixtures.validGetTransactionResponse(
+                status: GetTransactionResponse.STATUS_SUCCESS,
+                ledger: 7777
+            )
+        )
+
+        // Route friendbot to a 500 so funding throws immediately once it is
+        // reached, after the contract-visibility poll has run. This keeps the
+        // test from scripting the full balance / transfer funding pipeline while
+        // still proving the poll fired before funding.
+        MockURLProtocol.requestHandler = { request in
+            let host = request.url?.host ?? ""
+            if host == "friendbot.stellar.org" {
+                let response = HTTPURLResponse(
+                    url: request.url!,
+                    statusCode: 500,
+                    httpVersion: nil,
+                    headerFields: ["Content-Type": "text/plain"]
+                )!
+                return .success((response, "fail".data(using: .utf8)))
+            }
+            return MockSorobanServer.handle(request: request, script: script)
+        }
+
+        let walletOps = OZWalletOperations(kit: kit)
+        do {
+            _ = try await walletOps.deployPendingCredential(
+                credentialId: pipelineCredentialIdB64Url,
+                autoFund: true,
+                nativeTokenContract: validContractAddress2
+            )
+            XCTFail("expected SubmissionFailed once funding reaches the failing friendbot")
+        } catch is SmartAccountTransactionException.SubmissionFailed {
+            // expected: the visibility poll passed and funding reached friendbot
+        }
+
+        // Independently rebuild the contract-instance ledger key and assert the
+        // deploy / fund flow probed exactly that key for the deployed contract,
+        // proving the visibility poll fired with the deployed contract's id.
+        let expectedKey = try contractInstanceKeyBase64(contractId: derivedContractId)
+        let probed = script.getLedgerEntriesCalls.contains { body in
+            guard let text = String(data: body, encoding: .utf8) else { return false }
+            return text.contains(expectedKey)
+        }
+        XCTAssertTrue(
+            probed,
+            "deploy/fund flow must probe the contract-instance ledger key for the deployed contract"
+        )
+    }
+
+    func test_createWallet_autoFund_invokesContractVisibilityPoll() async throws {
+        let script = activatePipelineRpc()
+        defer { deactivatePipelineRpc() }
+
+        let provider = RecordingWebAuthnProvider()
+        let deployer = try pipelineDeployer()
+        let storage = OZInMemoryStorageAdapter()
+        let config = try pipelineConfig(provider: provider, deployer: deployer, storage: storage)
+        let kit = MockOZSmartAccountKit(
+            config: config,
+            sorobanServer: MockSorobanServer.makeMockedSorobanServer()
+        )
+        kit.configuredDeployer = deployer
+
+        let credentialIdBytes = try Data(base64URLEncoded: pipelineCredentialIdB64Url)
+        provider.enqueueRegister(registrationResult(credentialId: credentialIdBytes))
+        // createWallet derives the contract address from the registration
+        // credential id; recompute it to assert the visibility poll probed it.
+        let derivedContractId = try SmartAccountUtils.deriveContractAddress(
+            credentialId: credentialIdBytes,
+            deployerPublicKey: deployer.accountId,
+            networkPassphrase: Network.testnet.passphrase
+        )
+
+        // The deploy build fetches the deployer account and the contract
+        // visibility poll probes getLedgerEntries; the shared default returns a
+        // non-empty (deployer-account) entry, so the poll observes the contract
+        // as visible on its first probe and the flow proceeds to funding.
+        enqueueDeployerAccount(script, deployer: deployer)
+        script.enqueueSimulate(authEntries: [], minResourceFee: 50_000)
+        script.setSendSuccess(
+            status: SendTransactionResponse.STATUS_PENDING,
+            hash: "create-fund-hash"
+        )
+        script.setGetTransactionDefault(
+            payload: OZPipelineFixtures.validGetTransactionResponse(
+                status: GetTransactionResponse.STATUS_SUCCESS,
+                ledger: 7777
+            )
+        )
+
+        // Route friendbot to a 500 so funding throws immediately once it is
+        // reached, after the contract-visibility poll has run. This keeps the
+        // test from scripting the full balance / transfer funding pipeline while
+        // still proving the poll fired before funding from the createWallet
+        // (signAndSubmitDeploy) call site.
+        MockURLProtocol.requestHandler = { request in
+            let host = request.url?.host ?? ""
+            if host == "friendbot.stellar.org" {
+                let response = HTTPURLResponse(
+                    url: request.url!,
+                    statusCode: 500,
+                    httpVersion: nil,
+                    headerFields: ["Content-Type": "text/plain"]
+                )!
+                return .success((response, "fail".data(using: .utf8)))
+            }
+            return MockSorobanServer.handle(request: request, script: script)
+        }
+
+        let walletOps = OZWalletOperations(kit: kit)
+        do {
+            _ = try await walletOps.createWallet(
+                userName: "Carol",
+                autoSubmit: true,
+                autoFund: true,
+                nativeTokenContract: validContractAddress2
+            )
+            XCTFail("expected SubmissionFailed once funding reaches the failing friendbot")
+        } catch is SmartAccountTransactionException.SubmissionFailed {
+            // expected: the visibility poll passed and funding reached friendbot
+        }
+
+        // Independently rebuild the contract-instance ledger key and assert the
+        // create / fund flow probed exactly that key for the deployed contract,
+        // proving the visibility poll fired with the deployed contract's id.
+        let expectedKey = try contractInstanceKeyBase64(contractId: derivedContractId)
+        let probed = script.getLedgerEntriesCalls.contains { body in
+            guard let text = String(data: body, encoding: .utf8) else { return false }
+            return text.contains(expectedKey)
+        }
+        XCTAssertTrue(
+            probed,
+            "create/fund flow must probe the contract-instance ledger key for the deployed contract"
+        )
     }
 
     func test_deployPendingCredential_sendFailure_marksFailedAndThrows() async throws {

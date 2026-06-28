@@ -326,6 +326,20 @@ public final class OZTransactionOperations: OZManagerHelpers, @unchecked Sendabl
         resolveContextRuleIds: OZResolveContextRuleIds? = nil
     ) async throws -> OZTransactionResult {
         let connected = try kit.requireConnected()
+        // why: a headless connection carries no passkey credential
+        // (credentialId == nil) and is operable only through the multi-signer /
+        // external-signer pipeline. The single-passkey path below requires a
+        // credential, so refuse a headless caller up front — binding the
+        // credential in the same step — so a misrouted call fails clearly here
+        // rather than late and confusingly inside the credential lookup or the
+        // WebAuthn-provider guard.
+        guard let credentialId = connected.credentialId else {
+            throw SmartAccountValidationException.invalidInput(
+                field: "selectedSigners",
+                reason: "This kit is connected headlessly (no passkey); use the " +
+                    "multi-signer pipeline with explicit selectedSigners for headless operations."
+            )
+        }
         let deployer = try await kit.getDeployer()
         let deployerAccount = try await fetchAccount(accountId: deployer.accountId)
 
@@ -347,13 +361,14 @@ public final class OZTransactionOperations: OZManagerHelpers, @unchecked Sendabl
         let signedAuthEntries = try await signAuthEntriesPass(
             simulatedAuthEntries: simulatedAuthEntries,
             connected: connected,
+            credentialId: credentialId,
             resolveContextRuleIds: resolveContextRuleIds
         )
 
         if !signedAuthEntries.isEmpty {
             do {
                 try await kit.credentialManagerProtocol.updateLastUsed(
-                    credentialId: connected.credentialId
+                    credentialId: credentialId
                 )
             } catch {
                 // best-effort; the credential update is non-critical
@@ -394,6 +409,8 @@ public final class OZTransactionOperations: OZManagerHelpers, @unchecked Sendabl
     /// - Parameters:
     ///   - simulatedAuthEntries: Entries returned from the initial simulation.
     ///   - connected: Active connected-state pair identifying the smart account.
+    ///   - credentialId: Base64URL-encoded passkey credential id of the connected
+    ///     wallet, resolved by the caller after the headless guard.
     ///   - resolveContextRuleIds: Optional override of the automatic context-rule
     ///     resolution.
     /// - Returns: Authorization entries with the OZ AuthPayload Map wired into
@@ -403,6 +420,7 @@ public final class OZTransactionOperations: OZManagerHelpers, @unchecked Sendabl
     private func signAuthEntriesPass(
         simulatedAuthEntries: [SorobanAuthorizationEntryXDR],
         connected: ConnectedState,
+        credentialId: String,
         resolveContextRuleIds: OZResolveContextRuleIds?
     ) async throws -> [SorobanAuthorizationEntryXDR] {
         if simulatedAuthEntries.isEmpty {
@@ -480,10 +498,10 @@ public final class OZTransactionOperations: OZManagerHelpers, @unchecked Sendabl
 
             let credIdBytes: Data
             do {
-                credIdBytes = try Data(base64URLEncoded: connected.credentialId)
+                credIdBytes = try Data(base64URLEncoded: credentialId)
             } catch {
                 throw SmartAccountCredentialException.invalid(
-                    reason: "Failed to decode credentialId from Base64URL: \(connected.credentialId)",
+                    reason: "Failed to decode credentialId from Base64URL: \(credentialId)",
                     cause: error
                 )
             }
@@ -492,7 +510,7 @@ public final class OZTransactionOperations: OZManagerHelpers, @unchecked Sendabl
             // the active context rules are scanned for an External signer whose
             // key suffix matches the decoded credential id.
             let stored: OZStoredCredential? = await safeGetCredential(
-                credentialId: connected.credentialId
+                credentialId: credentialId
             )
             let signer: OZExternalSigner
             if let stored = stored {
@@ -696,13 +714,17 @@ public final class OZTransactionOperations: OZManagerHelpers, @unchecked Sendabl
             )
         }
 
-        // why: wait for Friendbot propagation to Soroban RPC state. The
-        // Horizon submission confirms in milliseconds but Soroban RPC may not
-        // observe the new account ledger entry until the next ledger close
-        // (~5 seconds on testnet).
-        try await Task.sleep(nanoseconds: 5_000_000_000)
-
-        let tempAccount = try await fetchAccount(accountId: tempKeypair.accountId)
+        // why: Friendbot confirms on Horizon within milliseconds, but the
+        // Soroban RPC may not observe the new account's ledger entry until a
+        // later ledger close. Poll the RPC until the temp account is visible
+        // rather than assuming a single fixed propagation delay; a fixed wait
+        // fails whenever testnet propagation is slower than the guess, because
+        // the balance simulation below would then read a not-yet-applied
+        // account entry and throw `Error(Contract, #6)` "account entry is
+        // missing".
+        let tempAccount = try await waitForAccountVisibleToRpc(
+            accountId: tempKeypair.accountId
+        )
 
         let reserveStroopsInt64: Int64 =
             Int64(OZConstants.friendbotReserveXlm) * StellarProtocolConstants.stroopsPerXlm
@@ -826,6 +848,269 @@ public final class OZTransactionOperations: OZManagerHelpers, @unchecked Sendabl
         }
 
         return OZTransactionOperations.formatXlmAmount(stroops: transferStroops)
+    }
+
+    /// Outcome of a single visibility probe issued by
+    /// ``pollUntilVisible(pollIntervalMs:timeoutSeconds:probe:timeoutReason:)``.
+    private enum PollOutcome<T> {
+        /// The probed ledger entry is visible; carries the resolved payload the
+        /// wait returns.
+        case visible(T)
+        /// The entry is not yet applied on the ledger the RPC has observed; the
+        /// poll continues.
+        case notYetVisible
+        /// The probe failed for a transport reason; retained as the eventual
+        /// timeout cause while the poll continues.
+        case transient(SorobanRpcRequestError)
+    }
+
+    /// Polls a Soroban-RPC visibility probe on a fixed interval until it reports
+    /// the target ledger entry as visible, then returns the probe's payload.
+    ///
+    /// A freshly funded account or freshly deployed contract confirms on Horizon
+    /// within milliseconds, but the Soroban RPC may not observe the new ledger
+    /// entry until a later ledger close; polling absorbs that variable
+    /// propagation delay rather than assuming a single fixed wait. Each `probe`
+    /// round trip is classified as ``PollOutcome/visible(_:)`` (the wait returns
+    /// the carried payload), ``PollOutcome/notYetVisible`` (the entry is not yet
+    /// applied, so another poll is issued), or ``PollOutcome/transient(_:)`` (a
+    /// transport failure retained as the eventual timeout cause). Every transient
+    /// error is retained and surfaced as the timeout cause when the entry never
+    /// becomes visible. The deadline is measured against a monotonic clock so it
+    /// cannot be perturbed by wall-clock adjustments while the wait is in flight.
+    /// The wait is cooperatively cancellable through Swift task cancellation.
+    ///
+    /// - Parameters:
+    ///   - pollIntervalMs: Delay between probes in milliseconds, clamped to a
+    ///     minimum of 1 ms to avoid a busy-loop.
+    ///   - timeoutSeconds: Overall budget in seconds.
+    ///   - probe: The per-attempt visibility probe.
+    ///   - timeoutReason: Builds the timeout message from the elapsed budget and
+    ///     the last transient error, when any was retained.
+    /// - Returns: The payload carried by the first ``PollOutcome/visible(_:)``.
+    /// - Throws: ``SmartAccountTransactionException/Timeout`` when the entry is
+    ///   not visible within `timeoutSeconds`; `CancellationError` when the
+    ///   surrounding task is cancelled.
+    private func pollUntilVisible<T>(
+        pollIntervalMs: Int,
+        timeoutSeconds: Double,
+        probe: () async -> PollOutcome<T>,
+        timeoutReason: (_ seconds: Double, _ lastError: SorobanRpcRequestError?) -> String
+    ) async throws -> T {
+        let pollIntervalNanos = UInt64(max(1, pollIntervalMs)) * 1_000_000
+        // Monotonic deadline: DispatchTime advances independently of wall-clock
+        // changes, so a clock adjustment cannot shorten or extend the budget.
+        let deadline = DispatchTime.now() + timeoutSeconds
+        var lastTransientError: SorobanRpcRequestError?
+
+        while true {
+            try Task.checkCancellation()
+
+            switch await probe() {
+            case .visible(let payload):
+                return payload
+            case .notYetVisible:
+                break
+            case .transient(let error):
+                lastTransientError = error
+            }
+
+            if DispatchTime.now() >= deadline {
+                break
+            }
+            try await Task.sleep(nanoseconds: pollIntervalNanos)
+        }
+
+        throw SmartAccountTransactionException.timeout(
+            details: timeoutReason(timeoutSeconds, lastTransientError),
+            cause: lastTransientError
+        )
+    }
+
+    /// Polls the Soroban RPC for a Friendbot-funded temporary account's ledger
+    /// entry until it is visible, then returns the resolved account.
+    ///
+    /// Friendbot confirms the funding on Horizon within milliseconds, but the
+    /// Soroban RPC may not observe the new account's ledger entry until a later
+    /// ledger close. Simulating the native SAC's `balance(<temp account>)`
+    /// before the entry is visible fails with `Error(Contract, #6)`
+    /// "account entry is missing"; this poll gates the balance simulation on the
+    /// account actually being present rather than assuming a single fixed
+    /// propagation delay, which fails when testnet propagation is slower than
+    /// the assumed wait.
+    ///
+    /// ``SorobanServer/getAccount(accountId:)`` reports a not-yet-visible
+    /// account as a `.requestFailed` carrying
+    /// ``SorobanServer/accountNotFoundMessage``; that outcome drives another
+    /// poll. Any other RPC failure is treated as a transient error: it is
+    /// retried up to the deadline and, when the account never becomes visible,
+    /// surfaced as the timeout cause. The successfully resolved account is
+    /// returned so the caller can reuse it without a second round-trip. The
+    /// wait is cooperatively cancellable through Swift task cancellation.
+    ///
+    /// - Parameters:
+    ///   - accountId: The temporary funding account's `G...` address.
+    ///   - pollIntervalMs: Delay between polls in milliseconds, clamped to a
+    ///     minimum of 1 ms to avoid a busy-loop. Defaults to
+    ///     ``OZConstants/rpcVisibilityPollIntervalMs``.
+    ///   - timeoutSeconds: Overall budget in seconds, measured against a
+    ///     monotonic clock. Defaults to
+    ///     ``OZConstants/rpcVisibilityTimeoutSeconds``.
+    /// - Returns: The funding account, now visible to the Soroban RPC, with its
+    ///   current sequence number.
+    /// - Throws: ``SmartAccountTransactionException/Timeout`` when the account
+    ///   is not visible within `timeoutSeconds`; `CancellationError` when the
+    ///   surrounding task is cancelled.
+    internal func waitForAccountVisibleToRpc(
+        accountId: String,
+        pollIntervalMs: Int = OZConstants.rpcVisibilityPollIntervalMs,
+        timeoutSeconds: Double = Double(OZConstants.rpcVisibilityTimeoutSeconds)
+    ) async throws -> Account {
+        return try await pollUntilVisible(
+            pollIntervalMs: pollIntervalMs,
+            timeoutSeconds: timeoutSeconds,
+            probe: { () -> PollOutcome<Account> in
+                switch await kit.sorobanServer.getAccount(accountId: accountId) {
+                case .success(let account):
+                    return .visible(account)
+                case .failure(let error):
+                    // "account not found yet" is the expected propagation case
+                    // and simply drives another poll; every other failure is a
+                    // transient RPC error retained as the eventual timeout cause.
+                    return OZTransactionOperations.isAccountNotVisibleError(error)
+                        ? .notYetVisible
+                        : .transient(error)
+                }
+            },
+            timeoutReason: { seconds, lastError in
+                let timeoutText = OZTransactionOperations.describeSeconds(seconds)
+                var reason =
+                    "Funding account \(accountId) not visible to the Soroban RPC within " +
+                    "\(timeoutText)s after Friendbot funding; testnet propagation may be " +
+                    "delayed. Retry shortly."
+                if let lastError = lastError {
+                    reason += " Last RPC error: \(self.rpcErrorMessage(lastError))."
+                }
+                return reason
+            }
+        )
+    }
+
+    /// Polls the Soroban RPC for a freshly deployed smart-account contract's
+    /// instance ledger entry until it is visible, then returns.
+    ///
+    /// The deploy transaction may confirm on Horizon a ledger or more before the
+    /// Soroban RPC's simulation endpoint observes the new contract instance.
+    /// Simulating the funding flow against the contract before its instance
+    /// entry is visible fails; this poll gates the funding flow on the contract
+    /// actually being present rather than assuming a single fixed propagation
+    /// delay, which fails when testnet propagation is slower than the assumed
+    /// wait.
+    ///
+    /// Visibility is detected structurally, without string-matching:
+    /// ``SorobanServer/getLedgerEntries(base64EncodedKeys:)`` is queried for the
+    /// contract's persistent instance ledger entry (the ``ContractDataEntryXDR``
+    /// keyed by ``SCValXDR/ledgerKeyContractInstance`` under
+    /// ``ContractDataDurability/persistent``, the exact key the funding flow's
+    /// simulation later reads). An empty `entries` array means the entry is not
+    /// yet applied on the ledger the RPC has observed and drives another poll; a
+    /// present entry means the contract is visible and the wait returns. Any RPC
+    /// transport failure is treated as a transient error: it is retried up to
+    /// the deadline and, when the contract never becomes visible, surfaced as
+    /// the timeout cause. The wait is cooperatively cancellable through Swift
+    /// task cancellation.
+    ///
+    /// - Parameters:
+    ///   - contractId: The deployed smart-account contract address (`C...`
+    ///     strkey).
+    ///   - pollIntervalMs: Delay between polls in milliseconds, clamped to a
+    ///     minimum of 1 ms to avoid a busy-loop. Defaults to
+    ///     ``OZConstants/rpcVisibilityPollIntervalMs``.
+    ///   - timeoutSeconds: Overall budget in seconds, measured against a
+    ///     monotonic clock. Defaults to
+    ///     ``OZConstants/rpcVisibilityTimeoutSeconds``.
+    /// - Throws: ``SmartAccountTransactionException/Timeout`` when the contract
+    ///   is not visible within `timeoutSeconds`;
+    ///   ``SmartAccountValidationException/InvalidAddress`` when `contractId`
+    ///   cannot be encoded into a ledger key; `CancellationError` when the
+    ///   surrounding task is cancelled.
+    internal func waitForContractVisibleToRpc(
+        contractId: String,
+        pollIntervalMs: Int = OZConstants.rpcVisibilityPollIntervalMs,
+        timeoutSeconds: Double = Double(OZConstants.rpcVisibilityTimeoutSeconds)
+    ) async throws {
+        let ledgerKeyBase64 = try OZTransactionOperations.contractInstanceLedgerKey(
+            contractId: contractId
+        )
+        _ = try await pollUntilVisible(
+            pollIntervalMs: pollIntervalMs,
+            timeoutSeconds: timeoutSeconds,
+            probe: { () -> PollOutcome<Void> in
+                switch await kit.sorobanServer.getLedgerEntries(
+                    base64EncodedKeys: [ledgerKeyBase64]
+                ) {
+                case .success(let response):
+                    // A present instance entry means the RPC has applied the
+                    // ledger carrying the deployed contract; an empty result is
+                    // the structural "not visible yet" signal that drives another
+                    // poll.
+                    return response.entries.isEmpty ? .notYetVisible : .visible(())
+                case .failure(let error):
+                    // Every RPC transport failure is a transient error retained
+                    // as the eventual timeout cause; the not-visible signal is
+                    // the empty-entries success above, never a failure.
+                    return .transient(error)
+                }
+            },
+            timeoutReason: { seconds, lastError in
+                let timeoutText = OZTransactionOperations.describeSeconds(seconds)
+                var reason =
+                    "Deployed contract \(contractId) not visible to the Soroban RPC " +
+                    "within \(timeoutText)s after deployment; testnet propagation may " +
+                    "be delayed. Retry shortly."
+                if let lastError = lastError {
+                    reason += " Last RPC error: \(self.rpcErrorMessage(lastError))."
+                }
+                return reason
+            }
+        )
+    }
+
+    /// Builds the Base64-encoded `LedgerKey` for a contract's persistent
+    /// instance ledger entry: the ``ContractDataEntryXDR`` keyed by
+    /// ``SCValXDR/ledgerKeyContractInstance`` under
+    /// ``ContractDataDurability/persistent``. This is the entry the Soroban RPC
+    /// reports for a deployed contract; probing it via
+    /// ``SorobanServer/getLedgerEntries(base64EncodedKeys:)`` is the visibility
+    /// signal for ``waitForContractVisibleToRpc(contractId:pollIntervalMs:timeoutSeconds:)``.
+    ///
+    /// Mirrors the key ``SorobanServer/getContractData(contractId:key:durability:)``
+    /// constructs internally so the visibility probe queries the exact entry the
+    /// funding flow's simulation later reads.
+    ///
+    /// - Throws: ``SmartAccountValidationException/InvalidAddress`` when
+    ///   `contractId` is not a valid contract address or its ledger key cannot
+    ///   be XDR-encoded.
+    internal static func contractInstanceLedgerKey(contractId: String) throws -> String {
+        let contractAddress: SCAddressXDR
+        do {
+            contractAddress = try SCAddressXDR(contractId: contractId)
+        } catch {
+            throw SmartAccountValidationException.invalidAddress(
+                address: contractId,
+                cause: error
+            )
+        }
+        let contractDataKey = LedgerKeyContractDataXDR(
+            contract: contractAddress,
+            key: .ledgerKeyContractInstance,
+            durability: .persistent
+        )
+        let ledgerKey = LedgerKeyXDR.contractData(contractDataKey)
+        guard let ledgerKeyBase64 = ledgerKey.xdrEncoded else {
+            throw SmartAccountValidationException.invalidAddress(address: contractId)
+        }
+        return ledgerKeyBase64
     }
 
     /// Simulates a host function in isolation and returns the parsed `SCValXDR`
@@ -1428,6 +1713,30 @@ public final class OZTransactionOperations: OZManagerHelpers, @unchecked Sendabl
             return nil
         }
         return nil
+    }
+
+    /// Returns `true` when a ``SorobanServer/getAccount(accountId:)`` failure
+    /// denotes an account not yet present on the ledger applied by the RPC,
+    /// rather than a transport or protocol error. `getAccount` reports a missing
+    /// account entry as a `.requestFailed` carrying
+    /// ``SorobanServer/accountNotFoundMessage``; matching that single shared
+    /// constant keeps this classification in lockstep with the message
+    /// `getAccount` actually emits. Every other failure shape is treated as a
+    /// transient RPC error.
+    internal static func isAccountNotVisibleError(_ error: SorobanRpcRequestError) -> Bool {
+        if case .requestFailed(let message) = error {
+            return message == SorobanServer.accountNotFoundMessage
+        }
+        return false
+    }
+
+    /// Formats a seconds value for human-readable error text, dropping the
+    /// fractional component when the value is a whole number of seconds.
+    internal static func describeSeconds(_ seconds: Double) -> String {
+        if seconds == seconds.rounded(.towardZero) {
+            return String(Int(seconds))
+        }
+        return String(seconds)
     }
 
     /// Extracts a `UInt32` from an `SCValXDR.u32` value, used to parse a token

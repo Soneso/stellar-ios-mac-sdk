@@ -219,21 +219,38 @@ public final class OZSmartAccountKit: OZSmartAccountKitProtocol, @unchecked Send
 
     /// Indicates whether a wallet is currently connected.
     ///
-    /// A wallet is connected when both the credential id and the contract id
-    /// are set. This property reflects in-memory state only; after an app
-    /// restart consumers should call
-    /// ``OZWalletOperations/connectWallet(options:)`` to restore a saved session.
+    /// A connection is defined by the smart-account contract; the credential is
+    /// optional and is absent for a headless
+    /// ``OZWalletOperations/connectToContract(contractId:)`` connection. This
+    /// property reflects in-memory state only; after an app restart consumers
+    /// should call ``OZWalletOperations/connectWallet(options:)`` to restore a
+    /// saved session.
     public var isConnected: Bool {
         stateLock.lock()
         defer { stateLock.unlock() }
-        return _credentialId != nil && _contractId != nil
+        return _contractId != nil
     }
 
-    /// The credential identifier of the currently connected wallet, when a
-    /// wallet is connected.
+    /// Indicates whether the current connection is headless — bound to a
+    /// smart-account contract with no passkey credential.
     ///
-    /// Returns `nil` when no wallet is connected. The credential id is
-    /// Base64URL-encoded without padding, matching the WebAuthn
+    /// `true` only for a connection established through
+    /// ``OZWalletOperations/connectToContract(contractId:)``. Headless
+    /// connections are operable only through the multi-signer / external-signer
+    /// pipeline; the single-passkey paths reject them.
+    public var isHeadless: Bool {
+        stateLock.lock()
+        defer { stateLock.unlock() }
+        return _contractId != nil && _credentialId == nil
+    }
+
+    /// The credential identifier of the currently connected wallet, when one is
+    /// present.
+    ///
+    /// Returns `nil` when no wallet is connected, and also for a headless
+    /// ``OZWalletOperations/connectToContract(contractId:)`` connection, which
+    /// binds a contract without a passkey credential. When present, the
+    /// credential id is Base64URL-encoded without padding, matching the WebAuthn
     /// specification.
     public var credentialId: String? {
         stateLock.lock()
@@ -320,12 +337,14 @@ public final class OZSmartAccountKit: OZSmartAccountKitProtocol, @unchecked Send
     ///
     /// Called by wallet-operations modules after a successful wallet
     /// creation or connection. Records the credential id and contract id
-    /// under the state lock.
+    /// under the state lock. A `nil` credential id marks a headless connection
+    /// bound to the contract alone.
     ///
     /// - Parameters:
-    ///   - credentialId: Base64URL-encoded credential identifier.
+    ///   - credentialId: Base64URL-encoded credential identifier, or `nil` for a
+    ///     headless connection.
     ///   - contractId: Smart account contract address (C-strkey).
-    internal func setConnectedState(credentialId: String, contractId: String) {
+    internal func setConnectedState(credentialId: String?, contractId: String) {
         stateLock.lock()
         _credentialId = credentialId
         _contractId = contractId
@@ -341,12 +360,12 @@ public final class OZSmartAccountKit: OZSmartAccountKitProtocol, @unchecked Send
     internal func requireConnected() throws -> ConnectedState {
         stateLock.lock()
         defer { stateLock.unlock() }
-        guard let cId = _credentialId, let ctId = _contractId else {
+        guard let ctId = _contractId else {
             throw SmartAccountWalletException.notConnected(
                 details: "No wallet connected. Call createWallet() or connectWallet() first."
             )
         }
-        return ConnectedState(credentialId: cId, contractId: ctId)
+        return ConnectedState(credentialId: _credentialId, contractId: ctId)
     }
 
     /// Disconnects the currently connected wallet.

@@ -254,6 +254,13 @@ public class SorobanServer: @unchecked Sendable {
     /// HTTP header name for application version identification.
     static let clientApplicationVersionHeader = "X-App-Version"
 
+    /// Message reported by ``getAccount(accountId:)`` when the account's ledger
+    /// entry is absent from the ledger the RPC has applied. Callers that poll
+    /// for eventual account visibility match this single constant instead of a
+    /// duplicated literal, so a wording change here cannot silently reclassify
+    /// a not-found result as a transient transport failure.
+    public static let accountNotFoundMessage = "could not find account"
+
     /// Automatically populated HTTP headers for RPC requests including SDK and application metadata.
     lazy var requestHeaders: [String: String] = {
         var headers: [String: String] = [:]
@@ -665,7 +672,7 @@ public class SorobanServer: @unchecked Sendable {
                         return .success(response: account)
                     }
                     else {
-                        return .failure(error: .requestFailed(message: "could not find account"))
+                        return .failure(error: .requestFailed(message: SorobanServer.accountNotFoundMessage))
                     }
                 case .failure(let error):
                     return .failure(error: error)
