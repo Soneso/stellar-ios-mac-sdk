@@ -3225,7 +3225,7 @@ class SEP10Analyzer:
                         field.implemented = True
                         field.sdk_property = 'isValidChallenge (signature verification)'
                 elif field.name == 'timebounds_enforcement':
-                    if 'txTimeBounds' in content and 'invalidTimeBounds' in content:
+                    if 'timeBounds' in content and 'invalidTimeBounds' in content:
                         field.implemented = True
                         field.sdk_property = 'isValidChallenge (timebounds validation)'
                 elif field.name == 'transaction_envelope_format':
@@ -3335,7 +3335,7 @@ class SEP10Analyzer:
                         field.implemented = True
                         field.sdk_property = 'isValidChallenge (signature verification)'
                 elif field.name == 'timebounds_validation':
-                    if 'txTimeBounds' in content and 'timeBoundsGracePeriod' in content:
+                    if 'timeBounds' in content and 'timeBoundsGracePeriod' in content:
                         field.implemented = True
                         field.sdk_property = 'isValidChallenge (timebounds with grace period)'
 

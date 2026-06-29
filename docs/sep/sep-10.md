@@ -82,7 +82,7 @@ let jwtResult = await webAuth.jwtToken(
 
 The method performs these steps internally:
 1. Requests a challenge transaction from the server
-2. Validates the challenge (sequence number = 0, valid signatures, time bounds, operations)
+2. Validates the challenge (sequence number = 0, valid signatures, time bounds, operations). The challenge must be time-bounded: one with no time bounds or an infinite maximum time (`maxTime == 0`) is rejected.
 3. Signs with your keypair(s)
 4. Submits the signed transaction to the server
 5. Returns the JWT token

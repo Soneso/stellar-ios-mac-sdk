@@ -48,7 +48,7 @@ See the [Quick Start in the README](README.md#quick-start) for an end-to-end exa
 public final class OZSmartAccountKit: @unchecked Sendable { ... }
 ```
 
-Composition root that owns every operations module, every manager, the shared `SorobanServer`, and the optional indexer and relayer HTTP clients. Connected-state accessors (`isConnected`, `credentialId`, `contractId`) are thread-safe (protected by an internal `NSLock`); the configuration and resolved transports are immutable for the kit's lifetime.
+Composition root that owns every operations module, every manager, the shared `SorobanServer`, and the optional indexer and relayer HTTP clients. Connected-state accessors (`isConnected`, `isHeadless`, `credentialId`, `contractId`) are thread-safe (protected by an internal `NSLock`); the configuration and resolved transports are immutable for the kit's lifetime.
 
 ### Factory Method
 
@@ -87,7 +87,15 @@ The event emitter shared by every manager bound to this kit. See the [Events](#e
 public var isConnected: Bool { get }
 ```
 
-`true` when both a credential identifier and a contract address are set. Reflects in-memory state only; after an app restart, call `walletOperations.connectWallet(_:)` to restore a saved session.
+`true` when a contract address is set; the credential is optional and is absent for a headless connection. Reflects in-memory state only; after an app restart, call `walletOperations.connectWallet(_:)` to restore a saved session.
+
+#### isHeadless
+
+```swift
+public var isHeadless: Bool { get }
+```
+
+`true` when the kit is connected to a contract with no passkey credential (contract address set, `credentialId == nil`) — the state established by `walletOperations.connectToContract(contractId:)`.
 
 #### credentialId
 
@@ -95,7 +103,7 @@ public var isConnected: Bool { get }
 public var credentialId: String? { get }
 ```
 
-The Base64URL-encoded (unpadded) WebAuthn credential identifier of the currently connected wallet, or `nil` when no wallet is connected.
+The Base64URL-encoded (unpadded) WebAuthn credential identifier of the currently connected wallet, or `nil` when no wallet is connected and for a headless connection.
 
 #### contractId
 
@@ -428,6 +436,21 @@ The cascade for resolving the contract address is: stored credential lookup → 
 
 **Throws**: `WebAuthnException` (prompt path), `SmartAccountWalletException` (no contract resolved), `SmartAccountValidationException` (options validation), `SmartAccountTransactionException` (RPC failure), `SmartAccountIndexerException` (indexer transport failure).
 
+#### connectToContract(...)
+
+```swift
+public func connectToContract(contractId: String) async throws -> OZConnectToContractResult
+```
+
+Connects to an existing smart account by its contract address alone. Runs no WebAuthn ceremony, consults no credential, and persists no session (any previously saved session is cleared). Verifies the contract exists on-chain (a one-shot existence check, not a poll), then sets the connected state with `credentialId == nil` and emits `OZSmartAccountEvent.walletConnectedHeadless(contractId:)`. A headless connection holds no passkey credential, so the single-passkey operations (`submit`, `transfer`, `contractCall`, `executeAndSubmit`, signer/manager calls left at the default empty `selectedSigners`) reject it — those calls must use the multi-signer / external-signer path with an explicit non-empty `selectedSigners`. Intended for an autonomous agent or backend service that signs through the external-signer path.
+
+**Parameters**:
+- `contractId`: Smart-account contract address (`C…` strkey).
+
+**Returns**: An `OZConnectToContractResult` carrying the verified contract address.
+
+**Throws**: `SmartAccountValidationException.InvalidAddress` (invalid `contractId`), `SmartAccountWalletException.notFound` (no contract at the address), `SmartAccountTransactionException` (RPC existence check failure).
+
 #### authenticatePasskey(...)
 
 ```swift
@@ -510,6 +533,16 @@ public enum OZConnectWalletResult: Sendable, Equatable, Hashable {
 ```
 
 The `connected` arm reports a successful single-contract resolution; `restoredFromSession` is `true` when the connection was restored from a stored session, `false` for fresh authentications. The `ambiguous` arm reports a multi-contract resolution from the indexer — the kit's connected state is NOT set on `.ambiguous`; the caller must let the user pick a candidate and re-call `connectWallet(options:)` with `contractId` set to the chosen value.
+
+#### OZConnectToContractResult
+
+```swift
+public struct OZConnectToContractResult: Sendable, Equatable, Hashable {
+    public let contractId: String
+}
+```
+
+Outcome of a headless `connectToContract(contractId:)`. Carries the verified contract address; no credential is involved.
 
 #### OZConnectWalletOptions
 
@@ -1882,6 +1915,7 @@ Returns the number of listeners currently registered for the supplied event tag.
 ```swift
 public enum OZSmartAccountEvent: Sendable, Equatable, Hashable {
     case walletConnected(contractId: String, credentialId: String)
+    case walletConnectedHeadless(contractId: String)
     case walletDisconnected(contractId: String)
     case credentialCreated(credential: OZStoredCredential)
     case credentialDeleted(credentialId: String)
@@ -1897,6 +1931,7 @@ public enum OZSmartAccountEvent: Sendable, Equatable, Hashable {
 | Arm | Payload | Emitted when |
 |---|---|---|
 | `walletConnected` | `contractId, credentialId` | A wallet is connected (fresh registration or session restore). |
+| `walletConnectedHeadless` | `contractId` | A headless connection is established via `connectToContract(contractId:)` — bound to a contract with no passkey credential. |
 | `walletDisconnected` | `contractId` | `kit.disconnect()` is called. The session is cleared; stored credentials remain. |
 | `credentialCreated` | `credential` | A WebAuthn credential is registered (during initial wallet setup or when adding a new signer). The wallet may not be deployed yet. |
 | `credentialDeleted` | `credentialId` | A credential is removed from storage. |
@@ -1912,6 +1947,7 @@ public enum OZSmartAccountEvent: Sendable, Equatable, Hashable {
 ```swift
 public enum OZSmartAccountEventType: String, Sendable, CaseIterable {
     case walletConnected = "WalletConnected"
+    case walletConnectedHeadless = "WalletConnectedHeadless"
     case walletDisconnected = "WalletDisconnected"
     case credentialCreated = "CredentialCreated"
     case credentialDeleted = "CredentialDeleted"

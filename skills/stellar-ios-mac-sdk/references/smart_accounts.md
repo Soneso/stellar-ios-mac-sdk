@@ -175,11 +175,12 @@ let kit = OZSmartAccountKit.create(config: config)
 
 ### Connection state
 
-The kit exposes three synchronous read-only properties reflecting in-memory state only:
+The kit exposes synchronous read-only properties reflecting in-memory state only:
 
 ```swift
-let connected: Bool      = kit.isConnected
-let credId: String?      = kit.credentialId   // Base64URL, no padding
+let connected: Bool      = kit.isConnected    // true when a contract is bound (credential optional)
+let headless: Bool       = kit.isHeadless     // true for a connectToContract connection (no passkey)
+let credId: String?      = kit.credentialId   // Base64URL, no padding; nil for a headless connection
 let contractId: String?  = kit.contractId     // C-address (56 chars)
 ```
 
@@ -505,6 +506,16 @@ When `credentialId` is provided (or after a WebAuthn prompt) without an explicit
    - N > 1 contracts → returns `.ambiguous(credentialId, candidates)`; connection state is NOT set.
 
 When an explicit `contractId` is supplied (direct connect or session restore), the cascade is bypassed and only the on-chain verification runs.
+
+### Headless connect (no passkey)
+
+`connectToContract(contractId:)` binds the kit to an existing smart account by contract address alone — no WebAuthn ceremony, no credential, no persisted session. It verifies the contract exists on-chain, sets the connected state with `credentialId == nil` (`kit.isHeadless == true`), and emits `walletConnectedHeadless`.
+
+```swift
+let result = try await kit.walletOperations.connectToContract(contractId: "C...")
+```
+
+A headless connection holds no passkey, so the single-passkey operations (`submit`, `transfer`, `contractCall`, `executeAndSubmit`, and any manager call left at the default empty `selectedSigners`) reject it. Operate through the multi-signer path with an explicit non-empty `selectedSigners`. Intended for an autonomous agent or backend service that signs through the external-signer path.
 
 ---
 
@@ -1226,6 +1237,7 @@ public init(
 ```swift
 public enum OZSmartAccountEvent {
     case walletConnected(contractId: String, credentialId: String)
+    case walletConnectedHeadless(contractId: String)   // connectToContract: no passkey credential
     case walletDisconnected(contractId: String)
     case credentialCreated(credential: OZStoredCredential)
     case credentialDeleted(credentialId: String)
@@ -1237,6 +1249,7 @@ public enum OZSmartAccountEvent {
 
 public enum OZSmartAccountEventType: String {
     case walletConnected = "WalletConnected"
+    case walletConnectedHeadless = "WalletConnectedHeadless"
     case walletDisconnected = "WalletDisconnected"
     case credentialCreated = "CredentialCreated"
     case credentialDeleted = "CredentialDeleted"

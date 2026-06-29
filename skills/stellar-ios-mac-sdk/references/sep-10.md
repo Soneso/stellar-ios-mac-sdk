@@ -111,7 +111,7 @@ Public properties on `WebAuthenticator`:
 `jwtToken(forUserAccount:signers:)` performs all SEP-10 steps internally:
 
 1. Requests a challenge transaction from the server (GET)
-2. Validates the challenge (sequence number = 0, server signature, time bounds, operation types, source accounts, home domain, web_auth_domain)
+2. Validates the challenge (sequence number = 0, server signature, time bounds, operation types, source accounts, home domain, web_auth_domain). The challenge must be time-bounded: one with no time bounds or an infinite maximum time (`maxTime == 0`) is rejected as `invalidTimeBounds`.
 3. Signs the transaction with the provided keypairs
 4. Submits the signed transaction to the server (POST)
 5. Returns the JWT token string
