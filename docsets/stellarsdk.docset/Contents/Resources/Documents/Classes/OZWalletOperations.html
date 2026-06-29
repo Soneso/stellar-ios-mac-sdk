@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          stellarsdk 3.6.0 Docs
+          stellarsdk 3.6.1 Docs
         </a>
          (94% documented)
       </p>
@@ -1843,6 +1843,9 @@
                 <a class="nav-group-task-link" href="../Structs/OZAuthenticatePasskeyResult.html">OZAuthenticatePasskeyResult</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/OZConnectToContractResult.html">OZConnectToContractResult</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/OZConnectWalletOptions.html">OZConnectWalletOptions</a>
               </li>
               <li class="nav-group-task">
@@ -2301,7 +2304,7 @@ previously deferred or failed deployment.</p>
 <code>kit.walletOperations</code>.</p>
 
               <div class="slightly-smaller">
-                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZWalletOperations.swift#L232-L1548">Show on GitHub</a>
+                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZWalletOperations.swift#L246-L1655">Show on GitHub</a>
               </div>
           </div>
         </section>
@@ -2438,7 +2441,7 @@ when <code>autoFund = true</code>.</p>
                         <p><code><a href="../Structs/OZCreateWalletResult.html">OZCreateWalletResult</a></code> describing the new wallet.</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZWalletOperations.swift#L269-L416">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZWalletOperations.swift#L283-L431">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2513,7 +2516,94 @@ session-only restore.</p>
                         <p><code><a href="../Enums/OZConnectWalletResult.html">OZConnectWalletResult</a></code> or <code>nil</code>.</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZWalletOperations.swift#L552-L737">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZWalletOperations.swift#L576-L761">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10stellarsdk18OZWalletOperationsC17connectToContract10contractIdAA09OZConnecteF6ResultVSS_tYaKF"></a>
+                    <a name="//apple_ref/swift/Method/connectToContract(contractId:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk18OZWalletOperationsC17connectToContract10contractIdAA09OZConnecteF6ResultVSS_tYaKF">connectToContract(contractId:<wbr>)</a>
+                    </code>
+                      <span class="declaration-note">
+                        Asynchronous
+                      </span>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Connects the kit to an already-deployed smart account by contract address,
+with no passkey credential.</p>
+
+<p>Intended for headless callers — an autonomous signer (the reference agent)
+or a backend service — that operate the account through the multi-signer /
+external-signer pipeline (non-empty <code>selectedSigners</code>) and never present a
+passkey. Unlike <code><a href="../Classes/OZWalletOperations.html#/s:10stellarsdk18OZWalletOperationsC13connectWallet7optionsAA09OZConnectE6ResultOSgAA0gE7OptionsV_tYaKF">connectWallet(options:)</a></code>, this does not run a WebAuthn
+ceremony, does not consult the credential manager, and does not persist a
+session; it also clears any previously saved session so a later silent
+reconnect cannot resurrect a stale passkey session.</p>
+
+<p>After a headless connect the single-passkey paths
+(<code><a href="../Classes/OZTransactionOperations.html#/s:10stellarsdk23OZTransactionOperationsC6submit12hostFunction4auth11forceMethod21resolveContextRuleIdsAA0B6ResultVAA04HostF3XDRO_SayAA025SorobanAuthorizationEntryP0VGAA012OZSubmissionI0OSgSays6UInt32VGAN_SitYaYbKcSgtYaKF">submit(hostFunction:auth:forceMethod:resolveContextRuleIds:)</a></code>,
+<code><a href="../Classes/OZTransactionOperations.html#/s:10stellarsdk23OZTransactionOperationsC8transfer13tokenContract9recipient6amount8decimals11forceMethodAA0B6ResultVSS_S2SSiSgAA012OZSubmissionK0OSgtYaKF">transfer(tokenContract:recipient:amount:decimals:forceMethod:)</a></code>,
+<code><a href="../Classes/OZTransactionOperations.html#/s:10stellarsdk23OZTransactionOperationsC12contractCall6target0F2Fn0F4Args11forceMethod21resolveContextRuleIdsAA0B6ResultVSS_SSSayAA8SCValXDROGAA012OZSubmissionJ0OSgSays6UInt32VGAA025SorobanAuthorizationEntryQ0V_SitYaYbKcSgtYaKF">contractCall(target:targetFn:targetArgs:forceMethod:resolveContextRuleIds:)</a></code>,
+<code><a href="../Classes/OZTransactionOperations.html#/s:10stellarsdk23OZTransactionOperationsC16executeAndSubmit6target0G2Fn0G4Args11forceMethod21resolveContextRuleIdsAA0B6ResultVSS_SSSayAA8SCValXDROGAA012OZSubmissionK0OSgSays6UInt32VGAA025SorobanAuthorizationEntryR0V_SitYaYbKcSgtYaKF">executeAndSubmit(target:targetFn:targetArgs:forceMethod:resolveContextRuleIds:)</a></code>,
+and any manager call left at the default empty <code>selectedSigners</code>) are NOT
+usable: they require a passkey credential and throw a clear error from the
+headless guard. Operate through <code>kit.multiSignerManager</code> or the sibling
+managers with an explicit non-empty <code>selectedSigners</code> list.</p>
+
+<p>The contract address is validated and its on-chain existence is verified
+before the connected state is set.</p>
+<div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    <code><a href="../Classes/SmartAccountValidationException/InvalidAddress.html">InvalidAddress</a></code> when <code>contractId</code>
+is not a valid contract address; <code><a href="../Classes/SmartAccountWalletException/NotFound.html">NotFound</a></code>
+when no contract instance exists at the address;
+<code><a href="../Classes/SmartAccountTransactionException.html">SmartAccountTransactionException</a></code> when the RPC existence check fails for
+transport reasons.
+
+</div>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">connectToContract</span><span class="p">(</span><span class="nv">contractId</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="k">async</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Structs/OZConnectToContractResult.html">OZConnectToContractResult</a></span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>contractId</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Smart account contract address (<code>C…</code> strkey).</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p><code><a href="../Structs/OZConnectToContractResult.html">OZConnectToContractResult</a></code> carrying the verified <code>contractId</code>.</p>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZWalletOperations.swift#L794-L811">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2598,7 +2688,7 @@ used by the authenticator.</p>
 normalised signature, and stored public key (when available).</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZWalletOperations.swift#L755-L853">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZWalletOperations.swift#L829-L927">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2723,7 +2813,7 @@ Friendbot (testnet only). Requires <code>autoSubmit = true</code>.</p>
                         <p><code><a href="../Structs/OZDeployPendingResult.html">OZDeployPendingResult</a></code> describing the deployment.</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZWalletOperations.swift#L875-L1023">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZWalletOperations.swift#L949-L1106">Show on GitHub</a>
                       </div>
                     </section>
                   </div>

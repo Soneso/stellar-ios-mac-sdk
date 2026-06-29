@@ -1416,56 +1416,63 @@
     },
     {
       "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountEvents.swift",
-      "line": 227,
+      "line": 244,
       "symbol": "OZSmartAccountEventType.walletConnected",
       "symbol_kind": "source.lang.swift.decl.enumelement",
       "warning": "undocumented"
     },
     {
       "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountEvents.swift",
-      "line": 228,
+      "line": 245,
+      "symbol": "OZSmartAccountEventType.walletConnectedHeadless",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountEvents.swift",
+      "line": 246,
       "symbol": "OZSmartAccountEventType.walletDisconnected",
       "symbol_kind": "source.lang.swift.decl.enumelement",
       "warning": "undocumented"
     },
     {
       "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountEvents.swift",
-      "line": 229,
+      "line": 247,
       "symbol": "OZSmartAccountEventType.credentialCreated",
       "symbol_kind": "source.lang.swift.decl.enumelement",
       "warning": "undocumented"
     },
     {
       "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountEvents.swift",
-      "line": 230,
+      "line": 248,
       "symbol": "OZSmartAccountEventType.credentialDeleted",
       "symbol_kind": "source.lang.swift.decl.enumelement",
       "warning": "undocumented"
     },
     {
       "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountEvents.swift",
-      "line": 231,
+      "line": 249,
       "symbol": "OZSmartAccountEventType.sessionExpired",
       "symbol_kind": "source.lang.swift.decl.enumelement",
       "warning": "undocumented"
     },
     {
       "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountEvents.swift",
-      "line": 232,
+      "line": 250,
       "symbol": "OZSmartAccountEventType.transactionSigned",
       "symbol_kind": "source.lang.swift.decl.enumelement",
       "warning": "undocumented"
     },
     {
       "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountEvents.swift",
-      "line": 233,
+      "line": 251,
       "symbol": "OZSmartAccountEventType.transactionSubmitted",
       "symbol_kind": "source.lang.swift.decl.enumelement",
       "warning": "undocumented"
     },
     {
       "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountEvents.swift",
-      "line": 234,
+      "line": 252,
       "symbol": "OZSmartAccountEventType.credentialSyncFailed",
       "symbol_kind": "source.lang.swift.decl.enumelement",
       "warning": "undocumented"
@@ -1633,14 +1640,21 @@
     },
     {
       "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZWalletOperations.swift",
-      "line": 149,
+      "line": 113,
+      "symbol": "OZConnectToContractResult.init(contractId:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZWalletOperations.swift",
+      "line": 163,
       "symbol": "OZAuthenticatePasskeyResult.init(credentialId:signature:publicKey:)",
       "symbol_kind": "source.lang.swift.decl.function.method.instance",
       "warning": "undocumented"
     },
     {
       "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZWalletOperations.swift",
-      "line": 209,
+      "line": 223,
       "symbol": "OZConnectWalletOptions.init(credentialId:contractId:fresh:prompt:)",
       "symbol_kind": "source.lang.swift.decl.function.method.instance",
       "warning": "undocumented"

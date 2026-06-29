@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          stellarsdk 3.6.0 Docs
+          stellarsdk 3.6.1 Docs
         </a>
          (94% documented)
       </p>
@@ -1843,6 +1843,9 @@
                 <a class="nav-group-task-link" href="../Structs/OZAuthenticatePasskeyResult.html">OZAuthenticatePasskeyResult</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/OZConnectToContractResult.html">OZConnectToContractResult</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/OZConnectWalletOptions.html">OZConnectWalletOptions</a>
               </li>
               <li class="nav-group-task">
@@ -2305,7 +2308,7 @@
 </code></pre>
 
               <div class="slightly-smaller">
-                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountEvents.swift#L29-L203">Show on GitHub</a>
+                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountEvents.swift#L29-L220">Show on GitHub</a>
               </div>
           </div>
         </section>
@@ -2381,6 +2384,61 @@ automatic session restoration or an explicit wallet connection call.</p>
                 <li class="item">
                   <div>
                     <code>
+                    <a name="/s:10stellarsdk19OZSmartAccountEventO23walletConnectedHeadlessyACSS_tcACmF"></a>
+                    <a name="//apple_ref/swift/Element/walletConnectedHeadless(contractId:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk19OZSmartAccountEventO23walletConnectedHeadlessyACSS_tcACmF">walletConnectedHeadless(contractId:<wbr>)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Emitted when a credential-less headless connection is established via
+<code><a href="../Classes/OZWalletOperations.html#/s:10stellarsdk18OZWalletOperationsC17connectToContract10contractIdAA09OZConnecteF6ResultVSS_tYaKF">connectToContract(contractId:)</a></code>.</p>
+
+<p>A headless connection attaches the kit to an already-deployed smart
+account by contract address alone, with no passkey credential. Unlike
+<code><a href="../Enums/OZSmartAccountEvent.html#/s:10stellarsdk19OZSmartAccountEventO15walletConnectedyACSS_SStcACmF">walletConnected(contractId:credentialId:)</a></code> it carries only the
+contract id, so listeners never receive a meaningless empty credential.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="k">case</span> <span class="nf">walletConnectedHeadless</span><span class="p">(</span><span class="nv">contractId</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>contractId</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The smart account contract address (<code>C…</code> strkey).</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountEvents.swift#L50">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
                     <a name="/s:10stellarsdk19OZSmartAccountEventO18walletDisconnectedyACSS_tcACmF"></a>
                     <a name="//apple_ref/swift/Element/walletDisconnected(contractId:)" class="dashAnchor"></a>
                     <a class="token" href="#/s:10stellarsdk19OZSmartAccountEventO18walletDisconnectedyACSS_tcACmF">walletDisconnected(contractId:<wbr>)</a>
@@ -2425,7 +2483,7 @@ but stored credentials remain for future reconnection.</p>
                         </table>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountEvents.swift#L47">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountEvents.swift#L58">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2478,7 +2536,7 @@ Note that the wallet may not be deployed yet.</p>
                         </table>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountEvents.swift#L56">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountEvents.swift#L67">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2531,7 +2589,7 @@ disconnected first.</p>
                         </table>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountEvents.swift#L65">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountEvents.swift#L76">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2595,7 +2653,7 @@ The application should prompt the user to reconnect.</p>
                         </table>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountEvents.swift#L75">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountEvents.swift#L86">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2660,7 +2718,7 @@ signers contributed).</p>
                         </table>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountEvents.swift#L86">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountEvents.swift#L97">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2726,7 +2784,7 @@ ledger.</p>
                         </table>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountEvents.swift#L98">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountEvents.swift#L109">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2794,7 +2852,7 @@ the check.</p>
                         </table>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountEvents.swift#L112">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountEvents.swift#L123">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2841,7 +2899,7 @@ and <code><a href="../Classes/OZSmartAccountEventEmitter.html#/s:10stellarsdk26O
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountEvents.swift#L121-L140">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountEvents.swift#L132-L153">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2887,7 +2945,7 @@ are compared because <code>Error</code> does not conform to <code>Equatable</cod
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountEvents.swift#L148-L169">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountEvents.swift#L161-L184">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2933,7 +2991,7 @@ are compared because <code>Error</code> does not conform to <code>Equatable</cod
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountEvents.swift#L177-L202">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountEvents.swift#L192-L219">Show on GitHub</a>
                       </div>
                     </section>
                   </div>

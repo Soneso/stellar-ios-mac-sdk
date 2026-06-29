@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          stellarsdk 3.6.0 Docs
+          stellarsdk 3.6.1 Docs
         </a>
          (94% documented)
       </p>
@@ -1843,6 +1843,9 @@
                 <a class="nav-group-task-link" href="../Structs/OZAuthenticatePasskeyResult.html">OZAuthenticatePasskeyResult</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/OZConnectToContractResult.html">OZConnectToContractResult</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/OZConnectWalletOptions.html">OZConnectWalletOptions</a>
               </li>
               <li class="nav-group-task">
@@ -2323,7 +2326,7 @@ restoration is desired.</p>
 </code></pre>
 
               <div class="slightly-smaller">
-                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountKit.swift#L44-L539">Show on GitHub</a>
+                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountKit.swift#L44-L558">Show on GitHub</a>
               </div>
           </div>
         </section>
@@ -2740,10 +2743,12 @@ after <code><a href="../Classes/OZSmartAccountKit.html#/s:10stellarsdk17OZSmartA
                       <div class="abstract">
                         <p>Indicates whether a wallet is currently connected.</p>
 
-<p>A wallet is connected when both the credential id and the contract id
-are set. This property reflects in-memory state only; after an app
-restart consumers should call
-<code><a href="../Classes/OZWalletOperations.html#/s:10stellarsdk18OZWalletOperationsC13connectWallet7optionsAA09OZConnectE6ResultOSgAA0gE7OptionsV_tYaKF">connectWallet(options:)</a></code> to restore a saved session.</p>
+<p>A connection is defined by the smart-account contract; the credential is
+optional and is absent for a headless
+<code><a href="../Classes/OZWalletOperations.html#/s:10stellarsdk18OZWalletOperationsC17connectToContract10contractIdAA09OZConnecteF6ResultVSS_tYaKF">connectToContract(contractId:)</a></code> connection. This
+property reflects in-memory state only; after an app restart consumers
+should call <code><a href="../Classes/OZWalletOperations.html#/s:10stellarsdk18OZWalletOperationsC13connectWallet7optionsAA09OZConnectE6ResultOSgAA0gE7OptionsV_tYaKF">connectWallet(options:)</a></code> to restore a
+saved session.</p>
 
                       </div>
                       <div class="declaration">
@@ -2755,7 +2760,43 @@ restart consumers should call
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountKit.swift#L226-L230">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountKit.swift#L228-L232">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10stellarsdk17OZSmartAccountKitC10isHeadlessSbvp"></a>
+                    <a name="//apple_ref/swift/Property/isHeadless" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk17OZSmartAccountKitC10isHeadlessSbvp">isHeadless</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Indicates whether the current connection is headless — bound to a
+smart-account contract with no passkey credential.</p>
+
+<p><code>true</code> only for a connection established through
+<code><a href="../Classes/OZWalletOperations.html#/s:10stellarsdk18OZWalletOperationsC17connectToContract10contractIdAA09OZConnecteF6ResultVSS_tYaKF">connectToContract(contractId:)</a></code>. Headless
+connections are operable only through the multi-signer / external-signer
+pipeline; the single-passkey paths reject them.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">isHeadless</span><span class="p">:</span> <span class="kt">Bool</span> <span class="p">{</span> <span class="k">get</span> <span class="p">}</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountKit.swift#L241-L245">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2773,11 +2814,13 @@ restart consumers should call
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>The credential identifier of the currently connected wallet, when a
-wallet is connected.</p>
+                        <p>The credential identifier of the currently connected wallet, when one is
+present.</p>
 
-<p>Returns <code>nil</code> when no wallet is connected. The credential id is
-Base64URL-encoded without padding, matching the WebAuthn
+<p>Returns <code>nil</code> when no wallet is connected, and also for a headless
+<code><a href="../Classes/OZWalletOperations.html#/s:10stellarsdk18OZWalletOperationsC17connectToContract10contractIdAA09OZConnecteF6ResultVSS_tYaKF">connectToContract(contractId:)</a></code> connection, which
+binds a contract without a passkey credential. When present, the
+credential id is Base64URL-encoded without padding, matching the WebAuthn
 specification.</p>
 
                       </div>
@@ -2790,7 +2833,7 @@ specification.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountKit.swift#L238-L242">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountKit.swift#L255-L259">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2824,7 +2867,7 @@ Stellar C-strkey (56 characters, starting with <code>C</code>).</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountKit.swift#L249-L253">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountKit.swift#L266-L270">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2880,7 +2923,7 @@ storage I/O and event emission so listeners see <code>isConnected == false</code
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountKit.swift#L363-L372">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountKit.swift#L382-L391">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2919,7 +2962,7 @@ call <code><a href="../Classes/OZSmartAccountKit.html#/s:10stellarsdk17OZSmartAc
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountKit.swift#L396-L416">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountKit.swift#L415-L435">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2963,7 +3006,7 @@ explicit deployer is configured. The result is cached after the first call.</p>
 fees when no relayer is configured.</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountKit.swift#L462-L472">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountKit.swift#L481-L491">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3036,7 +3079,7 @@ session restoration is desired.</p>
                         <p>A new kit bound to the supplied configuration.</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountKit.swift#L503-L538">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountKit.swift#L522-L557">Show on GitHub</a>
                       </div>
                     </section>
                   </div>

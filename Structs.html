@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="index.html">
-          stellarsdk 3.6.0 Docs
+          stellarsdk 3.6.1 Docs
         </a>
          (94% documented)
       </p>
@@ -1839,6 +1839,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Structs/OZAuthenticatePasskeyResult.html">OZAuthenticatePasskeyResult</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/OZConnectToContractResult.html">OZConnectToContractResult</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Structs/OZConnectWalletOptions.html">OZConnectWalletOptions</a>
@@ -8237,6 +8240,40 @@ uncompressed secp256r1 public key, the signed deploy transaction envelope
                 <li class="item">
                   <div>
                     <code>
+                    <a name="/s:10stellarsdk25OZConnectToContractResultV"></a>
+                    <a name="//apple_ref/swift/Struct/OZConnectToContractResult" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk25OZConnectToContractResultV">OZConnectToContractResult</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Outcome of a headless <code><a href="Classes/OZWalletOperations.html#/s:10stellarsdk18OZWalletOperationsC17connectToContract10contractIdAA09OZConnecteF6ResultVSS_tYaKF">connectToContract(contractId:)</a></code>.</p>
+
+<p>Carries the verified smart-account contract address. No credential is
+involved in a headless connection.</p>
+
+                        <a href="Structs/OZConnectToContractResult.html" class="slightly-smaller">See more</a>
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">OZConnectToContractResult</span> <span class="p">:</span> <span class="kt">Sendable</span><span class="p">,</span> <span class="kt">Equatable</span><span class="p">,</span> <span class="kt">Hashable</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZWalletOperations.swift#L108-L116">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
                     <a name="/s:10stellarsdk27OZAuthenticatePasskeyResultV"></a>
                     <a name="//apple_ref/swift/Struct/OZAuthenticatePasskeyResult" class="dashAnchor"></a>
                     <a class="token" href="#/s:10stellarsdk27OZAuthenticatePasskeyResultV">OZAuthenticatePasskeyResult</a>
@@ -8261,7 +8298,7 @@ discover deployed contracts before calling <code>connectWallet(options:)</code>.
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZWalletOperations.swift#L136-L176">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZWalletOperations.swift#L150-L190">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -8323,7 +8360,7 @@ silent session check.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZWalletOperations.swift#L190-L220">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZWalletOperations.swift#L204-L234">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -10064,7 +10101,7 @@ and if authentication is required to access it.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/transfer_server_protocol/responses/AnchorInfoResponse.swift#L430-L453">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/transfer_server_protocol/responses/AnchorInfoResponse.swift#L430-L459">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -10100,7 +10137,7 @@ SEP-6 requirements, such as account creation and claimable balance support.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/transfer_server_protocol/responses/AnchorInfoResponse.swift#L461-L485">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/transfer_server_protocol/responses/AnchorInfoResponse.swift#L467-L491">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -10209,7 +10246,7 @@ transaction responses.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/transfer_server_protocol/responses/AnchorTransactionsResponse.swift#L131-L348">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/transfer_server_protocol/responses/AnchorTransactionsResponse.swift#L131-L358">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -10245,7 +10282,7 @@ additional information is required to proceed.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/transfer_server_protocol/responses/AnchorTransactionsResponse.swift#L356-L375">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/transfer_server_protocol/responses/AnchorTransactionsResponse.swift#L366-L385">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -10281,7 +10318,7 @@ the asset in which fees are charged, and optional itemized details.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/transfer_server_protocol/responses/AnchorTransactionsResponse.swift#L383-L414">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/transfer_server_protocol/responses/AnchorTransactionsResponse.swift#L393-L424">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -10317,7 +10354,7 @@ itemized pricing to users.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/transfer_server_protocol/responses/AnchorTransactionsResponse.swift#L422-L453">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/transfer_server_protocol/responses/AnchorTransactionsResponse.swift#L432-L463">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -10353,7 +10390,7 @@ including the total refunded amount and individual refund payments.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/transfer_server_protocol/responses/AnchorTransactionsResponse.swift#L461-L490">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/transfer_server_protocol/responses/AnchorTransactionsResponse.swift#L471-L500">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -10389,7 +10426,7 @@ via Stellar or off-chain through an external payment system.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/transfer_server_protocol/responses/AnchorTransactionsResponse.swift#L498-L535">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/transfer_server_protocol/responses/AnchorTransactionsResponse.swift#L508-L545">Show on GitHub</a>
                       </div>
                     </section>
                   </div>

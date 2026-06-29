@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          stellarsdk 3.6.0 Docs
+          stellarsdk 3.6.1 Docs
         </a>
          (94% documented)
       </p>
@@ -1843,6 +1843,9 @@
                 <a class="nav-group-task-link" href="../Structs/OZAuthenticatePasskeyResult.html">OZAuthenticatePasskeyResult</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/OZConnectToContractResult.html">OZConnectToContractResult</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/OZConnectWalletOptions.html">OZConnectWalletOptions</a>
               </li>
               <li class="nav-group-task">
@@ -2292,7 +2295,7 @@
             <p>Configuration defaults and contract limits for OpenZeppelin smart account operations.</p>
 
               <div class="slightly-smaller">
-                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZConstants.swift#L11-L59">Show on GitHub</a>
+                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZConstants.swift#L11-L77">Show on GitHub</a>
               </div>
           </div>
         </section>
@@ -2425,6 +2428,78 @@ transferring Friendbot funds to a smart account wallet.</p>
                 <li class="item">
                   <div>
                     <code>
+                    <a name="/s:10stellarsdk11OZConstantsO27rpcVisibilityPollIntervalMsSivpZ"></a>
+                    <a name="//apple_ref/swift/Variable/rpcVisibilityPollIntervalMs" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk11OZConstantsO27rpcVisibilityPollIntervalMsSivpZ">rpcVisibilityPollIntervalMs</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Interval in milliseconds between Soroban RPC polls while waiting for a
+freshly created ledger entry to become visible to the RPC. Shared by the
+funding-account visibility wait in
+<code>OZTransactionOperations/waitForAccountVisibleToRpc(accountId:pollIntervalMs:timeoutSeconds:)</code>
+and the deployed-contract visibility wait in
+<code>OZTransactionOperations/waitForContractVisibleToRpc(contractId:pollIntervalMs:timeoutSeconds:)</code>.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">static</span> <span class="k">let</span> <span class="nv">rpcVisibilityPollIntervalMs</span><span class="p">:</span> <span class="kt">Int</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZConstants.swift#L32">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10stellarsdk11OZConstantsO27rpcVisibilityTimeoutSecondsSivpZ"></a>
+                    <a name="//apple_ref/swift/Variable/rpcVisibilityTimeoutSeconds" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk11OZConstantsO27rpcVisibilityTimeoutSecondsSivpZ">rpcVisibilityTimeoutSeconds</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Overall timeout in seconds for a freshly created ledger entry to become
+visible to the Soroban RPC. A funded account or a deployed contract
+confirms on Horizon within milliseconds, but the Soroban RPC may lag by
+one or more ledger closes; polling absorbs that variable propagation
+delay rather than assuming a single fixed wait. Shared by
+<code>OZTransactionOperations/waitForAccountVisibleToRpc(accountId:pollIntervalMs:timeoutSeconds:)</code>
+and
+<code>OZTransactionOperations/waitForContractVisibleToRpc(contractId:pollIntervalMs:timeoutSeconds:)</code>.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">static</span> <span class="k">let</span> <span class="nv">rpcVisibilityTimeoutSeconds</span><span class="p">:</span> <span class="kt">Int</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZConstants.swift#L42">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
                     <a name="/s:10stellarsdk11OZConstantsO21defaultTimeoutSecondsSivpZ"></a>
                     <a name="//apple_ref/swift/Variable/defaultTimeoutSeconds" class="dashAnchor"></a>
                     <a class="token" href="#/s:10stellarsdk11OZConstantsO21defaultTimeoutSecondsSivpZ">defaultTimeoutSeconds</a>
@@ -2447,7 +2522,7 @@ transferring Friendbot funds to a smart account wallet.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZConstants.swift#L27">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZConstants.swift#L45">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2477,7 +2552,7 @@ transferring Friendbot funds to a smart account wallet.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZConstants.swift#L30">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZConstants.swift#L48">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2507,7 +2582,7 @@ transferring Friendbot funds to a smart account wallet.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZConstants.swift#L33">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZConstants.swift#L51">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2537,7 +2612,7 @@ transferring Friendbot funds to a smart account wallet.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZConstants.swift#L36">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZConstants.swift#L54">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2567,7 +2642,7 @@ transferring Friendbot funds to a smart account wallet.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZConstants.swift#L39">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZConstants.swift#L57">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2597,7 +2672,7 @@ transferring Friendbot funds to a smart account wallet.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZConstants.swift#L42">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZConstants.swift#L60">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2633,7 +2708,7 @@ with hundreds of context rules) fits comfortably under this limit.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZConstants.swift#L51">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZConstants.swift#L69">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2667,7 +2742,7 @@ and surfaces as <code>OZRelayerResponse(success: false, ...)</code>.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZConstants.swift#L58">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZConstants.swift#L76">Show on GitHub</a>
                       </div>
                     </section>
                   </div>

@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          stellarsdk 3.6.0 Docs
+          stellarsdk 3.6.1 Docs
         </a>
          (94% documented)
       </p>
@@ -1843,6 +1843,9 @@
                 <a class="nav-group-task-link" href="../Structs/OZAuthenticatePasskeyResult.html">OZAuthenticatePasskeyResult</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/OZConnectToContractResult.html">OZConnectToContractResult</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/OZConnectWalletOptions.html">OZConnectWalletOptions</a>
               </li>
               <li class="nav-group-task">
@@ -2337,7 +2340,7 @@ or run your own RPC server. For production, always use a reliable RPC provider.<
 </ul>
 
               <div class="slightly-smaller">
-                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/SorobanServer.swift#L233-L1208">Show on GitHub</a>
+                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/SorobanServer.swift#L233-L1215">Show on GitHub</a>
               </div>
           </div>
         </section>
@@ -2346,6 +2349,40 @@ or run your own RPC server. For production, always use a reliable RPC provider.<
           <div class="section-content">
             <div class="task-group">
               <ul class="item-container">
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10stellarsdk13SorobanServerC22accountNotFoundMessageSSvpZ"></a>
+                    <a name="//apple_ref/swift/Variable/accountNotFoundMessage" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk13SorobanServerC22accountNotFoundMessageSSvpZ">accountNotFoundMessage</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Message reported by <code><a href="../Classes/SorobanServer.html#/s:10stellarsdk13SorobanServerC10getAccount9accountIdAA03GetE12ResponseEnumOSS_tYaF">getAccount(accountId:)</a></code> when the account&rsquo;s ledger
+entry is absent from the ledger the RPC has applied. Callers that poll
+for eventual account visibility match this single constant instead of a
+duplicated literal, so a wording change here cannot silently reclassify
+a not-found result as a transient transport failure.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">static</span> <span class="k">let</span> <span class="nv">accountNotFoundMessage</span><span class="p">:</span> <span class="kt">String</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/SorobanServer.swift#L262">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
                 <li class="item">
                   <div>
                     <code>
@@ -2371,7 +2408,7 @@ or run your own RPC server. For production, always use a reliable RPC provider.<
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/SorobanServer.swift#L281">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/SorobanServer.swift#L288">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2437,7 +2474,7 @@ caller wants to own and invalidate the transport explicitly.</p>
                         </table>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/SorobanServer.swift#L293-L296">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/SorobanServer.swift#L300-L303">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2473,7 +2510,7 @@ themselves. Subclasses may override to perform additional cleanup.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/SorobanServer.swift#L305-L307">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/SorobanServer.swift#L312-L314">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2507,7 +2544,7 @@ See: <a href="https://soroban.stellar.org/api/methods/getHealth">https://soroban
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/SorobanServer.swift#L311-L335">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/SorobanServer.swift#L318-L342">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2541,7 +2578,7 @@ See: <a href="https://soroban.stellar.org/api/methods/getNetwork">https://soroba
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/SorobanServer.swift#L339-L363">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/SorobanServer.swift#L346-L370">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2584,7 +2621,7 @@ during network traffic surge.</p>
                         <p>Fee statistics for both Soroban and classic transactions</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/SorobanServer.swift#L374-L398">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/SorobanServer.swift#L381-L405">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2624,7 +2661,7 @@ pared-down version of Stellar Core optimized for its own subset of needs.</p>
                         <p>Version details for RPC server and its embedded Stellar Core instance</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/SorobanServer.swift#L406-L430">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/SorobanServer.swift#L413-L437">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2684,7 +2721,7 @@ To fetch contract wasm byte-code, use the ContractCode ledger entry key.</p>
                         <p>Current values of the requested ledger entries</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/SorobanServer.swift#L440-L464">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/SorobanServer.swift#L447-L471">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2723,7 +2760,7 @@ To fetch contract wasm byte-code, use the ContractCode ledger entry key.</p>
                         <p>Latest ledger sequence number and hash</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/SorobanServer.swift#L471-L495">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/SorobanServer.swift#L478-L502">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2808,7 +2845,7 @@ fall within the history retention of their corresponding RPC provider.</p>
                         <p>List of ledger details within the requested range</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/SorobanServer.swift#L508-L532">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/SorobanServer.swift#L515-L539">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2864,7 +2901,7 @@ fall within the history retention of their corresponding RPC provider.</p>
                         <p>Contract code entry containing the WASM bytecode</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/SorobanServer.swift#L538-L558">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/SorobanServer.swift#L545-L565">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2920,7 +2957,7 @@ fall within the history retention of their corresponding RPC provider.</p>
                         <p>Contract code entry containing the WASM bytecode</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/SorobanServer.swift#L564-L601">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/SorobanServer.swift#L571-L608">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2977,7 +3014,7 @@ the information (Environment Meta, Contract Spec, Contract Meta).</p>
                         <p>Parsed contract information including spec entries</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/SorobanServer.swift#L608-L623">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/SorobanServer.swift#L615-L630">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3034,7 +3071,7 @@ the information (Environment Meta, Contract Spec, Contract Meta).</p>
                         <p>Parsed contract information including spec entries</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/SorobanServer.swift#L630-L645">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/SorobanServer.swift#L637-L652">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3091,7 +3128,7 @@ number for the account, so you can build a successful transaction. Fails if the 
                         <p>Account object with current sequence number</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/SorobanServer.swift#L652-L679">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/SorobanServer.swift#L659-L686">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3171,7 +3208,7 @@ number for the account, so you can build a successful transaction. Fails if the 
                         <p>Current value of the contract data entry</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/SorobanServer.swift#L687-L710">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/SorobanServer.swift#L694-L717">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3259,7 +3296,7 @@ and to obtain the correct resource limits and footprint.</p>
                         <p>SimulateTransactionResponseEnum with simulation results or error</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/SorobanServer.swift#L743-L767">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/SorobanServer.swift#L750-L774">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3347,7 +3384,7 @@ to poll for completion status.</p>
                         <p>SendTransactionResponseEnum with submission result or error</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/SorobanServer.swift#L800-L824">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/SorobanServer.swift#L807-L831">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3447,7 +3484,7 @@ if the transaction has been included in a ledger and whether it succeeded or fai
                         <p>GetTransactionResponseEnum with transaction status or error</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/SorobanServer.swift#L869-L893">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/SorobanServer.swift#L876-L900">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3561,7 +3598,7 @@ seconds. Defaults to a constant <code>1.0</code> second per attempt.</p>
 response or an <code>.failure</code> describing why polling could not complete.</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/SorobanServer.swift#L933-L971">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/SorobanServer.swift#L940-L978">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3633,7 +3670,7 @@ fall within the history retention of their corresponding RPC provider.</p>
                         <p>List of transactions within the requested range</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/SorobanServer.swift#L982-L1006">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/SorobanServer.swift#L989-L1013">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3772,7 +3809,7 @@ queried by off-chain applications. Use this method to:</p>
                         <p>GetEventsResponseEnum with events or error</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/SorobanServer.swift#L1054-L1078">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/SorobanServer.swift#L1061-L1085">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
