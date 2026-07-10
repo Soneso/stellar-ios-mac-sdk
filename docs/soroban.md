@@ -1047,7 +1047,7 @@ Generate type-safe Swift classes from contract specifications. This provides IDE
 
 ### Generate Bindings
 
-Use [stellar-contract-bindings](https://github.com/nicktomlin/stellar-contract-bindings) to generate Swift classes:
+Use [stellar-contract-bindings](https://github.com/lightsail-network/stellar-contract-bindings) to generate Swift classes:
 
 ```bash
 pip install stellar-contract-bindings
@@ -1075,7 +1075,7 @@ let clientOptions = ClientOptions(
     network: Network.testnet,
     rpcUrl: "https://soroban-testnet.stellar.org"
 )
-let tokenClient = try await TokenContract.forClientOptions(options: clientOptions)
+let tokenClient = try await TokenClient.forClientOptions(options: clientOptions)
 
 // Type-safe calls with native Swift types
 let balance = try await tokenClient.balance(id: try SCAddressXDR(accountId: "GABC..."))
