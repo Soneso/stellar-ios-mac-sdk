@@ -51,7 +51,7 @@ final class BindingsSpecTestContractTest: XCTestCase {
         XCTAssertTrue(methodNames.contains("from"))
         XCTAssertTrue(methodNames.contains("u32_fail_on_even"))
 
-        // u64 above 2^53 (beyond the JS/double safe-integer range)
+        // u64 above 2^53 (beyond the range a Double can represent exactly)
         let bigU64: UInt64 = 9_007_199_254_740_993 // 2^53 + 1
         let u64Result = try await contract.u64(u64: bigU64)
         XCTAssertEqual(bigU64, u64Result)
@@ -183,6 +183,24 @@ final class BindingsSpecTestContractTest: XCTestCase {
         let addressResult = try await contract.address(address: addressValue)
         XCTAssertEqual(sourceAccountKeyPair.accountId, addressResult.accountId)
         print("address round-trip passed: \(String(describing: addressResult.accountId))")
+
+        // muxed address round-trip (an M-address encodes as SC_ADDRESS_TYPE_MUXED_ACCOUNT)
+        let muxedAccount = try MuxedAccount(accountId: sourceAccountKeyPair.accountId, id: 123456789)
+        let muxedValue = try SCAddressXDR(accountId: muxedAccount.accountId)
+        let muxedResult = try await contract.muxedAddress(address: muxedValue)
+        XCTAssertEqual(muxedAccount.accountId, muxedResult.accountId)
+        print("muxed address round-trip passed: \(String(describing: muxedResult.accountId))")
+
+        // 128-bit integers at the type extremes (decimal strings end to end)
+        let i128Min = "-170141183460469231731687303715884105728"
+        let i128Result = try await contract.i128(i128: i128Min)
+        XCTAssertEqual(i128Min, i128Result)
+        print("i128 min round-trip passed")
+
+        let u128Max = "340282366920938463463374607431768211455"
+        let u128Result = try await contract.u128(u128: u128Max)
+        XCTAssertEqual(u128Max, u128Result)
+        print("u128 max round-trip passed")
 
         // integer-discriminant enum (RoyalCard: Jack=11, Queen=12, King=13). This
         // exercises the u32-rawValue enum conversion path.
