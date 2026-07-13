@@ -145,9 +145,13 @@ let transaction = try Transaction(
     memo: Memo.none
 )
 
-// init(transaction:Transaction, resourceConfig:ResourceConfig? = nil, authMode:String? = nil)
+// init(transaction:Transaction, resourceConfig:ResourceConfig? = nil, authMode:String? = nil, useUpgradedAuth:Bool = false)
 // - resourceConfig: resource budget (instructionLeeway)
 // - authMode: "enforce" | "record" | "record_allow_nonroot" (protocol 23+)
+// - useUpgradedAuth: request protocol-27 V2 credential arms (ADDRESS_V2) in the returned
+//   auth entries; "useUpgradedAuth": true is sent only when true, the key is omitted when false.
+//   A supporting RPC records V2 arms; RPCs without support silently ignore it and return legacy
+//   ADDRESS entries -- detect support by inspecting the credential arm of the returned entries.
 let request = SimulateTransactionRequest(transaction: transaction)
 let simResponse = await server.simulateTransaction(simulateTxRequest: request)
 switch simResponse {

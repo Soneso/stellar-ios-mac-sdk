@@ -8,12 +8,13 @@
 //  - ADDRESS_V2 XDR encode/decode round-trip with no network dependency.
 //  - buildPreimage() selects ENVELOPE_TYPE_SOROBAN_AUTHORIZATION_WITH_ADDRESS for V2.
 //  - signAuthEntries() preserves the ADDRESS_V2 arm and signs with the correct preimage.
-//  - When testnet runs protocol >= 27: a contract call whose auth entry is rewritten to V2
-//    signs and submits successfully.
+//  - When testnet runs protocol >= 27: a contract call whose auth entry is returned as
+//    ADDRESS_V2 by simulation (useUpgradedAuth) signs and submits successfully.
 //
-//  The signing-path tests (XDR, preimage type, arm preservation) run on every testnet
-//  regardless of the ledger protocol version. The submit-and-verify test is guarded by
-//  a protocol-version check so it skips cleanly on networks that do not yet support P27.
+//  The XDR round-trip and preimage tests run without network access on any testnet.
+//  The arm-preservation and submit tests require a testnet RPC that honors
+//  useUpgradedAuth (stellar-rpc v27.1.0+); the submit test additionally skips on
+//  networks whose ledger protocol is below 27.
 //
 
 import XCTest
@@ -165,9 +166,9 @@ final class SorobanP27AuthIntegrationTests: XCTestCase {
     /// into the inner address credentials.
     ///
     /// Procedure: install and deploy the auth contract, build a transaction where the
-    /// invoker differs from the submitter, obtain the simulated ADDRESS auth entry, rewrite
-    /// its credential arm to ADDRESS_V2, then call signAuthEntries(). The arm must remain
-    /// ADDRESS_V2 after signing.
+    /// invoker differs from the submitter with useUpgradedAuth set, hard-assert that
+    /// simulation returned the invoker's entry with the ADDRESS_V2 arm, then call
+    /// signAuthEntries(). The arm must remain ADDRESS_V2 after signing.
     func signAuthEntriesPreservesAddressV2Arm() async throws {
         let (client, invokerKeyPair) = try await buildAuthContractSetup()
 
@@ -177,14 +178,16 @@ final class SorobanP27AuthIntegrationTests: XCTestCase {
         let args = try spec.funcArgsToXdrSCValues(name: methodName,
                                                   args: ["user": invokerAccountId, "value": 1])
 
-        // Build the transaction; at this point auth entries carry legacy ADDRESS credentials
-        // as returned by the RPC simulate endpoint.
-        let assembledTx = try await client.buildInvokeMethodTx(name: methodName, args: args)
+        // useUpgradedAuth: true requests ADDRESS_V2 credential arms from the RPC.
+        // stellar-rpc v27.1.0+ honors the flag in recording mode and records ADDRESS_V2
+        // entries; servers without support silently ignore it and return legacy ADDRESS.
+        let assembledTx = try await client.buildInvokeMethodTx(name: methodName, args: args,
+                                                               methodOptions: MethodOptions(useUpgradedAuth: true))
 
-        // Rewrite any ADDRESS auth entry whose credential address matches the invoker
-        // to ADDRESS_V2 client-side — simulation returns legacy ADDRESS entries, so the
-        // V2 credential arm is assembled by the caller to exercise the V2 signing path.
-        try rewriteAddressToV2(assembledTx: assembledTx, signerAccountId: invokerAccountId)
+        // Testnet runs stellar-rpc v27.1.0+, so the invoker's entry must come back from
+        // simulation with the ADDRESS_V2 arm already set — this proves the flag was sent
+        // on the wire and honored by the server.
+        try assertSimulationReturnedAddressV2(assembledTx: assembledTx, signerAccountId: invokerAccountId)
 
         // Sign with ADDRESS_V2 credentials.
         try await assembledTx.signAuthEntries(signerKeyPair: invokerKeyPair)
@@ -209,13 +212,13 @@ final class SorobanP27AuthIntegrationTests: XCTestCase {
             }
         }
 
-        XCTAssertTrue(foundV2, "At least one ADDRESS_V2 auth entry must be present after rewrite and signing")
+        XCTAssertTrue(foundV2, "At least one ADDRESS_V2 auth entry must be present after signing")
     }
 
     // MARK: - Submit with ADDRESS_V2 on P27 testnet
 
-    /// When testnet runs protocol >= 27, a contract invocation signed with ADDRESS_V2
-    /// credentials must succeed end-to-end.
+    /// When testnet runs protocol >= 27, a contract invocation whose auth entry is
+    /// returned as ADDRESS_V2 by simulation (useUpgradedAuth) must succeed end-to-end.
     ///
     /// When the protocol version is < 27 the test is skipped because the network does not
     /// yet accept the ADDRESS_V2 credential arm in submitted transactions.
@@ -233,10 +236,12 @@ final class SorobanP27AuthIntegrationTests: XCTestCase {
         let args = try spec.funcArgsToXdrSCValues(name: methodName,
                                                   args: ["user": invokerAccountId, "value": 5])
 
-        let assembledTx = try await client.buildInvokeMethodTx(name: methodName, args: args)
+        let assembledTx = try await client.buildInvokeMethodTx(name: methodName, args: args,
+                                                               methodOptions: MethodOptions(useUpgradedAuth: true))
 
-        // Rewrite ADDRESS entries to ADDRESS_V2 to exercise the P27 signing and submit path.
-        try rewriteAddressToV2(assembledTx: assembledTx, signerAccountId: invokerAccountId)
+        // Simulation must return the ADDRESS_V2 arm (stellar-rpc v27.1.0+); the entry is
+        // then signed with the address-bound preimage and submitted.
+        try assertSimulationReturnedAddressV2(assembledTx: assembledTx, signerAccountId: invokerAccountId)
 
         try await assembledTx.signAuthEntries(signerKeyPair: invokerKeyPair)
 
@@ -263,26 +268,30 @@ final class SorobanP27AuthIntegrationTests: XCTestCase {
         return (client, invokerKeyPair)
     }
 
-    /// Rewrites every `.address` auth entry whose credential address matches
-    /// `signerAccountId` to `.addressV2`, preserving all other fields.
-    private func rewriteAddressToV2(
+    /// Hard-asserts that simulation returned at least one `.addressV2` auth entry for
+    /// `signerAccountId` — proving the useUpgradedAuth flag was sent on the wire and
+    /// honored by the server (requires stellar-rpc v27.1.0+).
+    private func assertSimulationReturnedAddressV2(
         assembledTx: AssembledTransaction,
         signerAccountId: String
     ) throws {
         guard let tx = assembledTx.tx,
               let invokeOp = tx.operations.first as? InvokeHostFunctionOperation else {
+            XCTFail("Expected assembled transaction with InvokeHostFunctionOperation")
             return
         }
 
-        var authEntries = invokeOp.auth
-        for i in authEntries.indices {
-            guard case .address(let creds) = authEntries[i].credentials,
-                  creds.address.accountId == signerAccountId else {
-                continue
+        let hasV2 = invokeOp.auth.contains { entry in
+            if case .addressV2(let creds) = entry.credentials {
+                return creds.address.accountId == signerAccountId
             }
-            authEntries[i].credentials = .addressV2(creds)
+            return false
         }
-        tx.setSorobanAuth(auth: authEntries)
+        XCTAssertTrue(
+            hasV2,
+            "Simulation must return an ADDRESS_V2 auth entry for the invoker when useUpgradedAuth is set "
+            + "(requires stellar-rpc v27.1.0+)"
+        )
     }
 
     /// Returns the current ledger protocol version from the testnet RPC.
