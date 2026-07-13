@@ -27,6 +27,8 @@ case .success(let health):
     // health.latestLedger: Int
     // health.oldestLedger: Int
     // health.ledgerRetentionWindow: Int
+    // health.latestLedgerCloseTime: String? (unix seconds; RPC v27.1.0+, nil on older servers)
+    // health.oldestLedgerCloseTime: String? (unix seconds; RPC v27.1.0+, nil on older servers)
     print("Status: \(health.status), ledger: \(health.latestLedger)")
 case .failure(let error):
     print("RPC error: \(error)")

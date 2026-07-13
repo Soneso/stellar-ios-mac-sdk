@@ -130,6 +130,9 @@ class SorobanTest: XCTestCase {
         switch response {
         case .success(let healthResponse):
             XCTAssertEqual(HealthStatus.HEALTHY, healthResponse.status)
+            // Testnet runs stellar-rpc v27.1.0+, which returns the ledger close times.
+            XCTAssertNotNil(healthResponse.latestLedgerCloseTime)
+            XCTAssertNotNil(healthResponse.oldestLedgerCloseTime)
         case .failure(let error):
             self.printError(error: error)
             XCTFail()

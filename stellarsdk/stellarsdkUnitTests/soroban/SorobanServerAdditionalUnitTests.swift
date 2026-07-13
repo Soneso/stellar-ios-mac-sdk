@@ -32,6 +32,48 @@ final class SorobanServerAdditionalUnitTests: XCTestCase {
     // MARK: - getHealth Tests
 
     func testGetHealthSuccess() async {
+        // Full v27.1.0+ response shape: the ledger close times are int64 values
+        // serialized as JSON strings.
+        let mockResponse = """
+        {
+            "jsonrpc": "2.0",
+            "id": "test-id",
+            "result": {
+                "status": "healthy",
+                "ledgerRetentionWindow": 17280,
+                "oldestLedger": 1000000,
+                "oldestLedgerCloseTime": "1783345758",
+                "latestLedger": 1017280,
+                "latestLedgerCloseTime": "1783951566"
+            }
+        }
+        """
+
+        let mock = RequestMock(
+            host: testHost,
+            path: "/",
+            httpMethod: "POST",
+            mockHandler: { _, _ in mockResponse }
+        )
+        ServerMock.add(mock: mock)
+
+        let response = await server.getHealth()
+
+        switch response {
+        case .success(let health):
+            XCTAssertEqual(health.status, "healthy")
+            XCTAssertEqual(health.ledgerRetentionWindow, 17280)
+            XCTAssertEqual(health.oldestLedger, 1000000)
+            XCTAssertEqual(health.latestLedger, 1017280)
+            XCTAssertEqual(health.latestLedgerCloseTime, "1783951566")
+            XCTAssertEqual(health.oldestLedgerCloseTime, "1783345758")
+        case .failure(let error):
+            XCTFail("Expected success, got error: \(error)")
+        }
+    }
+
+    func testGetHealthCloseTimesNilWhenAbsent() async {
+        // RPC servers below v27.1.0 do not return the ledger close-time fields.
         let mockResponse = """
         {
             "jsonrpc": "2.0",
@@ -58,9 +100,8 @@ final class SorobanServerAdditionalUnitTests: XCTestCase {
         switch response {
         case .success(let health):
             XCTAssertEqual(health.status, "healthy")
-            XCTAssertEqual(health.ledgerRetentionWindow, 17280)
-            XCTAssertEqual(health.oldestLedger, 1000000)
-            XCTAssertEqual(health.latestLedger, 1017280)
+            XCTAssertNil(health.latestLedgerCloseTime)
+            XCTAssertNil(health.oldestLedgerCloseTime)
         case .failure(let error):
             XCTFail("Expected success, got error: \(error)")
         }
