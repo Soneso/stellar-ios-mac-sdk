@@ -53,6 +53,8 @@ let package = Package(
                 .copy("soroban/soroban_modular_account_contract.wasm"),
                 .copy("soroban/soroban_atomic_swap_contract.wasm"),
                 .copy("soroban/soroban_events_contract.wasm"),
+                .copy("soroban/soroban_bindings_spec_test_contract.wasm"),
+                .copy("soroban/soroban_bindings_option_shapes_contract.wasm"),
                 .copy("web_authenticator_contracts/wasm/sep_45_account.wasm")
             ]
         ),
