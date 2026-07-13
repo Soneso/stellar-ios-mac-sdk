@@ -1,9 +1,9 @@
 # Soroban RPC vs iOS/macOS SDK Compatibility Matrix
 
-**RPC Version:** v27.0.0 (released 2026-06-11)  
-**RPC Source:** [v27.0.0](https://github.com/stellar/stellar-rpc/releases/tag/v27.0.0)  
-**SDK Version:** 3.6.1  
-**Generated:** 2026-06-29 02:04:25
+**RPC Version:** v27.1.1 (released 2026-07-07)  
+**RPC Source:** [v27.1.1](https://github.com/stellar/stellar-rpc/releases/tag/v27.1.1)  
+**SDK Version:** 3.7.0  
+**Generated:** 2026-07-13 19:53:50
 
 ## Overall Coverage
 
@@ -22,7 +22,7 @@
 | getTransaction | Full | `getTransaction(transactionHash:)` | GetTransactionResponse | Full support including protocol 23+ events field, computed properties. |
 | getTransactions | Full | `getTransactions(startLedger:, paginationOptions:)` | GetTransactionsResponse | Full pagination support with cursor and limit. |
 | sendTransaction | Full | `sendTransaction(transaction:)` | SendTransactionResponse | Full support for all response fields including diagnosticEvents, errorResult. |
-| simulateTransaction | Full | `simulateTransaction(simulateTxRequest:)` | SimulateTransactionResponse | Supports transaction, resourceConfig (instructionLeeway), and authMode (protocol 23+). |
+| simulateTransaction | Full | `simulateTransaction(simulateTxRequest:)` | SimulateTransactionResponse | Supports transaction, resourceConfig (instructionLeeway), authMode (protocol 23+), and useUpgradedAuth (RPC v27.1.0+). |
 
 ### Ledger Methods
 
@@ -74,7 +74,7 @@ Detailed breakdown of response field support per method.
 |------------|------------|------------|---------|
 | getEvents | 6 | 6 | - |
 | getFeeStats | 3 | 3 | - |
-| getHealth | 4 | 4 | - |
+| getHealth | 4 | 6 | - |
 | getLatestLedger | 6 | 6 | - |
 | getLedgerEntries | 2 | 2 | - |
 | getLedgers | 6 | 6 | - |

@@ -1,8 +1,8 @@
 # SEP-0024 (Hosted Deposit and Withdrawal) Compatibility Matrix
 
-**Generated:** 2026-06-29
+**Generated:** 2026-07-13
 
-**SDK Version:** 3.6.1
+**SDK Version:** 3.7.0
 
 **SEP Version:** 3.8.0
 

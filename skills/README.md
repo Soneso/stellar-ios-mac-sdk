@@ -14,10 +14,10 @@ Download [stellar-ios-mac-sdk.zip](stellar-ios-mac-sdk.zip) and extract it into 
 
 ```bash
 # Claude Code
-unzip stellar-ios-mac-sdk.zip -d .claude/skills/
+unzip stellar-ios-mac-sdk.zip -d .claude/skills/stellar-ios-mac-sdk/
 
 # Codex CLI
-unzip stellar-ios-mac-sdk.zip -d .codex/skills/
+unzip stellar-ios-mac-sdk.zip -d .codex/skills/stellar-ios-mac-sdk/
 ```
 
 ### Claude Code (via marketplace)

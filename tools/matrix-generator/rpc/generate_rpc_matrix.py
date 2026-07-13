@@ -411,6 +411,7 @@ class RPCMatrixGenerator:
                         sdk_mapped_params.add("transaction")
                         sdk_mapped_params.add("resourceConfig")
                         sdk_mapped_params.add("authMode")
+                        sdk_mapped_params.add("useUpgradedAuth")
                     if param == "paginationOptions":
                         sdk_mapped_params.add("pagination")
                         sdk_mapped_params.add("cursor")
@@ -493,7 +494,7 @@ class RPCMatrixGenerator:
         # Method-specific notes
         method_notes = {
             "sendTransaction": "Full support for all response fields including diagnosticEvents, errorResult.",
-            "simulateTransaction": "Supports transaction, resourceConfig (instructionLeeway), and authMode (protocol 23+).",
+            "simulateTransaction": "Supports transaction, resourceConfig (instructionLeeway), authMode (protocol 23+), and useUpgradedAuth (RPC v27.1.0+).",
             "getTransaction": "Full support including protocol 23+ events field, computed properties.",
             "getTransactions": "Full pagination support with cursor and limit.",
             "getLatestLedger": "Returns id, protocolVersion, and sequence.",

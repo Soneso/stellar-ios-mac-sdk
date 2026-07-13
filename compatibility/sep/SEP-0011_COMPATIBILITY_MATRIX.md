@@ -1,8 +1,8 @@
 # SEP-0011 (Txrep: human-readable low-level representation of Stellar transactions) Compatibility Matrix
 
-**Generated:** 2026-06-29
+**Generated:** 2026-07-13
 
-**SDK Version:** 3.6.1
+**SDK Version:** 3.7.0
 
 **SEP Version:** 1.1.0
 

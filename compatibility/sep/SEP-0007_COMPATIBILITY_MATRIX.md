@@ -1,8 +1,8 @@
 # SEP-0007 (URI Scheme to facilitate delegated signing) Compatibility Matrix
 
-**Generated:** 2026-06-29
+**Generated:** 2026-07-13
 
-**SDK Version:** 3.6.1
+**SDK Version:** 3.7.0
 
 **SEP Version:** 2.1.0
 
