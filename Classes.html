@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="index.html">
-          stellarsdk 3.6.1 Docs
+          stellarsdk 3.7.0 Docs
         </a>
          (94% documented)
       </p>
@@ -11772,6 +11772,7 @@ by the Soroban RPC server.</p>
 <li>transaction: The transaction to simulate (must contain InvokeHostFunction operation)</li>
 <li>resourceConfig: Optional resource budget configuration (default: 3000000 instruction leeway)</li>
 <li>authMode: Authorization simulation mode (protocol 23+)</li>
+<li>useUpgradedAuth: Request protocol-27 V2 credential arms in the simulation response (default false)</li>
 </ul>
 
 <p>Authorization modes (protocol 23+):</p>
@@ -11781,6 +11782,17 @@ by the Soroban RPC server.</p>
 <li>&ldquo;record&rdquo;: Record auth entries without enforcing</li>
 <li>&ldquo;record_allow_nonroot&rdquo;: Allow non-root authorization</li>
 </ul>
+
+<p><strong><code>useUpgradedAuth</code> flag</strong></p>
+
+<p>When <code>useUpgradedAuth</code> is <code>true</code>, the key <code>&quot;useUpgradedAuth&quot;: true</code> is included as a sibling of
+<code>&quot;transaction&quot;</code> in the JSON-RPC params. The key is omitted entirely when <code>false</code>
+(never sent as <code>&quot;useUpgradedAuth&quot;: false</code>). Emitting V2 credential arms on a network below
+protocol 27 invalidates the transaction, so this flag defaults to <code>false</code>.</p>
+
+<p>RPC servers that do not support <code>useUpgradedAuth</code> silently ignore the key and return legacy
+<code>ADDRESS</code> credential arms. The caller must detect V2 support by inspecting the
+credential arm of the returned entries, not by expecting an error.</p>
 
 <p>Example:</p>
 <pre class="highlight swift"><code><span class="k">let</span> <span class="nv">request</span> <span class="o">=</span> <span class="kt">SimulateTransactionRequest</span><span class="p">(</span>
@@ -11810,7 +11822,7 @@ by the Soroban RPC server.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/SimulateTransactionRequest.swift#L40-L71">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/SimulateTransactionRequest.swift#L52-L95">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -12545,6 +12557,7 @@ contract methods through SorobanClient or AssembledTransaction.</p>
 <li>Timeout: Transaction validity window (default: 300 seconds)</li>
 <li>Simulate: Auto-simulate before submission (default: true)</li>
 <li>Restore: Auto-restore archived entries if needed (default: false)</li>
+<li>UseUpgradedAuth: Request protocol-27 V2 credential arms in the simulation response (default: false)</li>
 </ul>
 
 <p>Example:</p>
@@ -12582,7 +12595,7 @@ contract methods through SorobanClient or AssembledTransaction.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/MethodOptions.swift#L43-L71">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/MethodOptions.swift#L44-L83">Show on GitHub</a>
                       </div>
                     </section>
                   </div>

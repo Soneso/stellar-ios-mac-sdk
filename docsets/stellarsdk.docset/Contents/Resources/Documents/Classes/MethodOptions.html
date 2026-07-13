@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          stellarsdk 3.6.1 Docs
+          stellarsdk 3.7.0 Docs
         </a>
          (94% documented)
       </p>
@@ -2304,6 +2304,7 @@ contract methods through SorobanClient or AssembledTransaction.</p>
 <li>Timeout: Transaction validity window (default: 300 seconds)</li>
 <li>Simulate: Auto-simulate before submission (default: true)</li>
 <li>Restore: Auto-restore archived entries if needed (default: false)</li>
+<li>UseUpgradedAuth: Request protocol-27 V2 credential arms in the simulation response (default: false)</li>
 </ul>
 
 <p>Example:</p>
@@ -2331,7 +2332,7 @@ contract methods through SorobanClient or AssembledTransaction.</p>
 </ul>
 
               <div class="slightly-smaller">
-                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/MethodOptions.swift#L43-L71">Show on GitHub</a>
+                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/MethodOptions.swift#L44-L83">Show on GitHub</a>
               </div>
           </div>
         </section>
@@ -2365,7 +2366,7 @@ contract methods through SorobanClient or AssembledTransaction.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/MethodOptions.swift#L46">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/MethodOptions.swift#L47">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2395,7 +2396,7 @@ contract methods through SorobanClient or AssembledTransaction.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/MethodOptions.swift#L49">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/MethodOptions.swift#L50">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2425,7 +2426,7 @@ contract methods through SorobanClient or AssembledTransaction.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/MethodOptions.swift#L52">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/MethodOptions.swift#L53">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2455,7 +2456,7 @@ contract methods through SorobanClient or AssembledTransaction.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/MethodOptions.swift#L55">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/MethodOptions.swift#L56">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2463,9 +2464,45 @@ contract methods through SorobanClient or AssembledTransaction.</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10stellarsdk13MethodOptionsC3fee16timeoutInSeconds8simulate7restoreACs6UInt32V_s6UInt64VS2btcfc"></a>
-                    <a name="//apple_ref/swift/Method/init(fee:timeoutInSeconds:simulate:restore:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10stellarsdk13MethodOptionsC3fee16timeoutInSeconds8simulate7restoreACs6UInt32V_s6UInt64VS2btcfc">init(fee:<wbr>timeoutInSeconds:<wbr>simulate:<wbr>restore:<wbr>)</a>
+                    <a name="/s:10stellarsdk13MethodOptionsC15useUpgradedAuthSbvp"></a>
+                    <a name="//apple_ref/swift/Property/useUpgradedAuth" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk13MethodOptionsC15useUpgradedAuthSbvp">useUpgradedAuth</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Request protocol-27 V2 credential arms in the simulation response. Default false.</p>
+
+<p>When <code>true</code>, the simulation request includes <code>&quot;useUpgradedAuth&quot;: true</code>, which instructs a
+protocol-27 RPC to return <code>ADDRESS_V2</code> credential arms.
+The key is omitted entirely when <code>false</code>. Emitting V2 on a pre-27 network invalidates
+the transaction. RPC servers without protocol-27 support silently ignore this flag and
+return legacy <code>ADDRESS</code> entries.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">let</span> <span class="nv">useUpgradedAuth</span><span class="p">:</span> <span class="kt">Bool</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/MethodOptions.swift#L65">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10stellarsdk13MethodOptionsC3fee16timeoutInSeconds8simulate7restore15useUpgradedAuthACs6UInt32V_s6UInt64VS3btcfc"></a>
+                    <a name="//apple_ref/swift/Method/init(fee:timeoutInSeconds:simulate:restore:useUpgradedAuth:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk13MethodOptionsC3fee16timeoutInSeconds8simulate7restore15useUpgradedAuthACs6UInt32V_s6UInt64VS3btcfc">init(fee:<wbr>timeoutInSeconds:<wbr>simulate:<wbr>restore:<wbr>useUpgradedAuth:<wbr>)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -2480,7 +2517,7 @@ contract methods through SorobanClient or AssembledTransaction.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="nf">init</span><span class="p">(</span><span class="nv">fee</span><span class="p">:</span> <span class="kt">UInt32</span> <span class="o">=</span> <span class="kt"><a href="../Classes/Transaction.html">Transaction</a></span><span class="o">.</span><span class="n">minBaseFee</span><span class="p">,</span> <span class="nv">timeoutInSeconds</span><span class="p">:</span> <span class="kt">UInt64</span> <span class="o">=</span> <span class="kt"><a href="../Structs/NetworkConstants.html">NetworkConstants</a></span><span class="o">.</span><span class="kt">DEFAULT_TIMEOUT_SECONDS</span><span class="p">,</span> <span class="nv">simulate</span><span class="p">:</span> <span class="kt">Bool</span> <span class="o">=</span> <span class="kc">true</span><span class="p">,</span> <span class="nv">restore</span><span class="p">:</span> <span class="kt">Bool</span> <span class="o">=</span> <span class="kc">false</span><span class="p">)</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="nf">init</span><span class="p">(</span><span class="nv">fee</span><span class="p">:</span> <span class="kt">UInt32</span> <span class="o">=</span> <span class="kt"><a href="../Classes/Transaction.html">Transaction</a></span><span class="o">.</span><span class="n">minBaseFee</span><span class="p">,</span> <span class="nv">timeoutInSeconds</span><span class="p">:</span> <span class="kt">UInt64</span> <span class="o">=</span> <span class="kt"><a href="../Structs/NetworkConstants.html">NetworkConstants</a></span><span class="o">.</span><span class="kt">DEFAULT_TIMEOUT_SECONDS</span><span class="p">,</span> <span class="nv">simulate</span><span class="p">:</span> <span class="kt">Bool</span> <span class="o">=</span> <span class="kc">true</span><span class="p">,</span> <span class="nv">restore</span><span class="p">:</span> <span class="kt">Bool</span> <span class="o">=</span> <span class="kc">false</span><span class="p">,</span> <span class="nv">useUpgradedAuth</span><span class="p">:</span> <span class="kt">Bool</span> <span class="o">=</span> <span class="kc">false</span><span class="p">)</span></code></pre>
 
                         </div>
                       </div>
@@ -2536,11 +2573,23 @@ contract methods through SorobanClient or AssembledTransaction.</p>
                                 </div>
                               </td>
                             </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>useUpgradedAuth</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Request protocol-27 V2 credential arms in the simulation response. Default false.</p>
+                                </div>
+                              </td>
+                            </tr>
                           </tbody>
                         </table>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/MethodOptions.swift#L65-L70">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/MethodOptions.swift#L76-L82">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
