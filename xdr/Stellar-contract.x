@@ -6,6 +6,11 @@
 namespace stellar
 {
 
+typedef opaque SCBytes<>;
+typedef string SCString<>;
+const SCSYMBOL_LIMIT = 32;
+typedef string SCSymbol<SCSYMBOL_LIMIT>;
+
 // We fix a maximum of 128 value types in the system for two reasons: we want to
 // keep the codes relatively small (<= 8 bits) when bit-packing values into a
 // u64 at the environment interface level, so that we keep many bits for
@@ -71,6 +76,7 @@ enum SCValType
     // instance and an address' nonce, respectively.
     SCV_LEDGER_KEY_CONTRACT_INSTANCE = 20,
     SCV_LEDGER_KEY_NONCE = 21
+
 };
 
 enum SCErrorType
@@ -168,14 +174,6 @@ enum ContractExecutableType
     CONTRACT_EXECUTABLE_STELLAR_ASSET = 1
 };
 
-union ContractExecutable switch (ContractExecutableType type)
-{
-case CONTRACT_EXECUTABLE_WASM:
-    Hash wasm_hash;
-case CONTRACT_EXECUTABLE_STELLAR_ASSET:
-    void;
-};
-
 enum SCAddressType
 {
     SC_ADDRESS_TYPE_ACCOUNT = 0,
@@ -205,17 +203,20 @@ case SC_ADDRESS_TYPE_LIQUIDITY_POOL:
     PoolID liquidityPoolId;
 };
 
+
+union ContractExecutable switch (ContractExecutableType type)
+{
+case CONTRACT_EXECUTABLE_WASM:
+    Hash wasm_hash;
+case CONTRACT_EXECUTABLE_STELLAR_ASSET:
+    void;
+};
+
 %struct SCVal;
 %struct SCMapEntry;
 
-const SCSYMBOL_LIMIT = 32;
-
 typedef SCVal SCVec<>;
 typedef SCMapEntry SCMap<>;
-
-typedef opaque SCBytes<>;
-typedef string SCString<>;
-typedef string SCSymbol<SCSYMBOL_LIMIT>;
 
 struct SCNonceKey {
     int64 nonce;
@@ -285,6 +286,7 @@ case SCV_LEDGER_KEY_CONTRACT_INSTANCE:
     void;
 case SCV_LEDGER_KEY_NONCE:
     SCNonceKey nonce_key;
+
 };
 
 struct SCMapEntry
