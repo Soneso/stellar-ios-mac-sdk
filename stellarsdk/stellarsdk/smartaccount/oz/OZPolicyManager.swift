@@ -221,8 +221,8 @@ public enum OZPolicyInstallParams: Sendable {
                 )
             }
 
-            // Sort the inner signer-weights map keys by XDR-encoded byte
-            // ordering (Soroban host requirement for ScMap key uniqueness).
+            // Sort the inner signer-weights map keys into the host's ScMap
+            // key order.
             let sortedInnerEntries = OZPolicyManager.sortMapByKeyXdr(innerEntries)
 
             // Outer struct map keys in alphabetical order:
@@ -852,23 +852,23 @@ public final class OZPolicyManager: OZManagerHelpers, @unchecked Sendable {
 
     // MARK: - ScMap key sorting
 
-    /// Sorts a list of `SCMapEntryXDR` entries by the lexicographic byte
-    /// ordering of their keys' XDR encoding.
+    /// Sorts a list of `SCMapEntryXDR` entries into the Soroban host's ScMap
+    /// key order.
     ///
-    /// Soroban's host enforces strict byte-lexicographic ordering of `SCMap`
-    /// keys for canonicality and uniqueness checks. Use this helper whenever a
+    /// The host stores and validates ScMap keys in a semantic order (see
+    /// `compareScValHostOrder`) and rejects a map materialized from an
+    /// out-of-order `SCVal` argument. Use this helper whenever a
     /// dynamically-keyed map is built from caller-supplied data so the on-chain
     /// shape is deterministic regardless of insertion order.
     ///
     /// The supplied list is not mutated; a new sorted list is returned. Two
-    /// entries whose keys encode to byte-equal sequences preserve their
-    /// relative input order (stable sort), but byte-equal keys signal a
-    /// duplicate-key bug and the on-chain host rejects such maps at
-    /// simulation time.
+    /// entries with equal keys preserve their relative input order (stable
+    /// sort), but equal keys signal a duplicate-key bug and the on-chain host
+    /// rejects such maps at simulation time.
     ///
     /// - Parameter entries: Entries to sort.
-    /// - Returns: A new array of entries sorted by XDR-encoded key bytes in
-    ///   ascending order.
+    /// - Returns: A new array of entries whose keys are in the host's ScMap
+    ///   key order.
     public static func sortMapByKeyXdr(
         _ entries: [SCMapEntryXDR]
     ) -> [SCMapEntryXDR] {
@@ -876,33 +876,37 @@ public final class OZPolicyManager: OZManagerHelpers, @unchecked Sendable {
             return entries
         }
 
-        // why: precompute each key's XDR bytes so the comparator does not
-        // re-encode the same key on every comparison. Hex strings are monotone
-        // in the byte sequence, so lexicographic comparison agrees with raw
-        // byte comparison.
-        struct Keyed {
-            let hex: String
-            let entry: SCMapEntryXDR
+        // Swift 5+ `sorted(by:)` is stable, so equal keys retain their input
+        // order without needing an index-tagged tiebreaker.
+        return entries.sorted { compareScValHostOrder($0.key, $1.key) < 0 }
+    }
+
+    /// Encodes a policies map (policy contract address -> install-param ScVal)
+    /// into the ScMap ScVal the smart-account contract expects: keys become
+    /// contract Addresses and entries are sorted into the host's ScMap key
+    /// order.
+    ///
+    /// - Parameter policies: Policy install params keyed by policy contract
+    ///   address (`C…` strkey).
+    /// - Returns: The policies ScMap ScVal.
+    /// - Throws: ``StellarSDKError`` when a policy address cannot be encoded
+    ///   into its `SCAddressXDR` representation.
+    internal static func policiesToScVal(_ policies: [String: SCValXDR]) throws -> SCValXDR {
+        var entries: [SCMapEntryXDR] = []
+        entries.reserveCapacity(policies.count)
+        for (address, installParam) in policies {
+            entries.append(SCMapEntryXDR(
+                key: .address(try SCAddressXDR(contractId: address)),
+                val: installParam
+            ))
         }
-        var keyed: [Keyed] = []
-        keyed.reserveCapacity(entries.count)
-        for entry in entries {
-            let keyBytes = OZPolicyManager.scValToXdrBytes(entry.key)
-            let hex = Data(keyBytes).base16EncodedString()
-            keyed.append(Keyed(hex: hex, entry: entry))
-        }
-        // Swift 5+ `sorted(by:)` is stable, so byte-equal keys retain their
-        // input order without needing an index-tagged tiebreaker.
-        let sorted = keyed.sorted { $0.hex < $1.hex }
-        return sorted.map { $0.entry }
+        return .map(sortMapByKeyXdr(entries))
     }
 
     /// Encodes an `SCValXDR` value to its raw XDR byte sequence.
     ///
-    /// Used by ``sortMapByKeyXdr(_:)`` to derive the deterministic sort key
-    /// for each map entry. Exposed at `internal` visibility so unit tests can
-    /// verify byte-level encoding determinism without exporting the helper to
-    /// SDK consumers.
+    /// Exposed at `internal` visibility so unit tests can verify byte-level
+    /// encoding determinism without exporting the helper to SDK consumers.
     ///
     /// - Parameter scVal: The value to encode.
     /// - Returns: The XDR-encoded byte sequence.

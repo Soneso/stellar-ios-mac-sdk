@@ -81,7 +81,8 @@ public final class OZSmartAccountAuthPayload {
 /// which is a named struct (Map-based) with fields `context_rule_ids` and `signers`. The
 /// outer struct map keys are inserted in alphabetical order (matching the Soroban Rust
 /// `#[contracttype]` derive convention); the inner dynamic-Map signer entries are sorted
-/// by lowercase-hex of their XDR-encoded keys so the encoding is deterministic.
+/// into the Soroban host's ScMap key order so the host accepts the map and the encoding
+/// is deterministic.
 public enum OZSmartAccountAuthPayloadCodec {
 
     /// Reads an `OZSmartAccountAuthPayload` from its `SCValXDR` representation.
@@ -155,12 +156,14 @@ public enum OZSmartAccountAuthPayloadCodec {
     /// Builds the outer map with exactly two entries in alphabetical insertion order
     /// (`context_rule_ids`, then `signers`), matching the Soroban Rust `#[contracttype]`
     /// derive ordering for the contract's `AuthPayload` struct. Inner signer entries are
-    /// sorted by lowercase-hex of their XDR-encoded keys so the encoding is deterministic
-    /// and the host-side dynamic-Map ordering check is satisfied.
+    /// sorted into the Soroban host's ScMap key order (content-wise, with length only a
+    /// tiebreaker on a shared prefix) so the host-side dynamic-Map ordering check is
+    /// satisfied and the encoding is deterministic.
     ///
     /// - Parameter payload: Payload to encode.
     /// - Returns: The `SCValXDR` representation of the payload.
-    /// - Throws: `SmartAccountTransactionException.SigningFailed` when XDR encoding of a signer key fails.
+    /// - Throws: `SmartAccountTransactionException.SigningFailed` when a signer cannot be
+    ///   converted to its `SCValXDR` key.
     public static func write(_ payload: OZSmartAccountAuthPayload) throws -> SCValXDR {
         // Build signer map entries, wrapping each raw signature byte array in an
         // `SCValXDR.bytes` value before sorting.
@@ -179,27 +182,11 @@ public enum OZSmartAccountAuthPayloadCodec {
             signerEntries.append(SCMapEntryXDR(key: key, val: .bytes(entry.signatureBytes)))
         }
 
-        // Sort signer entries by lowercase-hex of their XDR-encoded key bytes. The hex
-        // representation is monotone in the underlying byte sequence, so the resulting
-        // order matches a raw byte lexicographic sort.
-        let sortedSignerEntries: [SCMapEntryXDR]
-        do {
-            // Precompute the sort keys so the sort itself does not encode the same key
-            // repeatedly and so encoding errors surface deterministically.
-            var keyed: [(hex: String, entry: SCMapEntryXDR)] = []
-            keyed.reserveCapacity(signerEntries.count)
-            for entry in signerEntries {
-                let encoded = try XDREncoder.encode(entry.key)
-                let hex = Data(encoded).base16EncodedString()
-                keyed.append((hex: hex, entry: entry))
-            }
-            keyed.sort { $0.hex < $1.hex }
-            sortedSignerEntries = keyed.map { $0.entry }
-        } catch {
-            throw SmartAccountTransactionException.signingFailed(
-                reason: "Failed to XDR-encode signer key for sorting: \(error.localizedDescription)",
-                cause: error
-            )
+        // Sort signer entries into the host's ScMap key order. The host validates the
+        // key order when it materializes the map and rejects an out-of-order map with
+        // `InvalidInput`.
+        let sortedSignerEntries = signerEntries.sorted {
+            compareScValHostOrder($0.key, $1.key) < 0
         }
 
         let signersMapScVal: SCValXDR = .map(sortedSignerEntries)
@@ -208,8 +195,8 @@ public enum OZSmartAccountAuthPayloadCodec {
         let contextRuleIdsScVal: SCValXDR = .vec(ruleIdEntries)
 
         // Outer struct map keys insert in alphabetical order to match the Soroban Rust
-        // `#[contracttype]` derive convention. Inner dynamic-map keys are sorted above by
-        // XDR-byte order.
+        // `#[contracttype]` derive convention. Inner dynamic-map keys are sorted above
+        // into the host's ScMap key order.
         let outerEntries: [SCMapEntryXDR] = [
             SCMapEntryXDR(key: .symbol("context_rule_ids"), val: contextRuleIdsScVal),
             SCMapEntryXDR(key: .symbol("signers"), val: signersMapScVal)

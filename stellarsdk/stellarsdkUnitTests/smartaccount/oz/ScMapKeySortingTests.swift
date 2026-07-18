@@ -21,10 +21,12 @@ final class ScMapKeySortingTests: XCTestCase {
     // MARK: - Algorithm-level
 
     func testCompareByteArraysLexicographically() throws {
-        // Use Data lex comparison — codec sorts by lowercase-hex of XDR-encoded bytes.
-        let a = Data([0x00, 0x01])
-        let b = Data([0x00, 0x02])
-        XCTAssertTrue(a.lexicographicallyPrecedes(b))
+        // The codec sorts keys in the host's ScMap key order: content-wise,
+        // byte for byte, with length only a tiebreaker on a shared prefix.
+        XCTAssertLessThan(
+            compareScValHostOrder(.bytes(Data([0x00, 0x01])), .bytes(Data([0x00, 0x02]))),
+            0
+        )
     }
 
     func testSortMapByKeyXdrWithSymbolKeys() throws {
@@ -152,7 +154,7 @@ final class ScMapKeySortingTests: XCTestCase {
         )
         let scVal = try OZSmartAccountAuthPayloadCodec.write(payload)
         let decoded = try OZSmartAccountAuthPayloadCodec.read(scVal)
-        // Sorted by hex: keyData 0x01 sorts before 0xFF.
+        // Sorted into host order: keyData 0x01 sorts before 0xFF.
         XCTAssertEqual(decoded.signers[0].signatureBytes, Data([0xBB]))
         XCTAssertEqual(decoded.signers[1].signatureBytes, Data([0xAA]))
     }
@@ -196,7 +198,7 @@ final class ScMapKeySortingTests: XCTestCase {
         }
     }
 
-    func testScValKeySort_outer_struct_is_alphabetical_not_xdr_byte_sort() throws {
+    func testScValKeySort_outer_struct_is_alphabetical_insertion_order() throws {
         let payload = OZSmartAccountAuthPayload(signers: [], contextRuleIds: [1])
         let scVal = try OZSmartAccountAuthPayloadCodec.write(payload)
         guard case .map(let entries) = scVal, let entries = entries else {
@@ -208,16 +210,16 @@ final class ScMapKeySortingTests: XCTestCase {
             XCTFail("Expected Symbol keys")
             return
         }
-        // context_rule_ids (16 chars, XDR encodes longer) sorts BEFORE signers
-        // alphabetically (c < s) but AFTER signers under XDR-byte sort because XDR length
-        // prefix puts shorter strings first. The codec must emit alphabetical order to
-        // match the contract's `#[contracttype]` derive convention.
+        // The outer struct map keys are inserted in the contract's
+        // `#[contracttype]` field order (alphabetical: `context_rule_ids`,
+        // then `signers`) — they are never run through the dynamic-key sort.
         XCTAssertEqual(key0, "context_rule_ids")
         XCTAssertEqual(key1, "signers")
     }
 
-    func testScValKeySort_inner_signers_uses_xdr_hex_sort() throws {
-        // Insert in reverse order; verify the result is sorted by XDR-hex.
+    func testScValKeySort_inner_signers_uses_host_order() throws {
+        // Insert in reverse order; verify the result is sorted into the host's
+        // ScMap key order.
         let s1 = try OZExternalSigner(verifierAddress: validContractC, keyData: Data([0x80, 0x01]))
         let s2 = try OZExternalSigner(verifierAddress: validContractC, keyData: Data([0x01, 0x02]))
         let payload = OZSmartAccountAuthPayload(
@@ -236,18 +238,13 @@ final class ScMapKeySortingTests: XCTestCase {
             XCTFail("Expected inner map")
             return
         }
-        // First inner key should encode to a smaller hex string.
-        let key0Hex = try Data(XDREncoder.encode(inner[0].key)).base16EncodedString()
-        let key1Hex = try Data(XDREncoder.encode(inner[1].key)).base16EncodedString()
-        XCTAssertTrue(key0Hex < key1Hex)
-    }
-
-    func testScValKeySort_golden_alphabetical_vs_xdr_hex_diverge() throws {
-        // Outer struct order: alphabetical. Verify "a" < "ab" alphabetically — true under
-        // either ordering — but "zebra" < "middle" alphabetically false. Document the
-        // invariant by checking that the outer map is in code-point order regardless of
-        // XDR length.
-        // (Tested above via testScValKeySort_outer_struct_is_alphabetical_not_xdr_byte_sort.)
-        XCTAssertTrue("context_rule_ids" < "signers")
+        // The s2 key (keyData starting 0x01) sorts before the s1 key
+        // (keyData starting 0x80): content order decides.
+        XCTAssertLessThan(compareScValHostOrder(inner[0].key, inner[1].key), 0)
+        guard case .bytes(let firstSignature) = inner[0].val else {
+            XCTFail("Expected Bytes value")
+            return
+        }
+        XCTAssertEqual(firstSignature, Data([0x20]))
     }
 }

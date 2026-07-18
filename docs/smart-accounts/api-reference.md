@@ -999,7 +999,7 @@ public func addPasskey(
 
 Adds a WebAuthn passkey signer to a context rule when the credential identifier and public key are already in hand. Builds an `OZExternalSigner.webAuthn(verifierAddress:publicKey:credentialId:)` (the verifier address is sourced from `config.webauthnVerifierAddress`) and submits an `add_signer` invocation against the smart-account contract. The on-chain transaction requires authorization from an existing signer on the supplied context rule.
 
-`publicKey` must be the canonical uncompressed 65-byte secp256r1 form starting with `0x04`; `credentialId` must be non-empty.
+`publicKey` must be the canonical uncompressed 65-byte secp256r1 form starting with `0x04`; `credentialId` must be non-empty. The signer's key data (`publicKey || credentialId`) is limited to `OZConstants.maxExternalKeySize` (256) bytes — the same limit applies to every signer-addition path that produces an external signer.
 
 **Throws**: `SmartAccountWalletException.NotConnected`, `SmartAccountValidationException`, `SmartAccountTransactionException`.
 
@@ -1096,7 +1096,9 @@ public final class OZContextRuleManager: @unchecked Sendable { ... }
 
 Accessed via `kit.contextRuleManager`. Creates, lists, updates, and removes context rules on the connected smart-account contract. Contract limits enforced before submission:
 
+- Maximum `OZConstants.maxNameSize` (20) UTF-8 bytes per rule name (byte count, not character count).
 - Maximum `OZConstants.maxSigners` (15) signers per rule.
+- Maximum `OZConstants.maxExternalKeySize` (256) bytes of key data per external signer.
 - Maximum `OZConstants.maxPolicies` (5) policies per rule.
 
 A context rule must have at least one signer or one policy.
@@ -1115,7 +1117,7 @@ public func addContextRule(
 ) async throws -> OZTransactionResult
 ```
 
-Adds a new context rule. `contextType` selects the matching policy (default rule, call-contract, or create-contract). `name` is the human-readable rule name. `validUntil` is the optional ledger number at which the rule expires (`nil` for non-expiring). `signers` lists the signers authorised by the rule. `policies` maps policy contract addresses (`C…` strkey) to their installation parameters encoded as `SCValXDR`; map keys are sorted by XDR-byte order before submission to satisfy Soroban's `ScMap` ordering invariant.
+Adds a new context rule. `contextType` selects the matching policy (default rule, call-contract, or create-contract). `name` is the human-readable rule name (non-empty, at most `OZConstants.maxNameSize` UTF-8 bytes). `validUntil` is the optional ledger number at which the rule expires (`nil` for non-expiring). `signers` lists the signers authorised by the rule; each external signer's key data is limited to `OZConstants.maxExternalKeySize` bytes. `policies` maps policy contract addresses (`C…` strkey) to their installation parameters encoded as `SCValXDR`; map keys are sorted into the Soroban host's `ScMap` key order before submission.
 
 **Throws**: `SmartAccountWalletException.NotConnected`, `SmartAccountValidationException.InvalidInput`, `SmartAccountValidationException.InvalidAddress`, `SmartAccountTransactionException`.
 
@@ -1170,7 +1172,7 @@ public func updateName(
 ) async throws -> OZTransactionResult
 ```
 
-Updates the human-readable name of an existing rule. The `name` field is metadata only — it has no effect on rule matching or enforcement. Must be non-empty.
+Updates the human-readable name of an existing rule. The `name` field is metadata only — it has no effect on rule matching or enforcement. Must be non-empty and at most `OZConstants.maxNameSize` (20) UTF-8 bytes.
 
 **Throws**: `SmartAccountWalletException.NotConnected`, `SmartAccountValidationException.InvalidInput`, `SmartAccountTransactionException`.
 
@@ -1362,7 +1364,7 @@ Generic policy installation. Use this method directly when installing a custom p
 public static func sortMapByKeyXdr(_ entries: [SCMapEntryXDR]) -> [SCMapEntryXDR]
 ```
 
-Sorts a list of `SCMapEntryXDR` entries by the lexicographic byte ordering of their keys' XDR encoding. Soroban's host enforces strict byte-lexicographic ordering of `ScMap` keys for canonicality and uniqueness checks. Use this helper whenever a dynamically-keyed map is built from caller-supplied data so the on-chain shape is deterministic regardless of insertion order. The input list is not mutated.
+Sorts a list of `SCMapEntryXDR` entries into the Soroban host's `ScMap` key order. The host stores and validates map keys in a semantic order — different SCVal types by discriminant; `Vec`/`Map` element-wise (recursively); `Bytes`/`String`/`Symbol` by content, byte for byte, with length only a tiebreaker on a shared prefix — and rejects a map materialized from an out-of-order `SCVal` argument. Use this helper whenever a dynamically-keyed map is built from caller-supplied data so the on-chain shape is deterministic regardless of insertion order. The input list is not mutated.
 
 ### Supporting Types
 
@@ -1987,7 +1989,7 @@ Every error path in the kit funnels into a `SmartAccountException` subclass so c
 > | 3002 | `.credentialAlreadyExists` | `UnvalidatedContext` |
 > | 3003 | `.credentialInvalid` | `ExternalVerificationFailed` |
 >
-> The table above shows only the two codes the SDK enum reuses. On chain, the smart-account contract's `SmartAccountError` spans `3000` and `3002`-`3016`; the WebAuthn verifier's `WebAuthnError` occupies `3110`-`3119`; and the built-in policy contracts occupy `3200`-`3227`. When inspecting an error code, first check the exception type to determine which namespace it belongs to. Named constants for a subset of these codes are provided in [`OZContractErrorCodes`](#ozcontracterrorcodes) — the SDK surfaces the raw error message but does not parse or map contract error codes itself; see the [OpenZeppelin contracts source](https://github.com/OpenZeppelin/stellar-contracts/blob/main/packages/accounts/src/smart_account/mod.rs) for the full on-chain `SmartAccountError` enum, along with the `WebAuthnError` and policy error enums.
+> The table above shows only the two codes the SDK enum reuses. On chain, the smart-account contract's `SmartAccountError` spans `3000` and `3002`-`3016`; the WebAuthn verifier's `WebAuthnError` occupies `3110`-`3119`; and the built-in policy contracts occupy `3200`-`3227`. When inspecting an error code, first check the exception type to determine which namespace it belongs to. The full catalog of on-chain codes is available in [`OZContractErrorCodes`](#ozcontracterrorcodes), together with the consumer-side `decode(_:)` / `decodeFromMessage(_:)` helpers — the SDK surfaces the raw error message but does not parse or map contract error codes itself; see the [OpenZeppelin contracts source](https://github.com/OpenZeppelin/stellar-contracts/blob/main/packages/accounts/src/smart_account/mod.rs) for the on-chain `SmartAccountError`, `WebAuthnError`, and policy error enums.
 
 
 ```swift
@@ -2196,20 +2198,52 @@ public class SmartAccountIndexerException: SmartAccountException {
 ### OZContractErrorCodes
 
 ```swift
-public enum OZContractErrorCodes { ... }
+public enum OZContractErrorCodes {
+    public static func decode(_ code: Int) -> OZContractError?
+    public static func decodeFromMessage(_ message: String?) -> OZContractError?
+}
 ```
 
-Namespace exposing the on-chain error codes the smart-account contract may surface during simulation or submission:
+Namespace exposing the on-chain error codes of the OpenZeppelin smart-account, WebAuthn verifier, and policy contracts. These integers appear as `Error(Contract, #NNNN)` inside `SmartAccountTransactionException.SimulationFailed` / `SubmissionFailed` messages when a contract refuses an operation; the SDK surfaces the raw error message but does not parse or map contract error codes itself — `decode(_:)` and `decodeFromMessage(_:)` are consumer-side helpers.
+
+Named constants cover the smart-account contract's own error enum (`SmartAccountError`, codes `3000` and `3002`-`3016`; `3001` is unused):
 
 | Code | Name |
 |---|---|
+| 3000 | `contextRuleNotFound` |
+| 3002 | `unvalidatedContext` |
+| 3003 | `externalVerificationFailed` |
+| 3004 | `noSignersAndPolicies` |
+| 3005 | `pastValidUntil` |
+| 3006 | `signerNotFound` |
+| 3007 | `duplicateSigner` |
+| 3008 | `policyNotFound` |
+| 3009 | `duplicatePolicy` |
+| 3010 | `tooManySigners` |
+| 3011 | `tooManyPolicies` |
 | 3012 | `mathOverflow` |
 | 3013 | `keyDataTooLarge` |
 | 3014 | `contextRuleIdsLengthMismatch` |
 | 3015 | `nameTooLong` |
 | 3016 | `unauthorizedSigner` |
 
-These integers appear inside `SmartAccountTransactionException.SimulationFailed` / `SubmissionFailed` messages when the contract refuses an operation.
+`decode(_:)` resolves any known code — the constants above plus the WebAuthn verifier's `WebAuthnError` (`3110`-`3119`) and the built-in policy contracts' `SimpleThresholdError` (`3200`-`3203`), `WeightedThresholdError` (`3210`-`3214`), and `SpendingLimitError` (`3220`-`3227`) — into an `OZContractError`, or returns `nil` for unknown codes.
+
+`decodeFromMessage(_:)` scans an error message for `Error(Contract, #NNNN)` markers (whitespace-tolerant) and returns the first marker whose code is known, or `nil` when the message is `nil`, carries no marker, or carries only unknown codes.
+
+#### OZContractError
+
+```swift
+public struct OZContractError: Equatable, Hashable, Sendable {
+    public let code: Int
+    public let contract: String
+    public let name: String
+
+    public init(code: Int, contract: String, name: String)
+}
+```
+
+A decoded contract error: the numeric `code`, the contract error enum it belongs to (`contract`, for example `SmartAccountError`), and the variant `name` (for example `UnauthorizedSigner`), exactly as declared by the deployed contracts. Variant names repeat across the policy enums (for example `NotAllowed`), so `contract` disambiguates; `code` is globally unique.
 
 ---
 
@@ -2240,6 +2274,8 @@ public enum OZConstants {
     public static let defaultTimeoutSeconds: Int = 30
     public static let maxSigners: Int = 15
     public static let maxPolicies: Int = 5
+    public static let maxNameSize: Int = 20
+    public static let maxExternalKeySize: Int = 256
     public static let clientNameHeader: String = "X-Client-Name"
     public static let clientVersionHeader: String = "X-Client-Version"
     public static let clientName: String = "ios-stellar-sdk"
@@ -2248,7 +2284,7 @@ public enum OZConstants {
 }
 ```
 
-Timeouts and budgets used by the kit and the HTTP clients. `maxSigners` and `maxPolicies` are the contract limits enforced at validation time inside `OZContextRuleManager.addContextRule(...)`. `friendbotReserveXlm` is the protocol minimum-balance reserve retained on the funded temporary account during `OZTransactionOperations.fundWallet(...)`. The HTTP identification headers are pinned at the `URLSession` configuration layer by both `OZIndexerClient` and `OZRelayerClient`.
+Timeouts and budgets used by the kit and the HTTP clients. `maxSigners`, `maxPolicies`, `maxNameSize` (context-rule name, UTF-8 bytes), and `maxExternalKeySize` (external signer key data, bytes) are the contract limits enforced at validation time inside `OZContextRuleManager.addContextRule(...)` / `updateName(...)` and the `OZSignerManager` signer-addition paths. `friendbotReserveXlm` is the protocol minimum-balance reserve retained on the funded temporary account during `OZTransactionOperations.fundWallet(...)`. The HTTP identification headers are pinned at the `URLSession` configuration layer by both `OZIndexerClient` and `OZRelayerClient`.
 
 Stroop and ledger conversions live on the core SDK `StellarProtocolConstants` — for example `StellarProtocolConstants.stroopsPerXlm` (10,000,000), `.ledgersPerHour` (720), and `.ledgersPerDay` (17,280) — and are the defaults behind `signatureExpirationLedgers` and the spending-limit period conversions.
 
@@ -2476,7 +2512,7 @@ let indexer = OZIndexerClient.forNetwork(networkPassphrase: Network.testnet.pass
 
 // Or with a custom URL
 let indexer = try OZIndexerClient(
-    indexerUrl: "https://smart-account-indexer.sdf-ecosystem.workers.dev",
+    indexerUrl: "https://testnet.mercurydata.app/rest/smart-account-indexer",
     timeoutMs: 10000
 )
 ```
@@ -2508,8 +2544,8 @@ public static let defaultIndexerUrls: [String: String]
 ```
 
 Built-in default indexer URLs keyed by network passphrase:
-- Testnet — `https://smart-account-indexer.sdf-ecosystem.workers.dev`
-- Mainnet — `https://smart-account-indexer-mainnet.sdf-ecosystem.workers.dev`
+- Testnet — `https://testnet.mercurydata.app/rest/smart-account-indexer`
+- Mainnet — `https://mainnet.mercurydata.app/rest/smart-account-indexer`
 
 #### forNetwork
 

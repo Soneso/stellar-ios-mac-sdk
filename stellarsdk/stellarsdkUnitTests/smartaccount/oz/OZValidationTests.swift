@@ -135,4 +135,101 @@ final class OZValidationTests: XCTestCase {
             XCTAssertTrue(error is SmartAccountConfigurationException.InvalidConfig)
         }
     }
+
+    // MARK: - requireValidContextRuleName
+
+    func test_requireValidContextRuleName_empty_throws() {
+        do {
+            try requireValidContextRuleName("")
+            XCTFail("expected SmartAccountValidationException.InvalidInput")
+        } catch let error as SmartAccountValidationException.InvalidInput {
+            XCTAssertEqual(error.message, "Invalid input for name: Context rule name cannot be empty")
+        } catch {
+            XCTFail("unexpected error type: \(error)")
+        }
+    }
+
+    func test_requireValidContextRuleName_at20Bytes_noThrow() {
+        // 20 ASCII characters == 20 UTF-8 bytes: at the limit, accepted.
+        XCTAssertNoThrow(try requireValidContextRuleName(String(repeating: "a", count: 20)))
+    }
+
+    func test_requireValidContextRuleName_21Bytes_throws() {
+        do {
+            try requireValidContextRuleName(String(repeating: "a", count: 21))
+            XCTFail("expected SmartAccountValidationException.InvalidInput")
+        } catch let error as SmartAccountValidationException.InvalidInput {
+            XCTAssertTrue(
+                error.message.contains("Context rule name cannot exceed 20 bytes, got: 21"),
+                "unexpected message: \(error.message)"
+            )
+        } catch {
+            XCTFail("unexpected error type: \(error)")
+        }
+    }
+
+    func test_requireValidContextRuleName_multiByteUtf8_measuredInBytesNotCharacters() {
+        // "ä" is 2 UTF-8 bytes. 10 characters == 20 bytes: at the limit, accepted.
+        XCTAssertNoThrow(try requireValidContextRuleName(String(repeating: "ä", count: 10)))
+        // 11 characters == 22 bytes: over the byte limit even though the character
+        // count is below 20.
+        do {
+            try requireValidContextRuleName(String(repeating: "ä", count: 11))
+            XCTFail("expected SmartAccountValidationException.InvalidInput")
+        } catch let error as SmartAccountValidationException.InvalidInput {
+            XCTAssertTrue(
+                error.message.contains("got: 22"),
+                "expected byte count 22 in message, got: \(error.message)"
+            )
+        } catch {
+            XCTFail("unexpected error type: \(error)")
+        }
+    }
+
+    // MARK: - requireValidSigners
+
+    func test_requireValidSigners_externalAt256Bytes_noThrow() throws {
+        let signer = try OZExternalSigner(
+            verifierAddress: validContractC,
+            keyData: Data(repeating: 0x01, count: OZConstants.maxExternalKeySize)
+        )
+        XCTAssertNoThrow(try requireValidSigners([signer]))
+    }
+
+    func test_requireValidSigners_external257Bytes_throws() throws {
+        let signer = try OZExternalSigner(
+            verifierAddress: validContractC,
+            keyData: Data(repeating: 0x01, count: OZConstants.maxExternalKeySize + 1)
+        )
+        do {
+            try requireValidSigners([signer])
+            XCTFail("expected SmartAccountValidationException.InvalidInput")
+        } catch let error as SmartAccountValidationException.InvalidInput {
+            XCTAssertTrue(
+                error.message.contains("External signer key data cannot exceed 256 bytes, got: 257"),
+                "unexpected message: \(error.message)"
+            )
+        } catch {
+            XCTFail("unexpected error type: \(error)")
+        }
+    }
+
+    func test_requireValidSigners_delegatedHasNoKeyData_skipped() throws {
+        // Delegated signers carry no key data and must never trip the external-key check.
+        let validG = try KeyPair.generateRandomKeyPair().accountId
+        let delegated = try OZDelegatedSigner(address: validG)
+        XCTAssertNoThrow(try requireValidSigners([delegated]))
+    }
+
+    func test_requireValidSigners_mixedSigners_oversizedExternal_throws() throws {
+        let validG = try KeyPair.generateRandomKeyPair().accountId
+        let delegated = try OZDelegatedSigner(address: validG)
+        let oversized = try OZExternalSigner(
+            verifierAddress: validContractC,
+            keyData: Data(repeating: 0x02, count: OZConstants.maxExternalKeySize + 1)
+        )
+        XCTAssertThrowsError(try requireValidSigners([delegated, oversized])) { error in
+            XCTAssertTrue(error is SmartAccountValidationException.InvalidInput)
+        }
+    }
 }

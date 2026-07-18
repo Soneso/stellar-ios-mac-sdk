@@ -563,7 +563,8 @@ public final class OZSignerManager: OZManagerHelpers, @unchecked Sendable {
     ///   - forceMethod: Optional submission-method override.
     /// - Returns: An ``OZTransactionResult`` describing the on-chain outcome.
     /// - Throws: ``SmartAccountWalletException/NotConnected`` when no wallet is
-    ///   connected; ``SmartAccountValidationException`` when the signer cannot be
+    ///   connected; ``SmartAccountValidationException`` when the signer's key data
+    ///   exceeds ``OZConstants/maxExternalKeySize`` bytes or the signer cannot be
     ///   encoded; ``SmartAccountTransactionException`` for submission failures.
     private func addSigner(
         contextRuleId: UInt32,
@@ -572,6 +573,8 @@ public final class OZSignerManager: OZManagerHelpers, @unchecked Sendable {
         forceMethod: OZSubmissionMethod? = nil
     ) async throws -> OZTransactionResult {
         let connected = try kit.requireConnected()
+
+        try requireValidSigners([signer])
 
         let hostFunction = try OZSignerManager.buildAddSignerFunction(
             contractId: connected.contractId,
