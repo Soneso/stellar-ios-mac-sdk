@@ -182,9 +182,10 @@ final class SorobanServerPollTransactionTests: XCTestCase {
         )
 
         XCTAssertEqual(requestCount, 2)
-        if case .failure(let error) = response {
-            XCTAssertTrue("\(error)".contains("outage 2"),
-                          "Expected the last per-attempt failure to surface, got \(error)")
+        if case .failure(let error) = response,
+           case .errorResponse(let rpcError) = error {
+            XCTAssertTrue(rpcError.message?.contains("outage 2") == true,
+                          "Expected the last per-attempt failure to surface, got \(String(describing: rpcError.message))")
         } else {
             XCTFail("Expected the last per-attempt failure, got \(response)")
         }

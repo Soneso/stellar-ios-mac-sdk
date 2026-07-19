@@ -172,7 +172,7 @@ final class ScMapKeySortingTests: XCTestCase {
 
     // MARK: - Property tests
 
-    func testScValKeySort_property_random_keysets_geq_1000_match_reference() throws {
+    func testScValKeySort_property_random_keysets_geq_1000_is_permutation_invariant() throws {
         var rng = SeededRng(seed: 0xCAFEBABE)
         for _ in 0..<1000 {
             // Generate 2-4 random external signers with distinct keyData.

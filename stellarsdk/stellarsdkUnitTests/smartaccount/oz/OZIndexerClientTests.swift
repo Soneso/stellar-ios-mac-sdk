@@ -213,8 +213,12 @@ final class OZIndexerClientTests: XCTestCase {
 
     func testDefaultIndexerUrls_testnetHasUrl() {
         let url = OZIndexerClient.defaultIndexerUrls[Network.testnet.passphrase]
-        XCTAssertNotNil(url, "Testnet should have a default indexer URL configured")
-        XCTAssertTrue(url!.hasPrefix("https://"), "Default indexer URL must use HTTPS")
+        XCTAssertEqual(url, "https://testnet.mercurydata.app/rest/smart-account-indexer")
+    }
+
+    func testDefaultIndexerUrls_mainnetHasUrl() {
+        let url = OZIndexerClient.defaultIndexerUrls[Network.public.passphrase]
+        XCTAssertEqual(url, "https://mainnet.mercurydata.app/rest/smart-account-indexer")
     }
 
     func testDefaultIndexerUrls_unknownNetworkReturnsNull() {

@@ -294,6 +294,15 @@ final class OZConstructorPoliciesTests: XCTestCase {
         XCTAssertEqual(direct, built, "init and builder must produce equal configs")
     }
 
+    func test_config_defaultPolicies_differingPoliciesCompareUnequal() throws {
+        let one = try buildConfig(defaultPolicies: try policies(1))
+        let two = try buildConfig(defaultPolicies: try policies(2))
+        XCTAssertNotEqual(one, two,
+                          "configs differing only in defaultPolicies must compare unequal")
+        XCTAssertNotEqual(one.hashValue, two.hashValue,
+                          "hash must cover defaultPolicies")
+    }
+
     // ========================================================================
     // MARK: - createWallet validation before the passkey ceremony
     // ========================================================================

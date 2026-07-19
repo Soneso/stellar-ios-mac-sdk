@@ -412,7 +412,7 @@ public func addContextRule(
 ) async throws -> OZTransactionResult
 ```
 
-The `policies` map key is the policy contract address (`C…`); the value is the install-param `SCValXDR`. The SDK sorts the top-level `policies` map by XDR-byte key order before submission to satisfy Soroban's `ScMap` ordering invariant. This map is the ONLY way to create a rule WITH a policy in one submission — the convenience methods on `kit.policyManager` cannot create a rule. See [Which install path to use](#which-install-path-to-use) for the install-param map shapes.
+The `policies` map key is the policy contract address (`C…`); the value is the install-param `SCValXDR`. The SDK sorts the top-level `policies` map into the Soroban host's ScMap key order before submission. This map is the ONLY way to create a rule WITH a policy in one submission — the convenience methods on `kit.policyManager` cannot create a rule. See [Which install path to use](#which-install-path-to-use) for the install-param map shapes.
 
 Example — a rule scoped to a specific token contract, with two delegated signers and an inline spending-limit policy install map:
 
@@ -848,7 +848,7 @@ _ = try await kit.policyManager.addPolicy(
 )
 ```
 
-Inner map keys must be ordered by their XDR-byte encoding (lexicographic by symbol). The SDK sorts the top-level `policies` map for you; the inner install-params map you build is your responsibility. Use `OZPolicyManager.sortMapByKeyXdr(_:)` if you assemble entries dynamically:
+Inner map keys must be in the Soroban host's ScMap key order (content-wise by symbol, with length only a tiebreaker on a shared prefix). The SDK sorts the top-level `policies` map for you; the inner install-params map you build is your responsibility. Use `OZPolicyManager.sortMapByKeyXdr(_:)` if you assemble entries dynamically:
 
 ```swift
 public static func sortMapByKeyXdr(_ entries: [SCMapEntryXDR]) -> [SCMapEntryXDR]

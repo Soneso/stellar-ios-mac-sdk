@@ -3028,7 +3028,7 @@ public enum OZSmartAccountAuthPayloadCodec {
 }
 ```
 
-Codec for reading and writing `OZSmartAccountAuthPayload` to and from `SCValXDR`. Inner signer entries are sorted by lowercase-hex of their XDR-encoded keys for deterministic encoding. Signature bytes are verifier-dependent: WebAuthn and Policy entries are XDR-encoded `SCValXDR`; Ed25519 entries carry the raw 64-byte signature (no XDR wrapper).
+Codec for reading and writing `OZSmartAccountAuthPayload` to and from `SCValXDR`. Inner signer entries are sorted into the Soroban host's ScMap key order (content-wise, with length only a tiebreaker on a shared prefix). Signature bytes are verifier-dependent: WebAuthn and Policy entries are XDR-encoded `SCValXDR`; Ed25519 entries carry the raw 64-byte signature (no XDR wrapper).
 
 - `read(_:)` — accepts `SCValXDR.void` (returns an empty payload) or `SCValXDR.map` (the full payload).
 - `write(_:)` — builds the outer map with alphabetically ordered keys and sorts the inner signer entries.

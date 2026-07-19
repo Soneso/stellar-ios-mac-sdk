@@ -48,7 +48,7 @@ final class OZIndexerIntegrationTests: XCTestCase {
         // which the response echoes.
         let credentialBytes = randomBytes(count: 16)
         let response = try await client.lookupByCredentialId(
-            credentialId: base64UrlEncode(credentialBytes)
+            credentialId: credentialBytes.base64URLEncodedString()
         )
         XCTAssertEqual(
             credentialBytes.base16EncodedString(), response.credentialId,
@@ -109,11 +109,4 @@ final class OZIndexerIntegrationTests: XCTestCase {
         return data
     }
 
-    /// Unpadded base64url encoding, the credential-ID input form the client expects.
-    private func base64UrlEncode(_ data: Data) -> String {
-        return data.base64EncodedString()
-            .replacingOccurrences(of: "+", with: "-")
-            .replacingOccurrences(of: "/", with: "_")
-            .replacingOccurrences(of: "=", with: "")
-    }
 }
