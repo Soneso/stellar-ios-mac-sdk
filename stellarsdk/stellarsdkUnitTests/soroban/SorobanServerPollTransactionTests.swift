@@ -166,9 +166,9 @@ final class SorobanServerPollTransactionTests: XCTestCase {
         }
     }
 
-    func test_pollTransaction_returns_failure_when_every_attempt_is_a_transient_error() async {
-        // When no attempt ever produces a success response, the helper has no snapshot
-        // to return and must surface a synthetic failure rather than wait indefinitely.
+    func test_pollTransaction_returns_last_failure_when_every_attempt_is_a_transient_error() async {
+        // When no attempt ever produces a success response, the helper surfaces the
+        // last per-attempt failure so the caller sees the actual cause.
         var requestCount = 0
         registerSequence([
             { _ in requestCount += 1; return self.errorResponseJson(message: "outage 1") },
@@ -182,12 +182,11 @@ final class SorobanServerPollTransactionTests: XCTestCase {
         )
 
         XCTAssertEqual(requestCount, 2)
-        if case .failure(let error) = response,
-           case .requestFailed(let message) = error {
-            XCTAssertTrue(message.contains("no response received"),
-                          "Expected the synthetic 'no response received' failure when every attempt fails")
+        if case .failure(let error) = response {
+            XCTAssertTrue("\(error)".contains("outage 2"),
+                          "Expected the last per-attempt failure to surface, got \(error)")
         } else {
-            XCTFail("Expected .failure(.requestFailed(no response received)), got \(response)")
+            XCTFail("Expected the last per-attempt failure, got \(response)")
         }
     }
 

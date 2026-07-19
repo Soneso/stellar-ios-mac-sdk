@@ -908,9 +908,9 @@ public class SorobanServer: @unchecked Sendable {
     /// surface a timeout to the user.
     ///
     /// Transient RPC failures during a poll attempt (network glitches, rate limiting) are
-    /// swallowed: polling continues, and only the most recent successful response is kept.
-    /// If every poll attempt produces a transient failure, the helper returns a
-    /// request-failed result so the caller is not left waiting on a never-resolving call.
+    /// retried: polling continues, and only the most recent successful response is kept.
+    /// If every poll attempt produces a transient failure, the helper returns the last
+    /// per-attempt failure so the caller sees the actual cause.
     ///
     /// Argument validation: `maxAttempts` must be greater than zero. To preserve the
     /// non-throwing convention used by `simulateTransaction`, `sendTransaction`, and
@@ -948,17 +948,20 @@ public class SorobanServer: @unchecked Sendable {
 
         var attempts = 0
         var lastResponse: GetTransactionResponseEnum?
+        var lastFailure: GetTransactionResponseEnum?
 
         while attempts < maxAttempts {
             let response = await getTransaction(transactionHash: hash)
             // Only retain the most recent successful RPC response; transient failures
-            // are swallowed so a later attempt that succeeds wins, and an earlier
+            // are retried so a later attempt that succeeds wins, and an earlier
             // success still surfaces if every subsequent attempt fails.
             if case .success(let txResponse) = response {
                 lastResponse = response
                 if txResponse.status != GetTransactionResponse.STATUS_NOT_FOUND {
                     return response
                 }
+            } else {
+                lastFailure = response
             }
 
             attempts += 1
@@ -973,6 +976,11 @@ public class SorobanServer: @unchecked Sendable {
 
         if let lastResponse = lastResponse {
             return lastResponse
+        }
+        // Every attempt failed: surface the last per-attempt failure instead of a
+        // generic message so the caller sees the actual cause.
+        if let lastFailure = lastFailure {
+            return lastFailure
         }
         return .failure(error: .requestFailed(message: "pollTransaction: no response received"))
     }
