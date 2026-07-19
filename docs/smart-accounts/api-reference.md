@@ -257,6 +257,7 @@ Immutable configuration value type passed to `OZSmartAccountKit.create(config:)`
 - `externalWallet`: Optional external-wallet adapter injected into `kit.externalSigners` at construction. Required when `OZSelectedSigner.wallet(accountId:)` participates in a multi-signer ceremony and the wallet key is managed by an external service rather than an in-memory keypair.
 - `externalEd25519Adapter`: Optional Ed25519 adapter injected into `kit.externalSigners` at construction. Provides out-of-process Ed25519 signing (hardware wallets, remote signing services) as an alternative to in-memory keypairs registered via `kit.externalSigners.addEd25519FromRawKey(...)`.
 - `maxContextRuleScanId`: Maximum context-rule identifier to scan during `getAllContextRules()` / `listContextRules()`. Defaults to `50`. Increase when the account has had many add / remove cycles.
+- `defaultPolicies`: Policies installed on a new wallet's default context rule at deploy time, keyed by policy contract address (`C…` strkey) with the policy's install parameters as the value (see `OZPolicyInstallParams.toScVal()`). Applied through the contract constructor by `createWallet` and `deployPendingCredential`; a per-call `policies` argument overrides it. Defaults to no policies. Maximum `OZConstants.maxPolicies` (5). See the `createWallet` `policies` parameter for the built-in policies' install constraints at deploy time.
 
 ### Platform-specific provider integration
 
@@ -280,7 +281,8 @@ public init(
     storage: OZStorageAdapter = OZInMemoryStorageAdapter(),
     externalWallet: OZExternalWalletAdapter? = nil,
     externalEd25519Adapter: OZExternalEd25519SignerAdapter? = nil,
-    maxContextRuleScanId: UInt32 = 50
+    maxContextRuleScanId: UInt32 = 50,
+    defaultPolicies: [String: SCValXDR] = [:]
 ) throws
 ```
 
@@ -367,6 +369,7 @@ One setter per optional field, each `@discardableResult` and returning `Builder`
 - `externalWallet(_:)` — `OZExternalWalletAdapter?`
 - `externalEd25519Adapter(_:)` — `OZExternalEd25519SignerAdapter?`
 - `maxContextRuleScanId(_:)` — `UInt32`
+- `defaultPolicies(_:)` — `[String: SCValXDR]`
 
 #### build()
 
@@ -398,7 +401,8 @@ public func createWallet(
     autoSubmit: Bool = false,
     autoFund: Bool = false,
     nativeTokenContract: String? = nil,
-    forceMethod: OZSubmissionMethod? = nil
+    forceMethod: OZSubmissionMethod? = nil,
+    policies: [String: SCValXDR]? = nil
 ) async throws -> OZCreateWalletResult
 ```
 
@@ -412,6 +416,7 @@ When `autoFund == true`, the freshly deployed contract is funded through Friendb
 - `autoFund`: Fund the wallet via Friendbot after deployment (testnet only). Defaults to `false`.
 - `nativeTokenContract`: Native token (XLM SAC) contract address used when `autoFund == true`.
 - `forceMethod`: Optional submission-method override.
+- `policies`: Policies to install on the new wallet's default context rule at deploy time (via the contract constructor), keyed by policy contract address (`C…` strkey) with the policy's install parameters as the value (see `OZPolicyInstallParams.toScVal()`). When `nil` (default), `OZSmartAccountConfig.defaultPolicies` is used; pass a map (including an empty one) to override that default. Validated before the passkey ceremony, so an invalid policy config fails without creating an orphaned credential. Maximum 5 policies. Note the built-in policies' own install rules apply against this default rule and its single initial signer: a spending-limit policy installs only on call-contract rules and cannot be installed here, and a threshold must not exceed the signer count. A threshold of 1 installs and keeps the rule at 1-of-N as more signers are added; beyond that, constructor policies are primarily useful for custom policies.
 
 **Returns**: An `OZCreateWalletResult` describing the new wallet.
 
@@ -478,7 +483,8 @@ public func deployPendingCredential(
     autoSubmit: Bool = true,
     autoFund: Bool = false,
     nativeTokenContract: String? = nil,
-    forceMethod: OZSubmissionMethod? = nil
+    forceMethod: OZSubmissionMethod? = nil,
+    policies: [String: SCValXDR]? = nil
 ) async throws -> OZDeployPendingResult
 ```
 
@@ -490,6 +496,7 @@ Retries deployment for a credential whose previous deploy attempt was skipped or
 - `autoFund`: Fund the wallet via Friendbot after deployment. Defaults to `false`.
 - `nativeTokenContract`: Native token contract address used when `autoFund == true`.
 - `forceMethod`: Optional submission-method override.
+- `policies`: Policies to install on the default context rule at deploy time, keyed by policy contract address (`C…` strkey). When `nil` (default), `OZSmartAccountConfig.defaultPolicies` is used; pass a map (including an empty one) to override it. Constructor args are not part of the contract-address preimage, so the derived address is unchanged. Maximum 5 policies.
 
 **Returns**: An `OZDeployPendingResult`.
 

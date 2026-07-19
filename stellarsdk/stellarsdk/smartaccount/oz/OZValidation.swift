@@ -138,6 +138,26 @@ internal func requireValidSigners(_ signers: [any OZSmartAccountSigner]) throws 
     }
 }
 
+/// Validates constructor / context-rule policies: at most ``OZConstants/maxPolicies``
+/// entries, each keyed by a valid contract address (`C…`). The values are pre-encoded
+/// install-param ScVals and are not inspected here.
+///
+/// - Parameter policies: Policy install params keyed by policy contract address.
+/// - Throws: ``SmartAccountValidationException/InvalidInput`` when too many policies
+///   are supplied; ``SmartAccountValidationException/InvalidAddress`` when a policy
+///   key is not a valid contract address.
+internal func requireValidPolicies(_ policies: [String: SCValXDR]) throws {
+    if policies.count > OZConstants.maxPolicies {
+        throw SmartAccountValidationException.invalidInput(
+            field: "policies",
+            reason: "Cannot install more than \(OZConstants.maxPolicies) policies, got: \(policies.count)"
+        )
+    }
+    for (address, _) in policies {
+        try requireContractAddress(address, fieldName: "policyAddress")
+    }
+}
+
 // MARK: - Endpoint validation/normalization
 
 /// Validates and normalises a service endpoint URL for use by the OZ clients.

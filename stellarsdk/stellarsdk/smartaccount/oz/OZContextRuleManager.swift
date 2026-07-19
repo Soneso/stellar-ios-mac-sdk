@@ -150,17 +150,7 @@ public final class OZContextRuleManager: OZContextRuleManagerProtocol, OZManager
 
         try requireValidSigners(signers)
 
-        if policies.count > OZConstants.maxPolicies {
-            throw SmartAccountValidationException.invalidInput(
-                field: "policies",
-                reason: "Context rule cannot have more than \(OZConstants.maxPolicies) policies, got: \(policies.count)"
-            )
-        }
-
-        // Validate policy addresses are well-formed C-addresses.
-        for (address, _) in policies {
-            try requireContractAddress(address, fieldName: "contractAddress")
-        }
+        try requireValidPolicies(policies)
 
         // Build function arguments.
         //
