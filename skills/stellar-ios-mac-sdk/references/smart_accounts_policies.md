@@ -357,7 +357,7 @@ for rule in rules {
 
 ### The Default rule
 
-Every smart account deploys with one rule at `id = 0`: `contextType = .defaultRule`, signers `[initial passkey]`, no policies. The Default rule is the fallback — any operation that does not match a more specific rule goes through it. Add signers/policies to it freely, but do not remove it unless you have replaced it with a rule of equal or greater coverage; otherwise the account becomes unusable.
+Every smart account deploys with one rule at `id = 0`: `contextType = .defaultRule`, name `"multisig"` (assigned by the account contract's constructor), signers `[initial passkey]`, no policies unless constructor policies were supplied (see [Installing policies at deploy](#installing-policies-at-deploy)). The Default rule is the fallback — any operation that does not match a more specific rule goes through it. Add signers/policies to it freely, but do not remove it unless you have replaced it with a rule of equal or greater coverage; otherwise the account becomes unusable.
 
 ### OZContextRuleType
 
@@ -582,6 +582,7 @@ All state-changing methods take `selectedSigners: [OZSelectedSigner] = []` and `
 | Goal | Method | Notes |
 |------|--------|-------|
 | Create a rule WITH a policy in ONE submission | `addContextRule(policies: [policyAddress: installParamsScVal])` | You build the install-param `SCValXDR` yourself. The convenience methods CANNOT do this. |
+| Install a policy on the Default rule AT DEPLOY | `createWallet(policies:)` / `deployPendingCredential(policies:)` or `OZSmartAccountConfig.defaultPolicies` | Same hand-built `SCValXDR` map. See [Installing policies at deploy](#installing-policies-at-deploy). |
 | Install a policy on an ALREADY-EXISTING rule | `addPolicy(installParams:)` (generic) | Same hand-built `SCValXDR`. Works for any policy. The primary edit-time path. |
 | Shortcut: built-in policy on an EXISTING rule | `addSimpleThreshold` / `addWeightedThreshold` / `addSpendingLimit` | Encode the install params for you. Post-hoc on an existing rule ONLY; cannot reuse one value across create+edit. |
 
@@ -594,6 +595,26 @@ All state-changing methods take `selectedSigners: [OZSelectedSigner] = []` and `
 //   addContextRule(policies:) map (one submission), OR addContextRule first then
 //   a convenience method (two submissions).
 ```
+
+### Installing policies at deploy
+
+Policies can be installed on the Default rule when the wallet is created, via the
+account constructor: pass `policies` to `createWallet` or `deployPendingCredential`,
+or set `OZSmartAccountConfig.defaultPolicies` as a kit-wide default (a per-call
+`policies` value overrides it; an explicit empty map suppresses it). The map has
+the same shape as `addContextRule(policies:)` — policy `C-address` to hand-built
+install-param `SCValXDR`. It is validated before the passkey ceremony starts, so
+an invalid configuration never orphans a fresh credential, and constructor
+arguments are not part of the contract-address preimage, so the derived address
+is unchanged.
+
+Constraints at deploy time: a spending-limit policy installs only on
+call-contract rules, so it can never be a constructor policy (the Default rule is
+not a call-contract rule; on-chain error 3227). A threshold must not exceed the
+rule's signer count, and the freshly created rule has exactly one signer (the
+creating passkey), so only threshold 1 is valid (error 3201 otherwise).
+Threshold 1 stays meaningful as signers are added later: the rule remains 1-of-N
+(the backup-passkey pattern) instead of the no-policy default of N-of-N.
 
 The `addContextRule(policies:)` value and `addPolicy(installParams:)` argument are both a raw install-param `SCValXDR`. `OZPolicyInstallParams.toScVal()` is `internal` (see [OZPolicyInstallParams](#ozpolicyinstallparams-encoder-is-internal)), so for `addContextRule` you build the `SCValXDR` directly. The install-param map shapes (inner keys ascending by symbol):
 
@@ -1363,7 +1384,7 @@ do {
 }
 ```
 
-`OZContractErrorCodes` provides named constants for five of the contract error codes — `mathOverflow` (3012), `keyDataTooLarge` (3013), `contextRuleIdsLengthMismatch` (3014), `nameTooLong` (3015), `unauthorizedSigner` (3016). The SDK does not parse or map contract error codes; extract the code from the exception message yourself (as shown above) and compare it against these constants or the reference tables below.
+`OZContractErrorCodes` carries named constants for the smart-account contract's own error enum (3000, 3002-3016) and a decode table covering all known codes of the five contract error enums (account, WebAuthn verification, simple threshold, weighted threshold, spending limit). `decode(_:)` and `decodeFromMessage(_:)` resolve a code — or the first known code inside a failure message — to an `OZContractError` with the defining contract enum and variant name. The SDK never parses or maps contract codes on its own; these helpers are consumer-side, for use on the message of a failed transaction (as shown above).
 
 ---
 
