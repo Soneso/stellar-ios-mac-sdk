@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          stellarsdk 3.7.0 Docs
+          stellarsdk 3.8.0 Docs
         </a>
          (94% documented)
       </p>
@@ -1855,6 +1855,9 @@
                 <a class="nav-group-task-link" href="../Structs/OZContractDetailsResponse.html">OZContractDetailsResponse</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/OZContractError.html">OZContractError</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/OZCreateWalletResult.html">OZCreateWalletResult</a>
               </li>
               <li class="nav-group-task">
@@ -2315,7 +2318,7 @@ a non-empty list routes through the multi-signer ceremony coordinator.</p>
 </code></pre>
 
               <div class="slightly-smaller">
-                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZPolicyManager.swift#L405-L920">Show on GitHub</a>
+                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZPolicyManager.swift#L405-L924">Show on GitHub</a>
               </div>
           </div>
         </section>
@@ -3150,19 +3153,19 @@ on the matching enum case.</p>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Sorts a list of <code>SCMapEntryXDR</code> entries by the lexicographic byte
-ordering of their keys&rsquo; XDR encoding.</p>
+                        <p>Sorts a list of <code>SCMapEntryXDR</code> entries into the Soroban host&rsquo;s ScMap
+key order.</p>
 
-<p>Soroban&rsquo;s host enforces strict byte-lexicographic ordering of <code>SCMap</code>
-keys for canonicality and uniqueness checks. Use this helper whenever a
+<p>The host stores and validates ScMap keys in a semantic order (see
+<code>compareScValHostOrder</code>) and rejects a map materialized from an
+out-of-order <code>SCVal</code> argument. Use this helper whenever a
 dynamically-keyed map is built from caller-supplied data so the on-chain
 shape is deterministic regardless of insertion order.</p>
 
 <p>The supplied list is not mutated; a new sorted list is returned. Two
-entries whose keys encode to byte-equal sequences preserve their
-relative input order (stable sort), but byte-equal keys signal a
-duplicate-key bug and the on-chain host rejects such maps at
-simulation time.</p>
+entries with equal keys preserve their relative input order (stable
+sort), but equal keys signal a duplicate-key bug and the on-chain host
+rejects such maps at simulation time.</p>
 
                       </div>
                       <div class="declaration">
@@ -3196,11 +3199,11 @@ simulation time.</p>
                       </div>
                       <div>
                         <h4>Return Value</h4>
-                        <p>A new array of entries sorted by XDR-encoded key bytes in
-ascending order.</p>
+                        <p>A new array of entries whose keys are in the host&rsquo;s ScMap
+key order.</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZPolicyManager.swift#L872-L898">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZPolicyManager.swift#L872-L882">Show on GitHub</a>
                       </div>
                     </section>
                   </div>

@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          stellarsdk 3.7.0 Docs
+          stellarsdk 3.8.0 Docs
         </a>
          (94% documented)
       </p>
@@ -1855,6 +1855,9 @@
                 <a class="nav-group-task-link" href="../Structs/OZContractDetailsResponse.html">OZContractDetailsResponse</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/OZContractError.html">OZContractError</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/OZCreateWalletResult.html">OZCreateWalletResult</a>
               </li>
               <li class="nav-group-task">
@@ -2340,7 +2343,7 @@ or run your own RPC server. For production, always use a reliable RPC provider.<
 </ul>
 
               <div class="slightly-smaller">
-                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/SorobanServer.swift#L233-L1215">Show on GitHub</a>
+                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/SorobanServer.swift#L233-L1223">Show on GitHub</a>
               </div>
           </div>
         </section>
@@ -3514,9 +3517,9 @@ observed response is returned with its <code>NOT_FOUND</code> status preserved s
 surface a timeout to the user.</p>
 
 <p>Transient RPC failures during a poll attempt (network glitches, rate limiting) are
-swallowed: polling continues, and only the most recent successful response is kept.
-If every poll attempt produces a transient failure, the helper returns a
-request-failed result so the caller is not left waiting on a never-resolving call.</p>
+retried: polling continues, and only the most recent successful response is kept.
+If every poll attempt produces a transient failure, the helper returns the last
+per-attempt failure so the caller sees the actual cause.</p>
 
 <p>Argument validation: <code>maxAttempts</code> must be greater than zero. To preserve the
 non-throwing convention used by <code>simulateTransaction</code>, <code>sendTransaction</code>, and
@@ -3598,7 +3601,7 @@ seconds. Defaults to a constant <code>1.0</code> second per attempt.</p>
 response or an <code>.failure</code> describing why polling could not complete.</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/SorobanServer.swift#L940-L978">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/SorobanServer.swift#L940-L986">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3670,7 +3673,7 @@ fall within the history retention of their corresponding RPC provider.</p>
                         <p>List of transactions within the requested range</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/SorobanServer.swift#L989-L1013">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/SorobanServer.swift#L997-L1021">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3809,7 +3812,7 @@ queried by off-chain applications. Use this method to:</p>
                         <p>GetEventsResponseEnum with events or error</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/SorobanServer.swift#L1061-L1085">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/SorobanServer.swift#L1069-L1093">Show on GitHub</a>
                       </div>
                     </section>
                   </div>

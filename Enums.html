@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="index.html">
-          stellarsdk 3.7.0 Docs
+          stellarsdk 3.8.0 Docs
         </a>
          (94% documented)
       </p>
@@ -1851,6 +1851,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Structs/OZContractDetailsResponse.html">OZContractDetailsResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/OZContractError.html">OZContractError</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Structs/OZCreateWalletResult.html">OZCreateWalletResult</a>
@@ -5061,7 +5064,7 @@ instantiated.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZConstants.swift#L11-L77">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZConstants.swift#L11-L83">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -5079,15 +5082,18 @@ instantiated.</p>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Reference constants for a subset of the OpenZeppelin smart-account contract&rsquo;s
-on-chain error codes.</p>
+                        <p>Contract-level error codes from the OpenZeppelin smart account, WebAuthn verifier, and
+policy contracts.</p>
 
-<p>When the contract rejects a call, the code appears inside the message of a
+<p>When a contract rejects a call, the code appears inside the message of a
 <code><a href="Classes/SmartAccountTransactionException.html">SmartAccountTransactionException</a></code> (for example <code>Error(Contract, #3016)</code>). The SDK
-surfaces the raw error but does not parse or map contract error codes itself;
-callers can extract the code from the message and compare it against these constants.</p>
+surfaces the raw error but does not parse or map contract error codes itself; callers
+can extract the code from the message and compare it against these constants, or
+resolve it with the consumer-side <code>decode(_:)</code> and <code>decodeFromMessage(_:)</code> helpers.</p>
 
-<p>Error code range: <code>3xxx</code> (credential errors, aligned with the contract&rsquo;s <code>Error</code> enum).</p>
+<p>The named constants below cover the smart account contract&rsquo;s own error enum — the
+codes a caller is most likely to branch on. <code>decode(_:)</code> resolves any known code
+(smart account, WebAuthn, or a policy contract) into its contract and variant name.</p>
 
                         <a href="Enums/OZContractErrorCodes.html" class="slightly-smaller">See more</a>
                       </div>
@@ -5100,7 +5106,7 @@ callers can extract the code from the message and compare it against these const
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZContractErrorCodes.swift#L19-L35">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZContractErrorCodes.swift#L47-L193">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -5439,7 +5445,8 @@ existing signatures and ordering map entries deterministically.</li>
 which is a named struct (Map-based) with fields <code>context_rule_ids</code> and <code>signers</code>. The
 outer struct map keys are inserted in alphabetical order (matching the Soroban Rust
 <code>#[contracttype]</code> derive convention); the inner dynamic-Map signer entries are sorted
-by lowercase-hex of their XDR-encoded keys so the encoding is deterministic.</p>
+into the Soroban host&rsquo;s ScMap key order so the host accepts the map and the encoding
+is deterministic.</p>
 
                         <a href="Enums/OZSmartAccountAuthPayloadCodec.html" class="slightly-smaller">See more</a>
                       </div>
@@ -5452,7 +5459,7 @@ by lowercase-hex of their XDR-encoded keys so the encoding is deterministic.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountAuthPayload.swift#L85-L336">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountAuthPayload.swift#L86-L323">Show on GitHub</a>
                       </div>
                     </section>
                   </div>

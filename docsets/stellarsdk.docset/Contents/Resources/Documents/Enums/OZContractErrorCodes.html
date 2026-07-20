@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          stellarsdk 3.7.0 Docs
+          stellarsdk 3.8.0 Docs
         </a>
          (94% documented)
       </p>
@@ -1855,6 +1855,9 @@
                 <a class="nav-group-task-link" href="../Structs/OZContractDetailsResponse.html">OZContractDetailsResponse</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/OZContractError.html">OZContractError</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/OZCreateWalletResult.html">OZCreateWalletResult</a>
               </li>
               <li class="nav-group-task">
@@ -2292,18 +2295,21 @@
 
                 </div>
               </div>
-            <p>Reference constants for a subset of the OpenZeppelin smart-account contract&rsquo;s
-on-chain error codes.</p>
+            <p>Contract-level error codes from the OpenZeppelin smart account, WebAuthn verifier, and
+policy contracts.</p>
 
-<p>When the contract rejects a call, the code appears inside the message of a
+<p>When a contract rejects a call, the code appears inside the message of a
 <code><a href="../Classes/SmartAccountTransactionException.html">SmartAccountTransactionException</a></code> (for example <code>Error(Contract, #3016)</code>). The SDK
-surfaces the raw error but does not parse or map contract error codes itself;
-callers can extract the code from the message and compare it against these constants.</p>
+surfaces the raw error but does not parse or map contract error codes itself; callers
+can extract the code from the message and compare it against these constants, or
+resolve it with the consumer-side <code>decode(_:)</code> and <code>decodeFromMessage(_:)</code> helpers.</p>
 
-<p>Error code range: <code>3xxx</code> (credential errors, aligned with the contract&rsquo;s <code>Error</code> enum).</p>
+<p>The named constants below cover the smart account contract&rsquo;s own error enum — the
+codes a caller is most likely to branch on. <code>decode(_:)</code> resolves any known code
+(smart account, WebAuthn, or a policy contract) into its contract and variant name.</p>
 
               <div class="slightly-smaller">
-                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZContractErrorCodes.swift#L19-L35">Show on GitHub</a>
+                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZContractErrorCodes.swift#L47-L193">Show on GitHub</a>
               </div>
           </div>
         </section>
@@ -2312,6 +2318,336 @@ callers can extract the code from the message and compare it against these const
           <div class="section-content">
             <div class="task-group">
               <ul class="item-container">
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10stellarsdk20OZContractErrorCodesO19contextRuleNotFoundSivpZ"></a>
+                    <a name="//apple_ref/swift/Variable/contextRuleNotFound" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk20OZContractErrorCodesO19contextRuleNotFoundSivpZ">contextRuleNotFound</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>The referenced context rule does not exist on the account.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">static</span> <span class="k">let</span> <span class="nv">contextRuleNotFound</span><span class="p">:</span> <span class="kt">Int</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZContractErrorCodes.swift#L52">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10stellarsdk20OZContractErrorCodesO18unvalidatedContextSivpZ"></a>
+                    <a name="//apple_ref/swift/Variable/unvalidatedContext" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk20OZContractErrorCodesO18unvalidatedContextSivpZ">unvalidatedContext</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>The invocation context could not be validated against the account&rsquo;s context rules.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">static</span> <span class="k">let</span> <span class="nv">unvalidatedContext</span><span class="p">:</span> <span class="kt">Int</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZContractErrorCodes.swift#L55">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10stellarsdk20OZContractErrorCodesO26externalVerificationFailedSivpZ"></a>
+                    <a name="//apple_ref/swift/Variable/externalVerificationFailed" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk20OZContractErrorCodesO26externalVerificationFailedSivpZ">externalVerificationFailed</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>An external signer&rsquo;s verifier contract rejected the signature.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">static</span> <span class="k">let</span> <span class="nv">externalVerificationFailed</span><span class="p">:</span> <span class="kt">Int</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZContractErrorCodes.swift#L58">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10stellarsdk20OZContractErrorCodesO20noSignersAndPoliciesSivpZ"></a>
+                    <a name="//apple_ref/swift/Variable/noSignersAndPolicies" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk20OZContractErrorCodesO20noSignersAndPoliciesSivpZ">noSignersAndPolicies</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>A context rule must have at least one signer or one policy.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">static</span> <span class="k">let</span> <span class="nv">noSignersAndPolicies</span><span class="p">:</span> <span class="kt">Int</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZContractErrorCodes.swift#L61">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10stellarsdk20OZContractErrorCodesO14pastValidUntilSivpZ"></a>
+                    <a name="//apple_ref/swift/Variable/pastValidUntil" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk20OZContractErrorCodesO14pastValidUntilSivpZ">pastValidUntil</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>The context rule&rsquo;s <code>valid_until</code> ledger has already passed.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">static</span> <span class="k">let</span> <span class="nv">pastValidUntil</span><span class="p">:</span> <span class="kt">Int</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZContractErrorCodes.swift#L64">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10stellarsdk20OZContractErrorCodesO14signerNotFoundSivpZ"></a>
+                    <a name="//apple_ref/swift/Variable/signerNotFound" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk20OZContractErrorCodesO14signerNotFoundSivpZ">signerNotFound</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>The referenced signer is not present on the context rule.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">static</span> <span class="k">let</span> <span class="nv">signerNotFound</span><span class="p">:</span> <span class="kt">Int</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZContractErrorCodes.swift#L67">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10stellarsdk20OZContractErrorCodesO15duplicateSignerSivpZ"></a>
+                    <a name="//apple_ref/swift/Variable/duplicateSigner" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk20OZContractErrorCodesO15duplicateSignerSivpZ">duplicateSigner</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>The signer is already present on the context rule.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">static</span> <span class="k">let</span> <span class="nv">duplicateSigner</span><span class="p">:</span> <span class="kt">Int</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZContractErrorCodes.swift#L70">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10stellarsdk20OZContractErrorCodesO14policyNotFoundSivpZ"></a>
+                    <a name="//apple_ref/swift/Variable/policyNotFound" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk20OZContractErrorCodesO14policyNotFoundSivpZ">policyNotFound</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>The referenced policy is not installed on the context rule.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">static</span> <span class="k">let</span> <span class="nv">policyNotFound</span><span class="p">:</span> <span class="kt">Int</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZContractErrorCodes.swift#L73">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10stellarsdk20OZContractErrorCodesO15duplicatePolicySivpZ"></a>
+                    <a name="//apple_ref/swift/Variable/duplicatePolicy" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk20OZContractErrorCodesO15duplicatePolicySivpZ">duplicatePolicy</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>The policy is already installed on the context rule.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">static</span> <span class="k">let</span> <span class="nv">duplicatePolicy</span><span class="p">:</span> <span class="kt">Int</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZContractErrorCodes.swift#L76">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10stellarsdk20OZContractErrorCodesO14tooManySignersSivpZ"></a>
+                    <a name="//apple_ref/swift/Variable/tooManySigners" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk20OZContractErrorCodesO14tooManySignersSivpZ">tooManySigners</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>The context rule exceeds the maximum number of signers.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">static</span> <span class="k">let</span> <span class="nv">tooManySigners</span><span class="p">:</span> <span class="kt">Int</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZContractErrorCodes.swift#L79">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10stellarsdk20OZContractErrorCodesO15tooManyPoliciesSivpZ"></a>
+                    <a name="//apple_ref/swift/Variable/tooManyPolicies" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk20OZContractErrorCodesO15tooManyPoliciesSivpZ">tooManyPolicies</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>The context rule exceeds the maximum number of policies.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">static</span> <span class="k">let</span> <span class="nv">tooManyPolicies</span><span class="p">:</span> <span class="kt">Int</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZContractErrorCodes.swift#L82">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
                 <li class="item">
                   <div>
                     <code>
@@ -2337,7 +2673,7 @@ callers can extract the code from the message and compare it against these const
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZContractErrorCodes.swift#L22">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZContractErrorCodes.swift#L85">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2367,7 +2703,7 @@ callers can extract the code from the message and compare it against these const
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZContractErrorCodes.swift#L25">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZContractErrorCodes.swift#L88">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2397,7 +2733,7 @@ callers can extract the code from the message and compare it against these const
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZContractErrorCodes.swift#L28">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZContractErrorCodes.swift#L91">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2427,7 +2763,7 @@ callers can extract the code from the message and compare it against these const
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZContractErrorCodes.swift#L31">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZContractErrorCodes.swift#L94">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2457,7 +2793,120 @@ callers can extract the code from the message and compare it against these const
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZContractErrorCodes.swift#L34">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZContractErrorCodes.swift#L97">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10stellarsdk20OZContractErrorCodesO6decodeyAA0bC0VSgSiFZ"></a>
+                    <a name="//apple_ref/swift/Method/decode(_:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk20OZContractErrorCodesO6decodeyAA0bC0VSgSiFZ">decode(_:<wbr>)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Decodes a raw contract error <code>code</code> into the OZ contract and variant name that
+defined it, or <code>nil</code> if <code>code</code> is not a known OZ smart-account contract error.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">static</span> <span class="kd">func</span> <span class="nf">decode</span><span class="p">(</span><span class="n">_</span> <span class="nv">code</span><span class="p">:</span> <span class="kt">Int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Structs/OZContractError.html">OZContractError</a></span><span class="p">?</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>code</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The numeric contract error code to decode.</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>The decoded <code><a href="../Structs/OZContractError.html">OZContractError</a></code>, or <code>nil</code> for unknown codes.</p>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZContractErrorCodes.swift#L104-L106">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10stellarsdk20OZContractErrorCodesO17decodeFromMessageyAA0bC0VSgSSSgFZ"></a>
+                    <a name="//apple_ref/swift/Method/decodeFromMessage(_:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk20OZContractErrorCodesO17decodeFromMessageyAA0bC0VSgSSSgFZ">decodeFromMessage(_:<wbr>)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Extracts and decodes the first known contract error code from an error <code>message</code>.</p>
+
+<p>Soroban RPC surfaces contract failures as <code>Error(Contract, #NNNN)</code> inside
+simulation and submission error strings (typically the message of a thrown
+<code><a href="../Classes/SmartAccountTransactionException.html">SmartAccountTransactionException</a></code>). This scans the message for such markers and
+returns the first one whose code is a known OZ smart-account contract error, or
+<code>nil</code> when the message is <code>nil</code>, carries no marker, or carries only unknown codes.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">static</span> <span class="kd">func</span> <span class="nf">decodeFromMessage</span><span class="p">(</span><span class="n">_</span> <span class="nv">message</span><span class="p">:</span> <span class="kt">String</span><span class="p">?)</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Structs/OZContractError.html">OZContractError</a></span><span class="p">?</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>message</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The error message to scan.</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>The decoded <code><a href="../Structs/OZContractError.html">OZContractError</a></code>, or <code>nil</code> when no known code is found.</p>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZContractErrorCodes.swift#L118-L132">Show on GitHub</a>
                       </div>
                     </section>
                   </div>

@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          stellarsdk 3.7.0 Docs
+          stellarsdk 3.8.0 Docs
         </a>
          (94% documented)
       </p>
@@ -1855,6 +1855,9 @@
                 <a class="nav-group-task-link" href="../Structs/OZContractDetailsResponse.html">OZContractDetailsResponse</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/OZContractError.html">OZContractError</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/OZCreateWalletResult.html">OZCreateWalletResult</a>
               </li>
               <li class="nav-group-task">
@@ -2325,7 +2328,7 @@ example, <code>accountWasmHash</code> is not a 64-character hex string, or
 <code>webauthnVerifierAddress</code> is not a valid C-address).</p>
 
               <div class="slightly-smaller">
-                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountConfig.swift#L44-L527">Show on GitHub</a>
+                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountConfig.swift#L44-L552">Show on GitHub</a>
               </div>
           </div>
         </section>
@@ -2860,6 +2863,41 @@ all active rules. Increase if the account has had many add / remove cycles.</p>
                     </section>
                   </div>
                 </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10stellarsdk20OZSmartAccountConfigV15defaultPoliciesSDySSAA8SCValXDROGvp"></a>
+                    <a name="//apple_ref/swift/Property/defaultPolicies" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk20OZSmartAccountConfigV15defaultPoliciesSDySSAA8SCValXDROGvp">defaultPolicies</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Policies installed on the new wallet&rsquo;s default context rule at deploy time,
+keyed by policy contract address (<code>C…</code> strkey) with the policy&rsquo;s install
+parameters as the value (see <code><a href="../Enums/OZPolicyInstallParams.html#/s:10stellarsdk21OZPolicyInstallParamsO7toScValAA8SCValXDROyKF">toScVal()</a></code>). Applied
+through the account constructor by <code>createWallet</code> and
+<code>deployPendingCredential</code>; a per-call <code>policies</code> argument overrides this
+default. Defaults to no policies.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">let</span> <span class="nv">defaultPolicies</span><span class="p">:</span> <span class="p">[</span><span class="kt">String</span> <span class="p">:</span> <span class="kt">SCValXDR</span><span class="p">]</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountConfig.swift#L152">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
               </ul>
             </div>
             <div class="task-group">
@@ -2876,9 +2914,9 @@ all active rules. Increase if the account has had many add / remove cycles.</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10stellarsdk20OZSmartAccountConfigV6rpcUrl17networkPassphrase15accountWasmHash23webauthnVerifierAddress15deployerKeypair15sessionExpiryMs26signatureExpirationLedgers16timeoutInSeconds07relayerF007indexerF00L8Provider7storage14externalWallet22externalEd25519Adapter20maxContextRuleScanIdACSS_S3SAA7KeyPairCSgs5Int64VS2iSSSgAxA16WebAuthnProvider_pSgAA16OZStorageAdapter_pAA23OZExternalWalletAdapter_pSgAA30OZExternalEd25519SignerAdapter_pSgs6UInt32VtKcfc"></a>
-                    <a name="//apple_ref/swift/Method/init(rpcUrl:networkPassphrase:accountWasmHash:webauthnVerifierAddress:deployerKeypair:sessionExpiryMs:signatureExpirationLedgers:timeoutInSeconds:relayerUrl:indexerUrl:webauthnProvider:storage:externalWallet:externalEd25519Adapter:maxContextRuleScanId:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10stellarsdk20OZSmartAccountConfigV6rpcUrl17networkPassphrase15accountWasmHash23webauthnVerifierAddress15deployerKeypair15sessionExpiryMs26signatureExpirationLedgers16timeoutInSeconds07relayerF007indexerF00L8Provider7storage14externalWallet22externalEd25519Adapter20maxContextRuleScanIdACSS_S3SAA7KeyPairCSgs5Int64VS2iSSSgAxA16WebAuthnProvider_pSgAA16OZStorageAdapter_pAA23OZExternalWalletAdapter_pSgAA30OZExternalEd25519SignerAdapter_pSgs6UInt32VtKcfc">init(rpcUrl:<wbr>networkPassphrase:<wbr>accountWasmHash:<wbr>webauthnVerifierAddress:<wbr>deployerKeypair:<wbr>sessionExpiryMs:<wbr>signatureExpirationLedgers:<wbr>timeoutInSeconds:<wbr>relayerUrl:<wbr>indexerUrl:<wbr>webauthnProvider:<wbr>storage:<wbr>externalWallet:<wbr>externalEd25519Adapter:<wbr>maxContextRuleScanId:<wbr>)</a>
+                    <a name="/s:10stellarsdk20OZSmartAccountConfigV6rpcUrl17networkPassphrase15accountWasmHash23webauthnVerifierAddress15deployerKeypair15sessionExpiryMs26signatureExpirationLedgers16timeoutInSeconds07relayerF007indexerF00L8Provider7storage14externalWallet22externalEd25519Adapter20maxContextRuleScanId15defaultPoliciesACSS_S3SAA7KeyPairCSgs5Int64VS2iSSSgAyA16WebAuthnProvider_pSgAA16OZStorageAdapter_pAA23OZExternalWalletAdapter_pSgAA30OZExternalEd25519SignerAdapter_pSgs6UInt32VSDySSAA8SCValXDROGtKcfc"></a>
+                    <a name="//apple_ref/swift/Method/init(rpcUrl:networkPassphrase:accountWasmHash:webauthnVerifierAddress:deployerKeypair:sessionExpiryMs:signatureExpirationLedgers:timeoutInSeconds:relayerUrl:indexerUrl:webauthnProvider:storage:externalWallet:externalEd25519Adapter:maxContextRuleScanId:defaultPolicies:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk20OZSmartAccountConfigV6rpcUrl17networkPassphrase15accountWasmHash23webauthnVerifierAddress15deployerKeypair15sessionExpiryMs26signatureExpirationLedgers16timeoutInSeconds07relayerF007indexerF00L8Provider7storage14externalWallet22externalEd25519Adapter20maxContextRuleScanId15defaultPoliciesACSS_S3SAA7KeyPairCSgs5Int64VS2iSSSgAyA16WebAuthnProvider_pSgAA16OZStorageAdapter_pAA23OZExternalWalletAdapter_pSgAA30OZExternalEd25519SignerAdapter_pSgs6UInt32VSDySSAA8SCValXDROGtKcfc">init(rpcUrl:<wbr>networkPassphrase:<wbr>accountWasmHash:<wbr>webauthnVerifierAddress:<wbr>deployerKeypair:<wbr>sessionExpiryMs:<wbr>signatureExpirationLedgers:<wbr>timeoutInSeconds:<wbr>relayerUrl:<wbr>indexerUrl:<wbr>webauthnProvider:<wbr>storage:<wbr>externalWallet:<wbr>externalEd25519Adapter:<wbr>maxContextRuleScanId:<wbr>defaultPolicies:<wbr>)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -2915,13 +2953,14 @@ all active rules. Increase if the account has had many add / remove cycles.</p>
     <span class="nv">storage</span><span class="p">:</span> <span class="kt"><a href="../Protocols/OZStorageAdapter.html">OZStorageAdapter</a></span> <span class="o">=</span> <span class="kt"><a href="../Actors/OZInMemoryStorageAdapter.html">OZInMemoryStorageAdapter</a></span><span class="p">(),</span>
     <span class="nv">externalWallet</span><span class="p">:</span> <span class="kt"><a href="../Protocols/OZExternalWalletAdapter.html">OZExternalWalletAdapter</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
     <span class="nv">externalEd25519Adapter</span><span class="p">:</span> <span class="kt"><a href="../Protocols/OZExternalEd25519SignerAdapter.html">OZExternalEd25519SignerAdapter</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
-    <span class="nv">maxContextRuleScanId</span><span class="p">:</span> <span class="kt">UInt32</span> <span class="o">=</span> <span class="mi">50</span>
+    <span class="nv">maxContextRuleScanId</span><span class="p">:</span> <span class="kt">UInt32</span> <span class="o">=</span> <span class="mi">50</span><span class="p">,</span>
+    <span class="n"><a href="../Structs/OZSmartAccountConfig.html#/s:10stellarsdk20OZSmartAccountConfigV15defaultPoliciesSDySSAA8SCValXDROGvp">defaultPolicies</a></span><span class="p">:</span> <span class="p">[</span><span class="kt">String</span><span class="p">:</span> <span class="kt">SCValXDR</span><span class="p">]</span> <span class="o">=</span> <span class="p">[:]</span>
 <span class="p">)</span> <span class="k">throws</span></code></pre>
 
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountConfig.swift#L153-L227">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountConfig.swift#L161-L237">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2981,7 +3020,7 @@ Production apps typically supply a custom deployer for attribution and traceabil
                         <p>A deterministic <code><a href="../Classes/KeyPair.html">KeyPair</a></code> for contract deployment.</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountConfig.swift#L240-L255">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountConfig.swift#L250-L265">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3076,7 +3115,7 @@ Production apps typically supply a custom deployer for attribution and traceabil
        applied to every optional field.</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountConfig.swift#L266-L278">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountConfig.swift#L276-L288">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3135,7 +3174,7 @@ Production apps typically supply a custom deployer for attribution and traceabil
                         <p>The configured deployer or the default deterministic deployer.</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountConfig.swift#L290-L295">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountConfig.swift#L300-L305">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3174,7 +3213,7 @@ no URL is configured and no default exists for the network.</p>
                         <p>The resolved indexer URL, or <code>nil</code>.</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountConfig.swift#L305-L310">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountConfig.swift#L315-L320">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3232,7 +3271,7 @@ no URL is configured and no default exists for the network.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountConfig.swift#L349-L526">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountConfig.swift#L359-L551">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3269,7 +3308,8 @@ no URL is configured and no default exists for the network.</p>
 <code><a href="../Structs/OZSmartAccountConfig.html#/s:10stellarsdk20OZSmartAccountConfigV14externalWalletAA010OZExternalF7Adapter_pSgvp">externalWallet</a></code> fields use reference / instance equality where applicable.
 <code><a href="../Actors/OZInMemoryStorageAdapter.html">OZInMemoryStorageAdapter</a></code> overrides equality so all instances of that class
 compare equal, which lets two default-constructed configs round-trip through
-equality without surprises.</p>
+equality without surprises. <code><a href="../Structs/OZSmartAccountConfig.html#/s:10stellarsdk20OZSmartAccountConfigV15defaultPoliciesSDySSAA8SCValXDROGvp">defaultPolicies</a></code> values compare by their
+canonical XDR encoding.</p>
 
                       </div>
                       <div class="declaration">
@@ -3281,7 +3321,7 @@ equality without surprises.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountConfig.swift#L540-L570">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountConfig.swift#L566-L599">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3310,7 +3350,7 @@ equality without surprises.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountConfig.swift#L572-L598">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountConfig.swift#L601-L635">Show on GitHub</a>
                       </div>
                     </section>
                   </div>

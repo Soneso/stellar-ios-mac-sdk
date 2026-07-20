@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          stellarsdk 3.7.0 Docs
+          stellarsdk 3.8.0 Docs
         </a>
          (94% documented)
       </p>
@@ -1855,6 +1855,9 @@
                 <a class="nav-group-task-link" href="../Structs/OZContractDetailsResponse.html">OZContractDetailsResponse</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/OZContractError.html">OZContractError</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/OZCreateWalletResult.html">OZCreateWalletResult</a>
               </li>
               <li class="nav-group-task">
@@ -2304,7 +2307,7 @@ previously deferred or failed deployment.</p>
 <code>kit.walletOperations</code>.</p>
 
               <div class="slightly-smaller">
-                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZWalletOperations.swift#L246-L1655">Show on GitHub</a>
+                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZWalletOperations.swift#L246-L1695">Show on GitHub</a>
               </div>
           </div>
         </section>
@@ -2325,9 +2328,9 @@ previously deferred or failed deployment.</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10stellarsdk18OZWalletOperationsC12createWallet8userName10autoSubmit0H4Fund19nativeTokenContract11forceMethodAA08OZCreateE6ResultVSS_S2bSSSgAA012OZSubmissionO0OSgtYaKF"></a>
-                    <a name="//apple_ref/swift/Method/createWallet(userName:autoSubmit:autoFund:nativeTokenContract:forceMethod:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10stellarsdk18OZWalletOperationsC12createWallet8userName10autoSubmit0H4Fund19nativeTokenContract11forceMethodAA08OZCreateE6ResultVSS_S2bSSSgAA012OZSubmissionO0OSgtYaKF">createWallet(userName:<wbr>autoSubmit:<wbr>autoFund:<wbr>nativeTokenContract:<wbr>forceMethod:<wbr>)</a>
+                    <a name="/s:10stellarsdk18OZWalletOperationsC12createWallet8userName10autoSubmit0H4Fund19nativeTokenContract11forceMethod8policiesAA08OZCreateE6ResultVSS_S2bSSSgAA012OZSubmissionO0OSgSDySSAA8SCValXDROGSgtYaKF"></a>
+                    <a name="//apple_ref/swift/Method/createWallet(userName:autoSubmit:autoFund:nativeTokenContract:forceMethod:policies:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk18OZWalletOperationsC12createWallet8userName10autoSubmit0H4Fund19nativeTokenContract11forceMethod8policiesAA08OZCreateE6ResultVSS_S2bSSSgAA012OZSubmissionO0OSgSDySSAA8SCValXDROGSgtYaKF">createWallet(userName:<wbr>autoSubmit:<wbr>autoFund:<wbr>nativeTokenContract:<wbr>forceMethod:<wbr>policies:<wbr>)</a>
                     </code>
                       <span class="declaration-note">
                         Asynchronous
@@ -2360,7 +2363,8 @@ deploy XDR is always present in the result for deferred submission.</p>
     <span class="nv">autoSubmit</span><span class="p">:</span> <span class="kt">Bool</span> <span class="o">=</span> <span class="kc">false</span><span class="p">,</span>
     <span class="nv">autoFund</span><span class="p">:</span> <span class="kt">Bool</span> <span class="o">=</span> <span class="kc">false</span><span class="p">,</span>
     <span class="nv">nativeTokenContract</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
-    <span class="nv">forceMethod</span><span class="p">:</span> <span class="kt"><a href="../Enums/OZSubmissionMethod.html">OZSubmissionMethod</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span>
+    <span class="nv">forceMethod</span><span class="p">:</span> <span class="kt"><a href="../Enums/OZSubmissionMethod.html">OZSubmissionMethod</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
+    <span class="nv">policies</span><span class="p">:</span> <span class="p">[</span><span class="kt">String</span><span class="p">:</span> <span class="kt">SCValXDR</span><span class="p">]?</span> <span class="o">=</span> <span class="kc">nil</span>
 <span class="p">)</span> <span class="k">async</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Structs/OZCreateWalletResult.html">OZCreateWalletResult</a></span></code></pre>
 
                         </div>
@@ -2433,6 +2437,23 @@ when <code>autoFund = true</code>.</p>
                                 </div>
                               </td>
                             </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>policies</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Policies to install on the new wallet&rsquo;s default context
+rule at deploy time, keyed by policy contract address with the
+install-param ScVal as the value. <code>nil</code> (default) uses
+<code><a href="../Structs/OZSmartAccountConfig.html#/s:10stellarsdk20OZSmartAccountConfigV15defaultPoliciesSDySSAA8SCValXDROGvp">defaultPolicies</a></code>; a non-<code>nil</code> map overrides
+it. Validated before the passkey ceremony. Maximum
+<code><a href="../Enums/OZConstants.html#/s:10stellarsdk11OZConstantsO11maxPoliciesSivpZ">maxPolicies</a></code>.</p>
+                                </div>
+                              </td>
+                            </tr>
                           </tbody>
                         </table>
                       </div>
@@ -2441,7 +2462,7 @@ when <code>autoFund = true</code>.</p>
                         <p><code><a href="../Structs/OZCreateWalletResult.html">OZCreateWalletResult</a></code> describing the new wallet.</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZWalletOperations.swift#L283-L431">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZWalletOperations.swift#L289-L444">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2516,7 +2537,7 @@ session-only restore.</p>
                         <p><code><a href="../Enums/OZConnectWalletResult.html">OZConnectWalletResult</a></code> or <code>nil</code>.</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZWalletOperations.swift#L576-L761">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZWalletOperations.swift#L593-L778">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2603,7 +2624,7 @@ transport reasons.
                         <p><code><a href="../Structs/OZConnectToContractResult.html">OZConnectToContractResult</a></code> carrying the verified <code>contractId</code>.</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZWalletOperations.swift#L794-L811">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZWalletOperations.swift#L811-L828">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2688,7 +2709,7 @@ used by the authenticator.</p>
 normalised signature, and stored public key (when available).</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZWalletOperations.swift#L829-L927">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZWalletOperations.swift#L846-L944">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2696,9 +2717,9 @@ normalised signature, and stored public key (when available).</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10stellarsdk18OZWalletOperationsC23deployPendingCredential12credentialId10autoSubmit0I4Fund19nativeTokenContract11forceMethodAA08OZDeployE6ResultVSS_S2bSSSgAA012OZSubmissionP0OSgtYaKF"></a>
-                    <a name="//apple_ref/swift/Method/deployPendingCredential(credentialId:autoSubmit:autoFund:nativeTokenContract:forceMethod:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10stellarsdk18OZWalletOperationsC23deployPendingCredential12credentialId10autoSubmit0I4Fund19nativeTokenContract11forceMethodAA08OZDeployE6ResultVSS_S2bSSSgAA012OZSubmissionP0OSgtYaKF">deployPendingCredential(credentialId:<wbr>autoSubmit:<wbr>autoFund:<wbr>nativeTokenContract:<wbr>forceMethod:<wbr>)</a>
+                    <a name="/s:10stellarsdk18OZWalletOperationsC23deployPendingCredential12credentialId10autoSubmit0I4Fund19nativeTokenContract11forceMethod8policiesAA08OZDeployE6ResultVSS_S2bSSSgAA012OZSubmissionP0OSgSDySSAA8SCValXDROGSgtYaKF"></a>
+                    <a name="//apple_ref/swift/Method/deployPendingCredential(credentialId:autoSubmit:autoFund:nativeTokenContract:forceMethod:policies:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk18OZWalletOperationsC23deployPendingCredential12credentialId10autoSubmit0I4Fund19nativeTokenContract11forceMethod8policiesAA08OZDeployE6ResultVSS_S2bSSSgAA012OZSubmissionP0OSgSDySSAA8SCValXDROGSgtYaKF">deployPendingCredential(credentialId:<wbr>autoSubmit:<wbr>autoFund:<wbr>nativeTokenContract:<wbr>forceMethod:<wbr>policies:<wbr>)</a>
                     </code>
                       <span class="declaration-note">
                         Asynchronous
@@ -2731,7 +2752,8 @@ with a valid <code>publicKey</code> and <code>contractId</code>.</p>
     <span class="nv">autoSubmit</span><span class="p">:</span> <span class="kt">Bool</span> <span class="o">=</span> <span class="kc">true</span><span class="p">,</span>
     <span class="nv">autoFund</span><span class="p">:</span> <span class="kt">Bool</span> <span class="o">=</span> <span class="kc">false</span><span class="p">,</span>
     <span class="nv">nativeTokenContract</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
-    <span class="nv">forceMethod</span><span class="p">:</span> <span class="kt"><a href="../Enums/OZSubmissionMethod.html">OZSubmissionMethod</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span>
+    <span class="nv">forceMethod</span><span class="p">:</span> <span class="kt"><a href="../Enums/OZSubmissionMethod.html">OZSubmissionMethod</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
+    <span class="nv">policies</span><span class="p">:</span> <span class="p">[</span><span class="kt">String</span><span class="p">:</span> <span class="kt">SCValXDR</span><span class="p">]?</span> <span class="o">=</span> <span class="kc">nil</span>
 <span class="p">)</span> <span class="k">async</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Structs/OZDeployPendingResult.html">OZDeployPendingResult</a></span></code></pre>
 
                         </div>
@@ -2805,6 +2827,22 @@ Friendbot (testnet only). Requires <code>autoSubmit = true</code>.</p>
                                 </div>
                               </td>
                             </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>policies</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Policies to install on the default context rule at deploy
+time, keyed by policy contract address with the install-param ScVal
+as the value. <code>nil</code> (default) uses
+<code><a href="../Structs/OZSmartAccountConfig.html#/s:10stellarsdk20OZSmartAccountConfigV15defaultPoliciesSDySSAA8SCValXDROGvp">defaultPolicies</a></code>; a non-<code>nil</code> map overrides
+it. Maximum <code><a href="../Enums/OZConstants.html#/s:10stellarsdk11OZConstantsO11maxPoliciesSivpZ">maxPolicies</a></code>.</p>
+                                </div>
+                              </td>
+                            </tr>
                           </tbody>
                         </table>
                       </div>
@@ -2813,7 +2851,7 @@ Friendbot (testnet only). Requires <code>autoSubmit = true</code>.</p>
                         <p><code><a href="../Structs/OZDeployPendingResult.html">OZDeployPendingResult</a></code> describing the deployment.</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZWalletOperations.swift#L949-L1106">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZWalletOperations.swift#L971-L1135">Show on GitHub</a>
                       </div>
                     </section>
                   </div>

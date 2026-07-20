@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          stellarsdk 3.7.0 Docs
+          stellarsdk 3.8.0 Docs
         </a>
          (94% documented)
       </p>
@@ -1855,6 +1855,9 @@
                 <a class="nav-group-task-link" href="../Structs/OZContractDetailsResponse.html">OZContractDetailsResponse</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/OZContractError.html">OZContractError</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/OZCreateWalletResult.html">OZCreateWalletResult</a>
               </li>
               <li class="nav-group-task">
@@ -2317,7 +2320,7 @@ through the kit&rsquo;s multi-signer manager.</p>
 </code></pre>
 
               <div class="slightly-smaller">
-                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZContextRuleManager.swift#L72-L730">Show on GitHub</a>
+                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZContextRuleManager.swift#L72-L705">Show on GitHub</a>
               </div>
           </div>
         </section>
@@ -2360,7 +2363,10 @@ or the multi-signer submission path.</p>
 <p>Contract limits enforced before submission:</p>
 
 <ul>
+<li>Maximum <code><a href="../Enums/OZConstants.html#/s:10stellarsdk11OZConstantsO11maxNameSizeSivpZ">maxNameSize</a></code> UTF-8 bytes per rule name.</li>
 <li>Maximum <code><a href="../Enums/OZConstants.html#/s:10stellarsdk11OZConstantsO10maxSignersSivpZ">maxSigners</a></code> signers per rule.</li>
+<li>Maximum <code><a href="../Enums/OZConstants.html#/s:10stellarsdk11OZConstantsO18maxExternalKeySizeSivpZ">maxExternalKeySize</a></code> bytes of key data per
+external signer.</li>
 <li><p>Maximum <code><a href="../Enums/OZConstants.html#/s:10stellarsdk11OZConstantsO11maxPoliciesSivpZ">maxPolicies</a></code> policies per rule.</p></li>
 </ul><div class="aside aside-throws">
     <p class="aside-title">Throws</p>
@@ -2418,7 +2424,8 @@ failures.</li>
                               </td>
                               <td>
                                 <div>
-                                  <p>Human-readable rule name (must be non-empty).</p>
+                                  <p>Human-readable rule name (must be non-empty and at most
+<code><a href="../Enums/OZConstants.html#/s:10stellarsdk11OZConstantsO11maxNameSizeSivpZ">maxNameSize</a></code> UTF-8 bytes).</p>
                                 </div>
                               </td>
                             </tr>
@@ -2457,9 +2464,8 @@ means the rule never expires.</p>
                               <td>
                                 <div>
                                   <p>Map of policy contract addresses (<code>C…</code> strkey) to their
-installation parameters encoded as <code>SCValXDR</code>. Keys are sorted by
-XDR-byte order before submission to satisfy Soroban&rsquo;s <code>SCMap</code>
-ordering invariant.</p>
+installation parameters encoded as <code>SCValXDR</code>. Keys are sorted into
+the host&rsquo;s <code>SCMap</code> key order before submission.</p>
                                 </div>
                               </td>
                             </tr>
@@ -2497,7 +2503,7 @@ the multi-signer collaborator.</p>
                         <p>An <code><a href="../Structs/OZTransactionResult.html">OZTransactionResult</a></code> describing the on-chain outcome.</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZContextRuleManager.swift#L120-L219">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZContextRuleManager.swift#L123-L198">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2559,7 +2565,7 @@ For a typed view, parse with <code>parseContextRule(scVal:)</code> or use <code>
                         <p>The raw <code>SCValXDR</code> returned by the contract.</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZContextRuleManager.swift#L227-L240">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZContextRuleManager.swift#L206-L219">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2610,7 +2616,7 @@ not a <code>U32</code>.</li>
                         <p>The active rule count parsed as <code>UInt32</code>.</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZContextRuleManager.swift#L254-L275">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZContextRuleManager.swift#L233-L254">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2693,7 +2699,7 @@ is used.</p>
 order.</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZContextRuleManager.swift#L303-L328">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZContextRuleManager.swift#L282-L307">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2771,7 +2777,7 @@ is used.</p>
                         <p>Parsed context rules in ascending rule-id order.</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZContextRuleManager.swift#L351-L359">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZContextRuleManager.swift#L330-L338">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2854,7 +2860,8 @@ matching or enforcement.</p>
                               </td>
                               <td>
                                 <div>
-                                  <p>The new name (must be non-empty).</p>
+                                  <p>The new name (must be non-empty and at most
+<code><a href="../Enums/OZConstants.html#/s:10stellarsdk11OZConstantsO11maxNameSizeSivpZ">maxNameSize</a></code> UTF-8 bytes).</p>
                                 </div>
                               </td>
                             </tr>
@@ -2890,7 +2897,7 @@ matching or enforcement.</p>
                         <p>An <code><a href="../Structs/OZTransactionResult.html">OZTransactionResult</a></code> describing the on-chain outcome.</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZContextRuleManager.swift#L621-L651">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZContextRuleManager.swift#L601-L626">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2996,7 +3003,7 @@ On chain the field is <code>Option&lt;u32&gt;</code>, encoded as <code>Void</cod
                         <p>An <code><a href="../Structs/OZTransactionResult.html">OZTransactionResult</a></code> describing the on-chain outcome.</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZContextRuleManager.swift#L666-L696">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZContextRuleManager.swift#L641-L671">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3088,7 +3095,7 @@ On chain the field is <code>Option&lt;u32&gt;</code>, encoded as <code>Void</cod
                         <p>An <code><a href="../Structs/OZTransactionResult.html">OZTransactionResult</a></code> describing the on-chain outcome.</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZContextRuleManager.swift#L709-L728">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZContextRuleManager.swift#L684-L703">Show on GitHub</a>
                       </div>
                     </section>
                   </div>

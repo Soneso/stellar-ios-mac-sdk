@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          stellarsdk 3.7.0 Docs
+          stellarsdk 3.8.0 Docs
         </a>
          (94% documented)
       </p>
@@ -1855,6 +1855,9 @@
                 <a class="nav-group-task-link" href="../Structs/OZContractDetailsResponse.html">OZContractDetailsResponse</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/OZContractError.html">OZContractError</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/OZCreateWalletResult.html">OZCreateWalletResult</a>
               </li>
               <li class="nav-group-task">
@@ -2298,10 +2301,11 @@
 which is a named struct (Map-based) with fields <code>context_rule_ids</code> and <code>signers</code>. The
 outer struct map keys are inserted in alphabetical order (matching the Soroban Rust
 <code>#[contracttype]</code> derive convention); the inner dynamic-Map signer entries are sorted
-by lowercase-hex of their XDR-encoded keys so the encoding is deterministic.</p>
+into the Soroban host&rsquo;s ScMap key order so the host accepts the map and the encoding
+is deterministic.</p>
 
               <div class="slightly-smaller">
-                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountAuthPayload.swift#L85-L336">Show on GitHub</a>
+                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountAuthPayload.swift#L86-L323">Show on GitHub</a>
               </div>
           </div>
         </section>
@@ -2368,7 +2372,7 @@ value that is not a <code>Bytes</code> ScVal.</p>
                         <p>The decoded <code><a href="../Classes/OZSmartAccountAuthPayload.html">OZSmartAccountAuthPayload</a></code>.</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountAuthPayload.swift#L97-L151">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountAuthPayload.swift#L98-L152">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2391,11 +2395,13 @@ value that is not a <code>Bytes</code> ScVal.</p>
 <p>Builds the outer map with exactly two entries in alphabetical insertion order
 (<code>context_rule_ids</code>, then <code>signers</code>), matching the Soroban Rust <code>#[contracttype]</code>
 derive ordering for the contract&rsquo;s <code>AuthPayload</code> struct. Inner signer entries are
-sorted by lowercase-hex of their XDR-encoded keys so the encoding is deterministic
-and the host-side dynamic-Map ordering check is satisfied.</p>
+sorted into the Soroban host&rsquo;s ScMap key order (content-wise, with length only a
+tiebreaker on a shared prefix) so the host-side dynamic-Map ordering check is
+satisfied and the encoding is deterministic.</p>
 <div class="aside aside-throws">
     <p class="aside-title">Throws</p>
-    <code><a href="../Classes/SmartAccountTransactionException/SigningFailed.html">SmartAccountTransactionException.SigningFailed</a></code> when XDR encoding of a signer key fails.
+    <code><a href="../Classes/SmartAccountTransactionException/SigningFailed.html">SmartAccountTransactionException.SigningFailed</a></code> when a signer cannot be
+converted to its <code>SCValXDR</code> key.
 
 </div>
 
@@ -2432,7 +2438,7 @@ and the host-side dynamic-Map ordering check is satisfied.</p>
                         <p>The <code>SCValXDR</code> representation of the payload.</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountAuthPayload.swift#L164-L218">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountAuthPayload.swift#L167-L205">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2513,7 +2519,7 @@ values), the old entry is removed before the new one is appended. The payload&rs
                         </table>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountAuthPayload.swift#L230-L241">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountAuthPayload.swift#L217-L228">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2577,7 +2583,7 @@ values), the old entry is removed before the new one is appended. The payload&rs
                         <p>The parsed signer.</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountAuthPayload.swift#L252-L320">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountAuthPayload.swift#L239-L307">Show on GitHub</a>
                       </div>
                     </section>
                   </div>

@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="index.html">
-          stellarsdk 3.7.0 Docs
+          stellarsdk 3.8.0 Docs
         </a>
          (94% documented)
       </p>
@@ -1851,6 +1851,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Structs/OZContractDetailsResponse.html">OZContractDetailsResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/OZContractError.html">OZContractError</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Structs/OZCreateWalletResult.html">OZCreateWalletResult</a>
@@ -6986,6 +6989,41 @@ operation.</p>
                 <li class="item">
                   <div>
                     <code>
+                    <a name="/s:10stellarsdk15OZContractErrorV"></a>
+                    <a name="//apple_ref/swift/Struct/OZContractError" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk15OZContractErrorV">OZContractError</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>A decoded OpenZeppelin smart-account contract error: its numeric <code>code</code>, the contract
+error enum it belongs to (<code>contract</code>), and the <code>name</code> of the variant, exactly as
+declared by the deployed contracts. Variant names repeat across the policy enums (for
+example <code>NotAllowed</code>), so <code>contract</code> is required to disambiguate; <code>code</code> is globally
+unique.</p>
+
+                        <a href="Structs/OZContractError.html" class="slightly-smaller">See more</a>
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">OZContractError</span> <span class="p">:</span> <span class="kt">Equatable</span><span class="p">,</span> <span class="kt">Hashable</span><span class="p">,</span> <span class="kt">Sendable</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZContractErrorCodes.swift#L15-L33">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
                     <a name="/s:10stellarsdk12OZSyncResultV"></a>
                     <a name="//apple_ref/swift/Struct/OZSyncResult" class="dashAnchor"></a>
                     <a class="token" href="#/s:10stellarsdk12OZSyncResultV">OZSyncResult</a>
@@ -7653,7 +7691,7 @@ example, <code>accountWasmHash</code> is not a 64-character hex string, or
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountConfig.swift#L44-L527">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountConfig.swift#L44-L552">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
