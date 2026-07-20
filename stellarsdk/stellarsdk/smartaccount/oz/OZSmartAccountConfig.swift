@@ -143,6 +143,14 @@ public struct OZSmartAccountConfig: @unchecked Sendable {
     /// all active rules. Increase if the account has had many add / remove cycles.
     public let maxContextRuleScanId: UInt32
 
+    /// Policies installed on the new wallet's default context rule at deploy time,
+    /// keyed by policy contract address (`C…` strkey) with the policy's install
+    /// parameters as the value (see ``OZPolicyInstallParams/toScVal()``). Applied
+    /// through the account constructor by `createWallet` and
+    /// `deployPendingCredential`; a per-call `policies` argument overrides this
+    /// default. Defaults to no policies.
+    public let defaultPolicies: [String: SCValXDR]
+
     // MARK: - Initialization
 
     /// Initializes a new `OZSmartAccountConfig`.
@@ -165,7 +173,8 @@ public struct OZSmartAccountConfig: @unchecked Sendable {
         storage: OZStorageAdapter = OZInMemoryStorageAdapter(),
         externalWallet: OZExternalWalletAdapter? = nil,
         externalEd25519Adapter: OZExternalEd25519SignerAdapter? = nil,
-        maxContextRuleScanId: UInt32 = 50
+        maxContextRuleScanId: UInt32 = 50,
+        defaultPolicies: [String: SCValXDR] = [:]
     ) throws {
         if rpcUrl.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             throw SmartAccountConfigurationException.missingConfig(param: "rpcUrl")
@@ -224,6 +233,7 @@ public struct OZSmartAccountConfig: @unchecked Sendable {
         self.externalWallet = externalWallet
         self.externalEd25519Adapter = externalEd25519Adapter
         self.maxContextRuleScanId = maxContextRuleScanId
+        self.defaultPolicies = defaultPolicies
     }
 
     // MARK: - Static factories
@@ -364,6 +374,7 @@ public struct OZSmartAccountConfig: @unchecked Sendable {
         private var _externalWallet: OZExternalWalletAdapter? = nil
         private var _externalEd25519Adapter: OZExternalEd25519SignerAdapter? = nil
         private var _maxContextRuleScanId: UInt32 = 50
+        private var _defaultPolicies: [String: SCValXDR] = [:]
 
         /// Initializes a new `Builder` with the four required configuration fields.
         ///
@@ -500,6 +511,19 @@ public struct OZSmartAccountConfig: @unchecked Sendable {
             return self
         }
 
+        /// Sets the policies installed on the new wallet's default context rule at
+        /// deploy time.
+        ///
+        /// - Parameter value: Policy install params keyed by policy contract address
+        ///   (`C…` strkey); a per-call `policies` argument to `createWallet` /
+        ///   `deployPendingCredential` overrides this default.
+        /// - Returns: `self` for chaining.
+        @discardableResult
+        public func defaultPolicies(_ value: [String: SCValXDR]) -> Builder {
+            _defaultPolicies = value
+            return self
+        }
+
         /// Builds the `OZSmartAccountConfig`.
         ///
         /// - Returns: A new `OZSmartAccountConfig` instance.
@@ -520,7 +544,8 @@ public struct OZSmartAccountConfig: @unchecked Sendable {
                 storage: _storage,
                 externalWallet: _externalWallet,
                 externalEd25519Adapter: _externalEd25519Adapter,
-                maxContextRuleScanId: _maxContextRuleScanId
+                maxContextRuleScanId: _maxContextRuleScanId,
+                defaultPolicies: _defaultPolicies
             )
         }
     }
@@ -536,7 +561,8 @@ extension OZSmartAccountConfig: Equatable {
     /// `externalWallet` fields use reference / instance equality where applicable.
     /// `OZInMemoryStorageAdapter` overrides equality so all instances of that class
     /// compare equal, which lets two default-constructed configs round-trip through
-    /// equality without surprises.
+    /// equality without surprises. `defaultPolicies` values compare by their
+    /// canonical XDR encoding.
     public static func == (lhs: OZSmartAccountConfig, rhs: OZSmartAccountConfig) -> Bool {
         guard lhs.rpcUrl == rhs.rpcUrl,
               lhs.networkPassphrase == rhs.networkPassphrase,
@@ -564,6 +590,9 @@ extension OZSmartAccountConfig: Equatable {
             return false
         }
         if !externalEd25519AdaptersEqual(lhs.externalEd25519Adapter, rhs.externalEd25519Adapter) {
+            return false
+        }
+        if !policiesEqual(lhs.defaultPolicies, rhs.defaultPolicies) {
             return false
         }
         return true
@@ -594,6 +623,14 @@ extension OZSmartAccountConfig: Equatable {
         }
         if let adapter = externalEd25519Adapter {
             hasher.combine(ObjectIdentifier(adapter as AnyObject))
+        }
+        // why: iterate keys in sorted order so byte-equal policy maps hash
+        // identically regardless of dictionary iteration order.
+        for key in defaultPolicies.keys.sorted() {
+            hasher.combine(key)
+            if let value = defaultPolicies[key] {
+                hasher.combine(OZPolicyManager.scValToXdrBytes(value))
+            }
         }
     }
 
@@ -652,6 +689,26 @@ extension OZSmartAccountConfig: Equatable {
         default:
             return false
         }
+    }
+
+    /// Compares two policy maps by key set and by the canonical XDR encoding of
+    /// each install-param value (`SCValXDR` itself is not `Equatable`).
+    private static func policiesEqual(
+        _ lhs: [String: SCValXDR],
+        _ rhs: [String: SCValXDR]
+    ) -> Bool {
+        if lhs.count != rhs.count {
+            return false
+        }
+        for (key, lhsValue) in lhs {
+            guard let rhsValue = rhs[key] else {
+                return false
+            }
+            if OZPolicyManager.scValToXdrBytes(lhsValue) != OZPolicyManager.scValToXdrBytes(rhsValue) {
+                return false
+            }
+        }
+        return true
     }
 }
 

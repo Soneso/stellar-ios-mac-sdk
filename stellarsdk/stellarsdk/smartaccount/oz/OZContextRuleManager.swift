@@ -91,20 +91,23 @@ public final class OZContextRuleManager: OZContextRuleManagerProtocol, OZManager
     /// or the multi-signer submission path.
     ///
     /// Contract limits enforced before submission:
+    /// - Maximum ``OZConstants/maxNameSize`` UTF-8 bytes per rule name.
     /// - Maximum ``OZConstants/maxSigners`` signers per rule.
+    /// - Maximum ``OZConstants/maxExternalKeySize`` bytes of key data per
+    ///   external signer.
     /// - Maximum ``OZConstants/maxPolicies`` policies per rule.
     ///
     /// - Parameters:
     ///   - contextType: Operation-matching type for the rule.
-    ///   - name: Human-readable rule name (must be non-empty).
+    ///   - name: Human-readable rule name (must be non-empty and at most
+    ///     ``OZConstants/maxNameSize`` UTF-8 bytes).
     ///   - validUntil: Optional ledger number when this rule expires; `nil`
     ///     means the rule never expires.
     ///   - signers: Signers authorized by this rule. Either `signers` or
     ///     `policies` must be non-empty.
     ///   - policies: Map of policy contract addresses (`C…` strkey) to their
-    ///     installation parameters encoded as `SCValXDR`. Keys are sorted by
-    ///     XDR-byte order before submission to satisfy Soroban's `SCMap`
-    ///     ordering invariant.
+    ///     installation parameters encoded as `SCValXDR`. Keys are sorted into
+    ///     the host's `SCMap` key order before submission.
     ///   - selectedSigners: Optional multi-signer participants list. Empty
     ///     routes through single-signer submission; non-empty routes through
     ///     the multi-signer collaborator.
@@ -129,12 +132,7 @@ public final class OZContextRuleManager: OZContextRuleManagerProtocol, OZManager
         let connected = try kit.requireConnected()
 
         // Validate inputs.
-        if name.isEmpty {
-            throw SmartAccountValidationException.invalidInput(
-                field: "name",
-                reason: "Context rule name cannot be empty"
-            )
-        }
+        try requireValidContextRuleName(name)
 
         if signers.isEmpty && policies.isEmpty {
             throw SmartAccountValidationException.invalidInput(
@@ -150,17 +148,9 @@ public final class OZContextRuleManager: OZContextRuleManagerProtocol, OZManager
             )
         }
 
-        if policies.count > OZConstants.maxPolicies {
-            throw SmartAccountValidationException.invalidInput(
-                field: "policies",
-                reason: "Context rule cannot have more than \(OZConstants.maxPolicies) policies, got: \(policies.count)"
-            )
-        }
+        try requireValidSigners(signers)
 
-        // Validate policy addresses are well-formed C-addresses.
-        for (address, _) in policies {
-            try requireContractAddress(address, fieldName: "contractAddress")
-        }
+        try requireValidPolicies(policies)
 
         // Build function arguments.
         //
@@ -182,20 +172,9 @@ public final class OZContextRuleManager: OZContextRuleManagerProtocol, OZManager
         let signersScValList: [SCValXDR] = try signers.map { try $0.toScVal() }
         let signersScVal = SCValXDR.vec(signersScValList)
 
-        // arg 4: policies — Map<Address, ScVal>. Keys MUST be sorted by their
-        // XDR-byte representation per the Soroban `ScMap` ordering invariant;
-        // delegated to ``OZPolicyManager/sortMapByKeyXdr(_:)``.
-        var policyEntries: [SCMapEntryXDR] = []
-        policyEntries.reserveCapacity(policies.count)
-        for (address, installParam) in policies {
-            let policyScAddress = try SCAddressXDR(contractId: address)
-            policyEntries.append(SCMapEntryXDR(
-                key: .address(policyScAddress),
-                val: installParam
-            ))
-        }
-        let sortedPolicyEntries = OZPolicyManager.sortMapByKeyXdr(policyEntries)
-        let policiesScVal = SCValXDR.map(sortedPolicyEntries)
+        // arg 4: policies — Map<Address, ScVal> sorted into the host's ScMap
+        // key order; delegated to ``OZPolicyManager/policiesToScVal(_:)``.
+        let policiesScVal = try OZPolicyManager.policiesToScVal(policies)
 
         // Build invocation.
         let invokeArgs = InvokeContractArgsXDR(
@@ -612,7 +591,8 @@ public final class OZContextRuleManager: OZContextRuleManagerProtocol, OZManager
     ///
     /// - Parameters:
     ///   - id: The context-rule identifier to update.
-    ///   - name: The new name (must be non-empty).
+    ///   - name: The new name (must be non-empty and at most
+    ///     ``OZConstants/maxNameSize`` UTF-8 bytes).
     ///   - selectedSigners: Optional multi-signer participants list.
     ///   - forceMethod: Optional submission-method override.
     /// - Returns: An ``OZTransactionResult`` describing the on-chain outcome.
@@ -626,12 +606,7 @@ public final class OZContextRuleManager: OZContextRuleManagerProtocol, OZManager
     ) async throws -> OZTransactionResult {
         let connected = try kit.requireConnected()
 
-        if name.isEmpty {
-            throw SmartAccountValidationException.invalidInput(
-                field: "name",
-                reason: "Context rule name cannot be empty"
-            )
-        }
+        try requireValidContextRuleName(name)
 
         let invokeArgs = InvokeContractArgsXDR(
             contractAddress: try SCAddressXDR(contractId: connected.contractId),

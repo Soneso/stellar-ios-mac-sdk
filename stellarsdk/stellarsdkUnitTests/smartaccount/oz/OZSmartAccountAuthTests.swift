@@ -605,7 +605,7 @@ final class OZSmartAccountAuthTests: XCTestCase {
         XCTAssertThrowsError(try OZSmartAccountAuthPayloadCodec.signerFromScVal(.vec([])))
     }
 
-    func testCodecWrite_signersSortedByXdrKey() throws {
+    func testCodecWrite_signersSortedDeterministically() throws {
         let s1 = try OZExternalSigner(verifierAddress: validContractC, keyData: Data([0xFF]))
         let s2 = try OZExternalSigner(verifierAddress: validContractC, keyData: Data([0x01]))
         let payloadA = OZSmartAccountAuthPayload(

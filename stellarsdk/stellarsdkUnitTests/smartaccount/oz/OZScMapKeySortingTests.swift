@@ -13,22 +13,22 @@ import XCTest
 ///
 /// The sort routine is consumed by `OZPolicyInstallParams.weightedThreshold` for
 /// the inner signer-weights map and by `OZContextRuleManager.addContextRule`
-/// for the policies map. Both call sites depend on byte-deterministic key
-/// ordering: the Soroban host rejects `SCMap` values whose keys are not in
-/// strict ascending byte-lexicographic order, so a regression in this routine
-/// would surface as a contract-side simulation failure for every weighted
-/// threshold install on every chain.
+/// for the policies map. Both call sites depend on the keys being in the
+/// Soroban host's ScMap key order: the host validates the order when it
+/// materializes the map from an `SCVal` argument and rejects an out-of-order
+/// map with `InvalidInput`, so a regression in this routine would surface as a
+/// contract-side simulation failure for every weighted threshold install on
+/// every chain.
 ///
-/// XDR encoding rules exercised by these cases:
-/// - The four-byte SCVal discriminant prefix orders different SCVal types by
-///   their discriminant value (`SCV_U32 < SCV_BYTES < SCV_SYMBOL < SCV_ADDRESS …`).
-/// - Symbol bodies encode as a four-byte length prefix followed by the UTF-8
-///   bytes padded to a four-byte boundary, so symbols sort by length first
-///   and then alphabetically within the same length class.
-/// - Struct-shaped outer keys are not subject to byte-ordering — those follow
-///   the alphabetical convention the Soroban Rust `#[contracttype]` derive
-///   macro enforces. Those cases live in the policy-install-params tests; this
-///   file covers the byte-ordering path only.
+/// Ordering rules exercised by these cases:
+/// - Different SCVal types order by their discriminant value
+///   (`SCV_U32 < SCV_BYTES < SCV_SYMBOL < SCV_ADDRESS …`).
+/// - `Symbol`, `Bytes`, and `String` bodies compare by content, byte for byte
+///   (unsigned); length is only a tiebreaker on a shared prefix.
+/// - Struct-shaped outer keys are not subject to the dynamic-key sort — those
+///   follow the alphabetical convention the Soroban Rust `#[contracttype]`
+///   derive macro enforces. Those cases live in the policy-install-params
+///   tests; this file covers the dynamic-key ordering path only.
 final class OZScMapKeySortingTests: XCTestCase {
 
     private let validContractC = "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM"
@@ -36,7 +36,8 @@ final class OZScMapKeySortingTests: XCTestCase {
     // MARK: - Utility function tests (1 case)
 
     /// The comparator must treat bytes as unsigned and handle prefix
-    /// relationships per the lexicographic byte-order contract.
+    /// relationships per the host's content-order contract (shorter first
+    /// only on a shared prefix).
     func test_compareByteArraysLexicographically_unsignedAndPrefix() throws {
         // Equal arrays.
         XCTAssertEqual(
@@ -69,8 +70,9 @@ final class OZScMapKeySortingTests: XCTestCase {
 
     // MARK: - Single key-type entries (4 cases)
 
-    /// Symbol-typed keys with varied lengths sort by XDR length prefix first
-    /// (shorter symbol → smaller XDR bytes), then alphabetically.
+    /// Symbol-typed keys sort by content, byte for byte; length is only a
+    /// tiebreaker on a shared prefix. "middle" sorts between "alpha" and
+    /// "zebra" on its first byte (0x6d), regardless of being longer.
     func test_sortMapByKeyXdr_symbolKeys() throws {
         let entries: [SCMapEntryXDR] = [
             SCMapEntryXDR(key: .symbol("zebra"), val: .u32(1)),
@@ -81,12 +83,13 @@ final class OZScMapKeySortingTests: XCTestCase {
 
         XCTAssertEqual(sorted.count, 3)
         XCTAssertEqual(extractSymbolName(sorted[0].key), "alpha")
-        XCTAssertEqual(extractSymbolName(sorted[1].key), "zebra")
-        XCTAssertEqual(extractSymbolName(sorted[2].key), "middle")
+        XCTAssertEqual(extractSymbolName(sorted[1].key), "middle")
+        XCTAssertEqual(extractSymbolName(sorted[2].key), "zebra")
     }
 
-    /// Contract-address keys sort by their full XDR encoding (the contract
-    /// id is a 32-byte body following the address-type discriminant).
+    /// Contract-address keys sort in the host's ScMap key order. Addresses
+    /// are fixed-width (a 32-byte contract id following the address-type
+    /// discriminant), so content order equals XDR-byte order here.
     func test_sortMapByKeyXdr_addressKeys() throws {
         let addr1 = "CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC"
         let addr2 = "CA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUWDA"
@@ -101,14 +104,12 @@ final class OZScMapKeySortingTests: XCTestCase {
 
         XCTAssertEqual(sorted.count, 3)
         for i in 0 ..< sorted.count - 1 {
-            let cur = OZPolicyManager.scValToXdrBytes(sorted[i].key)
-            let nxt = OZPolicyManager.scValToXdrBytes(sorted[i + 1].key)
-            XCTAssertLessThan(hex(cur), hex(nxt))
+            XCTAssertLessThan(compareScValHostOrder(sorted[i].key, sorted[i + 1].key), 0)
         }
     }
 
     /// U32-typed keys: discriminant is constant across entries, so the sort
-    /// is by the 4-byte big-endian value of the U32 itself.
+    /// is by the numeric value of the U32 itself.
     func test_sortMapByKeyXdr_u32Keys() throws {
         let entries: [SCMapEntryXDR] = [
             SCMapEntryXDR(key: .u32(300), val: .void),
@@ -127,9 +128,8 @@ final class OZScMapKeySortingTests: XCTestCase {
         XCTAssertEqual(v2, 300)
     }
 
-    /// Bytes-typed keys sort by the byte body (with the bytes length prefix in
-    /// front, so shorter bytes precede longer for distinct prefixes — but for
-    /// equal-length bytes, the body bytes themselves drive the ordering).
+    /// Bytes-typed keys sort by their content, byte for byte (unsigned);
+    /// length is only a tiebreaker on a shared prefix.
     func test_sortMapByKeyXdr_bytesKeys() throws {
         let entries: [SCMapEntryXDR] = [
             SCMapEntryXDR(key: .bytes(Data([0xFF])), val: .u32(1)),
@@ -162,12 +162,10 @@ final class OZScMapKeySortingTests: XCTestCase {
         let sorted = OZPolicyManager.sortMapByKeyXdr(entries)
 
         // The exact ordering follows the SCVal discriminant numeric ranks; we
-        // assert pairwise XDR-byte ordering rather than hard-coding the
+        // assert pairwise discriminant ordering rather than hard-coding the
         // discriminant constants here.
         for i in 0 ..< sorted.count - 1 {
-            let cur = OZPolicyManager.scValToXdrBytes(sorted[i].key)
-            let nxt = OZPolicyManager.scValToXdrBytes(sorted[i + 1].key)
-            XCTAssertLessThan(hex(cur), hex(nxt))
+            XCTAssertLessThan(sorted[i].key.type(), sorted[i + 1].key.type())
         }
     }
 
@@ -265,8 +263,8 @@ final class OZScMapKeySortingTests: XCTestCase {
 
     /// Deeply nested map keys: when a key is itself a map (a legitimate but
     /// uncommon shape), the sort still produces a deterministic ordering
-    /// because the XDR encoding of a nested map recursively serializes its
-    /// own entries.
+    /// because map keys compare entry-wise, recursing into their own keys
+    /// and values.
     func test_sortMapByKeyXdr_nestedMapKeys() throws {
         let innerA: [SCMapEntryXDR] = [SCMapEntryXDR(key: .symbol("a"), val: .u32(1))]
         let innerB: [SCMapEntryXDR] = [SCMapEntryXDR(key: .symbol("b"), val: .u32(2))]
@@ -278,7 +276,7 @@ final class OZScMapKeySortingTests: XCTestCase {
         let sorted = OZPolicyManager.sortMapByKeyXdr(entries)
 
         // The "a"-keyed inner map sorts before the "b"-keyed inner map because
-        // the body bytes of `Symbol("a")` precede `Symbol("b")` in byte order.
+        // the content of `Symbol("a")` precedes `Symbol("b")`.
         guard case .u32(let v0) = sorted[0].val,
               case .u32(let v1) = sorted[1].val else {
             return XCTFail("expected u32 values")
@@ -319,7 +317,7 @@ final class OZScMapKeySortingTests: XCTestCase {
         XCTAssertEqual(encA, encB)
     }
 
-    /// The inner signer-weights map keys are in strict ascending XDR-byte
+    /// The inner signer-weights map keys are in strictly ascending host
     /// order regardless of caller insertion order.
     func test_sortMapByKeyXdr_weightedThresholdInnerKeysAreSorted() throws {
         let s1 = try OZDelegatedSigner(address: "GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7")
@@ -344,16 +342,14 @@ final class OZScMapKeySortingTests: XCTestCase {
         }
         XCTAssertEqual(inner.count, 3)
         for i in 0 ..< inner.count - 1 {
-            let cur = OZPolicyManager.scValToXdrBytes(inner[i].key)
-            let nxt = OZPolicyManager.scValToXdrBytes(inner[i + 1].key)
-            XCTAssertLessThan(hex(cur), hex(nxt))
+            XCTAssertLessThan(compareScValHostOrder(inner[i].key, inner[i + 1].key), 0)
         }
     }
 
     /// Simulates the policies-map construction `OZContextRuleManager.addContextRule`
     /// performs: each policy contract address is encoded as a key with `.void`
-    /// as the install-params placeholder, then the map is sorted by XDR bytes
-    /// before being passed on to the contract.
+    /// as the install-params placeholder, then the map is sorted into the
+    /// host's ScMap key order before being passed on to the contract.
     func test_sortMapByKeyXdr_policiesMapAddressKeysAreSorted() throws {
         let policyAddr1 = "CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC"
         let policyAddr2 = "CA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUWDA"
@@ -369,9 +365,7 @@ final class OZScMapKeySortingTests: XCTestCase {
         XCTAssertEqual(sorted.count, 3)
 
         for i in 0 ..< sorted.count - 1 {
-            let cur = OZPolicyManager.scValToXdrBytes(sorted[i].key)
-            let nxt = OZPolicyManager.scValToXdrBytes(sorted[i + 1].key)
-            XCTAssertLessThan(hex(cur), hex(nxt))
+            XCTAssertLessThan(compareScValHostOrder(sorted[i].key, sorted[i + 1].key), 0)
         }
     }
 
@@ -435,14 +429,6 @@ final class OZScMapKeySortingTests: XCTestCase {
     }
 
     private func compareKeyed(_ a: SCValXDR, _ b: SCValXDR) -> Int {
-        let ha = hex(OZPolicyManager.scValToXdrBytes(a))
-        let hb = hex(OZPolicyManager.scValToXdrBytes(b))
-        if ha < hb { return -1 }
-        if ha > hb { return 1 }
-        return 0
-    }
-
-    private func hex(_ bytes: [UInt8]) -> String {
-        return Data(bytes).base16EncodedString()
+        return compareScValHostOrder(a, b)
     }
 }

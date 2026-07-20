@@ -46,6 +46,14 @@ final class OZConstantsTests: XCTestCase {
         XCTAssertEqual(OZConstants.maxPolicies, 5)
     }
 
+    func test_MAX_NAME_SIZE_equals_20() {
+        XCTAssertEqual(OZConstants.maxNameSize, 20)
+    }
+
+    func test_MAX_EXTERNAL_KEY_SIZE_equals_256() {
+        XCTAssertEqual(OZConstants.maxExternalKeySize, 256)
+    }
+
     func test_CLIENT_NAME_HEADER_equals_X_Client_Name() {
         XCTAssertEqual(OZConstants.clientNameHeader, "X-Client-Name")
     }
@@ -73,6 +81,8 @@ final class OZConstantsTests: XCTestCase {
             OZConstants.defaultTimeoutSeconds,
             OZConstants.maxSigners,
             OZConstants.maxPolicies,
+            OZConstants.maxNameSize,
+            OZConstants.maxExternalKeySize,
             OZConstants.clientNameHeader,
             OZConstants.clientVersionHeader,
             OZConstants.clientName,

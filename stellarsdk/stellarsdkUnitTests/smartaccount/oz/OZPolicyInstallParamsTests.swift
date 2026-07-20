@@ -423,8 +423,8 @@ final class OZPolicyInstallParamsTests: XCTestCase {
     // sortMapByKeyXdr — extra edge cases (4 cases)
     // ========================================================================
 
-    /// Reversed symbol keys of the same length sort alphabetically because the
-    /// XDR length prefix is identical and the body bytes drive the order.
+    /// Reversed symbol keys of the same length sort alphabetically: the
+    /// symbol content bytes drive the order.
     func test_sortMapByKeyXdr_reversedSymbolKeysOfSameLength() throws {
         let entries: [SCMapEntryXDR] = [
             SCMapEntryXDR(key: .symbol("zzz"), val: .u32(1)),
@@ -437,7 +437,9 @@ final class OZPolicyInstallParamsTests: XCTestCase {
         XCTAssertEqual(extractSymbolName(sorted[2].key), "zzz")
     }
 
-    /// Symbols of differing length sort by length first, then alphabetically.
+    /// Symbols of differing length sort by content, with length only a
+    /// tiebreaker on a shared prefix: "a" precedes its extension "aaa", and
+    /// both precede "bb" on the first byte.
     func test_sortMapByKeyXdr_symbolKeysOfDifferentLengths() throws {
         let entries: [SCMapEntryXDR] = [
             SCMapEntryXDR(key: .symbol("bb"), val: .u32(1)),
@@ -446,8 +448,8 @@ final class OZPolicyInstallParamsTests: XCTestCase {
         ]
         let sorted = OZPolicyManager.sortMapByKeyXdr(entries)
         XCTAssertEqual(extractSymbolName(sorted[0].key), "a")
-        XCTAssertEqual(extractSymbolName(sorted[1].key), "bb")
-        XCTAssertEqual(extractSymbolName(sorted[2].key), "aaa")
+        XCTAssertEqual(extractSymbolName(sorted[1].key), "aaa")
+        XCTAssertEqual(extractSymbolName(sorted[2].key), "bb")
     }
 
     /// U32 keys sort numerically — verified at the SCVal level here as a

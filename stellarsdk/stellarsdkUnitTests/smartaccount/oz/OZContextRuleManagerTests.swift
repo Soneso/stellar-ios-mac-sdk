@@ -162,6 +162,49 @@ final class OZContextRuleManagerTests: XCTestCase {
         }
     }
 
+    /// A name over ``OZConstants/maxNameSize`` UTF-8 bytes is rejected with
+    /// ``SmartAccountValidationException/InvalidInput`` before any submission attempt.
+    func test_addContextRule_nameOverByteLimit_throws() async throws {
+        let (_, manager) = try connectedKit()
+        do {
+            _ = try await manager.addContextRule(
+                contextType: .defaultRule,
+                name: String(repeating: "a", count: OZConstants.maxNameSize + 1),
+                signers: [try OZDelegatedSigner(address: validAccountAddress)]
+            )
+            XCTFail("expected SmartAccountValidationException.InvalidInput")
+        } catch let error as SmartAccountValidationException.InvalidInput {
+            XCTAssertTrue(
+                error.message.contains("Context rule name cannot exceed \(OZConstants.maxNameSize) bytes"),
+                "expected name byte limit in message, got: \(error.message)"
+            )
+        }
+    }
+
+    /// An external signer whose key data exceeds ``OZConstants/maxExternalKeySize``
+    /// bytes is rejected with ``SmartAccountValidationException/InvalidInput`` before
+    /// any submission attempt.
+    func test_addContextRule_oversizedExternalSigner_throws() async throws {
+        let (_, manager) = try connectedKit()
+        let oversized = try OZExternalSigner(
+            verifierAddress: validContractAddress,
+            keyData: Data(repeating: 0x01, count: OZConstants.maxExternalKeySize + 1)
+        )
+        do {
+            _ = try await manager.addContextRule(
+                contextType: .defaultRule,
+                name: "rule",
+                signers: [oversized]
+            )
+            XCTFail("expected SmartAccountValidationException.InvalidInput")
+        } catch let error as SmartAccountValidationException.InvalidInput {
+            XCTAssertTrue(
+                error.message.contains("External signer key data cannot exceed \(OZConstants.maxExternalKeySize) bytes"),
+                "expected key data limit in message, got: \(error.message)"
+            )
+        }
+    }
+
     // ========================================================================
     // addContextRule — additional pre-submission contract checks
     // ========================================================================
@@ -226,6 +269,23 @@ final class OZContextRuleManagerTests: XCTestCase {
             XCTFail("expected SmartAccountValidationException.InvalidInput")
         } catch let error as SmartAccountValidationException.InvalidInput {
             XCTAssertTrue(error.message.contains("name"))
+        }
+    }
+
+    /// Connected kit + updateName with a name over the UTF-8 byte limit must throw
+    /// `SmartAccountValidationException.InvalidInput` before any submission attempt.
+    /// Uses a multi-byte character so the byte count (22) exceeds the limit while the
+    /// character count (11) stays below it.
+    func test_updateName_nameOverByteLimit_throws() async throws {
+        let (_, manager) = try connectedKit()
+        do {
+            _ = try await manager.updateName(id: 1, name: String(repeating: "ä", count: 11))
+            XCTFail("expected SmartAccountValidationException.InvalidInput")
+        } catch let error as SmartAccountValidationException.InvalidInput {
+            XCTAssertTrue(
+                error.message.contains("Context rule name cannot exceed \(OZConstants.maxNameSize) bytes, got: 22"),
+                "expected name byte limit in message, got: \(error.message)"
+            )
         }
     }
 

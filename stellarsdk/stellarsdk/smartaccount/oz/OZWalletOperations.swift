@@ -277,6 +277,12 @@ public final class OZWalletOperations: OZManagerHelpers, @unchecked Sendable {
     ///   - nativeTokenContract: Native token (XLM SAC) contract address used
     ///     when `autoFund = true`.
     ///   - forceMethod: Optional submission-method override.
+    ///   - policies: Policies to install on the new wallet's default context
+    ///     rule at deploy time, keyed by policy contract address with the
+    ///     install-param ScVal as the value. `nil` (default) uses
+    ///     ``OZSmartAccountConfig/defaultPolicies``; a non-`nil` map overrides
+    ///     it. Validated before the passkey ceremony. Maximum
+    ///     ``OZConstants/maxPolicies``.
     /// - Returns: ``OZCreateWalletResult`` describing the new wallet.
     /// - Throws: ``WebAuthnException``, ``SmartAccountValidationException``,
     ///   ``SmartAccountTransactionException``, ``SmartAccountCredentialException``, ``SmartAccountStorageException``.
@@ -285,7 +291,8 @@ public final class OZWalletOperations: OZManagerHelpers, @unchecked Sendable {
         autoSubmit: Bool = false,
         autoFund: Bool = false,
         nativeTokenContract: String? = nil,
-        forceMethod: OZSubmissionMethod? = nil
+        forceMethod: OZSubmissionMethod? = nil,
+        policies: [String: SCValXDR]? = nil
     ) async throws -> OZCreateWalletResult {
         guard let webauthnProvider = kit.config.webauthnProvider else {
             throw WebAuthnException.notSupported(
@@ -300,6 +307,11 @@ public final class OZWalletOperations: OZManagerHelpers, @unchecked Sendable {
                 reason: "nativeTokenContract is required when autoFund is true"
             )
         }
+
+        // Resolve and validate constructor policies before the passkey ceremony,
+        // so an invalid policy config never orphans a freshly created credential.
+        let effectivePolicies = policies ?? kit.config.defaultPolicies
+        try requireValidPolicies(effectivePolicies)
 
         let challengeData = try OZWalletOperations.secureRandomData(count: 32)
         let userIdData = try OZWalletOperations.secureRandomData(count: 32)
@@ -405,6 +417,7 @@ public final class OZWalletOperations: OZManagerHelpers, @unchecked Sendable {
             publicKey: publicKey,
             credentialId: registrationResult.credentialId,
             credentialIdBase64url: credentialIdBase64url,
+            policies: effectivePolicies,
             forceMethod: forceMethod
         )
 
@@ -430,7 +443,7 @@ public final class OZWalletOperations: OZManagerHelpers, @unchecked Sendable {
         )
     }
 
-    /// Output of ``buildCreateContractTransaction(publicKey:credentialId:credentialIdBase64url:forceMethod:)``.
+    /// Output of ``buildCreateContractTransaction(publicKey:credentialId:credentialIdBase64url:policies:forceMethod:)``.
     /// Carries the built `Transaction` and its serialised envelope XDR so the
     /// caller can submit directly or hand the XDR back to an off-line client.
     private struct BuiltDeploy {
@@ -447,6 +460,8 @@ public final class OZWalletOperations: OZManagerHelpers, @unchecked Sendable {
     ///   - credentialId: Raw credential identifier (not Base64URL encoded).
     ///   - credentialIdBase64url: Base64URL-encoded credential identifier used
     ///     for credential-manager bookkeeping.
+    ///   - policies: Resolved constructor policies keyed by policy contract
+    ///     address, encoded into the deploy transaction's constructor args.
     ///   - forceMethod: Optional submission-method override forwarded to the
     ///     underlying build helper.
     /// - Returns: ``BuiltDeploy`` carrying both the built `Transaction` and its
@@ -457,6 +472,7 @@ public final class OZWalletOperations: OZManagerHelpers, @unchecked Sendable {
         publicKey: Data,
         credentialId: Data,
         credentialIdBase64url: String,
+        policies: [String: SCValXDR],
         forceMethod: OZSubmissionMethod?
     ) async throws -> BuiltDeploy {
         let deployTransaction: Transaction
@@ -464,6 +480,7 @@ public final class OZWalletOperations: OZManagerHelpers, @unchecked Sendable {
             deployTransaction = try await buildDeployTransaction(
                 publicKey: publicKey,
                 credentialId: credentialId,
+                policies: policies,
                 forceMethod: forceMethod
             )
         } catch {
@@ -943,6 +960,11 @@ public final class OZWalletOperations: OZManagerHelpers, @unchecked Sendable {
     ///   - nativeTokenContract: Native token contract address used when
     ///     `autoFund = true`.
     ///   - forceMethod: Optional submission-method override.
+    ///   - policies: Policies to install on the default context rule at deploy
+    ///     time, keyed by policy contract address with the install-param ScVal
+    ///     as the value. `nil` (default) uses
+    ///     ``OZSmartAccountConfig/defaultPolicies``; a non-`nil` map overrides
+    ///     it. Maximum ``OZConstants/maxPolicies``.
     /// - Returns: ``OZDeployPendingResult`` describing the deployment.
     /// - Throws: ``SmartAccountCredentialException``, ``SmartAccountValidationException``,
     ///   ``SmartAccountTransactionException``.
@@ -951,7 +973,8 @@ public final class OZWalletOperations: OZManagerHelpers, @unchecked Sendable {
         autoSubmit: Bool = true,
         autoFund: Bool = false,
         nativeTokenContract: String? = nil,
-        forceMethod: OZSubmissionMethod? = nil
+        forceMethod: OZSubmissionMethod? = nil,
+        policies: [String: SCValXDR]? = nil
     ) async throws -> OZDeployPendingResult {
         // Validate autoFund requirements early so the failure occurs before
         // any storage / network calls.
@@ -961,6 +984,11 @@ public final class OZWalletOperations: OZManagerHelpers, @unchecked Sendable {
                 reason: "nativeTokenContract is required when autoFund is true"
             )
         }
+
+        // Resolve and validate constructor policies early (before any storage
+        // or network calls).
+        let effectivePolicies = policies ?? kit.config.defaultPolicies
+        try requireValidPolicies(effectivePolicies)
 
         // Normalise caller-supplied Base64URL credential id by stripping any
         // trailing `=` padding so storage lookups, connected-state writes,
@@ -1031,6 +1059,7 @@ public final class OZWalletOperations: OZManagerHelpers, @unchecked Sendable {
             deployTransaction = try await buildDeployTransaction(
                 publicKey: publicKey,
                 credentialId: credentialIdBytes,
+                policies: effectivePolicies,
                 forceMethod: forceMethod
             )
         } catch {
@@ -1340,6 +1369,7 @@ public final class OZWalletOperations: OZManagerHelpers, @unchecked Sendable {
     private func buildDeployTransaction(
         publicKey: Data,
         credentialId: Data,
+        policies: [String: SCValXDR],
         forceMethod: OZSubmissionMethod?
     ) async throws -> Transaction {
         // key_data = publicKey || credentialId
@@ -1370,7 +1400,17 @@ public final class OZWalletOperations: OZManagerHelpers, @unchecked Sendable {
             )
         }
 
-        let policiesScVal: SCValXDR = .map([])
+        // Policies installed on the default context rule, keyed by policy
+        // contract address and sorted into the host's ScMap key order.
+        let policiesScVal: SCValXDR
+        do {
+            policiesScVal = try OZPolicyManager.policiesToScVal(policies)
+        } catch {
+            throw SmartAccountTransactionException.signingFailed(
+                reason: "Failed to encode constructor policies: \(SmartAccountException.messageOf(error) ?? "unknown")",
+                cause: error
+            )
+        }
         let constructorArgs: [SCValXDR] = [signersScVal, policiesScVal]
 
         let deployer = try await kit.getDeployer()

@@ -535,8 +535,8 @@ public class OZIndexerClient: @unchecked Sendable {
 
     /// Default indexer URLs by Stellar network passphrase. Consulted by `OZSmartAccountConfig.effectiveIndexerUrl()` when no `indexerUrl` is supplied.
     public static let defaultIndexerUrls: [String: String] = [
-        Network.testnet.passphrase: "https://smart-account-indexer.sdf-ecosystem.workers.dev",
-        Network.public.passphrase: "https://smart-account-indexer-mainnet.sdf-ecosystem.workers.dev",
+        Network.testnet.passphrase: "https://testnet.mercurydata.app/rest/smart-account-indexer",
+        Network.public.passphrase: "https://mainnet.mercurydata.app/rest/smart-account-indexer",
     ]
 
     /// Returns the default indexer URL for the supplied network passphrase, or `nil`

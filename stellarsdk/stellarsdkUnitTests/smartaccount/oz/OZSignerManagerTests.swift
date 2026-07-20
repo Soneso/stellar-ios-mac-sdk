@@ -329,6 +329,31 @@ final class OZSignerManagerTests: XCTestCase {
         }
     }
 
+    /// A credential id that pushes the signer's key data (`publicKey || credentialId`)
+    /// over ``OZConstants/maxExternalKeySize`` bytes surfaces the key-data limit error
+    /// before any submission attempt.
+    func test_addPasskey_oversizedKeyData_throws() async throws {
+        let (_, manager) = try connectedKit()
+        // keyData = publicKey (65) + credentialId (192) = 257 bytes, one over the limit.
+        let credentialId = Data(
+            repeating: 0x02,
+            count: OZConstants.maxExternalKeySize + 1 - SmartAccountConstants.secp256r1PublicKeySize
+        )
+        do {
+            _ = try await manager.addPasskey(
+                contextRuleId: 0,
+                publicKey: validSecp256r1PublicKey(),
+                credentialId: credentialId
+            )
+            XCTFail("expected SmartAccountValidationException.InvalidInput")
+        } catch let error as SmartAccountValidationException.InvalidInput {
+            XCTAssertTrue(
+                error.message.contains("External signer key data cannot exceed \(OZConstants.maxExternalKeySize) bytes"),
+                "expected key data limit in message, got: \(error.message)"
+            )
+        }
+    }
+
     /// A non-empty `selectedSigners` list containing a wallet entry routes
     /// through the kit's multi-signer manager, whose initial validation
     /// rejects wallet-kind signers when the kit's config does not declare an

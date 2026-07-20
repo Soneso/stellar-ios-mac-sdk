@@ -50,6 +50,12 @@ public enum OZConstants {
     /// Maximum policies per context rule (OpenZeppelin contract limit).
     public static let maxPolicies: Int = 5
 
+    /// Maximum context rule name length in UTF-8 bytes (OpenZeppelin contract limit).
+    public static let maxNameSize: Int = 20
+
+    /// Maximum external signer key data length in bytes (OpenZeppelin contract limit).
+    public static let maxExternalKeySize: Int = 256
+
     /// HTTP header name identifying the SDK name in indexer and relayer requests.
     public static let clientNameHeader: String = "X-Client-Name"
 

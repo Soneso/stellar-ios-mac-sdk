@@ -215,7 +215,7 @@ await kit.close()   // close() is not throwing; managers must not be accessed af
 
 ## Creating a Wallet
 
-`walletOperations.createWallet(...)` runs a WebAuthn registration ceremony, derives a deterministic contract address, and optionally deploys the smart-account contract.
+`walletOperations.createWallet(...)` runs a WebAuthn registration ceremony, derives a deterministic contract address, and optionally deploys the smart-account contract. Policies for the Default rule can be installed at deploy via the `policies` parameter or `OZSmartAccountConfig.defaultPolicies`; see [Context Rules, Policies, and Multi-Signer](./smart_accounts_policies.md).
 
 > **Account-loss risk — add a backup signer before funding.** A freshly created wallet has exactly one signer: the passkey on the device that ran `createWallet`. If that device is lost, wiped, or the OS resets the authenticator (with iCloud passkey sync unavailable), the account and any funds it holds become permanently inaccessible. Before funding a production wallet, add at least one backup signer — see [Signer Management in smart_accounts_policies.md](./smart_accounts_policies.md).
 

@@ -202,6 +202,8 @@ try await kit.policyManager.addPolicy(
 
 The install parameters are policy-specific. Your custom policy contract defines what parameters it expects during installation.
 
+Policies can also be installed at deploy time on the wallet's Default rule, instead of being added afterward. Set `OZSmartAccountConfig.defaultPolicies`, or pass a per-call `policies` map to `createWallet` / `deployPendingCredential`, keyed by policy contract address with the policy's install parameters as the value. The kit passes them through the contract constructor, so the new wallet starts with those policies already enforced; a per-call argument overrides the config default. Because the Default rule starts with a single signer and the spending-limit policy only installs on CallContract rules, this is primarily useful for a threshold of 1 (which keeps the rule at 1-of-N as more signers are added) or custom policies.
+
 A typical setup involves 3-5 deployed contracts: the smart account (one per user), a WebAuthn verifier (shared across all accounts on the network), and 1-3 policy contracts (also shared).
 
 ---

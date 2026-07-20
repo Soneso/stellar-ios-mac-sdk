@@ -94,6 +94,70 @@ internal func requireNonBlankFunctionName(_ targetFn: String) throws {
     }
 }
 
+// MARK: - Contract limit validation
+
+/// Validates a context rule name: non-empty and within the OpenZeppelin contract's
+/// ``OZConstants/maxNameSize``-byte (UTF-8) limit. Rejecting oversized names
+/// client-side turns an opaque on-chain failure into a clear error before submission.
+///
+/// - Parameter name: The context rule name to validate.
+/// - Throws: ``SmartAccountValidationException/InvalidInput`` when the name is empty
+///   or exceeds the byte limit.
+internal func requireValidContextRuleName(_ name: String) throws {
+    if name.isEmpty {
+        throw SmartAccountValidationException.invalidInput(
+            field: "name",
+            reason: "Context rule name cannot be empty"
+        )
+    }
+    let byteLength = name.utf8.count
+    if byteLength > OZConstants.maxNameSize {
+        throw SmartAccountValidationException.invalidInput(
+            field: "name",
+            reason: "Context rule name cannot exceed \(OZConstants.maxNameSize) bytes, got: \(byteLength)"
+        )
+    }
+}
+
+/// Validates that no external signer's key data exceeds the OpenZeppelin contract's
+/// ``OZConstants/maxExternalKeySize``-byte limit. Delegated signers carry no key data
+/// and are skipped.
+///
+/// - Parameter signers: The signers to validate.
+/// - Throws: ``SmartAccountValidationException/InvalidInput`` when any external
+///   signer's key data is too large.
+internal func requireValidSigners(_ signers: [any OZSmartAccountSigner]) throws {
+    for signer in signers {
+        if let external = signer as? OZExternalSigner,
+           external.keyData.count > OZConstants.maxExternalKeySize {
+            throw SmartAccountValidationException.invalidInput(
+                field: "keyData",
+                reason: "External signer key data cannot exceed \(OZConstants.maxExternalKeySize) bytes, got: \(external.keyData.count)"
+            )
+        }
+    }
+}
+
+/// Validates constructor / context-rule policies: at most ``OZConstants/maxPolicies``
+/// entries, each keyed by a valid contract address (`C…`). The values are pre-encoded
+/// install-param ScVals and are not inspected here.
+///
+/// - Parameter policies: Policy install params keyed by policy contract address.
+/// - Throws: ``SmartAccountValidationException/InvalidInput`` when too many policies
+///   are supplied; ``SmartAccountValidationException/InvalidAddress`` when a policy
+///   key is not a valid contract address.
+internal func requireValidPolicies(_ policies: [String: SCValXDR]) throws {
+    if policies.count > OZConstants.maxPolicies {
+        throw SmartAccountValidationException.invalidInput(
+            field: "policies",
+            reason: "Cannot install more than \(OZConstants.maxPolicies) policies, got: \(policies.count)"
+        )
+    }
+    for (address, _) in policies {
+        try requireContractAddress(address, fieldName: "policyAddress")
+    }
+}
+
 // MARK: - Endpoint validation/normalization
 
 /// Validates and normalises a service endpoint URL for use by the OZ clients.
