@@ -6,6 +6,7 @@ import Foundation
 public enum ContractExecutableType: Int32, XDRCodable, Equatable, Sendable {
   case wasm = 0
   case stellarAsset = 1
+  case externalRef = 2
 }
 
 extension ContractExecutableType {
@@ -13,6 +14,7 @@ extension ContractExecutableType {
     switch self {
     case .wasm: return "CONTRACT_EXECUTABLE_WASM"
     case .stellarAsset: return "CONTRACT_EXECUTABLE_STELLAR_ASSET"
+    case .externalRef: return "CONTRACT_EXECUTABLE_EXTERNAL_REF"
     }
   }
 
@@ -20,6 +22,7 @@ extension ContractExecutableType {
     switch name {
     case "CONTRACT_EXECUTABLE_WASM": return .wasm
     case "CONTRACT_EXECUTABLE_STELLAR_ASSET": return .stellarAsset
+    case "CONTRACT_EXECUTABLE_EXTERNAL_REF": return .externalRef
     default:
       let prefix = "ContractExecutableType#"
       if name.hasPrefix(prefix), let v = Int32(name.dropFirst(prefix.count)), let parsed = ContractExecutableType(rawValue: v) {

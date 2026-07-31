@@ -292,6 +292,19 @@ extension SCValXDR {
             return nil
         }
     }
+
+    public var isExecutableTag: Bool {
+        return type() == SCValType.executableTag.rawValue
+    }
+
+    public var executableTag: String? {
+        switch self {
+        case .executableTag(let val):
+            return val
+        default:
+            return nil
+        }
+    }
 }
 
 // MARK: - BigInt Support Extension

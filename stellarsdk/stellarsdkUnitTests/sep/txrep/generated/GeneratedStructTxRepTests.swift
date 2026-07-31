@@ -144,6 +144,17 @@ static func parseTxRepLines(_ lines: [String]) -> [String: String] {
         XCTAssertEqual(backB64, originalB64, "TxRep roundtrip mismatch for ClawbackOpXDR")
     }
 
+    func test_ContractExecutableExternalRefXDR_roundtrip() throws {
+        let original: ContractExecutableExternalRefXDR = ContractExecutableExternalRefXDR(executableOwner: .account(try PublicKey([UInt8](repeating: 0xAB, count: 32))), tag: "test_string")
+        var lines: [String] = []
+        try original.toTxRep(prefix: "k", lines: &lines)
+        let map = Self.parseTxRepLines(lines)
+        let back = try ContractExecutableExternalRefXDR.fromTxRep(map, prefix: "k")
+        let originalB64 = try Data(XDREncoder.encode(original)).base64EncodedString()
+        let backB64 = try Data(XDREncoder.encode(back)).base64EncodedString()
+        XCTAssertEqual(backB64, originalB64, "TxRep roundtrip mismatch for ContractExecutableExternalRefXDR")
+    }
+
     func test_ContractIDPreimageFromAddressXDR_roundtrip() throws {
         let original: ContractIDPreimageFromAddressXDR = ContractIDPreimageFromAddressXDR(address: .account(try PublicKey([UInt8](repeating: 0xAB, count: 32))), salt: WrappedData32(Data(repeating: 0xAB, count: 32)))
         var lines: [String] = []

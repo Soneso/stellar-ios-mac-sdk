@@ -349,6 +349,15 @@ static func parseTxRepLines(_ lines: [String]) -> [String: String] {
         XCTAssertEqual(decoded, original, "TxRep roundtrip failed for ContractDataDurability.temporary")
     }
 
+    func test_ContractExecutableType_CONTRACT_EXECUTABLE_EXTERNAL_REF() throws {
+        let original: ContractExecutableType = .externalRef
+        var lines: [String] = []
+        try original.toTxRep(prefix: "k", lines: &lines)
+        let map = Self.parseTxRepLines(lines)
+        let decoded = try ContractExecutableType.fromTxRep(map, prefix: "k")
+        XCTAssertEqual(decoded, original, "TxRep roundtrip failed for ContractExecutableType.externalRef")
+    }
+
     func test_ContractExecutableType_CONTRACT_EXECUTABLE_STELLAR_ASSET() throws {
         let original: ContractExecutableType = .stellarAsset
         var lines: [String] = []
@@ -1283,6 +1292,15 @@ static func parseTxRepLines(_ lines: [String]) -> [String: String] {
         let map = Self.parseTxRepLines(lines)
         let decoded = try SCValType.fromTxRep(map, prefix: "k")
         XCTAssertEqual(decoded, original, "TxRep roundtrip failed for SCValType.error")
+    }
+
+    func test_SCValType_SCV_EXECUTABLE_TAG() throws {
+        let original: SCValType = .executableTag
+        var lines: [String] = []
+        try original.toTxRep(prefix: "k", lines: &lines)
+        let map = Self.parseTxRepLines(lines)
+        let decoded = try SCValType.fromTxRep(map, prefix: "k")
+        XCTAssertEqual(decoded, original, "TxRep roundtrip failed for SCValType.executableTag")
     }
 
     func test_SCValType_SCV_I128() throws {

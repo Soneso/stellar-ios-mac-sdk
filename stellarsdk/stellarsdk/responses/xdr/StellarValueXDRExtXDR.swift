@@ -6,6 +6,7 @@ import Foundation
 public enum StellarValueXDRExtXDR: XDRCodable, Sendable {
   case basic
   case lcValueSignature(LedgerCloseValueSignatureXDR)
+  case proposedValue(StellarValueXDRProposedValueXDR)
 
   public init(from decoder: Decoder) throws {
     var container = try decoder.unkeyedContainer()
@@ -17,6 +18,9 @@ public enum StellarValueXDRExtXDR: XDRCodable, Sendable {
     case StellarValueTypeXDR.signed.rawValue:
       let val = try container.decode(LedgerCloseValueSignatureXDR.self)
       self = .lcValueSignature(val)
+    case StellarValueTypeXDR.emptyTxSet.rawValue:
+      let val = try container.decode(StellarValueXDRProposedValueXDR.self)
+      self = .proposedValue(val)
     default:
       throw StellarSDKError.xdrDecodingError(message: "Unknown StellarValueXDRExtXDR discriminant: \(discriminant)")
     }
@@ -26,6 +30,7 @@ public enum StellarValueXDRExtXDR: XDRCodable, Sendable {
     switch self {
     case .basic: return StellarValueTypeXDR.basic.rawValue
     case .lcValueSignature: return StellarValueTypeXDR.signed.rawValue
+    case .proposedValue: return StellarValueTypeXDR.emptyTxSet.rawValue
     }
   }
 
@@ -37,6 +42,8 @@ public enum StellarValueXDRExtXDR: XDRCodable, Sendable {
     case .basic:
       break
     case .lcValueSignature(let val):
+      try container.encode(val)
+    case .proposedValue(let val):
       try container.encode(val)
     }
   }

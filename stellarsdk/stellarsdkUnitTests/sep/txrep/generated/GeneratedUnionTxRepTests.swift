@@ -199,6 +199,17 @@ static func parseTxRepLines(_ lines: [String]) -> [String: String] {
         XCTAssertEqual(backB64, originalB64, "TxRep roundtrip mismatch for ClaimantXDR.claimantTypeV0")
     }
 
+    func test_ContractExecutableXDR_externalRef() throws {
+        let original: ContractExecutableXDR = .externalRef(ContractExecutableExternalRefXDR(executableOwner: .account(try PublicKey([UInt8](repeating: 0xAB, count: 32))), tag: "test_string"))
+        var lines: [String] = []
+        try original.toTxRep(prefix: "k", lines: &lines)
+        let map = Self.parseTxRepLines(lines)
+        let back = try ContractExecutableXDR.fromTxRep(map, prefix: "k")
+        let originalB64 = try Data(XDREncoder.encode(original)).base64EncodedString()
+        let backB64 = try Data(XDREncoder.encode(back)).base64EncodedString()
+        XCTAssertEqual(backB64, originalB64, "TxRep roundtrip mismatch for ContractExecutableXDR.externalRef")
+    }
+
     func test_ContractExecutableXDR_token() throws {
         let original: ContractExecutableXDR = .token
         var lines: [String] = []
@@ -1066,6 +1077,17 @@ static func parseTxRepLines(_ lines: [String]) -> [String: String] {
         let originalB64 = try Data(XDREncoder.encode(original)).base64EncodedString()
         let backB64 = try Data(XDREncoder.encode(back)).base64EncodedString()
         XCTAssertEqual(backB64, originalB64, "TxRep roundtrip mismatch for SCValXDR.error")
+    }
+
+    func test_SCValXDR_executableTag() throws {
+        let original: SCValXDR = .executableTag("test_string")
+        var lines: [String] = []
+        try original.toTxRep(prefix: "k", lines: &lines)
+        let map = Self.parseTxRepLines(lines)
+        let back = try SCValXDR.fromTxRep(map, prefix: "k")
+        let originalB64 = try Data(XDREncoder.encode(original)).base64EncodedString()
+        let backB64 = try Data(XDREncoder.encode(back)).base64EncodedString()
+        XCTAssertEqual(backB64, originalB64, "TxRep roundtrip mismatch for SCValXDR.executableTag")
     }
 
     func test_SCValXDR_i128() throws {

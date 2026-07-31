@@ -26,6 +26,7 @@ public enum SCValType: Int32, XDRCodable, Equatable, Sendable {
   case contractInstance = 19
   case ledgerKeyContractInstance = 20
   case ledgerKeyNonce = 21
+  case executableTag = 22
 }
 
 extension SCValType {
@@ -53,6 +54,7 @@ extension SCValType {
     case .contractInstance: return "SCV_CONTRACT_INSTANCE"
     case .ledgerKeyContractInstance: return "SCV_LEDGER_KEY_CONTRACT_INSTANCE"
     case .ledgerKeyNonce: return "SCV_LEDGER_KEY_NONCE"
+    case .executableTag: return "SCV_EXECUTABLE_TAG"
     }
   }
 
@@ -80,6 +82,7 @@ extension SCValType {
     case "SCV_CONTRACT_INSTANCE": return .contractInstance
     case "SCV_LEDGER_KEY_CONTRACT_INSTANCE": return .ledgerKeyContractInstance
     case "SCV_LEDGER_KEY_NONCE": return .ledgerKeyNonce
+    case "SCV_EXECUTABLE_TAG": return .executableTag
     default:
       let prefix = "SCValType#"
       if name.hasPrefix(prefix), let v = Int32(name.dropFirst(prefix.count)), let parsed = SCValType(rawValue: v) {

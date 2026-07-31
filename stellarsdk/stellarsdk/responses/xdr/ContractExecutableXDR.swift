@@ -6,6 +6,7 @@ import Foundation
 public enum ContractExecutableXDR: XDRCodable, Sendable {
   case wasm(HashXDR)
   case token
+  case externalRef(ContractExecutableExternalRefXDR)
 
   public init(from decoder: Decoder) throws {
     var container = try decoder.unkeyedContainer()
@@ -17,6 +18,9 @@ public enum ContractExecutableXDR: XDRCodable, Sendable {
       self = .wasm(val)
     case ContractExecutableType.stellarAsset.rawValue:
       self = .token
+    case ContractExecutableType.externalRef.rawValue:
+      let val = try container.decode(ContractExecutableExternalRefXDR.self)
+      self = .externalRef(val)
     default:
       throw StellarSDKError.xdrDecodingError(message: "Unknown ContractExecutableXDR discriminant: \(discriminant)")
     }
@@ -26,6 +30,7 @@ public enum ContractExecutableXDR: XDRCodable, Sendable {
     switch self {
     case .wasm: return ContractExecutableType.wasm.rawValue
     case .token: return ContractExecutableType.stellarAsset.rawValue
+    case .externalRef: return ContractExecutableType.externalRef.rawValue
     }
   }
 
@@ -38,6 +43,8 @@ public enum ContractExecutableXDR: XDRCodable, Sendable {
       try container.encode(val)
     case .token:
       break
+    case .externalRef(let val):
+      try container.encode(val)
     }
   }
 }
@@ -50,6 +57,9 @@ extension ContractExecutableXDR {
       lines.append("\(prefix).wasm_hash: \(TxRepHelper.bytesToHex(val.wrapped))")
     case .token:
       lines.append("\(prefix).type: CONTRACT_EXECUTABLE_STELLAR_ASSET")
+    case .externalRef(let val):
+      lines.append("\(prefix).type: CONTRACT_EXECUTABLE_EXTERNAL_REF")
+      try val.toTxRep(prefix: "\(prefix).external_ref", lines: &lines)
     }
   }
 
@@ -64,6 +74,9 @@ extension ContractExecutableXDR {
       return .wasm(val)
     case "CONTRACT_EXECUTABLE_STELLAR_ASSET":
       return .token
+    case "CONTRACT_EXECUTABLE_EXTERNAL_REF":
+      let val = try ContractExecutableExternalRefXDR.fromTxRep(map, prefix: "\(prefix).external_ref")
+      return .externalRef(val)
     default:
       throw TxRepError.invalidValue(key: discKey)
     }
