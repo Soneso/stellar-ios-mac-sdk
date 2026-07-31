@@ -578,12 +578,33 @@ class ContractXDRUnitTests: XCTestCase {
         XCTAssertNil(decoded.wasm)
     }
 
-    func testContractExecutableXDRTypeDiscriminants() {
+    func testContractExecutableXDRExternalRef() throws {
+        let owner = try SCAddressXDR(contractId: "CA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE")
+        let externalRef = ContractExecutableExternalRefXDR(executableOwner: owner, tag: "my-tag")
+        let executable = ContractExecutableXDR.externalRef(externalRef)
+        let encoded = try XDREncoder.encode(executable)
+        let decoded = try XDRDecoder.decode(ContractExecutableXDR.self, data: encoded)
+
+        XCTAssertEqual(decoded.isWasm, false)
+        XCTAssertEqual(decoded.isStellarAsset, false)
+        XCTAssertEqual(decoded.isExternalRef, true)
+        XCTAssertNil(decoded.wasm)
+        XCTAssertEqual(decoded.externalRef?.executableOwner.contractId, owner.contractId)
+        XCTAssertEqual(decoded.externalRef?.tag, "my-tag")
+    }
+
+    func testContractExecutableXDRTypeDiscriminants() throws {
         let wasmExec = ContractExecutableXDR.wasm(WrappedData32(Data(repeating: 0, count: 32)))
         XCTAssertEqual(wasmExec.type(), ContractExecutableType.wasm.rawValue)
 
         let tokenExec = ContractExecutableXDR.token
         XCTAssertEqual(tokenExec.type(), ContractExecutableType.stellarAsset.rawValue)
+
+        let owner = try SCAddressXDR(contractId: "CA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE")
+        let externalRefExec = ContractExecutableXDR.externalRef(
+            ContractExecutableExternalRefXDR(executableOwner: owner, tag: "tag")
+        )
+        XCTAssertEqual(externalRefExec.type(), ContractExecutableType.externalRef.rawValue)
     }
 
     // MARK: - Int128PartsXDR Tests
@@ -693,7 +714,8 @@ class ContractXDRUnitTests: XCTestCase {
             (.vec(nil), "isVec"),
             (.map(nil), "isMap"),
             (.ledgerKeyContractInstance, "isLedgerKeyContractInstance"),
-            (.ledgerKeyNonce(SCNonceKeyXDR(nonce: 0)), "isLedgerKeyNonce")
+            (.ledgerKeyNonce(SCNonceKeyXDR(nonce: 0)), "isLedgerKeyNonce"),
+            (.executableTag(""), "isExecutableTag")
         ]
 
         for (val, expectedType) in testCases {
@@ -717,6 +739,7 @@ class ContractXDRUnitTests: XCTestCase {
             case "isMap": XCTAssertTrue(val.isMap)
             case "isLedgerKeyContractInstance": XCTAssertTrue(val.isLedgerKeyContractInstance)
             case "isLedgerKeyNonce": XCTAssertTrue(val.isLedgerKeyNonce)
+            case "isExecutableTag": XCTAssertTrue(val.isExecutableTag)
             default: XCTFail("Unknown type: \(expectedType)")
             }
         }
