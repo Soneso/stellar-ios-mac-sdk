@@ -189,6 +189,7 @@ struct MuxedEd25519Account
     uint256 ed25519;
 };
 
+
 union SCAddress switch (SCAddressType type)
 {
 case SC_ADDRESS_TYPE_ACCOUNT:
