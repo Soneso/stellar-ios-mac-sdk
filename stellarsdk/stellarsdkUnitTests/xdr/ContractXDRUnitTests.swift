@@ -510,6 +510,16 @@ class ContractXDRUnitTests: XCTestCase {
         XCTAssertEqual(decoded.ledgerKeyNonce?.nonce, 999)
     }
 
+    func testSCValXDRExecutableTag() throws {
+        let val = SCValXDR.executableTag("my-tag")
+        let encoded = try XDREncoder.encode(val)
+        let decoded = try XDRDecoder.decode(SCValXDR.self, data: encoded)
+
+        XCTAssertTrue(decoded.isExecutableTag)
+        XCTAssertEqual(decoded.executableTag, "my-tag")
+        XCTAssertNil(SCValXDR.void.executableTag)
+    }
+
     func testSCValXDRError() throws {
         let error = SCErrorXDR.budget(.arithDomain)
         let val = SCValXDR.error(error)
@@ -566,6 +576,8 @@ class ContractXDRUnitTests: XCTestCase {
         XCTAssertEqual(decoded.isWasm, true)
         XCTAssertEqual(decoded.wasm?.wrapped, wasmHash.wrapped)
         XCTAssertEqual(decoded.isStellarAsset, false)
+        XCTAssertEqual(decoded.isExternalRef, false)
+        XCTAssertNil(decoded.externalRef)
     }
 
     func testContractExecutableXDRToken() throws {
@@ -576,6 +588,7 @@ class ContractXDRUnitTests: XCTestCase {
         XCTAssertEqual(decoded.isWasm, false)
         XCTAssertEqual(decoded.isStellarAsset, true)
         XCTAssertNil(decoded.wasm)
+        XCTAssertNil(decoded.externalRef)
     }
 
     func testContractExecutableXDRExternalRef() throws {

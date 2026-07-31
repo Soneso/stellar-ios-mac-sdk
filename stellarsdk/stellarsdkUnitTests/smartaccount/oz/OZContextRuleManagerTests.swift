@@ -947,6 +947,52 @@ final class OZContextRuleManagerTests: XCTestCase {
         }
     }
 
+    /// A `createContractHostFn` / `createContractV2HostFn` whose executable
+    /// is `.externalRef` must throw `SmartAccountValidationException.InvalidInput`
+    /// when the rule-resolution pipeline tries to extract the WASM hash, since
+    /// an external executable reference carries no WASM hash.
+    func test_extractWasmHash_externalRef_throwsValidationException() async throws {
+        let owner = try SCAddressXDR(contractId: validContractAddress)
+        let executable = ContractExecutableXDR.externalRef(
+            ContractExecutableExternalRefXDR(executableOwner: owner, tag: "my-tag")
+        )
+        let preimage = ContractIDPreimageXDR.fromAddress(
+            ContractIDPreimageFromAddressXDR(
+                address: try SCAddressXDR(contractId: validContractAddress),
+                salt: WrappedData32(Data(repeating: 0, count: 32))
+            )
+        )
+        let createArgs = CreateContractV2ArgsXDR(
+            contractIDPreimage: preimage,
+            executable: executable,
+            constructorArgs: []
+        )
+        let function = SorobanAuthorizedFunctionXDR.createContractV2HostFn(createArgs)
+        let invocation = SorobanAuthorizedInvocationXDR(function: function, subInvocations: [])
+        let credentials = SorobanAddressCredentialsXDR(
+            address: try SCAddressXDR(contractId: validContractAddress),
+            nonce: 0,
+            signatureExpirationLedger: 0,
+            signature: .void
+        )
+        let entry = SorobanAuthorizationEntryXDR(
+            credentials: .address(credentials),
+            rootInvocation: invocation
+        )
+
+        let (_, manager) = try connectedKit()
+        do {
+            _ = try await manager.resolveContextRuleIdsForEntry(
+                entry: entry,
+                signers: [],
+                contextRules: []
+            )
+            XCTFail("expected SmartAccountValidationException.InvalidInput for external reference executable")
+        } catch is SmartAccountValidationException.InvalidInput {
+            // expected
+        }
+    }
+
     // ========================================================================
     // Batch C — OZSmartAccountKit+Wiring protocol forwarding
     // ========================================================================
