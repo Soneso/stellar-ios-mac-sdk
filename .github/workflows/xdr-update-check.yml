@@ -91,12 +91,58 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          count=$(gh issue list \
+          issues=$(gh issue list \
             --label "xdr-update" \
             --state open \
-            --json number \
-            --jq 'length')
+            --json number)
+          count=$(jq 'length' <<< "$issues")
+          number=$(jq -r '.[0].number // empty' <<< "$issues")
           echo "open_issues=$count" >> "$GITHUB_OUTPUT"
+          echo "issue_number=$number" >> "$GITHUB_OUTPUT"
+
+      - name: Comment on existing issue if upstream advanced
+        if: steps.compare.outputs.any_changed == 'true' && steps.existing.outputs.open_issues != '0'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ISSUE_NUMBER: ${{ steps.existing.outputs.issue_number }}
+        run: |
+          if [ -z "$ISSUE_NUMBER" ]; then
+            echo "::warning::Open xdr-update issue detected but its number could not be determined — skipping comment"
+            exit 0
+          fi
+
+          upstream_sha=$(cat /tmp/upstream_sha.txt)
+          upstream_sha_short=$(cat /tmp/upstream_sha_short.txt)
+
+          # Skip when the issue body or an earlier comment already covers this
+          # upstream commit. Only workflow-authored comments count as the dedup
+          # key so a third-party comment cannot suppress the notification (gh
+          # reports the Actions bot login as either github-actions or
+          # app/github-actions depending on version).
+          thread=$(gh issue view "$ISSUE_NUMBER" --json body,comments \
+            --jq '.body + "\n" + ([.comments[] | select(.author.login == "github-actions" or .author.login == "app/github-actions") | .body] | join("\n"))')
+          if grep -qF "$upstream_sha" <<< "$thread"; then
+            echo "Issue #$ISSUE_NUMBER already references $upstream_sha_short — nothing to do"
+            exit 0
+          fi
+
+          printf '%s\n' 'Upstream `curr` has advanced since this issue was last updated. Sync to the commit below instead of the one referenced above.' > /tmp/comment_body.md
+          printf '\n**Upstream commit:** [`%s`](https://github.com/stellar/stellar-xdr/commit/%s)\n' "$upstream_sha_short" "$upstream_sha" >> /tmp/comment_body.md
+          printf '\n## Changed files\n\n' >> /tmp/comment_body.md
+          cat /tmp/changes_summary.txt >> /tmp/comment_body.md
+          printf '\n## Diffs\n' >> /tmp/comment_body.md
+          # Truncate diffs to stay under GitHub's 65536-char comment body limit
+          max_diff_size=50000
+          diff_size=$(wc -c < /tmp/full_diff.txt)
+          if [ "$diff_size" -gt "$max_diff_size" ]; then
+            head -c "$max_diff_size" /tmp/full_diff.txt >> /tmp/comment_body.md
+            printf '\n```\n\n</details>\n\n' >> /tmp/comment_body.md
+            printf '> **Note:** Diffs truncated (%s bytes total). See the [upstream commit](https://github.com/stellar/stellar-xdr/commit/%s) for the full changeset.\n' "$diff_size" "$upstream_sha" >> /tmp/comment_body.md
+          else
+            cat /tmp/full_diff.txt >> /tmp/comment_body.md
+          fi
+
+          gh issue comment "$ISSUE_NUMBER" --body-file /tmp/comment_body.md
 
       - name: Ensure xdr-update label exists
         if: steps.compare.outputs.any_changed == 'true' && steps.existing.outputs.open_issues == '0'
