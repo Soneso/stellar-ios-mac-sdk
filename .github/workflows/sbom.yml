@@ -19,4 +19,4 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Fetch and submit SBOM
-        uses: SCF-Public-Goods-Maintenance/pg-atlas-sbom-action@e732fb836ead361371a7a7aad3c992ceb50c757d
+        uses: SCF-Public-Goods-Maintenance/pg-atlas-sbom-action@b876c74c601e8e6b5fdad7e4b9161be86b35dfcf
