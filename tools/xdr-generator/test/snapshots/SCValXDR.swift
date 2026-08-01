@@ -26,6 +26,7 @@ public indirect enum SCValXDR: XDRCodable, Sendable {
   case contractInstance(SCContractInstanceXDR)
   case ledgerKeyContractInstance
   case ledgerKeyNonce(SCNonceKeyXDR)
+  case executableTag(String)
 
   public init(from decoder: Decoder) throws {
     var container = try decoder.unkeyedContainer()
@@ -104,6 +105,9 @@ public indirect enum SCValXDR: XDRCodable, Sendable {
     case SCValType.ledgerKeyNonce.rawValue:
       let val = try container.decode(SCNonceKeyXDR.self)
       self = .ledgerKeyNonce(val)
+    case SCValType.executableTag.rawValue:
+      let val = try container.decode(String.self)
+      self = .executableTag(val)
     default:
       throw StellarSDKError.xdrDecodingError(message: "Unknown SCValXDR discriminant: \(discriminant)")
     }
@@ -133,6 +137,7 @@ public indirect enum SCValXDR: XDRCodable, Sendable {
     case .contractInstance: return SCValType.contractInstance.rawValue
     case .ledgerKeyContractInstance: return SCValType.ledgerKeyContractInstance.rawValue
     case .ledgerKeyNonce: return SCValType.ledgerKeyNonce.rawValue
+    case .executableTag: return SCValType.executableTag.rawValue
     }
   }
 
@@ -194,6 +199,8 @@ public indirect enum SCValXDR: XDRCodable, Sendable {
     case .ledgerKeyContractInstance:
       break
     case .ledgerKeyNonce(let val):
+      try container.encode(val)
+    case .executableTag(let val):
       try container.encode(val)
     }
   }
@@ -282,6 +289,9 @@ extension SCValXDR {
     case .ledgerKeyNonce(let val):
       lines.append("\(prefix).type: SCV_LEDGER_KEY_NONCE")
       try val.toTxRep(prefix: "\(prefix).nonce_key", lines: &lines)
+    case .executableTag(let val):
+      lines.append("\(prefix).type: SCV_EXECUTABLE_TAG")
+      lines.append("\(prefix).executable_tag: \(TxRepHelper.escapeString(val))")
     }
   }
 
@@ -373,6 +383,9 @@ extension SCValXDR {
     case "SCV_LEDGER_KEY_NONCE":
       let val = try SCNonceKeyXDR.fromTxRep(map, prefix: "\(prefix).nonce_key")
       return .ledgerKeyNonce(val)
+    case "SCV_EXECUTABLE_TAG":
+      let val = try TxRepHelper.requireString(map, "\(prefix).executable_tag")
+      return .executableTag(val)
     default:
       throw TxRepError.invalidValue(key: discKey)
     }

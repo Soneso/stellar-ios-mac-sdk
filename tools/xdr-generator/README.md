@@ -43,6 +43,9 @@ Output goes to `stellarsdk/stellarsdk/responses/xdr/`. Types listed in `SKIP_TYP
 2. Run `make xdr-update`
 3. Build and test: `swift build && swift test --filter stellarsdkUnitTests`
 4. If new types introduce naming conflicts, update the override files (see below)
+5. If a new type is reachable from the transaction envelope graph (operations, Soroban host functions, SCVal), add its canonical XDR name to `TXREP_XDR_NAMES` in `generator/txrep_types.rb` and regenerate — otherwise the type's TxRep methods are not emitted and referencing generated code fails to compile
+6. If a new struct has underscore-separated field names, add a camelCase mapping to `generator/field_overrides.rb` (TxRep keys keep the raw XDR name)
+7. Run `make xdr-generator-test` and, if the diffs are intentional, `make xdr-generator-update-snapshots`
 
 ### Run tests
 
@@ -70,6 +73,7 @@ bundle exec ruby test/validate_generated_types.rb
 | `generator/member_overrides.rb` | Maps enum case names and union arm names |
 | `generator/field_overrides.rb` | Maps struct property names |
 | `generator/type_overrides.rb` | Typedef resolution, extension point handling, mutability |
+| `generator/txrep_types.rb` | Registry of envelope-reachable types that receive TxRep methods |
 | `test/generator_snapshot_test.rb` | Snapshot tests comparing generated output to expected files |
 | `test/update_snapshots.rb` | Regenerates snapshot files after intentional generator changes |
 | `test/validate_generated_types.rb` | Validates generated files against XDR definitions |

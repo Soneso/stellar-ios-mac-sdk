@@ -200,6 +200,28 @@ final class ScValHostOrderTests: XCTestCase {
         XCTAssertEqual(compareScValHostOrder(a, SCValXDR.string("apple")), 0)
     }
 
+    /// ExecutableTag comparands carry an SCString and compare by content, byte for byte,
+    /// with the shorter value first on a prefix tie.
+    func testExecutableTagComparands_contentOrder() {
+        let a = SCValXDR.executableTag("aa")
+        let b = SCValXDR.executableTag("b")
+        XCTAssertLessThan(compareScValHostOrder(a, b), 0, "content order, not length-major order")
+        XCTAssertGreaterThan(compareScValHostOrder(b, a), 0)
+
+        let prefix = SCValXDR.executableTag("a")
+        XCTAssertLessThan(compareScValHostOrder(prefix, a), 0, "a prefix sorts before its extension")
+        XCTAssertEqual(compareScValHostOrder(a, SCValXDR.executableTag("aa")), 0)
+    }
+
+    /// Values of different types compare by their discriminant; the new executableTag
+    /// arm (22) sorts after every pre-existing arm.
+    func testExecutableTag_discriminantOrder() {
+        let tag = SCValXDR.executableTag("a")
+        let nonce = SCValXDR.ledgerKeyNonce(SCNonceKeyXDR(nonce: 0))
+        XCTAssertGreaterThan(compareScValHostOrder(tag, nonce), 0)
+        XCTAssertLessThan(compareScValHostOrder(nonce, tag), 0)
+    }
+
     /// Vec comparands: on a shared prefix, the shorter vec sorts first.
     func testVecComparands_prefixShorterFirst() {
         let short = SCValXDR.vec([.symbol("a")])

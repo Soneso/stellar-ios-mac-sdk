@@ -6,4 +6,5 @@ import Foundation
 public enum StellarValueTypeXDR: Int32, XDRCodable, Equatable, Sendable {
   case basic = 0
   case signed = 1
+  case emptyTxSet = 2
 }

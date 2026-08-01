@@ -17,4 +17,17 @@ extension ContractExecutableXDR {
     public var isStellarAsset: Bool? {
         return type() == ContractExecutableType.stellarAsset.rawValue
     }
+
+    public var isExternalRef: Bool? {
+        return type() == ContractExecutableType.externalRef.rawValue
+    }
+
+    public var externalRef: ContractExecutableExternalRefXDR? {
+        switch self {
+        case .externalRef(let val):
+            return val
+        default:
+            return nil
+        }
+    }
 }

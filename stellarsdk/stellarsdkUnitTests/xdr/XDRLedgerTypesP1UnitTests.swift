@@ -29,6 +29,13 @@ class XDRLedgerTypesP1UnitTests: XCTestCase {
         XCTAssertEqual(original, decoded)
     }
 
+    func testStellarValueTypeEmptyTxSetRoundTrip() throws {
+        let original = StellarValueTypeXDR.emptyTxSet
+        let encoded = try XDREncoder.encode(original)
+        let decoded = try XDRDecoder.decode(StellarValueTypeXDR.self, data: encoded)
+        XCTAssertEqual(original, decoded)
+    }
+
     func testLedgerHeaderFlagsTradingRoundTrip() throws {
         let original = LedgerHeaderFlagsXDR.tradingFlag
         let encoded = try XDREncoder.encode(original)
@@ -122,6 +129,34 @@ class XDRLedgerTypesP1UnitTests: XCTestCase {
             XCTAssertEqual(v.signature, sig.signature)
         } else {
             XCTFail("Expected .lcValueSignature")
+        }
+    }
+
+    func testStellarValueExtProposedValueRoundTrip() throws {
+        let sig = LedgerCloseValueSignatureXDR(
+            nodeID: try XDRTestHelpers.publicKey(),
+            signature: Data(repeating: 0xCC, count: 64)
+        )
+        let proposed = StellarValueXDRProposedValueXDR(
+            txSetHash: HashXDR(Data(repeating: 0x01, count: 32)),
+            previousLedgerHash: HashXDR(Data(repeating: 0x02, count: 32)),
+            previousLedgerVersion: 27,
+            lcValueSignature: sig
+        )
+        let original = StellarValueXDRExtXDR.proposedValue(proposed)
+
+        let encoded = try XDREncoder.encode(original)
+        let decoded = try XDRDecoder.decode(StellarValueXDRExtXDR.self, data: encoded)
+
+        XCTAssertEqual(decoded.type(), StellarValueTypeXDR.emptyTxSet.rawValue)
+        if case .proposedValue(let v) = decoded {
+            XCTAssertEqual(v.txSetHash.wrapped, proposed.txSetHash.wrapped)
+            XCTAssertEqual(v.previousLedgerHash.wrapped, proposed.previousLedgerHash.wrapped)
+            XCTAssertEqual(v.previousLedgerVersion, 27)
+            XCTAssertEqual(v.lcValueSignature.nodeID.accountId, sig.nodeID.accountId)
+            XCTAssertEqual(v.lcValueSignature.signature, sig.signature)
+        } else {
+            XCTFail("Expected .proposedValue")
         }
     }
 

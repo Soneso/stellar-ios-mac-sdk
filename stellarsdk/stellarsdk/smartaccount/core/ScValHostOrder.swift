@@ -21,9 +21,9 @@ import Foundation
 /// - `Vec` compares element-wise (recursively); the shorter vec sorts first on a prefix tie.
 /// - `Map` compares entry-wise (key, then value, recursively); the map with fewer entries
 ///   sorts first on a prefix tie.
-/// - `Bytes`, `String`, and `Symbol` compare by content, byte for byte (unsigned); the
-///   shorter value sorts first on a prefix tie (length is the tiebreaker, never the primary
-///   key).
+/// - `Bytes`, `String`, `Symbol`, and `ExecutableTag` compare by content, byte for byte
+///   (unsigned); the shorter value sorts first on a prefix tie (length is the tiebreaker,
+///   never the primary key).
 /// - All remaining values compare by their XDR encoding. For the fixed-width types that can
 ///   appear in smart-account map keys (addresses, unsigned scalars) this equals a content
 ///   comparison. Signed integer scalars would compare by their two's-complement bytes rather
@@ -68,6 +68,8 @@ internal func compareScValHostOrder(_ a: SCValXDR, _ b: SCValXDR) -> Int {
         return compareBytesUnsigned([UInt8](stringA.utf8), [UInt8](stringB.utf8))
     case (.symbol(let symbolA), .symbol(let symbolB)):
         return compareBytesUnsigned([UInt8](symbolA.utf8), [UInt8](symbolB.utf8))
+    case (.executableTag(let tagA), .executableTag(let tagB)):
+        return compareBytesUnsigned([UInt8](tagA.utf8), [UInt8](tagB.utf8))
     default:
         return compareBytesUnsigned(scValToXdrBytesForOrder(a), scValToXdrBytesForOrder(b))
     }

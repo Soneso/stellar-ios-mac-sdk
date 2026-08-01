@@ -81,6 +81,12 @@ FIELD_OVERRIDES = {
     "contractID" => "hash",
   },
 
+  # XDR: ContractExecutableExternalRef uses underscore-separated field names
+  # SDK uses camelCase
+  "ContractExecutableExternalRefXDR" => {
+    "executable_owner" => "executableOwner",
+  },
+
   # --- Stellar-ledger-entries.x ---
 
   # XDR: AccountEntryExtensionV1.ext (extension union)

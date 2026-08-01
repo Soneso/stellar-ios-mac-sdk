@@ -546,7 +546,8 @@ public final class OZContextRuleManager: OZContextRuleManagerProtocol, OZManager
     }
 
     /// Extracts a WASM hash from a ``ContractExecutableXDR``. Stellar Asset
-    /// Contract executables (the `.token` arm) carry no WASM hash; attempting
+    /// Contract executables (the `.token` arm) and external executable
+    /// references (the `.externalRef` arm) carry no WASM hash; attempting
     /// to use them as a `CreateContract` context-rule target throws.
     private func extractWasmHash(executable: ContractExecutableXDR) throws -> Data {
         switch executable {
@@ -556,6 +557,11 @@ public final class OZContextRuleManager: OZContextRuleManagerProtocol, OZManager
             throw SmartAccountValidationException.invalidInput(
                 field: "executable",
                 reason: "CreateContract invocation references a Stellar Asset Contract, not a WASM contract"
+            )
+        case .externalRef:
+            throw SmartAccountValidationException.invalidInput(
+                field: "executable",
+                reason: "CreateContract invocation references an external executable, not a WASM contract"
             )
         }
     }

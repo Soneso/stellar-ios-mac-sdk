@@ -183,6 +183,7 @@ module TxRepTypes
     'ContractIDPreimageFromAddress',
     'ContractExecutable',
     'ContractExecutableType',
+    'ContractExecutableExternalRef',
     'ContractDataDurability',
     'SorobanAuthorizationEntry',
     'SorobanCredentials',
