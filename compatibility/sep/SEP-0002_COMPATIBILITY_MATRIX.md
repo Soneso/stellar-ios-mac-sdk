@@ -1,8 +1,8 @@
 # SEP-0002 (Federation protocol) Compatibility Matrix
 
-**Generated:** 2026-07-20
+**Generated:** 2026-08-03
 
-**SDK Version:** 3.8.0
+**SDK Version:** 3.8.1
 
 **SEP Version:** 1.1.0
 

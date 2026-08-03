@@ -4,9 +4,9 @@ description: Build Stellar blockchain applications in Swift using stellar-ios-ma
 license: Apache 2.0
 compatibility: Requires Swift 6.0+, iOS 15+, macOS 12+. Zero external dependencies.
 metadata:
-  version: "1.3.1"
-  sdk_version: "3.8.0"
-  last_updated: "2026-07-20"
+  version: "1.3.2"
+  sdk_version: "3.8.1"
+  last_updated: "2026-08-03"
 ---
 
 # Stellar SDK for iOS & Mac
@@ -22,13 +22,13 @@ The Stellar iOS/Mac SDK (`stellarsdk`) is a native Swift library for building St
 ### Swift Package Manager
 
 ```swift
-.package(name: "stellarsdk", url: "git@github.com:Soneso/stellar-ios-mac-sdk.git", from: "3.8.0")
+.package(name: "stellarsdk", url: "git@github.com:Soneso/stellar-ios-mac-sdk.git", from: "3.8.1")
 ```
 
 ### CocoaPods
 
 ```ruby
-pod 'stellar-ios-mac-sdk', '~> 3.8.0'
+pod 'stellar-ios-mac-sdk', '~> 3.8.1'
 ```
 
 > All code examples below assume `import stellarsdk`.
