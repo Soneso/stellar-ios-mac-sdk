@@ -54,7 +54,7 @@ public final class Mnemonic: Sendable {
         let byteCount = strength.rawValue / 8
         var bytes = Data(count: byteCount)
         bytes.withUnsafeMutableBytes { buffer in
-            _ = SecRandomCopyBytes(kSecRandomDefault, byteCount, buffer.baseAddress!)
+            precondition(SecRandomCopyBytes(kSecRandomDefault, byteCount, buffer.baseAddress!) == errSecSuccess, "Secure random generation failed")
         }
         return create(entropy: bytes, language: language)
     }
