@@ -42,3 +42,31 @@ public struct RevokeID: XDRCodable, Sendable {
     try container.encode(asset)
   }
 }
+
+extension RevokeID: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "source_account", value: try AccountIDXDRJsonCodec.toXdrJsonValue(self.sourceAccount, type: "RevokeID", key: "source_account")))
+    members.append(XdrJsonMember(key: "seq_num", value: try SequenceNumberXDRJsonCodec.toXdrJsonValue(self.seqNum, type: "RevokeID", key: "seq_num")))
+    members.append(XdrJsonMember(key: "op_num", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.opNum, type: "RevokeID", key: "op_num")))
+    members.append(XdrJsonMember(key: "liquidity_pool_id", value: try PoolIDXDRJsonCodec.toXdrJsonValue(self.liquidityPoolID, type: "RevokeID", key: "liquidity_pool_id")))
+    members.append(XdrJsonMember(key: "asset", value: try self.asset.toXdrJsonValue()))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> RevokeID {
+    let members = try XdrJson.object(value, type: "RevokeID", keys: ["source_account", "seq_num", "op_num", "liquidity_pool_id", "asset"])
+    let sourceAccount: PublicKey = try AccountIDXDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "source_account", type: "RevokeID"), type: "RevokeID", key: "source_account")
+    let seqNum: Int64 = try SequenceNumberXDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "seq_num", type: "RevokeID"), type: "RevokeID", key: "seq_num")
+    let opNum: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "op_num", type: "RevokeID"), type: "RevokeID", key: "op_num")
+    let liquidityPoolID: WrappedData32 = try PoolIDXDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "liquidity_pool_id", type: "RevokeID"), type: "RevokeID", key: "liquidity_pool_id")
+    let asset: AssetXDR = try AssetXDR.fromXdrJsonValue(try XdrJson.field(members, key: "asset", type: "RevokeID"))
+    return RevokeID(
+      sourceAccount: sourceAccount,
+      seqNum: seqNum,
+      opNum: opNum,
+      liquidityPoolID: liquidityPoolID,
+      asset: asset
+    )
+  }
+}

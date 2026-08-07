@@ -82,3 +82,45 @@ public enum ChangeTrustResultXDR: XDRCodable, Sendable {
     }
   }
 }
+
+extension ChangeTrustResultXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .success: return .string("success")
+    case .malformed: return .string("malformed")
+    case .noIssuer: return .string("no_issuer")
+    case .invalidLimit: return .string("invalid_limit")
+    case .lowReserve: return .string("low_reserve")
+    case .selfNotAllowed: return .string("self_not_allowed")
+    case .trustLineMissing: return .string("trust_line_missing")
+    case .cannotDelete: return .string("cannot_delete")
+    case .notAuthMaintainLiabilities: return .string("not_auth_maintain_liabilities")
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> ChangeTrustResultXDR {
+    let name = try XdrJson.string(value, type: "ChangeTrustResultXDR")
+    switch name {
+    case "success":
+      return .success
+    case "malformed":
+      return .malformed
+    case "no_issuer":
+      return .noIssuer
+    case "invalid_limit":
+      return .invalidLimit
+    case "low_reserve":
+      return .lowReserve
+    case "self_not_allowed":
+      return .selfNotAllowed
+    case "trust_line_missing":
+      return .trustLineMissing
+    case "cannot_delete":
+      return .cannotDelete
+    case "not_auth_maintain_liabilities":
+      return .notAuthMaintainLiabilities
+    default:
+      throw XdrJsonError.unknownUnionArm(type: "ChangeTrustResultXDR", key: name)
+    }
+  }
+}

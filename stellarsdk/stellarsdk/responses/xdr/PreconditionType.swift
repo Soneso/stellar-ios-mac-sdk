@@ -43,3 +43,24 @@ extension PreconditionType {
     return try fromTxRepName(raw)
   }
 }
+
+extension PreconditionType: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .none: return .string("none")
+    case .time: return .string("time")
+    case .v2: return .string("v2")
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> PreconditionType {
+    let name = try XdrJson.string(value, type: "PreconditionType")
+    switch name {
+    case "none": return .none
+    case "time": return .time
+    case "v2": return .v2
+    default:
+      throw XdrJsonError.unknownEnumValue(type: "PreconditionType", value: name)
+    }
+  }
+}

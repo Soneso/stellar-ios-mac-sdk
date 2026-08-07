@@ -42,3 +42,31 @@ public struct ContractDataEntryXDR: XDRCodable, Sendable {
     try container.encode(val)
   }
 }
+
+extension ContractDataEntryXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "ext", value: try self.ext.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "contract", value: try self.contract.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "key", value: try self.key.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "durability", value: try self.durability.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "val", value: try self.val.toXdrJsonValue()))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> ContractDataEntryXDR {
+    let members = try XdrJson.object(value, type: "ContractDataEntryXDR", keys: ["ext", "contract", "key", "durability", "val"])
+    let ext: ExtensionPoint = try ExtensionPoint.fromXdrJsonValue(try XdrJson.field(members, key: "ext", type: "ContractDataEntryXDR"))
+    let contract: SCAddressXDR = try SCAddressXDR.fromXdrJsonValue(try XdrJson.field(members, key: "contract", type: "ContractDataEntryXDR"))
+    let key: SCValXDR = try SCValXDR.fromXdrJsonValue(try XdrJson.field(members, key: "key", type: "ContractDataEntryXDR"))
+    let durability: ContractDataDurability = try ContractDataDurability.fromXdrJsonValue(try XdrJson.field(members, key: "durability", type: "ContractDataEntryXDR"))
+    let val: SCValXDR = try SCValXDR.fromXdrJsonValue(try XdrJson.field(members, key: "val", type: "ContractDataEntryXDR"))
+    return ContractDataEntryXDR(
+      ext: ext,
+      contract: contract,
+      key: key,
+      durability: durability,
+      val: val
+    )
+  }
+}

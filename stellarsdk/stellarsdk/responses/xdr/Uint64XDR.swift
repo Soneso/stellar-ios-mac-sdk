@@ -4,3 +4,35 @@
 import Foundation
 
 public typealias Uint64XDR = UInt64
+
+public enum Uint64XDRJsonCodec {
+  public static func toXdrJsonValue(_ value: Uint64XDR) throws -> XdrJsonValue {
+    try toXdrJsonValue(value, type: "Uint64XDR", key: nil)
+  }
+
+  static func toXdrJsonValue(_ value: Uint64XDR, type: String, key: String?) throws -> XdrJsonValue {
+    return XdrJson.uint64(value)
+  }
+
+  public static func toXdrJson(_ value: Uint64XDR) throws -> String {
+    try XdrJsonWriter.canonicalString(from: try toXdrJsonValue(value))
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> Uint64XDR {
+    try fromXdrJsonValue(value, type: "Uint64XDR", key: nil)
+  }
+
+  static func fromXdrJsonValue(_ value: XdrJsonValue, type: String, key: String?) throws -> Uint64XDR {
+    let decoded: UInt64 = try XdrJson.uint64(value, type: type, key: key)
+    return decoded
+  }
+
+  public static func fromXdrJson(_ json: String) throws -> Uint64XDR {
+    try fromXdrJsonValue(try XdrJsonParser.parse(json))
+  }
+
+  public static func fromXdrJsonTree(_ value: XdrJsonValue) throws -> Uint64XDR {
+    try XdrJson.validateDepth(value)
+    return try fromXdrJsonValue(value)
+  }
+}

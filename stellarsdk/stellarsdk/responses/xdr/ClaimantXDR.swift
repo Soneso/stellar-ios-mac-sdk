@@ -59,3 +59,33 @@ extension ClaimantXDR {
     }
   }
 }
+
+extension ClaimantXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .claimantTypeV0(let payload):
+      return .object([XdrJsonMember(key: "claimant_type_v0", value: try payload.toXdrJsonValue())])
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> ClaimantXDR {
+    if case .string(let name) = value {
+      switch name {
+      case "claimant_type_v0":
+        throw XdrJsonError.invalidValue(type: "ClaimantXDR", key: "claimant_type_v0",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      default:
+        throw XdrJsonError.unknownUnionArm(type: "ClaimantXDR", key: name)
+      }
+    }
+
+    let member = try XdrJson.singleKeyObject(value, type: "ClaimantXDR")
+    switch member.key {
+    case "claimant_type_v0":
+      let claimantTypeV0: ClaimantV0XDR = try ClaimantV0XDR.fromXdrJsonValue(member.value)
+      return .claimantTypeV0(claimantTypeV0)
+    default:
+      throw XdrJsonError.unknownUnionArm(type: "ClaimantXDR", key: member.key)
+    }
+  }
+}

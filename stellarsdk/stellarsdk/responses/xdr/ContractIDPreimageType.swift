@@ -40,3 +40,22 @@ extension ContractIDPreimageType {
     return try fromTxRepName(raw)
   }
 }
+
+extension ContractIDPreimageType: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .fromAddress: return .string("address")
+    case .fromAsset: return .string("asset")
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> ContractIDPreimageType {
+    let name = try XdrJson.string(value, type: "ContractIDPreimageType")
+    switch name {
+    case "address": return .fromAddress
+    case "asset": return .fromAsset
+    default:
+      throw XdrJsonError.unknownEnumValue(type: "ContractIDPreimageType", value: name)
+    }
+  }
+}

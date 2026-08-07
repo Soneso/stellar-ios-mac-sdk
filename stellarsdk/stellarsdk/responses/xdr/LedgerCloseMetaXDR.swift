@@ -49,3 +49,49 @@ public enum LedgerCloseMetaXDR: XDRCodable, Sendable {
     }
   }
 }
+
+extension LedgerCloseMetaXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .v0(let payload):
+      return .object([XdrJsonMember(key: "v0", value: try payload.toXdrJsonValue())])
+    case .v1(let payload):
+      return .object([XdrJsonMember(key: "v1", value: try payload.toXdrJsonValue())])
+    case .v2(let payload):
+      return .object([XdrJsonMember(key: "v2", value: try payload.toXdrJsonValue())])
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> LedgerCloseMetaXDR {
+    if case .string(let name) = value {
+      switch name {
+      case "v0":
+        throw XdrJsonError.invalidValue(type: "LedgerCloseMetaXDR", key: "v0",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "v1":
+        throw XdrJsonError.invalidValue(type: "LedgerCloseMetaXDR", key: "v1",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "v2":
+        throw XdrJsonError.invalidValue(type: "LedgerCloseMetaXDR", key: "v2",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      default:
+        throw XdrJsonError.unknownUnionArm(type: "LedgerCloseMetaXDR", key: name)
+      }
+    }
+
+    let member = try XdrJson.singleKeyObject(value, type: "LedgerCloseMetaXDR")
+    switch member.key {
+    case "v0":
+      let v0: LedgerCloseMetaV0XDR = try LedgerCloseMetaV0XDR.fromXdrJsonValue(member.value)
+      return .v0(v0)
+    case "v1":
+      let v1: LedgerCloseMetaV1XDR = try LedgerCloseMetaV1XDR.fromXdrJsonValue(member.value)
+      return .v1(v1)
+    case "v2":
+      let v2: LedgerCloseMetaV2XDR = try LedgerCloseMetaV2XDR.fromXdrJsonValue(member.value)
+      return .v2(v2)
+    default:
+      throw XdrJsonError.unknownUnionArm(type: "LedgerCloseMetaXDR", key: member.key)
+    }
+  }
+}

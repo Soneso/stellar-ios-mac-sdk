@@ -55,3 +55,26 @@ extension InvokeContractArgsXDR {
     return InvokeContractArgsXDR(contractAddress: contractAddress, functionName: functionName, args: args)
   }
 }
+
+extension InvokeContractArgsXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "contract_address", value: try self.contractAddress.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "function_name", value: try SCSymbolXDRJsonCodec.toXdrJsonValue(self.functionName, type: "InvokeContractArgsXDR", key: "function_name")))
+    members.append(XdrJsonMember(key: "args", value: try XdrJson.array(self.args.map { element in try element.toXdrJsonValue() })))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> InvokeContractArgsXDR {
+    let members = try XdrJson.object(value, type: "InvokeContractArgsXDR", keys: ["contract_address", "function_name", "args"])
+    let contractAddress: SCAddressXDR = try SCAddressXDR.fromXdrJsonValue(try XdrJson.field(members, key: "contract_address", type: "InvokeContractArgsXDR"))
+    let functionName: String = try SCSymbolXDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "function_name", type: "InvokeContractArgsXDR"), type: "InvokeContractArgsXDR", key: "function_name")
+    let argsElements = try XdrJson.array(try XdrJson.field(members, key: "args", type: "InvokeContractArgsXDR"), type: "InvokeContractArgsXDR", key: "args")
+    let args: [SCValXDR] = try argsElements.map { element in try SCValXDR.fromXdrJsonValue(element) }
+    return InvokeContractArgsXDR(
+      contractAddress: contractAddress,
+      functionName: functionName,
+      args: args
+    )
+  }
+}

@@ -34,3 +34,26 @@ public struct TxSetComponentXDRTxsMaybeDiscountedFeeXDR: XDRCodable, Sendable {
     try container.encode(txs)
   }
 }
+
+extension TxSetComponentXDRTxsMaybeDiscountedFeeXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "base_fee", value: try XdrJson.optional(self.baseFee.map { element in try Int64XDRJsonCodec.toXdrJsonValue(element, type: "TxSetComponentXDRTxsMaybeDiscountedFeeXDR", key: "base_fee") })))
+    members.append(XdrJsonMember(key: "txs", value: try XdrJson.array(self.txs.map { element in try element.toXdrJsonValue() })))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> TxSetComponentXDRTxsMaybeDiscountedFeeXDR {
+    let members = try XdrJson.object(value, type: "TxSetComponentXDRTxsMaybeDiscountedFeeXDR", keys: ["base_fee", "txs"])
+    let baseFeeValue = try XdrJson.field(members, key: "base_fee", type: "TxSetComponentXDRTxsMaybeDiscountedFeeXDR")
+    let baseFee: Int64?
+    if baseFeeValue.isNull {
+      baseFee = nil
+    } else {
+      baseFee = try Int64XDRJsonCodec.fromXdrJsonValue(baseFeeValue, type: "TxSetComponentXDRTxsMaybeDiscountedFeeXDR", key: "base_fee")
+    }
+    let txsElements = try XdrJson.array(try XdrJson.field(members, key: "txs", type: "TxSetComponentXDRTxsMaybeDiscountedFeeXDR"), type: "TxSetComponentXDRTxsMaybeDiscountedFeeXDR", key: "txs")
+    let txs: [TransactionEnvelopeXDR] = try txsElements.map { element in try TransactionEnvelopeXDR.fromXdrJsonValue(element) }
+    return TxSetComponentXDRTxsMaybeDiscountedFeeXDR(baseFee: baseFee, txs: txs)
+  }
+}

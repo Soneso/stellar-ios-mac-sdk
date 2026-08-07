@@ -269,3 +269,97 @@ extension SetOptionsOperationXDR {
     return SetOptionsOperationXDR(inflationDestination: inflationDestination, clearFlags: clearFlags, setFlags: setFlags, masterWeight: masterWeight, lowThreshold: lowThreshold, medThreshold: medThreshold, highThreshold: highThreshold, homeDomain: homeDomain, signer: signer)
   }
 }
+
+extension SetOptionsOperationXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "inflation_dest", value: try XdrJson.optional(self.inflationDestination.map { element in try AccountIDXDRJsonCodec.toXdrJsonValue(element, type: "SetOptionsOperationXDR", key: "inflation_dest") })))
+    members.append(XdrJsonMember(key: "clear_flags", value: try XdrJson.optional(self.clearFlags.map { element in try Uint32XDRJsonCodec.toXdrJsonValue(element, type: "SetOptionsOperationXDR", key: "clear_flags") })))
+    members.append(XdrJsonMember(key: "set_flags", value: try XdrJson.optional(self.setFlags.map { element in try Uint32XDRJsonCodec.toXdrJsonValue(element, type: "SetOptionsOperationXDR", key: "set_flags") })))
+    members.append(XdrJsonMember(key: "master_weight", value: try XdrJson.optional(self.masterWeight.map { element in try Uint32XDRJsonCodec.toXdrJsonValue(element, type: "SetOptionsOperationXDR", key: "master_weight") })))
+    members.append(XdrJsonMember(key: "low_threshold", value: try XdrJson.optional(self.lowThreshold.map { element in try Uint32XDRJsonCodec.toXdrJsonValue(element, type: "SetOptionsOperationXDR", key: "low_threshold") })))
+    members.append(XdrJsonMember(key: "med_threshold", value: try XdrJson.optional(self.medThreshold.map { element in try Uint32XDRJsonCodec.toXdrJsonValue(element, type: "SetOptionsOperationXDR", key: "med_threshold") })))
+    members.append(XdrJsonMember(key: "high_threshold", value: try XdrJson.optional(self.highThreshold.map { element in try Uint32XDRJsonCodec.toXdrJsonValue(element, type: "SetOptionsOperationXDR", key: "high_threshold") })))
+    members.append(XdrJsonMember(key: "home_domain", value: try XdrJson.optional(self.homeDomain.map { element in try String32XDRJsonCodec.toXdrJsonValue(element, type: "SetOptionsOperationXDR", key: "home_domain") })))
+    members.append(XdrJsonMember(key: "signer", value: try XdrJson.optional(self.signer.map { element in try element.toXdrJsonValue() })))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> SetOptionsOperationXDR {
+    let members = try XdrJson.object(value, type: "SetOptionsOperationXDR", keys: ["inflation_dest", "clear_flags", "set_flags", "master_weight", "low_threshold", "med_threshold", "high_threshold", "home_domain", "signer"])
+    let inflationDestinationValue = try XdrJson.field(members, key: "inflation_dest", type: "SetOptionsOperationXDR")
+    let inflationDestination: PublicKey?
+    if inflationDestinationValue.isNull {
+      inflationDestination = nil
+    } else {
+      inflationDestination = try AccountIDXDRJsonCodec.fromXdrJsonValue(inflationDestinationValue, type: "SetOptionsOperationXDR", key: "inflation_dest")
+    }
+    let clearFlagsValue = try XdrJson.field(members, key: "clear_flags", type: "SetOptionsOperationXDR")
+    let clearFlags: UInt32?
+    if clearFlagsValue.isNull {
+      clearFlags = nil
+    } else {
+      clearFlags = try Uint32XDRJsonCodec.fromXdrJsonValue(clearFlagsValue, type: "SetOptionsOperationXDR", key: "clear_flags")
+    }
+    let setFlagsValue = try XdrJson.field(members, key: "set_flags", type: "SetOptionsOperationXDR")
+    let setFlags: UInt32?
+    if setFlagsValue.isNull {
+      setFlags = nil
+    } else {
+      setFlags = try Uint32XDRJsonCodec.fromXdrJsonValue(setFlagsValue, type: "SetOptionsOperationXDR", key: "set_flags")
+    }
+    let masterWeightValue = try XdrJson.field(members, key: "master_weight", type: "SetOptionsOperationXDR")
+    let masterWeight: UInt32?
+    if masterWeightValue.isNull {
+      masterWeight = nil
+    } else {
+      masterWeight = try Uint32XDRJsonCodec.fromXdrJsonValue(masterWeightValue, type: "SetOptionsOperationXDR", key: "master_weight")
+    }
+    let lowThresholdValue = try XdrJson.field(members, key: "low_threshold", type: "SetOptionsOperationXDR")
+    let lowThreshold: UInt32?
+    if lowThresholdValue.isNull {
+      lowThreshold = nil
+    } else {
+      lowThreshold = try Uint32XDRJsonCodec.fromXdrJsonValue(lowThresholdValue, type: "SetOptionsOperationXDR", key: "low_threshold")
+    }
+    let medThresholdValue = try XdrJson.field(members, key: "med_threshold", type: "SetOptionsOperationXDR")
+    let medThreshold: UInt32?
+    if medThresholdValue.isNull {
+      medThreshold = nil
+    } else {
+      medThreshold = try Uint32XDRJsonCodec.fromXdrJsonValue(medThresholdValue, type: "SetOptionsOperationXDR", key: "med_threshold")
+    }
+    let highThresholdValue = try XdrJson.field(members, key: "high_threshold", type: "SetOptionsOperationXDR")
+    let highThreshold: UInt32?
+    if highThresholdValue.isNull {
+      highThreshold = nil
+    } else {
+      highThreshold = try Uint32XDRJsonCodec.fromXdrJsonValue(highThresholdValue, type: "SetOptionsOperationXDR", key: "high_threshold")
+    }
+    let homeDomainValue = try XdrJson.field(members, key: "home_domain", type: "SetOptionsOperationXDR")
+    let homeDomain: String?
+    if homeDomainValue.isNull {
+      homeDomain = nil
+    } else {
+      homeDomain = try String32XDRJsonCodec.fromXdrJsonValue(homeDomainValue, type: "SetOptionsOperationXDR", key: "home_domain")
+    }
+    let signerValue = try XdrJson.field(members, key: "signer", type: "SetOptionsOperationXDR")
+    let signer: SignerXDR?
+    if signerValue.isNull {
+      signer = nil
+    } else {
+      signer = try SignerXDR.fromXdrJsonValue(signerValue)
+    }
+    return SetOptionsOperationXDR(
+      inflationDestination: inflationDestination,
+      clearFlags: clearFlags,
+      setFlags: setFlags,
+      masterWeight: masterWeight,
+      lowThreshold: lowThreshold,
+      medThreshold: medThreshold,
+      highThreshold: highThreshold,
+      homeDomain: homeDomain,
+      signer: signer
+    )
+  }
+}

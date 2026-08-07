@@ -8,3 +8,24 @@ public enum TrustLineFlags: Int32, XDRCodable, Equatable, Sendable {
   case authorizedToMaintainLiabilitiesFlag = 2
   case trustlineClawbackEnabledFlag = 4
 }
+
+extension TrustLineFlags: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .authorizedFlag: return .string("authorized_flag")
+    case .authorizedToMaintainLiabilitiesFlag: return .string("authorized_to_maintain_liabilities_flag")
+    case .trustlineClawbackEnabledFlag: return .string("trustline_clawback_enabled_flag")
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> TrustLineFlags {
+    let name = try XdrJson.string(value, type: "TrustLineFlags")
+    switch name {
+    case "authorized_flag": return .authorizedFlag
+    case "authorized_to_maintain_liabilities_flag": return .authorizedToMaintainLiabilitiesFlag
+    case "trustline_clawback_enabled_flag": return .trustlineClawbackEnabledFlag
+    default:
+      throw XdrJsonError.unknownEnumValue(type: "TrustLineFlags", value: name)
+    }
+  }
+}

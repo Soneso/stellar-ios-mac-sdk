@@ -24,3 +24,20 @@ public struct TransactionSetV1XDR: XDRCodable, Sendable {
     try container.encode(phases)
   }
 }
+
+extension TransactionSetV1XDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "previous_ledger_hash", value: try HashXDRJsonCodec.toXdrJsonValue(self.previousLedgerHash, type: "TransactionSetV1XDR", key: "previous_ledger_hash")))
+    members.append(XdrJsonMember(key: "phases", value: try XdrJson.array(self.phases.map { element in try element.toXdrJsonValue() })))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> TransactionSetV1XDR {
+    let members = try XdrJson.object(value, type: "TransactionSetV1XDR", keys: ["previous_ledger_hash", "phases"])
+    let previousLedgerHash: HashXDR = try HashXDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "previous_ledger_hash", type: "TransactionSetV1XDR"), type: "TransactionSetV1XDR", key: "previous_ledger_hash")
+    let phasesElements = try XdrJson.array(try XdrJson.field(members, key: "phases", type: "TransactionSetV1XDR"), type: "TransactionSetV1XDR", key: "phases")
+    let phases: [TransactionPhaseXDR] = try phasesElements.map { element in try TransactionPhaseXDR.fromXdrJsonValue(element) }
+    return TransactionSetV1XDR(previousLedgerHash: previousLedgerHash, phases: phases)
+  }
+}

@@ -32,3 +32,26 @@ public struct SCSpecUDTUnionCaseTupleV0XDR: XDRCodable, Sendable {
     try container.encode(type)
   }
 }
+
+extension SCSpecUDTUnionCaseTupleV0XDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "doc", value: XdrJson.escapedString(self.doc)))
+    members.append(XdrJsonMember(key: "name", value: XdrJson.escapedString(self.name)))
+    members.append(XdrJsonMember(key: "type", value: try XdrJson.array(self.type.map { element in try element.toXdrJsonValue() })))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> SCSpecUDTUnionCaseTupleV0XDR {
+    let members = try XdrJson.object(value, type: "SCSpecUDTUnionCaseTupleV0XDR", keys: ["doc", "name", XdrJson.DeclaredKey("type", alias: "type_")])
+    let doc: String = try XdrJson.unescapedText(try XdrJson.field(members, key: "doc", type: "SCSpecUDTUnionCaseTupleV0XDR"), type: "SCSpecUDTUnionCaseTupleV0XDR", key: "doc")
+    let name: String = try XdrJson.unescapedText(try XdrJson.field(members, key: "name", type: "SCSpecUDTUnionCaseTupleV0XDR"), type: "SCSpecUDTUnionCaseTupleV0XDR", key: "name")
+    let typeElements = try XdrJson.array(try XdrJson.field(members, key: XdrJson.DeclaredKey("type", alias: "type_"), type: "SCSpecUDTUnionCaseTupleV0XDR"), type: "SCSpecUDTUnionCaseTupleV0XDR", key: "type")
+    let type: [SCSpecTypeDefXDR] = try typeElements.map { element in try SCSpecTypeDefXDR.fromXdrJsonValue(element) }
+    return SCSpecUDTUnionCaseTupleV0XDR(
+      doc: doc,
+      name: name,
+      type: type
+    )
+  }
+}

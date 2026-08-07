@@ -37,3 +37,19 @@ extension ClaimantV0XDR {
     return ClaimantV0XDR(accountID: accountID, predicate: predicate)
   }
 }
+
+extension ClaimantV0XDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "destination", value: try AccountIDXDRJsonCodec.toXdrJsonValue(self.accountID, type: "ClaimantV0XDR", key: "destination")))
+    members.append(XdrJsonMember(key: "predicate", value: try self.predicate.toXdrJsonValue()))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> ClaimantV0XDR {
+    let members = try XdrJson.object(value, type: "ClaimantV0XDR", keys: ["destination", "predicate"])
+    let accountID: PublicKey = try AccountIDXDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "destination", type: "ClaimantV0XDR"), type: "ClaimantV0XDR", key: "destination")
+    let predicate: ClaimPredicateXDR = try ClaimPredicateXDR.fromXdrJsonValue(try XdrJson.field(members, key: "predicate", type: "ClaimantV0XDR"))
+    return ClaimantV0XDR(accountID: accountID, predicate: predicate)
+  }
+}

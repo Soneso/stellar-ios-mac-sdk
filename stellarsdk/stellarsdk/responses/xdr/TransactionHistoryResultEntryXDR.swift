@@ -32,3 +32,25 @@ public struct TransactionHistoryResultEntryXDR: XDRCodable, Sendable {
     try container.encode(ext)
   }
 }
+
+extension TransactionHistoryResultEntryXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "ledger_seq", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.ledgerSeq, type: "TransactionHistoryResultEntryXDR", key: "ledger_seq")))
+    members.append(XdrJsonMember(key: "tx_result_set", value: try self.txResultSet.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "ext", value: try self.ext.toXdrJsonValue()))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> TransactionHistoryResultEntryXDR {
+    let members = try XdrJson.object(value, type: "TransactionHistoryResultEntryXDR", keys: ["ledger_seq", "tx_result_set", "ext"])
+    let ledgerSeq: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "ledger_seq", type: "TransactionHistoryResultEntryXDR"), type: "TransactionHistoryResultEntryXDR", key: "ledger_seq")
+    let txResultSet: TransactionResultSetXDR = try TransactionResultSetXDR.fromXdrJsonValue(try XdrJson.field(members, key: "tx_result_set", type: "TransactionHistoryResultEntryXDR"))
+    let ext: TransactionHistoryResultEntryXDRExtXDR = try TransactionHistoryResultEntryXDRExtXDR.fromXdrJsonValue(try XdrJson.field(members, key: "ext", type: "TransactionHistoryResultEntryXDR"))
+    return TransactionHistoryResultEntryXDR(
+      ledgerSeq: ledgerSeq,
+      txResultSet: txResultSet,
+      ext: ext
+    )
+  }
+}

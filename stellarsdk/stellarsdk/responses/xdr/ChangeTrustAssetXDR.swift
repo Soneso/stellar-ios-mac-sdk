@@ -55,3 +55,55 @@ public enum ChangeTrustAssetXDR: XDRCodable, Sendable {
     }
   }
 }
+
+extension ChangeTrustAssetXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .native: return .string("native")
+    case .alphanum4(let payload):
+      return .object([XdrJsonMember(key: "credit_alphanum4", value: try payload.toXdrJsonValue())])
+    case .alphanum12(let payload):
+      return .object([XdrJsonMember(key: "credit_alphanum12", value: try payload.toXdrJsonValue())])
+    case .poolShare(let payload):
+      return .object([XdrJsonMember(key: "pool_share", value: try payload.toXdrJsonValue())])
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> ChangeTrustAssetXDR {
+    if case .string(let name) = value {
+      switch name {
+      case "native":
+        return .native
+      case "credit_alphanum4":
+        throw XdrJsonError.invalidValue(type: "ChangeTrustAssetXDR", key: "credit_alphanum4",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "credit_alphanum12":
+        throw XdrJsonError.invalidValue(type: "ChangeTrustAssetXDR", key: "credit_alphanum12",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "pool_share":
+        throw XdrJsonError.invalidValue(type: "ChangeTrustAssetXDR", key: "pool_share",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      default:
+        throw XdrJsonError.unknownUnionArm(type: "ChangeTrustAssetXDR", key: name)
+      }
+    }
+
+    let member = try XdrJson.singleKeyObject(value, type: "ChangeTrustAssetXDR")
+    switch member.key {
+    case "native":
+      throw XdrJsonError.invalidValue(type: "ChangeTrustAssetXDR", key: "native",
+                                      message: "this arm carries no value, so it is written as a bare string")
+    case "credit_alphanum4":
+      let alphanum4: Alpha4XDR = try Alpha4XDR.fromXdrJsonValue(member.value)
+      return .alphanum4(alphanum4)
+    case "credit_alphanum12":
+      let alphanum12: Alpha12XDR = try Alpha12XDR.fromXdrJsonValue(member.value)
+      return .alphanum12(alphanum12)
+    case "pool_share":
+      let poolShare: LiquidityPoolParametersXDR = try LiquidityPoolParametersXDR.fromXdrJsonValue(member.value)
+      return .poolShare(poolShare)
+    default:
+      throw XdrJsonError.unknownUnionArm(type: "ChangeTrustAssetXDR", key: member.key)
+    }
+  }
+}

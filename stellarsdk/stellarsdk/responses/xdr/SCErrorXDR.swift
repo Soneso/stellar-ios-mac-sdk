@@ -176,3 +176,105 @@ extension SCErrorXDR {
     }
   }
 }
+
+extension SCErrorXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .contract(let payload):
+      return .object([XdrJsonMember(key: "contract", value: try Uint32XDRJsonCodec.toXdrJsonValue(payload, type: "SCErrorXDR", key: "contract"))])
+    case .wasmVm(let payload):
+      return .object([XdrJsonMember(key: "wasm_vm", value: try payload.toXdrJsonValue())])
+    case .context(let payload):
+      return .object([XdrJsonMember(key: "context", value: try payload.toXdrJsonValue())])
+    case .storage(let payload):
+      return .object([XdrJsonMember(key: "storage", value: try payload.toXdrJsonValue())])
+    case .object(let payload):
+      return .object([XdrJsonMember(key: "object", value: try payload.toXdrJsonValue())])
+    case .crypto(let payload):
+      return .object([XdrJsonMember(key: "crypto", value: try payload.toXdrJsonValue())])
+    case .events(let payload):
+      return .object([XdrJsonMember(key: "events", value: try payload.toXdrJsonValue())])
+    case .budget(let payload):
+      return .object([XdrJsonMember(key: "budget", value: try payload.toXdrJsonValue())])
+    case .value(let payload):
+      return .object([XdrJsonMember(key: "value", value: try payload.toXdrJsonValue())])
+    case .auth(let payload):
+      return .object([XdrJsonMember(key: "auth", value: try payload.toXdrJsonValue())])
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> SCErrorXDR {
+    if case .string(let name) = value {
+      switch name {
+      case "contract":
+        throw XdrJsonError.invalidValue(type: "SCErrorXDR", key: "contract",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "wasm_vm":
+        throw XdrJsonError.invalidValue(type: "SCErrorXDR", key: "wasm_vm",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "context":
+        throw XdrJsonError.invalidValue(type: "SCErrorXDR", key: "context",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "storage":
+        throw XdrJsonError.invalidValue(type: "SCErrorXDR", key: "storage",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "object":
+        throw XdrJsonError.invalidValue(type: "SCErrorXDR", key: "object",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "crypto":
+        throw XdrJsonError.invalidValue(type: "SCErrorXDR", key: "crypto",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "events":
+        throw XdrJsonError.invalidValue(type: "SCErrorXDR", key: "events",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "budget":
+        throw XdrJsonError.invalidValue(type: "SCErrorXDR", key: "budget",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "value":
+        throw XdrJsonError.invalidValue(type: "SCErrorXDR", key: "value",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "auth":
+        throw XdrJsonError.invalidValue(type: "SCErrorXDR", key: "auth",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      default:
+        throw XdrJsonError.unknownUnionArm(type: "SCErrorXDR", key: name)
+      }
+    }
+
+    let member = try XdrJson.singleKeyObject(value, type: "SCErrorXDR")
+    switch member.key {
+    case "contract":
+      let contract: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(member.value, type: "SCErrorXDR", key: "contract")
+      return .contract(contract)
+    case "wasm_vm":
+      let wasmVm: SCErrorCode = try SCErrorCode.fromXdrJsonValue(member.value)
+      return .wasmVm(wasmVm)
+    case "context":
+      let context: SCErrorCode = try SCErrorCode.fromXdrJsonValue(member.value)
+      return .context(context)
+    case "storage":
+      let storage: SCErrorCode = try SCErrorCode.fromXdrJsonValue(member.value)
+      return .storage(storage)
+    case "object":
+      let object: SCErrorCode = try SCErrorCode.fromXdrJsonValue(member.value)
+      return .object(object)
+    case "crypto":
+      let crypto: SCErrorCode = try SCErrorCode.fromXdrJsonValue(member.value)
+      return .crypto(crypto)
+    case "events":
+      let events: SCErrorCode = try SCErrorCode.fromXdrJsonValue(member.value)
+      return .events(events)
+    case "budget":
+      let budget: SCErrorCode = try SCErrorCode.fromXdrJsonValue(member.value)
+      return .budget(budget)
+    case "value":
+      let valueField: SCErrorCode = try SCErrorCode.fromXdrJsonValue(member.value)
+      return .value(valueField)
+    case "auth":
+      let auth: SCErrorCode = try SCErrorCode.fromXdrJsonValue(member.value)
+      return .auth(auth)
+    default:
+      throw XdrJsonError.unknownUnionArm(type: "SCErrorXDR", key: member.key)
+    }
+  }
+}

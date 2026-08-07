@@ -63,3 +63,65 @@ public enum HashIDPreimageXDR: XDRCodable, Sendable {
     }
   }
 }
+
+extension HashIDPreimageXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .operationId(let payload):
+      return .object([XdrJsonMember(key: "op_id", value: try payload.toXdrJsonValue())])
+    case .revokeId(let payload):
+      return .object([XdrJsonMember(key: "pool_revoke_op_id", value: try payload.toXdrJsonValue())])
+    case .contractID(let payload):
+      return .object([XdrJsonMember(key: "contract_id", value: try payload.toXdrJsonValue())])
+    case .sorobanAuthorization(let payload):
+      return .object([XdrJsonMember(key: "soroban_authorization", value: try payload.toXdrJsonValue())])
+    case .sorobanAuthorizationWithAddress(let payload):
+      return .object([XdrJsonMember(key: "soroban_authorization_with_address", value: try payload.toXdrJsonValue())])
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> HashIDPreimageXDR {
+    if case .string(let name) = value {
+      switch name {
+      case "op_id":
+        throw XdrJsonError.invalidValue(type: "HashIDPreimageXDR", key: "op_id",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "pool_revoke_op_id":
+        throw XdrJsonError.invalidValue(type: "HashIDPreimageXDR", key: "pool_revoke_op_id",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "contract_id":
+        throw XdrJsonError.invalidValue(type: "HashIDPreimageXDR", key: "contract_id",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "soroban_authorization":
+        throw XdrJsonError.invalidValue(type: "HashIDPreimageXDR", key: "soroban_authorization",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "soroban_authorization_with_address":
+        throw XdrJsonError.invalidValue(type: "HashIDPreimageXDR", key: "soroban_authorization_with_address",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      default:
+        throw XdrJsonError.unknownUnionArm(type: "HashIDPreimageXDR", key: name)
+      }
+    }
+
+    let member = try XdrJson.singleKeyObject(value, type: "HashIDPreimageXDR")
+    switch member.key {
+    case "op_id":
+      let operationId: OperationID = try OperationID.fromXdrJsonValue(member.value)
+      return .operationId(operationId)
+    case "pool_revoke_op_id":
+      let revokeId: RevokeID = try RevokeID.fromXdrJsonValue(member.value)
+      return .revokeId(revokeId)
+    case "contract_id":
+      let contractID: HashIDPreimageContractIDXDR = try HashIDPreimageContractIDXDR.fromXdrJsonValue(member.value)
+      return .contractID(contractID)
+    case "soroban_authorization":
+      let sorobanAuthorization: HashIDPreimageSorobanAuthorizationXDR = try HashIDPreimageSorobanAuthorizationXDR.fromXdrJsonValue(member.value)
+      return .sorobanAuthorization(sorobanAuthorization)
+    case "soroban_authorization_with_address":
+      let sorobanAuthorizationWithAddress: HashIDPreimageSorobanAuthorizationWithAddressXDR = try HashIDPreimageSorobanAuthorizationWithAddressXDR.fromXdrJsonValue(member.value)
+      return .sorobanAuthorizationWithAddress(sorobanAuthorizationWithAddress)
+    default:
+      throw XdrJsonError.unknownUnionArm(type: "HashIDPreimageXDR", key: member.key)
+    }
+  }
+}

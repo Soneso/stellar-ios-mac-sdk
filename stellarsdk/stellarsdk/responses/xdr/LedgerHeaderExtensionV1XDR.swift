@@ -24,3 +24,19 @@ public struct LedgerHeaderExtensionV1XDR: XDRCodable, Sendable {
     try container.encode(ext)
   }
 }
+
+extension LedgerHeaderExtensionV1XDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "flags", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.flags, type: "LedgerHeaderExtensionV1XDR", key: "flags")))
+    members.append(XdrJsonMember(key: "ext", value: try self.ext.toXdrJsonValue()))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> LedgerHeaderExtensionV1XDR {
+    let members = try XdrJson.object(value, type: "LedgerHeaderExtensionV1XDR", keys: ["flags", "ext"])
+    let flags: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "flags", type: "LedgerHeaderExtensionV1XDR"), type: "LedgerHeaderExtensionV1XDR", key: "flags")
+    let ext: LedgerHeaderExtensionV1XDRExtXDR = try LedgerHeaderExtensionV1XDRExtXDR.fromXdrJsonValue(try XdrJson.field(members, key: "ext", type: "LedgerHeaderExtensionV1XDR"))
+    return LedgerHeaderExtensionV1XDR(flags: flags, ext: ext)
+  }
+}

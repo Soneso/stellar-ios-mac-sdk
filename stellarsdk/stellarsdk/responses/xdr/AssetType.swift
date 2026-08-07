@@ -46,3 +46,26 @@ extension AssetType {
     return try fromTxRepName(raw)
   }
 }
+
+extension AssetType: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .native: return .string("native")
+    case .creditAlphanum4: return .string("credit_alphanum4")
+    case .creditAlphanum12: return .string("credit_alphanum12")
+    case .poolShare: return .string("pool_share")
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> AssetType {
+    let name = try XdrJson.string(value, type: "AssetType")
+    switch name {
+    case "native": return .native
+    case "credit_alphanum4": return .creditAlphanum4
+    case "credit_alphanum12": return .creditAlphanum12
+    case "pool_share": return .poolShare
+    default:
+      throw XdrJsonError.unknownEnumValue(type: "AssetType", value: name)
+    }
+  }
+}

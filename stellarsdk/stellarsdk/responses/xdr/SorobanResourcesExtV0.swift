@@ -38,3 +38,18 @@ extension SorobanResourcesExtV0 {
     return SorobanResourcesExtV0(archivedSorobanEntries: archivedSorobanEntries)
   }
 }
+
+extension SorobanResourcesExtV0: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "archived_soroban_entries", value: try XdrJson.array(self.archivedSorobanEntries.map { element in try Uint32XDRJsonCodec.toXdrJsonValue(element, type: "SorobanResourcesExtV0", key: "archived_soroban_entries") })))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> SorobanResourcesExtV0 {
+    let members = try XdrJson.object(value, type: "SorobanResourcesExtV0", keys: ["archived_soroban_entries"])
+    let archivedSorobanEntriesElements = try XdrJson.array(try XdrJson.field(members, key: "archived_soroban_entries", type: "SorobanResourcesExtV0"), type: "SorobanResourcesExtV0", key: "archived_soroban_entries")
+    let archivedSorobanEntries: [UInt32] = try archivedSorobanEntriesElements.map { element in try Uint32XDRJsonCodec.fromXdrJsonValue(element, type: "SorobanResourcesExtV0", key: "archived_soroban_entries") }
+    return SorobanResourcesExtV0(archivedSorobanEntries: archivedSorobanEntries)
+  }
+}

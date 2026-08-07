@@ -32,3 +32,25 @@ public struct TimeSlicedSurveyStartCollectingMessageXDR: XDRCodable, Sendable {
     try container.encode(ledgerNum)
   }
 }
+
+extension TimeSlicedSurveyStartCollectingMessageXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "surveyor_id", value: try NodeIDXDRJsonCodec.toXdrJsonValue(self.surveyorID, type: "TimeSlicedSurveyStartCollectingMessageXDR", key: "surveyor_id")))
+    members.append(XdrJsonMember(key: "nonce", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.nonce, type: "TimeSlicedSurveyStartCollectingMessageXDR", key: "nonce")))
+    members.append(XdrJsonMember(key: "ledger_num", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.ledgerNum, type: "TimeSlicedSurveyStartCollectingMessageXDR", key: "ledger_num")))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> TimeSlicedSurveyStartCollectingMessageXDR {
+    let members = try XdrJson.object(value, type: "TimeSlicedSurveyStartCollectingMessageXDR", keys: ["surveyor_id", "nonce", "ledger_num"])
+    let surveyorID: NodeIDXDR = try NodeIDXDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "surveyor_id", type: "TimeSlicedSurveyStartCollectingMessageXDR"), type: "TimeSlicedSurveyStartCollectingMessageXDR", key: "surveyor_id")
+    let nonce: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "nonce", type: "TimeSlicedSurveyStartCollectingMessageXDR"), type: "TimeSlicedSurveyStartCollectingMessageXDR", key: "nonce")
+    let ledgerNum: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "ledger_num", type: "TimeSlicedSurveyStartCollectingMessageXDR"), type: "TimeSlicedSurveyStartCollectingMessageXDR", key: "ledger_num")
+    return TimeSlicedSurveyStartCollectingMessageXDR(
+      surveyorID: surveyorID,
+      nonce: nonce,
+      ledgerNum: ledgerNum
+    )
+  }
+}

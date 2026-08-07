@@ -4,3 +4,35 @@
 import Foundation
 
 public typealias SequenceNumberXDR = Int64
+
+public enum SequenceNumberXDRJsonCodec {
+  public static func toXdrJsonValue(_ value: SequenceNumberXDR) throws -> XdrJsonValue {
+    try toXdrJsonValue(value, type: "SequenceNumberXDR", key: nil)
+  }
+
+  static func toXdrJsonValue(_ value: SequenceNumberXDR, type: String, key: String?) throws -> XdrJsonValue {
+    return try Int64XDRJsonCodec.toXdrJsonValue(value, type: type, key: key)
+  }
+
+  public static func toXdrJson(_ value: SequenceNumberXDR) throws -> String {
+    try XdrJsonWriter.canonicalString(from: try toXdrJsonValue(value))
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> SequenceNumberXDR {
+    try fromXdrJsonValue(value, type: "SequenceNumberXDR", key: nil)
+  }
+
+  static func fromXdrJsonValue(_ value: XdrJsonValue, type: String, key: String?) throws -> SequenceNumberXDR {
+    let decoded: Int64 = try Int64XDRJsonCodec.fromXdrJsonValue(value, type: type, key: key)
+    return decoded
+  }
+
+  public static func fromXdrJson(_ json: String) throws -> SequenceNumberXDR {
+    try fromXdrJsonValue(try XdrJsonParser.parse(json))
+  }
+
+  public static func fromXdrJsonTree(_ value: XdrJsonValue) throws -> SequenceNumberXDR {
+    try XdrJson.validateDepth(value)
+    return try fromXdrJsonValue(value)
+  }
+}

@@ -41,3 +41,39 @@ public enum LedgerCloseMetaExtXDR: XDRCodable, Sendable {
     }
   }
 }
+
+extension LedgerCloseMetaExtXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .void: return .string("v0")
+    case .v1(let payload):
+      return .object([XdrJsonMember(key: "v1", value: try payload.toXdrJsonValue())])
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> LedgerCloseMetaExtXDR {
+    if case .string(let name) = value {
+      switch name {
+      case "v0":
+        return .void
+      case "v1":
+        throw XdrJsonError.invalidValue(type: "LedgerCloseMetaExtXDR", key: "v1",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      default:
+        throw XdrJsonError.unknownUnionArm(type: "LedgerCloseMetaExtXDR", key: name)
+      }
+    }
+
+    let member = try XdrJson.singleKeyObject(value, type: "LedgerCloseMetaExtXDR")
+    switch member.key {
+    case "v0":
+      throw XdrJsonError.invalidValue(type: "LedgerCloseMetaExtXDR", key: "v0",
+                                      message: "this arm carries no value, so it is written as a bare string")
+    case "v1":
+      let v1: LedgerCloseMetaExtV1XDR = try LedgerCloseMetaExtV1XDR.fromXdrJsonValue(member.value)
+      return .v1(v1)
+    default:
+      throw XdrJsonError.unknownUnionArm(type: "LedgerCloseMetaExtXDR", key: member.key)
+    }
+  }
+}

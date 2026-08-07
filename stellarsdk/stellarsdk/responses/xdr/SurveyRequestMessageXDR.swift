@@ -42,3 +42,31 @@ public struct SurveyRequestMessageXDR: XDRCodable, Sendable {
     try container.encode(commandType)
   }
 }
+
+extension SurveyRequestMessageXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "surveyor_peer_id", value: try NodeIDXDRJsonCodec.toXdrJsonValue(self.surveyorPeerID, type: "SurveyRequestMessageXDR", key: "surveyor_peer_id")))
+    members.append(XdrJsonMember(key: "surveyed_peer_id", value: try NodeIDXDRJsonCodec.toXdrJsonValue(self.surveyedPeerID, type: "SurveyRequestMessageXDR", key: "surveyed_peer_id")))
+    members.append(XdrJsonMember(key: "ledger_num", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.ledgerNum, type: "SurveyRequestMessageXDR", key: "ledger_num")))
+    members.append(XdrJsonMember(key: "encryption_key", value: try self.encryptionKey.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "command_type", value: try self.commandType.toXdrJsonValue()))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> SurveyRequestMessageXDR {
+    let members = try XdrJson.object(value, type: "SurveyRequestMessageXDR", keys: ["surveyor_peer_id", "surveyed_peer_id", "ledger_num", "encryption_key", "command_type"])
+    let surveyorPeerID: NodeIDXDR = try NodeIDXDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "surveyor_peer_id", type: "SurveyRequestMessageXDR"), type: "SurveyRequestMessageXDR", key: "surveyor_peer_id")
+    let surveyedPeerID: NodeIDXDR = try NodeIDXDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "surveyed_peer_id", type: "SurveyRequestMessageXDR"), type: "SurveyRequestMessageXDR", key: "surveyed_peer_id")
+    let ledgerNum: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "ledger_num", type: "SurveyRequestMessageXDR"), type: "SurveyRequestMessageXDR", key: "ledger_num")
+    let encryptionKey: Curve25519PublicXDR = try Curve25519PublicXDR.fromXdrJsonValue(try XdrJson.field(members, key: "encryption_key", type: "SurveyRequestMessageXDR"))
+    let commandType: SurveyMessageCommandTypeXDR = try SurveyMessageCommandTypeXDR.fromXdrJsonValue(try XdrJson.field(members, key: "command_type", type: "SurveyRequestMessageXDR"))
+    return SurveyRequestMessageXDR(
+      surveyorPeerID: surveyorPeerID,
+      surveyedPeerID: surveyedPeerID,
+      ledgerNum: ledgerNum,
+      encryptionKey: encryptionKey,
+      commandType: commandType
+    )
+  }
+}

@@ -32,3 +32,25 @@ public struct ContractCostParamEntryXDR: XDRCodable, Sendable {
     try container.encode(linearTerm)
   }
 }
+
+extension ContractCostParamEntryXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "ext", value: try self.ext.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "const_term", value: try Int64XDRJsonCodec.toXdrJsonValue(self.constTerm, type: "ContractCostParamEntryXDR", key: "const_term")))
+    members.append(XdrJsonMember(key: "linear_term", value: try Int64XDRJsonCodec.toXdrJsonValue(self.linearTerm, type: "ContractCostParamEntryXDR", key: "linear_term")))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> ContractCostParamEntryXDR {
+    let members = try XdrJson.object(value, type: "ContractCostParamEntryXDR", keys: ["ext", "const_term", "linear_term"])
+    let ext: ExtensionPoint = try ExtensionPoint.fromXdrJsonValue(try XdrJson.field(members, key: "ext", type: "ContractCostParamEntryXDR"))
+    let constTerm: Int64 = try Int64XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "const_term", type: "ContractCostParamEntryXDR"), type: "ContractCostParamEntryXDR", key: "const_term")
+    let linearTerm: Int64 = try Int64XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "linear_term", type: "ContractCostParamEntryXDR"), type: "ContractCostParamEntryXDR", key: "linear_term")
+    return ContractCostParamEntryXDR(
+      ext: ext,
+      constTerm: constTerm,
+      linearTerm: linearTerm
+    )
+  }
+}

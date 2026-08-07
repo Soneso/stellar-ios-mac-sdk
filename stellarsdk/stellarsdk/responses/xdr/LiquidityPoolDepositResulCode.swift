@@ -14,3 +14,36 @@ public enum LiquidityPoolDepositResulCode: Int32, XDRCodable, Equatable, Sendabl
   case poolFull = -7
   case trustlineFrozen = -8
 }
+
+extension LiquidityPoolDepositResulCode: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .success: return .string("success")
+    case .malformed: return .string("malformed")
+    case .noTrust: return .string("no_trust")
+    case .notAuthorized: return .string("not_authorized")
+    case .underfunded: return .string("underfunded")
+    case .lineFull: return .string("line_full")
+    case .badPrice: return .string("bad_price")
+    case .poolFull: return .string("pool_full")
+    case .trustlineFrozen: return .string("trustline_frozen")
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> LiquidityPoolDepositResulCode {
+    let name = try XdrJson.string(value, type: "LiquidityPoolDepositResulCode")
+    switch name {
+    case "success": return .success
+    case "malformed": return .malformed
+    case "no_trust": return .noTrust
+    case "not_authorized": return .notAuthorized
+    case "underfunded": return .underfunded
+    case "line_full": return .lineFull
+    case "bad_price": return .badPrice
+    case "pool_full": return .poolFull
+    case "trustline_frozen": return .trustlineFrozen
+    default:
+      throw XdrJsonError.unknownEnumValue(type: "LiquidityPoolDepositResulCode", value: name)
+    }
+  }
+}

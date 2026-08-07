@@ -45,3 +45,20 @@ extension SorobanAuthorizedInvocationXDR {
     return SorobanAuthorizedInvocationXDR(function: function, subInvocations: subInvocations)
   }
 }
+
+extension SorobanAuthorizedInvocationXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "function", value: try self.function.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "sub_invocations", value: try XdrJson.array(self.subInvocations.map { element in try element.toXdrJsonValue() })))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> SorobanAuthorizedInvocationXDR {
+    let members = try XdrJson.object(value, type: "SorobanAuthorizedInvocationXDR", keys: ["function", "sub_invocations"])
+    let function: SorobanAuthorizedFunctionXDR = try SorobanAuthorizedFunctionXDR.fromXdrJsonValue(try XdrJson.field(members, key: "function", type: "SorobanAuthorizedInvocationXDR"))
+    let subInvocationsElements = try XdrJson.array(try XdrJson.field(members, key: "sub_invocations", type: "SorobanAuthorizedInvocationXDR"), type: "SorobanAuthorizedInvocationXDR", key: "sub_invocations")
+    let subInvocations: [SorobanAuthorizedInvocationXDR] = try subInvocationsElements.map { element in try SorobanAuthorizedInvocationXDR.fromXdrJsonValue(element) }
+    return SorobanAuthorizedInvocationXDR(function: function, subInvocations: subInvocations)
+  }
+}

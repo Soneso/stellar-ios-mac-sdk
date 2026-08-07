@@ -37,3 +37,49 @@ extension Ed25519SignedPayload {
     return Ed25519SignedPayload(ed25519: ed25519, payload: payload)
   }
 }
+
+extension Ed25519SignedPayload: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    guard !self.payload.isEmpty else {
+      throw XdrJsonError.unrepresentable(
+        type: "Ed25519SignedPayload",
+        message: "a signed payload of zero length has no strkey the ecosystem accepts")
+    }
+    guard self.payload.count <= 64 else {
+      throw XdrJsonError.invalidValue(
+        type: "Ed25519SignedPayload", key: "payload",
+        message: "expected at most 64 bytes, got \(self.payload.count)")
+    }
+    guard self.ed25519.wrapped.count == 32 else {
+      throw XdrJsonError.invalidValue(
+        type: "Ed25519SignedPayload", key: "ed25519",
+        message: "expected 32 bytes, got \(self.ed25519.wrapped.count)")
+    }
+    let encoded = Data(try XDREncoder.encode(self))
+    return .string(try XdrJson.strKey(encoded, expectedLength: encoded.count,
+                                      type: "Ed25519SignedPayload", key: nil) { try $0.encodeSignedPayload() })
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> Ed25519SignedPayload {
+    let text = try XdrJson.string(value, type: "Ed25519SignedPayload")
+    let decoded: Ed25519SignedPayload
+    do {
+      decoded = try text.decodeSignedPayload()
+    } catch {
+      throw XdrJsonError.invalidValue(
+        type: "Ed25519SignedPayload", key: nil,
+        message: "not a signed payload strkey: \(XdrJson.preview(text))")
+    }
+    guard !decoded.payload.isEmpty else {
+      throw XdrJsonError.unrepresentable(
+        type: "Ed25519SignedPayload",
+        message: "a signed payload of zero length has no strkey the ecosystem accepts")
+    }
+    guard decoded.payload.count <= 64 else {
+      throw XdrJsonError.invalidValue(
+        type: "Ed25519SignedPayload", key: "payload",
+        message: "expected at most 64 bytes, got \(decoded.payload.count)")
+    }
+    return decoded
+  }
+}

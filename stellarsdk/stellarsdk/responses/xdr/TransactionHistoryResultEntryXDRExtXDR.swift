@@ -34,3 +34,21 @@ public enum TransactionHistoryResultEntryXDRExtXDR: XDRCodable, Sendable {
     }
   }
 }
+
+extension TransactionHistoryResultEntryXDRExtXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .void: return .string("v0")
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> TransactionHistoryResultEntryXDRExtXDR {
+    let name = try XdrJson.string(value, type: "TransactionHistoryResultEntryXDRExtXDR")
+    switch name {
+    case "v0":
+      return .void
+    default:
+      throw XdrJsonError.unknownUnionArm(type: "TransactionHistoryResultEntryXDRExtXDR", key: name)
+    }
+  }
+}

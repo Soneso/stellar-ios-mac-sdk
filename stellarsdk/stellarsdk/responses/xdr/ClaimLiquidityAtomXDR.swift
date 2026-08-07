@@ -42,3 +42,31 @@ public struct ClaimLiquidityAtomXDR: XDRCodable, Sendable {
     try container.encode(amountBought)
   }
 }
+
+extension ClaimLiquidityAtomXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "liquidity_pool_id", value: try PoolIDXDRJsonCodec.toXdrJsonValue(self.liquidityPoolID, type: "ClaimLiquidityAtomXDR", key: "liquidity_pool_id")))
+    members.append(XdrJsonMember(key: "asset_sold", value: try self.assetSold.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "amount_sold", value: try Int64XDRJsonCodec.toXdrJsonValue(self.amountSold, type: "ClaimLiquidityAtomXDR", key: "amount_sold")))
+    members.append(XdrJsonMember(key: "asset_bought", value: try self.assetBought.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "amount_bought", value: try Int64XDRJsonCodec.toXdrJsonValue(self.amountBought, type: "ClaimLiquidityAtomXDR", key: "amount_bought")))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> ClaimLiquidityAtomXDR {
+    let members = try XdrJson.object(value, type: "ClaimLiquidityAtomXDR", keys: ["liquidity_pool_id", "asset_sold", "amount_sold", "asset_bought", "amount_bought"])
+    let liquidityPoolID: WrappedData32 = try PoolIDXDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "liquidity_pool_id", type: "ClaimLiquidityAtomXDR"), type: "ClaimLiquidityAtomXDR", key: "liquidity_pool_id")
+    let assetSold: AssetXDR = try AssetXDR.fromXdrJsonValue(try XdrJson.field(members, key: "asset_sold", type: "ClaimLiquidityAtomXDR"))
+    let amountSold: Int64 = try Int64XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "amount_sold", type: "ClaimLiquidityAtomXDR"), type: "ClaimLiquidityAtomXDR", key: "amount_sold")
+    let assetBought: AssetXDR = try AssetXDR.fromXdrJsonValue(try XdrJson.field(members, key: "asset_bought", type: "ClaimLiquidityAtomXDR"))
+    let amountBought: Int64 = try Int64XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "amount_bought", type: "ClaimLiquidityAtomXDR"), type: "ClaimLiquidityAtomXDR", key: "amount_bought")
+    return ClaimLiquidityAtomXDR(
+      liquidityPoolID: liquidityPoolID,
+      assetSold: assetSold,
+      amountSold: amountSold,
+      assetBought: assetBought,
+      amountBought: amountBought
+    )
+  }
+}

@@ -7,3 +7,22 @@ public enum EndSponsoringFutureReservesResultCode: Int32, XDRCodable, Equatable,
   case success = 0
   case notSponsored = -1
 }
+
+extension EndSponsoringFutureReservesResultCode: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .success: return .string("success")
+    case .notSponsored: return .string("not_sponsored")
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> EndSponsoringFutureReservesResultCode {
+    let name = try XdrJson.string(value, type: "EndSponsoringFutureReservesResultCode")
+    switch name {
+    case "success": return .success
+    case "not_sponsored": return .notSponsored
+    default:
+      throw XdrJsonError.unknownEnumValue(type: "EndSponsoringFutureReservesResultCode", value: name)
+    }
+  }
+}

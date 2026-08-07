@@ -32,3 +32,25 @@ public struct InnerTransactionResultXDR: XDRCodable, Sendable {
     try container.encode(ext)
   }
 }
+
+extension InnerTransactionResultXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "fee_charged", value: try Int64XDRJsonCodec.toXdrJsonValue(self.feeCharged, type: "InnerTransactionResultXDR", key: "fee_charged")))
+    members.append(XdrJsonMember(key: "result", value: try self.result.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "ext", value: try self.ext.toXdrJsonValue()))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> InnerTransactionResultXDR {
+    let members = try XdrJson.object(value, type: "InnerTransactionResultXDR", keys: ["fee_charged", "result", "ext"])
+    let feeCharged: Int64 = try Int64XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "fee_charged", type: "InnerTransactionResultXDR"), type: "InnerTransactionResultXDR", key: "fee_charged")
+    let result: InnerTransactionResultBodyXDR = try InnerTransactionResultBodyXDR.fromXdrJsonValue(try XdrJson.field(members, key: "result", type: "InnerTransactionResultXDR"))
+    let ext: InnerTransactionResultXDRExtXDR = try InnerTransactionResultXDRExtXDR.fromXdrJsonValue(try XdrJson.field(members, key: "ext", type: "InnerTransactionResultXDR"))
+    return InnerTransactionResultXDR(
+      feeCharged: feeCharged,
+      result: result,
+      ext: ext
+    )
+  }
+}

@@ -24,3 +24,20 @@ public struct ManageOfferSuccessResultXDR: XDRCodable, Sendable {
     try container.encode(offer)
   }
 }
+
+extension ManageOfferSuccessResultXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "offers_claimed", value: try XdrJson.array(self.offersClaimed.map { element in try element.toXdrJsonValue() })))
+    members.append(XdrJsonMember(key: "offer", value: try self.offer.toXdrJsonValue()))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> ManageOfferSuccessResultXDR {
+    let members = try XdrJson.object(value, type: "ManageOfferSuccessResultXDR", keys: ["offers_claimed", "offer"])
+    let offersClaimedElements = try XdrJson.array(try XdrJson.field(members, key: "offers_claimed", type: "ManageOfferSuccessResultXDR"), type: "ManageOfferSuccessResultXDR", key: "offers_claimed")
+    let offersClaimed: [ClaimAtomXDR] = try offersClaimedElements.map { element in try ClaimAtomXDR.fromXdrJsonValue(element) }
+    let offer: ManageOfferSuccessResultOfferXDR = try ManageOfferSuccessResultOfferXDR.fromXdrJsonValue(try XdrJson.field(members, key: "offer", type: "ManageOfferSuccessResultXDR"))
+    return ManageOfferSuccessResultXDR(offersClaimed: offersClaimed, offer: offer)
+  }
+}

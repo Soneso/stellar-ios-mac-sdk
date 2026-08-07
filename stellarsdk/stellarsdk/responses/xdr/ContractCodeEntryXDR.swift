@@ -32,3 +32,25 @@ public struct ContractCodeEntryXDR: XDRCodable, Sendable {
     try container.encode(code)
   }
 }
+
+extension ContractCodeEntryXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "ext", value: try self.ext.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "hash", value: try HashXDRJsonCodec.toXdrJsonValue(self.hash, type: "ContractCodeEntryXDR", key: "hash")))
+    members.append(XdrJsonMember(key: "code", value: XdrJson.hex(self.code)))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> ContractCodeEntryXDR {
+    let members = try XdrJson.object(value, type: "ContractCodeEntryXDR", keys: ["ext", "hash", "code"])
+    let ext: ContractCodeEntryExt = try ContractCodeEntryExt.fromXdrJsonValue(try XdrJson.field(members, key: "ext", type: "ContractCodeEntryXDR"))
+    let hash: HashXDR = try HashXDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "hash", type: "ContractCodeEntryXDR"), type: "ContractCodeEntryXDR", key: "hash")
+    let code: Data = try XdrJson.hex(try XdrJson.field(members, key: "code", type: "ContractCodeEntryXDR"), type: "ContractCodeEntryXDR", key: "code")
+    return ContractCodeEntryXDR(
+      ext: ext,
+      hash: hash,
+      code: code
+    )
+  }
+}

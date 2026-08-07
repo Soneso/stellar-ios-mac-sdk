@@ -35,3 +35,33 @@ public enum FeeBumpTransactionXDRInnerTxXDR: XDRCodable, Sendable {
     }
   }
 }
+
+extension FeeBumpTransactionXDRInnerTxXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .v1(let payload):
+      return .object([XdrJsonMember(key: "tx", value: try payload.toXdrJsonValue())])
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> FeeBumpTransactionXDRInnerTxXDR {
+    if case .string(let name) = value {
+      switch name {
+      case "tx":
+        throw XdrJsonError.invalidValue(type: "FeeBumpTransactionXDRInnerTxXDR", key: "tx",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      default:
+        throw XdrJsonError.unknownUnionArm(type: "FeeBumpTransactionXDRInnerTxXDR", key: name)
+      }
+    }
+
+    let member = try XdrJson.singleKeyObject(value, type: "FeeBumpTransactionXDRInnerTxXDR")
+    switch member.key {
+    case "tx":
+      let v1: TransactionV1EnvelopeXDR = try TransactionV1EnvelopeXDR.fromXdrJsonValue(member.value)
+      return .v1(v1)
+    default:
+      throw XdrJsonError.unknownUnionArm(type: "FeeBumpTransactionXDRInnerTxXDR", key: member.key)
+    }
+  }
+}

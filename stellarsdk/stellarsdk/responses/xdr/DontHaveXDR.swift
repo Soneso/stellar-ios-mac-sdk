@@ -24,3 +24,19 @@ public struct DontHaveXDR: XDRCodable, Sendable {
     try container.encode(reqHash)
   }
 }
+
+extension DontHaveXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "type", value: try self.type.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "req_hash", value: try Uint256XDRJsonCodec.toXdrJsonValue(self.reqHash, type: "DontHaveXDR", key: "req_hash")))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> DontHaveXDR {
+    let members = try XdrJson.object(value, type: "DontHaveXDR", keys: [XdrJson.DeclaredKey("type", alias: "type_"), "req_hash"])
+    let type: MessageTypeXDR = try MessageTypeXDR.fromXdrJsonValue(try XdrJson.field(members, key: XdrJson.DeclaredKey("type", alias: "type_"), type: "DontHaveXDR"))
+    let reqHash: Uint256XDR = try Uint256XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "req_hash", type: "DontHaveXDR"), type: "DontHaveXDR", key: "req_hash")
+    return DontHaveXDR(type: type, reqHash: reqHash)
+  }
+}

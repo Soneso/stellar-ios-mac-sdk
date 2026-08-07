@@ -48,3 +48,47 @@ public enum StellarValueXDRExtXDR: XDRCodable, Sendable {
     }
   }
 }
+
+extension StellarValueXDRExtXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .basic: return .string("basic")
+    case .lcValueSignature(let payload):
+      return .object([XdrJsonMember(key: "signed", value: try payload.toXdrJsonValue())])
+    case .proposedValue(let payload):
+      return .object([XdrJsonMember(key: "empty_tx_set", value: try payload.toXdrJsonValue())])
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> StellarValueXDRExtXDR {
+    if case .string(let name) = value {
+      switch name {
+      case "basic":
+        return .basic
+      case "signed":
+        throw XdrJsonError.invalidValue(type: "StellarValueXDRExtXDR", key: "signed",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "empty_tx_set":
+        throw XdrJsonError.invalidValue(type: "StellarValueXDRExtXDR", key: "empty_tx_set",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      default:
+        throw XdrJsonError.unknownUnionArm(type: "StellarValueXDRExtXDR", key: name)
+      }
+    }
+
+    let member = try XdrJson.singleKeyObject(value, type: "StellarValueXDRExtXDR")
+    switch member.key {
+    case "basic":
+      throw XdrJsonError.invalidValue(type: "StellarValueXDRExtXDR", key: "basic",
+                                      message: "this arm carries no value, so it is written as a bare string")
+    case "signed":
+      let lcValueSignature: LedgerCloseValueSignatureXDR = try LedgerCloseValueSignatureXDR.fromXdrJsonValue(member.value)
+      return .lcValueSignature(lcValueSignature)
+    case "empty_tx_set":
+      let proposedValue: StellarValueXDRProposedValueXDR = try StellarValueXDRProposedValueXDR.fromXdrJsonValue(member.value)
+      return .proposedValue(proposedValue)
+    default:
+      throw XdrJsonError.unknownUnionArm(type: "StellarValueXDRExtXDR", key: member.key)
+    }
+  }
+}

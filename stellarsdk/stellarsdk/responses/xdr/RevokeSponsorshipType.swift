@@ -40,3 +40,22 @@ extension RevokeSponsorshipType {
     return try fromTxRepName(raw)
   }
 }
+
+extension RevokeSponsorshipType: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .revokeSponsorshipLedgerEntry: return .string("ledger_entry")
+    case .revokeSponsorshipSignerEntry: return .string("signer")
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> RevokeSponsorshipType {
+    let name = try XdrJson.string(value, type: "RevokeSponsorshipType")
+    switch name {
+    case "ledger_entry": return .revokeSponsorshipLedgerEntry
+    case "signer": return .revokeSponsorshipSignerEntry
+    default:
+      throw XdrJsonError.unknownEnumValue(type: "RevokeSponsorshipType", value: name)
+    }
+  }
+}

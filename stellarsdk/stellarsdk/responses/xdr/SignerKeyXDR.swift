@@ -98,3 +98,43 @@ extension SignerKeyXDR {
     }
   }
 }
+
+extension SignerKeyXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .ed25519(let key):
+      return .string(try XdrJson.strKey(key.wrapped, expectedLength: 32,
+                                        type: "SignerKeyXDR", key: "ed25519") { try $0.encodeEd25519PublicKey() })
+    case .preAuthTx(let key):
+      return .string(try XdrJson.strKey(key.wrapped, expectedLength: 32,
+                                        type: "SignerKeyXDR", key: "pre_auth_tx") { try $0.encodePreAuthTx() })
+    case .hashX(let key):
+      return .string(try XdrJson.strKey(key.wrapped, expectedLength: 32,
+                                        type: "SignerKeyXDR", key: "hash_x") { try $0.encodeSha256Hash() })
+    case .signedPayload(let payload):
+      return try payload.toXdrJsonValue()
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> SignerKeyXDR {
+    let text = try XdrJson.string(value, type: "SignerKeyXDR")
+    switch text.first {
+    case "G":
+      return .ed25519(Uint256XDR(try XdrJson.strKeyBytes(text, expectedLength: 32,
+                                                         type: "SignerKeyXDR", key: "ed25519") { try $0.decodeEd25519PublicKey() }))
+    case "T":
+      return .preAuthTx(Uint256XDR(try XdrJson.strKeyBytes(text, expectedLength: 32,
+                                                           type: "SignerKeyXDR", key: "pre_auth_tx") { try $0.decodePreAuthTx() }))
+    case "X":
+      return .hashX(Uint256XDR(try XdrJson.strKeyBytes(text, expectedLength: 32,
+                                                       type: "SignerKeyXDR", key: "hash_x") { try $0.decodeSha256Hash() }))
+    case "P":
+      return .signedPayload(try Ed25519SignedPayload.fromXdrJsonValue(value))
+    default:
+      throw XdrJsonError.invalidValue(
+        type: "SignerKeyXDR", key: nil,
+        message: "not an account, pre-authorized transaction, hash or signed payload " +
+                 "strkey: \(XdrJson.preview(text))")
+    }
+  }
+}

@@ -56,3 +56,21 @@ extension FeeBumpTransactionXDRExtXDR {
     }
   }
 }
+
+extension FeeBumpTransactionXDRExtXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .void: return .string("v0")
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> FeeBumpTransactionXDRExtXDR {
+    let name = try XdrJson.string(value, type: "FeeBumpTransactionXDRExtXDR")
+    switch name {
+    case "v0":
+      return .void
+    default:
+      throw XdrJsonError.unknownUnionArm(type: "FeeBumpTransactionXDRExtXDR", key: name)
+    }
+  }
+}

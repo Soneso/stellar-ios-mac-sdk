@@ -20,3 +20,17 @@ public struct FloodDemandXDR: XDRCodable, Sendable {
     try container.encode(txHashes)
   }
 }
+
+extension FloodDemandXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "tx_hashes", value: try self.txHashes.toXdrJsonValue()))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> FloodDemandXDR {
+    let members = try XdrJson.object(value, type: "FloodDemandXDR", keys: ["tx_hashes"])
+    let txHashes: TxDemandVectorXDR = try TxDemandVectorXDR.fromXdrJsonValue(try XdrJson.field(members, key: "tx_hashes", type: "FloodDemandXDR"))
+    return FloodDemandXDR(txHashes: txHashes)
+  }
+}

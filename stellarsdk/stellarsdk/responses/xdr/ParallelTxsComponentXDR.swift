@@ -34,3 +34,26 @@ public struct ParallelTxsComponentXDR: XDRCodable, Sendable {
     try container.encode(executionStages)
   }
 }
+
+extension ParallelTxsComponentXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "base_fee", value: try XdrJson.optional(self.baseFee.map { element in try Int64XDRJsonCodec.toXdrJsonValue(element, type: "ParallelTxsComponentXDR", key: "base_fee") })))
+    members.append(XdrJsonMember(key: "execution_stages", value: try XdrJson.array(self.executionStages.map { element in try element.toXdrJsonValue() })))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> ParallelTxsComponentXDR {
+    let members = try XdrJson.object(value, type: "ParallelTxsComponentXDR", keys: ["base_fee", "execution_stages"])
+    let baseFeeValue = try XdrJson.field(members, key: "base_fee", type: "ParallelTxsComponentXDR")
+    let baseFee: Int64?
+    if baseFeeValue.isNull {
+      baseFee = nil
+    } else {
+      baseFee = try Int64XDRJsonCodec.fromXdrJsonValue(baseFeeValue, type: "ParallelTxsComponentXDR", key: "base_fee")
+    }
+    let executionStagesElements = try XdrJson.array(try XdrJson.field(members, key: "execution_stages", type: "ParallelTxsComponentXDR"), type: "ParallelTxsComponentXDR", key: "execution_stages")
+    let executionStages: [ParallelTxExecutionStageXDR] = try executionStagesElements.map { element in try ParallelTxExecutionStageXDR.fromXdrJsonValue(element) }
+    return ParallelTxsComponentXDR(baseFee: baseFee, executionStages: executionStages)
+  }
+}

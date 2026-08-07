@@ -42,3 +42,41 @@ public enum SCSpecUDTUnionCaseV0XDR: XDRCodable, Sendable {
     }
   }
 }
+
+extension SCSpecUDTUnionCaseV0XDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .voidV0(let payload):
+      return .object([XdrJsonMember(key: "void_v0", value: try payload.toXdrJsonValue())])
+    case .tupleV0(let payload):
+      return .object([XdrJsonMember(key: "tuple_v0", value: try payload.toXdrJsonValue())])
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> SCSpecUDTUnionCaseV0XDR {
+    if case .string(let name) = value {
+      switch name {
+      case "void_v0":
+        throw XdrJsonError.invalidValue(type: "SCSpecUDTUnionCaseV0XDR", key: "void_v0",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "tuple_v0":
+        throw XdrJsonError.invalidValue(type: "SCSpecUDTUnionCaseV0XDR", key: "tuple_v0",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      default:
+        throw XdrJsonError.unknownUnionArm(type: "SCSpecUDTUnionCaseV0XDR", key: name)
+      }
+    }
+
+    let member = try XdrJson.singleKeyObject(value, type: "SCSpecUDTUnionCaseV0XDR")
+    switch member.key {
+    case "void_v0":
+      let voidV0: SCSpecUDTUnionCaseVoidV0XDR = try SCSpecUDTUnionCaseVoidV0XDR.fromXdrJsonValue(member.value)
+      return .voidV0(voidV0)
+    case "tuple_v0":
+      let tupleV0: SCSpecUDTUnionCaseTupleV0XDR = try SCSpecUDTUnionCaseTupleV0XDR.fromXdrJsonValue(member.value)
+      return .tupleV0(tupleV0)
+    default:
+      throw XdrJsonError.unknownUnionArm(type: "SCSpecUDTUnionCaseV0XDR", key: member.key)
+    }
+  }
+}

@@ -8,3 +8,24 @@ public enum ManageOfferEffect: Int32, XDRCodable, Equatable, Sendable {
   case updated = 1
   case deleted = 2
 }
+
+extension ManageOfferEffect: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .created: return .string("created")
+    case .updated: return .string("updated")
+    case .deleted: return .string("deleted")
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> ManageOfferEffect {
+    let name = try XdrJson.string(value, type: "ManageOfferEffect")
+    switch name {
+    case "created": return .created
+    case "updated": return .updated
+    case "deleted": return .deleted
+    default:
+      throw XdrJsonError.unknownEnumValue(type: "ManageOfferEffect", value: name)
+    }
+  }
+}

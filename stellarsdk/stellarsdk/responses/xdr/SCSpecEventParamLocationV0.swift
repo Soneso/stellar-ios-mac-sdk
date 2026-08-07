@@ -7,3 +7,22 @@ public enum SCSpecEventParamLocationV0: Int32, XDRCodable, Equatable, Sendable {
   case data = 0
   case topicList = 1
 }
+
+extension SCSpecEventParamLocationV0: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .data: return .string("data")
+    case .topicList: return .string("topic_list")
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> SCSpecEventParamLocationV0 {
+    let name = try XdrJson.string(value, type: "SCSpecEventParamLocationV0")
+    switch name {
+    case "data": return .data
+    case "topic_list": return .topicList
+    default:
+      throw XdrJsonError.unknownEnumValue(type: "SCSpecEventParamLocationV0", value: name)
+    }
+  }
+}

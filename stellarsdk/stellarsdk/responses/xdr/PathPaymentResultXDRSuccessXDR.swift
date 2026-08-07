@@ -24,3 +24,20 @@ public struct PathPaymentResultXDRSuccessXDR: XDRCodable, Sendable {
     try container.encode(last)
   }
 }
+
+extension PathPaymentResultXDRSuccessXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "offers", value: try XdrJson.array(self.offers.map { element in try element.toXdrJsonValue() })))
+    members.append(XdrJsonMember(key: "last", value: try self.last.toXdrJsonValue()))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> PathPaymentResultXDRSuccessXDR {
+    let members = try XdrJson.object(value, type: "PathPaymentResultXDRSuccessXDR", keys: ["offers", "last"])
+    let offersElements = try XdrJson.array(try XdrJson.field(members, key: "offers", type: "PathPaymentResultXDRSuccessXDR"), type: "PathPaymentResultXDRSuccessXDR", key: "offers")
+    let offers: [ClaimAtomXDR] = try offersElements.map { element in try ClaimAtomXDR.fromXdrJsonValue(element) }
+    let last: SimplePaymentResultXDR = try SimplePaymentResultXDR.fromXdrJsonValue(try XdrJson.field(members, key: "last", type: "PathPaymentResultXDRSuccessXDR"))
+    return PathPaymentResultXDRSuccessXDR(offers: offers, last: last)
+  }
+}

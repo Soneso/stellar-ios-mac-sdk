@@ -31,3 +31,17 @@ extension ClawbackClaimableBalanceOpXDR {
     return ClawbackClaimableBalanceOpXDR(claimableBalanceID: claimableBalanceID)
   }
 }
+
+extension ClawbackClaimableBalanceOpXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "balance_id", value: try self.claimableBalanceID.toXdrJsonValue()))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> ClawbackClaimableBalanceOpXDR {
+    let members = try XdrJson.object(value, type: "ClawbackClaimableBalanceOpXDR", keys: ["balance_id"])
+    let claimableBalanceID: ClaimableBalanceIDXDR = try ClaimableBalanceIDXDR.fromXdrJsonValue(try XdrJson.field(members, key: "balance_id", type: "ClawbackClaimableBalanceOpXDR"))
+    return ClawbackClaimableBalanceOpXDR(claimableBalanceID: claimableBalanceID)
+  }
+}

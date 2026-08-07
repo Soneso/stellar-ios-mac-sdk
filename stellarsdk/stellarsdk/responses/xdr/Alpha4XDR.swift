@@ -37,3 +37,19 @@ extension Alpha4XDR {
     return Alpha4XDR(assetCode: assetCode, issuer: issuer)
   }
 }
+
+extension Alpha4XDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "asset_code", value: try AssetCode4XDRJsonCodec.toXdrJsonValue(self.assetCode, type: "Alpha4XDR", key: "asset_code")))
+    members.append(XdrJsonMember(key: "issuer", value: try AccountIDXDRJsonCodec.toXdrJsonValue(self.issuer, type: "Alpha4XDR", key: "issuer")))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> Alpha4XDR {
+    let members = try XdrJson.object(value, type: "Alpha4XDR", keys: ["asset_code", "issuer"])
+    let assetCode: AssetCode4XDR = try AssetCode4XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "asset_code", type: "Alpha4XDR"), type: "Alpha4XDR", key: "asset_code")
+    let issuer: PublicKey = try AccountIDXDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "issuer", type: "Alpha4XDR"), type: "Alpha4XDR", key: "issuer")
+    return Alpha4XDR(assetCode: assetCode, issuer: issuer)
+  }
+}

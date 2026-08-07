@@ -32,3 +32,25 @@ public struct SimplePaymentResultXDR: XDRCodable, Sendable {
     try container.encode(amount)
   }
 }
+
+extension SimplePaymentResultXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "destination", value: try AccountIDXDRJsonCodec.toXdrJsonValue(self.destination, type: "SimplePaymentResultXDR", key: "destination")))
+    members.append(XdrJsonMember(key: "asset", value: try self.asset.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "amount", value: try Int64XDRJsonCodec.toXdrJsonValue(self.amount, type: "SimplePaymentResultXDR", key: "amount")))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> SimplePaymentResultXDR {
+    let members = try XdrJson.object(value, type: "SimplePaymentResultXDR", keys: ["destination", "asset", "amount"])
+    let destination: PublicKey = try AccountIDXDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "destination", type: "SimplePaymentResultXDR"), type: "SimplePaymentResultXDR", key: "destination")
+    let asset: AssetXDR = try AssetXDR.fromXdrJsonValue(try XdrJson.field(members, key: "asset", type: "SimplePaymentResultXDR"))
+    let amount: Int64 = try Int64XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "amount", type: "SimplePaymentResultXDR"), type: "SimplePaymentResultXDR", key: "amount")
+    return SimplePaymentResultXDR(
+      destination: destination,
+      asset: asset,
+      amount: amount
+    )
+  }
+}

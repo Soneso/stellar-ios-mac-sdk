@@ -8,3 +8,24 @@ public enum LedgerHeaderFlagsXDR: Int32, XDRCodable, Equatable, Sendable {
   case depositFlag = 2
   case withdrawalFlag = 4
 }
+
+extension LedgerHeaderFlagsXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .tradingFlag: return .string("trading_flag")
+    case .depositFlag: return .string("deposit_flag")
+    case .withdrawalFlag: return .string("withdrawal_flag")
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> LedgerHeaderFlagsXDR {
+    let name = try XdrJson.string(value, type: "LedgerHeaderFlagsXDR")
+    switch name {
+    case "trading_flag": return .tradingFlag
+    case "deposit_flag": return .depositFlag
+    case "withdrawal_flag": return .withdrawalFlag
+    default:
+      throw XdrJsonError.unknownEnumValue(type: "LedgerHeaderFlagsXDR", value: name)
+    }
+  }
+}

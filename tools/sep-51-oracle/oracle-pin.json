@@ -1,0 +1,18 @@
+{
+  "tool": "stellar-xdr",
+  "version": "28.0.0",
+  "tool_commit": "d0f1330e43c3a2c0c616da30698b24140d4eea72",
+  "xdr_commit": "9c9c145953e80990d6ff1ae3a6a973a0ce6d0694",
+  "install": "cargo install stellar-xdr --features cli --version 28.0.0 --locked",
+  "sdk_xdr_commit": "911c9356277468cb588481bd90b5d4b6eda395a7",
+  "sep_spec": {
+    "version": "2.0.1",
+    "status": "Draft",
+    "source": "https://raw.githubusercontent.com/stellar/stellar-protocol/master/ecosystem/sep-0051.md"
+  },
+  "notes": [
+    "The reference CLI is pinned by version, not merely by name on PATH: XDR-JSON key spellings changed between releases. Releases before 28.0.0 emit the Rust keyword-escaped key 'type_' where SEP-0051 requires 'type'.",
+    "sdk_xdr_commit is the XDR pin this SDK generates from (Makefile XDR_COMMIT). It differs from xdr_commit, so the reference CLI cannot resolve types and enum members added after the commit it vendors. Those are reported as unresolvable rather than as mismatches.",
+    "sep_spec records the SEP-0051 revision this implementation was written against. It is the single recorded value the release watcher compares the published specification with; docs/sep/sep-51.md and the agent skill quote the same version and are updated alongside it."
+  ]
+}

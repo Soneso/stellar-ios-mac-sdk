@@ -31,3 +31,70 @@ public enum SCSpecType: Int32, XDRCodable, Equatable, Sendable {
   case bytesN = 1006
   case udt = 2000
 }
+
+extension SCSpecType: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .val: return .string("val")
+    case .bool: return .string("bool")
+    case .void: return .string("void")
+    case .error: return .string("error")
+    case .u32: return .string("u32")
+    case .i32: return .string("i32")
+    case .u64: return .string("u64")
+    case .i64: return .string("i64")
+    case .timepoint: return .string("timepoint")
+    case .duration: return .string("duration")
+    case .u128: return .string("u128")
+    case .i128: return .string("i128")
+    case .u256: return .string("u256")
+    case .i256: return .string("i256")
+    case .bytes: return .string("bytes")
+    case .string: return .string("string")
+    case .symbol: return .string("symbol")
+    case .address: return .string("address")
+    case .muxedAddress: return .string("muxed_address")
+    case .option: return .string("option")
+    case .result: return .string("result")
+    case .vec: return .string("vec")
+    case .map: return .string("map")
+    case .tuple: return .string("tuple")
+    case .bytesN: return .string("bytes_n")
+    case .udt: return .string("udt")
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> SCSpecType {
+    let name = try XdrJson.string(value, type: "SCSpecType")
+    switch name {
+    case "val": return .val
+    case "bool": return .bool
+    case "void": return .void
+    case "error": return .error
+    case "u32": return .u32
+    case "i32": return .i32
+    case "u64": return .u64
+    case "i64": return .i64
+    case "timepoint": return .timepoint
+    case "duration": return .duration
+    case "u128": return .u128
+    case "i128": return .i128
+    case "u256": return .u256
+    case "i256": return .i256
+    case "bytes": return .bytes
+    case "string": return .string
+    case "symbol": return .symbol
+    case "address": return .address
+    case "muxed_address": return .muxedAddress
+    case "option": return .option
+    case "result": return .result
+    case "vec": return .vec
+    case "map": return .map
+    case "tuple": return .tuple
+    case "bytes_n": return .bytesN
+    case "udt": return .udt
+    default:
+      throw XdrJsonError.unknownEnumValue(type: "SCSpecType", value: name)
+    }
+  }
+}

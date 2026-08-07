@@ -47,3 +47,25 @@ extension ClawbackOpXDR {
     return ClawbackOpXDR(asset: asset, from: from, amount: amount)
   }
 }
+
+extension ClawbackOpXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "asset", value: try self.asset.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "from", value: try self.from.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "amount", value: try Int64XDRJsonCodec.toXdrJsonValue(self.amount, type: "ClawbackOpXDR", key: "amount")))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> ClawbackOpXDR {
+    let members = try XdrJson.object(value, type: "ClawbackOpXDR", keys: ["asset", "from", "amount"])
+    let asset: AssetXDR = try AssetXDR.fromXdrJsonValue(try XdrJson.field(members, key: "asset", type: "ClawbackOpXDR"))
+    let from: MuxedAccountXDR = try MuxedAccountXDR.fromXdrJsonValue(try XdrJson.field(members, key: "from", type: "ClawbackOpXDR"))
+    let amount: Int64 = try Int64XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "amount", type: "ClawbackOpXDR"), type: "ClawbackOpXDR", key: "amount")
+    return ClawbackOpXDR(
+      asset: asset,
+      from: from,
+      amount: amount
+    )
+  }
+}

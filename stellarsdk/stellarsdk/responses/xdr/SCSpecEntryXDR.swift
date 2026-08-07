@@ -70,3 +70,73 @@ public enum SCSpecEntryXDR: XDRCodable, Sendable {
     }
   }
 }
+
+extension SCSpecEntryXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .functionV0(let payload):
+      return .object([XdrJsonMember(key: "function_v0", value: try payload.toXdrJsonValue())])
+    case .structV0(let payload):
+      return .object([XdrJsonMember(key: "udt_struct_v0", value: try payload.toXdrJsonValue())])
+    case .unionV0(let payload):
+      return .object([XdrJsonMember(key: "udt_union_v0", value: try payload.toXdrJsonValue())])
+    case .enumV0(let payload):
+      return .object([XdrJsonMember(key: "udt_enum_v0", value: try payload.toXdrJsonValue())])
+    case .errorEnumV0(let payload):
+      return .object([XdrJsonMember(key: "udt_error_enum_v0", value: try payload.toXdrJsonValue())])
+    case .eventV0(let payload):
+      return .object([XdrJsonMember(key: "event_v0", value: try payload.toXdrJsonValue())])
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> SCSpecEntryXDR {
+    if case .string(let name) = value {
+      switch name {
+      case "function_v0":
+        throw XdrJsonError.invalidValue(type: "SCSpecEntryXDR", key: "function_v0",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "udt_struct_v0":
+        throw XdrJsonError.invalidValue(type: "SCSpecEntryXDR", key: "udt_struct_v0",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "udt_union_v0":
+        throw XdrJsonError.invalidValue(type: "SCSpecEntryXDR", key: "udt_union_v0",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "udt_enum_v0":
+        throw XdrJsonError.invalidValue(type: "SCSpecEntryXDR", key: "udt_enum_v0",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "udt_error_enum_v0":
+        throw XdrJsonError.invalidValue(type: "SCSpecEntryXDR", key: "udt_error_enum_v0",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "event_v0":
+        throw XdrJsonError.invalidValue(type: "SCSpecEntryXDR", key: "event_v0",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      default:
+        throw XdrJsonError.unknownUnionArm(type: "SCSpecEntryXDR", key: name)
+      }
+    }
+
+    let member = try XdrJson.singleKeyObject(value, type: "SCSpecEntryXDR")
+    switch member.key {
+    case "function_v0":
+      let functionV0: SCSpecFunctionV0XDR = try SCSpecFunctionV0XDR.fromXdrJsonValue(member.value)
+      return .functionV0(functionV0)
+    case "udt_struct_v0":
+      let structV0: SCSpecUDTStructV0XDR = try SCSpecUDTStructV0XDR.fromXdrJsonValue(member.value)
+      return .structV0(structV0)
+    case "udt_union_v0":
+      let unionV0: SCSpecUDTUnionV0XDR = try SCSpecUDTUnionV0XDR.fromXdrJsonValue(member.value)
+      return .unionV0(unionV0)
+    case "udt_enum_v0":
+      let enumV0: SCSpecUDTEnumV0XDR = try SCSpecUDTEnumV0XDR.fromXdrJsonValue(member.value)
+      return .enumV0(enumV0)
+    case "udt_error_enum_v0":
+      let errorEnumV0: SCSpecUDTErrorEnumV0XDR = try SCSpecUDTErrorEnumV0XDR.fromXdrJsonValue(member.value)
+      return .errorEnumV0(errorEnumV0)
+    case "event_v0":
+      let eventV0: SCSpecEventV0XDR = try SCSpecEventV0XDR.fromXdrJsonValue(member.value)
+      return .eventV0(eventV0)
+    default:
+      throw XdrJsonError.unknownUnionArm(type: "SCSpecEntryXDR", key: member.key)
+    }
+  }
+}

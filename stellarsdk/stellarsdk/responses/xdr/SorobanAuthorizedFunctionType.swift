@@ -43,3 +43,24 @@ extension SorobanAuthorizedFunctionType {
     return try fromTxRepName(raw)
   }
 }
+
+extension SorobanAuthorizedFunctionType: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .contractFn: return .string("contract_fn")
+    case .createContractHostFn: return .string("create_contract_host_fn")
+    case .createContractV2HostFn: return .string("create_contract_v2_host_fn")
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> SorobanAuthorizedFunctionType {
+    let name = try XdrJson.string(value, type: "SorobanAuthorizedFunctionType")
+    switch name {
+    case "contract_fn": return .contractFn
+    case "create_contract_host_fn": return .createContractHostFn
+    case "create_contract_v2_host_fn": return .createContractV2HostFn
+    default:
+      throw XdrJsonError.unknownEnumValue(type: "SorobanAuthorizedFunctionType", value: name)
+    }
+  }
+}

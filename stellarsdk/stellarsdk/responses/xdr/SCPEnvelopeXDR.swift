@@ -24,3 +24,19 @@ public struct SCPEnvelopeXDR: XDRCodable, Sendable {
     try container.encode(signature)
   }
 }
+
+extension SCPEnvelopeXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "statement", value: try self.statement.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "signature", value: try SignatureXDRJsonCodec.toXdrJsonValue(self.signature, type: "SCPEnvelopeXDR", key: "signature")))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> SCPEnvelopeXDR {
+    let members = try XdrJson.object(value, type: "SCPEnvelopeXDR", keys: ["statement", "signature"])
+    let statement: SCPStatementXDR = try SCPStatementXDR.fromXdrJsonValue(try XdrJson.field(members, key: "statement", type: "SCPEnvelopeXDR"))
+    let signature: SignatureXDR = try SignatureXDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "signature", type: "SCPEnvelopeXDR"), type: "SCPEnvelopeXDR", key: "signature")
+    return SCPEnvelopeXDR(statement: statement, signature: signature)
+  }
+}

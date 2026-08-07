@@ -64,3 +64,38 @@ extension LedgerEntryType {
     return try fromTxRepName(raw)
   }
 }
+
+extension LedgerEntryType: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .account: return .string("account")
+    case .trustline: return .string("trustline")
+    case .offer: return .string("offer")
+    case .data: return .string("data")
+    case .claimableBalance: return .string("claimable_balance")
+    case .liquidityPool: return .string("liquidity_pool")
+    case .contractData: return .string("contract_data")
+    case .contractCode: return .string("contract_code")
+    case .configSetting: return .string("config_setting")
+    case .ttl: return .string("ttl")
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> LedgerEntryType {
+    let name = try XdrJson.string(value, type: "LedgerEntryType")
+    switch name {
+    case "account": return .account
+    case "trustline": return .trustline
+    case "offer": return .offer
+    case "data": return .data
+    case "claimable_balance": return .claimableBalance
+    case "liquidity_pool": return .liquidityPool
+    case "contract_data": return .contractData
+    case "contract_code": return .contractCode
+    case "config_setting": return .configSetting
+    case "ttl": return .ttl
+    default:
+      throw XdrJsonError.unknownEnumValue(type: "LedgerEntryType", value: name)
+    }
+  }
+}

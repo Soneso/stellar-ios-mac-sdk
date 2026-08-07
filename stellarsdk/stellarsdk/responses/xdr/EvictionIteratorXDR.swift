@@ -32,3 +32,25 @@ public struct EvictionIteratorXDR: XDRCodable, Sendable {
     try container.encode(bucketFileOffset)
   }
 }
+
+extension EvictionIteratorXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "bucket_list_level", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.bucketListLevel, type: "EvictionIteratorXDR", key: "bucket_list_level")))
+    members.append(XdrJsonMember(key: "is_curr_bucket", value: XdrJson.bool(self.isCurrBucket)))
+    members.append(XdrJsonMember(key: "bucket_file_offset", value: try Uint64XDRJsonCodec.toXdrJsonValue(self.bucketFileOffset, type: "EvictionIteratorXDR", key: "bucket_file_offset")))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> EvictionIteratorXDR {
+    let members = try XdrJson.object(value, type: "EvictionIteratorXDR", keys: ["bucket_list_level", "is_curr_bucket", "bucket_file_offset"])
+    let bucketListLevel: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "bucket_list_level", type: "EvictionIteratorXDR"), type: "EvictionIteratorXDR", key: "bucket_list_level")
+    let isCurrBucket: Bool = try XdrJson.bool(try XdrJson.field(members, key: "is_curr_bucket", type: "EvictionIteratorXDR"), type: "EvictionIteratorXDR", key: "is_curr_bucket")
+    let bucketFileOffset: UInt64 = try Uint64XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "bucket_file_offset", type: "EvictionIteratorXDR"), type: "EvictionIteratorXDR", key: "bucket_file_offset")
+    return EvictionIteratorXDR(
+      bucketListLevel: bucketListLevel,
+      isCurrBucket: isCurrBucket,
+      bucketFileOffset: bucketFileOffset
+    )
+  }
+}

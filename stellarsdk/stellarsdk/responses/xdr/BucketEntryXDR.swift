@@ -56,3 +56,57 @@ public enum BucketEntryXDR: XDRCodable, Sendable {
     }
   }
 }
+
+extension BucketEntryXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .liveentry(let payload):
+      return .object([XdrJsonMember(key: "liveentry", value: try payload.toXdrJsonValue())])
+    case .initentry(let payload):
+      return .object([XdrJsonMember(key: "initentry", value: try payload.toXdrJsonValue())])
+    case .deadEntry(let payload):
+      return .object([XdrJsonMember(key: "deadentry", value: try payload.toXdrJsonValue())])
+    case .metaEntry(let payload):
+      return .object([XdrJsonMember(key: "metaentry", value: try payload.toXdrJsonValue())])
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> BucketEntryXDR {
+    if case .string(let name) = value {
+      switch name {
+      case "liveentry":
+        throw XdrJsonError.invalidValue(type: "BucketEntryXDR", key: "liveentry",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "initentry":
+        throw XdrJsonError.invalidValue(type: "BucketEntryXDR", key: "initentry",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "deadentry":
+        throw XdrJsonError.invalidValue(type: "BucketEntryXDR", key: "deadentry",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "metaentry":
+        throw XdrJsonError.invalidValue(type: "BucketEntryXDR", key: "metaentry",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      default:
+        throw XdrJsonError.unknownUnionArm(type: "BucketEntryXDR", key: name)
+      }
+    }
+
+    let member = try XdrJson.singleKeyObject(value, type: "BucketEntryXDR")
+    switch member.key {
+    case "liveentry":
+      let liveentry: LedgerEntryXDR = try LedgerEntryXDR.fromXdrJsonValue(member.value)
+      return .liveentry(liveentry)
+    case "initentry":
+      let initentry: LedgerEntryXDR = try LedgerEntryXDR.fromXdrJsonValue(member.value)
+      return .initentry(initentry)
+    case "deadentry":
+      let deadEntry: LedgerKeyXDR = try LedgerKeyXDR.fromXdrJsonValue(member.value)
+      return .deadEntry(deadEntry)
+    case "metaentry":
+      let metaEntry: BucketMetadataXDR = try BucketMetadataXDR.fromXdrJsonValue(member.value)
+      return .metaEntry(metaEntry)
+    default:
+      throw XdrJsonError.unknownUnionArm(type: "BucketEntryXDR", key: member.key)
+    }
+  }
+}

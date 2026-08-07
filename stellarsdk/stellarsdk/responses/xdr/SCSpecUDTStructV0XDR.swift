@@ -37,3 +37,29 @@ public struct SCSpecUDTStructV0XDR: XDRCodable, Sendable {
     try container.encode(fields)
   }
 }
+
+extension SCSpecUDTStructV0XDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "doc", value: XdrJson.escapedString(self.doc)))
+    members.append(XdrJsonMember(key: "lib", value: XdrJson.escapedString(self.lib)))
+    members.append(XdrJsonMember(key: "name", value: XdrJson.escapedString(self.name)))
+    members.append(XdrJsonMember(key: "fields", value: try XdrJson.array(self.fields.map { element in try element.toXdrJsonValue() })))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> SCSpecUDTStructV0XDR {
+    let members = try XdrJson.object(value, type: "SCSpecUDTStructV0XDR", keys: ["doc", "lib", "name", "fields"])
+    let doc: String = try XdrJson.unescapedText(try XdrJson.field(members, key: "doc", type: "SCSpecUDTStructV0XDR"), type: "SCSpecUDTStructV0XDR", key: "doc")
+    let lib: String = try XdrJson.unescapedText(try XdrJson.field(members, key: "lib", type: "SCSpecUDTStructV0XDR"), type: "SCSpecUDTStructV0XDR", key: "lib")
+    let name: String = try XdrJson.unescapedText(try XdrJson.field(members, key: "name", type: "SCSpecUDTStructV0XDR"), type: "SCSpecUDTStructV0XDR", key: "name")
+    let fieldsElements = try XdrJson.array(try XdrJson.field(members, key: "fields", type: "SCSpecUDTStructV0XDR"), type: "SCSpecUDTStructV0XDR", key: "fields")
+    let fields: [SCSpecUDTStructFieldV0XDR] = try fieldsElements.map { element in try SCSpecUDTStructFieldV0XDR.fromXdrJsonValue(element) }
+    return SCSpecUDTStructV0XDR(
+      doc: doc,
+      lib: lib,
+      name: name,
+      fields: fields
+    )
+  }
+}

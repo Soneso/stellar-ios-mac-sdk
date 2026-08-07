@@ -31,3 +31,17 @@ extension SCNonceKeyXDR {
     return SCNonceKeyXDR(nonce: nonce)
   }
 }
+
+extension SCNonceKeyXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "nonce", value: try Int64XDRJsonCodec.toXdrJsonValue(self.nonce, type: "SCNonceKeyXDR", key: "nonce")))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> SCNonceKeyXDR {
+    let members = try XdrJson.object(value, type: "SCNonceKeyXDR", keys: ["nonce"])
+    let nonce: Int64 = try Int64XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "nonce", type: "SCNonceKeyXDR"), type: "SCNonceKeyXDR", key: "nonce")
+    return SCNonceKeyXDR(nonce: nonce)
+  }
+}

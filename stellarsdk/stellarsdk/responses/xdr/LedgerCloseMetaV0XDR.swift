@@ -42,3 +42,34 @@ public struct LedgerCloseMetaV0XDR: XDRCodable, Sendable {
     try container.encode(scpInfo)
   }
 }
+
+extension LedgerCloseMetaV0XDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "ledger_header", value: try self.ledgerHeader.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "tx_set", value: try self.txSet.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "tx_processing", value: try XdrJson.array(self.txProcessing.map { element in try element.toXdrJsonValue() })))
+    members.append(XdrJsonMember(key: "upgrades_processing", value: try XdrJson.array(self.upgradesProcessing.map { element in try element.toXdrJsonValue() })))
+    members.append(XdrJsonMember(key: "scp_info", value: try XdrJson.array(self.scpInfo.map { element in try element.toXdrJsonValue() })))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> LedgerCloseMetaV0XDR {
+    let members = try XdrJson.object(value, type: "LedgerCloseMetaV0XDR", keys: ["ledger_header", "tx_set", "tx_processing", "upgrades_processing", "scp_info"])
+    let ledgerHeader: LedgerHeaderHistoryEntryXDR = try LedgerHeaderHistoryEntryXDR.fromXdrJsonValue(try XdrJson.field(members, key: "ledger_header", type: "LedgerCloseMetaV0XDR"))
+    let txSet: TransactionSetXDR = try TransactionSetXDR.fromXdrJsonValue(try XdrJson.field(members, key: "tx_set", type: "LedgerCloseMetaV0XDR"))
+    let txProcessingElements = try XdrJson.array(try XdrJson.field(members, key: "tx_processing", type: "LedgerCloseMetaV0XDR"), type: "LedgerCloseMetaV0XDR", key: "tx_processing")
+    let txProcessing: [TransactionResultMetaXDR] = try txProcessingElements.map { element in try TransactionResultMetaXDR.fromXdrJsonValue(element) }
+    let upgradesProcessingElements = try XdrJson.array(try XdrJson.field(members, key: "upgrades_processing", type: "LedgerCloseMetaV0XDR"), type: "LedgerCloseMetaV0XDR", key: "upgrades_processing")
+    let upgradesProcessing: [UpgradeEntryMetaXDR] = try upgradesProcessingElements.map { element in try UpgradeEntryMetaXDR.fromXdrJsonValue(element) }
+    let scpInfoElements = try XdrJson.array(try XdrJson.field(members, key: "scp_info", type: "LedgerCloseMetaV0XDR"), type: "LedgerCloseMetaV0XDR", key: "scp_info")
+    let scpInfo: [SCPHistoryEntryXDR] = try scpInfoElements.map { element in try SCPHistoryEntryXDR.fromXdrJsonValue(element) }
+    return LedgerCloseMetaV0XDR(
+      ledgerHeader: ledgerHeader,
+      txSet: txSet,
+      txProcessing: txProcessing,
+      upgradesProcessing: upgradesProcessing,
+      scpInfo: scpInfo
+    )
+  }
+}

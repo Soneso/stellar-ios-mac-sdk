@@ -82,3 +82,47 @@ extension ContractExecutableXDR {
     }
   }
 }
+
+extension ContractExecutableXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .wasm(let payload):
+      return .object([XdrJsonMember(key: "wasm", value: try HashXDRJsonCodec.toXdrJsonValue(payload, type: "ContractExecutableXDR", key: "wasm"))])
+    case .token: return .string("stellar_asset")
+    case .externalRef(let payload):
+      return .object([XdrJsonMember(key: "external_ref", value: try payload.toXdrJsonValue())])
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> ContractExecutableXDR {
+    if case .string(let name) = value {
+      switch name {
+      case "wasm":
+        throw XdrJsonError.invalidValue(type: "ContractExecutableXDR", key: "wasm",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "stellar_asset":
+        return .token
+      case "external_ref":
+        throw XdrJsonError.invalidValue(type: "ContractExecutableXDR", key: "external_ref",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      default:
+        throw XdrJsonError.unknownUnionArm(type: "ContractExecutableXDR", key: name)
+      }
+    }
+
+    let member = try XdrJson.singleKeyObject(value, type: "ContractExecutableXDR")
+    switch member.key {
+    case "wasm":
+      let wasm: HashXDR = try HashXDRJsonCodec.fromXdrJsonValue(member.value, type: "ContractExecutableXDR", key: "wasm")
+      return .wasm(wasm)
+    case "stellar_asset":
+      throw XdrJsonError.invalidValue(type: "ContractExecutableXDR", key: "stellar_asset",
+                                      message: "this arm carries no value, so it is written as a bare string")
+    case "external_ref":
+      let externalRef: ContractExecutableExternalRefXDR = try ContractExecutableExternalRefXDR.fromXdrJsonValue(member.value)
+      return .externalRef(externalRef)
+    default:
+      throw XdrJsonError.unknownUnionArm(type: "ContractExecutableXDR", key: member.key)
+    }
+  }
+}

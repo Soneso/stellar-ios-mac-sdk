@@ -25,3 +25,58 @@ public enum TransactionResultCode: Int32, XDRCodable, Equatable, Sendable {
   case sorobanInvalid = -17
   case frozenKeyAccessed = -18
 }
+
+extension TransactionResultCode: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .feeBumpInnerSuccess: return .string("tx_fee_bump_inner_success")
+    case .success: return .string("tx_success")
+    case .failed: return .string("tx_failed")
+    case .tooEarly: return .string("tx_too_early")
+    case .tooLate: return .string("tx_too_late")
+    case .missingOperation: return .string("tx_missing_operation")
+    case .badSeq: return .string("tx_bad_seq")
+    case .badAuth: return .string("tx_bad_auth")
+    case .insufficientBalance: return .string("tx_insufficient_balance")
+    case .noAccount: return .string("tx_no_account")
+    case .insufficientFee: return .string("tx_insufficient_fee")
+    case .badAuthExtra: return .string("tx_bad_auth_extra")
+    case .internalError: return .string("tx_internal_error")
+    case .notSupported: return .string("tx_not_supported")
+    case .feeBumpInnerFailed: return .string("tx_fee_bump_inner_failed")
+    case .badSponsorship: return .string("tx_bad_sponsorship")
+    case .badMinSeqAgeOrGap: return .string("tx_bad_min_seq_age_or_gap")
+    case .malformed: return .string("tx_malformed")
+    case .sorobanInvalid: return .string("tx_soroban_invalid")
+    case .frozenKeyAccessed: return .string("tx_frozen_key_accessed")
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> TransactionResultCode {
+    let name = try XdrJson.string(value, type: "TransactionResultCode")
+    switch name {
+    case "tx_fee_bump_inner_success": return .feeBumpInnerSuccess
+    case "tx_success": return .success
+    case "tx_failed": return .failed
+    case "tx_too_early": return .tooEarly
+    case "tx_too_late": return .tooLate
+    case "tx_missing_operation": return .missingOperation
+    case "tx_bad_seq": return .badSeq
+    case "tx_bad_auth": return .badAuth
+    case "tx_insufficient_balance": return .insufficientBalance
+    case "tx_no_account": return .noAccount
+    case "tx_insufficient_fee": return .insufficientFee
+    case "tx_bad_auth_extra": return .badAuthExtra
+    case "tx_internal_error": return .internalError
+    case "tx_not_supported": return .notSupported
+    case "tx_fee_bump_inner_failed": return .feeBumpInnerFailed
+    case "tx_bad_sponsorship": return .badSponsorship
+    case "tx_bad_min_seq_age_or_gap": return .badMinSeqAgeOrGap
+    case "tx_malformed": return .malformed
+    case "tx_soroban_invalid": return .sorobanInvalid
+    case "tx_frozen_key_accessed": return .frozenKeyAccessed
+    default:
+      throw XdrJsonError.unknownEnumValue(type: "TransactionResultCode", value: name)
+    }
+  }
+}

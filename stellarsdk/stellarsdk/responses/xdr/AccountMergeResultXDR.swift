@@ -77,3 +77,75 @@ public enum AccountMergeResultXDR: XDRCodable, Sendable {
     }
   }
 }
+
+extension AccountMergeResultXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .sourceAccountBalance(let payload):
+      return .object([XdrJsonMember(key: "success", value: try Int64XDRJsonCodec.toXdrJsonValue(payload, type: "AccountMergeResultXDR", key: "success"))])
+    case .malformed: return .string("malformed")
+    case .noAccount: return .string("no_account")
+    case .immutableSet: return .string("immutable_set")
+    case .hasSubEntries: return .string("has_sub_entries")
+    case .seqnumTooFar: return .string("seqnum_too_far")
+    case .destFull: return .string("dest_full")
+    case .isSponsor: return .string("is_sponsor")
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> AccountMergeResultXDR {
+    if case .string(let name) = value {
+      switch name {
+      case "success":
+        throw XdrJsonError.invalidValue(type: "AccountMergeResultXDR", key: "success",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "malformed":
+        return .malformed
+      case "no_account":
+        return .noAccount
+      case "immutable_set":
+        return .immutableSet
+      case "has_sub_entries":
+        return .hasSubEntries
+      case "seqnum_too_far":
+        return .seqnumTooFar
+      case "dest_full":
+        return .destFull
+      case "is_sponsor":
+        return .isSponsor
+      default:
+        throw XdrJsonError.unknownUnionArm(type: "AccountMergeResultXDR", key: name)
+      }
+    }
+
+    let member = try XdrJson.singleKeyObject(value, type: "AccountMergeResultXDR")
+    switch member.key {
+    case "success":
+      let sourceAccountBalance: Int64 = try Int64XDRJsonCodec.fromXdrJsonValue(member.value, type: "AccountMergeResultXDR", key: "success")
+      return .sourceAccountBalance(sourceAccountBalance)
+    case "malformed":
+      throw XdrJsonError.invalidValue(type: "AccountMergeResultXDR", key: "malformed",
+                                      message: "this arm carries no value, so it is written as a bare string")
+    case "no_account":
+      throw XdrJsonError.invalidValue(type: "AccountMergeResultXDR", key: "no_account",
+                                      message: "this arm carries no value, so it is written as a bare string")
+    case "immutable_set":
+      throw XdrJsonError.invalidValue(type: "AccountMergeResultXDR", key: "immutable_set",
+                                      message: "this arm carries no value, so it is written as a bare string")
+    case "has_sub_entries":
+      throw XdrJsonError.invalidValue(type: "AccountMergeResultXDR", key: "has_sub_entries",
+                                      message: "this arm carries no value, so it is written as a bare string")
+    case "seqnum_too_far":
+      throw XdrJsonError.invalidValue(type: "AccountMergeResultXDR", key: "seqnum_too_far",
+                                      message: "this arm carries no value, so it is written as a bare string")
+    case "dest_full":
+      throw XdrJsonError.invalidValue(type: "AccountMergeResultXDR", key: "dest_full",
+                                      message: "this arm carries no value, so it is written as a bare string")
+    case "is_sponsor":
+      throw XdrJsonError.invalidValue(type: "AccountMergeResultXDR", key: "is_sponsor",
+                                      message: "this arm carries no value, so it is written as a bare string")
+    default:
+      throw XdrJsonError.unknownUnionArm(type: "AccountMergeResultXDR", key: member.key)
+    }
+  }
+}

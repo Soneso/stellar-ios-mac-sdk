@@ -23,3 +23,19 @@ public struct ClaimableBalanceEntryExtensionV1: XDRCodable, Sendable {
     try container.encode(flags)
   }
 }
+
+extension ClaimableBalanceEntryExtensionV1: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "ext", value: .string("v0")))
+    members.append(XdrJsonMember(key: "flags", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.flags, type: "ClaimableBalanceEntryExtensionV1", key: "flags")))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> ClaimableBalanceEntryExtensionV1 {
+    let members = try XdrJson.object(value, type: "ClaimableBalanceEntryExtensionV1", keys: ["ext", "flags"])
+    _ = try ClaimableBalanceEntryExtensionV1ExtXDR.fromXdrJsonValue(try XdrJson.field(members, key: "ext", type: "ClaimableBalanceEntryExtensionV1"))
+    let flags: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "flags", type: "ClaimableBalanceEntryExtensionV1"), type: "ClaimableBalanceEntryExtensionV1", key: "flags")
+    return ClaimableBalanceEntryExtensionV1(flags: flags)
+  }
+}

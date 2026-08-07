@@ -7,3 +7,22 @@ public enum InflationResultCode: Int32, XDRCodable, Equatable, Sendable {
   case success = 0
   case notTime = -1
 }
+
+extension InflationResultCode: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .success: return .string("success")
+    case .notTime: return .string("not_time")
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> InflationResultCode {
+    let name = try XdrJson.string(value, type: "InflationResultCode")
+    switch name {
+    case "success": return .success
+    case "not_time": return .notTime
+    default:
+      throw XdrJsonError.unknownEnumValue(type: "InflationResultCode", value: name)
+    }
+  }
+}

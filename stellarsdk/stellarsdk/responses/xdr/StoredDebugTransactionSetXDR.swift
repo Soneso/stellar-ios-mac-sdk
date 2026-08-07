@@ -32,3 +32,25 @@ public struct StoredDebugTransactionSetXDR: XDRCodable, Sendable {
     try container.encode(scpValue)
   }
 }
+
+extension StoredDebugTransactionSetXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "tx_set", value: try self.txSet.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "ledger_seq", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.ledgerSeq, type: "StoredDebugTransactionSetXDR", key: "ledger_seq")))
+    members.append(XdrJsonMember(key: "scp_value", value: try self.scpValue.toXdrJsonValue()))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> StoredDebugTransactionSetXDR {
+    let members = try XdrJson.object(value, type: "StoredDebugTransactionSetXDR", keys: ["tx_set", "ledger_seq", "scp_value"])
+    let txSet: StoredTransactionSetXDR = try StoredTransactionSetXDR.fromXdrJsonValue(try XdrJson.field(members, key: "tx_set", type: "StoredDebugTransactionSetXDR"))
+    let ledgerSeq: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "ledger_seq", type: "StoredDebugTransactionSetXDR"), type: "StoredDebugTransactionSetXDR", key: "ledger_seq")
+    let scpValue: StellarValueXDR = try StellarValueXDR.fromXdrJsonValue(try XdrJson.field(members, key: "scp_value", type: "StoredDebugTransactionSetXDR"))
+    return StoredDebugTransactionSetXDR(
+      txSet: txSet,
+      ledgerSeq: ledgerSeq,
+      scpValue: scpValue
+    )
+  }
+}

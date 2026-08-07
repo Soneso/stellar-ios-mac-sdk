@@ -24,3 +24,19 @@ public struct TimeSlicedSurveyResponseMessageXDR: XDRCodable, Sendable {
     try container.encode(nonce)
   }
 }
+
+extension TimeSlicedSurveyResponseMessageXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "response", value: try self.response.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "nonce", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.nonce, type: "TimeSlicedSurveyResponseMessageXDR", key: "nonce")))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> TimeSlicedSurveyResponseMessageXDR {
+    let members = try XdrJson.object(value, type: "TimeSlicedSurveyResponseMessageXDR", keys: ["response", "nonce"])
+    let response: SurveyResponseMessageXDR = try SurveyResponseMessageXDR.fromXdrJsonValue(try XdrJson.field(members, key: "response", type: "TimeSlicedSurveyResponseMessageXDR"))
+    let nonce: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "nonce", type: "TimeSlicedSurveyResponseMessageXDR"), type: "TimeSlicedSurveyResponseMessageXDR", key: "nonce")
+    return TimeSlicedSurveyResponseMessageXDR(response: response, nonce: nonce)
+  }
+}

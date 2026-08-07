@@ -66,3 +66,27 @@ extension SCContractInstanceXDR {
     return SCContractInstanceXDR(executable: executable, storage: storage)
   }
 }
+
+extension SCContractInstanceXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "executable", value: try self.executable.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "storage", value: try XdrJson.optional(self.storage.map { element in try XdrJson.array(element.map { element in try element.toXdrJsonValue() }) })))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> SCContractInstanceXDR {
+    let members = try XdrJson.object(value, type: "SCContractInstanceXDR", keys: ["executable", "storage"])
+    let executable: ContractExecutableXDR = try ContractExecutableXDR.fromXdrJsonValue(try XdrJson.field(members, key: "executable", type: "SCContractInstanceXDR"))
+    let storageValue = try XdrJson.field(members, key: "storage", type: "SCContractInstanceXDR")
+    let storage: [SCMapEntryXDR]?
+    if storageValue.isNull {
+      storage = nil
+    } else {
+      let storagePresentElements = try XdrJson.array(storageValue, type: "SCContractInstanceXDR", key: "storage")
+      let storagePresent: [SCMapEntryXDR] = try storagePresentElements.map { element in try SCMapEntryXDR.fromXdrJsonValue(element) }
+      storage = storagePresent
+    }
+    return SCContractInstanceXDR(executable: executable, storage: storage)
+  }
+}

@@ -4,3 +4,35 @@
 import Foundation
 
 public typealias SignatureHintXDR = WrappedData4
+
+public enum SignatureHintXDRJsonCodec {
+  public static func toXdrJsonValue(_ value: SignatureHintXDR) throws -> XdrJsonValue {
+    try toXdrJsonValue(value, type: "SignatureHintXDR", key: nil)
+  }
+
+  static func toXdrJsonValue(_ value: SignatureHintXDR, type: String, key: String?) throws -> XdrJsonValue {
+    return try XdrJson.hex(value.wrapped, expectedLength: 4, type: type, key: key)
+  }
+
+  public static func toXdrJson(_ value: SignatureHintXDR) throws -> String {
+    try XdrJsonWriter.canonicalString(from: try toXdrJsonValue(value))
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> SignatureHintXDR {
+    try fromXdrJsonValue(value, type: "SignatureHintXDR", key: nil)
+  }
+
+  static func fromXdrJsonValue(_ value: XdrJsonValue, type: String, key: String?) throws -> SignatureHintXDR {
+    let decoded: WrappedData4 = WrappedData4(try XdrJson.hex(value, expectedLength: 4, type: type, key: key))
+    return decoded
+  }
+
+  public static func fromXdrJson(_ json: String) throws -> SignatureHintXDR {
+    try fromXdrJsonValue(try XdrJsonParser.parse(json))
+  }
+
+  public static func fromXdrJsonTree(_ value: XdrJsonValue) throws -> SignatureHintXDR {
+    try XdrJson.validateDepth(value)
+    return try fromXdrJsonValue(value)
+  }
+}

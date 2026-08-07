@@ -45,3 +45,20 @@ extension SorobanAddressCredentialsWithDelegatesXDR {
     return SorobanAddressCredentialsWithDelegatesXDR(addressCredentials: addressCredentials, delegates: delegates)
   }
 }
+
+extension SorobanAddressCredentialsWithDelegatesXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "address_credentials", value: try self.addressCredentials.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "delegates", value: try XdrJson.array(self.delegates.map { element in try element.toXdrJsonValue() })))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> SorobanAddressCredentialsWithDelegatesXDR {
+    let members = try XdrJson.object(value, type: "SorobanAddressCredentialsWithDelegatesXDR", keys: ["address_credentials", "delegates"])
+    let addressCredentials: SorobanAddressCredentialsXDR = try SorobanAddressCredentialsXDR.fromXdrJsonValue(try XdrJson.field(members, key: "address_credentials", type: "SorobanAddressCredentialsWithDelegatesXDR"))
+    let delegatesElements = try XdrJson.array(try XdrJson.field(members, key: "delegates", type: "SorobanAddressCredentialsWithDelegatesXDR"), type: "SorobanAddressCredentialsWithDelegatesXDR", key: "delegates")
+    let delegates: [SorobanDelegateSignatureXDR] = try delegatesElements.map { element in try SorobanDelegateSignatureXDR.fromXdrJsonValue(element) }
+    return SorobanAddressCredentialsWithDelegatesXDR(addressCredentials: addressCredentials, delegates: delegates)
+  }
+}

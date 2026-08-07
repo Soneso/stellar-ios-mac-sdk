@@ -32,3 +32,25 @@ public struct SCSpecUDTErrorEnumCaseV0XDR: XDRCodable, Sendable {
     try container.encode(value)
   }
 }
+
+extension SCSpecUDTErrorEnumCaseV0XDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "doc", value: XdrJson.escapedString(self.doc)))
+    members.append(XdrJsonMember(key: "name", value: XdrJson.escapedString(self.name)))
+    members.append(XdrJsonMember(key: "value", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.value, type: "SCSpecUDTErrorEnumCaseV0XDR", key: "value")))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> SCSpecUDTErrorEnumCaseV0XDR {
+    let members = try XdrJson.object(value, type: "SCSpecUDTErrorEnumCaseV0XDR", keys: ["doc", "name", "value"])
+    let doc: String = try XdrJson.unescapedText(try XdrJson.field(members, key: "doc", type: "SCSpecUDTErrorEnumCaseV0XDR"), type: "SCSpecUDTErrorEnumCaseV0XDR", key: "doc")
+    let name: String = try XdrJson.unescapedText(try XdrJson.field(members, key: "name", type: "SCSpecUDTErrorEnumCaseV0XDR"), type: "SCSpecUDTErrorEnumCaseV0XDR", key: "name")
+    let valueField: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "value", type: "SCSpecUDTErrorEnumCaseV0XDR"), type: "SCSpecUDTErrorEnumCaseV0XDR", key: "value")
+    return SCSpecUDTErrorEnumCaseV0XDR(
+      doc: doc,
+      name: name,
+      value: valueField
+    )
+  }
+}

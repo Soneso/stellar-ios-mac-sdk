@@ -6,3 +6,20 @@ import Foundation
 public enum SCMetaKind: Int32, XDRCodable, Equatable, Sendable {
   case v0 = 0
 }
+
+extension SCMetaKind: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .v0: return .string("sc_meta_v0")
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> SCMetaKind {
+    let name = try XdrJson.string(value, type: "SCMetaKind")
+    switch name {
+    case "sc_meta_v0": return .v0
+    default:
+      throw XdrJsonError.unknownEnumValue(type: "SCMetaKind", value: name)
+    }
+  }
+}

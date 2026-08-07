@@ -18,3 +18,8 @@ public enum PathPaymentResultCode: Int32, XDRCodable, Equatable, Sendable {
   case offerCrossSelf = -11
   case overSendmax = -12
 }
+
+// PathPaymentResultCode is the Swift form of both PathPaymentStrictReceiveResultCode and PathPaymentStrictSendResultCode.
+// SEP-0051 renders them under different names, so no single rendering is correct for
+// this type and it carries no XDR-JSON members. The conversions live on
+// the union each of them discriminates, under that definition's own names.

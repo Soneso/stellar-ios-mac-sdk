@@ -32,3 +32,26 @@ public struct LedgerCloseMetaBatchXDR: XDRCodable, Sendable {
     try container.encode(ledgerCloseMetas)
   }
 }
+
+extension LedgerCloseMetaBatchXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "start_sequence", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.startSequence, type: "LedgerCloseMetaBatchXDR", key: "start_sequence")))
+    members.append(XdrJsonMember(key: "end_sequence", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.endSequence, type: "LedgerCloseMetaBatchXDR", key: "end_sequence")))
+    members.append(XdrJsonMember(key: "ledger_close_metas", value: try XdrJson.array(self.ledgerCloseMetas.map { element in try element.toXdrJsonValue() })))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> LedgerCloseMetaBatchXDR {
+    let members = try XdrJson.object(value, type: "LedgerCloseMetaBatchXDR", keys: ["start_sequence", "end_sequence", "ledger_close_metas"])
+    let startSequence: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "start_sequence", type: "LedgerCloseMetaBatchXDR"), type: "LedgerCloseMetaBatchXDR", key: "start_sequence")
+    let endSequence: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "end_sequence", type: "LedgerCloseMetaBatchXDR"), type: "LedgerCloseMetaBatchXDR", key: "end_sequence")
+    let ledgerCloseMetasElements = try XdrJson.array(try XdrJson.field(members, key: "ledger_close_metas", type: "LedgerCloseMetaBatchXDR"), type: "LedgerCloseMetaBatchXDR", key: "ledger_close_metas")
+    let ledgerCloseMetas: [LedgerCloseMetaXDR] = try ledgerCloseMetasElements.map { element in try LedgerCloseMetaXDR.fromXdrJsonValue(element) }
+    return LedgerCloseMetaBatchXDR(
+      startSequence: startSequence,
+      endSequence: endSequence,
+      ledgerCloseMetas: ledgerCloseMetas
+    )
+  }
+}

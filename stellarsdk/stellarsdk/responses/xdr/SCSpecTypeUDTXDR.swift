@@ -20,3 +20,17 @@ public struct SCSpecTypeUDTXDR: XDRCodable, Sendable {
     try container.encode(name)
   }
 }
+
+extension SCSpecTypeUDTXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "name", value: XdrJson.escapedString(self.name)))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> SCSpecTypeUDTXDR {
+    let members = try XdrJson.object(value, type: "SCSpecTypeUDTXDR", keys: ["name"])
+    let name: String = try XdrJson.unescapedText(try XdrJson.field(members, key: "name", type: "SCSpecTypeUDTXDR"), type: "SCSpecTypeUDTXDR", key: "name")
+    return SCSpecTypeUDTXDR(name: name)
+  }
+}

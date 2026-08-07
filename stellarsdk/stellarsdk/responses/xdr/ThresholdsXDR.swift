@@ -4,3 +4,35 @@
 import Foundation
 
 public typealias ThresholdsXDR = WrappedData4
+
+public enum ThresholdsXDRJsonCodec {
+  public static func toXdrJsonValue(_ value: ThresholdsXDR) throws -> XdrJsonValue {
+    try toXdrJsonValue(value, type: "ThresholdsXDR", key: nil)
+  }
+
+  static func toXdrJsonValue(_ value: ThresholdsXDR, type: String, key: String?) throws -> XdrJsonValue {
+    return try XdrJson.hex(value.wrapped, expectedLength: 4, type: type, key: key)
+  }
+
+  public static func toXdrJson(_ value: ThresholdsXDR) throws -> String {
+    try XdrJsonWriter.canonicalString(from: try toXdrJsonValue(value))
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> ThresholdsXDR {
+    try fromXdrJsonValue(value, type: "ThresholdsXDR", key: nil)
+  }
+
+  static func fromXdrJsonValue(_ value: XdrJsonValue, type: String, key: String?) throws -> ThresholdsXDR {
+    let decoded: WrappedData4 = WrappedData4(try XdrJson.hex(value, expectedLength: 4, type: type, key: key))
+    return decoded
+  }
+
+  public static func fromXdrJson(_ json: String) throws -> ThresholdsXDR {
+    try fromXdrJsonValue(try XdrJsonParser.parse(json))
+  }
+
+  public static func fromXdrJsonTree(_ value: XdrJsonValue) throws -> ThresholdsXDR {
+    try XdrJson.validateDepth(value)
+    return try fromXdrJsonValue(value)
+  }
+}

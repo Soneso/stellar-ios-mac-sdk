@@ -55,3 +55,26 @@ extension SorobanDelegateSignatureXDR {
     return SorobanDelegateSignatureXDR(address: address, signature: signature, nestedDelegates: nestedDelegates)
   }
 }
+
+extension SorobanDelegateSignatureXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "address", value: try self.address.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "signature", value: try self.signature.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "nested_delegates", value: try XdrJson.array(self.nestedDelegates.map { element in try element.toXdrJsonValue() })))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> SorobanDelegateSignatureXDR {
+    let members = try XdrJson.object(value, type: "SorobanDelegateSignatureXDR", keys: ["address", "signature", "nested_delegates"])
+    let address: SCAddressXDR = try SCAddressXDR.fromXdrJsonValue(try XdrJson.field(members, key: "address", type: "SorobanDelegateSignatureXDR"))
+    let signature: SCValXDR = try SCValXDR.fromXdrJsonValue(try XdrJson.field(members, key: "signature", type: "SorobanDelegateSignatureXDR"))
+    let nestedDelegatesElements = try XdrJson.array(try XdrJson.field(members, key: "nested_delegates", type: "SorobanDelegateSignatureXDR"), type: "SorobanDelegateSignatureXDR", key: "nested_delegates")
+    let nestedDelegates: [SorobanDelegateSignatureXDR] = try nestedDelegatesElements.map { element in try SorobanDelegateSignatureXDR.fromXdrJsonValue(element) }
+    return SorobanDelegateSignatureXDR(
+      address: address,
+      signature: signature,
+      nestedDelegates: nestedDelegates
+    )
+  }
+}

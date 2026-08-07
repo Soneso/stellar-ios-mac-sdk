@@ -1,0 +1,556 @@
+name: SEP-51 reference watch
+
+# The SEP-0051 name table and conformance corpus are checked against a pinned build of the
+# XDR-JSON reference CLI. That build has to be compiled from source, which is too slow to put
+# in front of every pull request, so these checks run on a schedule instead. The checks that
+# need only committed artefacts run per pull request, in the sep-51-artefacts job of
+# xdr-generator.yml.
+#
+# Drift is expected to be rare and is never fixed here: the job reports it and a maintainer
+# regenerates the artefacts locally, because regeneration needs the same reference build.
+#
+# The same job then watches upstream for the two things that change XDR-JSON behaviour from
+# outside this repository: a new release of the reference crate, and a new revision of the
+# specification. A new reference release is compared against the committed artefacts in
+# advisory mode, which reports and writes nothing, so the answer to "is this pin bump routine
+# or does it change our output?" is in hand before anyone bumps the pin.
+
+on:
+  schedule:
+    # Mondays at 04:15 UTC
+    - cron: '15 4 * * 1'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Run without creating an issue (for testing)'
+        required: false
+        default: 'false'
+        type: boolean
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  check-against-reference:
+    name: Name table and corpus
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Read the pinned reference build
+        id: pin
+        run: |
+          PIN_FILE="tools/sep-51-oracle/oracle-pin.json"
+          if [ ! -f "$PIN_FILE" ]; then
+            echo "::error::Reference pin not found: $PIN_FILE"
+            exit 1
+          fi
+
+          VERSION=$(jq -r '.version' "$PIN_FILE")
+          if [ -z "$VERSION" ] || [ "$VERSION" = "null" ]; then
+            echo "::error::No version recorded in $PIN_FILE"
+            exit 1
+          fi
+
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Pinned reference build: stellar-xdr $VERSION"
+
+      - name: Cache the reference CLI
+        id: cli-cache
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.cargo/bin/stellar-xdr
+          key: stellar-xdr-cli-${{ runner.os }}-${{ steps.pin.outputs.version }}
+
+      - name: Install the reference CLI
+        if: steps.cli-cache.outputs.cache-hit != 'true'
+        run: |
+          cargo install stellar-xdr \
+            --features cli \
+            --version "${{ steps.pin.outputs.version }}" \
+            --locked
+
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@95ef2b042f9d7a56d8268cba8559e2842e2ad01b # v1.321.0
+        with:
+          ruby-version: '3.4'
+
+      - name: Cache generator gems
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: tools/xdr-generator/vendor
+          key: xdr-generator-gems-${{ runner.os }}-${{ hashFiles('tools/xdr-generator/Gemfile.lock') }}
+
+      - name: Install generator gems
+        # The name table is derived from the .x sources through the generator's own parser.
+        # The .x files themselves are committed, so nothing is downloaded here.
+        working-directory: tools/xdr-generator
+        run: |
+          bundle config set --local path vendor/bundle
+          bundle install --quiet
+
+      - name: Check the name table against the reference
+        id: names
+        run: |
+          set +e
+          ruby tools/sep-51-oracle/name_map.rb --check > /tmp/name_check.log 2>&1
+          status=$?
+          set -e
+          cat /tmp/name_check.log
+
+          if [ "$status" -eq 2 ]; then
+            echo "::error::The reference CLI is missing or does not match the pin recorded in tools/sep-51-oracle/oracle-pin.json."
+            echo "This is a broken job, not name drift. Check the install step above."
+            exit 1
+          fi
+
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+
+      - name: Check the corpus against the reference
+        id: corpus
+        run: |
+          set +e
+          bash tools/sep-51-corpus/refresh_corpus.sh > /tmp/corpus_check.log 2>&1
+          status=$?
+          set -e
+          cat /tmp/corpus_check.log
+
+          if [ "$status" -eq 2 ]; then
+            echo "::error::The reference CLI is missing or does not match the pin recorded in tools/sep-51-oracle/oracle-pin.json."
+            echo "This is a broken job, not corpus drift. Check the install step above."
+            exit 1
+          fi
+
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+
+      - name: Summarise
+        id: summary
+        run: |
+          NAMES_STATUS="${{ steps.names.outputs.status }}"
+          CORPUS_STATUS="${{ steps.corpus.outputs.status }}"
+
+          if [ "$NAMES_STATUS" = "0" ] && [ "$CORPUS_STATUS" = "0" ]; then
+            echo "The name table and the corpus both match the pinned reference build."
+            echo "drift=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "drift=true" >> "$GITHUB_OUTPUT"
+
+          {
+            printf 'The SEP-0051 artefacts no longer match the pinned reference build.\n'
+            printf '\n'
+            printf '**Reference build:** stellar-xdr `%s`\n' "${{ steps.pin.outputs.version }}"
+            printf '\n'
+          } > /tmp/report.md
+
+          if [ "$NAMES_STATUS" != "0" ]; then
+            {
+              printf '## Name table\n\n'
+              printf '`tools/sep-51-oracle/name-map.json` disagrees with the reference, or a committed artefact is out of date.\n\n'
+              printf '```\n'
+              cat /tmp/name_check.log
+              printf '\n```\n\n'
+            } >> /tmp/report.md
+          fi
+
+          if [ "$CORPUS_STATUS" != "0" ]; then
+            {
+              printf '## Corpus\n\n'
+              printf '`stellarsdk/stellarsdkUnitTests/sep/xdr_json/corpus.json` differs from a fresh generation.\n\n'
+              printf '```diff\n'
+              head -c 40000 /tmp/corpus_check.log
+              printf '\n```\n\n'
+            } >> /tmp/report.md
+          fi
+
+          {
+            printf '## Required actions\n\n'
+            printf 'Both checks need the pinned reference CLI, so they are resolved locally rather than here:\n\n'
+            printf '1. Install it: `cargo install stellar-xdr --features cli --version %s --locked`\n' "${{ steps.pin.outputs.version }}"
+            printf '2. Rebuild the name table: `ruby tools/sep-51-oracle/name_map.rb --diff`\n'
+            printf '3. Regenerate the corpus: `python3 tools/sep-51-corpus/generate_corpus.py`\n'
+            printf '4. Re-emit the generated test harnesses: `make xdr-generate-tests`\n'
+            printf '5. Run the tests: `swift test --filter stellarsdkUnitTests`\n'
+            printf '6. Review the diff before committing. A changed rendering is a wire-format change and belongs in the release notes.\n'
+            printf '\n'
+            printf 'A wire-format change caused by an XDR pin bump is expected and is not a SEP-0051 specification change.\n'
+          } >> /tmp/report.md
+
+          FINGERPRINT=$(sha256sum /tmp/report.md | cut -c1-16)
+          printf '\n<!-- drift-fingerprint: %s -->\n' "$FINGERPRINT" >> /tmp/report.md
+          printf '\n---\n*Reported by the [SEP-51 reference watch](.github/workflows/sep-51-reference-watch.yml).*\n' >> /tmp/report.md
+
+          echo "fingerprint=$FINGERPRINT" >> "$GITHUB_OUTPUT"
+          echo "::warning::SEP-0051 artefacts drifted from the pinned reference build."
+          cat /tmp/report.md
+
+      - name: Find an open drift issue
+        if: steps.summary.outputs.drift == 'true'
+        id: existing
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          issues=$(gh issue list --label "sep-51-corpus-drift" --state open --json number)
+          echo "open_issues=$(jq 'length' <<< "$issues")" >> "$GITHUB_OUTPUT"
+          echo "issue_number=$(jq -r '.[0].number // empty' <<< "$issues")" >> "$GITHUB_OUTPUT"
+
+      - name: Ensure the label exists
+        if: >-
+          steps.summary.outputs.drift == 'true'
+          && steps.existing.outputs.open_issues == '0'
+          && inputs.dry_run != 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh label create "sep-51-corpus-drift" \
+            --description "SEP-0051 artefacts differ from the pinned reference build" \
+            --color "5319e7" \
+            2>/dev/null || true
+
+      - name: Open an issue
+        if: >-
+          steps.summary.outputs.drift == 'true'
+          && steps.existing.outputs.open_issues == '0'
+          && inputs.dry_run != 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh issue create \
+            --title "SEP-51 artefacts drifted from the pinned reference build" \
+            --label "sep-51-corpus-drift" \
+            --body-file /tmp/report.md
+
+      - name: Comment on the open issue
+        if: >-
+          steps.summary.outputs.drift == 'true'
+          && steps.existing.outputs.open_issues != '0'
+          && inputs.dry_run != 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ISSUE_NUMBER: ${{ steps.existing.outputs.issue_number }}
+          FINGERPRINT: ${{ steps.summary.outputs.fingerprint }}
+        run: |
+          # The same drift would otherwise be re-reported every week. Only a report whose
+          # content differs from everything already in the thread is worth a comment.
+          thread=$(gh issue view "$ISSUE_NUMBER" --json body,comments --jq '.body + "\n" + ([.comments[].body] | join("\n"))')
+          if grep -qF "drift-fingerprint: $FINGERPRINT" <<< "$thread"; then
+            echo "Issue #$ISSUE_NUMBER already reports this drift."
+            exit 0
+          fi
+
+          gh issue comment "$ISSUE_NUMBER" --body-file /tmp/report.md
+
+      - name: Dry run summary
+        if: steps.summary.outputs.drift == 'true' && inputs.dry_run == 'true'
+        run: |
+          echo "::notice::Dry run: no issue was filed. Report:"
+          cat /tmp/report.md
+
+      # --- Upstream watch --------------------------------------------------------------
+      #
+      # Everything below reports on upstream movement. It never writes a committed artefact
+      # and never changes what the pinned checks above concluded.
+
+      - name: Check for a newer reference release
+        id: release
+        run: |
+          # crates.io requires a User-Agent that identifies the caller.
+          RESPONSE=$(curl -sS --fail --max-time 30 \
+            -H "User-Agent: stellar-ios-mac-sdk SEP-51 release watcher (https://github.com/Soneso/stellar-ios-mac-sdk)" \
+            "https://crates.io/api/v1/crates/stellar-xdr") || {
+              echo "::warning::Could not reach crates.io; skipping the release check."
+              echo "checked=false" >> "$GITHUB_OUTPUT"
+              exit 0
+            }
+
+          LATEST=$(jq -r '.crate.max_stable_version // .crate.max_version' <<< "$RESPONSE")
+          if [ -z "$LATEST" ] || [ "$LATEST" = "null" ]; then
+            echo "::warning::crates.io returned no version; skipping the release check."
+            echo "checked=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          PINNED="${{ steps.pin.outputs.version }}"
+          echo "checked=true" >> "$GITHUB_OUTPUT"
+          echo "latest=$LATEST" >> "$GITHUB_OUTPUT"
+          if [ "$LATEST" = "$PINNED" ]; then
+            echo "Reference crate is at the pinned version ($PINNED)."
+            echo "newer=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "Reference crate has moved: pinned $PINNED, latest $LATEST"
+            echo "newer=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Check the published specification revision
+        id: spec
+        run: |
+          PIN_FILE="tools/sep-51-oracle/oracle-pin.json"
+          WANT_VERSION=$(jq -r '.sep_spec.version' "$PIN_FILE")
+          WANT_STATUS=$(jq -r '.sep_spec.status' "$PIN_FILE")
+          SOURCE=$(jq -r '.sep_spec.source' "$PIN_FILE")
+
+          SPEC=$(curl -sS --fail --max-time 30 "$SOURCE") || {
+            echo "::warning::Could not fetch the specification; skipping the revision check."
+            echo "checked=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          }
+
+          # The preamble is a fenced block of "Key: value" lines at the top of the document.
+          GOT_VERSION=$(awk '/^Version:/ {print $2; exit}' <<< "$SPEC")
+          GOT_STATUS=$(awk '/^Status:/ {print $2; exit}' <<< "$SPEC")
+          if [ -z "$GOT_VERSION" ]; then
+            echo "::warning::No Version field in the specification preamble; skipping."
+            echo "checked=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "checked=true" >> "$GITHUB_OUTPUT"
+          echo "version=$GOT_VERSION" >> "$GITHUB_OUTPUT"
+          echo "status=$GOT_STATUS" >> "$GITHUB_OUTPUT"
+          if [ "$GOT_VERSION" = "$WANT_VERSION" ] && [ "$GOT_STATUS" = "$WANT_STATUS" ]; then
+            echo "Specification is at the recorded revision ($WANT_VERSION, $WANT_STATUS)."
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "Specification has moved: recorded $WANT_VERSION/$WANT_STATUS, published $GOT_VERSION/$GOT_STATUS"
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Cache the latest reference CLI
+        if: steps.release.outputs.newer == 'true'
+        id: latest-cache
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ runner.temp }}/stellar-xdr-latest
+          key: stellar-xdr-cli-${{ runner.os }}-${{ steps.release.outputs.latest }}
+
+      - name: Install the latest reference CLI
+        if: steps.release.outputs.newer == 'true' && steps.latest-cache.outputs.cache-hit != 'true'
+        run: |
+          # Installed under its own root rather than ~/.cargo/bin, so the pinned binary the
+          # checks above used stays exactly where it is.
+          cargo install stellar-xdr \
+            --features cli \
+            --version "${{ steps.release.outputs.latest }}" \
+            --locked \
+            --root "${{ runner.temp }}/stellar-xdr-latest"
+
+      - name: Compare the name table against the latest release
+        if: steps.release.outputs.newer == 'true'
+        id: advisory-names
+        env:
+          STELLAR_XDR: ${{ runner.temp }}/stellar-xdr-latest/bin/stellar-xdr
+        run: |
+          set +e
+          ruby tools/sep-51-oracle/name_map.rb --advisory > /tmp/advisory_names.log 2>&1
+          status=$?
+          set -e
+          cat /tmp/advisory_names.log
+
+          if [ "$status" -eq 2 ]; then
+            echo "::error::The latest reference build is not runnable. This is a broken job, not a behaviour change."
+            exit 1
+          fi
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+
+      - name: Compare the corpus against the latest release
+        if: steps.release.outputs.newer == 'true'
+        id: advisory-corpus
+        env:
+          STELLAR_XDR: ${{ runner.temp }}/stellar-xdr-latest/bin/stellar-xdr
+        run: |
+          set +e
+          bash tools/sep-51-corpus/refresh_corpus.sh --advisory > /tmp/advisory_corpus.log 2>&1
+          status=$?
+          set -e
+          cat /tmp/advisory_corpus.log
+
+          if [ "$status" -eq 2 ]; then
+            echo "::error::The latest reference build is not runnable. This is a broken job, not a behaviour change."
+            exit 1
+          fi
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+
+      - name: Confirm nothing was written
+        if: steps.release.outputs.newer == 'true'
+        run: |
+          # An advisory run reports only. A modified committed artefact would mean the
+          # advisory path wrote something it must not.
+          CHANGED=$(git status --porcelain -- \
+            tools/sep-51-oracle/name-map.json \
+            tools/sep-51-oracle/type_map.json \
+            stellarsdk/stellarsdkUnitTests/sep/xdr_json/corpus.json)
+          if [ -n "$CHANGED" ]; then
+            echo "::error::The advisory comparison modified committed artefacts:"
+            echo "$CHANGED"
+            exit 1
+          fi
+          echo "No committed artefact was modified."
+
+      - name: Summarise the upstream watch
+        id: watch
+        run: |
+          NEWER="${{ steps.release.outputs.newer }}"
+          SPEC_CHANGED="${{ steps.spec.outputs.changed }}"
+
+          if [ "$NEWER" != "true" ] && [ "$SPEC_CHANGED" != "true" ]; then
+            echo "Upstream is where this implementation expects it."
+            echo "report=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "report=true" >> "$GITHUB_OUTPUT"
+          : > /tmp/watch.md
+
+          if [ "$NEWER" = "true" ]; then
+            NAMES_STATUS="${{ steps.advisory-names.outputs.status }}"
+            CORPUS_STATUS="${{ steps.advisory-corpus.outputs.status }}"
+
+            {
+              printf '## Reference release\n\n'
+              printf 'The XDR-JSON reference crate has a release newer than the pin.\n\n'
+              printf '| | Version |\n|---|---|\n'
+              printf '| Pinned | `%s` |\n' "${{ steps.pin.outputs.version }}"
+              printf '| Latest | `%s` |\n\n' "${{ steps.release.outputs.latest }}"
+            } >> /tmp/watch.md
+
+            if [ "$NAMES_STATUS" = "0" ] && [ "$CORPUS_STATUS" = "0" ]; then
+              {
+                printf '**Verdict: behaviour unchanged, routine pin bump.**\n\n'
+                printf 'Every derived JSON name and every corpus rendering is identical under the new build. '
+                printf 'Adopting it is a pin change and a regeneration, with no wire-format consequence.\n\n'
+                printf '1. Update `tools/sep-51-oracle/oracle-pin.json` to the new build: `version`, `xdr_commit`, `tool_commit`, and the version inside `install`. Three are consumed and `tool_commit` is recorded provenance -- `install` is printed as the remedy in every prerequisite error, so a bump that leaves it behind points maintainers at the old build.\n'
+                printf '2. `ruby tools/sep-51-oracle/name_map.rb --diff`\n'
+                printf '3. `python3 tools/sep-51-corpus/generate_corpus.py`\n'
+                printf '4. `make xdr-generate-tests`\n'
+                printf '5. `swift test --filter stellarsdkUnitTests`\n'
+              } >> /tmp/watch.md
+            else
+              {
+                printf '**Verdict: behaviour changed.**\n\n'
+                printf 'The new build does not render everything the way the pinned one does. '
+                printf 'Each difference below is a decision: follow the new reference behaviour, or keep '
+                printf 'the current rendering because SEP-0051 specifies it. Nothing has been changed.\n\n'
+              } >> /tmp/watch.md
+
+              if [ "$NAMES_STATUS" != "0" ]; then
+                {
+                  printf '### Names that differ\n\n```\n'
+                  head -c 20000 /tmp/advisory_names.log
+                  printf '\n```\n\n'
+                } >> /tmp/watch.md
+              fi
+              if [ "$CORPUS_STATUS" != "0" ]; then
+                {
+                  printf '### Renderings that differ\n\n```diff\n'
+                  head -c 20000 /tmp/advisory_corpus.log
+                  printf '\n```\n\n'
+                } >> /tmp/watch.md
+              fi
+
+              if [ "${{ steps.summary.outputs.drift }}" = "true" ]; then
+                printf '> The pinned checks in this run also reported drift, so a difference above may '
+                printf 'come from the committed artefacts being stale rather than from the new release. '
+                printf 'Resolve that first.\n\n' >> /tmp/watch.md
+              fi
+            fi
+          fi
+
+          if [ "$SPEC_CHANGED" = "true" ]; then
+            {
+              printf '## Specification revision\n\n'
+              printf 'SEP-0051 has been revised since the revision this implementation records.\n\n'
+              printf '| | Version | Status |\n|---|---|---|\n'
+              printf '| Recorded | `%s` | %s |\n' \
+                "$(jq -r '.sep_spec.version' tools/sep-51-oracle/oracle-pin.json)" \
+                "$(jq -r '.sep_spec.status' tools/sep-51-oracle/oracle-pin.json)"
+              printf '| Published | `%s` | %s |\n\n' \
+                "${{ steps.spec.outputs.version }}" "${{ steps.spec.outputs.status }}"
+              printf 'Read the change, then update `sep_spec` in `tools/sep-51-oracle/oracle-pin.json` '
+              printf 'together with the revision quoted in `docs/sep/sep-51.md` and '
+              printf '`skills/stellar-ios-mac-sdk/references/sep-51.md`. The per-pull-request '
+              printf 'check in `xdr-generator.yml` fails until the three agree.\n\n'
+            } >> /tmp/watch.md
+          fi
+
+          FINGERPRINT=$(sha256sum /tmp/watch.md | cut -c1-16)
+          printf '\n<!-- watch-fingerprint: %s -->\n' "$FINGERPRINT" >> /tmp/watch.md
+          printf '\n---\n*Reported by the [SEP-51 reference watch](.github/workflows/sep-51-reference-watch.yml).*\n' >> /tmp/watch.md
+          echo "fingerprint=$FINGERPRINT" >> "$GITHUB_OUTPUT"
+
+          if [ "$NEWER" = "true" ] && [ "$SPEC_CHANGED" = "true" ]; then
+            echo "title=SEP-51: new reference release and specification revision" >> "$GITHUB_OUTPUT"
+          elif [ "$NEWER" = "true" ]; then
+            echo "title=SEP-51: reference release ${{ steps.release.outputs.latest }} is newer than the pin" >> "$GITHUB_OUTPUT"
+          else
+            echo "title=SEP-51: specification revised to ${{ steps.spec.outputs.version }}" >> "$GITHUB_OUTPUT"
+          fi
+
+          echo "::notice::Upstream moved; see the report."
+          cat /tmp/watch.md
+
+      - name: Find an open upstream-watch issue
+        if: steps.watch.outputs.report == 'true'
+        id: watch-existing
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          issues=$(gh issue list --label "sep-51-reference-release" --state open --json number)
+          echo "open_issues=$(jq 'length' <<< "$issues")" >> "$GITHUB_OUTPUT"
+          echo "issue_number=$(jq -r '.[0].number // empty' <<< "$issues")" >> "$GITHUB_OUTPUT"
+
+      - name: Ensure the upstream-watch label exists
+        if: >-
+          steps.watch.outputs.report == 'true'
+          && steps.watch-existing.outputs.open_issues == '0'
+          && inputs.dry_run != 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh label create "sep-51-reference-release" \
+            --description "A newer XDR-JSON reference release or specification revision is available" \
+            --color "0e8a16" \
+            2>/dev/null || true
+
+      - name: Open an upstream-watch issue
+        if: >-
+          steps.watch.outputs.report == 'true'
+          && steps.watch-existing.outputs.open_issues == '0'
+          && inputs.dry_run != 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh issue create \
+            --title "${{ steps.watch.outputs.title }}" \
+            --label "sep-51-reference-release" \
+            --body-file /tmp/watch.md
+
+      - name: Comment on the open upstream-watch issue
+        if: >-
+          steps.watch.outputs.report == 'true'
+          && steps.watch-existing.outputs.open_issues != '0'
+          && inputs.dry_run != 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ISSUE_NUMBER: ${{ steps.watch-existing.outputs.issue_number }}
+          FINGERPRINT: ${{ steps.watch.outputs.fingerprint }}
+        run: |
+          # The same upstream state is reported every week until it is acted on, so only a
+          # report whose content differs from everything already in the thread is a comment.
+          thread=$(gh issue view "$ISSUE_NUMBER" --json body,comments --jq '.body + "\n" + ([.comments[].body] | join("\n"))')
+          if grep -qF "watch-fingerprint: $FINGERPRINT" <<< "$thread"; then
+            echo "Issue #$ISSUE_NUMBER already reports this upstream state."
+            exit 0
+          fi
+
+          gh issue comment "$ISSUE_NUMBER" --body-file /tmp/watch.md
+
+      - name: Dry run summary for the upstream watch
+        if: steps.watch.outputs.report == 'true' && inputs.dry_run == 'true'
+        run: |
+          echo "::notice::Dry run: no issue was filed. Report:"
+          cat /tmp/watch.md

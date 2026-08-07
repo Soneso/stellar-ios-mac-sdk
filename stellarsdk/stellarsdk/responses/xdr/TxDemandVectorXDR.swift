@@ -19,3 +19,15 @@ public struct TxDemandVectorXDR: XDRCodable, Sendable {
     try container.encode(wrapped)
   }
 }
+
+extension TxDemandVectorXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    return try XdrJson.array(self.wrapped.map { element in try HashXDRJsonCodec.toXdrJsonValue(element, type: "TxDemandVectorXDR", key: nil) })
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> TxDemandVectorXDR {
+    let decodedElements = try XdrJson.array(value, type: "TxDemandVectorXDR")
+    let decoded: [HashXDR] = try decodedElements.map { element in try HashXDRJsonCodec.fromXdrJsonValue(element, type: "TxDemandVectorXDR", key: nil) }
+    return TxDemandVectorXDR(wrapped: decoded)
+  }
+}

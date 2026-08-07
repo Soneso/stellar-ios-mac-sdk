@@ -10,3 +10,28 @@ public enum ClawbackResultCode: Int32, XDRCodable, Equatable, Sendable {
   case noTrust = -3
   case underfunded = -4
 }
+
+extension ClawbackResultCode: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .success: return .string("success")
+    case .malformed: return .string("malformed")
+    case .notClawbackEnabled: return .string("not_clawback_enabled")
+    case .noTrust: return .string("no_trust")
+    case .underfunded: return .string("underfunded")
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> ClawbackResultCode {
+    let name = try XdrJson.string(value, type: "ClawbackResultCode")
+    switch name {
+    case "success": return .success
+    case "malformed": return .malformed
+    case "not_clawback_enabled": return .notClawbackEnabled
+    case "no_trust": return .noTrust
+    case "underfunded": return .underfunded
+    default:
+      throw XdrJsonError.unknownEnumValue(type: "ClawbackResultCode", value: name)
+    }
+  }
+}

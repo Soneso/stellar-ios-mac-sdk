@@ -7,3 +7,22 @@ public enum BumpSequenceResultCode: Int32, XDRCodable, Equatable, Sendable {
   case success = 0
   case badSeq = -1
 }
+
+extension BumpSequenceResultCode: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .success: return .string("success")
+    case .badSeq: return .string("bad_seq")
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> BumpSequenceResultCode {
+    let name = try XdrJson.string(value, type: "BumpSequenceResultCode")
+    switch name {
+    case "success": return .success
+    case "bad_seq": return .badSeq
+    default:
+      throw XdrJsonError.unknownEnumValue(type: "BumpSequenceResultCode", value: name)
+    }
+  }
+}

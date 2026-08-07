@@ -4,3 +4,41 @@
 import Foundation
 
 public typealias SponsorshipDescriptorXDR = PublicKey?
+
+public enum SponsorshipDescriptorXDRJsonCodec {
+  public static func toXdrJsonValue(_ value: SponsorshipDescriptorXDR) throws -> XdrJsonValue {
+    try toXdrJsonValue(value, type: "SponsorshipDescriptorXDR", key: nil)
+  }
+
+  static func toXdrJsonValue(_ value: SponsorshipDescriptorXDR, type: String, key: String?) throws -> XdrJsonValue {
+    return try XdrJson.optional(value.map { element in try AccountIDXDRJsonCodec.toXdrJsonValue(element, type: type, key: key) })
+  }
+
+  public static func toXdrJson(_ value: SponsorshipDescriptorXDR) throws -> String {
+    try XdrJsonWriter.canonicalString(from: try toXdrJsonValue(value))
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> SponsorshipDescriptorXDR {
+    try fromXdrJsonValue(value, type: "SponsorshipDescriptorXDR", key: nil)
+  }
+
+  static func fromXdrJsonValue(_ value: XdrJsonValue, type: String, key: String?) throws -> SponsorshipDescriptorXDR {
+    let decodedValue = value
+    let decoded: PublicKey?
+    if decodedValue.isNull {
+      decoded = nil
+    } else {
+      decoded = try AccountIDXDRJsonCodec.fromXdrJsonValue(decodedValue, type: type, key: key)
+    }
+    return decoded
+  }
+
+  public static func fromXdrJson(_ json: String) throws -> SponsorshipDescriptorXDR {
+    try fromXdrJsonValue(try XdrJsonParser.parse(json))
+  }
+
+  public static func fromXdrJsonTree(_ value: XdrJsonValue) throws -> SponsorshipDescriptorXDR {
+    try XdrJson.validateDepth(value)
+    return try fromXdrJsonValue(value)
+  }
+}

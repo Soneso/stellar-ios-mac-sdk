@@ -31,3 +31,28 @@ public struct PersistedSCPStateV0XDR: XDRCodable, Sendable {
     try container.encode(txSets)
   }
 }
+
+extension PersistedSCPStateV0XDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "scp_envelopes", value: try XdrJson.array(self.scpEnvelopes.map { element in try element.toXdrJsonValue() })))
+    members.append(XdrJsonMember(key: "quorum_sets", value: try XdrJson.array(self.quorumSets.map { element in try element.toXdrJsonValue() })))
+    members.append(XdrJsonMember(key: "tx_sets", value: try XdrJson.array(self.txSets.map { element in try element.toXdrJsonValue() })))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> PersistedSCPStateV0XDR {
+    let members = try XdrJson.object(value, type: "PersistedSCPStateV0XDR", keys: ["scp_envelopes", "quorum_sets", "tx_sets"])
+    let scpEnvelopesElements = try XdrJson.array(try XdrJson.field(members, key: "scp_envelopes", type: "PersistedSCPStateV0XDR"), type: "PersistedSCPStateV0XDR", key: "scp_envelopes")
+    let scpEnvelopes: [SCPEnvelopeXDR] = try scpEnvelopesElements.map { element in try SCPEnvelopeXDR.fromXdrJsonValue(element) }
+    let quorumSetsElements = try XdrJson.array(try XdrJson.field(members, key: "quorum_sets", type: "PersistedSCPStateV0XDR"), type: "PersistedSCPStateV0XDR", key: "quorum_sets")
+    let quorumSets: [SCPQuorumSetXDR] = try quorumSetsElements.map { element in try SCPQuorumSetXDR.fromXdrJsonValue(element) }
+    let txSetsElements = try XdrJson.array(try XdrJson.field(members, key: "tx_sets", type: "PersistedSCPStateV0XDR"), type: "PersistedSCPStateV0XDR", key: "tx_sets")
+    let txSets: [StoredTransactionSetXDR] = try txSetsElements.map { element in try StoredTransactionSetXDR.fromXdrJsonValue(element) }
+    return PersistedSCPStateV0XDR(
+      scpEnvelopes: scpEnvelopes,
+      quorumSets: quorumSets,
+      txSets: txSets
+    )
+  }
+}

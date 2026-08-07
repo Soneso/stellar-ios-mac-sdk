@@ -4,3 +4,35 @@
 import Foundation
 
 public typealias SignatureXDR = Data
+
+public enum SignatureXDRJsonCodec {
+  public static func toXdrJsonValue(_ value: SignatureXDR) throws -> XdrJsonValue {
+    try toXdrJsonValue(value, type: "SignatureXDR", key: nil)
+  }
+
+  static func toXdrJsonValue(_ value: SignatureXDR, type: String, key: String?) throws -> XdrJsonValue {
+    return XdrJson.hex(value)
+  }
+
+  public static func toXdrJson(_ value: SignatureXDR) throws -> String {
+    try XdrJsonWriter.canonicalString(from: try toXdrJsonValue(value))
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> SignatureXDR {
+    try fromXdrJsonValue(value, type: "SignatureXDR", key: nil)
+  }
+
+  static func fromXdrJsonValue(_ value: XdrJsonValue, type: String, key: String?) throws -> SignatureXDR {
+    let decoded: Data = try XdrJson.hex(value, type: type, key: key)
+    return decoded
+  }
+
+  public static func fromXdrJson(_ json: String) throws -> SignatureXDR {
+    try fromXdrJsonValue(try XdrJsonParser.parse(json))
+  }
+
+  public static func fromXdrJsonTree(_ value: XdrJsonValue) throws -> SignatureXDR {
+    try XdrJson.validateDepth(value)
+    return try fromXdrJsonValue(value)
+  }
+}

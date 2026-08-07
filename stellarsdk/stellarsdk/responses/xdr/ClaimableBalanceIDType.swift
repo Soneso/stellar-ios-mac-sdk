@@ -37,3 +37,20 @@ extension ClaimableBalanceIDType {
     return try fromTxRepName(raw)
   }
 }
+
+extension ClaimableBalanceIDType: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .claimableBalanceIDTypeV0: return .string("claimable_balance_id_type_v0")
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> ClaimableBalanceIDType {
+    let name = try XdrJson.string(value, type: "ClaimableBalanceIDType")
+    switch name {
+    case "claimable_balance_id_type_v0": return .claimableBalanceIDTypeV0
+    default:
+      throw XdrJsonError.unknownEnumValue(type: "ClaimableBalanceIDType", value: name)
+    }
+  }
+}

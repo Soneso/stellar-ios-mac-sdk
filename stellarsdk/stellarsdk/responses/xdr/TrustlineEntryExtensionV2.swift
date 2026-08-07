@@ -23,3 +23,19 @@ public struct TrustlineEntryExtensionV2: XDRCodable, Sendable {
     try container.encode(ext)
   }
 }
+
+extension TrustlineEntryExtensionV2: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "liquidity_pool_use_count", value: try Int32XDRJsonCodec.toXdrJsonValue(self.liquidityPoolUseCount, type: "TrustlineEntryExtensionV2", key: "liquidity_pool_use_count")))
+    members.append(XdrJsonMember(key: "ext", value: .string("v0")))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> TrustlineEntryExtensionV2 {
+    let members = try XdrJson.object(value, type: "TrustlineEntryExtensionV2", keys: ["liquidity_pool_use_count", "ext"])
+    let liquidityPoolUseCount: Int32 = try Int32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "liquidity_pool_use_count", type: "TrustlineEntryExtensionV2"), type: "TrustlineEntryExtensionV2", key: "liquidity_pool_use_count")
+    _ = try TrustlineEntryExtensionV2ExtXDR.fromXdrJsonValue(try XdrJson.field(members, key: "ext", type: "TrustlineEntryExtensionV2"))
+    return TrustlineEntryExtensionV2(liquidityPoolUseCount: liquidityPoolUseCount)
+  }
+}

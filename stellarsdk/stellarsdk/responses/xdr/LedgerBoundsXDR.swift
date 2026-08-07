@@ -37,3 +37,19 @@ extension LedgerBoundsXDR {
     return LedgerBoundsXDR(minLedger: minLedger, maxLedger: maxLedger)
   }
 }
+
+extension LedgerBoundsXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "min_ledger", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.minLedger, type: "LedgerBoundsXDR", key: "min_ledger")))
+    members.append(XdrJsonMember(key: "max_ledger", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.maxLedger, type: "LedgerBoundsXDR", key: "max_ledger")))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> LedgerBoundsXDR {
+    let members = try XdrJson.object(value, type: "LedgerBoundsXDR", keys: ["min_ledger", "max_ledger"])
+    let minLedger: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "min_ledger", type: "LedgerBoundsXDR"), type: "LedgerBoundsXDR", key: "min_ledger")
+    let maxLedger: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "max_ledger", type: "LedgerBoundsXDR"), type: "LedgerBoundsXDR", key: "max_ledger")
+    return LedgerBoundsXDR(minLedger: minLedger, maxLedger: maxLedger)
+  }
+}

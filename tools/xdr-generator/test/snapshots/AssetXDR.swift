@@ -82,3 +82,47 @@ extension AssetXDR {
     }
   }
 }
+
+extension AssetXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .native: return .string("native")
+    case .alphanum4(let payload):
+      return .object([XdrJsonMember(key: "credit_alphanum4", value: try payload.toXdrJsonValue())])
+    case .alphanum12(let payload):
+      return .object([XdrJsonMember(key: "credit_alphanum12", value: try payload.toXdrJsonValue())])
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> AssetXDR {
+    if case .string(let name) = value {
+      switch name {
+      case "native":
+        return .native
+      case "credit_alphanum4":
+        throw XdrJsonError.invalidValue(type: "AssetXDR", key: "credit_alphanum4",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "credit_alphanum12":
+        throw XdrJsonError.invalidValue(type: "AssetXDR", key: "credit_alphanum12",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      default:
+        throw XdrJsonError.unknownUnionArm(type: "AssetXDR", key: name)
+      }
+    }
+
+    let member = try XdrJson.singleKeyObject(value, type: "AssetXDR")
+    switch member.key {
+    case "native":
+      throw XdrJsonError.invalidValue(type: "AssetXDR", key: "native",
+                                      message: "this arm carries no value, so it is written as a bare string")
+    case "credit_alphanum4":
+      let alphanum4: Alpha4XDR = try Alpha4XDR.fromXdrJsonValue(member.value)
+      return .alphanum4(alphanum4)
+    case "credit_alphanum12":
+      let alphanum12: Alpha12XDR = try Alpha12XDR.fromXdrJsonValue(member.value)
+      return .alphanum12(alphanum12)
+    default:
+      throw XdrJsonError.unknownUnionArm(type: "AssetXDR", key: member.key)
+    }
+  }
+}

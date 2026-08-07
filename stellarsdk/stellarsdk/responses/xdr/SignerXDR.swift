@@ -37,3 +37,19 @@ extension SignerXDR {
     return SignerXDR(key: key, weight: weight)
   }
 }
+
+extension SignerXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "key", value: try self.key.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "weight", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.weight, type: "SignerXDR", key: "weight")))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> SignerXDR {
+    let members = try XdrJson.object(value, type: "SignerXDR", keys: ["key", "weight"])
+    let key: SignerKeyXDR = try SignerKeyXDR.fromXdrJsonValue(try XdrJson.field(members, key: "key", type: "SignerXDR"))
+    let weight: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "weight", type: "SignerXDR"), type: "SignerXDR", key: "weight")
+    return SignerXDR(key: key, weight: weight)
+  }
+}

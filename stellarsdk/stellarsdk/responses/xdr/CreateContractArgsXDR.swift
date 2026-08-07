@@ -37,3 +37,19 @@ extension CreateContractArgsXDR {
     return CreateContractArgsXDR(contractIDPreimage: contractIDPreimage, executable: executable)
   }
 }
+
+extension CreateContractArgsXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "contract_id_preimage", value: try self.contractIDPreimage.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "executable", value: try self.executable.toXdrJsonValue()))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> CreateContractArgsXDR {
+    let members = try XdrJson.object(value, type: "CreateContractArgsXDR", keys: ["contract_id_preimage", "executable"])
+    let contractIDPreimage: ContractIDPreimageXDR = try ContractIDPreimageXDR.fromXdrJsonValue(try XdrJson.field(members, key: "contract_id_preimage", type: "CreateContractArgsXDR"))
+    let executable: ContractExecutableXDR = try ContractExecutableXDR.fromXdrJsonValue(try XdrJson.field(members, key: "executable", type: "CreateContractArgsXDR"))
+    return CreateContractArgsXDR(contractIDPreimage: contractIDPreimage, executable: executable)
+  }
+}

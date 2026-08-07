@@ -24,3 +24,19 @@ public struct SCEnvMetaEntryXDRInterfaceVersionXDR: XDRCodable, Sendable {
     try container.encode(preRelease)
   }
 }
+
+extension SCEnvMetaEntryXDRInterfaceVersionXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "protocol", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.`protocol`, type: "SCEnvMetaEntryXDRInterfaceVersionXDR", key: "protocol")))
+    members.append(XdrJsonMember(key: "pre_release", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.preRelease, type: "SCEnvMetaEntryXDRInterfaceVersionXDR", key: "pre_release")))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> SCEnvMetaEntryXDRInterfaceVersionXDR {
+    let members = try XdrJson.object(value, type: "SCEnvMetaEntryXDRInterfaceVersionXDR", keys: ["protocol", "pre_release"])
+    let `protocol`: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "protocol", type: "SCEnvMetaEntryXDRInterfaceVersionXDR"), type: "SCEnvMetaEntryXDRInterfaceVersionXDR", key: "protocol")
+    let preRelease: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "pre_release", type: "SCEnvMetaEntryXDRInterfaceVersionXDR"), type: "SCEnvMetaEntryXDRInterfaceVersionXDR", key: "pre_release")
+    return SCEnvMetaEntryXDRInterfaceVersionXDR(protocol: `protocol`, preRelease: preRelease)
+  }
+}

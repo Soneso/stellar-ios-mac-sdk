@@ -23,3 +23,21 @@ public struct FreezeBypassTxsDeltaXDR: XDRCodable, Sendable {
     try container.encode(removeTxs)
   }
 }
+
+extension FreezeBypassTxsDeltaXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "add_txs", value: try XdrJson.array(self.addTxs.map { element in try HashXDRJsonCodec.toXdrJsonValue(element, type: "FreezeBypassTxsDeltaXDR", key: "add_txs") })))
+    members.append(XdrJsonMember(key: "remove_txs", value: try XdrJson.array(self.removeTxs.map { element in try HashXDRJsonCodec.toXdrJsonValue(element, type: "FreezeBypassTxsDeltaXDR", key: "remove_txs") })))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> FreezeBypassTxsDeltaXDR {
+    let members = try XdrJson.object(value, type: "FreezeBypassTxsDeltaXDR", keys: ["add_txs", "remove_txs"])
+    let addTxsElements = try XdrJson.array(try XdrJson.field(members, key: "add_txs", type: "FreezeBypassTxsDeltaXDR"), type: "FreezeBypassTxsDeltaXDR", key: "add_txs")
+    let addTxs: [HashXDR] = try addTxsElements.map { element in try HashXDRJsonCodec.fromXdrJsonValue(element, type: "FreezeBypassTxsDeltaXDR", key: "add_txs") }
+    let removeTxsElements = try XdrJson.array(try XdrJson.field(members, key: "remove_txs", type: "FreezeBypassTxsDeltaXDR"), type: "FreezeBypassTxsDeltaXDR", key: "remove_txs")
+    let removeTxs: [HashXDR] = try removeTxsElements.map { element in try HashXDRJsonCodec.fromXdrJsonValue(element, type: "FreezeBypassTxsDeltaXDR", key: "remove_txs") }
+    return FreezeBypassTxsDeltaXDR(addTxs: addTxs, removeTxs: removeTxs)
+  }
+}

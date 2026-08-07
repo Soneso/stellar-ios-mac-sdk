@@ -19,3 +19,15 @@ public struct SCMapXDR: XDRCodable, Sendable {
     try container.encode(wrapped)
   }
 }
+
+extension SCMapXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    return try XdrJson.array(self.wrapped.map { element in try element.toXdrJsonValue() })
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> SCMapXDR {
+    let decodedElements = try XdrJson.array(value, type: "SCMapXDR")
+    let decoded: [SCMapEntryXDR] = try decodedElements.map { element in try SCMapEntryXDR.fromXdrJsonValue(element) }
+    return SCMapXDR(wrapped: decoded)
+  }
+}

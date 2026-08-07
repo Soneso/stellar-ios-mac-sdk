@@ -4,3 +4,35 @@
 import Foundation
 
 public typealias HashXDR = WrappedData32
+
+public enum HashXDRJsonCodec {
+  public static func toXdrJsonValue(_ value: HashXDR) throws -> XdrJsonValue {
+    try toXdrJsonValue(value, type: "HashXDR", key: nil)
+  }
+
+  static func toXdrJsonValue(_ value: HashXDR, type: String, key: String?) throws -> XdrJsonValue {
+    return try XdrJson.hex(value.wrapped, expectedLength: 32, type: type, key: key)
+  }
+
+  public static func toXdrJson(_ value: HashXDR) throws -> String {
+    try XdrJsonWriter.canonicalString(from: try toXdrJsonValue(value))
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> HashXDR {
+    try fromXdrJsonValue(value, type: "HashXDR", key: nil)
+  }
+
+  static func fromXdrJsonValue(_ value: XdrJsonValue, type: String, key: String?) throws -> HashXDR {
+    let decoded: WrappedData32 = WrappedData32(try XdrJson.hex(value, expectedLength: 32, type: type, key: key))
+    return decoded
+  }
+
+  public static func fromXdrJson(_ json: String) throws -> HashXDR {
+    try fromXdrJsonValue(try XdrJsonParser.parse(json))
+  }
+
+  public static func fromXdrJsonTree(_ value: XdrJsonValue) throws -> HashXDR {
+    try XdrJson.validateDepth(value)
+    return try fromXdrJsonValue(value)
+  }
+}

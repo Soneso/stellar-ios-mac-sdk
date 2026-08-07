@@ -56,3 +56,57 @@ public enum SCPStatementXDRPledgesXDR: XDRCodable, Sendable {
     }
   }
 }
+
+extension SCPStatementXDRPledgesXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .prepare(let payload):
+      return .object([XdrJsonMember(key: "prepare", value: try payload.toXdrJsonValue())])
+    case .confirm(let payload):
+      return .object([XdrJsonMember(key: "confirm", value: try payload.toXdrJsonValue())])
+    case .externalize(let payload):
+      return .object([XdrJsonMember(key: "externalize", value: try payload.toXdrJsonValue())])
+    case .nominate(let payload):
+      return .object([XdrJsonMember(key: "nominate", value: try payload.toXdrJsonValue())])
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> SCPStatementXDRPledgesXDR {
+    if case .string(let name) = value {
+      switch name {
+      case "prepare":
+        throw XdrJsonError.invalidValue(type: "SCPStatementXDRPledgesXDR", key: "prepare",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "confirm":
+        throw XdrJsonError.invalidValue(type: "SCPStatementXDRPledgesXDR", key: "confirm",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "externalize":
+        throw XdrJsonError.invalidValue(type: "SCPStatementXDRPledgesXDR", key: "externalize",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "nominate":
+        throw XdrJsonError.invalidValue(type: "SCPStatementXDRPledgesXDR", key: "nominate",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      default:
+        throw XdrJsonError.unknownUnionArm(type: "SCPStatementXDRPledgesXDR", key: name)
+      }
+    }
+
+    let member = try XdrJson.singleKeyObject(value, type: "SCPStatementXDRPledgesXDR")
+    switch member.key {
+    case "prepare":
+      let prepare: SCPStatementXDRPrepareXDR = try SCPStatementXDRPrepareXDR.fromXdrJsonValue(member.value)
+      return .prepare(prepare)
+    case "confirm":
+      let confirm: SCPStatementXDRConfirmXDR = try SCPStatementXDRConfirmXDR.fromXdrJsonValue(member.value)
+      return .confirm(confirm)
+    case "externalize":
+      let externalize: SCPStatementXDRExternalizeXDR = try SCPStatementXDRExternalizeXDR.fromXdrJsonValue(member.value)
+      return .externalize(externalize)
+    case "nominate":
+      let nominate: SCPNominationXDR = try SCPNominationXDR.fromXdrJsonValue(member.value)
+      return .nominate(nominate)
+    default:
+      throw XdrJsonError.unknownUnionArm(type: "SCPStatementXDRPledgesXDR", key: member.key)
+    }
+  }
+}

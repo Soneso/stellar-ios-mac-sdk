@@ -42,3 +42,31 @@ public struct ConfigSettingSCPTiming: XDRCodable, Sendable {
     try container.encode(ballotTimeoutIncrementMilliseconds)
   }
 }
+
+extension ConfigSettingSCPTiming: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "ledger_target_close_time_milliseconds", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.ledgerTargetCloseTimeMilliseconds, type: "ConfigSettingSCPTiming", key: "ledger_target_close_time_milliseconds")))
+    members.append(XdrJsonMember(key: "nomination_timeout_initial_milliseconds", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.nominationTimeoutInitialMilliseconds, type: "ConfigSettingSCPTiming", key: "nomination_timeout_initial_milliseconds")))
+    members.append(XdrJsonMember(key: "nomination_timeout_increment_milliseconds", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.nominationTimeoutIncrementMilliseconds, type: "ConfigSettingSCPTiming", key: "nomination_timeout_increment_milliseconds")))
+    members.append(XdrJsonMember(key: "ballot_timeout_initial_milliseconds", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.ballotTimeoutInitialMilliseconds, type: "ConfigSettingSCPTiming", key: "ballot_timeout_initial_milliseconds")))
+    members.append(XdrJsonMember(key: "ballot_timeout_increment_milliseconds", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.ballotTimeoutIncrementMilliseconds, type: "ConfigSettingSCPTiming", key: "ballot_timeout_increment_milliseconds")))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> ConfigSettingSCPTiming {
+    let members = try XdrJson.object(value, type: "ConfigSettingSCPTiming", keys: ["ledger_target_close_time_milliseconds", "nomination_timeout_initial_milliseconds", "nomination_timeout_increment_milliseconds", "ballot_timeout_initial_milliseconds", "ballot_timeout_increment_milliseconds"])
+    let ledgerTargetCloseTimeMilliseconds: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "ledger_target_close_time_milliseconds", type: "ConfigSettingSCPTiming"), type: "ConfigSettingSCPTiming", key: "ledger_target_close_time_milliseconds")
+    let nominationTimeoutInitialMilliseconds: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "nomination_timeout_initial_milliseconds", type: "ConfigSettingSCPTiming"), type: "ConfigSettingSCPTiming", key: "nomination_timeout_initial_milliseconds")
+    let nominationTimeoutIncrementMilliseconds: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "nomination_timeout_increment_milliseconds", type: "ConfigSettingSCPTiming"), type: "ConfigSettingSCPTiming", key: "nomination_timeout_increment_milliseconds")
+    let ballotTimeoutInitialMilliseconds: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "ballot_timeout_initial_milliseconds", type: "ConfigSettingSCPTiming"), type: "ConfigSettingSCPTiming", key: "ballot_timeout_initial_milliseconds")
+    let ballotTimeoutIncrementMilliseconds: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "ballot_timeout_increment_milliseconds", type: "ConfigSettingSCPTiming"), type: "ConfigSettingSCPTiming", key: "ballot_timeout_increment_milliseconds")
+    return ConfigSettingSCPTiming(
+      ledgerTargetCloseTimeMilliseconds: ledgerTargetCloseTimeMilliseconds,
+      nominationTimeoutInitialMilliseconds: nominationTimeoutInitialMilliseconds,
+      nominationTimeoutIncrementMilliseconds: nominationTimeoutIncrementMilliseconds,
+      ballotTimeoutInitialMilliseconds: ballotTimeoutInitialMilliseconds,
+      ballotTimeoutIncrementMilliseconds: ballotTimeoutIncrementMilliseconds
+    )
+  }
+}

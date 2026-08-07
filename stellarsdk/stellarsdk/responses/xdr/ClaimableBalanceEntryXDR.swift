@@ -42,3 +42,32 @@ public struct ClaimableBalanceEntryXDR: XDRCodable, Sendable {
     try container.encode(ext)
   }
 }
+
+extension ClaimableBalanceEntryXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "balance_id", value: try self.claimableBalanceID.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "claimants", value: try XdrJson.array(self.claimants.map { element in try element.toXdrJsonValue() })))
+    members.append(XdrJsonMember(key: "asset", value: try self.asset.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "amount", value: try Int64XDRJsonCodec.toXdrJsonValue(self.amount, type: "ClaimableBalanceEntryXDR", key: "amount")))
+    members.append(XdrJsonMember(key: "ext", value: try self.ext.toXdrJsonValue()))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> ClaimableBalanceEntryXDR {
+    let members = try XdrJson.object(value, type: "ClaimableBalanceEntryXDR", keys: ["balance_id", "claimants", "asset", "amount", "ext"])
+    let claimableBalanceID: ClaimableBalanceIDXDR = try ClaimableBalanceIDXDR.fromXdrJsonValue(try XdrJson.field(members, key: "balance_id", type: "ClaimableBalanceEntryXDR"))
+    let claimantsElements = try XdrJson.array(try XdrJson.field(members, key: "claimants", type: "ClaimableBalanceEntryXDR"), type: "ClaimableBalanceEntryXDR", key: "claimants")
+    let claimants: [ClaimantXDR] = try claimantsElements.map { element in try ClaimantXDR.fromXdrJsonValue(element) }
+    let asset: AssetXDR = try AssetXDR.fromXdrJsonValue(try XdrJson.field(members, key: "asset", type: "ClaimableBalanceEntryXDR"))
+    let amount: Int64 = try Int64XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "amount", type: "ClaimableBalanceEntryXDR"), type: "ClaimableBalanceEntryXDR", key: "amount")
+    let ext: ClaimableBalanceEntryExtXDR = try ClaimableBalanceEntryExtXDR.fromXdrJsonValue(try XdrJson.field(members, key: "ext", type: "ClaimableBalanceEntryXDR"))
+    return ClaimableBalanceEntryXDR(
+      claimableBalanceID: claimableBalanceID,
+      claimants: claimants,
+      asset: asset,
+      amount: amount,
+      ext: ext
+    )
+  }
+}

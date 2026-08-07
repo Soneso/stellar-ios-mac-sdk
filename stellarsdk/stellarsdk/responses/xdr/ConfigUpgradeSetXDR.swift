@@ -19,3 +19,18 @@ public struct ConfigUpgradeSetXDR: XDRCodable, Sendable {
     try container.encode(updatedEntry)
   }
 }
+
+extension ConfigUpgradeSetXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "updated_entry", value: try XdrJson.array(self.updatedEntry.map { element in try element.toXdrJsonValue() })))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> ConfigUpgradeSetXDR {
+    let members = try XdrJson.object(value, type: "ConfigUpgradeSetXDR", keys: ["updated_entry"])
+    let updatedEntryElements = try XdrJson.array(try XdrJson.field(members, key: "updated_entry", type: "ConfigUpgradeSetXDR"), type: "ConfigUpgradeSetXDR", key: "updated_entry")
+    let updatedEntry: [ConfigSettingEntryXDR] = try updatedEntryElements.map { element in try ConfigSettingEntryXDR.fromXdrJsonValue(element) }
+    return ConfigUpgradeSetXDR(updatedEntry: updatedEntry)
+  }
+}

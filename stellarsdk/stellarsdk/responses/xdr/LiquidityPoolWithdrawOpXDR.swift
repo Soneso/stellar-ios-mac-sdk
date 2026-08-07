@@ -54,3 +54,28 @@ extension LiquidityPoolWithdrawOpXDR {
     return LiquidityPoolWithdrawOpXDR(liquidityPoolID: liquidityPoolID, amount: amount, minAmountA: minAmountA, minAmountB: minAmountB)
   }
 }
+
+extension LiquidityPoolWithdrawOpXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "liquidity_pool_id", value: try PoolIDXDRJsonCodec.toXdrJsonValue(self.liquidityPoolID, type: "LiquidityPoolWithdrawOpXDR", key: "liquidity_pool_id")))
+    members.append(XdrJsonMember(key: "amount", value: try Int64XDRJsonCodec.toXdrJsonValue(self.amount, type: "LiquidityPoolWithdrawOpXDR", key: "amount")))
+    members.append(XdrJsonMember(key: "min_amount_a", value: try Int64XDRJsonCodec.toXdrJsonValue(self.minAmountA, type: "LiquidityPoolWithdrawOpXDR", key: "min_amount_a")))
+    members.append(XdrJsonMember(key: "min_amount_b", value: try Int64XDRJsonCodec.toXdrJsonValue(self.minAmountB, type: "LiquidityPoolWithdrawOpXDR", key: "min_amount_b")))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> LiquidityPoolWithdrawOpXDR {
+    let members = try XdrJson.object(value, type: "LiquidityPoolWithdrawOpXDR", keys: ["liquidity_pool_id", "amount", "min_amount_a", "min_amount_b"])
+    let liquidityPoolID: WrappedData32 = try PoolIDXDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "liquidity_pool_id", type: "LiquidityPoolWithdrawOpXDR"), type: "LiquidityPoolWithdrawOpXDR", key: "liquidity_pool_id")
+    let amount: Int64 = try Int64XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "amount", type: "LiquidityPoolWithdrawOpXDR"), type: "LiquidityPoolWithdrawOpXDR", key: "amount")
+    let minAmountA: Int64 = try Int64XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "min_amount_a", type: "LiquidityPoolWithdrawOpXDR"), type: "LiquidityPoolWithdrawOpXDR", key: "min_amount_a")
+    let minAmountB: Int64 = try Int64XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "min_amount_b", type: "LiquidityPoolWithdrawOpXDR"), type: "LiquidityPoolWithdrawOpXDR", key: "min_amount_b")
+    return LiquidityPoolWithdrawOpXDR(
+      liquidityPoolID: liquidityPoolID,
+      amount: amount,
+      minAmountA: minAmountA,
+      minAmountB: minAmountB
+    )
+  }
+}

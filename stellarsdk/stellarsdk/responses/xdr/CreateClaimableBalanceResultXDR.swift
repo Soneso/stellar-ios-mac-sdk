@@ -65,3 +65,63 @@ public enum CreateClaimableBalanceResultXDR: XDRCodable, Sendable {
     }
   }
 }
+
+extension CreateClaimableBalanceResultXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .balanceID(let payload):
+      return .object([XdrJsonMember(key: "success", value: try payload.toXdrJsonValue())])
+    case .malformed: return .string("malformed")
+    case .lowReserve: return .string("low_reserve")
+    case .noTrust: return .string("no_trust")
+    case .notAuthorized: return .string("not_authorized")
+    case .underfunded: return .string("underfunded")
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> CreateClaimableBalanceResultXDR {
+    if case .string(let name) = value {
+      switch name {
+      case "success":
+        throw XdrJsonError.invalidValue(type: "CreateClaimableBalanceResultXDR", key: "success",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "malformed":
+        return .malformed
+      case "low_reserve":
+        return .lowReserve
+      case "no_trust":
+        return .noTrust
+      case "not_authorized":
+        return .notAuthorized
+      case "underfunded":
+        return .underfunded
+      default:
+        throw XdrJsonError.unknownUnionArm(type: "CreateClaimableBalanceResultXDR", key: name)
+      }
+    }
+
+    let member = try XdrJson.singleKeyObject(value, type: "CreateClaimableBalanceResultXDR")
+    switch member.key {
+    case "success":
+      let balanceID: ClaimableBalanceIDXDR = try ClaimableBalanceIDXDR.fromXdrJsonValue(member.value)
+      return .balanceID(balanceID)
+    case "malformed":
+      throw XdrJsonError.invalidValue(type: "CreateClaimableBalanceResultXDR", key: "malformed",
+                                      message: "this arm carries no value, so it is written as a bare string")
+    case "low_reserve":
+      throw XdrJsonError.invalidValue(type: "CreateClaimableBalanceResultXDR", key: "low_reserve",
+                                      message: "this arm carries no value, so it is written as a bare string")
+    case "no_trust":
+      throw XdrJsonError.invalidValue(type: "CreateClaimableBalanceResultXDR", key: "no_trust",
+                                      message: "this arm carries no value, so it is written as a bare string")
+    case "not_authorized":
+      throw XdrJsonError.invalidValue(type: "CreateClaimableBalanceResultXDR", key: "not_authorized",
+                                      message: "this arm carries no value, so it is written as a bare string")
+    case "underfunded":
+      throw XdrJsonError.invalidValue(type: "CreateClaimableBalanceResultXDR", key: "underfunded",
+                                      message: "this arm carries no value, so it is written as a bare string")
+    default:
+      throw XdrJsonError.unknownUnionArm(type: "CreateClaimableBalanceResultXDR", key: member.key)
+    }
+  }
+}

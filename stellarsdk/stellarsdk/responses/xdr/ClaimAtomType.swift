@@ -8,3 +8,24 @@ public enum ClaimAtomType: Int32, XDRCodable, Equatable, Sendable {
   case orderBook = 1
   case liquidityPool = 2
 }
+
+extension ClaimAtomType: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .v0: return .string("v0")
+    case .orderBook: return .string("order_book")
+    case .liquidityPool: return .string("liquidity_pool")
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> ClaimAtomType {
+    let name = try XdrJson.string(value, type: "ClaimAtomType")
+    switch name {
+    case "v0": return .v0
+    case "order_book": return .orderBook
+    case "liquidity_pool": return .liquidityPool
+    default:
+      throw XdrJsonError.unknownEnumValue(type: "ClaimAtomType", value: name)
+    }
+  }
+}

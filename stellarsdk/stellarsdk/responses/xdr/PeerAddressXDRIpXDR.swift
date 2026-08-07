@@ -42,3 +42,41 @@ public enum PeerAddressXDRIpXDR: XDRCodable, Sendable {
     }
   }
 }
+
+extension PeerAddressXDRIpXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .ipv4(let payload):
+      return .object([XdrJsonMember(key: "i_pv4", value: try XdrJson.hex(payload.wrapped, expectedLength: 4, type: "PeerAddressXDRIpXDR", key: "i_pv4"))])
+    case .ipv6(let payload):
+      return .object([XdrJsonMember(key: "i_pv6", value: try XdrJson.hex(payload.wrapped, expectedLength: 16, type: "PeerAddressXDRIpXDR", key: "i_pv6"))])
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> PeerAddressXDRIpXDR {
+    if case .string(let name) = value {
+      switch name {
+      case "i_pv4":
+        throw XdrJsonError.invalidValue(type: "PeerAddressXDRIpXDR", key: "i_pv4",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "i_pv6":
+        throw XdrJsonError.invalidValue(type: "PeerAddressXDRIpXDR", key: "i_pv6",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      default:
+        throw XdrJsonError.unknownUnionArm(type: "PeerAddressXDRIpXDR", key: name)
+      }
+    }
+
+    let member = try XdrJson.singleKeyObject(value, type: "PeerAddressXDRIpXDR")
+    switch member.key {
+    case "i_pv4":
+      let ipv4: WrappedData4 = WrappedData4(try XdrJson.hex(member.value, expectedLength: 4, type: "PeerAddressXDRIpXDR", key: "i_pv4"))
+      return .ipv4(ipv4)
+    case "i_pv6":
+      let ipv6: WrappedData16 = WrappedData16(try XdrJson.hex(member.value, expectedLength: 16, type: "PeerAddressXDRIpXDR", key: "i_pv6"))
+      return .ipv6(ipv6)
+    default:
+      throw XdrJsonError.unknownUnionArm(type: "PeerAddressXDRIpXDR", key: member.key)
+    }
+  }
+}

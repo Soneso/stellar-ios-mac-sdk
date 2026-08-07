@@ -24,3 +24,19 @@ public struct TTLEntryXDR: XDRCodable, Sendable {
     try container.encode(liveUntilLedgerSeq)
   }
 }
+
+extension TTLEntryXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "key_hash", value: try HashXDRJsonCodec.toXdrJsonValue(self.keyHash, type: "TTLEntryXDR", key: "key_hash")))
+    members.append(XdrJsonMember(key: "live_until_ledger_seq", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.liveUntilLedgerSeq, type: "TTLEntryXDR", key: "live_until_ledger_seq")))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> TTLEntryXDR {
+    let members = try XdrJson.object(value, type: "TTLEntryXDR", keys: ["key_hash", "live_until_ledger_seq"])
+    let keyHash: HashXDR = try HashXDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "key_hash", type: "TTLEntryXDR"), type: "TTLEntryXDR", key: "key_hash")
+    let liveUntilLedgerSeq: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "live_until_ledger_seq", type: "TTLEntryXDR"), type: "TTLEntryXDR", key: "live_until_ledger_seq")
+    return TTLEntryXDR(keyHash: keyHash, liveUntilLedgerSeq: liveUntilLedgerSeq)
+  }
+}

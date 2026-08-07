@@ -37,3 +37,19 @@ extension Alpha12XDR {
     return Alpha12XDR(assetCode: assetCode, issuer: issuer)
   }
 }
+
+extension Alpha12XDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "asset_code", value: try AssetCode12XDRJsonCodec.toXdrJsonValue(self.assetCode, type: "Alpha12XDR", key: "asset_code")))
+    members.append(XdrJsonMember(key: "issuer", value: try AccountIDXDRJsonCodec.toXdrJsonValue(self.issuer, type: "Alpha12XDR", key: "issuer")))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> Alpha12XDR {
+    let members = try XdrJson.object(value, type: "Alpha12XDR", keys: ["asset_code", "issuer"])
+    let assetCode: AssetCode12XDR = try AssetCode12XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "asset_code", type: "Alpha12XDR"), type: "Alpha12XDR", key: "asset_code")
+    let issuer: PublicKey = try AccountIDXDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "issuer", type: "Alpha12XDR"), type: "Alpha12XDR", key: "issuer")
+    return Alpha12XDR(assetCode: assetCode, issuer: issuer)
+  }
+}

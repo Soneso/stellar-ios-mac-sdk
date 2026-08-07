@@ -92,3 +92,61 @@ public struct ConfigSettingContractLedgerCostV0XDR: XDRCodable, Sendable {
     try container.encode(sorobanStateRentFeeGrowthFactor)
   }
 }
+
+extension ConfigSettingContractLedgerCostV0XDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "ledger_max_disk_read_entries", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.ledgerMaxDiskReadEntries, type: "ConfigSettingContractLedgerCostV0XDR", key: "ledger_max_disk_read_entries")))
+    members.append(XdrJsonMember(key: "ledger_max_disk_read_bytes", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.ledgerMaxDiskReadBytes, type: "ConfigSettingContractLedgerCostV0XDR", key: "ledger_max_disk_read_bytes")))
+    members.append(XdrJsonMember(key: "ledger_max_write_ledger_entries", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.ledgerMaxWriteLedgerEntries, type: "ConfigSettingContractLedgerCostV0XDR", key: "ledger_max_write_ledger_entries")))
+    members.append(XdrJsonMember(key: "ledger_max_write_bytes", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.ledgerMaxWriteBytes, type: "ConfigSettingContractLedgerCostV0XDR", key: "ledger_max_write_bytes")))
+    members.append(XdrJsonMember(key: "tx_max_disk_read_entries", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.txMaxDiskReadEntries, type: "ConfigSettingContractLedgerCostV0XDR", key: "tx_max_disk_read_entries")))
+    members.append(XdrJsonMember(key: "tx_max_disk_read_bytes", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.txMaxDiskReadBytes, type: "ConfigSettingContractLedgerCostV0XDR", key: "tx_max_disk_read_bytes")))
+    members.append(XdrJsonMember(key: "tx_max_write_ledger_entries", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.txMaxWriteLedgerEntries, type: "ConfigSettingContractLedgerCostV0XDR", key: "tx_max_write_ledger_entries")))
+    members.append(XdrJsonMember(key: "tx_max_write_bytes", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.txMaxWriteBytes, type: "ConfigSettingContractLedgerCostV0XDR", key: "tx_max_write_bytes")))
+    members.append(XdrJsonMember(key: "fee_disk_read_ledger_entry", value: try Int64XDRJsonCodec.toXdrJsonValue(self.feeDiskReadLedgerEntry, type: "ConfigSettingContractLedgerCostV0XDR", key: "fee_disk_read_ledger_entry")))
+    members.append(XdrJsonMember(key: "fee_write_ledger_entry", value: try Int64XDRJsonCodec.toXdrJsonValue(self.feeWriteLedgerEntry, type: "ConfigSettingContractLedgerCostV0XDR", key: "fee_write_ledger_entry")))
+    members.append(XdrJsonMember(key: "fee_disk_read1_kb", value: try Int64XDRJsonCodec.toXdrJsonValue(self.feeDiskRead1KB, type: "ConfigSettingContractLedgerCostV0XDR", key: "fee_disk_read1_kb")))
+    members.append(XdrJsonMember(key: "soroban_state_target_size_bytes", value: try Int64XDRJsonCodec.toXdrJsonValue(self.sorobanStateTargetSizeBytes, type: "ConfigSettingContractLedgerCostV0XDR", key: "soroban_state_target_size_bytes")))
+    members.append(XdrJsonMember(key: "rent_fee1_kb_soroban_state_size_low", value: try Int64XDRJsonCodec.toXdrJsonValue(self.rentFee1KBSorobanStateSizeLow, type: "ConfigSettingContractLedgerCostV0XDR", key: "rent_fee1_kb_soroban_state_size_low")))
+    members.append(XdrJsonMember(key: "rent_fee1_kb_soroban_state_size_high", value: try Int64XDRJsonCodec.toXdrJsonValue(self.rentFee1KBSorobanStateSizeHigh, type: "ConfigSettingContractLedgerCostV0XDR", key: "rent_fee1_kb_soroban_state_size_high")))
+    members.append(XdrJsonMember(key: "soroban_state_rent_fee_growth_factor", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.sorobanStateRentFeeGrowthFactor, type: "ConfigSettingContractLedgerCostV0XDR", key: "soroban_state_rent_fee_growth_factor")))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> ConfigSettingContractLedgerCostV0XDR {
+    let members = try XdrJson.object(value, type: "ConfigSettingContractLedgerCostV0XDR", keys: ["ledger_max_disk_read_entries", "ledger_max_disk_read_bytes", "ledger_max_write_ledger_entries", "ledger_max_write_bytes", "tx_max_disk_read_entries", "tx_max_disk_read_bytes", "tx_max_write_ledger_entries", "tx_max_write_bytes", "fee_disk_read_ledger_entry", "fee_write_ledger_entry", "fee_disk_read1_kb", "soroban_state_target_size_bytes", "rent_fee1_kb_soroban_state_size_low", "rent_fee1_kb_soroban_state_size_high", "soroban_state_rent_fee_growth_factor"])
+    let ledgerMaxDiskReadEntries: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "ledger_max_disk_read_entries", type: "ConfigSettingContractLedgerCostV0XDR"), type: "ConfigSettingContractLedgerCostV0XDR", key: "ledger_max_disk_read_entries")
+    let ledgerMaxDiskReadBytes: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "ledger_max_disk_read_bytes", type: "ConfigSettingContractLedgerCostV0XDR"), type: "ConfigSettingContractLedgerCostV0XDR", key: "ledger_max_disk_read_bytes")
+    let ledgerMaxWriteLedgerEntries: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "ledger_max_write_ledger_entries", type: "ConfigSettingContractLedgerCostV0XDR"), type: "ConfigSettingContractLedgerCostV0XDR", key: "ledger_max_write_ledger_entries")
+    let ledgerMaxWriteBytes: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "ledger_max_write_bytes", type: "ConfigSettingContractLedgerCostV0XDR"), type: "ConfigSettingContractLedgerCostV0XDR", key: "ledger_max_write_bytes")
+    let txMaxDiskReadEntries: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "tx_max_disk_read_entries", type: "ConfigSettingContractLedgerCostV0XDR"), type: "ConfigSettingContractLedgerCostV0XDR", key: "tx_max_disk_read_entries")
+    let txMaxDiskReadBytes: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "tx_max_disk_read_bytes", type: "ConfigSettingContractLedgerCostV0XDR"), type: "ConfigSettingContractLedgerCostV0XDR", key: "tx_max_disk_read_bytes")
+    let txMaxWriteLedgerEntries: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "tx_max_write_ledger_entries", type: "ConfigSettingContractLedgerCostV0XDR"), type: "ConfigSettingContractLedgerCostV0XDR", key: "tx_max_write_ledger_entries")
+    let txMaxWriteBytes: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "tx_max_write_bytes", type: "ConfigSettingContractLedgerCostV0XDR"), type: "ConfigSettingContractLedgerCostV0XDR", key: "tx_max_write_bytes")
+    let feeDiskReadLedgerEntry: Int64 = try Int64XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "fee_disk_read_ledger_entry", type: "ConfigSettingContractLedgerCostV0XDR"), type: "ConfigSettingContractLedgerCostV0XDR", key: "fee_disk_read_ledger_entry")
+    let feeWriteLedgerEntry: Int64 = try Int64XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "fee_write_ledger_entry", type: "ConfigSettingContractLedgerCostV0XDR"), type: "ConfigSettingContractLedgerCostV0XDR", key: "fee_write_ledger_entry")
+    let feeDiskRead1KB: Int64 = try Int64XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "fee_disk_read1_kb", type: "ConfigSettingContractLedgerCostV0XDR"), type: "ConfigSettingContractLedgerCostV0XDR", key: "fee_disk_read1_kb")
+    let sorobanStateTargetSizeBytes: Int64 = try Int64XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "soroban_state_target_size_bytes", type: "ConfigSettingContractLedgerCostV0XDR"), type: "ConfigSettingContractLedgerCostV0XDR", key: "soroban_state_target_size_bytes")
+    let rentFee1KBSorobanStateSizeLow: Int64 = try Int64XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "rent_fee1_kb_soroban_state_size_low", type: "ConfigSettingContractLedgerCostV0XDR"), type: "ConfigSettingContractLedgerCostV0XDR", key: "rent_fee1_kb_soroban_state_size_low")
+    let rentFee1KBSorobanStateSizeHigh: Int64 = try Int64XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "rent_fee1_kb_soroban_state_size_high", type: "ConfigSettingContractLedgerCostV0XDR"), type: "ConfigSettingContractLedgerCostV0XDR", key: "rent_fee1_kb_soroban_state_size_high")
+    let sorobanStateRentFeeGrowthFactor: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "soroban_state_rent_fee_growth_factor", type: "ConfigSettingContractLedgerCostV0XDR"), type: "ConfigSettingContractLedgerCostV0XDR", key: "soroban_state_rent_fee_growth_factor")
+    return ConfigSettingContractLedgerCostV0XDR(
+      ledgerMaxDiskReadEntries: ledgerMaxDiskReadEntries,
+      ledgerMaxDiskReadBytes: ledgerMaxDiskReadBytes,
+      ledgerMaxWriteLedgerEntries: ledgerMaxWriteLedgerEntries,
+      ledgerMaxWriteBytes: ledgerMaxWriteBytes,
+      txMaxDiskReadEntries: txMaxDiskReadEntries,
+      txMaxDiskReadBytes: txMaxDiskReadBytes,
+      txMaxWriteLedgerEntries: txMaxWriteLedgerEntries,
+      txMaxWriteBytes: txMaxWriteBytes,
+      feeDiskReadLedgerEntry: feeDiskReadLedgerEntry,
+      feeWriteLedgerEntry: feeWriteLedgerEntry,
+      feeDiskRead1KB: feeDiskRead1KB,
+      sorobanStateTargetSizeBytes: sorobanStateTargetSizeBytes,
+      rentFee1KBSorobanStateSizeLow: rentFee1KBSorobanStateSizeLow,
+      rentFee1KBSorobanStateSizeHigh: rentFee1KBSorobanStateSizeHigh,
+      sorobanStateRentFeeGrowthFactor: sorobanStateRentFeeGrowthFactor
+    )
+  }
+}

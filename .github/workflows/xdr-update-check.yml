@@ -182,7 +182,23 @@ jobs:
             '3. Build the SDK and fix any compile errors in the SDK layer (operation builders, TxRep, SEP implementations, etc.)' \
             '4. Run `swift test --filter stellarsdkUnitTests` and fix any test failures' \
             '5. If the XDR changes introduce new types or extend existing ones (e.g. new operations, transaction fields, or protocol features), evaluate whether the SDK needs new or updated high-level APIs to support them (e.g. operation builders, TxRep, service classes)' \
-            '6. Update the changelog and release notes with any breaking changes or new features' >> /tmp/issue_body.md
+            '6. Refresh the SEP-0051 (XDR-JSON) artefacts; see below' \
+            '7. Update the changelog and release notes with any breaking changes or new features' >> /tmp/issue_body.md
+          printf '\n## SEP-0051 artefacts\n\n' >> /tmp/issue_body.md
+          printf '%s\n' \
+            'XDR-JSON derives its wire names from the same `.x` files, so a pin bump can change them. New enum members and new union arms change the wire surface; `make xdr-update` regenerates the conversions but not the artefacts that check them, and those need the pinned reference CLI:' \
+            '' \
+            '```bash' \
+            'cargo install stellar-xdr --features cli --version "$(jq -r .version tools/sep-51-oracle/oracle-pin.json)" --locked' \
+            'ruby tools/sep-51-oracle/name_map.rb --diff        # rebuild the name table against the reference' \
+            'ruby tools/sep-51-oracle/emitted_names.rb          # check the emitted names against it' \
+            'python3 tools/sep-51-corpus/generate_corpus.py     # regenerate the conformance corpus' \
+            'make xdr-generate-tests                            # re-emit the generated test harnesses' \
+            '```' \
+            '' \
+            'Then review whether any newly added type needs a type-level override in `tools/xdr-generator/generator/json_overrides.rb`: a type rendered as a strkey, an asset code or a single decimal string is not derivable from the `.x` alone.' \
+            '' \
+            'If the reference build cannot resolve the new types, it vendors an older XDR commit than this SDK now pins. The tools report those separately as unresolvable rather than as mismatches; the fix is to advance the reference pin, not to hand-write fixtures.' >> /tmp/issue_body.md
           printf '\nSee the [XDR generator README](tools/xdr-generator/README.md) for detailed instructions.\n' >> /tmp/issue_body.md
           printf '\n---\n*This issue was created automatically by the [XDR update check workflow](.github/workflows/xdr-update-check.yml).*\n' >> /tmp/issue_body.md
 

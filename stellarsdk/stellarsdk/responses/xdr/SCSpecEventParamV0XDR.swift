@@ -37,3 +37,28 @@ public struct SCSpecEventParamV0XDR: XDRCodable, Sendable {
     try container.encode(location)
   }
 }
+
+extension SCSpecEventParamV0XDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "doc", value: XdrJson.escapedString(self.doc)))
+    members.append(XdrJsonMember(key: "name", value: XdrJson.escapedString(self.name)))
+    members.append(XdrJsonMember(key: "type", value: try self.type.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "location", value: try self.location.toXdrJsonValue()))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> SCSpecEventParamV0XDR {
+    let members = try XdrJson.object(value, type: "SCSpecEventParamV0XDR", keys: ["doc", "name", XdrJson.DeclaredKey("type", alias: "type_"), "location"])
+    let doc: String = try XdrJson.unescapedText(try XdrJson.field(members, key: "doc", type: "SCSpecEventParamV0XDR"), type: "SCSpecEventParamV0XDR", key: "doc")
+    let name: String = try XdrJson.unescapedText(try XdrJson.field(members, key: "name", type: "SCSpecEventParamV0XDR"), type: "SCSpecEventParamV0XDR", key: "name")
+    let type: SCSpecTypeDefXDR = try SCSpecTypeDefXDR.fromXdrJsonValue(try XdrJson.field(members, key: XdrJson.DeclaredKey("type", alias: "type_"), type: "SCSpecEventParamV0XDR"))
+    let location: SCSpecEventParamLocationV0 = try SCSpecEventParamLocationV0.fromXdrJsonValue(try XdrJson.field(members, key: "location", type: "SCSpecEventParamV0XDR"))
+    return SCSpecEventParamV0XDR(
+      doc: doc,
+      name: name,
+      type: type,
+      location: location
+    )
+  }
+}

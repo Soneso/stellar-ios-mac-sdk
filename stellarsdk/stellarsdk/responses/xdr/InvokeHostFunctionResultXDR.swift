@@ -65,3 +65,63 @@ public enum InvokeHostFunctionResultXDR: XDRCodable, Sendable {
     }
   }
 }
+
+extension InvokeHostFunctionResultXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .success(let payload):
+      return .object([XdrJsonMember(key: "success", value: try HashXDRJsonCodec.toXdrJsonValue(payload, type: "InvokeHostFunctionResultXDR", key: "success"))])
+    case .malformed: return .string("malformed")
+    case .trapped: return .string("trapped")
+    case .resourceLimitExceeded: return .string("resource_limit_exceeded")
+    case .entryArchived: return .string("entry_archived")
+    case .insufficientRefundableFee: return .string("insufficient_refundable_fee")
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> InvokeHostFunctionResultXDR {
+    if case .string(let name) = value {
+      switch name {
+      case "success":
+        throw XdrJsonError.invalidValue(type: "InvokeHostFunctionResultXDR", key: "success",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "malformed":
+        return .malformed
+      case "trapped":
+        return .trapped
+      case "resource_limit_exceeded":
+        return .resourceLimitExceeded
+      case "entry_archived":
+        return .entryArchived
+      case "insufficient_refundable_fee":
+        return .insufficientRefundableFee
+      default:
+        throw XdrJsonError.unknownUnionArm(type: "InvokeHostFunctionResultXDR", key: name)
+      }
+    }
+
+    let member = try XdrJson.singleKeyObject(value, type: "InvokeHostFunctionResultXDR")
+    switch member.key {
+    case "success":
+      let success: HashXDR = try HashXDRJsonCodec.fromXdrJsonValue(member.value, type: "InvokeHostFunctionResultXDR", key: "success")
+      return .success(success)
+    case "malformed":
+      throw XdrJsonError.invalidValue(type: "InvokeHostFunctionResultXDR", key: "malformed",
+                                      message: "this arm carries no value, so it is written as a bare string")
+    case "trapped":
+      throw XdrJsonError.invalidValue(type: "InvokeHostFunctionResultXDR", key: "trapped",
+                                      message: "this arm carries no value, so it is written as a bare string")
+    case "resource_limit_exceeded":
+      throw XdrJsonError.invalidValue(type: "InvokeHostFunctionResultXDR", key: "resource_limit_exceeded",
+                                      message: "this arm carries no value, so it is written as a bare string")
+    case "entry_archived":
+      throw XdrJsonError.invalidValue(type: "InvokeHostFunctionResultXDR", key: "entry_archived",
+                                      message: "this arm carries no value, so it is written as a bare string")
+    case "insufficient_refundable_fee":
+      throw XdrJsonError.invalidValue(type: "InvokeHostFunctionResultXDR", key: "insufficient_refundable_fee",
+                                      message: "this arm carries no value, so it is written as a bare string")
+    default:
+      throw XdrJsonError.unknownUnionArm(type: "InvokeHostFunctionResultXDR", key: member.key)
+    }
+  }
+}

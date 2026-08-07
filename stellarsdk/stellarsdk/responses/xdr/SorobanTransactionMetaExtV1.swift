@@ -37,3 +37,28 @@ public struct SorobanTransactionMetaExtV1: XDRCodable, Sendable {
     try container.encode(rentFeeCharged)
   }
 }
+
+extension SorobanTransactionMetaExtV1: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "ext", value: try self.ext.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "total_non_refundable_resource_fee_charged", value: try Int64XDRJsonCodec.toXdrJsonValue(self.totalNonRefundableResourceFeeCharged, type: "SorobanTransactionMetaExtV1", key: "total_non_refundable_resource_fee_charged")))
+    members.append(XdrJsonMember(key: "total_refundable_resource_fee_charged", value: try Int64XDRJsonCodec.toXdrJsonValue(self.totalRefundableResourceFeeCharged, type: "SorobanTransactionMetaExtV1", key: "total_refundable_resource_fee_charged")))
+    members.append(XdrJsonMember(key: "rent_fee_charged", value: try Int64XDRJsonCodec.toXdrJsonValue(self.rentFeeCharged, type: "SorobanTransactionMetaExtV1", key: "rent_fee_charged")))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> SorobanTransactionMetaExtV1 {
+    let members = try XdrJson.object(value, type: "SorobanTransactionMetaExtV1", keys: ["ext", "total_non_refundable_resource_fee_charged", "total_refundable_resource_fee_charged", "rent_fee_charged"])
+    let ext: ExtensionPoint = try ExtensionPoint.fromXdrJsonValue(try XdrJson.field(members, key: "ext", type: "SorobanTransactionMetaExtV1"))
+    let totalNonRefundableResourceFeeCharged: Int64 = try Int64XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "total_non_refundable_resource_fee_charged", type: "SorobanTransactionMetaExtV1"), type: "SorobanTransactionMetaExtV1", key: "total_non_refundable_resource_fee_charged")
+    let totalRefundableResourceFeeCharged: Int64 = try Int64XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "total_refundable_resource_fee_charged", type: "SorobanTransactionMetaExtV1"), type: "SorobanTransactionMetaExtV1", key: "total_refundable_resource_fee_charged")
+    let rentFeeCharged: Int64 = try Int64XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "rent_fee_charged", type: "SorobanTransactionMetaExtV1"), type: "SorobanTransactionMetaExtV1", key: "rent_fee_charged")
+    return SorobanTransactionMetaExtV1(
+      ext: ext,
+      totalNonRefundableResourceFeeCharged: totalNonRefundableResourceFeeCharged,
+      totalRefundableResourceFeeCharged: totalRefundableResourceFeeCharged,
+      rentFeeCharged: rentFeeCharged
+    )
+  }
+}

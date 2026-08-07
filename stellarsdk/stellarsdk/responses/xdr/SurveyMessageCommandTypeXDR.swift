@@ -6,3 +6,20 @@ import Foundation
 public enum SurveyMessageCommandTypeXDR: Int32, XDRCodable, Equatable, Sendable {
   case timeSlicedSurveyTopology = 1
 }
+
+extension SurveyMessageCommandTypeXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .timeSlicedSurveyTopology: return .string("time_sliced_survey_topology")
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> SurveyMessageCommandTypeXDR {
+    let name = try XdrJson.string(value, type: "SurveyMessageCommandTypeXDR")
+    switch name {
+    case "time_sliced_survey_topology": return .timeSlicedSurveyTopology
+    default:
+      throw XdrJsonError.unknownEnumValue(type: "SurveyMessageCommandTypeXDR", value: name)
+    }
+  }
+}

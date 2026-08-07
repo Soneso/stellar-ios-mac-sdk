@@ -24,3 +24,19 @@ public struct UpgradeEntryMetaXDR: XDRCodable, Sendable {
     try container.encode(changes)
   }
 }
+
+extension UpgradeEntryMetaXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "upgrade", value: try self.upgrade.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "changes", value: try self.changes.toXdrJsonValue()))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> UpgradeEntryMetaXDR {
+    let members = try XdrJson.object(value, type: "UpgradeEntryMetaXDR", keys: ["upgrade", "changes"])
+    let upgrade: LedgerUpgradeXDR = try LedgerUpgradeXDR.fromXdrJsonValue(try XdrJson.field(members, key: "upgrade", type: "UpgradeEntryMetaXDR"))
+    let changes: LedgerEntryChangesXDR = try LedgerEntryChangesXDR.fromXdrJsonValue(try XdrJson.field(members, key: "changes", type: "UpgradeEntryMetaXDR"))
+    return UpgradeEntryMetaXDR(upgrade: upgrade, changes: changes)
+  }
+}

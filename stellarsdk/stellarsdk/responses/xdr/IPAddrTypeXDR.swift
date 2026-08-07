@@ -7,3 +7,22 @@ public enum IPAddrTypeXDR: Int32, XDRCodable, Equatable, Sendable {
   case pv4 = 0
   case pv6 = 1
 }
+
+extension IPAddrTypeXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .pv4: return .string("i_pv4")
+    case .pv6: return .string("i_pv6")
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> IPAddrTypeXDR {
+    let name = try XdrJson.string(value, type: "IPAddrTypeXDR")
+    switch name {
+    case "i_pv4": return .pv4
+    case "i_pv6": return .pv6
+    default:
+      throw XdrJsonError.unknownEnumValue(type: "IPAddrTypeXDR", value: name)
+    }
+  }
+}

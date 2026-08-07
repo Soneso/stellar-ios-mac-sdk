@@ -62,3 +62,43 @@ public struct SerializedBinaryFuseFilterXDR: XDRCodable, Sendable {
     try container.encode(fingerprints)
   }
 }
+
+extension SerializedBinaryFuseFilterXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "type", value: try self.type.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "input_hash_seed", value: try self.inputHashSeed.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "filter_seed", value: try self.filterSeed.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "segment_length", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.segmentLength, type: "SerializedBinaryFuseFilterXDR", key: "segment_length")))
+    members.append(XdrJsonMember(key: "segement_length_mask", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.segementLengthMask, type: "SerializedBinaryFuseFilterXDR", key: "segement_length_mask")))
+    members.append(XdrJsonMember(key: "segment_count", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.segmentCount, type: "SerializedBinaryFuseFilterXDR", key: "segment_count")))
+    members.append(XdrJsonMember(key: "segment_count_length", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.segmentCountLength, type: "SerializedBinaryFuseFilterXDR", key: "segment_count_length")))
+    members.append(XdrJsonMember(key: "fingerprint_length", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.fingerprintLength, type: "SerializedBinaryFuseFilterXDR", key: "fingerprint_length")))
+    members.append(XdrJsonMember(key: "fingerprints", value: XdrJson.hex(self.fingerprints)))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> SerializedBinaryFuseFilterXDR {
+    let members = try XdrJson.object(value, type: "SerializedBinaryFuseFilterXDR", keys: [XdrJson.DeclaredKey("type", alias: "type_"), "input_hash_seed", "filter_seed", "segment_length", "segement_length_mask", "segment_count", "segment_count_length", "fingerprint_length", "fingerprints"])
+    let type: BinaryFuseFilterTypeXDR = try BinaryFuseFilterTypeXDR.fromXdrJsonValue(try XdrJson.field(members, key: XdrJson.DeclaredKey("type", alias: "type_"), type: "SerializedBinaryFuseFilterXDR"))
+    let inputHashSeed: ShortHashSeedXDR = try ShortHashSeedXDR.fromXdrJsonValue(try XdrJson.field(members, key: "input_hash_seed", type: "SerializedBinaryFuseFilterXDR"))
+    let filterSeed: ShortHashSeedXDR = try ShortHashSeedXDR.fromXdrJsonValue(try XdrJson.field(members, key: "filter_seed", type: "SerializedBinaryFuseFilterXDR"))
+    let segmentLength: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "segment_length", type: "SerializedBinaryFuseFilterXDR"), type: "SerializedBinaryFuseFilterXDR", key: "segment_length")
+    let segementLengthMask: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "segement_length_mask", type: "SerializedBinaryFuseFilterXDR"), type: "SerializedBinaryFuseFilterXDR", key: "segement_length_mask")
+    let segmentCount: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "segment_count", type: "SerializedBinaryFuseFilterXDR"), type: "SerializedBinaryFuseFilterXDR", key: "segment_count")
+    let segmentCountLength: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "segment_count_length", type: "SerializedBinaryFuseFilterXDR"), type: "SerializedBinaryFuseFilterXDR", key: "segment_count_length")
+    let fingerprintLength: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "fingerprint_length", type: "SerializedBinaryFuseFilterXDR"), type: "SerializedBinaryFuseFilterXDR", key: "fingerprint_length")
+    let fingerprints: Data = try XdrJson.hex(try XdrJson.field(members, key: "fingerprints", type: "SerializedBinaryFuseFilterXDR"), type: "SerializedBinaryFuseFilterXDR", key: "fingerprints")
+    return SerializedBinaryFuseFilterXDR(
+      type: type,
+      inputHashSeed: inputHashSeed,
+      filterSeed: filterSeed,
+      segmentLength: segmentLength,
+      segementLengthMask: segementLengthMask,
+      segmentCount: segmentCount,
+      segmentCountLength: segmentCountLength,
+      fingerprintLength: fingerprintLength,
+      fingerprints: fingerprints
+    )
+  }
+}

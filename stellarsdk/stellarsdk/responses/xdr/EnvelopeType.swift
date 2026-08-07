@@ -67,3 +67,40 @@ extension EnvelopeType {
     return try fromTxRepName(raw)
   }
 }
+
+extension EnvelopeType: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .txV0: return .string("tx_v0")
+    case .scp: return .string("scp")
+    case .tx: return .string("tx")
+    case .auth: return .string("auth")
+    case .scpvalue: return .string("scpvalue")
+    case .txFeeBump: return .string("tx_fee_bump")
+    case .opId: return .string("op_id")
+    case .poolRevokeOpId: return .string("pool_revoke_op_id")
+    case .contractId: return .string("contract_id")
+    case .sorobanAuthorization: return .string("soroban_authorization")
+    case .sorobanAuthorizationWithAddress: return .string("soroban_authorization_with_address")
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> EnvelopeType {
+    let name = try XdrJson.string(value, type: "EnvelopeType")
+    switch name {
+    case "tx_v0": return .txV0
+    case "scp": return .scp
+    case "tx": return .tx
+    case "auth": return .auth
+    case "scpvalue": return .scpvalue
+    case "tx_fee_bump": return .txFeeBump
+    case "op_id": return .opId
+    case "pool_revoke_op_id": return .poolRevokeOpId
+    case "contract_id": return .contractId
+    case "soroban_authorization": return .sorobanAuthorization
+    case "soroban_authorization_with_address": return .sorobanAuthorizationWithAddress
+    default:
+      throw XdrJsonError.unknownEnumValue(type: "EnvelopeType", value: name)
+    }
+  }
+}

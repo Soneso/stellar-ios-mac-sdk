@@ -58,3 +58,33 @@ public enum ManageDataResultXDR: XDRCodable, Sendable {
     }
   }
 }
+
+extension ManageDataResultXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .success: return .string("success")
+    case .notSupportedYet: return .string("not_supported_yet")
+    case .nameNotFound: return .string("name_not_found")
+    case .lowReserve: return .string("low_reserve")
+    case .invalidName: return .string("invalid_name")
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> ManageDataResultXDR {
+    let name = try XdrJson.string(value, type: "ManageDataResultXDR")
+    switch name {
+    case "success":
+      return .success
+    case "not_supported_yet":
+      return .notSupportedYet
+    case "name_not_found":
+      return .nameNotFound
+    case "low_reserve":
+      return .lowReserve
+    case "invalid_name":
+      return .invalidName
+    default:
+      throw XdrJsonError.unknownUnionArm(type: "ManageDataResultXDR", key: name)
+    }
+  }
+}

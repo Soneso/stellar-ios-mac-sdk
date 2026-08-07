@@ -115,3 +115,72 @@ extension OperationType {
     return try fromTxRepName(raw)
   }
 }
+
+extension OperationType: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .accountCreated: return .string("create_account")
+    case .payment: return .string("payment")
+    case .pathPayment: return .string("path_payment_strict_receive")
+    case .manageSellOffer: return .string("manage_sell_offer")
+    case .createPassiveSellOffer: return .string("create_passive_sell_offer")
+    case .setOptions: return .string("set_options")
+    case .changeTrust: return .string("change_trust")
+    case .allowTrust: return .string("allow_trust")
+    case .accountMerge: return .string("account_merge")
+    case .inflation: return .string("inflation")
+    case .manageData: return .string("manage_data")
+    case .bumpSequence: return .string("bump_sequence")
+    case .manageBuyOffer: return .string("manage_buy_offer")
+    case .pathPaymentStrictSend: return .string("path_payment_strict_send")
+    case .createClaimableBalance: return .string("create_claimable_balance")
+    case .claimClaimableBalance: return .string("claim_claimable_balance")
+    case .beginSponsoringFutureReserves: return .string("begin_sponsoring_future_reserves")
+    case .endSponsoringFutureReserves: return .string("end_sponsoring_future_reserves")
+    case .revokeSponsorship: return .string("revoke_sponsorship")
+    case .clawback: return .string("clawback")
+    case .clawbackClaimableBalance: return .string("clawback_claimable_balance")
+    case .setTrustLineFlags: return .string("set_trust_line_flags")
+    case .liquidityPoolDeposit: return .string("liquidity_pool_deposit")
+    case .liquidityPoolWithdraw: return .string("liquidity_pool_withdraw")
+    case .invokeHostFunction: return .string("invoke_host_function")
+    case .extendFootprintTTL: return .string("extend_footprint_ttl")
+    case .restoreFootprint: return .string("restore_footprint")
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> OperationType {
+    let name = try XdrJson.string(value, type: "OperationType")
+    switch name {
+    case "create_account": return .accountCreated
+    case "payment": return .payment
+    case "path_payment_strict_receive": return .pathPayment
+    case "manage_sell_offer": return .manageSellOffer
+    case "create_passive_sell_offer": return .createPassiveSellOffer
+    case "set_options": return .setOptions
+    case "change_trust": return .changeTrust
+    case "allow_trust": return .allowTrust
+    case "account_merge": return .accountMerge
+    case "inflation": return .inflation
+    case "manage_data": return .manageData
+    case "bump_sequence": return .bumpSequence
+    case "manage_buy_offer": return .manageBuyOffer
+    case "path_payment_strict_send": return .pathPaymentStrictSend
+    case "create_claimable_balance": return .createClaimableBalance
+    case "claim_claimable_balance": return .claimClaimableBalance
+    case "begin_sponsoring_future_reserves": return .beginSponsoringFutureReserves
+    case "end_sponsoring_future_reserves": return .endSponsoringFutureReserves
+    case "revoke_sponsorship": return .revokeSponsorship
+    case "clawback": return .clawback
+    case "clawback_claimable_balance": return .clawbackClaimableBalance
+    case "set_trust_line_flags": return .setTrustLineFlags
+    case "liquidity_pool_deposit": return .liquidityPoolDeposit
+    case "liquidity_pool_withdraw": return .liquidityPoolWithdraw
+    case "invoke_host_function": return .invokeHostFunction
+    case "extend_footprint_ttl": return .extendFootprintTTL
+    case "restore_footprint": return .restoreFootprint
+    default:
+      throw XdrJsonError.unknownEnumValue(type: "OperationType", value: name)
+    }
+  }
+}

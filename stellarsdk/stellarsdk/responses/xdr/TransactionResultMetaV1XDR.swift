@@ -42,3 +42,31 @@ public struct TransactionResultMetaV1XDR: XDRCodable, Sendable {
     try container.encode(postTxApplyFeeProcessing)
   }
 }
+
+extension TransactionResultMetaV1XDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "ext", value: try self.ext.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "result", value: try self.result.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "fee_processing", value: try self.feeProcessing.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "tx_apply_processing", value: try self.txApplyProcessing.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "post_tx_apply_fee_processing", value: try self.postTxApplyFeeProcessing.toXdrJsonValue()))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> TransactionResultMetaV1XDR {
+    let members = try XdrJson.object(value, type: "TransactionResultMetaV1XDR", keys: ["ext", "result", "fee_processing", "tx_apply_processing", "post_tx_apply_fee_processing"])
+    let ext: ExtensionPoint = try ExtensionPoint.fromXdrJsonValue(try XdrJson.field(members, key: "ext", type: "TransactionResultMetaV1XDR"))
+    let result: TransactionResultPairXDR = try TransactionResultPairXDR.fromXdrJsonValue(try XdrJson.field(members, key: "result", type: "TransactionResultMetaV1XDR"))
+    let feeProcessing: LedgerEntryChangesXDR = try LedgerEntryChangesXDR.fromXdrJsonValue(try XdrJson.field(members, key: "fee_processing", type: "TransactionResultMetaV1XDR"))
+    let txApplyProcessing: TransactionMetaXDR = try TransactionMetaXDR.fromXdrJsonValue(try XdrJson.field(members, key: "tx_apply_processing", type: "TransactionResultMetaV1XDR"))
+    let postTxApplyFeeProcessing: LedgerEntryChangesXDR = try LedgerEntryChangesXDR.fromXdrJsonValue(try XdrJson.field(members, key: "post_tx_apply_fee_processing", type: "TransactionResultMetaV1XDR"))
+    return TransactionResultMetaV1XDR(
+      ext: ext,
+      result: result,
+      feeProcessing: feeProcessing,
+      txApplyProcessing: txApplyProcessing,
+      postTxApplyFeeProcessing: postTxApplyFeeProcessing
+    )
+  }
+}

@@ -9,3 +9,26 @@ public enum BucketEntryTypeXDR: Int32, XDRCodable, Equatable, Sendable {
   case deadentry = 1
   case initentry = 2
 }
+
+extension BucketEntryTypeXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .metaentry: return .string("metaentry")
+    case .liveentry: return .string("liveentry")
+    case .deadentry: return .string("deadentry")
+    case .initentry: return .string("initentry")
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> BucketEntryTypeXDR {
+    let name = try XdrJson.string(value, type: "BucketEntryTypeXDR")
+    switch name {
+    case "metaentry": return .metaentry
+    case "liveentry": return .liveentry
+    case "deadentry": return .deadentry
+    case "initentry": return .initentry
+    default:
+      throw XdrJsonError.unknownEnumValue(type: "BucketEntryTypeXDR", value: name)
+    }
+  }
+}

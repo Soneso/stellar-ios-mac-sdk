@@ -37,3 +37,19 @@ extension TimeBoundsXDR {
     return TimeBoundsXDR(minTime: minTime, maxTime: maxTime)
   }
 }
+
+extension TimeBoundsXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "min_time", value: try TimePointXDRJsonCodec.toXdrJsonValue(self.minTime, type: "TimeBoundsXDR", key: "min_time")))
+    members.append(XdrJsonMember(key: "max_time", value: try TimePointXDRJsonCodec.toXdrJsonValue(self.maxTime, type: "TimeBoundsXDR", key: "max_time")))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> TimeBoundsXDR {
+    let members = try XdrJson.object(value, type: "TimeBoundsXDR", keys: ["min_time", "max_time"])
+    let minTime: UInt64 = try TimePointXDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "min_time", type: "TimeBoundsXDR"), type: "TimeBoundsXDR", key: "min_time")
+    let maxTime: UInt64 = try TimePointXDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "max_time", type: "TimeBoundsXDR"), type: "TimeBoundsXDR", key: "max_time")
+    return TimeBoundsXDR(minTime: minTime, maxTime: maxTime)
+  }
+}

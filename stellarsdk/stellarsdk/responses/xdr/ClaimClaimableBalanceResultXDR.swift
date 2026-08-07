@@ -70,3 +70,39 @@ public enum ClaimClaimableBalanceResultXDR: XDRCodable, Sendable {
     }
   }
 }
+
+extension ClaimClaimableBalanceResultXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .success: return .string("success")
+    case .doesNotExist: return .string("does_not_exist")
+    case .cannotClaim: return .string("cannot_claim")
+    case .lineFull: return .string("line_full")
+    case .noTrust: return .string("no_trust")
+    case .notAuthorized: return .string("not_authorized")
+    case .trustlineFrozen: return .string("trustline_frozen")
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> ClaimClaimableBalanceResultXDR {
+    let name = try XdrJson.string(value, type: "ClaimClaimableBalanceResultXDR")
+    switch name {
+    case "success":
+      return .success
+    case "does_not_exist":
+      return .doesNotExist
+    case "cannot_claim":
+      return .cannotClaim
+    case "line_full":
+      return .lineFull
+    case "no_trust":
+      return .noTrust
+    case "not_authorized":
+      return .notAuthorized
+    case "trustline_frozen":
+      return .trustlineFrozen
+    default:
+      throw XdrJsonError.unknownUnionArm(type: "ClaimClaimableBalanceResultXDR", key: name)
+    }
+  }
+}

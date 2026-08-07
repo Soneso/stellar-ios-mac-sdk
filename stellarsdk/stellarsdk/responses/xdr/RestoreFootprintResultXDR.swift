@@ -52,3 +52,30 @@ public enum RestoreFootprintResultXDR: XDRCodable, Sendable {
     }
   }
 }
+
+extension RestoreFootprintResultXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .success: return .string("success")
+    case .malformed: return .string("malformed")
+    case .resourceLimitExceeded: return .string("resource_limit_exceeded")
+    case .insufficientRefundableFee: return .string("insufficient_refundable_fee")
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> RestoreFootprintResultXDR {
+    let name = try XdrJson.string(value, type: "RestoreFootprintResultXDR")
+    switch name {
+    case "success":
+      return .success
+    case "malformed":
+      return .malformed
+    case "resource_limit_exceeded":
+      return .resourceLimitExceeded
+    case "insufficient_refundable_fee":
+      return .insufficientRefundableFee
+    default:
+      throw XdrJsonError.unknownUnionArm(type: "RestoreFootprintResultXDR", key: name)
+    }
+  }
+}

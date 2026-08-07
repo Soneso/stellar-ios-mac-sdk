@@ -37,3 +37,16 @@ extension UInt128PartsXDR {
     return UInt128PartsXDR(hi: hi, lo: lo)
   }
 }
+
+extension UInt128PartsXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    return XdrJson.wideDecimal(
+      XdrWideInteger.data128(hi: self.hi, lo: self.lo), signed: false)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> UInt128PartsXDR {
+    let bytes = try XdrJson.wideDecimal(value, bitSize: 128, signed: false, type: "UInt128PartsXDR")
+    let parts = XdrWideInteger.parts128(from: bytes)
+    return UInt128PartsXDR(hi: parts.hi, lo: parts.lo)
+  }
+}

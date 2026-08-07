@@ -43,3 +43,24 @@ extension ContractExecutableType {
     return try fromTxRepName(raw)
   }
 }
+
+extension ContractExecutableType: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .wasm: return .string("wasm")
+    case .stellarAsset: return .string("stellar_asset")
+    case .externalRef: return .string("external_ref")
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> ContractExecutableType {
+    let name = try XdrJson.string(value, type: "ContractExecutableType")
+    switch name {
+    case "wasm": return .wasm
+    case "stellar_asset": return .stellarAsset
+    case "external_ref": return .externalRef
+    default:
+      throw XdrJsonError.unknownEnumValue(type: "ContractExecutableType", value: name)
+    }
+  }
+}

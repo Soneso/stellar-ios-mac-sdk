@@ -24,3 +24,20 @@ public struct InvokeHostFunctionSuccessPreImageXDR: XDRCodable, Sendable {
     try container.encode(events)
   }
 }
+
+extension InvokeHostFunctionSuccessPreImageXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "return_value", value: try self.returnValue.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "events", value: try XdrJson.array(self.events.map { element in try element.toXdrJsonValue() })))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> InvokeHostFunctionSuccessPreImageXDR {
+    let members = try XdrJson.object(value, type: "InvokeHostFunctionSuccessPreImageXDR", keys: ["return_value", "events"])
+    let returnValue: SCValXDR = try SCValXDR.fromXdrJsonValue(try XdrJson.field(members, key: "return_value", type: "InvokeHostFunctionSuccessPreImageXDR"))
+    let eventsElements = try XdrJson.array(try XdrJson.field(members, key: "events", type: "InvokeHostFunctionSuccessPreImageXDR"), type: "InvokeHostFunctionSuccessPreImageXDR", key: "events")
+    let events: [ContractEventXDR] = try eventsElements.map { element in try ContractEventXDR.fromXdrJsonValue(element) }
+    return InvokeHostFunctionSuccessPreImageXDR(returnValue: returnValue, events: events)
+  }
+}

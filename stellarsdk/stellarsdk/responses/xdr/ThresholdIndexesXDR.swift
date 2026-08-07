@@ -9,3 +9,26 @@ public enum ThresholdIndexesXDR: Int32, XDRCodable, Equatable, Sendable {
   case med = 2
   case high = 3
 }
+
+extension ThresholdIndexesXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .masterWeight: return .string("master_weight")
+    case .low: return .string("low")
+    case .med: return .string("med")
+    case .high: return .string("high")
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> ThresholdIndexesXDR {
+    let name = try XdrJson.string(value, type: "ThresholdIndexesXDR")
+    switch name {
+    case "master_weight": return .masterWeight
+    case "low": return .low
+    case "med": return .med
+    case "high": return .high
+    default:
+      throw XdrJsonError.unknownEnumValue(type: "ThresholdIndexesXDR", value: name)
+    }
+  }
+}

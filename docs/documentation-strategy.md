@@ -380,6 +380,7 @@ documentation/
 │   ├── sep-30.md              # Account recovery
 │   ├── sep-38.md              # Anchor quotes
 │   ├── sep-45.md              # Contract account authentication
+│   ├── sep-51.md              # XDR-JSON conversion
 │   └── sep-53.md              # Message signing and verification
 └── documentation-strategy.md   # This file
 ```

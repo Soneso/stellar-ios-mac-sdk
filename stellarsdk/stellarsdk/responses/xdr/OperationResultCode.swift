@@ -12,3 +12,32 @@ public enum OperationResultCode: Int32, XDRCodable, Equatable, Sendable {
   case exceededWorkLimit = -5
   case tooManySponsoring = -6
 }
+
+extension OperationResultCode: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .inner: return .string("op_inner")
+    case .badAuth: return .string("op_bad_auth")
+    case .noAccount: return .string("op_no_account")
+    case .notSupported: return .string("op_not_supported")
+    case .tooManySubentries: return .string("op_too_many_subentries")
+    case .exceededWorkLimit: return .string("op_exceeded_work_limit")
+    case .tooManySponsoring: return .string("op_too_many_sponsoring")
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> OperationResultCode {
+    let name = try XdrJson.string(value, type: "OperationResultCode")
+    switch name {
+    case "op_inner": return .inner
+    case "op_bad_auth": return .badAuth
+    case "op_no_account": return .noAccount
+    case "op_not_supported": return .notSupported
+    case "op_too_many_subentries": return .tooManySubentries
+    case "op_exceeded_work_limit": return .exceededWorkLimit
+    case "op_too_many_sponsoring": return .tooManySponsoring
+    default:
+      throw XdrJsonError.unknownEnumValue(type: "OperationResultCode", value: name)
+    }
+  }
+}

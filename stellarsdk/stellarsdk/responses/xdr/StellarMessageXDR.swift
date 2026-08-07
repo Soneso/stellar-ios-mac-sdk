@@ -175,3 +175,194 @@ public enum StellarMessageXDR: XDRCodable, Sendable {
     }
   }
 }
+
+extension StellarMessageXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .error(let payload):
+      return .object([XdrJsonMember(key: "error_msg", value: try payload.toXdrJsonValue())])
+    case .hello(let payload):
+      return .object([XdrJsonMember(key: "hello", value: try payload.toXdrJsonValue())])
+    case .auth(let payload):
+      return .object([XdrJsonMember(key: "auth", value: try payload.toXdrJsonValue())])
+    case .dontHave(let payload):
+      return .object([XdrJsonMember(key: "dont_have", value: try payload.toXdrJsonValue())])
+    case .peers(let payload):
+      return .object([XdrJsonMember(key: "peers", value: try XdrJson.array(payload.map { element in try element.toXdrJsonValue() }))])
+    case .txSetHash(let payload):
+      return .object([XdrJsonMember(key: "get_tx_set", value: try Uint256XDRJsonCodec.toXdrJsonValue(payload, type: "StellarMessageXDR", key: "get_tx_set"))])
+    case .txSet(let payload):
+      return .object([XdrJsonMember(key: "tx_set", value: try payload.toXdrJsonValue())])
+    case .generalizedTxSet(let payload):
+      return .object([XdrJsonMember(key: "generalized_tx_set", value: try payload.toXdrJsonValue())])
+    case .transaction(let payload):
+      return .object([XdrJsonMember(key: "transaction", value: try payload.toXdrJsonValue())])
+    case .signedTimeSlicedSurveyRequestMessage(let payload):
+      return .object([XdrJsonMember(key: "time_sliced_survey_request", value: try payload.toXdrJsonValue())])
+    case .signedTimeSlicedSurveyResponseMessage(let payload):
+      return .object([XdrJsonMember(key: "time_sliced_survey_response", value: try payload.toXdrJsonValue())])
+    case .signedTimeSlicedSurveyStartCollectingMessage(let payload):
+      return .object([XdrJsonMember(key: "time_sliced_survey_start_collecting", value: try payload.toXdrJsonValue())])
+    case .signedTimeSlicedSurveyStopCollectingMessage(let payload):
+      return .object([XdrJsonMember(key: "time_sliced_survey_stop_collecting", value: try payload.toXdrJsonValue())])
+    case .qSetHash(let payload):
+      return .object([XdrJsonMember(key: "get_scp_quorumset", value: try Uint256XDRJsonCodec.toXdrJsonValue(payload, type: "StellarMessageXDR", key: "get_scp_quorumset"))])
+    case .qSet(let payload):
+      return .object([XdrJsonMember(key: "scp_quorumset", value: try payload.toXdrJsonValue())])
+    case .envelope(let payload):
+      return .object([XdrJsonMember(key: "scp_message", value: try payload.toXdrJsonValue())])
+    case .getSCPLedgerSeq(let payload):
+      return .object([XdrJsonMember(key: "get_scp_state", value: try Uint32XDRJsonCodec.toXdrJsonValue(payload, type: "StellarMessageXDR", key: "get_scp_state"))])
+    case .sendMoreMessage(let payload):
+      return .object([XdrJsonMember(key: "send_more", value: try payload.toXdrJsonValue())])
+    case .sendMoreExtendedMessage(let payload):
+      return .object([XdrJsonMember(key: "send_more_extended", value: try payload.toXdrJsonValue())])
+    case .floodAdvert(let payload):
+      return .object([XdrJsonMember(key: "flood_advert", value: try payload.toXdrJsonValue())])
+    case .floodDemand(let payload):
+      return .object([XdrJsonMember(key: "flood_demand", value: try payload.toXdrJsonValue())])
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> StellarMessageXDR {
+    if case .string(let name) = value {
+      switch name {
+      case "error_msg":
+        throw XdrJsonError.invalidValue(type: "StellarMessageXDR", key: "error_msg",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "hello":
+        throw XdrJsonError.invalidValue(type: "StellarMessageXDR", key: "hello",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "auth":
+        throw XdrJsonError.invalidValue(type: "StellarMessageXDR", key: "auth",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "dont_have":
+        throw XdrJsonError.invalidValue(type: "StellarMessageXDR", key: "dont_have",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "peers":
+        throw XdrJsonError.invalidValue(type: "StellarMessageXDR", key: "peers",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "get_tx_set":
+        throw XdrJsonError.invalidValue(type: "StellarMessageXDR", key: "get_tx_set",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "tx_set":
+        throw XdrJsonError.invalidValue(type: "StellarMessageXDR", key: "tx_set",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "generalized_tx_set":
+        throw XdrJsonError.invalidValue(type: "StellarMessageXDR", key: "generalized_tx_set",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "transaction":
+        throw XdrJsonError.invalidValue(type: "StellarMessageXDR", key: "transaction",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "time_sliced_survey_request":
+        throw XdrJsonError.invalidValue(type: "StellarMessageXDR", key: "time_sliced_survey_request",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "time_sliced_survey_response":
+        throw XdrJsonError.invalidValue(type: "StellarMessageXDR", key: "time_sliced_survey_response",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "time_sliced_survey_start_collecting":
+        throw XdrJsonError.invalidValue(type: "StellarMessageXDR", key: "time_sliced_survey_start_collecting",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "time_sliced_survey_stop_collecting":
+        throw XdrJsonError.invalidValue(type: "StellarMessageXDR", key: "time_sliced_survey_stop_collecting",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "get_scp_quorumset":
+        throw XdrJsonError.invalidValue(type: "StellarMessageXDR", key: "get_scp_quorumset",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "scp_quorumset":
+        throw XdrJsonError.invalidValue(type: "StellarMessageXDR", key: "scp_quorumset",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "scp_message":
+        throw XdrJsonError.invalidValue(type: "StellarMessageXDR", key: "scp_message",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "get_scp_state":
+        throw XdrJsonError.invalidValue(type: "StellarMessageXDR", key: "get_scp_state",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "send_more":
+        throw XdrJsonError.invalidValue(type: "StellarMessageXDR", key: "send_more",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "send_more_extended":
+        throw XdrJsonError.invalidValue(type: "StellarMessageXDR", key: "send_more_extended",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "flood_advert":
+        throw XdrJsonError.invalidValue(type: "StellarMessageXDR", key: "flood_advert",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "flood_demand":
+        throw XdrJsonError.invalidValue(type: "StellarMessageXDR", key: "flood_demand",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      default:
+        throw XdrJsonError.unknownUnionArm(type: "StellarMessageXDR", key: name)
+      }
+    }
+
+    let member = try XdrJson.singleKeyObject(value, type: "StellarMessageXDR")
+    switch member.key {
+    case "error_msg":
+      let error: ErrorXDR = try ErrorXDR.fromXdrJsonValue(member.value)
+      return .error(error)
+    case "hello":
+      let hello: HelloXDR = try HelloXDR.fromXdrJsonValue(member.value)
+      return .hello(hello)
+    case "auth":
+      let auth: AuthXDR = try AuthXDR.fromXdrJsonValue(member.value)
+      return .auth(auth)
+    case "dont_have":
+      let dontHave: DontHaveXDR = try DontHaveXDR.fromXdrJsonValue(member.value)
+      return .dontHave(dontHave)
+    case "peers":
+      let peersElements = try XdrJson.array(member.value, type: "StellarMessageXDR", key: "peers")
+      let peers: [PeerAddressXDR] = try peersElements.map { element in try PeerAddressXDR.fromXdrJsonValue(element) }
+      return .peers(peers)
+    case "get_tx_set":
+      let txSetHash: Uint256XDR = try Uint256XDRJsonCodec.fromXdrJsonValue(member.value, type: "StellarMessageXDR", key: "get_tx_set")
+      return .txSetHash(txSetHash)
+    case "tx_set":
+      let txSet: TransactionSetXDR = try TransactionSetXDR.fromXdrJsonValue(member.value)
+      return .txSet(txSet)
+    case "generalized_tx_set":
+      let generalizedTxSet: GeneralizedTransactionSetXDR = try GeneralizedTransactionSetXDR.fromXdrJsonValue(member.value)
+      return .generalizedTxSet(generalizedTxSet)
+    case "transaction":
+      let transaction: TransactionEnvelopeXDR = try TransactionEnvelopeXDR.fromXdrJsonValue(member.value)
+      return .transaction(transaction)
+    case "time_sliced_survey_request":
+      let signedTimeSlicedSurveyRequestMessage: SignedTimeSlicedSurveyRequestMessageXDR = try SignedTimeSlicedSurveyRequestMessageXDR.fromXdrJsonValue(member.value)
+      return .signedTimeSlicedSurveyRequestMessage(signedTimeSlicedSurveyRequestMessage)
+    case "time_sliced_survey_response":
+      let signedTimeSlicedSurveyResponseMessage: SignedTimeSlicedSurveyResponseMessageXDR = try SignedTimeSlicedSurveyResponseMessageXDR.fromXdrJsonValue(member.value)
+      return .signedTimeSlicedSurveyResponseMessage(signedTimeSlicedSurveyResponseMessage)
+    case "time_sliced_survey_start_collecting":
+      let signedTimeSlicedSurveyStartCollectingMessage: SignedTimeSlicedSurveyStartCollectingMessageXDR = try SignedTimeSlicedSurveyStartCollectingMessageXDR.fromXdrJsonValue(member.value)
+      return .signedTimeSlicedSurveyStartCollectingMessage(signedTimeSlicedSurveyStartCollectingMessage)
+    case "time_sliced_survey_stop_collecting":
+      let signedTimeSlicedSurveyStopCollectingMessage: SignedTimeSlicedSurveyStopCollectingMessageXDR = try SignedTimeSlicedSurveyStopCollectingMessageXDR.fromXdrJsonValue(member.value)
+      return .signedTimeSlicedSurveyStopCollectingMessage(signedTimeSlicedSurveyStopCollectingMessage)
+    case "get_scp_quorumset":
+      let qSetHash: Uint256XDR = try Uint256XDRJsonCodec.fromXdrJsonValue(member.value, type: "StellarMessageXDR", key: "get_scp_quorumset")
+      return .qSetHash(qSetHash)
+    case "scp_quorumset":
+      let qSet: SCPQuorumSetXDR = try SCPQuorumSetXDR.fromXdrJsonValue(member.value)
+      return .qSet(qSet)
+    case "scp_message":
+      let envelope: SCPEnvelopeXDR = try SCPEnvelopeXDR.fromXdrJsonValue(member.value)
+      return .envelope(envelope)
+    case "get_scp_state":
+      let getSCPLedgerSeq: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(member.value, type: "StellarMessageXDR", key: "get_scp_state")
+      return .getSCPLedgerSeq(getSCPLedgerSeq)
+    case "send_more":
+      let sendMoreMessage: SendMoreXDR = try SendMoreXDR.fromXdrJsonValue(member.value)
+      return .sendMoreMessage(sendMoreMessage)
+    case "send_more_extended":
+      let sendMoreExtendedMessage: SendMoreExtendedXDR = try SendMoreExtendedXDR.fromXdrJsonValue(member.value)
+      return .sendMoreExtendedMessage(sendMoreExtendedMessage)
+    case "flood_advert":
+      let floodAdvert: FloodAdvertXDR = try FloodAdvertXDR.fromXdrJsonValue(member.value)
+      return .floodAdvert(floodAdvert)
+    case "flood_demand":
+      let floodDemand: FloodDemandXDR = try FloodDemandXDR.fromXdrJsonValue(member.value)
+      return .floodDemand(floodDemand)
+    default:
+      throw XdrJsonError.unknownUnionArm(type: "StellarMessageXDR", key: member.key)
+    }
+  }
+}

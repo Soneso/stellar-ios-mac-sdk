@@ -121,10 +121,16 @@ class GeneratorSnapshotTest < Minitest::Test
     end
   end
 
+  # The property type is the resolved type, not the typedef name. The XDR-JSON codec is a
+  # separate matter: it is keyed on the declared XDR name precisely because several typedefs
+  # resolve to one Swift type and render differently, so AccountIDXDRJsonCodec does appear
+  # elsewhere in the same file.
   def test_typedef_resolution_in_structs
     content = File.read(File.join(@output_dir, "DataEntryXDR.swift"))
-    assert_includes content, "PublicKey", "DataEntryXDR should use PublicKey (not AccountIDXDR)"
-    refute_includes content, "AccountIDXDR", "DataEntryXDR should not use AccountIDXDR"
+    assert_includes content, "public let accountID: PublicKey",
+                    "DataEntryXDR should declare accountID as PublicKey"
+    refute_includes content, "accountID: AccountIDXDR",
+                    "DataEntryXDR should not declare accountID as AccountIDXDR"
   end
 
   def test_extension_point_simplification

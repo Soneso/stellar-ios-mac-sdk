@@ -35,3 +35,33 @@ public enum SCMetaEntryXDR: XDRCodable, Sendable {
     }
   }
 }
+
+extension SCMetaEntryXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .v0(let payload):
+      return .object([XdrJsonMember(key: "sc_meta_v0", value: try payload.toXdrJsonValue())])
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> SCMetaEntryXDR {
+    if case .string(let name) = value {
+      switch name {
+      case "sc_meta_v0":
+        throw XdrJsonError.invalidValue(type: "SCMetaEntryXDR", key: "sc_meta_v0",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      default:
+        throw XdrJsonError.unknownUnionArm(type: "SCMetaEntryXDR", key: name)
+      }
+    }
+
+    let member = try XdrJson.singleKeyObject(value, type: "SCMetaEntryXDR")
+    switch member.key {
+    case "sc_meta_v0":
+      let v0: SCMetaV0XDR = try SCMetaV0XDR.fromXdrJsonValue(member.value)
+      return .v0(v0)
+    default:
+      throw XdrJsonError.unknownUnionArm(type: "SCMetaEntryXDR", key: member.key)
+    }
+  }
+}

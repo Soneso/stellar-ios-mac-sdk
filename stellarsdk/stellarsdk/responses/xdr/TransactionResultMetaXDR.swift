@@ -32,3 +32,25 @@ public struct TransactionResultMetaXDR: XDRCodable, Sendable {
     try container.encode(txApplyProcessing)
   }
 }
+
+extension TransactionResultMetaXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "result", value: try self.result.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "fee_processing", value: try self.feeProcessing.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "tx_apply_processing", value: try self.txApplyProcessing.toXdrJsonValue()))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> TransactionResultMetaXDR {
+    let members = try XdrJson.object(value, type: "TransactionResultMetaXDR", keys: ["result", "fee_processing", "tx_apply_processing"])
+    let result: TransactionResultPairXDR = try TransactionResultPairXDR.fromXdrJsonValue(try XdrJson.field(members, key: "result", type: "TransactionResultMetaXDR"))
+    let feeProcessing: LedgerEntryChangesXDR = try LedgerEntryChangesXDR.fromXdrJsonValue(try XdrJson.field(members, key: "fee_processing", type: "TransactionResultMetaXDR"))
+    let txApplyProcessing: TransactionMetaXDR = try TransactionMetaXDR.fromXdrJsonValue(try XdrJson.field(members, key: "tx_apply_processing", type: "TransactionResultMetaXDR"))
+    return TransactionResultMetaXDR(
+      result: result,
+      feeProcessing: feeProcessing,
+      txApplyProcessing: txApplyProcessing
+    )
+  }
+}

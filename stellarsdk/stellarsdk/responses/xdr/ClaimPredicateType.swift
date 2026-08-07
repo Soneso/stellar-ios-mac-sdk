@@ -52,3 +52,30 @@ extension ClaimPredicateType {
     return try fromTxRepName(raw)
   }
 }
+
+extension ClaimPredicateType: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .claimPredicateUnconditional: return .string("unconditional")
+    case .claimPredicateAnd: return .string("and")
+    case .claimPredicateOr: return .string("or")
+    case .claimPredicateNot: return .string("not")
+    case .claimPredicateBeforeAbsTime: return .string("before_absolute_time")
+    case .claimPredicateBeforeRelTime: return .string("before_relative_time")
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> ClaimPredicateType {
+    let name = try XdrJson.string(value, type: "ClaimPredicateType")
+    switch name {
+    case "unconditional": return .claimPredicateUnconditional
+    case "and": return .claimPredicateAnd
+    case "or": return .claimPredicateOr
+    case "not": return .claimPredicateNot
+    case "before_absolute_time": return .claimPredicateBeforeAbsTime
+    case "before_relative_time": return .claimPredicateBeforeRelTime
+    default:
+      throw XdrJsonError.unknownEnumValue(type: "ClaimPredicateType", value: name)
+    }
+  }
+}

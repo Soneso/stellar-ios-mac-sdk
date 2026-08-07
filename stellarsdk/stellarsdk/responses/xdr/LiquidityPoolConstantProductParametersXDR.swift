@@ -47,3 +47,25 @@ extension LiquidityPoolConstantProductParametersXDR {
     return LiquidityPoolConstantProductParametersXDR(assetA: assetA, assetB: assetB, fee: fee)
   }
 }
+
+extension LiquidityPoolConstantProductParametersXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "asset_a", value: try self.assetA.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "asset_b", value: try self.assetB.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "fee", value: try Int32XDRJsonCodec.toXdrJsonValue(self.fee, type: "LiquidityPoolConstantProductParametersXDR", key: "fee")))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> LiquidityPoolConstantProductParametersXDR {
+    let members = try XdrJson.object(value, type: "LiquidityPoolConstantProductParametersXDR", keys: ["asset_a", "asset_b", "fee"])
+    let assetA: AssetXDR = try AssetXDR.fromXdrJsonValue(try XdrJson.field(members, key: "asset_a", type: "LiquidityPoolConstantProductParametersXDR"))
+    let assetB: AssetXDR = try AssetXDR.fromXdrJsonValue(try XdrJson.field(members, key: "asset_b", type: "LiquidityPoolConstantProductParametersXDR"))
+    let fee: Int32 = try Int32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "fee", type: "LiquidityPoolConstantProductParametersXDR"), type: "LiquidityPoolConstantProductParametersXDR", key: "fee")
+    return LiquidityPoolConstantProductParametersXDR(
+      assetA: assetA,
+      assetB: assetB,
+      fee: fee
+    )
+  }
+}

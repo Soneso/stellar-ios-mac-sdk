@@ -12,3 +12,32 @@ public enum AllowTrustResultCode: Int32, XDRCodable, Equatable, Sendable {
   case selfNotAllowed = -5
   case lowReserve = -6
 }
+
+extension AllowTrustResultCode: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .success: return .string("success")
+    case .malformed: return .string("malformed")
+    case .noTrustLine: return .string("no_trust_line")
+    case .trustNotRequired: return .string("trust_not_required")
+    case .cantRevoke: return .string("cant_revoke")
+    case .selfNotAllowed: return .string("self_not_allowed")
+    case .lowReserve: return .string("low_reserve")
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> AllowTrustResultCode {
+    let name = try XdrJson.string(value, type: "AllowTrustResultCode")
+    switch name {
+    case "success": return .success
+    case "malformed": return .malformed
+    case "no_trust_line": return .noTrustLine
+    case "trust_not_required": return .trustNotRequired
+    case "cant_revoke": return .cantRevoke
+    case "self_not_allowed": return .selfNotAllowed
+    case "low_reserve": return .lowReserve
+    default:
+      throw XdrJsonError.unknownEnumValue(type: "AllowTrustResultCode", value: name)
+    }
+  }
+}

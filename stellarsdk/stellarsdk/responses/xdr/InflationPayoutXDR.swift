@@ -24,3 +24,19 @@ public struct InflationPayoutXDR: XDRCodable, Sendable {
     try container.encode(amount)
   }
 }
+
+extension InflationPayoutXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "destination", value: try AccountIDXDRJsonCodec.toXdrJsonValue(self.destination, type: "InflationPayoutXDR", key: "destination")))
+    members.append(XdrJsonMember(key: "amount", value: try Int64XDRJsonCodec.toXdrJsonValue(self.amount, type: "InflationPayoutXDR", key: "amount")))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> InflationPayoutXDR {
+    let members = try XdrJson.object(value, type: "InflationPayoutXDR", keys: ["destination", "amount"])
+    let destination: PublicKey = try AccountIDXDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "destination", type: "InflationPayoutXDR"), type: "InflationPayoutXDR", key: "destination")
+    let amount: Int64 = try Int64XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "amount", type: "InflationPayoutXDR"), type: "InflationPayoutXDR", key: "amount")
+    return InflationPayoutXDR(destination: destination, amount: amount)
+  }
+}

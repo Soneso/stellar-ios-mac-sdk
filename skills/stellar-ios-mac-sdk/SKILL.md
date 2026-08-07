@@ -1,19 +1,19 @@
 ---
 name: stellar-ios-mac-sdk
-description: Build Stellar blockchain applications in Swift using stellar-ios-mac-sdk. Use when generating Swift code for transaction building, signing, Horizon API queries, Soroban RPC, smart contract deployment and invocation, smart accounts (OpenZeppelin) with passkey / WebAuthn authentication, XDR encoding/decoding, and SEP protocol integration. Covers 26+ operations, 50 Horizon endpoints, 12 RPC methods, and 17 SEP implementations with Swift async/await and callback-based streaming patterns. Reach for it when the developer mentions Stellar, blockchain, passkey, smart wallet, or biometric signing on iOS or macOS. Full Swift 6 strict concurrency support (all types Sendable).
+description: Build Stellar blockchain applications in Swift using stellar-ios-mac-sdk. Use when generating Swift code for transaction building, signing, Horizon API queries, Soroban RPC, smart contract deployment and invocation, smart accounts (OpenZeppelin) with passkey / WebAuthn authentication, XDR encoding/decoding, and SEP protocol integration. Covers 26+ operations, 50 Horizon endpoints, 12 RPC methods, and 18 SEP implementations with Swift async/await and callback-based streaming patterns. Reach for it when the developer mentions Stellar, blockchain, passkey, smart wallet, or biometric signing on iOS or macOS. Full Swift 6 strict concurrency support (all types Sendable).
 license: Apache 2.0
 compatibility: Requires Swift 6.0+, iOS 15+, macOS 12+. Zero external dependencies.
 metadata:
-  version: "1.3.2"
+  version: "1.4.0"
   sdk_version: "3.8.1"
-  last_updated: "2026-08-03"
+  last_updated: "2026-08-06"
 ---
 
 # Stellar SDK for iOS & Mac
 
 ## Overview
 
-The Stellar iOS/Mac SDK (`stellarsdk`) is a native Swift library for building Stellar applications on iOS 15+ and macOS 12+. It provides 100% Horizon API coverage (50/50 endpoints), 100% Soroban RPC coverage (12/12 methods), and 17 SEP implementations. All public APIs use Swift async/await with Swift 6 strict concurrency. The SDK has zero external dependencies.
+The Stellar iOS/Mac SDK (`stellarsdk`) is a native Swift library for building Stellar applications on iOS 15+ and macOS 12+. It provides 100% Horizon API coverage (50/50 endpoints), 100% Soroban RPC coverage (12/12 methods), and 18 SEP implementations. All public APIs use Swift async/await with Swift 6 strict concurrency. The SDK has zero external dependencies.
 
 **Module name:** `stellarsdk` (always lowercase in import statements)
 
@@ -388,7 +388,7 @@ Never hardcode secret seeds. Use iOS Keychain for storage. Always verify transac
 
 ## 11. SEP Implementations
 
-The SDK implements 17 Stellar Ecosystem Proposals (SEPs): SEP-01 (TOML), SEP-02 (Federation), SEP-05 (Key Derivation), SEP-10 (Web Auth), SEP-24 (Interactive deposit/withdrawal), and more.
+The SDK implements 18 Stellar Ecosystem Proposals (SEPs): SEP-01 (TOML), SEP-02 (Federation), SEP-05 (Key Derivation), SEP-10 (Web Auth), SEP-24 (Interactive deposit/withdrawal), and more.
 
 [SEP Implementations Reference](./references/sep.md)
 
@@ -411,7 +411,7 @@ Multi-signature accounts, sponsored reserves, claimable balances, liquidity pool
 - [XDR Guide](./references/xdr.md) - XDR encoding/decoding and debugging
 - [Troubleshooting Guide](./references/troubleshooting.md) - Error codes and solutions
 - [Security Best Practices](./references/security.md) - Keychain storage, transaction verification
-- [SEP Implementations](./references/sep.md) - All 17 SEP protocol implementations
+- [SEP Implementations](./references/sep.md) - All 18 SEP protocol implementations
 - [Advanced Features](./references/advanced.md) - Multi-sig, sponsorship, claimable balances, liquidity pools
 - [API Reference (Signatures)](./references/api_reference.md) - All public class/method signatures
 

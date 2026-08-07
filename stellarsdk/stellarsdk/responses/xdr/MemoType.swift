@@ -49,3 +49,28 @@ extension MemoType {
     return try fromTxRepName(raw)
   }
 }
+
+extension MemoType: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .MEMO_TYPE_NONE: return .string("none")
+    case .MEMO_TYPE_TEXT: return .string("text")
+    case .MEMO_TYPE_ID: return .string("id")
+    case .MEMO_TYPE_HASH: return .string("hash")
+    case .MEMO_TYPE_RETURN: return .string("return")
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> MemoType {
+    let name = try XdrJson.string(value, type: "MemoType")
+    switch name {
+    case "none": return .MEMO_TYPE_NONE
+    case "text": return .MEMO_TYPE_TEXT
+    case "id": return .MEMO_TYPE_ID
+    case "hash": return .MEMO_TYPE_HASH
+    case "return": return .MEMO_TYPE_RETURN
+    default:
+      throw XdrJsonError.unknownEnumValue(type: "MemoType", value: name)
+    }
+  }
+}

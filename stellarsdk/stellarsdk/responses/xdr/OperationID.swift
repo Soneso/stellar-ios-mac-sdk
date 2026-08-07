@@ -32,3 +32,25 @@ public struct OperationID: XDRCodable, Sendable {
     try container.encode(opNum)
   }
 }
+
+extension OperationID: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "source_account", value: try AccountIDXDRJsonCodec.toXdrJsonValue(self.sourceAccount, type: "OperationID", key: "source_account")))
+    members.append(XdrJsonMember(key: "seq_num", value: try SequenceNumberXDRJsonCodec.toXdrJsonValue(self.seqNum, type: "OperationID", key: "seq_num")))
+    members.append(XdrJsonMember(key: "op_num", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.opNum, type: "OperationID", key: "op_num")))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> OperationID {
+    let members = try XdrJson.object(value, type: "OperationID", keys: ["source_account", "seq_num", "op_num"])
+    let sourceAccount: PublicKey = try AccountIDXDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "source_account", type: "OperationID"), type: "OperationID", key: "source_account")
+    let seqNum: Int64 = try SequenceNumberXDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "seq_num", type: "OperationID"), type: "OperationID", key: "seq_num")
+    let opNum: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "op_num", type: "OperationID"), type: "OperationID", key: "op_num")
+    return OperationID(
+      sourceAccount: sourceAccount,
+      seqNum: seqNum,
+      opNum: opNum
+    )
+  }
+}

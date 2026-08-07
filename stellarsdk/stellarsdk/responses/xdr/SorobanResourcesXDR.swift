@@ -54,3 +54,28 @@ extension SorobanResourcesXDR {
     return SorobanResourcesXDR(footprint: footprint, instructions: instructions, diskReadBytes: diskReadBytes, writeBytes: writeBytes)
   }
 }
+
+extension SorobanResourcesXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "footprint", value: try self.footprint.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "instructions", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.instructions, type: "SorobanResourcesXDR", key: "instructions")))
+    members.append(XdrJsonMember(key: "disk_read_bytes", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.diskReadBytes, type: "SorobanResourcesXDR", key: "disk_read_bytes")))
+    members.append(XdrJsonMember(key: "write_bytes", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.writeBytes, type: "SorobanResourcesXDR", key: "write_bytes")))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> SorobanResourcesXDR {
+    let members = try XdrJson.object(value, type: "SorobanResourcesXDR", keys: ["footprint", "instructions", "disk_read_bytes", "write_bytes"])
+    let footprint: LedgerFootprintXDR = try LedgerFootprintXDR.fromXdrJsonValue(try XdrJson.field(members, key: "footprint", type: "SorobanResourcesXDR"))
+    let instructions: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "instructions", type: "SorobanResourcesXDR"), type: "SorobanResourcesXDR", key: "instructions")
+    let diskReadBytes: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "disk_read_bytes", type: "SorobanResourcesXDR"), type: "SorobanResourcesXDR", key: "disk_read_bytes")
+    let writeBytes: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "write_bytes", type: "SorobanResourcesXDR"), type: "SorobanResourcesXDR", key: "write_bytes")
+    return SorobanResourcesXDR(
+      footprint: footprint,
+      instructions: instructions,
+      diskReadBytes: diskReadBytes,
+      writeBytes: writeBytes
+    )
+  }
+}

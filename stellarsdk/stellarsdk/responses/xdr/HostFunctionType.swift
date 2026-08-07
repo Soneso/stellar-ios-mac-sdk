@@ -46,3 +46,26 @@ extension HostFunctionType {
     return try fromTxRepName(raw)
   }
 }
+
+extension HostFunctionType: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .invokeContract: return .string("invoke_contract")
+    case .createContract: return .string("create_contract")
+    case .uploadContractWasm: return .string("upload_contract_wasm")
+    case .createContractV2: return .string("create_contract_v2")
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> HostFunctionType {
+    let name = try XdrJson.string(value, type: "HostFunctionType")
+    switch name {
+    case "invoke_contract": return .invokeContract
+    case "create_contract": return .createContract
+    case "upload_contract_wasm": return .uploadContractWasm
+    case "create_contract_v2": return .createContractV2
+    default:
+      throw XdrJsonError.unknownEnumValue(type: "HostFunctionType", value: name)
+    }
+  }
+}

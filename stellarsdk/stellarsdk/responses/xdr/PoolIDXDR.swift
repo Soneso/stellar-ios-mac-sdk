@@ -4,3 +4,37 @@
 import Foundation
 
 public typealias PoolIDXDR = HashXDR
+
+public enum PoolIDXDRJsonCodec {
+  public static func toXdrJsonValue(_ value: PoolIDXDR) throws -> XdrJsonValue {
+    try toXdrJsonValue(value, type: "PoolIDXDR", key: nil)
+  }
+
+  static func toXdrJsonValue(_ value: PoolIDXDR, type: String, key: String?) throws -> XdrJsonValue {
+    return .string(try XdrJson.strKey(value.wrapped, expectedLength: 32,
+                                      type: type, key: key) { try $0.encodeLiquidityPoolId() })
+  }
+
+  public static func toXdrJson(_ value: PoolIDXDR) throws -> String {
+    try XdrJsonWriter.canonicalString(from: try toXdrJsonValue(value))
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> PoolIDXDR {
+    try fromXdrJsonValue(value, type: "PoolIDXDR", key: nil)
+  }
+
+  static func fromXdrJsonValue(_ value: XdrJsonValue, type: String, key: String?) throws -> PoolIDXDR {
+    let text = try XdrJson.string(value, type: type, key: key)
+    return PoolIDXDR(try XdrJson.strKeyBytes(text, expectedLength: 32,
+                                             type: type, key: key) { try $0.decodeLiquidityPoolId() })
+  }
+
+  public static func fromXdrJson(_ json: String) throws -> PoolIDXDR {
+    try fromXdrJsonValue(try XdrJsonParser.parse(json))
+  }
+
+  public static func fromXdrJsonTree(_ value: XdrJsonValue) throws -> PoolIDXDR {
+    try XdrJson.validateDepth(value)
+    return try fromXdrJsonValue(value)
+  }
+}

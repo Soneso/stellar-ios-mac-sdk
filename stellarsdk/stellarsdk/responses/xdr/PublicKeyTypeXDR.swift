@@ -37,3 +37,20 @@ extension PublicKeyTypeXDR {
     return try fromTxRepName(raw)
   }
 }
+
+extension PublicKeyTypeXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .publicKeyTypeEd25519: return .string("public_key_type_ed25519")
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> PublicKeyTypeXDR {
+    let name = try XdrJson.string(value, type: "PublicKeyTypeXDR")
+    switch name {
+    case "public_key_type_ed25519": return .publicKeyTypeEd25519
+    default:
+      throw XdrJsonError.unknownEnumValue(type: "PublicKeyTypeXDR", value: name)
+    }
+  }
+}

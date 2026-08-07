@@ -8,3 +8,24 @@ public enum ContractEventType: Int32, XDRCodable, Equatable, Sendable {
   case contract = 1
   case diagnostic = 2
 }
+
+extension ContractEventType: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .system: return .string("system")
+    case .contract: return .string("contract")
+    case .diagnostic: return .string("diagnostic")
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> ContractEventType {
+    let name = try XdrJson.string(value, type: "ContractEventType")
+    switch name {
+    case "system": return .system
+    case "contract": return .contract
+    case "diagnostic": return .diagnostic
+    default:
+      throw XdrJsonError.unknownEnumValue(type: "ContractEventType", value: name)
+    }
+  }
+}

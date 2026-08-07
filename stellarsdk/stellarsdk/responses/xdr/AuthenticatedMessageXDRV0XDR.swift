@@ -32,3 +32,25 @@ public struct AuthenticatedMessageXDRV0XDR: XDRCodable, Sendable {
     try container.encode(mac)
   }
 }
+
+extension AuthenticatedMessageXDRV0XDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "sequence", value: try Uint64XDRJsonCodec.toXdrJsonValue(self.sequence, type: "AuthenticatedMessageXDRV0XDR", key: "sequence")))
+    members.append(XdrJsonMember(key: "message", value: try self.message.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "mac", value: try self.mac.toXdrJsonValue()))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> AuthenticatedMessageXDRV0XDR {
+    let members = try XdrJson.object(value, type: "AuthenticatedMessageXDRV0XDR", keys: ["sequence", "message", "mac"])
+    let sequence: UInt64 = try Uint64XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "sequence", type: "AuthenticatedMessageXDRV0XDR"), type: "AuthenticatedMessageXDRV0XDR", key: "sequence")
+    let message: StellarMessageXDR = try StellarMessageXDR.fromXdrJsonValue(try XdrJson.field(members, key: "message", type: "AuthenticatedMessageXDRV0XDR"))
+    let mac: HmacSha256MacXDR = try HmacSha256MacXDR.fromXdrJsonValue(try XdrJson.field(members, key: "mac", type: "AuthenticatedMessageXDRV0XDR"))
+    return AuthenticatedMessageXDRV0XDR(
+      sequence: sequence,
+      message: message,
+      mac: mac
+    )
+  }
+}

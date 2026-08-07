@@ -24,3 +24,19 @@ public struct LedgerCloseValueSignatureXDR: XDRCodable, Sendable {
     try container.encode(signature)
   }
 }
+
+extension LedgerCloseValueSignatureXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "node_id", value: try NodeIDXDRJsonCodec.toXdrJsonValue(self.nodeID, type: "LedgerCloseValueSignatureXDR", key: "node_id")))
+    members.append(XdrJsonMember(key: "signature", value: try SignatureXDRJsonCodec.toXdrJsonValue(self.signature, type: "LedgerCloseValueSignatureXDR", key: "signature")))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> LedgerCloseValueSignatureXDR {
+    let members = try XdrJson.object(value, type: "LedgerCloseValueSignatureXDR", keys: ["node_id", "signature"])
+    let nodeID: NodeIDXDR = try NodeIDXDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "node_id", type: "LedgerCloseValueSignatureXDR"), type: "LedgerCloseValueSignatureXDR", key: "node_id")
+    let signature: SignatureXDR = try SignatureXDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "signature", type: "LedgerCloseValueSignatureXDR"), type: "LedgerCloseValueSignatureXDR", key: "signature")
+    return LedgerCloseValueSignatureXDR(nodeID: nodeID, signature: signature)
+  }
+}

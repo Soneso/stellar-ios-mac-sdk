@@ -64,3 +64,38 @@ extension SCErrorType {
     return try fromTxRepName(raw)
   }
 }
+
+extension SCErrorType: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .contract: return .string("contract")
+    case .wasmVm: return .string("wasm_vm")
+    case .context: return .string("context")
+    case .storage: return .string("storage")
+    case .object: return .string("object")
+    case .crypto: return .string("crypto")
+    case .events: return .string("events")
+    case .budget: return .string("budget")
+    case .value: return .string("value")
+    case .auth: return .string("auth")
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> SCErrorType {
+    let name = try XdrJson.string(value, type: "SCErrorType")
+    switch name {
+    case "contract": return .contract
+    case "wasm_vm": return .wasmVm
+    case "context": return .context
+    case "storage": return .storage
+    case "object": return .object
+    case "crypto": return .crypto
+    case "events": return .events
+    case "budget": return .budget
+    case "value": return .value
+    case "auth": return .auth
+    default:
+      throw XdrJsonError.unknownEnumValue(type: "SCErrorType", value: name)
+    }
+  }
+}

@@ -31,3 +31,17 @@ extension LedgerKeyTTLXDR {
     return LedgerKeyTTLXDR(keyHash: keyHash)
   }
 }
+
+extension LedgerKeyTTLXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "key_hash", value: try HashXDRJsonCodec.toXdrJsonValue(self.keyHash, type: "LedgerKeyTTLXDR", key: "key_hash")))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> LedgerKeyTTLXDR {
+    let members = try XdrJson.object(value, type: "LedgerKeyTTLXDR", keys: ["key_hash"])
+    let keyHash: HashXDR = try HashXDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "key_hash", type: "LedgerKeyTTLXDR"), type: "LedgerKeyTTLXDR", key: "key_hash")
+    return LedgerKeyTTLXDR(keyHash: keyHash)
+  }
+}

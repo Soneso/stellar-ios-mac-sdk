@@ -55,3 +55,26 @@ extension CreateContractV2ArgsXDR {
     return CreateContractV2ArgsXDR(contractIDPreimage: contractIDPreimage, executable: executable, constructorArgs: constructorArgs)
   }
 }
+
+extension CreateContractV2ArgsXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "contract_id_preimage", value: try self.contractIDPreimage.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "executable", value: try self.executable.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "constructor_args", value: try XdrJson.array(self.constructorArgs.map { element in try element.toXdrJsonValue() })))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> CreateContractV2ArgsXDR {
+    let members = try XdrJson.object(value, type: "CreateContractV2ArgsXDR", keys: ["contract_id_preimage", "executable", "constructor_args"])
+    let contractIDPreimage: ContractIDPreimageXDR = try ContractIDPreimageXDR.fromXdrJsonValue(try XdrJson.field(members, key: "contract_id_preimage", type: "CreateContractV2ArgsXDR"))
+    let executable: ContractExecutableXDR = try ContractExecutableXDR.fromXdrJsonValue(try XdrJson.field(members, key: "executable", type: "CreateContractV2ArgsXDR"))
+    let constructorArgsElements = try XdrJson.array(try XdrJson.field(members, key: "constructor_args", type: "CreateContractV2ArgsXDR"), type: "CreateContractV2ArgsXDR", key: "constructor_args")
+    let constructorArgs: [SCValXDR] = try constructorArgsElements.map { element in try SCValXDR.fromXdrJsonValue(element) }
+    return CreateContractV2ArgsXDR(
+      contractIDPreimage: contractIDPreimage,
+      executable: executable,
+      constructorArgs: constructorArgs
+    )
+  }
+}

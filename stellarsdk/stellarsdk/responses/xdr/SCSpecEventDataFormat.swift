@@ -8,3 +8,24 @@ public enum SCSpecEventDataFormat: Int32, XDRCodable, Equatable, Sendable {
   case vec = 1
   case map = 2
 }
+
+extension SCSpecEventDataFormat: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .singleValue: return .string("single_value")
+    case .vec: return .string("vec")
+    case .map: return .string("map")
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> SCSpecEventDataFormat {
+    let name = try XdrJson.string(value, type: "SCSpecEventDataFormat")
+    switch name {
+    case "single_value": return .singleValue
+    case "vec": return .vec
+    case "map": return .map
+    default:
+      throw XdrJsonError.unknownEnumValue(type: "SCSpecEventDataFormat", value: name)
+    }
+  }
+}

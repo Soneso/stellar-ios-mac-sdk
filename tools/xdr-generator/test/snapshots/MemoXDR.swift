@@ -108,3 +108,63 @@ extension MemoXDR {
     }
   }
 }
+
+extension MemoXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .none: return .string("none")
+    case .text(let payload):
+      return .object([XdrJsonMember(key: "text", value: XdrJson.escapedString(payload))])
+    case .id(let payload):
+      return .object([XdrJsonMember(key: "id", value: try Uint64XDRJsonCodec.toXdrJsonValue(payload, type: "MemoXDR", key: "id"))])
+    case .hash(let payload):
+      return .object([XdrJsonMember(key: "hash", value: try HashXDRJsonCodec.toXdrJsonValue(payload, type: "MemoXDR", key: "hash"))])
+    case .returnHash(let payload):
+      return .object([XdrJsonMember(key: "return", value: try HashXDRJsonCodec.toXdrJsonValue(payload, type: "MemoXDR", key: "return"))])
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> MemoXDR {
+    if case .string(let name) = value {
+      switch name {
+      case "none":
+        return .none
+      case "text":
+        throw XdrJsonError.invalidValue(type: "MemoXDR", key: "text",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "id":
+        throw XdrJsonError.invalidValue(type: "MemoXDR", key: "id",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "hash":
+        throw XdrJsonError.invalidValue(type: "MemoXDR", key: "hash",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "return":
+        throw XdrJsonError.invalidValue(type: "MemoXDR", key: "return",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      default:
+        throw XdrJsonError.unknownUnionArm(type: "MemoXDR", key: name)
+      }
+    }
+
+    let member = try XdrJson.singleKeyObject(value, type: "MemoXDR")
+    switch member.key {
+    case "none":
+      throw XdrJsonError.invalidValue(type: "MemoXDR", key: "none",
+                                      message: "this arm carries no value, so it is written as a bare string")
+    case "text":
+      let text: String = try XdrJson.unescapedText(member.value, type: "MemoXDR", key: "text")
+      return .text(text)
+    case "id":
+      let id: UInt64 = try Uint64XDRJsonCodec.fromXdrJsonValue(member.value, type: "MemoXDR", key: "id")
+      return .id(id)
+    case "hash":
+      let hash: HashXDR = try HashXDRJsonCodec.fromXdrJsonValue(member.value, type: "MemoXDR", key: "hash")
+      return .hash(hash)
+    case "return":
+      let returnHash: HashXDR = try HashXDRJsonCodec.fromXdrJsonValue(member.value, type: "MemoXDR", key: "return")
+      return .returnHash(returnHash)
+    default:
+      throw XdrJsonError.unknownUnionArm(type: "MemoXDR", key: member.key)
+    }
+  }
+}

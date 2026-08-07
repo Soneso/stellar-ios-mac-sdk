@@ -46,3 +46,26 @@ extension SorobanCredentialsType {
     return try fromTxRepName(raw)
   }
 }
+
+extension SorobanCredentialsType: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .sourceAccount: return .string("source_account")
+    case .address: return .string("address")
+    case .addressV2: return .string("address_v2")
+    case .addressWithDelegates: return .string("address_with_delegates")
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> SorobanCredentialsType {
+    let name = try XdrJson.string(value, type: "SorobanCredentialsType")
+    switch name {
+    case "source_account": return .sourceAccount
+    case "address": return .address
+    case "address_v2": return .addressV2
+    case "address_with_delegates": return .addressWithDelegates
+    default:
+      throw XdrJsonError.unknownEnumValue(type: "SorobanCredentialsType", value: name)
+    }
+  }
+}

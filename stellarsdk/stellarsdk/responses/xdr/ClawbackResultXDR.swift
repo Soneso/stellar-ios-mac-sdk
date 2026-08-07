@@ -58,3 +58,33 @@ public enum ClawbackResultXDR: XDRCodable, Sendable {
     }
   }
 }
+
+extension ClawbackResultXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .success: return .string("success")
+    case .malformed: return .string("malformed")
+    case .notClawbackEnabled: return .string("not_clawback_enabled")
+    case .noTrust: return .string("no_trust")
+    case .underfunded: return .string("underfunded")
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> ClawbackResultXDR {
+    let name = try XdrJson.string(value, type: "ClawbackResultXDR")
+    switch name {
+    case "success":
+      return .success
+    case "malformed":
+      return .malformed
+    case "not_clawback_enabled":
+      return .notClawbackEnabled
+    case "no_trust":
+      return .noTrust
+    case "underfunded":
+      return .underfunded
+    default:
+      throw XdrJsonError.unknownUnionArm(type: "ClawbackResultXDR", key: name)
+    }
+  }
+}

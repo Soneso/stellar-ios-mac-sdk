@@ -42,3 +42,41 @@ public enum TransactionSignaturePayloadTaggedTransactionXDR: XDRCodable, Sendabl
     }
   }
 }
+
+extension TransactionSignaturePayloadTaggedTransactionXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .tx(let payload):
+      return .object([XdrJsonMember(key: "tx", value: try payload.toXdrJsonValue())])
+    case .feeBump(let payload):
+      return .object([XdrJsonMember(key: "tx_fee_bump", value: try payload.toXdrJsonValue())])
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> TransactionSignaturePayloadTaggedTransactionXDR {
+    if case .string(let name) = value {
+      switch name {
+      case "tx":
+        throw XdrJsonError.invalidValue(type: "TransactionSignaturePayloadTaggedTransactionXDR", key: "tx",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "tx_fee_bump":
+        throw XdrJsonError.invalidValue(type: "TransactionSignaturePayloadTaggedTransactionXDR", key: "tx_fee_bump",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      default:
+        throw XdrJsonError.unknownUnionArm(type: "TransactionSignaturePayloadTaggedTransactionXDR", key: name)
+      }
+    }
+
+    let member = try XdrJson.singleKeyObject(value, type: "TransactionSignaturePayloadTaggedTransactionXDR")
+    switch member.key {
+    case "tx":
+      let tx: TransactionXDR = try TransactionXDR.fromXdrJsonValue(member.value)
+      return .tx(tx)
+    case "tx_fee_bump":
+      let feeBump: FeeBumpTransactionXDR = try FeeBumpTransactionXDR.fromXdrJsonValue(member.value)
+      return .feeBump(feeBump)
+    default:
+      throw XdrJsonError.unknownUnionArm(type: "TransactionSignaturePayloadTaggedTransactionXDR", key: member.key)
+    }
+  }
+}

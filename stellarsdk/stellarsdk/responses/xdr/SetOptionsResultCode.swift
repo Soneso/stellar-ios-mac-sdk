@@ -16,3 +16,40 @@ public enum SetOptionsResultCode: Int32, XDRCodable, Equatable, Sendable {
   case invalidHomeDomain = -9
   case authRevocableRequired = -10
 }
+
+extension SetOptionsResultCode: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .success: return .string("success")
+    case .lowReserve: return .string("low_reserve")
+    case .tooManySigners: return .string("too_many_signers")
+    case .badFlags: return .string("bad_flags")
+    case .invalidInflation: return .string("invalid_inflation")
+    case .cantChange: return .string("cant_change")
+    case .unknownFlag: return .string("unknown_flag")
+    case .thresholdOutOfRange: return .string("threshold_out_of_range")
+    case .badSigner: return .string("bad_signer")
+    case .invalidHomeDomain: return .string("invalid_home_domain")
+    case .authRevocableRequired: return .string("auth_revocable_required")
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> SetOptionsResultCode {
+    let name = try XdrJson.string(value, type: "SetOptionsResultCode")
+    switch name {
+    case "success": return .success
+    case "low_reserve": return .lowReserve
+    case "too_many_signers": return .tooManySigners
+    case "bad_flags": return .badFlags
+    case "invalid_inflation": return .invalidInflation
+    case "cant_change": return .cantChange
+    case "unknown_flag": return .unknownFlag
+    case "threshold_out_of_range": return .thresholdOutOfRange
+    case "bad_signer": return .badSigner
+    case "invalid_home_domain": return .invalidHomeDomain
+    case "auth_revocable_required": return .authRevocableRequired
+    default:
+      throw XdrJsonError.unknownEnumValue(type: "SetOptionsResultCode", value: name)
+    }
+  }
+}

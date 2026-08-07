@@ -217,3 +217,449 @@ public enum OperationResultXDRTrXDR: XDRCodable, Sendable {
     }
   }
 }
+
+extension OperationResultXDRTrXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .createAccountResult(let payload):
+      return .object([XdrJsonMember(key: "create_account", value: try payload.toXdrJsonValue())])
+    case .paymentResult(let payload):
+      return .object([XdrJsonMember(key: "payment", value: try payload.toXdrJsonValue())])
+    case .pathPaymentStrictReceiveResult(let payload):
+      return .object([XdrJsonMember(key: "path_payment_strict_receive", value: try Self.pathPaymentStrictReceiveResultToXdrJsonValue(payload))])
+    case .manageSellOfferResult(let payload):
+      return .object([XdrJsonMember(key: "manage_sell_offer", value: try payload.toXdrJsonValue())])
+    case .createPassiveSellOfferResult(let payload):
+      return .object([XdrJsonMember(key: "create_passive_sell_offer", value: try payload.toXdrJsonValue())])
+    case .setOptionsResult(let payload):
+      return .object([XdrJsonMember(key: "set_options", value: try payload.toXdrJsonValue())])
+    case .changeTrustResult(let payload):
+      return .object([XdrJsonMember(key: "change_trust", value: try payload.toXdrJsonValue())])
+    case .allowTrustResult(let payload):
+      return .object([XdrJsonMember(key: "allow_trust", value: try payload.toXdrJsonValue())])
+    case .accountMergeResult(let payload):
+      return .object([XdrJsonMember(key: "account_merge", value: try payload.toXdrJsonValue())])
+    case .inflationResult(let payload):
+      return .object([XdrJsonMember(key: "inflation", value: try payload.toXdrJsonValue())])
+    case .manageDataResult(let payload):
+      return .object([XdrJsonMember(key: "manage_data", value: try payload.toXdrJsonValue())])
+    case .bumpSeqResult(let payload):
+      return .object([XdrJsonMember(key: "bump_sequence", value: try payload.toXdrJsonValue())])
+    case .manageBuyOfferResult(let payload):
+      return .object([XdrJsonMember(key: "manage_buy_offer", value: try payload.toXdrJsonValue())])
+    case .pathPaymentStrictSendResult(let payload):
+      return .object([XdrJsonMember(key: "path_payment_strict_send", value: try Self.pathPaymentStrictSendResultToXdrJsonValue(payload))])
+    case .createClaimableBalanceResult(let payload):
+      return .object([XdrJsonMember(key: "create_claimable_balance", value: try payload.toXdrJsonValue())])
+    case .claimClaimableBalanceResult(let payload):
+      return .object([XdrJsonMember(key: "claim_claimable_balance", value: try payload.toXdrJsonValue())])
+    case .beginSponsoringFutureReservesResult(let payload):
+      return .object([XdrJsonMember(key: "begin_sponsoring_future_reserves", value: try payload.toXdrJsonValue())])
+    case .endSponsoringFutureReservesResult(let payload):
+      return .object([XdrJsonMember(key: "end_sponsoring_future_reserves", value: try payload.toXdrJsonValue())])
+    case .revokeSponsorshipResult(let payload):
+      return .object([XdrJsonMember(key: "revoke_sponsorship", value: try payload.toXdrJsonValue())])
+    case .clawbackResult(let payload):
+      return .object([XdrJsonMember(key: "clawback", value: try payload.toXdrJsonValue())])
+    case .clawbackClaimableBalanceResult(let payload):
+      return .object([XdrJsonMember(key: "clawback_claimable_balance", value: try payload.toXdrJsonValue())])
+    case .setTrustLineFlagsResult(let payload):
+      return .object([XdrJsonMember(key: "set_trust_line_flags", value: try payload.toXdrJsonValue())])
+    case .liquidityPoolDepositResult(let payload):
+      return .object([XdrJsonMember(key: "liquidity_pool_deposit", value: try payload.toXdrJsonValue())])
+    case .liquidityPoolWithdrawResult(let payload):
+      return .object([XdrJsonMember(key: "liquidity_pool_withdraw", value: try payload.toXdrJsonValue())])
+    case .invokeHostFunctionResult(let payload):
+      return .object([XdrJsonMember(key: "invoke_host_function", value: try payload.toXdrJsonValue())])
+    case .extendFootprintTTLResult(let payload):
+      return .object([XdrJsonMember(key: "extend_footprint_ttl", value: try payload.toXdrJsonValue())])
+    case .restoreFootprintResult(let payload):
+      return .object([XdrJsonMember(key: "restore_footprint", value: try payload.toXdrJsonValue())])
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> OperationResultXDRTrXDR {
+    if case .string(let name) = value {
+      switch name {
+      case "create_account":
+        throw XdrJsonError.invalidValue(type: "OperationResultXDRTrXDR", key: "create_account",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "payment":
+        throw XdrJsonError.invalidValue(type: "OperationResultXDRTrXDR", key: "payment",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "path_payment_strict_receive":
+        throw XdrJsonError.invalidValue(type: "OperationResultXDRTrXDR", key: "path_payment_strict_receive",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "manage_sell_offer":
+        throw XdrJsonError.invalidValue(type: "OperationResultXDRTrXDR", key: "manage_sell_offer",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "create_passive_sell_offer":
+        throw XdrJsonError.invalidValue(type: "OperationResultXDRTrXDR", key: "create_passive_sell_offer",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "set_options":
+        throw XdrJsonError.invalidValue(type: "OperationResultXDRTrXDR", key: "set_options",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "change_trust":
+        throw XdrJsonError.invalidValue(type: "OperationResultXDRTrXDR", key: "change_trust",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "allow_trust":
+        throw XdrJsonError.invalidValue(type: "OperationResultXDRTrXDR", key: "allow_trust",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "account_merge":
+        throw XdrJsonError.invalidValue(type: "OperationResultXDRTrXDR", key: "account_merge",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "inflation":
+        throw XdrJsonError.invalidValue(type: "OperationResultXDRTrXDR", key: "inflation",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "manage_data":
+        throw XdrJsonError.invalidValue(type: "OperationResultXDRTrXDR", key: "manage_data",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "bump_sequence":
+        throw XdrJsonError.invalidValue(type: "OperationResultXDRTrXDR", key: "bump_sequence",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "manage_buy_offer":
+        throw XdrJsonError.invalidValue(type: "OperationResultXDRTrXDR", key: "manage_buy_offer",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "path_payment_strict_send":
+        throw XdrJsonError.invalidValue(type: "OperationResultXDRTrXDR", key: "path_payment_strict_send",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "create_claimable_balance":
+        throw XdrJsonError.invalidValue(type: "OperationResultXDRTrXDR", key: "create_claimable_balance",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "claim_claimable_balance":
+        throw XdrJsonError.invalidValue(type: "OperationResultXDRTrXDR", key: "claim_claimable_balance",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "begin_sponsoring_future_reserves":
+        throw XdrJsonError.invalidValue(type: "OperationResultXDRTrXDR", key: "begin_sponsoring_future_reserves",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "end_sponsoring_future_reserves":
+        throw XdrJsonError.invalidValue(type: "OperationResultXDRTrXDR", key: "end_sponsoring_future_reserves",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "revoke_sponsorship":
+        throw XdrJsonError.invalidValue(type: "OperationResultXDRTrXDR", key: "revoke_sponsorship",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "clawback":
+        throw XdrJsonError.invalidValue(type: "OperationResultXDRTrXDR", key: "clawback",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "clawback_claimable_balance":
+        throw XdrJsonError.invalidValue(type: "OperationResultXDRTrXDR", key: "clawback_claimable_balance",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "set_trust_line_flags":
+        throw XdrJsonError.invalidValue(type: "OperationResultXDRTrXDR", key: "set_trust_line_flags",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "liquidity_pool_deposit":
+        throw XdrJsonError.invalidValue(type: "OperationResultXDRTrXDR", key: "liquidity_pool_deposit",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "liquidity_pool_withdraw":
+        throw XdrJsonError.invalidValue(type: "OperationResultXDRTrXDR", key: "liquidity_pool_withdraw",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "invoke_host_function":
+        throw XdrJsonError.invalidValue(type: "OperationResultXDRTrXDR", key: "invoke_host_function",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "extend_footprint_ttl":
+        throw XdrJsonError.invalidValue(type: "OperationResultXDRTrXDR", key: "extend_footprint_ttl",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "restore_footprint":
+        throw XdrJsonError.invalidValue(type: "OperationResultXDRTrXDR", key: "restore_footprint",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      default:
+        throw XdrJsonError.unknownUnionArm(type: "OperationResultXDRTrXDR", key: name)
+      }
+    }
+
+    let member = try XdrJson.singleKeyObject(value, type: "OperationResultXDRTrXDR")
+    switch member.key {
+    case "create_account":
+      let createAccountResult: CreateAccountResultXDR = try CreateAccountResultXDR.fromXdrJsonValue(member.value)
+      return .createAccountResult(createAccountResult)
+    case "payment":
+      let paymentResult: PaymentResultXDR = try PaymentResultXDR.fromXdrJsonValue(member.value)
+      return .paymentResult(paymentResult)
+    case "path_payment_strict_receive":
+      let pathPaymentStrictReceiveResult: PathPaymentResultXDR = try Self.pathPaymentStrictReceiveResultFromXdrJsonValue(member.value)
+      return .pathPaymentStrictReceiveResult(pathPaymentStrictReceiveResult)
+    case "manage_sell_offer":
+      let manageSellOfferResult: ManageOfferResultXDR = try ManageOfferResultXDR.fromXdrJsonValue(member.value)
+      return .manageSellOfferResult(manageSellOfferResult)
+    case "create_passive_sell_offer":
+      let createPassiveSellOfferResult: ManageOfferResultXDR = try ManageOfferResultXDR.fromXdrJsonValue(member.value)
+      return .createPassiveSellOfferResult(createPassiveSellOfferResult)
+    case "set_options":
+      let setOptionsResult: SetOptionsResultXDR = try SetOptionsResultXDR.fromXdrJsonValue(member.value)
+      return .setOptionsResult(setOptionsResult)
+    case "change_trust":
+      let changeTrustResult: ChangeTrustResultXDR = try ChangeTrustResultXDR.fromXdrJsonValue(member.value)
+      return .changeTrustResult(changeTrustResult)
+    case "allow_trust":
+      let allowTrustResult: AllowTrustResultXDR = try AllowTrustResultXDR.fromXdrJsonValue(member.value)
+      return .allowTrustResult(allowTrustResult)
+    case "account_merge":
+      let accountMergeResult: AccountMergeResultXDR = try AccountMergeResultXDR.fromXdrJsonValue(member.value)
+      return .accountMergeResult(accountMergeResult)
+    case "inflation":
+      let inflationResult: InflationResultXDR = try InflationResultXDR.fromXdrJsonValue(member.value)
+      return .inflationResult(inflationResult)
+    case "manage_data":
+      let manageDataResult: ManageDataResultXDR = try ManageDataResultXDR.fromXdrJsonValue(member.value)
+      return .manageDataResult(manageDataResult)
+    case "bump_sequence":
+      let bumpSeqResult: BumpSequenceResultXDR = try BumpSequenceResultXDR.fromXdrJsonValue(member.value)
+      return .bumpSeqResult(bumpSeqResult)
+    case "manage_buy_offer":
+      let manageBuyOfferResult: ManageOfferResultXDR = try ManageOfferResultXDR.fromXdrJsonValue(member.value)
+      return .manageBuyOfferResult(manageBuyOfferResult)
+    case "path_payment_strict_send":
+      let pathPaymentStrictSendResult: PathPaymentResultXDR = try Self.pathPaymentStrictSendResultFromXdrJsonValue(member.value)
+      return .pathPaymentStrictSendResult(pathPaymentStrictSendResult)
+    case "create_claimable_balance":
+      let createClaimableBalanceResult: CreateClaimableBalanceResultXDR = try CreateClaimableBalanceResultXDR.fromXdrJsonValue(member.value)
+      return .createClaimableBalanceResult(createClaimableBalanceResult)
+    case "claim_claimable_balance":
+      let claimClaimableBalanceResult: ClaimClaimableBalanceResultXDR = try ClaimClaimableBalanceResultXDR.fromXdrJsonValue(member.value)
+      return .claimClaimableBalanceResult(claimClaimableBalanceResult)
+    case "begin_sponsoring_future_reserves":
+      let beginSponsoringFutureReservesResult: BeginSponsoringFutureReservesResultXDR = try BeginSponsoringFutureReservesResultXDR.fromXdrJsonValue(member.value)
+      return .beginSponsoringFutureReservesResult(beginSponsoringFutureReservesResult)
+    case "end_sponsoring_future_reserves":
+      let endSponsoringFutureReservesResult: EndSponsoringFutureReservesResultXDR = try EndSponsoringFutureReservesResultXDR.fromXdrJsonValue(member.value)
+      return .endSponsoringFutureReservesResult(endSponsoringFutureReservesResult)
+    case "revoke_sponsorship":
+      let revokeSponsorshipResult: RevokeSponsorshipResultXDR = try RevokeSponsorshipResultXDR.fromXdrJsonValue(member.value)
+      return .revokeSponsorshipResult(revokeSponsorshipResult)
+    case "clawback":
+      let clawbackResult: ClawbackResultXDR = try ClawbackResultXDR.fromXdrJsonValue(member.value)
+      return .clawbackResult(clawbackResult)
+    case "clawback_claimable_balance":
+      let clawbackClaimableBalanceResult: ClawbackClaimableBalanceResultXDR = try ClawbackClaimableBalanceResultXDR.fromXdrJsonValue(member.value)
+      return .clawbackClaimableBalanceResult(clawbackClaimableBalanceResult)
+    case "set_trust_line_flags":
+      let setTrustLineFlagsResult: SetTrustLineFlagsResultXDR = try SetTrustLineFlagsResultXDR.fromXdrJsonValue(member.value)
+      return .setTrustLineFlagsResult(setTrustLineFlagsResult)
+    case "liquidity_pool_deposit":
+      let liquidityPoolDepositResult: LiquidityPoolDepositResultXDR = try LiquidityPoolDepositResultXDR.fromXdrJsonValue(member.value)
+      return .liquidityPoolDepositResult(liquidityPoolDepositResult)
+    case "liquidity_pool_withdraw":
+      let liquidityPoolWithdrawResult: LiquidityPoolWithdrawResultXDR = try LiquidityPoolWithdrawResultXDR.fromXdrJsonValue(member.value)
+      return .liquidityPoolWithdrawResult(liquidityPoolWithdrawResult)
+    case "invoke_host_function":
+      let invokeHostFunctionResult: InvokeHostFunctionResultXDR = try InvokeHostFunctionResultXDR.fromXdrJsonValue(member.value)
+      return .invokeHostFunctionResult(invokeHostFunctionResult)
+    case "extend_footprint_ttl":
+      let extendFootprintTTLResult: ExtendFootprintTTLResultXDR = try ExtendFootprintTTLResultXDR.fromXdrJsonValue(member.value)
+      return .extendFootprintTTLResult(extendFootprintTTLResult)
+    case "restore_footprint":
+      let restoreFootprintResult: RestoreFootprintResultXDR = try RestoreFootprintResultXDR.fromXdrJsonValue(member.value)
+      return .restoreFootprintResult(restoreFootprintResult)
+    default:
+      throw XdrJsonError.unknownUnionArm(type: "OperationResultXDRTrXDR", key: member.key)
+    }
+  }
+
+  // MARK: - PathPaymentStrictReceiveResult
+
+  private static func pathPaymentStrictReceiveResultToXdrJsonValue(_ payload: PathPaymentResultXDR) throws -> XdrJsonValue {
+    switch payload {
+    case .success(let inner):
+      return .object([XdrJsonMember(key: "success", value: try inner.toXdrJsonValue())])
+    case .malformed: return .string("malformed")
+    case .underfunded: return .string("underfunded")
+    case .srcNoTrust: return .string("src_no_trust")
+    case .srcNotAuthorized: return .string("src_not_authorized")
+    case .noDestination: return .string("no_destination")
+    case .noTrust: return .string("no_trust")
+    case .notAuthorized: return .string("not_authorized")
+    case .lineFull: return .string("line_full")
+    case .noIssuer(let inner):
+      return .object([XdrJsonMember(key: "no_issuer", value: try inner.toXdrJsonValue())])
+    case .tooFewOffers: return .string("too_few_offers")
+    case .offerCrossSelf: return .string("offer_cross_self")
+    case .overSendmax: return .string("over_sendmax")
+    }
+  }
+
+  private static func pathPaymentStrictReceiveResultFromXdrJsonValue(_ value: XdrJsonValue) throws -> PathPaymentResultXDR {
+    if case .string(let name) = value {
+      switch name {
+      case "success":
+        throw XdrJsonError.invalidValue(type: "PathPaymentStrictReceiveResult", key: "success",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "malformed":
+        return .malformed
+      case "underfunded":
+        return .underfunded
+      case "src_no_trust":
+        return .srcNoTrust
+      case "src_not_authorized":
+        return .srcNotAuthorized
+      case "no_destination":
+        return .noDestination
+      case "no_trust":
+        return .noTrust
+      case "not_authorized":
+        return .notAuthorized
+      case "line_full":
+        return .lineFull
+      case "no_issuer":
+        throw XdrJsonError.invalidValue(type: "PathPaymentStrictReceiveResult", key: "no_issuer",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "too_few_offers":
+        return .tooFewOffers
+      case "offer_cross_self":
+        return .offerCrossSelf
+      case "over_sendmax":
+        return .overSendmax
+      default:
+        throw XdrJsonError.unknownUnionArm(type: "PathPaymentStrictReceiveResult", key: name)
+      }
+    }
+
+    let member = try XdrJson.singleKeyObject(value, type: "PathPaymentStrictReceiveResult")
+    switch member.key {
+    case "success":
+      let success: PathPaymentResultXDRSuccessXDR = try PathPaymentResultXDRSuccessXDR.fromXdrJsonValue(member.value)
+      return .success(success)
+    case "malformed":
+      throw XdrJsonError.invalidValue(type: "PathPaymentStrictReceiveResult", key: "malformed",
+                                      message: "this arm carries no value, so it is written as a bare string")
+    case "underfunded":
+      throw XdrJsonError.invalidValue(type: "PathPaymentStrictReceiveResult", key: "underfunded",
+                                      message: "this arm carries no value, so it is written as a bare string")
+    case "src_no_trust":
+      throw XdrJsonError.invalidValue(type: "PathPaymentStrictReceiveResult", key: "src_no_trust",
+                                      message: "this arm carries no value, so it is written as a bare string")
+    case "src_not_authorized":
+      throw XdrJsonError.invalidValue(type: "PathPaymentStrictReceiveResult", key: "src_not_authorized",
+                                      message: "this arm carries no value, so it is written as a bare string")
+    case "no_destination":
+      throw XdrJsonError.invalidValue(type: "PathPaymentStrictReceiveResult", key: "no_destination",
+                                      message: "this arm carries no value, so it is written as a bare string")
+    case "no_trust":
+      throw XdrJsonError.invalidValue(type: "PathPaymentStrictReceiveResult", key: "no_trust",
+                                      message: "this arm carries no value, so it is written as a bare string")
+    case "not_authorized":
+      throw XdrJsonError.invalidValue(type: "PathPaymentStrictReceiveResult", key: "not_authorized",
+                                      message: "this arm carries no value, so it is written as a bare string")
+    case "line_full":
+      throw XdrJsonError.invalidValue(type: "PathPaymentStrictReceiveResult", key: "line_full",
+                                      message: "this arm carries no value, so it is written as a bare string")
+    case "no_issuer":
+      let noIssuer: AssetXDR = try AssetXDR.fromXdrJsonValue(member.value)
+      return .noIssuer(noIssuer)
+    case "too_few_offers":
+      throw XdrJsonError.invalidValue(type: "PathPaymentStrictReceiveResult", key: "too_few_offers",
+                                      message: "this arm carries no value, so it is written as a bare string")
+    case "offer_cross_self":
+      throw XdrJsonError.invalidValue(type: "PathPaymentStrictReceiveResult", key: "offer_cross_self",
+                                      message: "this arm carries no value, so it is written as a bare string")
+    case "over_sendmax":
+      throw XdrJsonError.invalidValue(type: "PathPaymentStrictReceiveResult", key: "over_sendmax",
+                                      message: "this arm carries no value, so it is written as a bare string")
+    default:
+      throw XdrJsonError.unknownUnionArm(type: "PathPaymentStrictReceiveResult", key: member.key)
+    }
+  }
+
+  // MARK: - PathPaymentStrictSendResult
+
+  private static func pathPaymentStrictSendResultToXdrJsonValue(_ payload: PathPaymentResultXDR) throws -> XdrJsonValue {
+    switch payload {
+    case .success(let inner):
+      return .object([XdrJsonMember(key: "success", value: try inner.toXdrJsonValue())])
+    case .malformed: return .string("malformed")
+    case .underfunded: return .string("underfunded")
+    case .srcNoTrust: return .string("src_no_trust")
+    case .srcNotAuthorized: return .string("src_not_authorized")
+    case .noDestination: return .string("no_destination")
+    case .noTrust: return .string("no_trust")
+    case .notAuthorized: return .string("not_authorized")
+    case .lineFull: return .string("line_full")
+    case .noIssuer(let inner):
+      return .object([XdrJsonMember(key: "no_issuer", value: try inner.toXdrJsonValue())])
+    case .tooFewOffers: return .string("too_few_offers")
+    case .offerCrossSelf: return .string("offer_cross_self")
+    case .overSendmax: return .string("under_destmin")
+    }
+  }
+
+  private static func pathPaymentStrictSendResultFromXdrJsonValue(_ value: XdrJsonValue) throws -> PathPaymentResultXDR {
+    if case .string(let name) = value {
+      switch name {
+      case "success":
+        throw XdrJsonError.invalidValue(type: "PathPaymentStrictSendResult", key: "success",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "malformed":
+        return .malformed
+      case "underfunded":
+        return .underfunded
+      case "src_no_trust":
+        return .srcNoTrust
+      case "src_not_authorized":
+        return .srcNotAuthorized
+      case "no_destination":
+        return .noDestination
+      case "no_trust":
+        return .noTrust
+      case "not_authorized":
+        return .notAuthorized
+      case "line_full":
+        return .lineFull
+      case "no_issuer":
+        throw XdrJsonError.invalidValue(type: "PathPaymentStrictSendResult", key: "no_issuer",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "too_few_offers":
+        return .tooFewOffers
+      case "offer_cross_self":
+        return .offerCrossSelf
+      case "under_destmin":
+        return .overSendmax
+      default:
+        throw XdrJsonError.unknownUnionArm(type: "PathPaymentStrictSendResult", key: name)
+      }
+    }
+
+    let member = try XdrJson.singleKeyObject(value, type: "PathPaymentStrictSendResult")
+    switch member.key {
+    case "success":
+      let success: PathPaymentResultXDRSuccessXDR = try PathPaymentResultXDRSuccessXDR.fromXdrJsonValue(member.value)
+      return .success(success)
+    case "malformed":
+      throw XdrJsonError.invalidValue(type: "PathPaymentStrictSendResult", key: "malformed",
+                                      message: "this arm carries no value, so it is written as a bare string")
+    case "underfunded":
+      throw XdrJsonError.invalidValue(type: "PathPaymentStrictSendResult", key: "underfunded",
+                                      message: "this arm carries no value, so it is written as a bare string")
+    case "src_no_trust":
+      throw XdrJsonError.invalidValue(type: "PathPaymentStrictSendResult", key: "src_no_trust",
+                                      message: "this arm carries no value, so it is written as a bare string")
+    case "src_not_authorized":
+      throw XdrJsonError.invalidValue(type: "PathPaymentStrictSendResult", key: "src_not_authorized",
+                                      message: "this arm carries no value, so it is written as a bare string")
+    case "no_destination":
+      throw XdrJsonError.invalidValue(type: "PathPaymentStrictSendResult", key: "no_destination",
+                                      message: "this arm carries no value, so it is written as a bare string")
+    case "no_trust":
+      throw XdrJsonError.invalidValue(type: "PathPaymentStrictSendResult", key: "no_trust",
+                                      message: "this arm carries no value, so it is written as a bare string")
+    case "not_authorized":
+      throw XdrJsonError.invalidValue(type: "PathPaymentStrictSendResult", key: "not_authorized",
+                                      message: "this arm carries no value, so it is written as a bare string")
+    case "line_full":
+      throw XdrJsonError.invalidValue(type: "PathPaymentStrictSendResult", key: "line_full",
+                                      message: "this arm carries no value, so it is written as a bare string")
+    case "no_issuer":
+      let noIssuer: AssetXDR = try AssetXDR.fromXdrJsonValue(member.value)
+      return .noIssuer(noIssuer)
+    case "too_few_offers":
+      throw XdrJsonError.invalidValue(type: "PathPaymentStrictSendResult", key: "too_few_offers",
+                                      message: "this arm carries no value, so it is written as a bare string")
+    case "offer_cross_self":
+      throw XdrJsonError.invalidValue(type: "PathPaymentStrictSendResult", key: "offer_cross_self",
+                                      message: "this arm carries no value, so it is written as a bare string")
+    case "under_destmin":
+      throw XdrJsonError.invalidValue(type: "PathPaymentStrictSendResult", key: "under_destmin",
+                                      message: "this arm carries no value, so it is written as a bare string")
+    default:
+      throw XdrJsonError.unknownUnionArm(type: "PathPaymentStrictSendResult", key: member.key)
+    }
+  }
+}

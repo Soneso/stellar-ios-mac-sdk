@@ -9,3 +9,26 @@ public enum BeginSponsoringFutureReservesResultCode: Int32, XDRCodable, Equatabl
   case alreadySponsored = -2
   case recursive = -3
 }
+
+extension BeginSponsoringFutureReservesResultCode: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .success: return .string("success")
+    case .malformed: return .string("malformed")
+    case .alreadySponsored: return .string("already_sponsored")
+    case .recursive: return .string("recursive")
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> BeginSponsoringFutureReservesResultCode {
+    let name = try XdrJson.string(value, type: "BeginSponsoringFutureReservesResultCode")
+    switch name {
+    case "success": return .success
+    case "malformed": return .malformed
+    case "already_sponsored": return .alreadySponsored
+    case "recursive": return .recursive
+    default:
+      throw XdrJsonError.unknownEnumValue(type: "BeginSponsoringFutureReservesResultCode", value: name)
+    }
+  }
+}

@@ -12,3 +12,32 @@ public enum LiquidityPoolWithdrawResulCode: Int32, XDRCodable, Equatable, Sendab
   case underMinimum = -5
   case trustlineFrozen = -6
 }
+
+extension LiquidityPoolWithdrawResulCode: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .success: return .string("success")
+    case .malformed: return .string("malformed")
+    case .noTrust: return .string("no_trust")
+    case .underfunded: return .string("underfunded")
+    case .lineFull: return .string("line_full")
+    case .underMinimum: return .string("under_minimum")
+    case .trustlineFrozen: return .string("trustline_frozen")
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> LiquidityPoolWithdrawResulCode {
+    let name = try XdrJson.string(value, type: "LiquidityPoolWithdrawResulCode")
+    switch name {
+    case "success": return .success
+    case "malformed": return .malformed
+    case "no_trust": return .noTrust
+    case "underfunded": return .underfunded
+    case "line_full": return .lineFull
+    case "under_minimum": return .underMinimum
+    case "trustline_frozen": return .trustlineFrozen
+    default:
+      throw XdrJsonError.unknownEnumValue(type: "LiquidityPoolWithdrawResulCode", value: name)
+    }
+  }
+}

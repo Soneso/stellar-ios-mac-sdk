@@ -32,3 +32,25 @@ public struct SCPStatementXDR: XDRCodable, Sendable {
     try container.encode(pledges)
   }
 }
+
+extension SCPStatementXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "node_id", value: try NodeIDXDRJsonCodec.toXdrJsonValue(self.nodeID, type: "SCPStatementXDR", key: "node_id")))
+    members.append(XdrJsonMember(key: "slot_index", value: try Uint64XDRJsonCodec.toXdrJsonValue(self.slotIndex, type: "SCPStatementXDR", key: "slot_index")))
+    members.append(XdrJsonMember(key: "pledges", value: try self.pledges.toXdrJsonValue()))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> SCPStatementXDR {
+    let members = try XdrJson.object(value, type: "SCPStatementXDR", keys: ["node_id", "slot_index", "pledges"])
+    let nodeID: NodeIDXDR = try NodeIDXDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "node_id", type: "SCPStatementXDR"), type: "SCPStatementXDR", key: "node_id")
+    let slotIndex: UInt64 = try Uint64XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "slot_index", type: "SCPStatementXDR"), type: "SCPStatementXDR", key: "slot_index")
+    let pledges: SCPStatementXDRPledgesXDR = try SCPStatementXDRPledgesXDR.fromXdrJsonValue(try XdrJson.field(members, key: "pledges", type: "SCPStatementXDR"))
+    return SCPStatementXDR(
+      nodeID: nodeID,
+      slotIndex: slotIndex,
+      pledges: pledges
+    )
+  }
+}

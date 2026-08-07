@@ -67,3 +67,46 @@ public struct StateArchivalSettingsXDR: XDRCodable, Sendable {
     try container.encode(startingEvictionScanLevel)
   }
 }
+
+extension StateArchivalSettingsXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "max_entry_ttl", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.maxEntryTTL, type: "StateArchivalSettingsXDR", key: "max_entry_ttl")))
+    members.append(XdrJsonMember(key: "min_temporary_ttl", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.minTemporaryTTL, type: "StateArchivalSettingsXDR", key: "min_temporary_ttl")))
+    members.append(XdrJsonMember(key: "min_persistent_ttl", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.minPersistentTTL, type: "StateArchivalSettingsXDR", key: "min_persistent_ttl")))
+    members.append(XdrJsonMember(key: "persistent_rent_rate_denominator", value: try Int64XDRJsonCodec.toXdrJsonValue(self.persistentRentRateDenominator, type: "StateArchivalSettingsXDR", key: "persistent_rent_rate_denominator")))
+    members.append(XdrJsonMember(key: "temp_rent_rate_denominator", value: try Int64XDRJsonCodec.toXdrJsonValue(self.tempRentRateDenominator, type: "StateArchivalSettingsXDR", key: "temp_rent_rate_denominator")))
+    members.append(XdrJsonMember(key: "max_entries_to_archive", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.maxEntriesToArchive, type: "StateArchivalSettingsXDR", key: "max_entries_to_archive")))
+    members.append(XdrJsonMember(key: "live_soroban_state_size_window_sample_size", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.liveSorobanStateSizeWindowSampleSize, type: "StateArchivalSettingsXDR", key: "live_soroban_state_size_window_sample_size")))
+    members.append(XdrJsonMember(key: "live_soroban_state_size_window_sample_period", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.liveSorobanStateSizeWindowSamplePeriod, type: "StateArchivalSettingsXDR", key: "live_soroban_state_size_window_sample_period")))
+    members.append(XdrJsonMember(key: "eviction_scan_size", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.evictionScanSize, type: "StateArchivalSettingsXDR", key: "eviction_scan_size")))
+    members.append(XdrJsonMember(key: "starting_eviction_scan_level", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.startingEvictionScanLevel, type: "StateArchivalSettingsXDR", key: "starting_eviction_scan_level")))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> StateArchivalSettingsXDR {
+    let members = try XdrJson.object(value, type: "StateArchivalSettingsXDR", keys: ["max_entry_ttl", "min_temporary_ttl", "min_persistent_ttl", "persistent_rent_rate_denominator", "temp_rent_rate_denominator", "max_entries_to_archive", "live_soroban_state_size_window_sample_size", "live_soroban_state_size_window_sample_period", "eviction_scan_size", "starting_eviction_scan_level"])
+    let maxEntryTTL: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "max_entry_ttl", type: "StateArchivalSettingsXDR"), type: "StateArchivalSettingsXDR", key: "max_entry_ttl")
+    let minTemporaryTTL: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "min_temporary_ttl", type: "StateArchivalSettingsXDR"), type: "StateArchivalSettingsXDR", key: "min_temporary_ttl")
+    let minPersistentTTL: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "min_persistent_ttl", type: "StateArchivalSettingsXDR"), type: "StateArchivalSettingsXDR", key: "min_persistent_ttl")
+    let persistentRentRateDenominator: Int64 = try Int64XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "persistent_rent_rate_denominator", type: "StateArchivalSettingsXDR"), type: "StateArchivalSettingsXDR", key: "persistent_rent_rate_denominator")
+    let tempRentRateDenominator: Int64 = try Int64XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "temp_rent_rate_denominator", type: "StateArchivalSettingsXDR"), type: "StateArchivalSettingsXDR", key: "temp_rent_rate_denominator")
+    let maxEntriesToArchive: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "max_entries_to_archive", type: "StateArchivalSettingsXDR"), type: "StateArchivalSettingsXDR", key: "max_entries_to_archive")
+    let liveSorobanStateSizeWindowSampleSize: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "live_soroban_state_size_window_sample_size", type: "StateArchivalSettingsXDR"), type: "StateArchivalSettingsXDR", key: "live_soroban_state_size_window_sample_size")
+    let liveSorobanStateSizeWindowSamplePeriod: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "live_soroban_state_size_window_sample_period", type: "StateArchivalSettingsXDR"), type: "StateArchivalSettingsXDR", key: "live_soroban_state_size_window_sample_period")
+    let evictionScanSize: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "eviction_scan_size", type: "StateArchivalSettingsXDR"), type: "StateArchivalSettingsXDR", key: "eviction_scan_size")
+    let startingEvictionScanLevel: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "starting_eviction_scan_level", type: "StateArchivalSettingsXDR"), type: "StateArchivalSettingsXDR", key: "starting_eviction_scan_level")
+    return StateArchivalSettingsXDR(
+      maxEntryTTL: maxEntryTTL,
+      minTemporaryTTL: minTemporaryTTL,
+      minPersistentTTL: minPersistentTTL,
+      persistentRentRateDenominator: persistentRentRateDenominator,
+      tempRentRateDenominator: tempRentRateDenominator,
+      maxEntriesToArchive: maxEntriesToArchive,
+      liveSorobanStateSizeWindowSampleSize: liveSorobanStateSizeWindowSampleSize,
+      liveSorobanStateSizeWindowSamplePeriod: liveSorobanStateSizeWindowSamplePeriod,
+      evictionScanSize: evictionScanSize,
+      startingEvictionScanLevel: startingEvictionScanLevel
+    )
+  }
+}

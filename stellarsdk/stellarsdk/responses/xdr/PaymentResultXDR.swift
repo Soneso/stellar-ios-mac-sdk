@@ -88,3 +88,48 @@ public enum PaymentResultXDR: XDRCodable, Sendable {
     }
   }
 }
+
+extension PaymentResultXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .success: return .string("success")
+    case .malformed: return .string("malformed")
+    case .underfunded: return .string("underfunded")
+    case .srcNoTrust: return .string("src_no_trust")
+    case .srcNotAuthorized: return .string("src_not_authorized")
+    case .noDestination: return .string("no_destination")
+    case .noTrust: return .string("no_trust")
+    case .notAuthorized: return .string("not_authorized")
+    case .lineFull: return .string("line_full")
+    case .noIssuer: return .string("no_issuer")
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> PaymentResultXDR {
+    let name = try XdrJson.string(value, type: "PaymentResultXDR")
+    switch name {
+    case "success":
+      return .success
+    case "malformed":
+      return .malformed
+    case "underfunded":
+      return .underfunded
+    case "src_no_trust":
+      return .srcNoTrust
+    case "src_not_authorized":
+      return .srcNotAuthorized
+    case "no_destination":
+      return .noDestination
+    case "no_trust":
+      return .noTrust
+    case "not_authorized":
+      return .notAuthorized
+    case "line_full":
+      return .lineFull
+    case "no_issuer":
+      return .noIssuer
+    default:
+      throw XdrJsonError.unknownUnionArm(type: "PaymentResultXDR", key: name)
+    }
+  }
+}

@@ -12,3 +12,32 @@ public enum LedgerUpgradeTypeXDR: Int32, XDRCodable, Equatable, Sendable {
   case config = 6
   case maxSorobanTxSetSize = 7
 }
+
+extension LedgerUpgradeTypeXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .version: return .string("version")
+    case .baseFee: return .string("base_fee")
+    case .maxTxSetSize: return .string("max_tx_set_size")
+    case .baseReserve: return .string("base_reserve")
+    case .flags: return .string("flags")
+    case .config: return .string("config")
+    case .maxSorobanTxSetSize: return .string("max_soroban_tx_set_size")
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> LedgerUpgradeTypeXDR {
+    let name = try XdrJson.string(value, type: "LedgerUpgradeTypeXDR")
+    switch name {
+    case "version": return .version
+    case "base_fee": return .baseFee
+    case "max_tx_set_size": return .maxTxSetSize
+    case "base_reserve": return .baseReserve
+    case "flags": return .flags
+    case "config": return .config
+    case "max_soroban_tx_set_size": return .maxSorobanTxSetSize
+    default:
+      throw XdrJsonError.unknownEnumValue(type: "LedgerUpgradeTypeXDR", value: name)
+    }
+  }
+}

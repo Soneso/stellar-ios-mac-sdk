@@ -191,3 +191,195 @@ public indirect enum SCSpecTypeDefXDR: XDRCodable, Sendable {
     }
   }
 }
+
+extension SCSpecTypeDefXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .val: return .string("val")
+    case .bool: return .string("bool")
+    case .void: return .string("void")
+    case .error: return .string("error")
+    case .u32: return .string("u32")
+    case .i32: return .string("i32")
+    case .u64: return .string("u64")
+    case .i64: return .string("i64")
+    case .timepoint: return .string("timepoint")
+    case .duration: return .string("duration")
+    case .u128: return .string("u128")
+    case .i128: return .string("i128")
+    case .u256: return .string("u256")
+    case .i256: return .string("i256")
+    case .bytes: return .string("bytes")
+    case .string: return .string("string")
+    case .symbol: return .string("symbol")
+    case .address: return .string("address")
+    case .muxedAddress: return .string("muxed_address")
+    case .option(let payload):
+      return .object([XdrJsonMember(key: "option", value: try payload.toXdrJsonValue())])
+    case .result(let payload):
+      return .object([XdrJsonMember(key: "result", value: try payload.toXdrJsonValue())])
+    case .vec(let payload):
+      return .object([XdrJsonMember(key: "vec", value: try payload.toXdrJsonValue())])
+    case .map(let payload):
+      return .object([XdrJsonMember(key: "map", value: try payload.toXdrJsonValue())])
+    case .tuple(let payload):
+      return .object([XdrJsonMember(key: "tuple", value: try payload.toXdrJsonValue())])
+    case .bytesN(let payload):
+      return .object([XdrJsonMember(key: "bytes_n", value: try payload.toXdrJsonValue())])
+    case .udt(let payload):
+      return .object([XdrJsonMember(key: "udt", value: try payload.toXdrJsonValue())])
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> SCSpecTypeDefXDR {
+    if case .string(let name) = value {
+      switch name {
+      case "val":
+        return .val
+      case "bool":
+        return .bool
+      case "void":
+        return .void
+      case "error":
+        return .error
+      case "u32":
+        return .u32
+      case "i32":
+        return .i32
+      case "u64":
+        return .u64
+      case "i64":
+        return .i64
+      case "timepoint":
+        return .timepoint
+      case "duration":
+        return .duration
+      case "u128":
+        return .u128
+      case "i128":
+        return .i128
+      case "u256":
+        return .u256
+      case "i256":
+        return .i256
+      case "bytes":
+        return .bytes
+      case "string":
+        return .string
+      case "symbol":
+        return .symbol
+      case "address":
+        return .address
+      case "muxed_address":
+        return .muxedAddress
+      case "option":
+        throw XdrJsonError.invalidValue(type: "SCSpecTypeDefXDR", key: "option",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "result":
+        throw XdrJsonError.invalidValue(type: "SCSpecTypeDefXDR", key: "result",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "vec":
+        throw XdrJsonError.invalidValue(type: "SCSpecTypeDefXDR", key: "vec",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "map":
+        throw XdrJsonError.invalidValue(type: "SCSpecTypeDefXDR", key: "map",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "tuple":
+        throw XdrJsonError.invalidValue(type: "SCSpecTypeDefXDR", key: "tuple",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "bytes_n":
+        throw XdrJsonError.invalidValue(type: "SCSpecTypeDefXDR", key: "bytes_n",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "udt":
+        throw XdrJsonError.invalidValue(type: "SCSpecTypeDefXDR", key: "udt",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      default:
+        throw XdrJsonError.unknownUnionArm(type: "SCSpecTypeDefXDR", key: name)
+      }
+    }
+
+    let member = try XdrJson.singleKeyObject(value, type: "SCSpecTypeDefXDR")
+    switch member.key {
+    case "val":
+      throw XdrJsonError.invalidValue(type: "SCSpecTypeDefXDR", key: "val",
+                                      message: "this arm carries no value, so it is written as a bare string")
+    case "bool":
+      throw XdrJsonError.invalidValue(type: "SCSpecTypeDefXDR", key: "bool",
+                                      message: "this arm carries no value, so it is written as a bare string")
+    case "void":
+      throw XdrJsonError.invalidValue(type: "SCSpecTypeDefXDR", key: "void",
+                                      message: "this arm carries no value, so it is written as a bare string")
+    case "error":
+      throw XdrJsonError.invalidValue(type: "SCSpecTypeDefXDR", key: "error",
+                                      message: "this arm carries no value, so it is written as a bare string")
+    case "u32":
+      throw XdrJsonError.invalidValue(type: "SCSpecTypeDefXDR", key: "u32",
+                                      message: "this arm carries no value, so it is written as a bare string")
+    case "i32":
+      throw XdrJsonError.invalidValue(type: "SCSpecTypeDefXDR", key: "i32",
+                                      message: "this arm carries no value, so it is written as a bare string")
+    case "u64":
+      throw XdrJsonError.invalidValue(type: "SCSpecTypeDefXDR", key: "u64",
+                                      message: "this arm carries no value, so it is written as a bare string")
+    case "i64":
+      throw XdrJsonError.invalidValue(type: "SCSpecTypeDefXDR", key: "i64",
+                                      message: "this arm carries no value, so it is written as a bare string")
+    case "timepoint":
+      throw XdrJsonError.invalidValue(type: "SCSpecTypeDefXDR", key: "timepoint",
+                                      message: "this arm carries no value, so it is written as a bare string")
+    case "duration":
+      throw XdrJsonError.invalidValue(type: "SCSpecTypeDefXDR", key: "duration",
+                                      message: "this arm carries no value, so it is written as a bare string")
+    case "u128":
+      throw XdrJsonError.invalidValue(type: "SCSpecTypeDefXDR", key: "u128",
+                                      message: "this arm carries no value, so it is written as a bare string")
+    case "i128":
+      throw XdrJsonError.invalidValue(type: "SCSpecTypeDefXDR", key: "i128",
+                                      message: "this arm carries no value, so it is written as a bare string")
+    case "u256":
+      throw XdrJsonError.invalidValue(type: "SCSpecTypeDefXDR", key: "u256",
+                                      message: "this arm carries no value, so it is written as a bare string")
+    case "i256":
+      throw XdrJsonError.invalidValue(type: "SCSpecTypeDefXDR", key: "i256",
+                                      message: "this arm carries no value, so it is written as a bare string")
+    case "bytes":
+      throw XdrJsonError.invalidValue(type: "SCSpecTypeDefXDR", key: "bytes",
+                                      message: "this arm carries no value, so it is written as a bare string")
+    case "string":
+      throw XdrJsonError.invalidValue(type: "SCSpecTypeDefXDR", key: "string",
+                                      message: "this arm carries no value, so it is written as a bare string")
+    case "symbol":
+      throw XdrJsonError.invalidValue(type: "SCSpecTypeDefXDR", key: "symbol",
+                                      message: "this arm carries no value, so it is written as a bare string")
+    case "address":
+      throw XdrJsonError.invalidValue(type: "SCSpecTypeDefXDR", key: "address",
+                                      message: "this arm carries no value, so it is written as a bare string")
+    case "muxed_address":
+      throw XdrJsonError.invalidValue(type: "SCSpecTypeDefXDR", key: "muxed_address",
+                                      message: "this arm carries no value, so it is written as a bare string")
+    case "option":
+      let option: SCSpecTypeOptionXDR = try SCSpecTypeOptionXDR.fromXdrJsonValue(member.value)
+      return .option(option)
+    case "result":
+      let result: SCSpecTypeResultXDR = try SCSpecTypeResultXDR.fromXdrJsonValue(member.value)
+      return .result(result)
+    case "vec":
+      let vec: SCSpecTypeVecXDR = try SCSpecTypeVecXDR.fromXdrJsonValue(member.value)
+      return .vec(vec)
+    case "map":
+      let map: SCSpecTypeMapXDR = try SCSpecTypeMapXDR.fromXdrJsonValue(member.value)
+      return .map(map)
+    case "tuple":
+      let tuple: SCSpecTypeTupleXDR = try SCSpecTypeTupleXDR.fromXdrJsonValue(member.value)
+      return .tuple(tuple)
+    case "bytes_n":
+      let bytesN: SCSpecTypeBytesNXDR = try SCSpecTypeBytesNXDR.fromXdrJsonValue(member.value)
+      return .bytesN(bytesN)
+    case "udt":
+      let udt: SCSpecTypeUDTXDR = try SCSpecTypeUDTXDR.fromXdrJsonValue(member.value)
+      return .udt(udt)
+    default:
+      throw XdrJsonError.unknownUnionArm(type: "SCSpecTypeDefXDR", key: member.key)
+    }
+  }
+}

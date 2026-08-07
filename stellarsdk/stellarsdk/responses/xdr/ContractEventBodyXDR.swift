@@ -35,3 +35,33 @@ public enum ContractEventBodyXDR: XDRCodable, Sendable {
     }
   }
 }
+
+extension ContractEventBodyXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .v0(let payload):
+      return .object([XdrJsonMember(key: "v0", value: try payload.toXdrJsonValue())])
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> ContractEventBodyXDR {
+    if case .string(let name) = value {
+      switch name {
+      case "v0":
+        throw XdrJsonError.invalidValue(type: "ContractEventBodyXDR", key: "v0",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      default:
+        throw XdrJsonError.unknownUnionArm(type: "ContractEventBodyXDR", key: name)
+      }
+    }
+
+    let member = try XdrJson.singleKeyObject(value, type: "ContractEventBodyXDR")
+    switch member.key {
+    case "v0":
+      let v0: ContractEventBodyV0XDR = try ContractEventBodyV0XDR.fromXdrJsonValue(member.value)
+      return .v0(v0)
+    default:
+      throw XdrJsonError.unknownUnionArm(type: "ContractEventBodyXDR", key: member.key)
+    }
+  }
+}

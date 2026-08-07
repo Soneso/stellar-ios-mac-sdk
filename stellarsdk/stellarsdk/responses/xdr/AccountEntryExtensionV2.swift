@@ -37,3 +37,29 @@ public struct AccountEntryExtensionV2: XDRCodable, Sendable {
     try container.encode(reserved)
   }
 }
+
+extension AccountEntryExtensionV2: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "num_sponsored", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.numSponsored, type: "AccountEntryExtensionV2", key: "num_sponsored")))
+    members.append(XdrJsonMember(key: "num_sponsoring", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.numSponsoring, type: "AccountEntryExtensionV2", key: "num_sponsoring")))
+    members.append(XdrJsonMember(key: "signer_sponsoring_i_ds", value: try XdrJson.array(self.signerSponsoringIDs.map { element in try SponsorshipDescriptorXDRJsonCodec.toXdrJsonValue(element, type: "AccountEntryExtensionV2", key: "signer_sponsoring_i_ds") })))
+    members.append(XdrJsonMember(key: "ext", value: try self.reserved.toXdrJsonValue()))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> AccountEntryExtensionV2 {
+    let members = try XdrJson.object(value, type: "AccountEntryExtensionV2", keys: ["num_sponsored", "num_sponsoring", "signer_sponsoring_i_ds", "ext"])
+    let numSponsored: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "num_sponsored", type: "AccountEntryExtensionV2"), type: "AccountEntryExtensionV2", key: "num_sponsored")
+    let numSponsoring: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "num_sponsoring", type: "AccountEntryExtensionV2"), type: "AccountEntryExtensionV2", key: "num_sponsoring")
+    let signerSponsoringIDsElements = try XdrJson.array(try XdrJson.field(members, key: "signer_sponsoring_i_ds", type: "AccountEntryExtensionV2"), type: "AccountEntryExtensionV2", key: "signer_sponsoring_i_ds")
+    let signerSponsoringIDs: [PublicKey?] = try signerSponsoringIDsElements.map { element in try SponsorshipDescriptorXDRJsonCodec.fromXdrJsonValue(element, type: "AccountEntryExtensionV2", key: "signer_sponsoring_i_ds") }
+    let reserved: AccountEntryExtV2XDR = try AccountEntryExtV2XDR.fromXdrJsonValue(try XdrJson.field(members, key: "ext", type: "AccountEntryExtensionV2"))
+    return AccountEntryExtensionV2(
+      numSponsored: numSponsored,
+      numSponsoring: numSponsoring,
+      signerSponsoringIDs: signerSponsoringIDs,
+      reserved: reserved
+    )
+  }
+}

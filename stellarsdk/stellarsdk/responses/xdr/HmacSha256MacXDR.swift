@@ -20,3 +20,17 @@ public struct HmacSha256MacXDR: XDRCodable, Sendable {
     try container.encode(mac)
   }
 }
+
+extension HmacSha256MacXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "mac", value: try XdrJson.hex(self.mac.wrapped, expectedLength: 32, type: "HmacSha256MacXDR", key: "mac")))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> HmacSha256MacXDR {
+    let members = try XdrJson.object(value, type: "HmacSha256MacXDR", keys: ["mac"])
+    let mac: WrappedData32 = WrappedData32(try XdrJson.hex(try XdrJson.field(members, key: "mac", type: "HmacSha256MacXDR"), expectedLength: 32, type: "HmacSha256MacXDR", key: "mac"))
+    return HmacSha256MacXDR(mac: mac)
+  }
+}

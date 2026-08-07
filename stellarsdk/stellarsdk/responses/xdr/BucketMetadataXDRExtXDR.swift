@@ -41,3 +41,39 @@ public enum BucketMetadataXDRExtXDR: XDRCodable, Sendable {
     }
   }
 }
+
+extension BucketMetadataXDRExtXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .void: return .string("v0")
+    case .bucketListType(let payload):
+      return .object([XdrJsonMember(key: "v1", value: try payload.toXdrJsonValue())])
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> BucketMetadataXDRExtXDR {
+    if case .string(let name) = value {
+      switch name {
+      case "v0":
+        return .void
+      case "v1":
+        throw XdrJsonError.invalidValue(type: "BucketMetadataXDRExtXDR", key: "v1",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      default:
+        throw XdrJsonError.unknownUnionArm(type: "BucketMetadataXDRExtXDR", key: name)
+      }
+    }
+
+    let member = try XdrJson.singleKeyObject(value, type: "BucketMetadataXDRExtXDR")
+    switch member.key {
+    case "v0":
+      throw XdrJsonError.invalidValue(type: "BucketMetadataXDRExtXDR", key: "v0",
+                                      message: "this arm carries no value, so it is written as a bare string")
+    case "v1":
+      let bucketListType: BucketListTypeXDR = try BucketListTypeXDR.fromXdrJsonValue(member.value)
+      return .bucketListType(bucketListType)
+    default:
+      throw XdrJsonError.unknownUnionArm(type: "BucketMetadataXDRExtXDR", key: member.key)
+    }
+  }
+}

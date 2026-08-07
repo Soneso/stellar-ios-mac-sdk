@@ -19,3 +19,18 @@ public struct FrozenLedgerKeysXDR: XDRCodable, Sendable {
     try container.encode(keys)
   }
 }
+
+extension FrozenLedgerKeysXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "keys", value: try XdrJson.array(self.keys.map { element in try EncodedLedgerKeyXDRJsonCodec.toXdrJsonValue(element, type: "FrozenLedgerKeysXDR", key: "keys") })))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> FrozenLedgerKeysXDR {
+    let members = try XdrJson.object(value, type: "FrozenLedgerKeysXDR", keys: ["keys"])
+    let keysElements = try XdrJson.array(try XdrJson.field(members, key: "keys", type: "FrozenLedgerKeysXDR"), type: "FrozenLedgerKeysXDR", key: "keys")
+    let keys: [EncodedLedgerKeyXDR] = try keysElements.map { element in try EncodedLedgerKeyXDRJsonCodec.fromXdrJsonValue(element, type: "FrozenLedgerKeysXDR", key: "keys") }
+    return FrozenLedgerKeysXDR(keys: keys)
+  }
+}

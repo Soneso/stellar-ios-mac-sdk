@@ -6,3 +6,20 @@ import Foundation
 public enum ClaimableBalanceFlags: Int32, XDRCodable, Equatable, Sendable {
   case claimableBalanceClawbackEnabledFlag = 1
 }
+
+extension ClaimableBalanceFlags: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .claimableBalanceClawbackEnabledFlag: return .string("claimable_balance_clawback_enabled_flag")
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> ClaimableBalanceFlags {
+    let name = try XdrJson.string(value, type: "ClaimableBalanceFlags")
+    switch name {
+    case "claimable_balance_clawback_enabled_flag": return .claimableBalanceClawbackEnabledFlag
+    default:
+      throw XdrJsonError.unknownEnumValue(type: "ClaimableBalanceFlags", value: name)
+    }
+  }
+}

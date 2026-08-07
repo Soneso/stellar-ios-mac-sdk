@@ -42,3 +42,31 @@ public struct ConstantProductXDR: XDRCodable, Sendable {
     try container.encode(poolSharesTrustLineCount)
   }
 }
+
+extension ConstantProductXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "params", value: try self.params.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "reserve_a", value: try Int64XDRJsonCodec.toXdrJsonValue(self.reserveA, type: "ConstantProductXDR", key: "reserve_a")))
+    members.append(XdrJsonMember(key: "reserve_b", value: try Int64XDRJsonCodec.toXdrJsonValue(self.reserveB, type: "ConstantProductXDR", key: "reserve_b")))
+    members.append(XdrJsonMember(key: "total_pool_shares", value: try Int64XDRJsonCodec.toXdrJsonValue(self.totalPoolShares, type: "ConstantProductXDR", key: "total_pool_shares")))
+    members.append(XdrJsonMember(key: "pool_shares_trust_line_count", value: try Int64XDRJsonCodec.toXdrJsonValue(self.poolSharesTrustLineCount, type: "ConstantProductXDR", key: "pool_shares_trust_line_count")))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> ConstantProductXDR {
+    let members = try XdrJson.object(value, type: "ConstantProductXDR", keys: ["params", "reserve_a", "reserve_b", "total_pool_shares", "pool_shares_trust_line_count"])
+    let params: LiquidityPoolConstantProductParametersXDR = try LiquidityPoolConstantProductParametersXDR.fromXdrJsonValue(try XdrJson.field(members, key: "params", type: "ConstantProductXDR"))
+    let reserveA: Int64 = try Int64XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "reserve_a", type: "ConstantProductXDR"), type: "ConstantProductXDR", key: "reserve_a")
+    let reserveB: Int64 = try Int64XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "reserve_b", type: "ConstantProductXDR"), type: "ConstantProductXDR", key: "reserve_b")
+    let totalPoolShares: Int64 = try Int64XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "total_pool_shares", type: "ConstantProductXDR"), type: "ConstantProductXDR", key: "total_pool_shares")
+    let poolSharesTrustLineCount: Int64 = try Int64XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "pool_shares_trust_line_count", type: "ConstantProductXDR"), type: "ConstantProductXDR", key: "pool_shares_trust_line_count")
+    return ConstantProductXDR(
+      params: params,
+      reserveA: reserveA,
+      reserveB: reserveB,
+      totalPoolShares: totalPoolShares,
+      poolSharesTrustLineCount: poolSharesTrustLineCount
+    )
+  }
+}

@@ -24,3 +24,19 @@ public struct TrustlineEntryExtensionV1: XDRCodable, Sendable {
     try container.encode(ext)
   }
 }
+
+extension TrustlineEntryExtensionV1: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "liabilities", value: try self.liabilities.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "ext", value: try self.ext.toXdrJsonValue()))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> TrustlineEntryExtensionV1 {
+    let members = try XdrJson.object(value, type: "TrustlineEntryExtensionV1", keys: ["liabilities", "ext"])
+    let liabilities: LiabilitiesXDR = try LiabilitiesXDR.fromXdrJsonValue(try XdrJson.field(members, key: "liabilities", type: "TrustlineEntryExtensionV1"))
+    let ext: TrustlineEntryExtV1XDR = try TrustlineEntryExtV1XDR.fromXdrJsonValue(try XdrJson.field(members, key: "ext", type: "TrustlineEntryExtensionV1"))
+    return TrustlineEntryExtensionV1(liabilities: liabilities, ext: ext)
+  }
+}

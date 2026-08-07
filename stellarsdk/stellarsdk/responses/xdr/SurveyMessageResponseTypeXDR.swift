@@ -6,3 +6,20 @@ import Foundation
 public enum SurveyMessageResponseTypeXDR: Int32, XDRCodable, Equatable, Sendable {
   case surveyTopologyResponseV2 = 2
 }
+
+extension SurveyMessageResponseTypeXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .surveyTopologyResponseV2: return .string("survey_topology_response_v2")
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> SurveyMessageResponseTypeXDR {
+    let name = try XdrJson.string(value, type: "SurveyMessageResponseTypeXDR")
+    switch name {
+    case "survey_topology_response_v2": return .surveyTopologyResponseV2
+    default:
+      throw XdrJsonError.unknownEnumValue(type: "SurveyMessageResponseTypeXDR", value: name)
+    }
+  }
+}

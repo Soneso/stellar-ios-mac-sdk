@@ -111,3 +111,41 @@ extension SCAddressXDR {
     }
   }
 }
+
+extension SCAddressXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .account(let account):
+      return try account.toXdrJsonValue()
+    case .contract(let contract):
+      return try ContractIDXDRJsonCodec.toXdrJsonValue(contract, type: "SCAddressXDR", key: "contract")
+    case .muxedAccount(let muxedAccount):
+      return try muxedAccount.toXdrJsonValue()
+    case .claimableBalanceId(let balance):
+      return try balance.toXdrJsonValue()
+    case .liquidityPoolId(let pool):
+      return try PoolIDXDRJsonCodec.toXdrJsonValue(pool, type: "SCAddressXDR", key: "liquidity_pool")
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> SCAddressXDR {
+    let text = try XdrJson.string(value, type: "SCAddressXDR")
+    switch text.first {
+    case "G":
+      return .account(try PublicKey.fromXdrJsonValue(value))
+    case "C":
+      return .contract(try ContractIDXDRJsonCodec.fromXdrJsonValue(value, type: "SCAddressXDR", key: "contract"))
+    case "M":
+      return .muxedAccount(try MuxedAccountMed25519XDR.fromXdrJsonValue(value))
+    case "B":
+      return .claimableBalanceId(try ClaimableBalanceIDXDR.fromXdrJsonValue(value))
+    case "L":
+      return .liquidityPoolId(try PoolIDXDRJsonCodec.fromXdrJsonValue(value, type: "SCAddressXDR", key: "liquidity_pool"))
+    default:
+      throw XdrJsonError.invalidValue(
+        type: "SCAddressXDR", key: nil,
+        message: "not an account, contract, muxed account, claimable balance " +
+                 "or liquidity pool strkey: \(XdrJson.preview(text))")
+    }
+  }
+}

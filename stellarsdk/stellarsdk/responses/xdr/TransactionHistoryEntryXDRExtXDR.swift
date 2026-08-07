@@ -41,3 +41,39 @@ public enum TransactionHistoryEntryXDRExtXDR: XDRCodable, Sendable {
     }
   }
 }
+
+extension TransactionHistoryEntryXDRExtXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .void: return .string("v0")
+    case .generalizedTxSet(let payload):
+      return .object([XdrJsonMember(key: "v1", value: try payload.toXdrJsonValue())])
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> TransactionHistoryEntryXDRExtXDR {
+    if case .string(let name) = value {
+      switch name {
+      case "v0":
+        return .void
+      case "v1":
+        throw XdrJsonError.invalidValue(type: "TransactionHistoryEntryXDRExtXDR", key: "v1",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      default:
+        throw XdrJsonError.unknownUnionArm(type: "TransactionHistoryEntryXDRExtXDR", key: name)
+      }
+    }
+
+    let member = try XdrJson.singleKeyObject(value, type: "TransactionHistoryEntryXDRExtXDR")
+    switch member.key {
+    case "v0":
+      throw XdrJsonError.invalidValue(type: "TransactionHistoryEntryXDRExtXDR", key: "v0",
+                                      message: "this arm carries no value, so it is written as a bare string")
+    case "v1":
+      let generalizedTxSet: GeneralizedTransactionSetXDR = try GeneralizedTransactionSetXDR.fromXdrJsonValue(member.value)
+      return .generalizedTxSet(generalizedTxSet)
+    default:
+      throw XdrJsonError.unknownUnionArm(type: "TransactionHistoryEntryXDRExtXDR", key: member.key)
+    }
+  }
+}

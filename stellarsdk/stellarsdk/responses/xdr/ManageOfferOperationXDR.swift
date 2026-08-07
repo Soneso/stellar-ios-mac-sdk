@@ -61,3 +61,8 @@ extension ManageOfferOperationXDR {
     return ManageOfferOperationXDR(selling: selling, buying: buying, amount: amount, price: price, offerID: offerID)
   }
 }
+
+// ManageOfferOperationXDR is the Swift form of both ManageSellOfferOp and ManageBuyOfferOp.
+// SEP-0051 renders them under different names, so no single rendering is correct for
+// this type and it carries no XDR-JSON members. The conversions live on
+// the union arm that selects each of them, under that definition's own names.
