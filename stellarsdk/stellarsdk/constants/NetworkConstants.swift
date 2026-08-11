@@ -32,6 +32,11 @@ public struct NetworkConstants: Sendable {
     public static let DEFAULT_TIMEOUT_SECONDS:UInt64 = 300
 
     /// Transaction time buffer in seconds (10 seconds)
-    /// Used to account for clock skew when setting transaction time bounds
+    ///
+    /// Unused by the SDK: Soroban transactions set no lower time bound
+    /// (minTime = 0). A lower bound derived from the client clock is seen as
+    /// lying in the future by any submission node whose clock or ledger state
+    /// lags the client, which rejects the transaction with tx_too_early.
+    @available(*, deprecated, message: "Unused by the SDK; Soroban transactions set no lower time bound (minTime = 0).")
     public static let TRANSACTION_TIME_BUFFER_SECONDS = 10
 }

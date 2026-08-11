@@ -1445,15 +1445,14 @@ public final class OZTransactionOperations: OZManagerHelpers, @unchecked Sendabl
                 }
                 return try await pollForConfirmation(hash: sendResult.transactionId)
             default:
-                if emitEvents {
-                    kit.events.emit(
-                        .transactionSubmitted(
-                            hash: sendResult.transactionId,
-                            success: true
-                        )
-                    )
-                }
-                return try await pollForConfirmation(hash: sendResult.transactionId)
+                // A status other than PENDING or DUPLICATE reports a
+                // submission the network did not queue, so polling its hash
+                // cannot find a result.
+                return OZTransactionResult(
+                    success: false,
+                    hash: sendResult.transactionId,
+                    error: "Transaction submission returned unrecognized status: \(sendResult.status)"
+                )
             }
         case .failure(let error):
             throw SmartAccountTransactionException.submissionFailed(

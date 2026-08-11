@@ -1284,6 +1284,50 @@ final class OZWalletOperationsTests: XCTestCase {
         XCTAssertEqual(failed?.deploymentStatus, .failed)
     }
 
+    func test_createWallet_sendTryAgainLater_marksDeploymentFailedAndThrows() async throws {
+        // A TRY_AGAIN_LATER submission was never queued, so it fails fast
+        // instead of polling a hash that cannot resolve.
+        let script = activatePipelineRpc()
+        defer { deactivatePipelineRpc() }
+
+        let provider = RecordingWebAuthnProvider()
+        let deployer = try pipelineDeployer()
+        let storage = OZInMemoryStorageAdapter()
+        let config = try pipelineConfig(provider: provider, deployer: deployer, storage: storage)
+        let credentialManager = MockCredentialManager(storage: storage)
+        let kit = MockOZSmartAccountKit(
+            config: config,
+            sorobanServer: MockSorobanServer.makeMockedSorobanServer(),
+            credentialManager: credentialManager
+        )
+        kit.configuredDeployer = deployer
+
+        let credentialIdBytes = try Data(base64URLEncoded: pipelineCredentialIdB64Url)
+        provider.enqueueRegister(registrationResult(credentialId: credentialIdBytes))
+
+        enqueueDeployerAccount(script, deployer: deployer)
+        script.enqueueSimulate(authEntries: [], minResourceFee: 100_000)
+        script.setSendSuccess(
+            status: SendTransactionResponse.STATUS_TRY_AGAIN_LATER,
+            hash: "busy-hash"
+        )
+
+        let walletOps = OZWalletOperations(kit: kit)
+        do {
+            _ = try await walletOps.createWallet(autoSubmit: true)
+            XCTFail("expected SmartAccountTransactionException.SubmissionFailed")
+        } catch let error as SmartAccountTransactionException.SubmissionFailed {
+            XCTAssertTrue(error.message.contains("TRY_AGAIN_LATER"),
+                          "unexpected message: \(error.message)")
+        }
+
+        XCTAssertEqual(script.getTransactionCalls.count, 0,
+                       "TRY_AGAIN_LATER must not poll")
+        XCTAssertEqual(credentialManager.markDeploymentFailedCalls.count, 1)
+        let failed = try await storage.get(credentialId: pipelineCredentialIdB64Url)
+        XCTAssertEqual(failed?.deploymentStatus, .failed)
+    }
+
     // ========================================================================
     // MARK: - connectWallet happy paths
     // ========================================================================

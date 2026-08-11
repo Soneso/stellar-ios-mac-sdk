@@ -10101,7 +10101,7 @@ class MatrixRenderer:
             }
         elif sep_number in ["51", "0051"]:
             class_descriptions = {
-                'XdrJsonCodable': 'Protocol every XDR type conforms to, declaring toXdrJsonValue() and fromXdrJsonValue(_:) and deriving toXdrJson(), fromXdrJson(_:) and fromXdrJsonTree(_:)',
+                'XdrJsonCodable': 'Protocol XDR types conform to, declaring toXdrJsonValue() and fromXdrJsonValue(_:) and deriving toXdrJson(), fromXdrJson(_:) and fromXdrJsonTree(_:); the three transaction envelope classes carry the same five members without the conformance',
                 'XdrJsonValue': 'XDR-JSON document tree (null, bool, number, string, array, object) holding object members in XDR declaration order',
                 'XdrJsonMember': 'One key and value of an XdrJsonValue object',
                 'XdrJson': 'Shared runtime carrying the escaping, hex, strkey, integer, container and depth rules every conversion applies',

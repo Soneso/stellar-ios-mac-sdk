@@ -2934,9 +2934,9 @@ final class OZTransactionOperationsPipelineTests: XCTestCase {
         XCTAssertEqual(script.getTransactionCalls.count, 1)
     }
 
-    /// An unrecognised send status falls into the default arm, which emits the
-    /// submitted event and polls for confirmation.
-    func test_submit_sendUnknownStatus_defaultArm_pollsForConfirmation() async throws {
+    /// An unrecognised send status reports a submission the network did not
+    /// queue, so it fails fast instead of polling a hash that cannot resolve.
+    func test_submit_sendUnknownStatus_failsFastWithoutPolling() async throws {
         let h = try await buildPipelineHarness()
         enqueueDeployerAccount(deployer: h.deployer)
         script.enqueueSimulate(authEntries: [])
@@ -2944,10 +2944,6 @@ final class OZTransactionOperationsPipelineTests: XCTestCase {
         script.setSendSuccess(
             status: "SOME_FUTURE_STATUS",
             hash: "future"
-        )
-        script.enqueueGetTransactionResponse(
-            status: GetTransactionResponse.STATUS_SUCCESS,
-            ledger: 555
         )
 
         let hostFn = HostFunctionXDR.invokeContract(
@@ -2958,9 +2954,12 @@ final class OZTransactionOperationsPipelineTests: XCTestCase {
             )
         )
         let result = try await h.txOps.submit(hostFunction: hostFn, auth: [])
-        XCTAssertTrue(result.success)
+        XCTAssertFalse(result.success)
         XCTAssertEqual(result.hash, "future")
-        XCTAssertEqual(script.getTransactionCalls.count, 1)
+        XCTAssertTrue(result.error?.contains("SOME_FUTURE_STATUS") ?? false,
+                      "expected the status in the error, got: \(result.error ?? "nil")")
+        XCTAssertEqual(script.getTransactionCalls.count, 0,
+                       "an unrecognized status must not poll")
     }
 
     /// A transport-level `getAccount`/send failure during direct RPC submission

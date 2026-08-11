@@ -549,7 +549,10 @@ public class SorobanServer: @unchecked Sendable {
             let response = await self.getLedgerEntries(base64EncodedKeys: [ledgerKeyBase64])
             switch response {
             case .success(let response):
-                let data = try? LedgerEntryDataXDR(fromBase64: response.entries[0].xdr)
+                guard let firstEntry = response.entries.first else {
+                    return .failure(error: .requestFailed(message: "no contract code entry found for wasm id \(wasmId)"))
+                }
+                let data = try? LedgerEntryDataXDR(fromBase64: firstEntry.xdr)
                 if let contractCode = data?.contractCode {
                     return .success(response: contractCode)
                 }

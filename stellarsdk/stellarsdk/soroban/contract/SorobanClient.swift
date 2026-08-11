@@ -93,6 +93,7 @@ public final class SorobanClient: Sendable {
     ///
     public static func forClientOptions(options:ClientOptions) async throws -> SorobanClient {
         let server = SorobanServer(endpoint: options.rpcUrl)
+        server.enableLogging = options.enableServerLogging
         let infoEnum = await server.getContractInfoForContractId(contractId:options.contractId)
         switch infoEnum {
         case .success(let info):
@@ -145,6 +146,23 @@ public final class SorobanClient: Sendable {
     /// - install(installRequest:force:) for uploading contract code
     /// - [Stellar developer docs](https://developers.stellar.org)
     public static func deploy(deployRequest:DeployRequest) async throws -> SorobanClient {
+        // Load the spec from the wasm code entry before deploying: the code
+        // entry was settled by the install transaction, while reading the
+        // contract instance right after deployment races the RPC's
+        // ledger-entry ingestion, so a successful deployment could surface
+        // as a load failure. Loading by contract id below remains the
+        // fallback when the code entry cannot be read or parsed up front.
+        let server = SorobanServer(endpoint: deployRequest.rpcUrl)
+        server.enableLogging = deployRequest.enableServerLogging
+        var contractInfo:SorobanContractInfo? = nil
+        let infoEnum = await server.getContractInfoForWasmId(wasmId: deployRequest.wasmHash)
+        switch infoEnum {
+        case .success(let info):
+            contractInfo = info
+        case .parsingFailure, .rpcFailure:
+            contractInfo = nil
+        }
+
         let sourceAddress = try SCAddressXDR(accountId: deployRequest.sourceAccountKeyPair.accountId)
         let createContractOp = try InvokeHostFunctionOperation.forCreatingContractWithConstructor(wasmId: deployRequest.wasmHash, address: sourceAddress, constructorArguments: deployRequest.constructorArgs ?? [], salt: deployRequest.salt)
         let clientOptions = ClientOptions(sourceAccountKeyPair: deployRequest.sourceAccountKeyPair,
@@ -166,6 +184,9 @@ public final class SorobanClient: Sendable {
                                           network: deployRequest.network,
                                           rpcUrl: deployRequest.rpcUrl,
                                           enableServerLogging: deployRequest.enableServerLogging)
+        if let contractInfo = contractInfo {
+            return SorobanClient(specEntries: contractInfo.specEntries, clientOptions: finalOptions)
+        }
         return try await SorobanClient.forClientOptions(options: finalOptions)
         
     }

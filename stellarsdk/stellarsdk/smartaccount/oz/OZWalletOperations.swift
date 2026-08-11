@@ -1581,13 +1581,23 @@ public final class OZWalletOperations: OZManagerHelpers, @unchecked Sendable {
             let sendResponse = await kit.sorobanServer.sendTransaction(transaction: transaction)
             switch sendResponse {
             case .success(let sendResult):
-                if let errorResultXdr = sendResult.errorResultXdr {
+                // A PENDING submission was accepted into the network's
+                // transaction queue and a DUPLICATE one names a transaction
+                // already in that queue, so both poll to the true outcome
+                // below. Any other status reports a submission the network
+                // did not queue, so polling its hash cannot find a result.
+                if sendResult.status != SendTransactionResponse.STATUS_PENDING
+                    && sendResult.status != SendTransactionResponse.STATUS_DUPLICATE {
+                    var errorMessage = "Deployment transaction failed with status: \(sendResult.status)"
+                    if let errorResultXdr = sendResult.errorResultXdr {
+                        errorMessage += ", error transaction result xdr: \(errorResultXdr)"
+                    }
                     await markDeploymentFailedSafely(
                         credentialId: credentialIdBase64url,
-                        error: "Transaction error: \(errorResultXdr)"
+                        error: errorMessage
                     )
                     throw SmartAccountTransactionException.submissionFailed(
-                        reason: "Deployment transaction error: \(errorResultXdr)"
+                        reason: errorMessage
                     )
                 }
                 transactionHash = sendResult.transactionId

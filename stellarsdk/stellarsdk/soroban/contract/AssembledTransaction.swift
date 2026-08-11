@@ -214,7 +214,7 @@ public final class AssembledTransaction: @unchecked Sendable {
     public static func buildWithOp(operation: InvokeHostFunctionOperation, options:AssembledTransactionOptions) async throws -> AssembledTransaction {
         let aTx = AssembledTransaction(options: options)
         let sourceAccount = try await aTx.getSourceAccount()
-        let timeBounds = TimeBounds(minTime: UInt64(Date().timeIntervalSince1970) - 10,
+        let timeBounds = TimeBounds(minTime: 0,
                                     maxTime: UInt64(Date().timeIntervalSince1970) + options.methodOptions.timeoutInSeconds)
         let preconditions = TransactionPreconditions(timeBounds:timeBounds)
         aTx.raw = try Transaction(sourceAccount: sourceAccount, operations: [operation], memo: nil, preconditions: preconditions, maxOperationFee: options.methodOptions.fee)
@@ -253,7 +253,7 @@ public final class AssembledTransaction: @unchecked Sendable {
             let result = try await restoreFootprint(restorePreamble: restorePreamble)
             if result.status == GetTransactionResponse.STATUS_SUCCESS {
                 let sourceAccount = try await getSourceAccount()
-                let timeBounds = TimeBounds(minTime: UInt64(Date().timeIntervalSince1970) - 10,
+                let timeBounds = TimeBounds(minTime: 0,
                                             maxTime: UInt64(Date().timeIntervalSince1970) + options.methodOptions.timeoutInSeconds)
                 let preconditions = TransactionPreconditions(timeBounds:timeBounds)
                 let invokeContractHostFunction = try InvokeHostFunctionOperation.forInvokingContract(contractId: options.clientOptions.contractId, functionName: options.method, functionArguments: options.arguments ?? [])
@@ -337,9 +337,24 @@ public final class AssembledTransaction: @unchecked Sendable {
         let sendTxResponseEnum = await server.sendTransaction(transaction: signedTx)
         switch sendTxResponseEnum {
         case .success(let response):
-            if response.status == SendTransactionResponse.STATUS_ERROR {
-                let errorResultXdr = response.errorResultXdr ?? "unknown"
-                throw AssembledTransactionError.sendFailed(message: "Sent transaction has status ERROR. Transaction result xdr: \(errorResultXdr)")
+            // A PENDING submission was accepted into the network's transaction
+            // queue and a DUPLICATE one names a transaction already in that
+            // queue, so both poll to the transaction's true outcome. Any other
+            // status reports a submission the network did not queue, so polling
+            // its hash cannot find a result.
+            if response.status != SendTransactionResponse.STATUS_PENDING
+                && response.status != SendTransactionResponse.STATUS_DUPLICATE {
+                var message = "Send transaction failed with status: \(response.status)"
+                if let errorResultXdr = response.errorResultXdr {
+                    message += ", error transaction result xdr: \(errorResultXdr)"
+                }
+                if let diagnosticEvents = response.diagnosticEvents, !diagnosticEvents.isEmpty {
+                    let encodedEvents = diagnosticEvents.compactMap { $0.xdrEncoded }
+                    if !encodedEvents.isEmpty {
+                        message += ", diagnostic events: \(encodedEvents.joined(separator: ", "))"
+                    }
+                }
+                throw AssembledTransactionError.sendFailed(message: message)
             }
             return try await pollStatus(transactionId: response.transactionId)
         case .failure(let error):
@@ -663,7 +678,7 @@ public final class AssembledTransaction: @unchecked Sendable {
         let restoreTx = AssembledTransaction(options: options)
         let restoreOp = RestoreFootprintOperation()
         let sourceAccount = try await restoreTx.getSourceAccount()
-        let timeBounds = TimeBounds(minTime: UInt64(Date().timeIntervalSince1970) - 10,
+        let timeBounds = TimeBounds(minTime: 0,
                                     maxTime: UInt64(Date().timeIntervalSince1970) + restoreTx.options.methodOptions.timeoutInSeconds)
         let preconditions = TransactionPreconditions(timeBounds:timeBounds)
         restoreTx.raw = try Transaction(sourceAccount: sourceAccount, operations: [restoreOp], memo: nil, preconditions: preconditions, maxOperationFee: fee)

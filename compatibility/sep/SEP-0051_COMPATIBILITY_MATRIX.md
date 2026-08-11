@@ -1,6 +1,6 @@
 # SEP-0051 (XDR-JSON) Compatibility Matrix
 
-**Generated:** 2026-08-07
+**Generated:** 2026-08-11
 
 **SDK Version:** 3.8.1
 
@@ -45,7 +45,7 @@ This proposal defines XDR-JSON, a standard mapping between Stellar's XDR (Extern
 
 ### Key Classes
 
-- **`XdrJsonCodable`**: Protocol every XDR type conforms to, declaring toXdrJsonValue() and fromXdrJsonValue(_:) and deriving toXdrJson(), fromXdrJson(_:) and fromXdrJsonTree(_:)
+- **`XdrJsonCodable`**: Protocol XDR types conform to, declaring toXdrJsonValue() and fromXdrJsonValue(_:) and deriving toXdrJson(), fromXdrJson(_:) and fromXdrJsonTree(_:); the three transaction envelope classes carry the same five members without the conformance
 - **`XdrJsonValue`**: XDR-JSON document tree (null, bool, number, string, array, object) holding object members in XDR declaration order
 - **`XdrJsonMember`**: One key and value of an XdrJsonValue object
 - **`XdrJson`**: Shared runtime carrying the escaping, hex, strkey, integer, container and depth rules every conversion applies
