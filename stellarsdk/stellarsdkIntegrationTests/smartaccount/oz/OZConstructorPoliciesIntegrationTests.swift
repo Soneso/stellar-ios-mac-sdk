@@ -21,7 +21,6 @@ final class OZConstructorPoliciesIntegrationTests: XCTestCase {
     // MARK: - Configuration
 
     let rpcUrl = "https://soroban-testnet.stellar.org"
-    let sdk = StellarSDK.testNet()
     let network = Network.testnet
 
     /// Smart account contract WASM installed on testnet.
@@ -117,19 +116,8 @@ final class OZConstructorPoliciesIntegrationTests: XCTestCase {
     /// is a stub provider returning the secp256r1 generator point plus a random credential ID.
     private func createKit() async throws -> OZSmartAccountKit {
         let deployer = try KeyPair.generateRandomKeyPair()
-        let responseEnum = await sdk.accounts.createTestAccount(accountId: deployer.accountId)
-        switch responseEnum {
-        case .success:
-            break
-        case .failure(let error):
-            StellarSDKLog.printHorizonRequestErrorMessage(
-                tag: "OZConstructorPoliciesIntegrationTests.createKit()",
-                horizonRequestError: error
-            )
-            XCTFail("could not create test account: \(deployer.accountId)")
-            throw error
-        }
-        try await waitForRpcAccount(accountId: deployer.accountId)
+        try await fundTestAccountAndAwaitVisibility(accountId: deployer.accountId,
+                                                    rpc: SorobanServer(endpoint: rpcUrl))
 
         let provider = StubWebAuthnProvider(
             registrationResult: WebAuthnRegistrationResult(
@@ -151,20 +139,6 @@ final class OZConstructorPoliciesIntegrationTests: XCTestCase {
             webauthnProvider: provider
         )
         return OZSmartAccountKit.create(config: config)
-    }
-
-    /// Waits until the RPC exposes the freshly funded account. The deploy path fetches the
-    /// deployer through the RPC, so Friendbot funding must be visible there before deploying.
-    private func waitForRpcAccount(accountId: String) async throws {
-        let sorobanServer = SorobanServer(endpoint: rpcUrl)
-        for _ in 0..<20 {
-            let response = await sorobanServer.getAccount(accountId: accountId)
-            if case .success = response {
-                return
-            }
-            try await Task.sleep(nanoseconds: 3 * NSEC_PER_SEC)
-        }
-        XCTFail("funded account \(accountId) did not become visible on the RPC")
     }
 
     /// Cryptographically random bytes for credential IDs.

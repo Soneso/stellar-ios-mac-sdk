@@ -38,24 +38,16 @@ class SorobanTest: XCTestCase {
         let changeTrustOp = ChangeTrustOperation(sourceAccountId:accountAId, asset:asset, limit: 100000000)
         let payOp = try! PaymentOperation(sourceAccountId: accountBId, destinationAccountId: accountAId, asset: asset, amount: 50000)
         
-        var responseEnum = network.passphrase == Network.testnet.passphrase ? await sdk.accounts.createTestAccount(accountId: accountAId) : await sdk.accounts.createFutureNetTestAccount(accountId: accountAId)
-        switch responseEnum {
-        case .success(_):
-            break
-        case .failure(let error):
-            StellarSDKLog.printHorizonRequestErrorMessage(tag:"setUp()", horizonRequestError: error)
-            XCTFail("could not create test account A: \(accountAId)")
-        }
-        
-        responseEnum = network.passphrase == Network.testnet.passphrase ? await sdk.accounts.createTestAccount(accountId: accountBId) : await sdk.accounts.createFutureNetTestAccount(accountId: accountBId)
-        switch responseEnum {
-        case .success(_):
-            break
-        case .failure(let error):
-            StellarSDKLog.printHorizonRequestErrorMessage(tag:"setUp()", horizonRequestError: error)
-            XCTFail("could not create test account B: \(accountBId)")
-        }
-        
+        try await fundTestAccountAndAwaitVisibility(accountId: accountAId,
+                                                    horizon: sdk,
+                                                    rpc: sorobanServer,
+                                                    useFuturenet: network.passphrase != Network.testnet.passphrase)
+
+        try await fundTestAccountAndAwaitVisibility(accountId: accountBId,
+                                                    horizon: sdk,
+                                                    rpc: sorobanServer,
+                                                    useFuturenet: network.passphrase != Network.testnet.passphrase)
+
         let accDetailsResEnum = await sdk.accounts.getAccountDetails(accountId: accountBId);
         switch accDetailsResEnum {
         case .success(let accountResponse):

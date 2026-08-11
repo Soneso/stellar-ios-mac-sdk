@@ -26,23 +26,9 @@ class MemoRemoteTestCase: XCTestCase, @unchecked Sendable {
         let sourceAccountId = sourceKeyPair.accountId
         let destinationAccountId = destinationKeyPair.accountId
         
-        var responseEnum = network.passphrase == Network.testnet.passphrase ? await sdk.accounts.createTestAccount(accountId: sourceAccountId) : await sdk.accounts.createFutureNetTestAccount(accountId: sourceAccountId)
-        switch responseEnum {
-        case .success(_):
-            break
-        case .failure(let error):
-            StellarSDKLog.printHorizonRequestErrorMessage(tag:"setUp()", horizonRequestError: error)
-            XCTFail("could not create test account: \(sourceAccountId)")
-        }
-        
-        responseEnum = network.passphrase == Network.testnet.passphrase ? await sdk.accounts.createTestAccount(accountId: destinationAccountId) : await sdk.accounts.createFutureNetTestAccount(accountId: destinationAccountId)
-        switch responseEnum {
-        case .success(_):
-            break
-        case .failure(let error):
-            StellarSDKLog.printHorizonRequestErrorMessage(tag:"setUp()", horizonRequestError: error)
-            XCTFail("could not create test account: \(destinationAccountId)")
-        }
+        try await fundTestAccountAndAwaitVisibility(accountId: sourceAccountId, horizon: sdk, useFuturenet: network.passphrase != Network.testnet.passphrase)
+
+        try await fundTestAccountAndAwaitVisibility(accountId: destinationAccountId, horizon: sdk, useFuturenet: network.passphrase != Network.testnet.passphrase)
 
     }
     

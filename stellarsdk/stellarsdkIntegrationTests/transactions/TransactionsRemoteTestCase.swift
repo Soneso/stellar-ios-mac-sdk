@@ -37,15 +37,8 @@ class TransactionsRemoteTestCase: XCTestCase, @unchecked Sendable {
         let createAccountOp2 = try! CreateAccountOperation(sourceAccountId: testAccountId, destinationAccountId: destinationKeyPair.accountId, startBalance: 100)
         let createAccountOp3 = try! CreateAccountOperation(sourceAccountId: testAccountId, destinationAccountId: payerKeyPair.accountId, startBalance: 100)
         
-        let responseEnum = network.passphrase == Network.testnet.passphrase ? await sdk.accounts.createTestAccount(accountId: testAccountId) : await sdk.accounts.createFutureNetTestAccount(accountId: testAccountId)
-        switch responseEnum {
-        case .success(_):
-            break
-        case .failure(let error):
-            StellarSDKLog.printHorizonRequestErrorMessage(tag:"setUp()", horizonRequestError: error)
-            XCTFail("could not create test account: \(testAccountId)")
-        }
-        
+        try await fundTestAccountAndAwaitVisibility(accountId: testAccountId, horizon: sdk, useFuturenet: network.passphrase != Network.testnet.passphrase)
+
         let accDetailsResEnum = await sdk.accounts.getAccountDetails(accountId: testAccountId);
         switch accDetailsResEnum {
         case .success(let accountResponse):

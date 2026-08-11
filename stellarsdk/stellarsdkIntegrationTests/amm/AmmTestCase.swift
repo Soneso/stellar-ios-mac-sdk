@@ -37,33 +37,12 @@ class AmmTestCase: XCTestCase, @unchecked Sendable {
         let payOp1 = try! PaymentOperation(sourceAccountId: SONESOIssuingAccountId, destinationAccountId: testAccountId, asset: SONESOAsset, amount: 50000)
         let payOp2 = try! PaymentOperation(sourceAccountId: COOLIssuingAccountId, destinationAccountId: testAccountId, asset: COOLAsset, amount: 50000)
         
-        var responseEnum = network.passphrase == Network.testnet.passphrase ? await sdk.accounts.createTestAccount(accountId: testAccountId) : await sdk.accounts.createFutureNetTestAccount(accountId: testAccountId)
-        switch responseEnum {
-        case .success(_):
-            break
-        case .failure(let error):
-            StellarSDKLog.printHorizonRequestErrorMessage(tag:"setUp()", horizonRequestError: error)
-            XCTFail("could not create test account: \(testAccountId)")
-        }
-        
-        responseEnum = network.passphrase == Network.testnet.passphrase ? await sdk.accounts.createTestAccount(accountId: SONESOIssuingAccountId) : await sdk.accounts.createFutureNetTestAccount(accountId: SONESOIssuingAccountId)
-        switch responseEnum {
-        case .success(_):
-            break
-        case .failure(let error):
-            StellarSDKLog.printHorizonRequestErrorMessage(tag:"setUp()", horizonRequestError: error)
-            XCTFail("could not create test account: \(SONESOIssuingAccountId)")
-        }
-        
-        responseEnum = network.passphrase == Network.testnet.passphrase ? await sdk.accounts.createTestAccount(accountId: COOLIssuingAccountId) : await sdk.accounts.createFutureNetTestAccount(accountId: COOLIssuingAccountId)
-        switch responseEnum {
-        case .success(_):
-            break
-        case .failure(let error):
-            StellarSDKLog.printHorizonRequestErrorMessage(tag:"setUp()", horizonRequestError: error)
-            XCTFail("could not create test account: \(COOLIssuingAccountId)")
-        }
-        
+        try await fundTestAccountAndAwaitVisibility(accountId: testAccountId, horizon: sdk, useFuturenet: network.passphrase != Network.testnet.passphrase)
+
+        try await fundTestAccountAndAwaitVisibility(accountId: SONESOIssuingAccountId, horizon: sdk, useFuturenet: network.passphrase != Network.testnet.passphrase)
+
+        try await fundTestAccountAndAwaitVisibility(accountId: COOLIssuingAccountId, horizon: sdk, useFuturenet: network.passphrase != Network.testnet.passphrase)
+
         let accDetailsResEnum = await sdk.accounts.getAccountDetails(accountId: testAccountId);
         switch accDetailsResEnum {
         case .success(let accountResponse):

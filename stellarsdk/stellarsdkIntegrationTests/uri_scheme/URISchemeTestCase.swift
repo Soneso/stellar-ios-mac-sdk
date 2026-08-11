@@ -39,14 +39,7 @@ class URISchemeTestCase: XCTestCase {
         case .success(_):
             return
         case .failure(_):
-            let responseEnum = await sdk.accounts.createTestAccount(accountId: accountID)
-            switch responseEnum {
-            case .success(_):
-                return
-            case .failure(let error):
-                StellarSDKLog.printHorizonRequestErrorMessage(tag:"setUp()", horizonRequestError: error)
-                XCTFail("could not create test account: \(accountID)")
-            }
+            try await fundTestAccountAndAwaitVisibility(accountId: accountID, horizon: sdk)
         }
     }
     

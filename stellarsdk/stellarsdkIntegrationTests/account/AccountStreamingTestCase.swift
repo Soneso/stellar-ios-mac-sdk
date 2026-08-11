@@ -30,14 +30,7 @@ class AccountStreamingTestCase: XCTestCase {
         let manageDataOp = ManageDataOperation(sourceAccountId: testAccountId, name: "test_key", data: "initial".data(using: .utf8))
         let createAccountOp = try! CreateAccountOperation(sourceAccountId: testAccountId, destinationAccountId: destinationAccountId, startBalance: 10.0)
 
-        let response = network.passphrase == Network.testnet.passphrase ? await sdk.accounts.createTestAccount(accountId: testAccountId) : await sdk.accounts.createFutureNetTestAccount(accountId: testAccountId)
-        switch response {
-        case .success(_):
-            break
-        case .failure(let error):
-            StellarSDKLog.printHorizonRequestErrorMessage(tag:"setUp()", horizonRequestError: error)
-            XCTFail("could not create test account: \(testAccountId)")
-        }
+        try await fundTestAccountAndAwaitVisibility(accountId: testAccountId, horizon: sdk, useFuturenet: network.passphrase != Network.testnet.passphrase)
 
         let accDetailsRes = await self.sdk.accounts.getAccountDetails(accountId: testAccountId)
         switch accDetailsRes {

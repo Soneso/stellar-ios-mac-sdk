@@ -29,23 +29,9 @@ class LiquidityPoolTradesStreamingTestCase: XCTestCase {
         let issuingAccountId = issuingKeyPair.accountId
 
         // Create test accounts
-        var response = network.passphrase == Network.testnet.passphrase ? await sdk.accounts.createTestAccount(accountId: testAccountId) : await sdk.accounts.createFutureNetTestAccount(accountId: testAccountId)
-        switch response {
-        case .success(_):
-            break
-        case .failure(let error):
-            StellarSDKLog.printHorizonRequestErrorMessage(tag:"setUp()", horizonRequestError: error)
-            XCTFail("could not create test account: \(testAccountId)")
-        }
+        try await fundTestAccountAndAwaitVisibility(accountId: testAccountId, horizon: sdk, useFuturenet: network.passphrase != Network.testnet.passphrase)
 
-        response = network.passphrase == Network.testnet.passphrase ? await sdk.accounts.createTestAccount(accountId: issuingAccountId) : await sdk.accounts.createFutureNetTestAccount(accountId: issuingAccountId)
-        switch response {
-        case .success(_):
-            break
-        case .failure(let error):
-            StellarSDKLog.printHorizonRequestErrorMessage(tag:"setUp()", horizonRequestError: error)
-            XCTFail("could not create issuing account: \(issuingAccountId)")
-        }
+        try await fundTestAccountAndAwaitVisibility(accountId: issuingAccountId, horizon: sdk, useFuturenet: network.passphrase != Network.testnet.passphrase)
 
         // Create custom asset and establish trustline
         customAsset = ChangeTrustAsset(canonicalForm: "TEST:" + issuingAccountId)!

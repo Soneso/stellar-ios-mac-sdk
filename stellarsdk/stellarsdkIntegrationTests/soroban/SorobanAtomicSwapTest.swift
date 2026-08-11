@@ -16,7 +16,6 @@ class SorobanAtomicSwapTest: XCTestCase {
     
     static let testOn = "testnet" // "futurenet"
     let sorobanServer = testOn == "testnet" ? SorobanServer(endpoint: "https://soroban-testnet.stellar.org"): SorobanServer(endpoint: "https://rpc-futurenet.stellar.org")
-    let sdk = testOn == "testnet" ? StellarSDK.testNet() : StellarSDK.futureNet()
     let network = testOn == "testnet" ? Network.testnet : Network.futurenet
     
     let submitterKeyPair = try! KeyPair.generateRandomKeyPair()
@@ -36,14 +35,9 @@ class SorobanAtomicSwapTest: XCTestCase {
         sorobanServer.enableLogging = true
 
         let submitterAccountId = submitterKeyPair.accountId
-        let responseEnum = network.passphrase == Network.testnet.passphrase ? await sdk.accounts.createTestAccount(accountId: submitterAccountId) : await sdk.accounts.createFutureNetTestAccount(accountId: submitterAccountId)
-        switch responseEnum {
-        case .success(_):
-            break
-        case .failure(let error):
-            StellarSDKLog.printHorizonRequestErrorMessage(tag:"setUp()", horizonRequestError: error)
-            XCTFail("could not create submitter account: \(submitterKeyPair.accountId)")
-        }
+        try await fundTestAccountAndAwaitVisibility(accountId: submitterAccountId,
+                                                    rpc: sorobanServer,
+                                                    useFuturenet: network.passphrase != Network.testnet.passphrase)
     }
     
     func testAll() async {

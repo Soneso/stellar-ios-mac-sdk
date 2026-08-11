@@ -37,15 +37,8 @@ class PaymentPathsTestCase: XCTestCase {
         let chTrustOp3 = ChangeTrustOperation(sourceAccountId: sellerKeyPair.accountId, asset: IOMAsset, limit: 10000)
         let chTrustOp4 = ChangeTrustOperation(sourceAccountId: sellerKeyPair.accountId, asset: EURAsset, limit: 10000)
         
-        let responseEnum = network.passphrase == Network.testnet.passphrase ? await sdk.accounts.createTestAccount(accountId: sourceAccountId) : await sdk.accounts.createFutureNetTestAccount(accountId: sourceAccountId)
-        switch responseEnum {
-        case .success(_):
-            break
-        case .failure(let error):
-            StellarSDKLog.printHorizonRequestErrorMessage(tag:"setUp()", horizonRequestError: error)
-            XCTFail("could not create test account: \(sourceAccountId)")
-        }
-        
+        try await fundTestAccountAndAwaitVisibility(accountId: sourceAccountId, horizon: sdk, useFuturenet: network.passphrase != Network.testnet.passphrase)
+
         let accDetailsResEnum = await sdk.accounts.getAccountDetails(accountId: sourceAccountId);
         switch accDetailsResEnum {
         case .success(let accountResponse):

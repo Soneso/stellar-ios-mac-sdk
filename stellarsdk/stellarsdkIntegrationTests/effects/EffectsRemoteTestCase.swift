@@ -25,14 +25,7 @@ class EffectsRemoteTestCase: XCTestCase {
         let testAccountId = testKeyPair.accountId
         let manageDataOp = ManageDataOperation(sourceAccountId: testAccountId, name: "soneso", data: "is super".data(using: .utf8))
 
-        let responseEnum = network.passphrase == Network.testnet.passphrase ? await sdk.accounts.createTestAccount(accountId: testAccountId) : await sdk.accounts.createFutureNetTestAccount(accountId: testAccountId)
-        switch responseEnum {
-        case .success(_):
-            break
-        case .failure(let error):
-            StellarSDKLog.printHorizonRequestErrorMessage(tag:"setUp()", horizonRequestError: error)
-            XCTFail("could not create test account: \(testAccountId)")
-        }
+        try await fundTestAccountAndAwaitVisibility(accountId: testAccountId, horizon: sdk, useFuturenet: network.passphrase != Network.testnet.passphrase)
         let accDetailsResEnum = await sdk.accounts.getAccountDetails(accountId: testAccountId);
         switch accDetailsResEnum {
         case .success(let accountResponse):

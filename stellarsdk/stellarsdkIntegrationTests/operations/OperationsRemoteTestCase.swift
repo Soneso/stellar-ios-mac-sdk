@@ -43,24 +43,10 @@ class OperationsRemoteTestCase: XCTestCase, @unchecked Sendable {
         let createAccountOp3 = CreateAccountOperation(sourceAccountId: testAccountId, destination: accountToSponsorKeyPair, startBalance: 100.0)
         let paymentOp1 = try! PaymentOperation(sourceAccountId: issuingAccountId, destinationAccountId: testAccountId, asset: IOMAsset, amount: 20000)
         
-        var responseEnum = network.passphrase == Network.testnet.passphrase ? await sdk.accounts.createTestAccount(accountId: testAccountId) : await sdk.accounts.createFutureNetTestAccount(accountId: testAccountId)
-        switch responseEnum {
-        case .success(_):
-            break
-        case .failure(let error):
-            StellarSDKLog.printHorizonRequestErrorMessage(tag:"setUp()", horizonRequestError: error)
-            XCTFail("could not create test account: \(testAccountId)")
-        }
-        
-        responseEnum = network.passphrase == Network.testnet.passphrase ? await sdk.accounts.createTestAccount(accountId: issuingAccountId) : await sdk.accounts.createFutureNetTestAccount(accountId: issuingAccountId)
-        switch responseEnum {
-        case .success(_):
-            break
-        case .failure(let error):
-            StellarSDKLog.printHorizonRequestErrorMessage(tag:"setUp()", horizonRequestError: error)
-            XCTFail("could not create issuing account: \(issuingAccountId)")
-        }
-        
+        try await fundTestAccountAndAwaitVisibility(accountId: testAccountId, horizon: sdk, useFuturenet: network.passphrase != Network.testnet.passphrase)
+
+        try await fundTestAccountAndAwaitVisibility(accountId: issuingAccountId, horizon: sdk, useFuturenet: network.passphrase != Network.testnet.passphrase)
+
         let accDetailsResEnum = await self.sdk.accounts.getAccountDetails(accountId: testAccountId);
         switch accDetailsResEnum {
         case .success(let accountResponse):

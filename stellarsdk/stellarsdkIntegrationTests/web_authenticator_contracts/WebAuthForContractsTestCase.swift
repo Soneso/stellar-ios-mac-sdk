@@ -857,13 +857,13 @@ class WebAuthForContractsTestCase: XCTestCase {
         print("Created signer keypair: \(signerKeyPair.accountId)")
 
         // Step 2: Fund source account via FriendBot
-        let responseEnum = await sdk.accounts.createTestAccount(accountId: sourceKeyPair.accountId)
-        switch responseEnum {
-        case .success(_):
+        do {
+            try await fundTestAccountAndAwaitVisibility(accountId: sourceKeyPair.accountId,
+                                                        horizon: sdk,
+                                                        rpc: SorobanServer(endpoint: sorobanRpcUrl))
             print("Funded test account via Friendbot")
-        case .failure(let error):
-            StellarSDKLog.printHorizonRequestErrorMessage(tag:"testWithStellarTestAnchor()", horizonRequestError: error)
-            XCTFail("Could not fund test account: \(sourceKeyPair.accountId)")
+        } catch {
+            XCTFail("Could not fund test account: \(sourceKeyPair.accountId) - \(error)")
             expectation.fulfill()
             return
         }
@@ -988,13 +988,13 @@ class WebAuthForContractsTestCase: XCTestCase {
         print("Created signer keypair: \(signerKeyPair.accountId)")
 
         // Step 2: Fund source account via FriendBot
-        let responseEnum = await sdk.accounts.createTestAccount(accountId: sourceKeyPair.accountId)
-        switch responseEnum {
-        case .success(_):
+        do {
+            try await fundTestAccountAndAwaitVisibility(accountId: sourceKeyPair.accountId,
+                                                        horizon: sdk,
+                                                        rpc: SorobanServer(endpoint: sorobanRpcUrl))
             print("Funded test account via Friendbot")
-        case .failure(let error):
-            StellarSDKLog.printHorizonRequestErrorMessage(tag:"testWithStellarTestAnchorAndClientDomain()", horizonRequestError: error)
-            XCTFail("Could not fund test account: \(sourceKeyPair.accountId)")
+        } catch {
+            XCTFail("Could not fund test account: \(sourceKeyPair.accountId) - \(error)")
             expectation.fulfill()
             return
         }

@@ -22,33 +22,28 @@ class DataForAccountRemoteTestCase: XCTestCase {
         let testAccountId = testKeyPair.accountId
         let manageDataOp = ManageDataOperation(sourceAccountId: testAccountId, name: "soneso", data: "is super".data(using: .utf8))
         
-        let response = network.passphrase == Network.testnet.passphrase ? await sdk.accounts.createTestAccount(accountId: testAccountId) : await sdk.accounts.createFutureNetTestAccount(accountId: testAccountId)
-        switch response {
-        case .success(_):
-            let accDetailsRes = await self.sdk.accounts.getAccountDetails(accountId: testAccountId);
-            switch accDetailsRes {
-            case .success(let accountResponse):
-                let transaction = try! Transaction(sourceAccount: accountResponse,
-                                                  operations: [manageDataOp],
-                                                  memo: Memo.none)
-                try! transaction.sign(keyPair: self.testKeyPair, network: self.network)
-                let submitTxRes = await self.sdk.transactions.submitTransaction(transaction: transaction)
-                switch submitTxRes {
-                case .success(let details):
-                    XCTAssert(details.operationCount > 0)
-                case .destinationRequiresMemo(destinationAccountId: let destinationAccountId):
-                    XCTFail("destination account \(destinationAccountId) requires memo")
-                case .failure(error: let error):
-                    StellarSDKLog.printHorizonRequestErrorMessage(tag:"setUp()", horizonRequestError: error)
-                    XCTFail("submit transaction error")
-                }
-            case .failure(let error):
+        try await fundTestAccountAndAwaitVisibility(accountId: testAccountId, horizon: sdk, useFuturenet: network.passphrase != Network.testnet.passphrase)
+
+        let accDetailsRes = await self.sdk.accounts.getAccountDetails(accountId: testAccountId);
+        switch accDetailsRes {
+        case .success(let accountResponse):
+            let transaction = try! Transaction(sourceAccount: accountResponse,
+                                              operations: [manageDataOp],
+                                              memo: Memo.none)
+            try! transaction.sign(keyPair: self.testKeyPair, network: self.network)
+            let submitTxRes = await self.sdk.transactions.submitTransaction(transaction: transaction)
+            switch submitTxRes {
+            case .success(let details):
+                XCTAssert(details.operationCount > 0)
+            case .destinationRequiresMemo(destinationAccountId: let destinationAccountId):
+                XCTFail("destination account \(destinationAccountId) requires memo")
+            case .failure(error: let error):
                 StellarSDKLog.printHorizonRequestErrorMessage(tag:"setUp()", horizonRequestError: error)
-                XCTFail("could not load account details for test account: \(testAccountId)")
+                XCTFail("submit transaction error")
             }
         case .failure(let error):
             StellarSDKLog.printHorizonRequestErrorMessage(tag:"setUp()", horizonRequestError: error)
-            XCTFail("could not create test account: \(testAccountId)")
+            XCTFail("could not load account details for test account: \(testAccountId)")
         }
     }
     

@@ -26,7 +26,6 @@ final class SorobanP27AuthIntegrationTests: XCTestCase {
 
     static let testOn = "testnet"
     let sorobanServer = SorobanServer(endpoint: "https://soroban-testnet.stellar.org")
-    let sdk = StellarSDK.testNet()
     let network = Network.testnet
     let rpcUrl = "https://soroban-testnet.stellar.org"
 
@@ -41,17 +40,7 @@ final class SorobanP27AuthIntegrationTests: XCTestCase {
         sorobanServer.enableLogging = true
         sourceAccountKeyPair = try KeyPair.generateRandomKeyPair()
         let testAccountId = sourceAccountKeyPair.accountId
-        let responseEnum = await sdk.accounts.createTestAccount(accountId: testAccountId)
-        switch responseEnum {
-        case .success:
-            break
-        case .failure(let error):
-            StellarSDKLog.printHorizonRequestErrorMessage(
-                tag: "SorobanP27AuthIntegrationTests.setUp()",
-                horizonRequestError: error
-            )
-            XCTFail("could not create test account: \(testAccountId)")
-        }
+        try await fundTestAccountAndAwaitVisibility(accountId: testAccountId, rpc: sorobanServer)
     }
 
     // MARK: - Tests
@@ -337,16 +326,11 @@ final class SorobanP27AuthIntegrationTests: XCTestCase {
     }
 
     private func fundTestnetAccount(accountId: String) async {
-        let responseEnum = await sdk.accounts.createTestAccount(accountId: accountId)
-        switch responseEnum {
-        case .success:
-            break
-        case .failure(let error):
-            StellarSDKLog.printHorizonRequestErrorMessage(
-                tag: "SorobanP27AuthIntegrationTests.fundTestnetAccount(\(accountId))",
-                horizonRequestError: error
-            )
-            XCTFail("could not fund account: \(accountId)")
+        do {
+            try await fundTestAccountAndAwaitVisibility(accountId: accountId, rpc: sorobanServer)
+        } catch {
+            XCTFail("could not fund account \(accountId): \(error)")
+            return
         }
     }
 }

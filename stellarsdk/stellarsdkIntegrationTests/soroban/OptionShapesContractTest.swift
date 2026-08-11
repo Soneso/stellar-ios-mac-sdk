@@ -11,7 +11,6 @@ import stellarsdk
 final class OptionShapesContractTest: XCTestCase {
     static let testOn = "testnet" // "futurenet"
     let testnetServerUrl = testOn == "testnet" ? "https://soroban-testnet.stellar.org" : "https://rpc-futurenet.stellar.org"
-    let sdk = testOn == "testnet" ? StellarSDK.testNet() : StellarSDK.futureNet()
     let network = testOn == "testnet" ? Network.testnet : Network.futurenet
     let optionShapesContractFileName = "soroban_bindings_option_shapes_contract"
     var sourceAccountKeyPair: KeyPair!
@@ -20,14 +19,9 @@ final class OptionShapesContractTest: XCTestCase {
         sourceAccountKeyPair = try KeyPair.generateRandomKeyPair()
         print("Signer seed: \(String(describing: sourceAccountKeyPair.secretSeed))")
         let testAccountId = sourceAccountKeyPair.accountId
-        let responseEnum = network.passphrase == Network.testnet.passphrase ? await sdk.accounts.createTestAccount(accountId: testAccountId) : await sdk.accounts.createFutureNetTestAccount(accountId: testAccountId)
-        switch responseEnum {
-        case .success(_):
-            break
-        case .failure(let error):
-            StellarSDKLog.printHorizonRequestErrorMessage(tag: "setUp()", horizonRequestError: error)
-            XCTFail("could not create test account: \(sourceAccountKeyPair.accountId)")
-        }
+        try await fundTestAccountAndAwaitVisibility(accountId: testAccountId,
+                                                    rpc: SorobanServer(endpoint: testnetServerUrl),
+                                                    useFuturenet: network.passphrase != Network.testnet.passphrase)
     }
 
     func testOptionShapesContractBindings() async throws {

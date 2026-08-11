@@ -131,33 +131,12 @@ class RegulatedAssetsTestCase: XCTestCase {
         
         let setFlagsOp = try! SetOptionsOperation(sourceAccountId:asset1IssuerKp.accountId, setFlags: AccountFlags.AUTH_REQUIRED_FLAG | AccountFlags.AUTH_REVOCABLE_FLAG)
         
-        var responseEnum = await sdk.accounts.createTestAccount(accountId: asset1IssuerKp.accountId)
-        switch responseEnum {
-        case .success(_):
-            break
-        case .failure(let error):
-            StellarSDKLog.printHorizonRequestErrorMessage(tag:"setUp()", horizonRequestError: error)
-            XCTFail("could not create asset1Issuer account: \(asset1IssuerKp.accountId)")
-        }
-        
-        responseEnum = await sdk.accounts.createTestAccount(accountId: asset2IssuerKp.accountId)
-        switch responseEnum {
-        case .success(_):
-            break
-        case .failure(let error):
-            StellarSDKLog.printHorizonRequestErrorMessage(tag:"setUp()", horizonRequestError: error)
-            XCTFail("could not create asset2Issuer account: \(asset2IssuerKp.accountId)")
-        }
-        
-        responseEnum = await sdk.accounts.createTestAccount(accountId: accountAKp.accountId)
-        switch responseEnum {
-        case .success(_):
-            break
-        case .failure(let error):
-            StellarSDKLog.printHorizonRequestErrorMessage(tag:"setUp()", horizonRequestError: error)
-            XCTFail("could not create accountA account: \(accountAKp.accountId)")
-        }
-        
+        try await fundTestAccountAndAwaitVisibility(accountId: asset1IssuerKp.accountId, horizon: sdk)
+
+        try await fundTestAccountAndAwaitVisibility(accountId: asset2IssuerKp.accountId, horizon: sdk)
+
+        try await fundTestAccountAndAwaitVisibility(accountId: accountAKp.accountId, horizon: sdk)
+
         let accDetailsResEnum = await sdk.accounts.getAccountDetails(accountId: asset1IssuerKp.accountId);
         switch accDetailsResEnum {
         case .success(let accountResponse):

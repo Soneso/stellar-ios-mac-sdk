@@ -33,15 +33,8 @@ class ClawbackTestCase: XCTestCase, @unchecked Sendable {
         let createAccountOp2 = CreateAccountOperation(sourceAccountId: donorAccountId, destination: destinationKeyPair, startBalance: 100)
         let createAccountOp3 = CreateAccountOperation(sourceAccountId: donorAccountId, destination: claimantKeyPair, startBalance: 100)
         
-        let responseEnum = network.passphrase == Network.testnet.passphrase ? await sdk.accounts.createTestAccount(accountId: donorAccountId) : await sdk.accounts.createFutureNetTestAccount(accountId: donorAccountId)
-        switch responseEnum {
-        case .success(_):
-            break
-        case .failure(let error):
-            StellarSDKLog.printHorizonRequestErrorMessage(tag:"setUp()", horizonRequestError: error)
-            XCTFail("could not create donor account: \(donorAccountId)")
-        }
-        
+        try await fundTestAccountAndAwaitVisibility(accountId: donorAccountId, horizon: sdk, useFuturenet: network.passphrase != Network.testnet.passphrase)
+
         let accDetailsResEnum = await sdk.accounts.getAccountDetails(accountId: donorAccountId);
         switch accDetailsResEnum {
         case .success(let accountResponse):

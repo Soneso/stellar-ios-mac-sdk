@@ -14,7 +14,6 @@ class SorobanAuthTest: XCTestCase {
 
     static let testOn = "testnet" // "futurenet"
     let sorobanServer = testOn == "testnet" ? SorobanServer(endpoint: "https://soroban-testnet.stellar.org"): SorobanServer(endpoint: "https://rpc-futurenet.stellar.org")
-    let sdk = testOn == "testnet" ? StellarSDK.testNet() : StellarSDK.futureNet()
     let network = testOn == "testnet" ? Network.testnet : Network.futurenet
     
     var invokerKeyPair = try! KeyPair.generateRandomKeyPair()
@@ -33,23 +32,13 @@ class SorobanAuthTest: XCTestCase {
         let invokerId = invokerKeyPair.accountId
         let senderId = senderKeyPair.accountId
         
-        var responseEnum = network.passphrase == Network.testnet.passphrase ? await sdk.accounts.createTestAccount(accountId: invokerId) : await sdk.accounts.createFutureNetTestAccount(accountId: invokerId)
-        switch responseEnum {
-        case .success(_):
-            break
-        case .failure(let error):
-            StellarSDKLog.printHorizonRequestErrorMessage(tag:"setUp()", horizonRequestError: error)
-            XCTFail("could not create invoker account: \(invokerId)")
-        }
-        
-        responseEnum = network.passphrase == Network.testnet.passphrase ? await sdk.accounts.createTestAccount(accountId: senderId) : await sdk.accounts.createFutureNetTestAccount(accountId: senderId)
-        switch responseEnum {
-        case .success(_):
-            break
-        case .failure(let error):
-            StellarSDKLog.printHorizonRequestErrorMessage(tag:"setUp()", horizonRequestError: error)
-            XCTFail("could not create sender account: \(senderId)")
-        }
+        try await fundTestAccountAndAwaitVisibility(accountId: invokerId,
+                                                    rpc: sorobanServer,
+                                                    useFuturenet: network.passphrase != Network.testnet.passphrase)
+
+        try await fundTestAccountAndAwaitVisibility(accountId: senderId,
+                                                    rpc: sorobanServer,
+                                                    useFuturenet: network.passphrase != Network.testnet.passphrase)
     }
     
     func testAll() async {

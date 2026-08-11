@@ -12,7 +12,6 @@ import stellarsdk
 final class SorobanClientTest: XCTestCase {
     static let testOn = "testnet" // "futurenet"
     let testnetServerUrl = testOn == "testnet" ? "https://soroban-testnet.stellar.org" : "https://rpc-futurenet.stellar.org"
-    let sdk = testOn == "testnet" ? StellarSDK.testNet() : StellarSDK.futureNet()
     let network = testOn == "testnet" ? Network.testnet : Network.futurenet
     let helloContractFileName = "soroban_hello_world_contract"
     let authContractFileName = "soroban_auth_contract"
@@ -25,14 +24,9 @@ final class SorobanClientTest: XCTestCase {
         sourceAccountKeyPair = try KeyPair.generateRandomKeyPair()
         print("Signer seed: \(String(describing: sourceAccountKeyPair.secretSeed))")
         let testAccountId = sourceAccountKeyPair.accountId
-        let responseEnum = network.passphrase == Network.testnet.passphrase ? await sdk.accounts.createTestAccount(accountId: testAccountId) : await sdk.accounts.createFutureNetTestAccount(accountId: testAccountId)
-        switch responseEnum {
-        case .success(_):
-            break
-        case .failure(let error):
-            StellarSDKLog.printHorizonRequestErrorMessage(tag:"setUp()", horizonRequestError: error)
-            XCTFail("could not create test account: \(sourceAccountKeyPair.accountId)")
-        }
+        try await fundTestAccountAndAwaitVisibility(accountId: testAccountId,
+                                                    rpc: SorobanServer(endpoint: testnetServerUrl),
+                                                    useFuturenet: network.passphrase != Network.testnet.passphrase)
     }
 
     func testContracts() async throws {
@@ -508,13 +502,13 @@ final class SorobanClientTest: XCTestCase {
     }
     
     func fundTestnetAccount(accountId:String) async {
-        let responseEnum = network.passphrase == Network.testnet.passphrase ? await sdk.accounts.createTestAccount(accountId: accountId) : await sdk.accounts.createFutureNetTestAccount(accountId: accountId)
-        switch responseEnum {
-        case .success(_):
-            break
-        case .failure(let error):
-            StellarSDKLog.printHorizonRequestErrorMessage(tag:"fundTestnetAccount(\(accountId))", horizonRequestError: error)
-            XCTFail("could not create test account: \(accountId)")
+        do {
+            try await fundTestAccountAndAwaitVisibility(accountId: accountId,
+                                                        rpc: SorobanServer(endpoint: testnetServerUrl),
+                                                        useFuturenet: network.passphrase != Network.testnet.passphrase)
+        } catch {
+            XCTFail("could not create test account \(accountId): \(error)")
+            return
         }
     }
     

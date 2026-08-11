@@ -31,14 +31,9 @@ class SorobanEventsTest: XCTestCase {
         sorobanServer.enableLogging = true
         let accountAId = submitterKeyPair.accountId
 
-        let responseEnum = network.passphrase == Network.testnet.passphrase ? await sdk.accounts.createTestAccount(accountId: accountAId) : await sdk.accounts.createFutureNetTestAccount(accountId: accountAId)
-        switch responseEnum {
-        case .success(_):
-            break
-        case .failure(let error):
-            StellarSDKLog.printHorizonRequestErrorMessage(tag:"setUp()", horizonRequestError: error)
-            XCTFail("could not create test account A: \(accountAId)")
-        }
+        try await fundTestAccountAndAwaitVisibility(accountId: accountAId,
+                                                    rpc: sorobanServer,
+                                                    useFuturenet: network.passphrase != Network.testnet.passphrase)
     }
     
     func testAll() async {
