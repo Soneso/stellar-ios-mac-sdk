@@ -3,10 +3,10 @@
     "source": "stellar-rpc",
     "repository": "https://github.com/stellar/stellar-rpc",
     "version": "v27.1.1",
-    "extracted_date": "2026-08-03",
+    "extracted_date": "2026-08-11",
     "total_methods": 12,
     "protocol": "JSON-RPC 2.0",
-    "protocol_definitions": "https://github.com/stellar/go-stellar-sdk/tree/v0.6.0/protocols/rpc"
+    "protocol_definitions": "https://github.com/stellar/go-stellar-sdk/tree/v0.6.1/protocols/rpc"
   },
   "methods": {
     "getHealth": {
