@@ -31,3 +31,17 @@ extension LedgerKeyAccountXDR {
     return LedgerKeyAccountXDR(accountID: accountID)
   }
 }
+
+extension LedgerKeyAccountXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "account_id", value: try AccountIDXDRJsonCodec.toXdrJsonValue(self.accountID, type: "LedgerKeyAccountXDR", key: "account_id")))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> LedgerKeyAccountXDR {
+    let members = try XdrJson.object(value, type: "LedgerKeyAccountXDR", keys: ["account_id"])
+    let accountID: PublicKey = try AccountIDXDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "account_id", type: "LedgerKeyAccountXDR"), type: "LedgerKeyAccountXDR", key: "account_id")
+    return LedgerKeyAccountXDR(accountID: accountID)
+  }
+}

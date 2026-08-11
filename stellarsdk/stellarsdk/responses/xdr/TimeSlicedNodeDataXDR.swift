@@ -67,3 +67,46 @@ public struct TimeSlicedNodeDataXDR: XDRCodable, Sendable {
     try container.encode(maxOutboundPeerCount)
   }
 }
+
+extension TimeSlicedNodeDataXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "added_authenticated_peers", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.addedAuthenticatedPeers, type: "TimeSlicedNodeDataXDR", key: "added_authenticated_peers")))
+    members.append(XdrJsonMember(key: "dropped_authenticated_peers", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.droppedAuthenticatedPeers, type: "TimeSlicedNodeDataXDR", key: "dropped_authenticated_peers")))
+    members.append(XdrJsonMember(key: "total_inbound_peer_count", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.totalInboundPeerCount, type: "TimeSlicedNodeDataXDR", key: "total_inbound_peer_count")))
+    members.append(XdrJsonMember(key: "total_outbound_peer_count", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.totalOutboundPeerCount, type: "TimeSlicedNodeDataXDR", key: "total_outbound_peer_count")))
+    members.append(XdrJsonMember(key: "p75_scp_first_to_self_latency_ms", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.p75SCPFirstToSelfLatencyMs, type: "TimeSlicedNodeDataXDR", key: "p75_scp_first_to_self_latency_ms")))
+    members.append(XdrJsonMember(key: "p75_scp_self_to_other_latency_ms", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.p75SCPSelfToOtherLatencyMs, type: "TimeSlicedNodeDataXDR", key: "p75_scp_self_to_other_latency_ms")))
+    members.append(XdrJsonMember(key: "lost_sync_count", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.lostSyncCount, type: "TimeSlicedNodeDataXDR", key: "lost_sync_count")))
+    members.append(XdrJsonMember(key: "is_validator", value: XdrJson.bool(self.isValidator)))
+    members.append(XdrJsonMember(key: "max_inbound_peer_count", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.maxInboundPeerCount, type: "TimeSlicedNodeDataXDR", key: "max_inbound_peer_count")))
+    members.append(XdrJsonMember(key: "max_outbound_peer_count", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.maxOutboundPeerCount, type: "TimeSlicedNodeDataXDR", key: "max_outbound_peer_count")))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> TimeSlicedNodeDataXDR {
+    let members = try XdrJson.object(value, type: "TimeSlicedNodeDataXDR", keys: ["added_authenticated_peers", "dropped_authenticated_peers", "total_inbound_peer_count", "total_outbound_peer_count", "p75_scp_first_to_self_latency_ms", "p75_scp_self_to_other_latency_ms", "lost_sync_count", "is_validator", "max_inbound_peer_count", "max_outbound_peer_count"])
+    let addedAuthenticatedPeers: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "added_authenticated_peers", type: "TimeSlicedNodeDataXDR"), type: "TimeSlicedNodeDataXDR", key: "added_authenticated_peers")
+    let droppedAuthenticatedPeers: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "dropped_authenticated_peers", type: "TimeSlicedNodeDataXDR"), type: "TimeSlicedNodeDataXDR", key: "dropped_authenticated_peers")
+    let totalInboundPeerCount: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "total_inbound_peer_count", type: "TimeSlicedNodeDataXDR"), type: "TimeSlicedNodeDataXDR", key: "total_inbound_peer_count")
+    let totalOutboundPeerCount: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "total_outbound_peer_count", type: "TimeSlicedNodeDataXDR"), type: "TimeSlicedNodeDataXDR", key: "total_outbound_peer_count")
+    let p75SCPFirstToSelfLatencyMs: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "p75_scp_first_to_self_latency_ms", type: "TimeSlicedNodeDataXDR"), type: "TimeSlicedNodeDataXDR", key: "p75_scp_first_to_self_latency_ms")
+    let p75SCPSelfToOtherLatencyMs: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "p75_scp_self_to_other_latency_ms", type: "TimeSlicedNodeDataXDR"), type: "TimeSlicedNodeDataXDR", key: "p75_scp_self_to_other_latency_ms")
+    let lostSyncCount: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "lost_sync_count", type: "TimeSlicedNodeDataXDR"), type: "TimeSlicedNodeDataXDR", key: "lost_sync_count")
+    let isValidator: Bool = try XdrJson.bool(try XdrJson.field(members, key: "is_validator", type: "TimeSlicedNodeDataXDR"), type: "TimeSlicedNodeDataXDR", key: "is_validator")
+    let maxInboundPeerCount: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "max_inbound_peer_count", type: "TimeSlicedNodeDataXDR"), type: "TimeSlicedNodeDataXDR", key: "max_inbound_peer_count")
+    let maxOutboundPeerCount: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "max_outbound_peer_count", type: "TimeSlicedNodeDataXDR"), type: "TimeSlicedNodeDataXDR", key: "max_outbound_peer_count")
+    return TimeSlicedNodeDataXDR(
+      addedAuthenticatedPeers: addedAuthenticatedPeers,
+      droppedAuthenticatedPeers: droppedAuthenticatedPeers,
+      totalInboundPeerCount: totalInboundPeerCount,
+      totalOutboundPeerCount: totalOutboundPeerCount,
+      p75SCPFirstToSelfLatencyMs: p75SCPFirstToSelfLatencyMs,
+      p75SCPSelfToOtherLatencyMs: p75SCPSelfToOtherLatencyMs,
+      lostSyncCount: lostSyncCount,
+      isValidator: isValidator,
+      maxInboundPeerCount: maxInboundPeerCount,
+      maxOutboundPeerCount: maxOutboundPeerCount
+    )
+  }
+}

@@ -31,3 +31,17 @@ extension BeginSponsoringFutureReservesOpXDR {
     return BeginSponsoringFutureReservesOpXDR(sponsoredId: sponsoredId)
   }
 }
+
+extension BeginSponsoringFutureReservesOpXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "sponsored_id", value: try AccountIDXDRJsonCodec.toXdrJsonValue(self.sponsoredId, type: "BeginSponsoringFutureReservesOpXDR", key: "sponsored_id")))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> BeginSponsoringFutureReservesOpXDR {
+    let members = try XdrJson.object(value, type: "BeginSponsoringFutureReservesOpXDR", keys: ["sponsored_id"])
+    let sponsoredId: PublicKey = try AccountIDXDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "sponsored_id", type: "BeginSponsoringFutureReservesOpXDR"), type: "BeginSponsoringFutureReservesOpXDR", key: "sponsored_id")
+    return BeginSponsoringFutureReservesOpXDR(sponsoredId: sponsoredId)
+  }
+}

@@ -32,3 +32,25 @@ public struct AuthCertXDR: XDRCodable, Sendable {
     try container.encode(sig)
   }
 }
+
+extension AuthCertXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "pubkey", value: try self.pubkey.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "expiration", value: try Uint64XDRJsonCodec.toXdrJsonValue(self.expiration, type: "AuthCertXDR", key: "expiration")))
+    members.append(XdrJsonMember(key: "sig", value: try SignatureXDRJsonCodec.toXdrJsonValue(self.sig, type: "AuthCertXDR", key: "sig")))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> AuthCertXDR {
+    let members = try XdrJson.object(value, type: "AuthCertXDR", keys: ["pubkey", "expiration", "sig"])
+    let pubkey: Curve25519PublicXDR = try Curve25519PublicXDR.fromXdrJsonValue(try XdrJson.field(members, key: "pubkey", type: "AuthCertXDR"))
+    let expiration: UInt64 = try Uint64XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "expiration", type: "AuthCertXDR"), type: "AuthCertXDR", key: "expiration")
+    let sig: SignatureXDR = try SignatureXDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "sig", type: "AuthCertXDR"), type: "AuthCertXDR", key: "sig")
+    return AuthCertXDR(
+      pubkey: pubkey,
+      expiration: expiration,
+      sig: sig
+    )
+  }
+}

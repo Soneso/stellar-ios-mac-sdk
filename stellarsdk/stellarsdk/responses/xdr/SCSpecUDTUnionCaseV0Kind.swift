@@ -7,3 +7,22 @@ public enum SCSpecUDTUnionCaseV0Kind: Int32, XDRCodable, Equatable, Sendable {
   case voidV0 = 0
   case tupleV0 = 1
 }
+
+extension SCSpecUDTUnionCaseV0Kind: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .voidV0: return .string("void_v0")
+    case .tupleV0: return .string("tuple_v0")
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> SCSpecUDTUnionCaseV0Kind {
+    let name = try XdrJson.string(value, type: "SCSpecUDTUnionCaseV0Kind")
+    switch name {
+    case "void_v0": return .voidV0
+    case "tuple_v0": return .tupleV0
+    default:
+      throw XdrJsonError.unknownEnumValue(type: "SCSpecUDTUnionCaseV0Kind", value: name)
+    }
+  }
+}

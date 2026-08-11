@@ -32,3 +32,26 @@ public struct TransactionMetaV2XDR: XDRCodable, Sendable {
     try container.encode(txChangesAfter)
   }
 }
+
+extension TransactionMetaV2XDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "tx_changes_before", value: try self.txChangesBefore.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "operations", value: try XdrJson.array(self.operations.map { element in try element.toXdrJsonValue() })))
+    members.append(XdrJsonMember(key: "tx_changes_after", value: try self.txChangesAfter.toXdrJsonValue()))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> TransactionMetaV2XDR {
+    let members = try XdrJson.object(value, type: "TransactionMetaV2XDR", keys: ["tx_changes_before", "operations", "tx_changes_after"])
+    let txChangesBefore: LedgerEntryChangesXDR = try LedgerEntryChangesXDR.fromXdrJsonValue(try XdrJson.field(members, key: "tx_changes_before", type: "TransactionMetaV2XDR"))
+    let operationsElements = try XdrJson.array(try XdrJson.field(members, key: "operations", type: "TransactionMetaV2XDR"), type: "TransactionMetaV2XDR", key: "operations")
+    let operations: [OperationMetaXDR] = try operationsElements.map { element in try OperationMetaXDR.fromXdrJsonValue(element) }
+    let txChangesAfter: LedgerEntryChangesXDR = try LedgerEntryChangesXDR.fromXdrJsonValue(try XdrJson.field(members, key: "tx_changes_after", type: "TransactionMetaV2XDR"))
+    return TransactionMetaV2XDR(
+      txChangesBefore: txChangesBefore,
+      operations: operations,
+      txChangesAfter: txChangesAfter
+    )
+  }
+}

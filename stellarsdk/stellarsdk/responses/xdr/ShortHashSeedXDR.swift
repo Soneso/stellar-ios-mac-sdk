@@ -20,3 +20,17 @@ public struct ShortHashSeedXDR: XDRCodable, Sendable {
     try container.encode(seed)
   }
 }
+
+extension ShortHashSeedXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "seed", value: try XdrJson.hex(self.seed.wrapped, expectedLength: 16, type: "ShortHashSeedXDR", key: "seed")))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> ShortHashSeedXDR {
+    let members = try XdrJson.object(value, type: "ShortHashSeedXDR", keys: ["seed"])
+    let seed: WrappedData16 = WrappedData16(try XdrJson.hex(try XdrJson.field(members, key: "seed", type: "ShortHashSeedXDR"), expectedLength: 16, type: "ShortHashSeedXDR", key: "seed"))
+    return ShortHashSeedXDR(seed: seed)
+  }
+}

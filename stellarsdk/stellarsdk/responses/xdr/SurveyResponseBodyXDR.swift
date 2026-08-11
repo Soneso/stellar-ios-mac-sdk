@@ -35,3 +35,33 @@ public enum SurveyResponseBodyXDR: XDRCodable, Sendable {
     }
   }
 }
+
+extension SurveyResponseBodyXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .topologyResponseBodyV2(let payload):
+      return .object([XdrJsonMember(key: "survey_topology_response_v2", value: try payload.toXdrJsonValue())])
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> SurveyResponseBodyXDR {
+    if case .string(let name) = value {
+      switch name {
+      case "survey_topology_response_v2":
+        throw XdrJsonError.invalidValue(type: "SurveyResponseBodyXDR", key: "survey_topology_response_v2",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      default:
+        throw XdrJsonError.unknownUnionArm(type: "SurveyResponseBodyXDR", key: name)
+      }
+    }
+
+    let member = try XdrJson.singleKeyObject(value, type: "SurveyResponseBodyXDR")
+    switch member.key {
+    case "survey_topology_response_v2":
+      let topologyResponseBodyV2: TopologyResponseBodyV2XDR = try TopologyResponseBodyV2XDR.fromXdrJsonValue(member.value)
+      return .topologyResponseBodyV2(topologyResponseBodyV2)
+    default:
+      throw XdrJsonError.unknownUnionArm(type: "SurveyResponseBodyXDR", key: member.key)
+    }
+  }
+}

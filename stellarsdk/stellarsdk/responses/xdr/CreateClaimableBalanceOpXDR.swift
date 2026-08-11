@@ -55,3 +55,26 @@ extension CreateClaimableBalanceOpXDR {
     return CreateClaimableBalanceOpXDR(asset: asset, amount: amount, claimants: claimants)
   }
 }
+
+extension CreateClaimableBalanceOpXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "asset", value: try self.asset.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "amount", value: try Int64XDRJsonCodec.toXdrJsonValue(self.amount, type: "CreateClaimableBalanceOpXDR", key: "amount")))
+    members.append(XdrJsonMember(key: "claimants", value: try XdrJson.array(self.claimants.map { element in try element.toXdrJsonValue() })))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> CreateClaimableBalanceOpXDR {
+    let members = try XdrJson.object(value, type: "CreateClaimableBalanceOpXDR", keys: ["asset", "amount", "claimants"])
+    let asset: AssetXDR = try AssetXDR.fromXdrJsonValue(try XdrJson.field(members, key: "asset", type: "CreateClaimableBalanceOpXDR"))
+    let amount: Int64 = try Int64XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "amount", type: "CreateClaimableBalanceOpXDR"), type: "CreateClaimableBalanceOpXDR", key: "amount")
+    let claimantsElements = try XdrJson.array(try XdrJson.field(members, key: "claimants", type: "CreateClaimableBalanceOpXDR"), type: "CreateClaimableBalanceOpXDR", key: "claimants")
+    let claimants: [ClaimantXDR] = try claimantsElements.map { element in try ClaimantXDR.fromXdrJsonValue(element) }
+    return CreateClaimableBalanceOpXDR(
+      asset: asset,
+      amount: amount,
+      claimants: claimants
+    )
+  }
+}

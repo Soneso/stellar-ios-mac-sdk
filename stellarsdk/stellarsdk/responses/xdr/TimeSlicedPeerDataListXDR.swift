@@ -19,3 +19,15 @@ public struct TimeSlicedPeerDataListXDR: XDRCodable, Sendable {
     try container.encode(wrapped)
   }
 }
+
+extension TimeSlicedPeerDataListXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    return try XdrJson.array(self.wrapped.map { element in try element.toXdrJsonValue() })
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> TimeSlicedPeerDataListXDR {
+    let decodedElements = try XdrJson.array(value, type: "TimeSlicedPeerDataListXDR")
+    let decoded: [TimeSlicedPeerDataXDR] = try decodedElements.map { element in try TimeSlicedPeerDataXDR.fromXdrJsonValue(element) }
+    return TimeSlicedPeerDataListXDR(wrapped: decoded)
+  }
+}

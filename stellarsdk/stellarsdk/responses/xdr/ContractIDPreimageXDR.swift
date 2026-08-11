@@ -72,3 +72,41 @@ extension ContractIDPreimageXDR {
     }
   }
 }
+
+extension ContractIDPreimageXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .fromAddress(let payload):
+      return .object([XdrJsonMember(key: "address", value: try payload.toXdrJsonValue())])
+    case .fromAsset(let payload):
+      return .object([XdrJsonMember(key: "asset", value: try payload.toXdrJsonValue())])
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> ContractIDPreimageXDR {
+    if case .string(let name) = value {
+      switch name {
+      case "address":
+        throw XdrJsonError.invalidValue(type: "ContractIDPreimageXDR", key: "address",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "asset":
+        throw XdrJsonError.invalidValue(type: "ContractIDPreimageXDR", key: "asset",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      default:
+        throw XdrJsonError.unknownUnionArm(type: "ContractIDPreimageXDR", key: name)
+      }
+    }
+
+    let member = try XdrJson.singleKeyObject(value, type: "ContractIDPreimageXDR")
+    switch member.key {
+    case "address":
+      let fromAddress: ContractIDPreimageFromAddressXDR = try ContractIDPreimageFromAddressXDR.fromXdrJsonValue(member.value)
+      return .fromAddress(fromAddress)
+    case "asset":
+      let fromAsset: AssetXDR = try AssetXDR.fromXdrJsonValue(member.value)
+      return .fromAsset(fromAsset)
+    default:
+      throw XdrJsonError.unknownUnionArm(type: "ContractIDPreimageXDR", key: member.key)
+    }
+  }
+}

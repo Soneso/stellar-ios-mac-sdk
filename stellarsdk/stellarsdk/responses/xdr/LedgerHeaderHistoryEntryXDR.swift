@@ -32,3 +32,25 @@ public struct LedgerHeaderHistoryEntryXDR: XDRCodable, Sendable {
     try container.encode(ext)
   }
 }
+
+extension LedgerHeaderHistoryEntryXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "hash", value: try HashXDRJsonCodec.toXdrJsonValue(self.hash, type: "LedgerHeaderHistoryEntryXDR", key: "hash")))
+    members.append(XdrJsonMember(key: "header", value: try self.header.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "ext", value: try self.ext.toXdrJsonValue()))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> LedgerHeaderHistoryEntryXDR {
+    let members = try XdrJson.object(value, type: "LedgerHeaderHistoryEntryXDR", keys: ["hash", "header", "ext"])
+    let hash: HashXDR = try HashXDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "hash", type: "LedgerHeaderHistoryEntryXDR"), type: "LedgerHeaderHistoryEntryXDR", key: "hash")
+    let header: LedgerHeaderXDR = try LedgerHeaderXDR.fromXdrJsonValue(try XdrJson.field(members, key: "header", type: "LedgerHeaderHistoryEntryXDR"))
+    let ext: LedgerHeaderHistoryEntryXDRExtXDR = try LedgerHeaderHistoryEntryXDRExtXDR.fromXdrJsonValue(try XdrJson.field(members, key: "ext", type: "LedgerHeaderHistoryEntryXDR"))
+    return LedgerHeaderHistoryEntryXDR(
+      hash: hash,
+      header: header,
+      ext: ext
+    )
+  }
+}

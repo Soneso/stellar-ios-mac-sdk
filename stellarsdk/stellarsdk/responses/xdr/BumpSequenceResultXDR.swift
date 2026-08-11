@@ -40,3 +40,24 @@ public enum BumpSequenceResultXDR: XDRCodable, Sendable {
     }
   }
 }
+
+extension BumpSequenceResultXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .success: return .string("success")
+    case .badSeq: return .string("bad_seq")
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> BumpSequenceResultXDR {
+    let name = try XdrJson.string(value, type: "BumpSequenceResultXDR")
+    switch name {
+    case "success":
+      return .success
+    case "bad_seq":
+      return .badSeq
+    default:
+      throw XdrJsonError.unknownUnionArm(type: "BumpSequenceResultXDR", key: name)
+    }
+  }
+}

@@ -19,3 +19,18 @@ public struct TransactionResultSetXDR: XDRCodable, Sendable {
     try container.encode(results)
   }
 }
+
+extension TransactionResultSetXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "results", value: try XdrJson.array(self.results.map { element in try element.toXdrJsonValue() })))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> TransactionResultSetXDR {
+    let members = try XdrJson.object(value, type: "TransactionResultSetXDR", keys: ["results"])
+    let resultsElements = try XdrJson.array(try XdrJson.field(members, key: "results", type: "TransactionResultSetXDR"), type: "TransactionResultSetXDR", key: "results")
+    let results: [TransactionResultPairXDR] = try resultsElements.map { element in try TransactionResultPairXDR.fromXdrJsonValue(element) }
+    return TransactionResultSetXDR(results: results)
+  }
+}

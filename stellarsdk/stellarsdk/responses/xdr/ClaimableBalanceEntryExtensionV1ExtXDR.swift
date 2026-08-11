@@ -34,3 +34,21 @@ public enum ClaimableBalanceEntryExtensionV1ExtXDR: XDRCodable, Sendable {
     }
   }
 }
+
+extension ClaimableBalanceEntryExtensionV1ExtXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .void: return .string("v0")
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> ClaimableBalanceEntryExtensionV1ExtXDR {
+    let name = try XdrJson.string(value, type: "ClaimableBalanceEntryExtensionV1ExtXDR")
+    switch name {
+    case "v0":
+      return .void
+    default:
+      throw XdrJsonError.unknownUnionArm(type: "ClaimableBalanceEntryExtensionV1ExtXDR", key: name)
+    }
+  }
+}

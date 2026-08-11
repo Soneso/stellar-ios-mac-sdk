@@ -62,3 +62,43 @@ public struct HelloXDR: XDRCodable, Sendable {
     try container.encode(nonce)
   }
 }
+
+extension HelloXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "ledger_version", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.ledgerVersion, type: "HelloXDR", key: "ledger_version")))
+    members.append(XdrJsonMember(key: "overlay_version", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.overlayVersion, type: "HelloXDR", key: "overlay_version")))
+    members.append(XdrJsonMember(key: "overlay_min_version", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.overlayMinVersion, type: "HelloXDR", key: "overlay_min_version")))
+    members.append(XdrJsonMember(key: "network_id", value: try HashXDRJsonCodec.toXdrJsonValue(self.networkID, type: "HelloXDR", key: "network_id")))
+    members.append(XdrJsonMember(key: "version_str", value: XdrJson.escapedString(self.versionStr)))
+    members.append(XdrJsonMember(key: "listening_port", value: XdrJson.int32(self.listeningPort)))
+    members.append(XdrJsonMember(key: "peer_id", value: try NodeIDXDRJsonCodec.toXdrJsonValue(self.peerID, type: "HelloXDR", key: "peer_id")))
+    members.append(XdrJsonMember(key: "cert", value: try self.cert.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "nonce", value: try Uint256XDRJsonCodec.toXdrJsonValue(self.nonce, type: "HelloXDR", key: "nonce")))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> HelloXDR {
+    let members = try XdrJson.object(value, type: "HelloXDR", keys: ["ledger_version", "overlay_version", "overlay_min_version", "network_id", "version_str", "listening_port", "peer_id", "cert", "nonce"])
+    let ledgerVersion: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "ledger_version", type: "HelloXDR"), type: "HelloXDR", key: "ledger_version")
+    let overlayVersion: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "overlay_version", type: "HelloXDR"), type: "HelloXDR", key: "overlay_version")
+    let overlayMinVersion: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "overlay_min_version", type: "HelloXDR"), type: "HelloXDR", key: "overlay_min_version")
+    let networkID: HashXDR = try HashXDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "network_id", type: "HelloXDR"), type: "HelloXDR", key: "network_id")
+    let versionStr: String = try XdrJson.unescapedText(try XdrJson.field(members, key: "version_str", type: "HelloXDR"), type: "HelloXDR", key: "version_str")
+    let listeningPort: Int32 = try XdrJson.int32(try XdrJson.field(members, key: "listening_port", type: "HelloXDR"), type: "HelloXDR", key: "listening_port")
+    let peerID: NodeIDXDR = try NodeIDXDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "peer_id", type: "HelloXDR"), type: "HelloXDR", key: "peer_id")
+    let cert: AuthCertXDR = try AuthCertXDR.fromXdrJsonValue(try XdrJson.field(members, key: "cert", type: "HelloXDR"))
+    let nonce: Uint256XDR = try Uint256XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "nonce", type: "HelloXDR"), type: "HelloXDR", key: "nonce")
+    return HelloXDR(
+      ledgerVersion: ledgerVersion,
+      overlayVersion: overlayVersion,
+      overlayMinVersion: overlayMinVersion,
+      networkID: networkID,
+      versionStr: versionStr,
+      listeningPort: listeningPort,
+      peerID: peerID,
+      cert: cert,
+      nonce: nonce
+    )
+  }
+}

@@ -31,3 +31,17 @@ extension LedgerKeyLiquidityPoolXDR {
     return LedgerKeyLiquidityPoolXDR(liquidityPoolID: liquidityPoolID)
   }
 }
+
+extension LedgerKeyLiquidityPoolXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "liquidity_pool_id", value: try PoolIDXDRJsonCodec.toXdrJsonValue(self.liquidityPoolID, type: "LedgerKeyLiquidityPoolXDR", key: "liquidity_pool_id")))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> LedgerKeyLiquidityPoolXDR {
+    let members = try XdrJson.object(value, type: "LedgerKeyLiquidityPoolXDR", keys: ["liquidity_pool_id"])
+    let liquidityPoolID: WrappedData32 = try PoolIDXDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "liquidity_pool_id", type: "LedgerKeyLiquidityPoolXDR"), type: "LedgerKeyLiquidityPoolXDR", key: "liquidity_pool_id")
+    return LedgerKeyLiquidityPoolXDR(liquidityPoolID: liquidityPoolID)
+  }
+}

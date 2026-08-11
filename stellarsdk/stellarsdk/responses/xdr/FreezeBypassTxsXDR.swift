@@ -19,3 +19,18 @@ public struct FreezeBypassTxsXDR: XDRCodable, Sendable {
     try container.encode(txHashes)
   }
 }
+
+extension FreezeBypassTxsXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "tx_hashes", value: try XdrJson.array(self.txHashes.map { element in try HashXDRJsonCodec.toXdrJsonValue(element, type: "FreezeBypassTxsXDR", key: "tx_hashes") })))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> FreezeBypassTxsXDR {
+    let members = try XdrJson.object(value, type: "FreezeBypassTxsXDR", keys: ["tx_hashes"])
+    let txHashesElements = try XdrJson.array(try XdrJson.field(members, key: "tx_hashes", type: "FreezeBypassTxsXDR"), type: "FreezeBypassTxsXDR", key: "tx_hashes")
+    let txHashes: [HashXDR] = try txHashesElements.map { element in try HashXDRJsonCodec.fromXdrJsonValue(element, type: "FreezeBypassTxsXDR", key: "tx_hashes") }
+    return FreezeBypassTxsXDR(txHashes: txHashes)
+  }
+}

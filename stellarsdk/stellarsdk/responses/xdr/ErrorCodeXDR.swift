@@ -10,3 +10,28 @@ public enum ErrorCodeXDR: Int32, XDRCodable, Equatable, Sendable {
   case auth = 3
   case load = 4
 }
+
+extension ErrorCodeXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .misc: return .string("misc")
+    case .data: return .string("data")
+    case .conf: return .string("conf")
+    case .auth: return .string("auth")
+    case .load: return .string("load")
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> ErrorCodeXDR {
+    let name = try XdrJson.string(value, type: "ErrorCodeXDR")
+    switch name {
+    case "misc": return .misc
+    case "data": return .data
+    case "conf": return .conf
+    case "auth": return .auth
+    case "load": return .load
+    default:
+      throw XdrJsonError.unknownEnumValue(type: "ErrorCodeXDR", value: name)
+    }
+  }
+}

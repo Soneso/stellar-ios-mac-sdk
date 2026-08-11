@@ -20,3 +20,17 @@ public struct ConfigSettingContractExecutionLanesV0XDR: XDRCodable, Sendable {
     try container.encode(ledgerMaxTxCount)
   }
 }
+
+extension ConfigSettingContractExecutionLanesV0XDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "ledger_max_tx_count", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.ledgerMaxTxCount, type: "ConfigSettingContractExecutionLanesV0XDR", key: "ledger_max_tx_count")))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> ConfigSettingContractExecutionLanesV0XDR {
+    let members = try XdrJson.object(value, type: "ConfigSettingContractExecutionLanesV0XDR", keys: ["ledger_max_tx_count"])
+    let ledgerMaxTxCount: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "ledger_max_tx_count", type: "ConfigSettingContractExecutionLanesV0XDR"), type: "ConfigSettingContractExecutionLanesV0XDR", key: "ledger_max_tx_count")
+    return ConfigSettingContractExecutionLanesV0XDR(ledgerMaxTxCount: ledgerMaxTxCount)
+  }
+}

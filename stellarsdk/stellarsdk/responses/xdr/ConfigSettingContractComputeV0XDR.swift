@@ -37,3 +37,28 @@ public struct ConfigSettingContractComputeV0XDR: XDRCodable, Sendable {
     try container.encode(txMemoryLimit)
   }
 }
+
+extension ConfigSettingContractComputeV0XDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "ledger_max_instructions", value: try Int64XDRJsonCodec.toXdrJsonValue(self.ledgerMaxInstructions, type: "ConfigSettingContractComputeV0XDR", key: "ledger_max_instructions")))
+    members.append(XdrJsonMember(key: "tx_max_instructions", value: try Int64XDRJsonCodec.toXdrJsonValue(self.txMaxInstructions, type: "ConfigSettingContractComputeV0XDR", key: "tx_max_instructions")))
+    members.append(XdrJsonMember(key: "fee_rate_per_instructions_increment", value: try Int64XDRJsonCodec.toXdrJsonValue(self.feeRatePerInstructionsIncrement, type: "ConfigSettingContractComputeV0XDR", key: "fee_rate_per_instructions_increment")))
+    members.append(XdrJsonMember(key: "tx_memory_limit", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.txMemoryLimit, type: "ConfigSettingContractComputeV0XDR", key: "tx_memory_limit")))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> ConfigSettingContractComputeV0XDR {
+    let members = try XdrJson.object(value, type: "ConfigSettingContractComputeV0XDR", keys: ["ledger_max_instructions", "tx_max_instructions", "fee_rate_per_instructions_increment", "tx_memory_limit"])
+    let ledgerMaxInstructions: Int64 = try Int64XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "ledger_max_instructions", type: "ConfigSettingContractComputeV0XDR"), type: "ConfigSettingContractComputeV0XDR", key: "ledger_max_instructions")
+    let txMaxInstructions: Int64 = try Int64XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "tx_max_instructions", type: "ConfigSettingContractComputeV0XDR"), type: "ConfigSettingContractComputeV0XDR", key: "tx_max_instructions")
+    let feeRatePerInstructionsIncrement: Int64 = try Int64XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "fee_rate_per_instructions_increment", type: "ConfigSettingContractComputeV0XDR"), type: "ConfigSettingContractComputeV0XDR", key: "fee_rate_per_instructions_increment")
+    let txMemoryLimit: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "tx_memory_limit", type: "ConfigSettingContractComputeV0XDR"), type: "ConfigSettingContractComputeV0XDR", key: "tx_memory_limit")
+    return ConfigSettingContractComputeV0XDR(
+      ledgerMaxInstructions: ledgerMaxInstructions,
+      txMaxInstructions: txMaxInstructions,
+      feeRatePerInstructionsIncrement: feeRatePerInstructionsIncrement,
+      txMemoryLimit: txMemoryLimit
+    )
+  }
+}

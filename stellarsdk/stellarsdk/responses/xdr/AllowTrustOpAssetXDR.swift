@@ -42,3 +42,29 @@ public enum AllowTrustOpAssetXDR: XDRCodable, Sendable {
     }
   }
 }
+
+extension AllowTrustOpAssetXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .alphanum4(let code):
+      return try AssetCode4XDRJsonCodec.toXdrJsonValue(code, type: "AllowTrustOpAssetXDR",
+                                                       key: "credit_alphanum4")
+    case .alphanum12(let code):
+      return try AssetCode12XDRJsonCodec.toXdrJsonValue(code, type: "AllowTrustOpAssetXDR",
+                                                        key: "credit_alphanum12")
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> AllowTrustOpAssetXDR {
+    let raw = try XdrJson.unescapeString(value, type: "AllowTrustOpAssetXDR")
+    if raw.count <= 4 {
+      return .alphanum4(AssetCode4XDR(XdrJson.rightPad(raw, to: 4)))
+    }
+    guard raw.count <= 12 else {
+      throw XdrJsonError.invalidValue(
+        type: "AllowTrustOpAssetXDR", key: nil,
+        message: "expected at most 12 bytes, got \(raw.count)")
+    }
+    return .alphanum12(AssetCode12XDR(XdrJson.rightPad(raw, to: 12)))
+  }
+}

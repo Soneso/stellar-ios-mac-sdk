@@ -24,3 +24,20 @@ public struct ContractEventBodyV0XDR: XDRCodable, Sendable {
     try container.encode(data)
   }
 }
+
+extension ContractEventBodyV0XDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "topics", value: try XdrJson.array(self.topics.map { element in try element.toXdrJsonValue() })))
+    members.append(XdrJsonMember(key: "data", value: try self.data.toXdrJsonValue()))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> ContractEventBodyV0XDR {
+    let members = try XdrJson.object(value, type: "ContractEventBodyV0XDR", keys: ["topics", "data"])
+    let topicsElements = try XdrJson.array(try XdrJson.field(members, key: "topics", type: "ContractEventBodyV0XDR"), type: "ContractEventBodyV0XDR", key: "topics")
+    let topics: [SCValXDR] = try topicsElements.map { element in try SCValXDR.fromXdrJsonValue(element) }
+    let data: SCValXDR = try SCValXDR.fromXdrJsonValue(try XdrJson.field(members, key: "data", type: "ContractEventBodyV0XDR"))
+    return ContractEventBodyV0XDR(topics: topics, data: data)
+  }
+}

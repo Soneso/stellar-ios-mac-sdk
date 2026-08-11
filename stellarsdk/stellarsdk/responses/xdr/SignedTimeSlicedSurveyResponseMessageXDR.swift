@@ -24,3 +24,19 @@ public struct SignedTimeSlicedSurveyResponseMessageXDR: XDRCodable, Sendable {
     try container.encode(response)
   }
 }
+
+extension SignedTimeSlicedSurveyResponseMessageXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "response_signature", value: try SignatureXDRJsonCodec.toXdrJsonValue(self.responseSignature, type: "SignedTimeSlicedSurveyResponseMessageXDR", key: "response_signature")))
+    members.append(XdrJsonMember(key: "response", value: try self.response.toXdrJsonValue()))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> SignedTimeSlicedSurveyResponseMessageXDR {
+    let members = try XdrJson.object(value, type: "SignedTimeSlicedSurveyResponseMessageXDR", keys: ["response_signature", "response"])
+    let responseSignature: SignatureXDR = try SignatureXDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "response_signature", type: "SignedTimeSlicedSurveyResponseMessageXDR"), type: "SignedTimeSlicedSurveyResponseMessageXDR", key: "response_signature")
+    let response: TimeSlicedSurveyResponseMessageXDR = try TimeSlicedSurveyResponseMessageXDR.fromXdrJsonValue(try XdrJson.field(members, key: "response", type: "SignedTimeSlicedSurveyResponseMessageXDR"))
+    return SignedTimeSlicedSurveyResponseMessageXDR(responseSignature: responseSignature, response: response)
+  }
+}

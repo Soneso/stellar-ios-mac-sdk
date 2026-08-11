@@ -52,3 +52,30 @@ public enum ExtendFootprintTTLResultXDR: XDRCodable, Sendable {
     }
   }
 }
+
+extension ExtendFootprintTTLResultXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .success: return .string("success")
+    case .malformed: return .string("malformed")
+    case .resourceLimitExceeded: return .string("resource_limit_exceeded")
+    case .insufficientRefundableFee: return .string("insufficient_refundable_fee")
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> ExtendFootprintTTLResultXDR {
+    let name = try XdrJson.string(value, type: "ExtendFootprintTTLResultXDR")
+    switch name {
+    case "success":
+      return .success
+    case "malformed":
+      return .malformed
+    case "resource_limit_exceeded":
+      return .resourceLimitExceeded
+    case "insufficient_refundable_fee":
+      return .insufficientRefundableFee
+    default:
+      throw XdrJsonError.unknownUnionArm(type: "ExtendFootprintTTLResultXDR", key: name)
+    }
+  }
+}

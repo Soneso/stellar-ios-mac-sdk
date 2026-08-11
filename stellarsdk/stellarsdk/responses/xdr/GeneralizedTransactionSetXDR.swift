@@ -35,3 +35,33 @@ public enum GeneralizedTransactionSetXDR: XDRCodable, Sendable {
     }
   }
 }
+
+extension GeneralizedTransactionSetXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .v1TxSet(let payload):
+      return .object([XdrJsonMember(key: "v1", value: try payload.toXdrJsonValue())])
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> GeneralizedTransactionSetXDR {
+    if case .string(let name) = value {
+      switch name {
+      case "v1":
+        throw XdrJsonError.invalidValue(type: "GeneralizedTransactionSetXDR", key: "v1",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      default:
+        throw XdrJsonError.unknownUnionArm(type: "GeneralizedTransactionSetXDR", key: name)
+      }
+    }
+
+    let member = try XdrJson.singleKeyObject(value, type: "GeneralizedTransactionSetXDR")
+    switch member.key {
+    case "v1":
+      let v1TxSet: TransactionSetV1XDR = try TransactionSetV1XDR.fromXdrJsonValue(member.value)
+      return .v1TxSet(v1TxSet)
+    default:
+      throw XdrJsonError.unknownUnionArm(type: "GeneralizedTransactionSetXDR", key: member.key)
+    }
+  }
+}

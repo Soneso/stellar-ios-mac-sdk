@@ -5,14 +5,26 @@ on:
     branches: [master]
     paths:
       - 'tools/xdr-generator/**'
+      - 'tools/sep-51-oracle/**'
+      - 'tools/sep-51-corpus/**'
       - 'xdr/*.x'
       - 'stellarsdk/stellarsdk/responses/xdr/**'
+      - 'stellarsdk/stellarsdk/xdr_json/**'
+      - 'stellarsdk/stellarsdkUnitTests/sep/xdr_json/**'
+      - 'docs/sep/sep-51.md'
+      - 'skills/stellar-ios-mac-sdk/references/sep-51.md'
   pull_request:
     branches: [master]
     paths:
       - 'tools/xdr-generator/**'
+      - 'tools/sep-51-oracle/**'
+      - 'tools/sep-51-corpus/**'
       - 'xdr/*.x'
       - 'stellarsdk/stellarsdk/responses/xdr/**'
+      - 'stellarsdk/stellarsdk/xdr_json/**'
+      - 'stellarsdk/stellarsdkUnitTests/sep/xdr_json/**'
+      - 'docs/sep/sep-51.md'
+      - 'skills/stellar-ios-mac-sdk/references/sep-51.md'
 
 permissions:
   contents: read
@@ -34,12 +46,114 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Regenerate XDR files
+        # This also re-emits both test harnesses, because xdr-generate runs
+        # test/generate_tests.rb and test/emit_json_tests.rb after generate.rb. Every check
+        # below reads what this step produced, so nothing may read those paths before it
+        # completes: a partially written tree produces convincing failures that disappear on
+        # a re-run.
         run: make xdr-generate
 
       - name: Check for uncommitted changes
         run: |
-          if ! git diff --quiet stellarsdk/stellarsdk/responses/xdr/; then
-            echo "Generated XDR files are out of date. Run 'make xdr-generate' and commit the results."
-            git diff --stat stellarsdk/stellarsdk/responses/xdr/
+          PATHS="stellarsdk/stellarsdk/responses/xdr/ \
+                 stellarsdk/stellarsdkUnitTests/sep/txrep/generated/ \
+                 stellarsdk/stellarsdkUnitTests/sep/xdr_json/generated/"
+          # shellcheck disable=SC2086
+          if ! git diff --quiet -- $PATHS; then
+            echo "Generated files are out of date. Run 'make xdr-generate' and commit the results."
+            # shellcheck disable=SC2086
+            git diff --stat -- $PATHS
             exit 1
           fi
+
+      - name: Check for stray generated files
+        run: |
+          # A generated file whose name differs from the tracked one only by case is
+          # invisible on a case-insensitive filesystem: the tracked file is left untouched,
+          # so the diff above comes back clean while the checkout now holds two files
+          # declaring the same type. This runner is case-sensitive, which is where it shows
+          # up, so the untracked-file check belongs here rather than in a developer's shell.
+          STRAY=$(git status --porcelain --untracked-files=all -- \
+            stellarsdk/stellarsdk/responses/xdr/ \
+            stellarsdk/stellarsdkUnitTests/sep/txrep/generated/ \
+            stellarsdk/stellarsdkUnitTests/sep/xdr_json/generated/)
+          if [ -n "$STRAY" ]; then
+            echo "Regeneration produced files the repository does not track:"
+            echo "$STRAY"
+            echo ""
+            echo "If a name differs from a tracked file only by case, rename the tracked file"
+            echo "to the spelling the generator emits: git mv -f <tracked> <generated>."
+            exit 1
+          fi
+
+  sep-51-artefacts:
+    name: SEP-51 committed artefacts
+    runs-on: ubuntu-latest
+    # These checks read only what is committed and never regenerate, so they are independent
+    # of generated-files-check and need no reference build. The two questions that do need
+    # the pinned XDR-JSON CLI -- are the derived names what the reference emits, and is the
+    # corpus what the reference produces -- are answered on a schedule, by
+    # sep-51-reference-watch.yml, because that build has to be compiled from source.
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@95ef2b042f9d7a56d8268cba8559e2842e2ad01b # v1.321.0
+        with:
+          ruby-version: '3.4'
+
+      - name: Cache generator gems
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: tools/xdr-generator/vendor
+          key: xdr-generator-gems-${{ runner.os }}-${{ hashFiles('tools/xdr-generator/Gemfile.lock') }}
+
+      - name: Install generator gems
+        # The name table is derived from the .x sources through the generator's own parser,
+        # so it needs the same bundle the generator uses.
+        working-directory: tools/xdr-generator
+        run: |
+          bundle config set --local path vendor/bundle
+          bundle install --quiet
+
+      - name: Check the name table against the .x sources
+        # Answers "does name-map.json still describe the committed .x?". The other half,
+        # "are those names what the reference emits?", needs the pinned CLI and runs weekly.
+        run: ruby tools/sep-51-oracle/name_map.rb --offline-check
+
+      - name: Check the emitted names against the name table
+        # The guard against a generator-renamed constant reaching the wire. Stellar-overlay.x
+        # declares IPv4, the generated Swift case is pv4, and the SEP-0051 string is i_pv4;
+        # emitting pv4 would round-trip against itself and no round-trip test would see it.
+        run: ruby tools/sep-51-oracle/emitted_names.rb
+
+      - name: Validate the conformance corpus
+        # Seed shape, seed-to-entry agreement, the pins the corpus records, and every
+        # completeness assertion. The recorded JSON and base64 come from the reference and
+        # are checked weekly.
+        run: python3 tools/sep-51-corpus/generate_corpus.py --validate-committed
+
+      - name: Check the recorded specification revision
+        # oracle-pin.json is the single recorded revision; the user documentation and the
+        # agent skill quote it. A quote left behind after a pin bump is a documentation
+        # error that nothing else would report.
+        run: |
+          VERSION=$(jq -r '.sep_spec.version' tools/sep-51-oracle/oracle-pin.json)
+          if [ -z "$VERSION" ] || [ "$VERSION" = "null" ]; then
+            echo "No sep_spec.version recorded in tools/sep-51-oracle/oracle-pin.json"
+            exit 1
+          fi
+          status=0
+          for file in docs/sep/sep-51.md skills/stellar-ios-mac-sdk/references/sep-51.md; do
+            if ! grep -qF "v$VERSION" "$file"; then
+              echo "$file does not quote the recorded specification revision v$VERSION"
+              status=1
+            fi
+          done
+          if [ "$status" -ne 0 ]; then
+            echo ""
+            echo "Update the quoted revision, or oracle-pin.json's sep_spec, so the two agree."
+            exit 1
+          fi
+          echo "Documentation and skill both quote SEP-0051 v$VERSION."

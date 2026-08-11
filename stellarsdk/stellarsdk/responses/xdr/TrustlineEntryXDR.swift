@@ -47,3 +47,34 @@ public struct TrustlineEntryXDR: XDRCodable, Sendable {
     try container.encode(reserved)
   }
 }
+
+extension TrustlineEntryXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "account_id", value: try AccountIDXDRJsonCodec.toXdrJsonValue(self.accountID, type: "TrustlineEntryXDR", key: "account_id")))
+    members.append(XdrJsonMember(key: "asset", value: try self.asset.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "balance", value: try Int64XDRJsonCodec.toXdrJsonValue(self.balance, type: "TrustlineEntryXDR", key: "balance")))
+    members.append(XdrJsonMember(key: "limit", value: try Int64XDRJsonCodec.toXdrJsonValue(self.limit, type: "TrustlineEntryXDR", key: "limit")))
+    members.append(XdrJsonMember(key: "flags", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.flags, type: "TrustlineEntryXDR", key: "flags")))
+    members.append(XdrJsonMember(key: "ext", value: try self.reserved.toXdrJsonValue()))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> TrustlineEntryXDR {
+    let members = try XdrJson.object(value, type: "TrustlineEntryXDR", keys: ["account_id", "asset", "balance", "limit", "flags", "ext"])
+    let accountID: PublicKey = try AccountIDXDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "account_id", type: "TrustlineEntryXDR"), type: "TrustlineEntryXDR", key: "account_id")
+    let asset: TrustlineAssetXDR = try TrustlineAssetXDR.fromXdrJsonValue(try XdrJson.field(members, key: "asset", type: "TrustlineEntryXDR"))
+    let balance: Int64 = try Int64XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "balance", type: "TrustlineEntryXDR"), type: "TrustlineEntryXDR", key: "balance")
+    let limit: Int64 = try Int64XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "limit", type: "TrustlineEntryXDR"), type: "TrustlineEntryXDR", key: "limit")
+    let flags: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "flags", type: "TrustlineEntryXDR"), type: "TrustlineEntryXDR", key: "flags")
+    let reserved: TrustlineEntryExtXDR = try TrustlineEntryExtXDR.fromXdrJsonValue(try XdrJson.field(members, key: "ext", type: "TrustlineEntryXDR"))
+    return TrustlineEntryXDR(
+      accountID: accountID,
+      asset: asset,
+      balance: balance,
+      limit: limit,
+      flags: flags,
+      reserved: reserved
+    )
+  }
+}

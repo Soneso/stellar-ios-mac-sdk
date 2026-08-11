@@ -23,3 +23,21 @@ public struct FrozenLedgerKeysDeltaXDR: XDRCodable, Sendable {
     try container.encode(keysToUnfreeze)
   }
 }
+
+extension FrozenLedgerKeysDeltaXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "keys_to_freeze", value: try XdrJson.array(self.keysToFreeze.map { element in try EncodedLedgerKeyXDRJsonCodec.toXdrJsonValue(element, type: "FrozenLedgerKeysDeltaXDR", key: "keys_to_freeze") })))
+    members.append(XdrJsonMember(key: "keys_to_unfreeze", value: try XdrJson.array(self.keysToUnfreeze.map { element in try EncodedLedgerKeyXDRJsonCodec.toXdrJsonValue(element, type: "FrozenLedgerKeysDeltaXDR", key: "keys_to_unfreeze") })))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> FrozenLedgerKeysDeltaXDR {
+    let members = try XdrJson.object(value, type: "FrozenLedgerKeysDeltaXDR", keys: ["keys_to_freeze", "keys_to_unfreeze"])
+    let keysToFreezeElements = try XdrJson.array(try XdrJson.field(members, key: "keys_to_freeze", type: "FrozenLedgerKeysDeltaXDR"), type: "FrozenLedgerKeysDeltaXDR", key: "keys_to_freeze")
+    let keysToFreeze: [EncodedLedgerKeyXDR] = try keysToFreezeElements.map { element in try EncodedLedgerKeyXDRJsonCodec.fromXdrJsonValue(element, type: "FrozenLedgerKeysDeltaXDR", key: "keys_to_freeze") }
+    let keysToUnfreezeElements = try XdrJson.array(try XdrJson.field(members, key: "keys_to_unfreeze", type: "FrozenLedgerKeysDeltaXDR"), type: "FrozenLedgerKeysDeltaXDR", key: "keys_to_unfreeze")
+    let keysToUnfreeze: [EncodedLedgerKeyXDR] = try keysToUnfreezeElements.map { element in try EncodedLedgerKeyXDRJsonCodec.fromXdrJsonValue(element, type: "FrozenLedgerKeysDeltaXDR", key: "keys_to_unfreeze") }
+    return FrozenLedgerKeysDeltaXDR(keysToFreeze: keysToFreeze, keysToUnfreeze: keysToUnfreeze)
+  }
+}

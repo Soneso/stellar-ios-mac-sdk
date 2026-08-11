@@ -4,3 +4,35 @@
 import Foundation
 
 public typealias SCStringXDR = String
+
+public enum SCStringXDRJsonCodec {
+  public static func toXdrJsonValue(_ value: SCStringXDR) throws -> XdrJsonValue {
+    try toXdrJsonValue(value, type: "SCStringXDR", key: nil)
+  }
+
+  static func toXdrJsonValue(_ value: SCStringXDR, type: String, key: String?) throws -> XdrJsonValue {
+    return XdrJson.escapedString(value)
+  }
+
+  public static func toXdrJson(_ value: SCStringXDR) throws -> String {
+    try XdrJsonWriter.canonicalString(from: try toXdrJsonValue(value))
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> SCStringXDR {
+    try fromXdrJsonValue(value, type: "SCStringXDR", key: nil)
+  }
+
+  static func fromXdrJsonValue(_ value: XdrJsonValue, type: String, key: String?) throws -> SCStringXDR {
+    let decoded: String = try XdrJson.unescapedText(value, type: type, key: key)
+    return decoded
+  }
+
+  public static func fromXdrJson(_ json: String) throws -> SCStringXDR {
+    try fromXdrJsonValue(try XdrJsonParser.parse(json))
+  }
+
+  public static func fromXdrJsonTree(_ value: XdrJsonValue) throws -> SCStringXDR {
+    try XdrJson.validateDepth(value)
+    return try fromXdrJsonValue(value)
+  }
+}

@@ -95,3 +95,55 @@ extension SorobanCredentialsXDR {
     }
   }
 }
+
+extension SorobanCredentialsXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .sourceAccount: return .string("source_account")
+    case .address(let payload):
+      return .object([XdrJsonMember(key: "address", value: try payload.toXdrJsonValue())])
+    case .addressV2(let payload):
+      return .object([XdrJsonMember(key: "address_v2", value: try payload.toXdrJsonValue())])
+    case .addressWithDelegates(let payload):
+      return .object([XdrJsonMember(key: "address_with_delegates", value: try payload.toXdrJsonValue())])
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> SorobanCredentialsXDR {
+    if case .string(let name) = value {
+      switch name {
+      case "source_account":
+        return .sourceAccount
+      case "address":
+        throw XdrJsonError.invalidValue(type: "SorobanCredentialsXDR", key: "address",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "address_v2":
+        throw XdrJsonError.invalidValue(type: "SorobanCredentialsXDR", key: "address_v2",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "address_with_delegates":
+        throw XdrJsonError.invalidValue(type: "SorobanCredentialsXDR", key: "address_with_delegates",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      default:
+        throw XdrJsonError.unknownUnionArm(type: "SorobanCredentialsXDR", key: name)
+      }
+    }
+
+    let member = try XdrJson.singleKeyObject(value, type: "SorobanCredentialsXDR")
+    switch member.key {
+    case "source_account":
+      throw XdrJsonError.invalidValue(type: "SorobanCredentialsXDR", key: "source_account",
+                                      message: "this arm carries no value, so it is written as a bare string")
+    case "address":
+      let address: SorobanAddressCredentialsXDR = try SorobanAddressCredentialsXDR.fromXdrJsonValue(member.value)
+      return .address(address)
+    case "address_v2":
+      let addressV2: SorobanAddressCredentialsXDR = try SorobanAddressCredentialsXDR.fromXdrJsonValue(member.value)
+      return .addressV2(addressV2)
+    case "address_with_delegates":
+      let addressWithDelegates: SorobanAddressCredentialsWithDelegatesXDR = try SorobanAddressCredentialsWithDelegatesXDR.fromXdrJsonValue(member.value)
+      return .addressWithDelegates(addressWithDelegates)
+    default:
+      throw XdrJsonError.unknownUnionArm(type: "SorobanCredentialsXDR", key: member.key)
+    }
+  }
+}

@@ -446,3 +446,357 @@ extension OperationBodyXDR {
     }
   }
 }
+
+extension OperationBodyXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .createAccountOp(let payload):
+      return .object([XdrJsonMember(key: "create_account", value: try payload.toXdrJsonValue())])
+    case .paymentOp(let payload):
+      return .object([XdrJsonMember(key: "payment", value: try payload.toXdrJsonValue())])
+    case .pathPaymentStrictReceiveOp(let payload):
+      return .object([XdrJsonMember(key: "path_payment_strict_receive", value: try Self.pathPaymentStrictReceiveOpToXdrJsonValue(payload))])
+    case .manageSellOfferOp(let payload):
+      return .object([XdrJsonMember(key: "manage_sell_offer", value: try Self.manageSellOfferOpToXdrJsonValue(payload))])
+    case .createPassiveSellOfferOp(let payload):
+      return .object([XdrJsonMember(key: "create_passive_sell_offer", value: try payload.toXdrJsonValue())])
+    case .setOptionsOp(let payload):
+      return .object([XdrJsonMember(key: "set_options", value: try payload.toXdrJsonValue())])
+    case .changeTrustOp(let payload):
+      return .object([XdrJsonMember(key: "change_trust", value: try payload.toXdrJsonValue())])
+    case .allowTrustOp(let payload):
+      return .object([XdrJsonMember(key: "allow_trust", value: try payload.toXdrJsonValue())])
+    case .accountMerge(let payload):
+      return .object([XdrJsonMember(key: "account_merge", value: try payload.toXdrJsonValue())])
+    case .inflation: return .string("inflation")
+    case .manageDataOp(let payload):
+      return .object([XdrJsonMember(key: "manage_data", value: try payload.toXdrJsonValue())])
+    case .bumpSequenceOp(let payload):
+      return .object([XdrJsonMember(key: "bump_sequence", value: try payload.toXdrJsonValue())])
+    case .manageBuyOfferOp(let payload):
+      return .object([XdrJsonMember(key: "manage_buy_offer", value: try Self.manageBuyOfferOpToXdrJsonValue(payload))])
+    case .pathPaymentStrictSendOp(let payload):
+      return .object([XdrJsonMember(key: "path_payment_strict_send", value: try Self.pathPaymentStrictSendOpToXdrJsonValue(payload))])
+    case .createClaimableBalanceOp(let payload):
+      return .object([XdrJsonMember(key: "create_claimable_balance", value: try payload.toXdrJsonValue())])
+    case .claimClaimableBalanceOp(let payload):
+      return .object([XdrJsonMember(key: "claim_claimable_balance", value: try payload.toXdrJsonValue())])
+    case .beginSponsoringFutureReservesOp(let payload):
+      return .object([XdrJsonMember(key: "begin_sponsoring_future_reserves", value: try payload.toXdrJsonValue())])
+    case .endSponsoringFutureReserves: return .string("end_sponsoring_future_reserves")
+    case .revokeSponsorshipOp(let payload):
+      return .object([XdrJsonMember(key: "revoke_sponsorship", value: try payload.toXdrJsonValue())])
+    case .clawbackOp(let payload):
+      return .object([XdrJsonMember(key: "clawback", value: try payload.toXdrJsonValue())])
+    case .clawbackClaimableBalanceOp(let payload):
+      return .object([XdrJsonMember(key: "clawback_claimable_balance", value: try payload.toXdrJsonValue())])
+    case .setTrustLineFlagsOp(let payload):
+      return .object([XdrJsonMember(key: "set_trust_line_flags", value: try payload.toXdrJsonValue())])
+    case .liquidityPoolDepositOp(let payload):
+      return .object([XdrJsonMember(key: "liquidity_pool_deposit", value: try payload.toXdrJsonValue())])
+    case .liquidityPoolWithdrawOp(let payload):
+      return .object([XdrJsonMember(key: "liquidity_pool_withdraw", value: try payload.toXdrJsonValue())])
+    case .invokeHostFunctionOp(let payload):
+      return .object([XdrJsonMember(key: "invoke_host_function", value: try payload.toXdrJsonValue())])
+    case .extendFootprintTTLOp(let payload):
+      return .object([XdrJsonMember(key: "extend_footprint_ttl", value: try payload.toXdrJsonValue())])
+    case .restoreFootprintOp(let payload):
+      return .object([XdrJsonMember(key: "restore_footprint", value: try payload.toXdrJsonValue())])
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> OperationBodyXDR {
+    if case .string(let name) = value {
+      switch name {
+      case "create_account":
+        throw XdrJsonError.invalidValue(type: "OperationBodyXDR", key: "create_account",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "payment":
+        throw XdrJsonError.invalidValue(type: "OperationBodyXDR", key: "payment",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "path_payment_strict_receive":
+        throw XdrJsonError.invalidValue(type: "OperationBodyXDR", key: "path_payment_strict_receive",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "manage_sell_offer":
+        throw XdrJsonError.invalidValue(type: "OperationBodyXDR", key: "manage_sell_offer",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "create_passive_sell_offer":
+        throw XdrJsonError.invalidValue(type: "OperationBodyXDR", key: "create_passive_sell_offer",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "set_options":
+        throw XdrJsonError.invalidValue(type: "OperationBodyXDR", key: "set_options",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "change_trust":
+        throw XdrJsonError.invalidValue(type: "OperationBodyXDR", key: "change_trust",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "allow_trust":
+        throw XdrJsonError.invalidValue(type: "OperationBodyXDR", key: "allow_trust",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "account_merge":
+        throw XdrJsonError.invalidValue(type: "OperationBodyXDR", key: "account_merge",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "inflation":
+        return .inflation
+      case "manage_data":
+        throw XdrJsonError.invalidValue(type: "OperationBodyXDR", key: "manage_data",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "bump_sequence":
+        throw XdrJsonError.invalidValue(type: "OperationBodyXDR", key: "bump_sequence",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "manage_buy_offer":
+        throw XdrJsonError.invalidValue(type: "OperationBodyXDR", key: "manage_buy_offer",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "path_payment_strict_send":
+        throw XdrJsonError.invalidValue(type: "OperationBodyXDR", key: "path_payment_strict_send",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "create_claimable_balance":
+        throw XdrJsonError.invalidValue(type: "OperationBodyXDR", key: "create_claimable_balance",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "claim_claimable_balance":
+        throw XdrJsonError.invalidValue(type: "OperationBodyXDR", key: "claim_claimable_balance",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "begin_sponsoring_future_reserves":
+        throw XdrJsonError.invalidValue(type: "OperationBodyXDR", key: "begin_sponsoring_future_reserves",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "end_sponsoring_future_reserves":
+        return .endSponsoringFutureReserves
+      case "revoke_sponsorship":
+        throw XdrJsonError.invalidValue(type: "OperationBodyXDR", key: "revoke_sponsorship",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "clawback":
+        throw XdrJsonError.invalidValue(type: "OperationBodyXDR", key: "clawback",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "clawback_claimable_balance":
+        throw XdrJsonError.invalidValue(type: "OperationBodyXDR", key: "clawback_claimable_balance",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "set_trust_line_flags":
+        throw XdrJsonError.invalidValue(type: "OperationBodyXDR", key: "set_trust_line_flags",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "liquidity_pool_deposit":
+        throw XdrJsonError.invalidValue(type: "OperationBodyXDR", key: "liquidity_pool_deposit",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "liquidity_pool_withdraw":
+        throw XdrJsonError.invalidValue(type: "OperationBodyXDR", key: "liquidity_pool_withdraw",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "invoke_host_function":
+        throw XdrJsonError.invalidValue(type: "OperationBodyXDR", key: "invoke_host_function",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "extend_footprint_ttl":
+        throw XdrJsonError.invalidValue(type: "OperationBodyXDR", key: "extend_footprint_ttl",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "restore_footprint":
+        throw XdrJsonError.invalidValue(type: "OperationBodyXDR", key: "restore_footprint",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      default:
+        throw XdrJsonError.unknownUnionArm(type: "OperationBodyXDR", key: name)
+      }
+    }
+
+    let member = try XdrJson.singleKeyObject(value, type: "OperationBodyXDR")
+    switch member.key {
+    case "create_account":
+      let createAccountOp: CreateAccountOperationXDR = try CreateAccountOperationXDR.fromXdrJsonValue(member.value)
+      return .createAccountOp(createAccountOp)
+    case "payment":
+      let paymentOp: PaymentOperationXDR = try PaymentOperationXDR.fromXdrJsonValue(member.value)
+      return .paymentOp(paymentOp)
+    case "path_payment_strict_receive":
+      let pathPaymentStrictReceiveOp: PathPaymentOperationXDR = try Self.pathPaymentStrictReceiveOpFromXdrJsonValue(member.value)
+      return .pathPaymentStrictReceiveOp(pathPaymentStrictReceiveOp)
+    case "manage_sell_offer":
+      let manageSellOfferOp: ManageOfferOperationXDR = try Self.manageSellOfferOpFromXdrJsonValue(member.value)
+      return .manageSellOfferOp(manageSellOfferOp)
+    case "create_passive_sell_offer":
+      let createPassiveSellOfferOp: CreatePassiveOfferOperationXDR = try CreatePassiveOfferOperationXDR.fromXdrJsonValue(member.value)
+      return .createPassiveSellOfferOp(createPassiveSellOfferOp)
+    case "set_options":
+      let setOptionsOp: SetOptionsOperationXDR = try SetOptionsOperationXDR.fromXdrJsonValue(member.value)
+      return .setOptionsOp(setOptionsOp)
+    case "change_trust":
+      let changeTrustOp: ChangeTrustOperationXDR = try ChangeTrustOperationXDR.fromXdrJsonValue(member.value)
+      return .changeTrustOp(changeTrustOp)
+    case "allow_trust":
+      let allowTrustOp: AllowTrustOperationXDR = try AllowTrustOperationXDR.fromXdrJsonValue(member.value)
+      return .allowTrustOp(allowTrustOp)
+    case "account_merge":
+      let accountMerge: MuxedAccountXDR = try MuxedAccountXDR.fromXdrJsonValue(member.value)
+      return .accountMerge(accountMerge)
+    case "inflation":
+      throw XdrJsonError.invalidValue(type: "OperationBodyXDR", key: "inflation",
+                                      message: "this arm carries no value, so it is written as a bare string")
+    case "manage_data":
+      let manageDataOp: ManageDataOperationXDR = try ManageDataOperationXDR.fromXdrJsonValue(member.value)
+      return .manageDataOp(manageDataOp)
+    case "bump_sequence":
+      let bumpSequenceOp: BumpSequenceOperationXDR = try BumpSequenceOperationXDR.fromXdrJsonValue(member.value)
+      return .bumpSequenceOp(bumpSequenceOp)
+    case "manage_buy_offer":
+      let manageBuyOfferOp: ManageOfferOperationXDR = try Self.manageBuyOfferOpFromXdrJsonValue(member.value)
+      return .manageBuyOfferOp(manageBuyOfferOp)
+    case "path_payment_strict_send":
+      let pathPaymentStrictSendOp: PathPaymentOperationXDR = try Self.pathPaymentStrictSendOpFromXdrJsonValue(member.value)
+      return .pathPaymentStrictSendOp(pathPaymentStrictSendOp)
+    case "create_claimable_balance":
+      let createClaimableBalanceOp: CreateClaimableBalanceOpXDR = try CreateClaimableBalanceOpXDR.fromXdrJsonValue(member.value)
+      return .createClaimableBalanceOp(createClaimableBalanceOp)
+    case "claim_claimable_balance":
+      let claimClaimableBalanceOp: ClaimClaimableBalanceOpXDR = try ClaimClaimableBalanceOpXDR.fromXdrJsonValue(member.value)
+      return .claimClaimableBalanceOp(claimClaimableBalanceOp)
+    case "begin_sponsoring_future_reserves":
+      let beginSponsoringFutureReservesOp: BeginSponsoringFutureReservesOpXDR = try BeginSponsoringFutureReservesOpXDR.fromXdrJsonValue(member.value)
+      return .beginSponsoringFutureReservesOp(beginSponsoringFutureReservesOp)
+    case "end_sponsoring_future_reserves":
+      throw XdrJsonError.invalidValue(type: "OperationBodyXDR", key: "end_sponsoring_future_reserves",
+                                      message: "this arm carries no value, so it is written as a bare string")
+    case "revoke_sponsorship":
+      let revokeSponsorshipOp: RevokeSponsorshipOpXDR = try RevokeSponsorshipOpXDR.fromXdrJsonValue(member.value)
+      return .revokeSponsorshipOp(revokeSponsorshipOp)
+    case "clawback":
+      let clawbackOp: ClawbackOpXDR = try ClawbackOpXDR.fromXdrJsonValue(member.value)
+      return .clawbackOp(clawbackOp)
+    case "clawback_claimable_balance":
+      let clawbackClaimableBalanceOp: ClawbackClaimableBalanceOpXDR = try ClawbackClaimableBalanceOpXDR.fromXdrJsonValue(member.value)
+      return .clawbackClaimableBalanceOp(clawbackClaimableBalanceOp)
+    case "set_trust_line_flags":
+      let setTrustLineFlagsOp: SetTrustLineFlagsOpXDR = try SetTrustLineFlagsOpXDR.fromXdrJsonValue(member.value)
+      return .setTrustLineFlagsOp(setTrustLineFlagsOp)
+    case "liquidity_pool_deposit":
+      let liquidityPoolDepositOp: LiquidityPoolDepositOpXDR = try LiquidityPoolDepositOpXDR.fromXdrJsonValue(member.value)
+      return .liquidityPoolDepositOp(liquidityPoolDepositOp)
+    case "liquidity_pool_withdraw":
+      let liquidityPoolWithdrawOp: LiquidityPoolWithdrawOpXDR = try LiquidityPoolWithdrawOpXDR.fromXdrJsonValue(member.value)
+      return .liquidityPoolWithdrawOp(liquidityPoolWithdrawOp)
+    case "invoke_host_function":
+      let invokeHostFunctionOp: InvokeHostFunctionOpXDR = try InvokeHostFunctionOpXDR.fromXdrJsonValue(member.value)
+      return .invokeHostFunctionOp(invokeHostFunctionOp)
+    case "extend_footprint_ttl":
+      let extendFootprintTTLOp: ExtendFootprintTTLOpXDR = try ExtendFootprintTTLOpXDR.fromXdrJsonValue(member.value)
+      return .extendFootprintTTLOp(extendFootprintTTLOp)
+    case "restore_footprint":
+      let restoreFootprintOp: RestoreFootprintOpXDR = try RestoreFootprintOpXDR.fromXdrJsonValue(member.value)
+      return .restoreFootprintOp(restoreFootprintOp)
+    default:
+      throw XdrJsonError.unknownUnionArm(type: "OperationBodyXDR", key: member.key)
+    }
+  }
+
+  // MARK: - PathPaymentStrictReceiveOp
+
+  private static func pathPaymentStrictReceiveOpToXdrJsonValue(_ value: PathPaymentOperationXDR) throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "send_asset", value: try value.sendAsset.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "send_max", value: try Int64XDRJsonCodec.toXdrJsonValue(value.sendMax, type: "PathPaymentStrictReceiveOp", key: "send_max")))
+    members.append(XdrJsonMember(key: "destination", value: try value.destination.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "dest_asset", value: try value.destinationAsset.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "dest_amount", value: try Int64XDRJsonCodec.toXdrJsonValue(value.destinationAmount, type: "PathPaymentStrictReceiveOp", key: "dest_amount")))
+    members.append(XdrJsonMember(key: "path", value: try XdrJson.array(value.path.map { element in try element.toXdrJsonValue() })))
+    return .object(members)
+  }
+
+  private static func pathPaymentStrictReceiveOpFromXdrJsonValue(_ value: XdrJsonValue) throws -> PathPaymentOperationXDR {
+    let members = try XdrJson.object(value, type: "PathPaymentStrictReceiveOp", keys: ["send_asset", "send_max", "destination", "dest_asset", "dest_amount", "path"])
+    let sendAsset: AssetXDR = try AssetXDR.fromXdrJsonValue(try XdrJson.field(members, key: "send_asset", type: "PathPaymentStrictReceiveOp"))
+    let sendMax: Int64 = try Int64XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "send_max", type: "PathPaymentStrictReceiveOp"), type: "PathPaymentStrictReceiveOp", key: "send_max")
+    let destination: MuxedAccountXDR = try MuxedAccountXDR.fromXdrJsonValue(try XdrJson.field(members, key: "destination", type: "PathPaymentStrictReceiveOp"))
+    let destinationAsset: AssetXDR = try AssetXDR.fromXdrJsonValue(try XdrJson.field(members, key: "dest_asset", type: "PathPaymentStrictReceiveOp"))
+    let destinationAmount: Int64 = try Int64XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "dest_amount", type: "PathPaymentStrictReceiveOp"), type: "PathPaymentStrictReceiveOp", key: "dest_amount")
+    let pathElements = try XdrJson.array(try XdrJson.field(members, key: "path", type: "PathPaymentStrictReceiveOp"), type: "PathPaymentStrictReceiveOp", key: "path")
+    let path: [AssetXDR] = try pathElements.map { element in try AssetXDR.fromXdrJsonValue(element) }
+    return PathPaymentOperationXDR(
+      sendAsset: sendAsset,
+      sendMax: sendMax,
+      destination: destination,
+      destinationAsset: destinationAsset,
+      destinationAmount: destinationAmount,
+      path: path
+    )
+  }
+
+  // MARK: - ManageSellOfferOp
+
+  private static func manageSellOfferOpToXdrJsonValue(_ value: ManageOfferOperationXDR) throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "selling", value: try value.selling.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "buying", value: try value.buying.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "amount", value: try Int64XDRJsonCodec.toXdrJsonValue(value.amount, type: "ManageSellOfferOp", key: "amount")))
+    members.append(XdrJsonMember(key: "price", value: try value.price.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "offer_id", value: try Int64XDRJsonCodec.toXdrJsonValue(value.offerID, type: "ManageSellOfferOp", key: "offer_id")))
+    return .object(members)
+  }
+
+  private static func manageSellOfferOpFromXdrJsonValue(_ value: XdrJsonValue) throws -> ManageOfferOperationXDR {
+    let members = try XdrJson.object(value, type: "ManageSellOfferOp", keys: ["selling", "buying", "amount", "price", "offer_id"])
+    let selling: AssetXDR = try AssetXDR.fromXdrJsonValue(try XdrJson.field(members, key: "selling", type: "ManageSellOfferOp"))
+    let buying: AssetXDR = try AssetXDR.fromXdrJsonValue(try XdrJson.field(members, key: "buying", type: "ManageSellOfferOp"))
+    let amount: Int64 = try Int64XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "amount", type: "ManageSellOfferOp"), type: "ManageSellOfferOp", key: "amount")
+    let price: PriceXDR = try PriceXDR.fromXdrJsonValue(try XdrJson.field(members, key: "price", type: "ManageSellOfferOp"))
+    let offerID: Int64 = try Int64XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "offer_id", type: "ManageSellOfferOp"), type: "ManageSellOfferOp", key: "offer_id")
+    return ManageOfferOperationXDR(
+      selling: selling,
+      buying: buying,
+      amount: amount,
+      price: price,
+      offerID: offerID
+    )
+  }
+
+  // MARK: - ManageBuyOfferOp
+
+  private static func manageBuyOfferOpToXdrJsonValue(_ value: ManageOfferOperationXDR) throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "selling", value: try value.selling.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "buying", value: try value.buying.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "buy_amount", value: try Int64XDRJsonCodec.toXdrJsonValue(value.amount, type: "ManageBuyOfferOp", key: "buy_amount")))
+    members.append(XdrJsonMember(key: "price", value: try value.price.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "offer_id", value: try Int64XDRJsonCodec.toXdrJsonValue(value.offerID, type: "ManageBuyOfferOp", key: "offer_id")))
+    return .object(members)
+  }
+
+  private static func manageBuyOfferOpFromXdrJsonValue(_ value: XdrJsonValue) throws -> ManageOfferOperationXDR {
+    let members = try XdrJson.object(value, type: "ManageBuyOfferOp", keys: ["selling", "buying", "buy_amount", "price", "offer_id"])
+    let selling: AssetXDR = try AssetXDR.fromXdrJsonValue(try XdrJson.field(members, key: "selling", type: "ManageBuyOfferOp"))
+    let buying: AssetXDR = try AssetXDR.fromXdrJsonValue(try XdrJson.field(members, key: "buying", type: "ManageBuyOfferOp"))
+    let amount: Int64 = try Int64XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "buy_amount", type: "ManageBuyOfferOp"), type: "ManageBuyOfferOp", key: "buy_amount")
+    let price: PriceXDR = try PriceXDR.fromXdrJsonValue(try XdrJson.field(members, key: "price", type: "ManageBuyOfferOp"))
+    let offerID: Int64 = try Int64XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "offer_id", type: "ManageBuyOfferOp"), type: "ManageBuyOfferOp", key: "offer_id")
+    return ManageOfferOperationXDR(
+      selling: selling,
+      buying: buying,
+      amount: amount,
+      price: price,
+      offerID: offerID
+    )
+  }
+
+  // MARK: - PathPaymentStrictSendOp
+
+  private static func pathPaymentStrictSendOpToXdrJsonValue(_ value: PathPaymentOperationXDR) throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "send_asset", value: try value.sendAsset.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "send_amount", value: try Int64XDRJsonCodec.toXdrJsonValue(value.sendMax, type: "PathPaymentStrictSendOp", key: "send_amount")))
+    members.append(XdrJsonMember(key: "destination", value: try value.destination.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "dest_asset", value: try value.destinationAsset.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "dest_min", value: try Int64XDRJsonCodec.toXdrJsonValue(value.destinationAmount, type: "PathPaymentStrictSendOp", key: "dest_min")))
+    members.append(XdrJsonMember(key: "path", value: try XdrJson.array(value.path.map { element in try element.toXdrJsonValue() })))
+    return .object(members)
+  }
+
+  private static func pathPaymentStrictSendOpFromXdrJsonValue(_ value: XdrJsonValue) throws -> PathPaymentOperationXDR {
+    let members = try XdrJson.object(value, type: "PathPaymentStrictSendOp", keys: ["send_asset", "send_amount", "destination", "dest_asset", "dest_min", "path"])
+    let sendAsset: AssetXDR = try AssetXDR.fromXdrJsonValue(try XdrJson.field(members, key: "send_asset", type: "PathPaymentStrictSendOp"))
+    let sendMax: Int64 = try Int64XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "send_amount", type: "PathPaymentStrictSendOp"), type: "PathPaymentStrictSendOp", key: "send_amount")
+    let destination: MuxedAccountXDR = try MuxedAccountXDR.fromXdrJsonValue(try XdrJson.field(members, key: "destination", type: "PathPaymentStrictSendOp"))
+    let destinationAsset: AssetXDR = try AssetXDR.fromXdrJsonValue(try XdrJson.field(members, key: "dest_asset", type: "PathPaymentStrictSendOp"))
+    let destinationAmount: Int64 = try Int64XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "dest_min", type: "PathPaymentStrictSendOp"), type: "PathPaymentStrictSendOp", key: "dest_min")
+    let pathElements = try XdrJson.array(try XdrJson.field(members, key: "path", type: "PathPaymentStrictSendOp"), type: "PathPaymentStrictSendOp", key: "path")
+    let path: [AssetXDR] = try pathElements.map { element in try AssetXDR.fromXdrJsonValue(element) }
+    return PathPaymentOperationXDR(
+      sendAsset: sendAsset,
+      sendMax: sendMax,
+      destination: destination,
+      destinationAsset: destinationAsset,
+      destinationAmount: destinationAmount,
+      path: path
+    )
+  }
+}

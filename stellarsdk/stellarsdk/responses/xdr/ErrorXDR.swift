@@ -24,3 +24,19 @@ public struct ErrorXDR: XDRCodable, Sendable {
     try container.encode(msg)
   }
 }
+
+extension ErrorXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "code", value: try self.code.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "msg", value: XdrJson.escapedString(self.msg)))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> ErrorXDR {
+    let members = try XdrJson.object(value, type: "ErrorXDR", keys: ["code", "msg"])
+    let code: ErrorCodeXDR = try ErrorCodeXDR.fromXdrJsonValue(try XdrJson.field(members, key: "code", type: "ErrorXDR"))
+    let msg: String = try XdrJson.unescapedText(try XdrJson.field(members, key: "msg", type: "ErrorXDR"), type: "ErrorXDR", key: "msg")
+    return ErrorXDR(code: code, msg: msg)
+  }
+}

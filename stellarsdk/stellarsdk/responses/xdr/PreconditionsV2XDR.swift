@@ -136,3 +136,53 @@ extension PreconditionsV2XDR {
     return PreconditionsV2XDR(timeBounds: timeBounds, ledgerBounds: ledgerBounds, sequenceNumber: sequenceNumber, minSeqAge: minSeqAge, minSeqLedgerGap: minSeqLedgerGap, extraSigners: extraSigners)
   }
 }
+
+extension PreconditionsV2XDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "time_bounds", value: try XdrJson.optional(self.timeBounds.map { element in try element.toXdrJsonValue() })))
+    members.append(XdrJsonMember(key: "ledger_bounds", value: try XdrJson.optional(self.ledgerBounds.map { element in try element.toXdrJsonValue() })))
+    members.append(XdrJsonMember(key: "min_seq_num", value: try XdrJson.optional(self.sequenceNumber.map { element in try SequenceNumberXDRJsonCodec.toXdrJsonValue(element, type: "PreconditionsV2XDR", key: "min_seq_num") })))
+    members.append(XdrJsonMember(key: "min_seq_age", value: try DurationXDRJsonCodec.toXdrJsonValue(self.minSeqAge, type: "PreconditionsV2XDR", key: "min_seq_age")))
+    members.append(XdrJsonMember(key: "min_seq_ledger_gap", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.minSeqLedgerGap, type: "PreconditionsV2XDR", key: "min_seq_ledger_gap")))
+    members.append(XdrJsonMember(key: "extra_signers", value: try XdrJson.array(self.extraSigners.map { element in try element.toXdrJsonValue() })))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> PreconditionsV2XDR {
+    let members = try XdrJson.object(value, type: "PreconditionsV2XDR", keys: ["time_bounds", "ledger_bounds", "min_seq_num", "min_seq_age", "min_seq_ledger_gap", "extra_signers"])
+    let timeBoundsValue = try XdrJson.field(members, key: "time_bounds", type: "PreconditionsV2XDR")
+    let timeBounds: TimeBoundsXDR?
+    if timeBoundsValue.isNull {
+      timeBounds = nil
+    } else {
+      timeBounds = try TimeBoundsXDR.fromXdrJsonValue(timeBoundsValue)
+    }
+    let ledgerBoundsValue = try XdrJson.field(members, key: "ledger_bounds", type: "PreconditionsV2XDR")
+    let ledgerBounds: LedgerBoundsXDR?
+    if ledgerBoundsValue.isNull {
+      ledgerBounds = nil
+    } else {
+      ledgerBounds = try LedgerBoundsXDR.fromXdrJsonValue(ledgerBoundsValue)
+    }
+    let sequenceNumberValue = try XdrJson.field(members, key: "min_seq_num", type: "PreconditionsV2XDR")
+    let sequenceNumber: Int64?
+    if sequenceNumberValue.isNull {
+      sequenceNumber = nil
+    } else {
+      sequenceNumber = try SequenceNumberXDRJsonCodec.fromXdrJsonValue(sequenceNumberValue, type: "PreconditionsV2XDR", key: "min_seq_num")
+    }
+    let minSeqAge: UInt64 = try DurationXDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "min_seq_age", type: "PreconditionsV2XDR"), type: "PreconditionsV2XDR", key: "min_seq_age")
+    let minSeqLedgerGap: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "min_seq_ledger_gap", type: "PreconditionsV2XDR"), type: "PreconditionsV2XDR", key: "min_seq_ledger_gap")
+    let extraSignersElements = try XdrJson.array(try XdrJson.field(members, key: "extra_signers", type: "PreconditionsV2XDR"), type: "PreconditionsV2XDR", key: "extra_signers")
+    let extraSigners: [SignerKeyXDR] = try extraSignersElements.map { element in try SignerKeyXDR.fromXdrJsonValue(element) }
+    return PreconditionsV2XDR(
+      timeBounds: timeBounds,
+      ledgerBounds: ledgerBounds,
+      sequenceNumber: sequenceNumber,
+      minSeqAge: minSeqAge,
+      minSeqLedgerGap: minSeqLedgerGap,
+      extraSigners: extraSigners
+    )
+  }
+}

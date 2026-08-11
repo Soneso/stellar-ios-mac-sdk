@@ -42,3 +42,42 @@ public enum TransactionPhaseXDR: XDRCodable, Sendable {
     }
   }
 }
+
+extension TransactionPhaseXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .v0Components(let payload):
+      return .object([XdrJsonMember(key: "v0", value: try XdrJson.array(payload.map { element in try element.toXdrJsonValue() }))])
+    case .parallelTxsComponent(let payload):
+      return .object([XdrJsonMember(key: "v1", value: try payload.toXdrJsonValue())])
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> TransactionPhaseXDR {
+    if case .string(let name) = value {
+      switch name {
+      case "v0":
+        throw XdrJsonError.invalidValue(type: "TransactionPhaseXDR", key: "v0",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "v1":
+        throw XdrJsonError.invalidValue(type: "TransactionPhaseXDR", key: "v1",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      default:
+        throw XdrJsonError.unknownUnionArm(type: "TransactionPhaseXDR", key: name)
+      }
+    }
+
+    let member = try XdrJson.singleKeyObject(value, type: "TransactionPhaseXDR")
+    switch member.key {
+    case "v0":
+      let v0ComponentsElements = try XdrJson.array(member.value, type: "TransactionPhaseXDR", key: "v0")
+      let v0Components: [TxSetComponentXDR] = try v0ComponentsElements.map { element in try TxSetComponentXDR.fromXdrJsonValue(element) }
+      return .v0Components(v0Components)
+    case "v1":
+      let parallelTxsComponent: ParallelTxsComponentXDR = try ParallelTxsComponentXDR.fromXdrJsonValue(member.value)
+      return .parallelTxsComponent(parallelTxsComponent)
+    default:
+      throw XdrJsonError.unknownUnionArm(type: "TransactionPhaseXDR", key: member.key)
+    }
+  }
+}

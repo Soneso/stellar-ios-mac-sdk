@@ -31,3 +31,17 @@ extension BumpSequenceOperationXDR {
     return BumpSequenceOperationXDR(bumpTo: bumpTo)
   }
 }
+
+extension BumpSequenceOperationXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "bump_to", value: try SequenceNumberXDRJsonCodec.toXdrJsonValue(self.bumpTo, type: "BumpSequenceOperationXDR", key: "bump_to")))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> BumpSequenceOperationXDR {
+    let members = try XdrJson.object(value, type: "BumpSequenceOperationXDR", keys: ["bump_to"])
+    let bumpTo: Int64 = try SequenceNumberXDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "bump_to", type: "BumpSequenceOperationXDR"), type: "BumpSequenceOperationXDR", key: "bump_to")
+    return BumpSequenceOperationXDR(bumpTo: bumpTo)
+  }
+}

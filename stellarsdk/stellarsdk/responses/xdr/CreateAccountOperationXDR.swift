@@ -37,3 +37,19 @@ extension CreateAccountOperationXDR {
     return CreateAccountOperationXDR(destination: destination, balance: startingBalance)
   }
 }
+
+extension CreateAccountOperationXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "destination", value: try AccountIDXDRJsonCodec.toXdrJsonValue(self.destination, type: "CreateAccountOperationXDR", key: "destination")))
+    members.append(XdrJsonMember(key: "starting_balance", value: try Int64XDRJsonCodec.toXdrJsonValue(self.startingBalance, type: "CreateAccountOperationXDR", key: "starting_balance")))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> CreateAccountOperationXDR {
+    let members = try XdrJson.object(value, type: "CreateAccountOperationXDR", keys: ["destination", "starting_balance"])
+    let destination: PublicKey = try AccountIDXDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "destination", type: "CreateAccountOperationXDR"), type: "CreateAccountOperationXDR", key: "destination")
+    let startingBalance: Int64 = try Int64XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "starting_balance", type: "CreateAccountOperationXDR"), type: "CreateAccountOperationXDR", key: "starting_balance")
+    return CreateAccountOperationXDR(destination: destination, balance: startingBalance)
+  }
+}

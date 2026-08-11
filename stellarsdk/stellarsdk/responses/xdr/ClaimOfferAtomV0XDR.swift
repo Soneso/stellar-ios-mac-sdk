@@ -47,3 +47,34 @@ public struct ClaimOfferAtomV0XDR: XDRCodable, Sendable {
     try container.encode(amountBought)
   }
 }
+
+extension ClaimOfferAtomV0XDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "seller_ed25519", value: try Uint256XDRJsonCodec.toXdrJsonValue(self.sellerEd25519, type: "ClaimOfferAtomV0XDR", key: "seller_ed25519")))
+    members.append(XdrJsonMember(key: "offer_id", value: try Int64XDRJsonCodec.toXdrJsonValue(self.offerId, type: "ClaimOfferAtomV0XDR", key: "offer_id")))
+    members.append(XdrJsonMember(key: "asset_sold", value: try self.assetSold.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "amount_sold", value: try Int64XDRJsonCodec.toXdrJsonValue(self.amountSold, type: "ClaimOfferAtomV0XDR", key: "amount_sold")))
+    members.append(XdrJsonMember(key: "asset_bought", value: try self.assetBought.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "amount_bought", value: try Int64XDRJsonCodec.toXdrJsonValue(self.amountBought, type: "ClaimOfferAtomV0XDR", key: "amount_bought")))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> ClaimOfferAtomV0XDR {
+    let members = try XdrJson.object(value, type: "ClaimOfferAtomV0XDR", keys: ["seller_ed25519", "offer_id", "asset_sold", "amount_sold", "asset_bought", "amount_bought"])
+    let sellerEd25519: Uint256XDR = try Uint256XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "seller_ed25519", type: "ClaimOfferAtomV0XDR"), type: "ClaimOfferAtomV0XDR", key: "seller_ed25519")
+    let offerId: Int64 = try Int64XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "offer_id", type: "ClaimOfferAtomV0XDR"), type: "ClaimOfferAtomV0XDR", key: "offer_id")
+    let assetSold: AssetXDR = try AssetXDR.fromXdrJsonValue(try XdrJson.field(members, key: "asset_sold", type: "ClaimOfferAtomV0XDR"))
+    let amountSold: Int64 = try Int64XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "amount_sold", type: "ClaimOfferAtomV0XDR"), type: "ClaimOfferAtomV0XDR", key: "amount_sold")
+    let assetBought: AssetXDR = try AssetXDR.fromXdrJsonValue(try XdrJson.field(members, key: "asset_bought", type: "ClaimOfferAtomV0XDR"))
+    let amountBought: Int64 = try Int64XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "amount_bought", type: "ClaimOfferAtomV0XDR"), type: "ClaimOfferAtomV0XDR", key: "amount_bought")
+    return ClaimOfferAtomV0XDR(
+      sellerEd25519: sellerEd25519,
+      offerId: offerId,
+      assetSold: assetSold,
+      amountSold: amountSold,
+      assetBought: assetBought,
+      amountBought: amountBought
+    )
+  }
+}

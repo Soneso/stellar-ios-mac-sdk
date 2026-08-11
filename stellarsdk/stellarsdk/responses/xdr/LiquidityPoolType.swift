@@ -37,3 +37,20 @@ extension LiquidityPoolType {
     return try fromTxRepName(raw)
   }
 }
+
+extension LiquidityPoolType: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .constantProduct: return .string("liquidity_pool_constant_product")
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> LiquidityPoolType {
+    let name = try XdrJson.string(value, type: "LiquidityPoolType")
+    switch name {
+    case "liquidity_pool_constant_product": return .constantProduct
+    default:
+      throw XdrJsonError.unknownEnumValue(type: "LiquidityPoolType", value: name)
+    }
+  }
+}

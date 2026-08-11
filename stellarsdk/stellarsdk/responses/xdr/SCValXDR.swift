@@ -391,3 +391,221 @@ extension SCValXDR {
     }
   }
 }
+
+extension SCValXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .bool(let payload):
+      return .object([XdrJsonMember(key: "bool", value: XdrJson.bool(payload))])
+    case .void: return .string("void")
+    case .error(let payload):
+      return .object([XdrJsonMember(key: "error", value: try payload.toXdrJsonValue())])
+    case .u32(let payload):
+      return .object([XdrJsonMember(key: "u32", value: try Uint32XDRJsonCodec.toXdrJsonValue(payload, type: "SCValXDR", key: "u32"))])
+    case .i32(let payload):
+      return .object([XdrJsonMember(key: "i32", value: try Int32XDRJsonCodec.toXdrJsonValue(payload, type: "SCValXDR", key: "i32"))])
+    case .u64(let payload):
+      return .object([XdrJsonMember(key: "u64", value: try Uint64XDRJsonCodec.toXdrJsonValue(payload, type: "SCValXDR", key: "u64"))])
+    case .i64(let payload):
+      return .object([XdrJsonMember(key: "i64", value: try Int64XDRJsonCodec.toXdrJsonValue(payload, type: "SCValXDR", key: "i64"))])
+    case .timepoint(let payload):
+      return .object([XdrJsonMember(key: "timepoint", value: try TimePointXDRJsonCodec.toXdrJsonValue(payload, type: "SCValXDR", key: "timepoint"))])
+    case .duration(let payload):
+      return .object([XdrJsonMember(key: "duration", value: try DurationXDRJsonCodec.toXdrJsonValue(payload, type: "SCValXDR", key: "duration"))])
+    case .u128(let payload):
+      return .object([XdrJsonMember(key: "u128", value: try payload.toXdrJsonValue())])
+    case .i128(let payload):
+      return .object([XdrJsonMember(key: "i128", value: try payload.toXdrJsonValue())])
+    case .u256(let payload):
+      return .object([XdrJsonMember(key: "u256", value: try payload.toXdrJsonValue())])
+    case .i256(let payload):
+      return .object([XdrJsonMember(key: "i256", value: try payload.toXdrJsonValue())])
+    case .bytes(let payload):
+      return .object([XdrJsonMember(key: "bytes", value: try SCBytesXDRJsonCodec.toXdrJsonValue(payload, type: "SCValXDR", key: "bytes"))])
+    case .string(let payload):
+      return .object([XdrJsonMember(key: "string", value: try SCStringXDRJsonCodec.toXdrJsonValue(payload, type: "SCValXDR", key: "string"))])
+    case .symbol(let payload):
+      return .object([XdrJsonMember(key: "symbol", value: try SCSymbolXDRJsonCodec.toXdrJsonValue(payload, type: "SCValXDR", key: "symbol"))])
+    case .vec(let payload):
+      return .object([XdrJsonMember(key: "vec", value: try XdrJson.optional(payload.map { element in try XdrJson.array(element.map { element in try element.toXdrJsonValue() }) }))])
+    case .map(let payload):
+      return .object([XdrJsonMember(key: "map", value: try XdrJson.optional(payload.map { element in try XdrJson.array(element.map { element in try element.toXdrJsonValue() }) }))])
+    case .address(let payload):
+      return .object([XdrJsonMember(key: "address", value: try payload.toXdrJsonValue())])
+    case .contractInstance(let payload):
+      return .object([XdrJsonMember(key: "contract_instance", value: try payload.toXdrJsonValue())])
+    case .ledgerKeyContractInstance: return .string("ledger_key_contract_instance")
+    case .ledgerKeyNonce(let payload):
+      return .object([XdrJsonMember(key: "ledger_key_nonce", value: try payload.toXdrJsonValue())])
+    case .executableTag(let payload):
+      return .object([XdrJsonMember(key: "executable_tag", value: try SCStringXDRJsonCodec.toXdrJsonValue(payload, type: "SCValXDR", key: "executable_tag"))])
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> SCValXDR {
+    if case .string(let name) = value {
+      switch name {
+      case "bool":
+        throw XdrJsonError.invalidValue(type: "SCValXDR", key: "bool",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "void":
+        return .void
+      case "error":
+        throw XdrJsonError.invalidValue(type: "SCValXDR", key: "error",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "u32":
+        throw XdrJsonError.invalidValue(type: "SCValXDR", key: "u32",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "i32":
+        throw XdrJsonError.invalidValue(type: "SCValXDR", key: "i32",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "u64":
+        throw XdrJsonError.invalidValue(type: "SCValXDR", key: "u64",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "i64":
+        throw XdrJsonError.invalidValue(type: "SCValXDR", key: "i64",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "timepoint":
+        throw XdrJsonError.invalidValue(type: "SCValXDR", key: "timepoint",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "duration":
+        throw XdrJsonError.invalidValue(type: "SCValXDR", key: "duration",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "u128":
+        throw XdrJsonError.invalidValue(type: "SCValXDR", key: "u128",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "i128":
+        throw XdrJsonError.invalidValue(type: "SCValXDR", key: "i128",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "u256":
+        throw XdrJsonError.invalidValue(type: "SCValXDR", key: "u256",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "i256":
+        throw XdrJsonError.invalidValue(type: "SCValXDR", key: "i256",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "bytes":
+        throw XdrJsonError.invalidValue(type: "SCValXDR", key: "bytes",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "string":
+        throw XdrJsonError.invalidValue(type: "SCValXDR", key: "string",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "symbol":
+        throw XdrJsonError.invalidValue(type: "SCValXDR", key: "symbol",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "vec":
+        throw XdrJsonError.invalidValue(type: "SCValXDR", key: "vec",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "map":
+        throw XdrJsonError.invalidValue(type: "SCValXDR", key: "map",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "address":
+        throw XdrJsonError.invalidValue(type: "SCValXDR", key: "address",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "contract_instance":
+        throw XdrJsonError.invalidValue(type: "SCValXDR", key: "contract_instance",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "ledger_key_contract_instance":
+        return .ledgerKeyContractInstance
+      case "ledger_key_nonce":
+        throw XdrJsonError.invalidValue(type: "SCValXDR", key: "ledger_key_nonce",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "executable_tag":
+        throw XdrJsonError.invalidValue(type: "SCValXDR", key: "executable_tag",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      default:
+        throw XdrJsonError.unknownUnionArm(type: "SCValXDR", key: name)
+      }
+    }
+
+    let member = try XdrJson.singleKeyObject(value, type: "SCValXDR")
+    switch member.key {
+    case "bool":
+      let bool: Bool = try XdrJson.bool(member.value, type: "SCValXDR", key: "bool")
+      return .bool(bool)
+    case "void":
+      throw XdrJsonError.invalidValue(type: "SCValXDR", key: "void",
+                                      message: "this arm carries no value, so it is written as a bare string")
+    case "error":
+      let error: SCErrorXDR = try SCErrorXDR.fromXdrJsonValue(member.value)
+      return .error(error)
+    case "u32":
+      let u32: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(member.value, type: "SCValXDR", key: "u32")
+      return .u32(u32)
+    case "i32":
+      let i32: Int32 = try Int32XDRJsonCodec.fromXdrJsonValue(member.value, type: "SCValXDR", key: "i32")
+      return .i32(i32)
+    case "u64":
+      let u64: UInt64 = try Uint64XDRJsonCodec.fromXdrJsonValue(member.value, type: "SCValXDR", key: "u64")
+      return .u64(u64)
+    case "i64":
+      let i64: Int64 = try Int64XDRJsonCodec.fromXdrJsonValue(member.value, type: "SCValXDR", key: "i64")
+      return .i64(i64)
+    case "timepoint":
+      let timepoint: UInt64 = try TimePointXDRJsonCodec.fromXdrJsonValue(member.value, type: "SCValXDR", key: "timepoint")
+      return .timepoint(timepoint)
+    case "duration":
+      let duration: UInt64 = try DurationXDRJsonCodec.fromXdrJsonValue(member.value, type: "SCValXDR", key: "duration")
+      return .duration(duration)
+    case "u128":
+      let u128: UInt128PartsXDR = try UInt128PartsXDR.fromXdrJsonValue(member.value)
+      return .u128(u128)
+    case "i128":
+      let i128: Int128PartsXDR = try Int128PartsXDR.fromXdrJsonValue(member.value)
+      return .i128(i128)
+    case "u256":
+      let u256: UInt256PartsXDR = try UInt256PartsXDR.fromXdrJsonValue(member.value)
+      return .u256(u256)
+    case "i256":
+      let i256: Int256PartsXDR = try Int256PartsXDR.fromXdrJsonValue(member.value)
+      return .i256(i256)
+    case "bytes":
+      let bytes: SCBytesXDR = try SCBytesXDRJsonCodec.fromXdrJsonValue(member.value, type: "SCValXDR", key: "bytes")
+      return .bytes(bytes)
+    case "string":
+      let string: String = try SCStringXDRJsonCodec.fromXdrJsonValue(member.value, type: "SCValXDR", key: "string")
+      return .string(string)
+    case "symbol":
+      let symbol: String = try SCSymbolXDRJsonCodec.fromXdrJsonValue(member.value, type: "SCValXDR", key: "symbol")
+      return .symbol(symbol)
+    case "vec":
+      let vecValue = member.value
+      let vec: [SCValXDR]?
+      if vecValue.isNull {
+        vec = nil
+      } else {
+        let vecPresentElements = try XdrJson.array(vecValue, type: "SCValXDR", key: "vec")
+        let vecPresent: [SCValXDR] = try vecPresentElements.map { element in try SCValXDR.fromXdrJsonValue(element) }
+        vec = vecPresent
+      }
+      return .vec(vec)
+    case "map":
+      let mapValue = member.value
+      let map: [SCMapEntryXDR]?
+      if mapValue.isNull {
+        map = nil
+      } else {
+        let mapPresentElements = try XdrJson.array(mapValue, type: "SCValXDR", key: "map")
+        let mapPresent: [SCMapEntryXDR] = try mapPresentElements.map { element in try SCMapEntryXDR.fromXdrJsonValue(element) }
+        map = mapPresent
+      }
+      return .map(map)
+    case "address":
+      let address: SCAddressXDR = try SCAddressXDR.fromXdrJsonValue(member.value)
+      return .address(address)
+    case "contract_instance":
+      let contractInstance: SCContractInstanceXDR = try SCContractInstanceXDR.fromXdrJsonValue(member.value)
+      return .contractInstance(contractInstance)
+    case "ledger_key_contract_instance":
+      throw XdrJsonError.invalidValue(type: "SCValXDR", key: "ledger_key_contract_instance",
+                                      message: "this arm carries no value, so it is written as a bare string")
+    case "ledger_key_nonce":
+      let ledgerKeyNonce: SCNonceKeyXDR = try SCNonceKeyXDR.fromXdrJsonValue(member.value)
+      return .ledgerKeyNonce(ledgerKeyNonce)
+    case "executable_tag":
+      let executableTag: String = try SCStringXDRJsonCodec.fromXdrJsonValue(member.value, type: "SCValXDR", key: "executable_tag")
+      return .executableTag(executableTag)
+    default:
+      throw XdrJsonError.unknownUnionArm(type: "SCValXDR", key: member.key)
+    }
+  }
+}

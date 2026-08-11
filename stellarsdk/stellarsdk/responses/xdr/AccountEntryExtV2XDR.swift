@@ -41,3 +41,39 @@ public enum AccountEntryExtV2XDR: XDRCodable, Sendable {
     }
   }
 }
+
+extension AccountEntryExtV2XDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .void: return .string("v0")
+    case .accountEntryExtensionV3(let payload):
+      return .object([XdrJsonMember(key: "v3", value: try payload.toXdrJsonValue())])
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> AccountEntryExtV2XDR {
+    if case .string(let name) = value {
+      switch name {
+      case "v0":
+        return .void
+      case "v3":
+        throw XdrJsonError.invalidValue(type: "AccountEntryExtV2XDR", key: "v3",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      default:
+        throw XdrJsonError.unknownUnionArm(type: "AccountEntryExtV2XDR", key: name)
+      }
+    }
+
+    let member = try XdrJson.singleKeyObject(value, type: "AccountEntryExtV2XDR")
+    switch member.key {
+    case "v0":
+      throw XdrJsonError.invalidValue(type: "AccountEntryExtV2XDR", key: "v0",
+                                      message: "this arm carries no value, so it is written as a bare string")
+    case "v3":
+      let accountEntryExtensionV3: AccountEntryExtensionV3 = try AccountEntryExtensionV3.fromXdrJsonValue(member.value)
+      return .accountEntryExtensionV3(accountEntryExtensionV3)
+    default:
+      throw XdrJsonError.unknownUnionArm(type: "AccountEntryExtV2XDR", key: member.key)
+    }
+  }
+}

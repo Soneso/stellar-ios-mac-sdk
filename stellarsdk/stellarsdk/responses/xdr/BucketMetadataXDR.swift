@@ -24,3 +24,19 @@ public struct BucketMetadataXDR: XDRCodable, Sendable {
     try container.encode(ext)
   }
 }
+
+extension BucketMetadataXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "ledger_version", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.ledgerVersion, type: "BucketMetadataXDR", key: "ledger_version")))
+    members.append(XdrJsonMember(key: "ext", value: try self.ext.toXdrJsonValue()))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> BucketMetadataXDR {
+    let members = try XdrJson.object(value, type: "BucketMetadataXDR", keys: ["ledger_version", "ext"])
+    let ledgerVersion: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "ledger_version", type: "BucketMetadataXDR"), type: "BucketMetadataXDR", key: "ledger_version")
+    let ext: BucketMetadataXDRExtXDR = try BucketMetadataXDRExtXDR.fromXdrJsonValue(try XdrJson.field(members, key: "ext", type: "BucketMetadataXDR"))
+    return BucketMetadataXDR(ledgerVersion: ledgerVersion, ext: ext)
+  }
+}

@@ -24,3 +24,19 @@ public struct SignedTimeSlicedSurveyRequestMessageXDR: XDRCodable, Sendable {
     try container.encode(request)
   }
 }
+
+extension SignedTimeSlicedSurveyRequestMessageXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "request_signature", value: try SignatureXDRJsonCodec.toXdrJsonValue(self.requestSignature, type: "SignedTimeSlicedSurveyRequestMessageXDR", key: "request_signature")))
+    members.append(XdrJsonMember(key: "request", value: try self.request.toXdrJsonValue()))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> SignedTimeSlicedSurveyRequestMessageXDR {
+    let members = try XdrJson.object(value, type: "SignedTimeSlicedSurveyRequestMessageXDR", keys: ["request_signature", "request"])
+    let requestSignature: SignatureXDR = try SignatureXDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "request_signature", type: "SignedTimeSlicedSurveyRequestMessageXDR"), type: "SignedTimeSlicedSurveyRequestMessageXDR", key: "request_signature")
+    let request: TimeSlicedSurveyRequestMessageXDR = try TimeSlicedSurveyRequestMessageXDR.fromXdrJsonValue(try XdrJson.field(members, key: "request", type: "SignedTimeSlicedSurveyRequestMessageXDR"))
+    return SignedTimeSlicedSurveyRequestMessageXDR(requestSignature: requestSignature, request: request)
+  }
+}

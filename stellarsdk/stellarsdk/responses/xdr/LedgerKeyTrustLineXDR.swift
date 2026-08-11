@@ -37,3 +37,19 @@ extension LedgerKeyTrustLineXDR {
     return LedgerKeyTrustLineXDR(accountID: accountID, asset: asset)
   }
 }
+
+extension LedgerKeyTrustLineXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "account_id", value: try AccountIDXDRJsonCodec.toXdrJsonValue(self.accountID, type: "LedgerKeyTrustLineXDR", key: "account_id")))
+    members.append(XdrJsonMember(key: "asset", value: try self.asset.toXdrJsonValue()))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> LedgerKeyTrustLineXDR {
+    let members = try XdrJson.object(value, type: "LedgerKeyTrustLineXDR", keys: ["account_id", "asset"])
+    let accountID: PublicKey = try AccountIDXDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "account_id", type: "LedgerKeyTrustLineXDR"), type: "LedgerKeyTrustLineXDR", key: "account_id")
+    let asset: TrustlineAssetXDR = try TrustlineAssetXDR.fromXdrJsonValue(try XdrJson.field(members, key: "asset", type: "LedgerKeyTrustLineXDR"))
+    return LedgerKeyTrustLineXDR(accountID: accountID, asset: asset)
+  }
+}

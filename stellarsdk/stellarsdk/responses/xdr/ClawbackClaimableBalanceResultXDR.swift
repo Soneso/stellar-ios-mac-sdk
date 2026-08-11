@@ -52,3 +52,30 @@ public enum ClawbackClaimableBalanceResultXDR: XDRCodable, Sendable {
     }
   }
 }
+
+extension ClawbackClaimableBalanceResultXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .success: return .string("success")
+    case .doesNotExist: return .string("does_not_exist")
+    case .notIssuer: return .string("not_issuer")
+    case .notClawbackEnabled: return .string("not_clawback_enabled")
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> ClawbackClaimableBalanceResultXDR {
+    let name = try XdrJson.string(value, type: "ClawbackClaimableBalanceResultXDR")
+    switch name {
+    case "success":
+      return .success
+    case "does_not_exist":
+      return .doesNotExist
+    case "not_issuer":
+      return .notIssuer
+    case "not_clawback_enabled":
+      return .notClawbackEnabled
+    default:
+      throw XdrJsonError.unknownUnionArm(type: "ClawbackClaimableBalanceResultXDR", key: name)
+    }
+  }
+}

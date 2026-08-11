@@ -47,3 +47,25 @@ extension AllowTrustOperationXDR {
     return AllowTrustOperationXDR(trustor: trustor, asset: asset, authorize: authorize)
   }
 }
+
+extension AllowTrustOperationXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "trustor", value: try AccountIDXDRJsonCodec.toXdrJsonValue(self.trustor, type: "AllowTrustOperationXDR", key: "trustor")))
+    members.append(XdrJsonMember(key: "asset", value: try self.asset.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "authorize", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.authorize, type: "AllowTrustOperationXDR", key: "authorize")))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> AllowTrustOperationXDR {
+    let members = try XdrJson.object(value, type: "AllowTrustOperationXDR", keys: ["trustor", "asset", "authorize"])
+    let trustor: PublicKey = try AccountIDXDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "trustor", type: "AllowTrustOperationXDR"), type: "AllowTrustOperationXDR", key: "trustor")
+    let asset: AllowTrustOpAssetXDR = try AllowTrustOpAssetXDR.fromXdrJsonValue(try XdrJson.field(members, key: "asset", type: "AllowTrustOperationXDR"))
+    let authorize: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "authorize", type: "AllowTrustOperationXDR"), type: "AllowTrustOperationXDR", key: "authorize")
+    return AllowTrustOperationXDR(
+      trustor: trustor,
+      asset: asset,
+      authorize: authorize
+    )
+  }
+}

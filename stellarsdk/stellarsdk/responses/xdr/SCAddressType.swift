@@ -49,3 +49,28 @@ extension SCAddressType {
     return try fromTxRepName(raw)
   }
 }
+
+extension SCAddressType: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .account: return .string("account")
+    case .contract: return .string("contract")
+    case .muxedAccount: return .string("muxed_account")
+    case .claimableBalance: return .string("claimable_balance")
+    case .liquidityPool: return .string("liquidity_pool")
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> SCAddressType {
+    let name = try XdrJson.string(value, type: "SCAddressType")
+    switch name {
+    case "account": return .account
+    case "contract": return .contract
+    case "muxed_account": return .muxedAccount
+    case "claimable_balance": return .claimableBalance
+    case "liquidity_pool": return .liquidityPool
+    default:
+      throw XdrJsonError.unknownEnumValue(type: "SCAddressType", value: name)
+    }
+  }
+}

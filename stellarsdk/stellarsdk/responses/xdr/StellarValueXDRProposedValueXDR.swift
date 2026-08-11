@@ -37,3 +37,28 @@ public struct StellarValueXDRProposedValueXDR: XDRCodable, Sendable {
     try container.encode(lcValueSignature)
   }
 }
+
+extension StellarValueXDRProposedValueXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "tx_set_hash", value: try HashXDRJsonCodec.toXdrJsonValue(self.txSetHash, type: "StellarValueXDRProposedValueXDR", key: "tx_set_hash")))
+    members.append(XdrJsonMember(key: "previous_ledger_hash", value: try HashXDRJsonCodec.toXdrJsonValue(self.previousLedgerHash, type: "StellarValueXDRProposedValueXDR", key: "previous_ledger_hash")))
+    members.append(XdrJsonMember(key: "previous_ledger_version", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.previousLedgerVersion, type: "StellarValueXDRProposedValueXDR", key: "previous_ledger_version")))
+    members.append(XdrJsonMember(key: "lc_value_signature", value: try self.lcValueSignature.toXdrJsonValue()))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> StellarValueXDRProposedValueXDR {
+    let members = try XdrJson.object(value, type: "StellarValueXDRProposedValueXDR", keys: ["tx_set_hash", "previous_ledger_hash", "previous_ledger_version", "lc_value_signature"])
+    let txSetHash: HashXDR = try HashXDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "tx_set_hash", type: "StellarValueXDRProposedValueXDR"), type: "StellarValueXDRProposedValueXDR", key: "tx_set_hash")
+    let previousLedgerHash: HashXDR = try HashXDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "previous_ledger_hash", type: "StellarValueXDRProposedValueXDR"), type: "StellarValueXDRProposedValueXDR", key: "previous_ledger_hash")
+    let previousLedgerVersion: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "previous_ledger_version", type: "StellarValueXDRProposedValueXDR"), type: "StellarValueXDRProposedValueXDR", key: "previous_ledger_version")
+    let lcValueSignature: LedgerCloseValueSignatureXDR = try LedgerCloseValueSignatureXDR.fromXdrJsonValue(try XdrJson.field(members, key: "lc_value_signature", type: "StellarValueXDRProposedValueXDR"))
+    return StellarValueXDRProposedValueXDR(
+      txSetHash: txSetHash,
+      previousLedgerHash: previousLedgerHash,
+      previousLedgerVersion: previousLedgerVersion,
+      lcValueSignature: lcValueSignature
+    )
+  }
+}

@@ -6,3 +6,20 @@ import Foundation
 public enum SCEnvMetaKind: Int32, XDRCodable, Equatable, Sendable {
   case interfaceVersion = 0
 }
+
+extension SCEnvMetaKind: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .interfaceVersion: return .string("sc_env_meta_kind_interface_version")
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> SCEnvMetaKind {
+    let name = try XdrJson.string(value, type: "SCEnvMetaKind")
+    switch name {
+    case "sc_env_meta_kind_interface_version": return .interfaceVersion
+    default:
+      throw XdrJsonError.unknownEnumValue(type: "SCEnvMetaKind", value: name)
+    }
+  }
+}

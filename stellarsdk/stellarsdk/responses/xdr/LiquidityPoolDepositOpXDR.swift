@@ -61,3 +61,31 @@ extension LiquidityPoolDepositOpXDR {
     return LiquidityPoolDepositOpXDR(liquidityPoolID: liquidityPoolID, maxAmountA: maxAmountA, maxAmountB: maxAmountB, minPrice: minPrice, maxPrice: maxPrice)
   }
 }
+
+extension LiquidityPoolDepositOpXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "liquidity_pool_id", value: try PoolIDXDRJsonCodec.toXdrJsonValue(self.liquidityPoolID, type: "LiquidityPoolDepositOpXDR", key: "liquidity_pool_id")))
+    members.append(XdrJsonMember(key: "max_amount_a", value: try Int64XDRJsonCodec.toXdrJsonValue(self.maxAmountA, type: "LiquidityPoolDepositOpXDR", key: "max_amount_a")))
+    members.append(XdrJsonMember(key: "max_amount_b", value: try Int64XDRJsonCodec.toXdrJsonValue(self.maxAmountB, type: "LiquidityPoolDepositOpXDR", key: "max_amount_b")))
+    members.append(XdrJsonMember(key: "min_price", value: try self.minPrice.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "max_price", value: try self.maxPrice.toXdrJsonValue()))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> LiquidityPoolDepositOpXDR {
+    let members = try XdrJson.object(value, type: "LiquidityPoolDepositOpXDR", keys: ["liquidity_pool_id", "max_amount_a", "max_amount_b", "min_price", "max_price"])
+    let liquidityPoolID: WrappedData32 = try PoolIDXDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "liquidity_pool_id", type: "LiquidityPoolDepositOpXDR"), type: "LiquidityPoolDepositOpXDR", key: "liquidity_pool_id")
+    let maxAmountA: Int64 = try Int64XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "max_amount_a", type: "LiquidityPoolDepositOpXDR"), type: "LiquidityPoolDepositOpXDR", key: "max_amount_a")
+    let maxAmountB: Int64 = try Int64XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "max_amount_b", type: "LiquidityPoolDepositOpXDR"), type: "LiquidityPoolDepositOpXDR", key: "max_amount_b")
+    let minPrice: PriceXDR = try PriceXDR.fromXdrJsonValue(try XdrJson.field(members, key: "min_price", type: "LiquidityPoolDepositOpXDR"))
+    let maxPrice: PriceXDR = try PriceXDR.fromXdrJsonValue(try XdrJson.field(members, key: "max_price", type: "LiquidityPoolDepositOpXDR"))
+    return LiquidityPoolDepositOpXDR(
+      liquidityPoolID: liquidityPoolID,
+      maxAmountA: maxAmountA,
+      maxAmountB: maxAmountB,
+      minPrice: minPrice,
+      maxPrice: maxPrice
+    )
+  }
+}

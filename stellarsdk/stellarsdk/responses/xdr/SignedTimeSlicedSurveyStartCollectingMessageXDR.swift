@@ -24,3 +24,19 @@ public struct SignedTimeSlicedSurveyStartCollectingMessageXDR: XDRCodable, Senda
     try container.encode(startCollecting)
   }
 }
+
+extension SignedTimeSlicedSurveyStartCollectingMessageXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "signature", value: try SignatureXDRJsonCodec.toXdrJsonValue(self.signature, type: "SignedTimeSlicedSurveyStartCollectingMessageXDR", key: "signature")))
+    members.append(XdrJsonMember(key: "start_collecting", value: try self.startCollecting.toXdrJsonValue()))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> SignedTimeSlicedSurveyStartCollectingMessageXDR {
+    let members = try XdrJson.object(value, type: "SignedTimeSlicedSurveyStartCollectingMessageXDR", keys: ["signature", "start_collecting"])
+    let signature: SignatureXDR = try SignatureXDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "signature", type: "SignedTimeSlicedSurveyStartCollectingMessageXDR"), type: "SignedTimeSlicedSurveyStartCollectingMessageXDR", key: "signature")
+    let startCollecting: TimeSlicedSurveyStartCollectingMessageXDR = try TimeSlicedSurveyStartCollectingMessageXDR.fromXdrJsonValue(try XdrJson.field(members, key: "start_collecting", type: "SignedTimeSlicedSurveyStartCollectingMessageXDR"))
+    return SignedTimeSlicedSurveyStartCollectingMessageXDR(signature: signature, startCollecting: startCollecting)
+  }
+}

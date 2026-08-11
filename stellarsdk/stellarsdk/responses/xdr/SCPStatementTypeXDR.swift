@@ -9,3 +9,26 @@ public enum SCPStatementTypeXDR: Int32, XDRCodable, Equatable, Sendable {
   case externalize = 2
   case nominate = 3
 }
+
+extension SCPStatementTypeXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .prepare: return .string("prepare")
+    case .confirm: return .string("confirm")
+    case .externalize: return .string("externalize")
+    case .nominate: return .string("nominate")
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> SCPStatementTypeXDR {
+    let name = try XdrJson.string(value, type: "SCPStatementTypeXDR")
+    switch name {
+    case "prepare": return .prepare
+    case "confirm": return .confirm
+    case "externalize": return .externalize
+    case "nominate": return .nominate
+    default:
+      throw XdrJsonError.unknownEnumValue(type: "SCPStatementTypeXDR", value: name)
+    }
+  }
+}

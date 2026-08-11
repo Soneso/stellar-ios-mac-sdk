@@ -37,3 +37,30 @@ public struct SCSpecFunctionV0XDR: XDRCodable, Sendable {
     try container.encode(outputs)
   }
 }
+
+extension SCSpecFunctionV0XDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "doc", value: XdrJson.escapedString(self.doc)))
+    members.append(XdrJsonMember(key: "name", value: try SCSymbolXDRJsonCodec.toXdrJsonValue(self.name, type: "SCSpecFunctionV0XDR", key: "name")))
+    members.append(XdrJsonMember(key: "inputs", value: try XdrJson.array(self.inputs.map { element in try element.toXdrJsonValue() })))
+    members.append(XdrJsonMember(key: "outputs", value: try XdrJson.array(self.outputs.map { element in try element.toXdrJsonValue() })))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> SCSpecFunctionV0XDR {
+    let members = try XdrJson.object(value, type: "SCSpecFunctionV0XDR", keys: ["doc", "name", "inputs", "outputs"])
+    let doc: String = try XdrJson.unescapedText(try XdrJson.field(members, key: "doc", type: "SCSpecFunctionV0XDR"), type: "SCSpecFunctionV0XDR", key: "doc")
+    let name: String = try SCSymbolXDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "name", type: "SCSpecFunctionV0XDR"), type: "SCSpecFunctionV0XDR", key: "name")
+    let inputsElements = try XdrJson.array(try XdrJson.field(members, key: "inputs", type: "SCSpecFunctionV0XDR"), type: "SCSpecFunctionV0XDR", key: "inputs")
+    let inputs: [SCSpecFunctionInputV0XDR] = try inputsElements.map { element in try SCSpecFunctionInputV0XDR.fromXdrJsonValue(element) }
+    let outputsElements = try XdrJson.array(try XdrJson.field(members, key: "outputs", type: "SCSpecFunctionV0XDR"), type: "SCSpecFunctionV0XDR", key: "outputs")
+    let outputs: [SCSpecTypeDefXDR] = try outputsElements.map { element in try SCSpecTypeDefXDR.fromXdrJsonValue(element) }
+    return SCSpecFunctionV0XDR(
+      doc: doc,
+      name: name,
+      inputs: inputs,
+      outputs: outputs
+    )
+  }
+}

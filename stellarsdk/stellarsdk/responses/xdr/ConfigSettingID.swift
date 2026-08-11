@@ -97,3 +97,60 @@ extension ConfigSettingID {
     return try fromTxRepName(raw)
   }
 }
+
+extension ConfigSettingID: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .contractMaxSizeBytes: return .string("contract_max_size_bytes")
+    case .contractComputeV0: return .string("contract_compute_v0")
+    case .contractLedgerCostV0: return .string("contract_ledger_cost_v0")
+    case .contractHistoricalDataV0: return .string("contract_historical_data_v0")
+    case .contractEventsV0: return .string("contract_events_v0")
+    case .contractBandwidthV0: return .string("contract_bandwidth_v0")
+    case .contractCostParamsCpuInstructions: return .string("contract_cost_params_cpu_instructions")
+    case .contractCostParamsMemoryBytes: return .string("contract_cost_params_memory_bytes")
+    case .contractDataKeySizeBytes: return .string("contract_data_key_size_bytes")
+    case .contractDataEntrySizeBytes: return .string("contract_data_entry_size_bytes")
+    case .stateArchival: return .string("state_archival")
+    case .contractExecutionLanes: return .string("contract_execution_lanes")
+    case .liveSorobanStateSizeWindow: return .string("live_soroban_state_size_window")
+    case .evictionIterator: return .string("eviction_iterator")
+    case .contractParallelComputeV0: return .string("contract_parallel_compute_v0")
+    case .contractLedgerCostExtV0: return .string("contract_ledger_cost_ext_v0")
+    case .scpTiming: return .string("scp_timing")
+    case .frozenLedgerKeys: return .string("frozen_ledger_keys")
+    case .frozenLedgerKeysDelta: return .string("frozen_ledger_keys_delta")
+    case .freezeBypassTxs: return .string("freeze_bypass_txs")
+    case .freezeBypassTxsDelta: return .string("freeze_bypass_txs_delta")
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> ConfigSettingID {
+    let name = try XdrJson.string(value, type: "ConfigSettingID")
+    switch name {
+    case "contract_max_size_bytes": return .contractMaxSizeBytes
+    case "contract_compute_v0": return .contractComputeV0
+    case "contract_ledger_cost_v0": return .contractLedgerCostV0
+    case "contract_historical_data_v0": return .contractHistoricalDataV0
+    case "contract_events_v0": return .contractEventsV0
+    case "contract_bandwidth_v0": return .contractBandwidthV0
+    case "contract_cost_params_cpu_instructions": return .contractCostParamsCpuInstructions
+    case "contract_cost_params_memory_bytes": return .contractCostParamsMemoryBytes
+    case "contract_data_key_size_bytes": return .contractDataKeySizeBytes
+    case "contract_data_entry_size_bytes": return .contractDataEntrySizeBytes
+    case "state_archival": return .stateArchival
+    case "contract_execution_lanes": return .contractExecutionLanes
+    case "live_soroban_state_size_window": return .liveSorobanStateSizeWindow
+    case "eviction_iterator": return .evictionIterator
+    case "contract_parallel_compute_v0": return .contractParallelComputeV0
+    case "contract_ledger_cost_ext_v0": return .contractLedgerCostExtV0
+    case "scp_timing": return .scpTiming
+    case "frozen_ledger_keys": return .frozenLedgerKeys
+    case "frozen_ledger_keys_delta": return .frozenLedgerKeysDelta
+    case "freeze_bypass_txs": return .freezeBypassTxs
+    case "freeze_bypass_txs_delta": return .freezeBypassTxsDelta
+    default:
+      throw XdrJsonError.unknownEnumValue(type: "ConfigSettingID", value: name)
+    }
+  }
+}

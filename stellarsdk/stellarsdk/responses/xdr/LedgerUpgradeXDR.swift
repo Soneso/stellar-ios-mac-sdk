@@ -77,3 +77,81 @@ public enum LedgerUpgradeXDR: XDRCodable, Sendable {
     }
   }
 }
+
+extension LedgerUpgradeXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .newLedgerVersion(let payload):
+      return .object([XdrJsonMember(key: "version", value: try Uint32XDRJsonCodec.toXdrJsonValue(payload, type: "LedgerUpgradeXDR", key: "version"))])
+    case .newBaseFee(let payload):
+      return .object([XdrJsonMember(key: "base_fee", value: try Uint32XDRJsonCodec.toXdrJsonValue(payload, type: "LedgerUpgradeXDR", key: "base_fee"))])
+    case .newMaxTxSetSize(let payload):
+      return .object([XdrJsonMember(key: "max_tx_set_size", value: try Uint32XDRJsonCodec.toXdrJsonValue(payload, type: "LedgerUpgradeXDR", key: "max_tx_set_size"))])
+    case .newBaseReserve(let payload):
+      return .object([XdrJsonMember(key: "base_reserve", value: try Uint32XDRJsonCodec.toXdrJsonValue(payload, type: "LedgerUpgradeXDR", key: "base_reserve"))])
+    case .newFlags(let payload):
+      return .object([XdrJsonMember(key: "flags", value: try Uint32XDRJsonCodec.toXdrJsonValue(payload, type: "LedgerUpgradeXDR", key: "flags"))])
+    case .newConfig(let payload):
+      return .object([XdrJsonMember(key: "config", value: try payload.toXdrJsonValue())])
+    case .newMaxSorobanTxSetSize(let payload):
+      return .object([XdrJsonMember(key: "max_soroban_tx_set_size", value: try Uint32XDRJsonCodec.toXdrJsonValue(payload, type: "LedgerUpgradeXDR", key: "max_soroban_tx_set_size"))])
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> LedgerUpgradeXDR {
+    if case .string(let name) = value {
+      switch name {
+      case "version":
+        throw XdrJsonError.invalidValue(type: "LedgerUpgradeXDR", key: "version",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "base_fee":
+        throw XdrJsonError.invalidValue(type: "LedgerUpgradeXDR", key: "base_fee",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "max_tx_set_size":
+        throw XdrJsonError.invalidValue(type: "LedgerUpgradeXDR", key: "max_tx_set_size",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "base_reserve":
+        throw XdrJsonError.invalidValue(type: "LedgerUpgradeXDR", key: "base_reserve",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "flags":
+        throw XdrJsonError.invalidValue(type: "LedgerUpgradeXDR", key: "flags",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "config":
+        throw XdrJsonError.invalidValue(type: "LedgerUpgradeXDR", key: "config",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "max_soroban_tx_set_size":
+        throw XdrJsonError.invalidValue(type: "LedgerUpgradeXDR", key: "max_soroban_tx_set_size",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      default:
+        throw XdrJsonError.unknownUnionArm(type: "LedgerUpgradeXDR", key: name)
+      }
+    }
+
+    let member = try XdrJson.singleKeyObject(value, type: "LedgerUpgradeXDR")
+    switch member.key {
+    case "version":
+      let newLedgerVersion: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(member.value, type: "LedgerUpgradeXDR", key: "version")
+      return .newLedgerVersion(newLedgerVersion)
+    case "base_fee":
+      let newBaseFee: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(member.value, type: "LedgerUpgradeXDR", key: "base_fee")
+      return .newBaseFee(newBaseFee)
+    case "max_tx_set_size":
+      let newMaxTxSetSize: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(member.value, type: "LedgerUpgradeXDR", key: "max_tx_set_size")
+      return .newMaxTxSetSize(newMaxTxSetSize)
+    case "base_reserve":
+      let newBaseReserve: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(member.value, type: "LedgerUpgradeXDR", key: "base_reserve")
+      return .newBaseReserve(newBaseReserve)
+    case "flags":
+      let newFlags: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(member.value, type: "LedgerUpgradeXDR", key: "flags")
+      return .newFlags(newFlags)
+    case "config":
+      let newConfig: ConfigUpgradeSetKeyXDR = try ConfigUpgradeSetKeyXDR.fromXdrJsonValue(member.value)
+      return .newConfig(newConfig)
+    case "max_soroban_tx_set_size":
+      let newMaxSorobanTxSetSize: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(member.value, type: "LedgerUpgradeXDR", key: "max_soroban_tx_set_size")
+      return .newMaxSorobanTxSetSize(newMaxSorobanTxSetSize)
+    default:
+      throw XdrJsonError.unknownUnionArm(type: "LedgerUpgradeXDR", key: member.key)
+    }
+  }
+}

@@ -6,3 +6,20 @@ import Foundation
 public enum TxSetComponentTypeXDR: Int32, XDRCodable, Equatable, Sendable {
   case txsetCompTxsMaybeDiscountedFee = 0
 }
+
+extension TxSetComponentTypeXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .txsetCompTxsMaybeDiscountedFee: return .string("txset_comp_txs_maybe_discounted_fee")
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> TxSetComponentTypeXDR {
+    let name = try XdrJson.string(value, type: "TxSetComponentTypeXDR")
+    switch name {
+    case "txset_comp_txs_maybe_discounted_fee": return .txsetCompTxsMaybeDiscountedFee
+    default:
+      throw XdrJsonError.unknownEnumValue(type: "TxSetComponentTypeXDR", value: name)
+    }
+  }
+}

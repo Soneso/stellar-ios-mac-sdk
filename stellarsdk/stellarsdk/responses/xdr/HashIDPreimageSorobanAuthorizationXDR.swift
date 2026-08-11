@@ -37,3 +37,28 @@ public struct HashIDPreimageSorobanAuthorizationXDR: XDRCodable, Sendable {
     try container.encode(invocation)
   }
 }
+
+extension HashIDPreimageSorobanAuthorizationXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "network_id", value: try HashXDRJsonCodec.toXdrJsonValue(self.networkID, type: "HashIDPreimageSorobanAuthorizationXDR", key: "network_id")))
+    members.append(XdrJsonMember(key: "nonce", value: try Int64XDRJsonCodec.toXdrJsonValue(self.nonce, type: "HashIDPreimageSorobanAuthorizationXDR", key: "nonce")))
+    members.append(XdrJsonMember(key: "signature_expiration_ledger", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.signatureExpirationLedger, type: "HashIDPreimageSorobanAuthorizationXDR", key: "signature_expiration_ledger")))
+    members.append(XdrJsonMember(key: "invocation", value: try self.invocation.toXdrJsonValue()))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> HashIDPreimageSorobanAuthorizationXDR {
+    let members = try XdrJson.object(value, type: "HashIDPreimageSorobanAuthorizationXDR", keys: ["network_id", "nonce", "signature_expiration_ledger", "invocation"])
+    let networkID: HashXDR = try HashXDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "network_id", type: "HashIDPreimageSorobanAuthorizationXDR"), type: "HashIDPreimageSorobanAuthorizationXDR", key: "network_id")
+    let nonce: Int64 = try Int64XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "nonce", type: "HashIDPreimageSorobanAuthorizationXDR"), type: "HashIDPreimageSorobanAuthorizationXDR", key: "nonce")
+    let signatureExpirationLedger: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "signature_expiration_ledger", type: "HashIDPreimageSorobanAuthorizationXDR"), type: "HashIDPreimageSorobanAuthorizationXDR", key: "signature_expiration_ledger")
+    let invocation: SorobanAuthorizedInvocationXDR = try SorobanAuthorizedInvocationXDR.fromXdrJsonValue(try XdrJson.field(members, key: "invocation", type: "HashIDPreimageSorobanAuthorizationXDR"))
+    return HashIDPreimageSorobanAuthorizationXDR(
+      networkID: networkID,
+      nonce: nonce,
+      signatureExpirationLedger: signatureExpirationLedger,
+      invocation: invocation
+    )
+  }
+}

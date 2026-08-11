@@ -4,3 +4,35 @@
 import Foundation
 
 public typealias EncodedLedgerKeyXDR = Data
+
+public enum EncodedLedgerKeyXDRJsonCodec {
+  public static func toXdrJsonValue(_ value: EncodedLedgerKeyXDR) throws -> XdrJsonValue {
+    try toXdrJsonValue(value, type: "EncodedLedgerKeyXDR", key: nil)
+  }
+
+  static func toXdrJsonValue(_ value: EncodedLedgerKeyXDR, type: String, key: String?) throws -> XdrJsonValue {
+    return XdrJson.hex(value)
+  }
+
+  public static func toXdrJson(_ value: EncodedLedgerKeyXDR) throws -> String {
+    try XdrJsonWriter.canonicalString(from: try toXdrJsonValue(value))
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> EncodedLedgerKeyXDR {
+    try fromXdrJsonValue(value, type: "EncodedLedgerKeyXDR", key: nil)
+  }
+
+  static func fromXdrJsonValue(_ value: XdrJsonValue, type: String, key: String?) throws -> EncodedLedgerKeyXDR {
+    let decoded: Data = try XdrJson.hex(value, type: type, key: key)
+    return decoded
+  }
+
+  public static func fromXdrJson(_ json: String) throws -> EncodedLedgerKeyXDR {
+    try fromXdrJsonValue(try XdrJsonParser.parse(json))
+  }
+
+  public static func fromXdrJsonTree(_ value: XdrJsonValue) throws -> EncodedLedgerKeyXDR {
+    try XdrJson.validateDepth(value)
+    return try fromXdrJsonValue(value)
+  }
+}

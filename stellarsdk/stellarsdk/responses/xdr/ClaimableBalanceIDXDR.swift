@@ -59,3 +59,33 @@ extension ClaimableBalanceIDXDR {
     }
   }
 }
+
+extension ClaimableBalanceIDXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .claimableBalanceIDTypeV0(let hash):
+      guard hash.wrapped.count == 32 else {
+        throw XdrJsonError.invalidValue(
+          type: "ClaimableBalanceIDXDR", key: "v0",
+          message: "expected 32 bytes, got \(hash.wrapped.count)")
+      }
+      var raw = Data([UInt8(ClaimableBalanceIDType.claimableBalanceIDTypeV0.rawValue)])
+      raw.append(hash.wrapped)
+      return .string(try XdrJson.strKey(raw, expectedLength: 33,
+                                        type: "ClaimableBalanceIDXDR", key: nil) { try $0.encodeClaimableBalanceId() })
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> ClaimableBalanceIDXDR {
+    let text = try XdrJson.string(value, type: "ClaimableBalanceIDXDR")
+    let raw = try XdrJson.strKeyBytes(text, expectedLength: 33,
+                                      type: "ClaimableBalanceIDXDR", key: nil) { try $0.decodeClaimableBalanceId() }
+    let discriminant = Int32(raw[raw.startIndex])
+    guard discriminant == ClaimableBalanceIDType.claimableBalanceIDTypeV0.rawValue else {
+      throw XdrJsonError.invalidValue(
+        type: "ClaimableBalanceIDXDR", key: nil,
+        message: "unknown claimable balance type \(discriminant)")
+    }
+    return .claimableBalanceIDTypeV0(HashXDR(Data(raw.dropFirst())))
+  }
+}

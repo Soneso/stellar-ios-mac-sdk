@@ -85,3 +85,49 @@ extension SorobanAuthorizedFunctionXDR {
     }
   }
 }
+
+extension SorobanAuthorizedFunctionXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .contractFn(let payload):
+      return .object([XdrJsonMember(key: "contract_fn", value: try payload.toXdrJsonValue())])
+    case .createContractHostFn(let payload):
+      return .object([XdrJsonMember(key: "create_contract_host_fn", value: try payload.toXdrJsonValue())])
+    case .createContractV2HostFn(let payload):
+      return .object([XdrJsonMember(key: "create_contract_v2_host_fn", value: try payload.toXdrJsonValue())])
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> SorobanAuthorizedFunctionXDR {
+    if case .string(let name) = value {
+      switch name {
+      case "contract_fn":
+        throw XdrJsonError.invalidValue(type: "SorobanAuthorizedFunctionXDR", key: "contract_fn",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "create_contract_host_fn":
+        throw XdrJsonError.invalidValue(type: "SorobanAuthorizedFunctionXDR", key: "create_contract_host_fn",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "create_contract_v2_host_fn":
+        throw XdrJsonError.invalidValue(type: "SorobanAuthorizedFunctionXDR", key: "create_contract_v2_host_fn",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      default:
+        throw XdrJsonError.unknownUnionArm(type: "SorobanAuthorizedFunctionXDR", key: name)
+      }
+    }
+
+    let member = try XdrJson.singleKeyObject(value, type: "SorobanAuthorizedFunctionXDR")
+    switch member.key {
+    case "contract_fn":
+      let contractFn: InvokeContractArgsXDR = try InvokeContractArgsXDR.fromXdrJsonValue(member.value)
+      return .contractFn(contractFn)
+    case "create_contract_host_fn":
+      let createContractHostFn: CreateContractArgsXDR = try CreateContractArgsXDR.fromXdrJsonValue(member.value)
+      return .createContractHostFn(createContractHostFn)
+    case "create_contract_v2_host_fn":
+      let createContractV2HostFn: CreateContractV2ArgsXDR = try CreateContractV2ArgsXDR.fromXdrJsonValue(member.value)
+      return .createContractV2HostFn(createContractV2HostFn)
+    default:
+      throw XdrJsonError.unknownUnionArm(type: "SorobanAuthorizedFunctionXDR", key: member.key)
+    }
+  }
+}

@@ -32,3 +32,27 @@ public struct SCPQuorumSetXDR: XDRCodable, Sendable {
     try container.encode(innerSets)
   }
 }
+
+extension SCPQuorumSetXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "threshold", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.threshold, type: "SCPQuorumSetXDR", key: "threshold")))
+    members.append(XdrJsonMember(key: "validators", value: try XdrJson.array(self.validators.map { element in try NodeIDXDRJsonCodec.toXdrJsonValue(element, type: "SCPQuorumSetXDR", key: "validators") })))
+    members.append(XdrJsonMember(key: "inner_sets", value: try XdrJson.array(self.innerSets.map { element in try element.toXdrJsonValue() })))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> SCPQuorumSetXDR {
+    let members = try XdrJson.object(value, type: "SCPQuorumSetXDR", keys: ["threshold", "validators", "inner_sets"])
+    let threshold: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "threshold", type: "SCPQuorumSetXDR"), type: "SCPQuorumSetXDR", key: "threshold")
+    let validatorsElements = try XdrJson.array(try XdrJson.field(members, key: "validators", type: "SCPQuorumSetXDR"), type: "SCPQuorumSetXDR", key: "validators")
+    let validators: [NodeIDXDR] = try validatorsElements.map { element in try NodeIDXDRJsonCodec.fromXdrJsonValue(element, type: "SCPQuorumSetXDR", key: "validators") }
+    let innerSetsElements = try XdrJson.array(try XdrJson.field(members, key: "inner_sets", type: "SCPQuorumSetXDR"), type: "SCPQuorumSetXDR", key: "inner_sets")
+    let innerSets: [SCPQuorumSetXDR] = try innerSetsElements.map { element in try SCPQuorumSetXDR.fromXdrJsonValue(element) }
+    return SCPQuorumSetXDR(
+      threshold: threshold,
+      validators: validators,
+      innerSets: innerSets
+    )
+  }
+}

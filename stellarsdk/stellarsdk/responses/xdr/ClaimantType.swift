@@ -37,3 +37,20 @@ extension ClaimantType {
     return try fromTxRepName(raw)
   }
 }
+
+extension ClaimantType: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .claimantTypeV0: return .string("claimant_type_v0")
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> ClaimantType {
+    let name = try XdrJson.string(value, type: "ClaimantType")
+    switch name {
+    case "claimant_type_v0": return .claimantTypeV0
+    default:
+      throw XdrJsonError.unknownEnumValue(type: "ClaimantType", value: name)
+    }
+  }
+}

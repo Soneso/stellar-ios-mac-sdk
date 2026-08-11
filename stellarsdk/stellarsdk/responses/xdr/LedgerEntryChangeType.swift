@@ -10,3 +10,28 @@ public enum LedgerEntryChangeType: Int32, XDRCodable, Equatable, Sendable {
   case ledgerEntryState = 3
   case ledgerEntryRestore = 4
 }
+
+extension LedgerEntryChangeType: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .ledgerEntryCreated: return .string("created")
+    case .ledgerEntryUpdated: return .string("updated")
+    case .ledgerEntryRemoved: return .string("removed")
+    case .ledgerEntryState: return .string("state")
+    case .ledgerEntryRestore: return .string("restored")
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> LedgerEntryChangeType {
+    let name = try XdrJson.string(value, type: "LedgerEntryChangeType")
+    switch name {
+    case "created": return .ledgerEntryCreated
+    case "updated": return .ledgerEntryUpdated
+    case "removed": return .ledgerEntryRemoved
+    case "state": return .ledgerEntryState
+    case "restored": return .ledgerEntryRestore
+    default:
+      throw XdrJsonError.unknownEnumValue(type: "LedgerEntryChangeType", value: name)
+    }
+  }
+}

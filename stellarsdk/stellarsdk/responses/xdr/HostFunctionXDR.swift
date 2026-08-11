@@ -98,3 +98,57 @@ extension HostFunctionXDR {
     }
   }
 }
+
+extension HostFunctionXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .invokeContract(let payload):
+      return .object([XdrJsonMember(key: "invoke_contract", value: try payload.toXdrJsonValue())])
+    case .createContract(let payload):
+      return .object([XdrJsonMember(key: "create_contract", value: try payload.toXdrJsonValue())])
+    case .uploadContractWasm(let payload):
+      return .object([XdrJsonMember(key: "upload_contract_wasm", value: XdrJson.hex(payload))])
+    case .createContractV2(let payload):
+      return .object([XdrJsonMember(key: "create_contract_v2", value: try payload.toXdrJsonValue())])
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> HostFunctionXDR {
+    if case .string(let name) = value {
+      switch name {
+      case "invoke_contract":
+        throw XdrJsonError.invalidValue(type: "HostFunctionXDR", key: "invoke_contract",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "create_contract":
+        throw XdrJsonError.invalidValue(type: "HostFunctionXDR", key: "create_contract",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "upload_contract_wasm":
+        throw XdrJsonError.invalidValue(type: "HostFunctionXDR", key: "upload_contract_wasm",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "create_contract_v2":
+        throw XdrJsonError.invalidValue(type: "HostFunctionXDR", key: "create_contract_v2",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      default:
+        throw XdrJsonError.unknownUnionArm(type: "HostFunctionXDR", key: name)
+      }
+    }
+
+    let member = try XdrJson.singleKeyObject(value, type: "HostFunctionXDR")
+    switch member.key {
+    case "invoke_contract":
+      let invokeContract: InvokeContractArgsXDR = try InvokeContractArgsXDR.fromXdrJsonValue(member.value)
+      return .invokeContract(invokeContract)
+    case "create_contract":
+      let createContract: CreateContractArgsXDR = try CreateContractArgsXDR.fromXdrJsonValue(member.value)
+      return .createContract(createContract)
+    case "upload_contract_wasm":
+      let uploadContractWasm: Data = try XdrJson.hex(member.value, type: "HostFunctionXDR", key: "upload_contract_wasm")
+      return .uploadContractWasm(uploadContractWasm)
+    case "create_contract_v2":
+      let createContractV2: CreateContractV2ArgsXDR = try CreateContractV2ArgsXDR.fromXdrJsonValue(member.value)
+      return .createContractV2(createContractV2)
+    default:
+      throw XdrJsonError.unknownUnionArm(type: "HostFunctionXDR", key: member.key)
+    }
+  }
+}

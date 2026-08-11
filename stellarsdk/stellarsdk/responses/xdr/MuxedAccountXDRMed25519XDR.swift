@@ -24,3 +24,27 @@ public struct MuxedAccountXDRMed25519XDR: XDRCodable, Sendable {
     try container.encode(ed25519)
   }
 }
+
+extension MuxedAccountXDRMed25519XDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    guard self.ed25519.wrapped.count == 32 else {
+      throw XdrJsonError.invalidValue(
+        type: "MuxedAccountXDRMed25519XDR", key: "ed25519",
+        message: "expected 32 bytes, got \(self.ed25519.wrapped.count)")
+    }
+    let inverted = MuxedAccountMed25519XDRInverted(
+      id: self.id, sourceAccountEd25519: [UInt8](self.ed25519.wrapped))
+    let encoded = Data(try XDREncoder.encode(inverted))
+    return .string(try XdrJson.strKey(encoded, expectedLength: 40,
+                                      type: "MuxedAccountXDRMed25519XDR", key: nil) { try $0.encodeMEd25519AccountId() })
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> MuxedAccountXDRMed25519XDR {
+    let text = try XdrJson.string(value, type: "MuxedAccountXDRMed25519XDR")
+    let raw = try XdrJson.strKeyBytes(text, expectedLength: 40,
+                                      type: "MuxedAccountXDRMed25519XDR", key: nil) { try $0.decodeMed25519PublicKey() }
+    let inverted = try XDRDecoder.decode(MuxedAccountMed25519XDRInverted.self, data: [UInt8](raw))
+    return MuxedAccountXDRMed25519XDR(
+      id: inverted.id, ed25519: Uint256XDR(Data(inverted.sourceAccountEd25519)))
+  }
+}

@@ -20,3 +20,17 @@ public struct SendMoreXDR: XDRCodable, Sendable {
     try container.encode(numMessages)
   }
 }
+
+extension SendMoreXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "num_messages", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.numMessages, type: "SendMoreXDR", key: "num_messages")))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> SendMoreXDR {
+    let members = try XdrJson.object(value, type: "SendMoreXDR", keys: ["num_messages"])
+    let numMessages: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "num_messages", type: "SendMoreXDR"), type: "SendMoreXDR", key: "num_messages")
+    return SendMoreXDR(numMessages: numMessages)
+  }
+}

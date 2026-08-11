@@ -4,3 +4,34 @@
 import Foundation
 
 public typealias NodeIDXDR = PublicKey
+
+public enum NodeIDXDRJsonCodec {
+  public static func toXdrJsonValue(_ value: NodeIDXDR) throws -> XdrJsonValue {
+    try toXdrJsonValue(value, type: "NodeIDXDR", key: nil)
+  }
+
+  static func toXdrJsonValue(_ value: NodeIDXDR, type: String, key: String?) throws -> XdrJsonValue {
+    return try value.toXdrJsonValue()
+  }
+
+  public static func toXdrJson(_ value: NodeIDXDR) throws -> String {
+    try XdrJsonWriter.canonicalString(from: try toXdrJsonValue(value))
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> NodeIDXDR {
+    try fromXdrJsonValue(value, type: "NodeIDXDR", key: nil)
+  }
+
+  static func fromXdrJsonValue(_ value: XdrJsonValue, type: String, key: String?) throws -> NodeIDXDR {
+    return try PublicKey.fromXdrJsonValue(value)
+  }
+
+  public static func fromXdrJson(_ json: String) throws -> NodeIDXDR {
+    try fromXdrJsonValue(try XdrJsonParser.parse(json))
+  }
+
+  public static func fromXdrJsonTree(_ value: XdrJsonValue) throws -> NodeIDXDR {
+    try XdrJson.validateDepth(value)
+    return try fromXdrJsonValue(value)
+  }
+}

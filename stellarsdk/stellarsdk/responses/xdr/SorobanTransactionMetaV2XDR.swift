@@ -34,3 +34,25 @@ public struct SorobanTransactionMetaV2XDR: XDRCodable, Sendable {
     }
   }
 }
+
+extension SorobanTransactionMetaV2XDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "ext", value: try self.ext.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "return_value", value: try XdrJson.optional(self.returnValue.map { element in try element.toXdrJsonValue() })))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> SorobanTransactionMetaV2XDR {
+    let members = try XdrJson.object(value, type: "SorobanTransactionMetaV2XDR", keys: ["ext", "return_value"])
+    let ext: SorobanTransactionMetaExt = try SorobanTransactionMetaExt.fromXdrJsonValue(try XdrJson.field(members, key: "ext", type: "SorobanTransactionMetaV2XDR"))
+    let returnValueValue = try XdrJson.field(members, key: "return_value", type: "SorobanTransactionMetaV2XDR")
+    let returnValue: SCValXDR?
+    if returnValueValue.isNull {
+      returnValue = nil
+    } else {
+      returnValue = try SCValXDR.fromXdrJsonValue(returnValueValue)
+    }
+    return SorobanTransactionMetaV2XDR(ext: ext, returnValue: returnValue)
+  }
+}

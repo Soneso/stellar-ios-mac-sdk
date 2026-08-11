@@ -138,3 +138,139 @@ public enum InnerTransactionResultBodyXDR: XDRCodable, Sendable {
     }
   }
 }
+
+extension InnerTransactionResultBodyXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .success(let payload):
+      return .object([XdrJsonMember(key: "tx_success", value: try XdrJson.array(payload.map { element in try element.toXdrJsonValue() }))])
+    case .failed(let payload):
+      return .object([XdrJsonMember(key: "tx_failed", value: try XdrJson.array(payload.map { element in try element.toXdrJsonValue() }))])
+    case .tooEarly: return .string("tx_too_early")
+    case .tooLate: return .string("tx_too_late")
+    case .missingOperation: return .string("tx_missing_operation")
+    case .badSeq: return .string("tx_bad_seq")
+    case .badAuth: return .string("tx_bad_auth")
+    case .insufficientBalance: return .string("tx_insufficient_balance")
+    case .noAccount: return .string("tx_no_account")
+    case .insufficientFee: return .string("tx_insufficient_fee")
+    case .badAuthExtra: return .string("tx_bad_auth_extra")
+    case .internalError: return .string("tx_internal_error")
+    case .notSupported: return .string("tx_not_supported")
+    case .badSponsorship: return .string("tx_bad_sponsorship")
+    case .badMinSeqAgeOrGap: return .string("tx_bad_min_seq_age_or_gap")
+    case .malformed: return .string("tx_malformed")
+    case .sorobanInvalid: return .string("tx_soroban_invalid")
+    case .frozenKeyAccessed: return .string("tx_frozen_key_accessed")
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> InnerTransactionResultBodyXDR {
+    if case .string(let name) = value {
+      switch name {
+      case "tx_success":
+        throw XdrJsonError.invalidValue(type: "InnerTransactionResultBodyXDR", key: "tx_success",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "tx_failed":
+        throw XdrJsonError.invalidValue(type: "InnerTransactionResultBodyXDR", key: "tx_failed",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "tx_too_early":
+        return .tooEarly
+      case "tx_too_late":
+        return .tooLate
+      case "tx_missing_operation":
+        return .missingOperation
+      case "tx_bad_seq":
+        return .badSeq
+      case "tx_bad_auth":
+        return .badAuth
+      case "tx_insufficient_balance":
+        return .insufficientBalance
+      case "tx_no_account":
+        return .noAccount
+      case "tx_insufficient_fee":
+        return .insufficientFee
+      case "tx_bad_auth_extra":
+        return .badAuthExtra
+      case "tx_internal_error":
+        return .internalError
+      case "tx_not_supported":
+        return .notSupported
+      case "tx_bad_sponsorship":
+        return .badSponsorship
+      case "tx_bad_min_seq_age_or_gap":
+        return .badMinSeqAgeOrGap
+      case "tx_malformed":
+        return .malformed
+      case "tx_soroban_invalid":
+        return .sorobanInvalid
+      case "tx_frozen_key_accessed":
+        return .frozenKeyAccessed
+      default:
+        throw XdrJsonError.unknownUnionArm(type: "InnerTransactionResultBodyXDR", key: name)
+      }
+    }
+
+    let member = try XdrJson.singleKeyObject(value, type: "InnerTransactionResultBodyXDR")
+    switch member.key {
+    case "tx_success":
+      let successElements = try XdrJson.array(member.value, type: "InnerTransactionResultBodyXDR", key: "tx_success")
+      let success: [OperationResultXDR] = try successElements.map { element in try OperationResultXDR.fromXdrJsonValue(element) }
+      return .success(success)
+    case "tx_failed":
+      let failedElements = try XdrJson.array(member.value, type: "InnerTransactionResultBodyXDR", key: "tx_failed")
+      let failed: [OperationResultXDR] = try failedElements.map { element in try OperationResultXDR.fromXdrJsonValue(element) }
+      return .failed(failed)
+    case "tx_too_early":
+      throw XdrJsonError.invalidValue(type: "InnerTransactionResultBodyXDR", key: "tx_too_early",
+                                      message: "this arm carries no value, so it is written as a bare string")
+    case "tx_too_late":
+      throw XdrJsonError.invalidValue(type: "InnerTransactionResultBodyXDR", key: "tx_too_late",
+                                      message: "this arm carries no value, so it is written as a bare string")
+    case "tx_missing_operation":
+      throw XdrJsonError.invalidValue(type: "InnerTransactionResultBodyXDR", key: "tx_missing_operation",
+                                      message: "this arm carries no value, so it is written as a bare string")
+    case "tx_bad_seq":
+      throw XdrJsonError.invalidValue(type: "InnerTransactionResultBodyXDR", key: "tx_bad_seq",
+                                      message: "this arm carries no value, so it is written as a bare string")
+    case "tx_bad_auth":
+      throw XdrJsonError.invalidValue(type: "InnerTransactionResultBodyXDR", key: "tx_bad_auth",
+                                      message: "this arm carries no value, so it is written as a bare string")
+    case "tx_insufficient_balance":
+      throw XdrJsonError.invalidValue(type: "InnerTransactionResultBodyXDR", key: "tx_insufficient_balance",
+                                      message: "this arm carries no value, so it is written as a bare string")
+    case "tx_no_account":
+      throw XdrJsonError.invalidValue(type: "InnerTransactionResultBodyXDR", key: "tx_no_account",
+                                      message: "this arm carries no value, so it is written as a bare string")
+    case "tx_insufficient_fee":
+      throw XdrJsonError.invalidValue(type: "InnerTransactionResultBodyXDR", key: "tx_insufficient_fee",
+                                      message: "this arm carries no value, so it is written as a bare string")
+    case "tx_bad_auth_extra":
+      throw XdrJsonError.invalidValue(type: "InnerTransactionResultBodyXDR", key: "tx_bad_auth_extra",
+                                      message: "this arm carries no value, so it is written as a bare string")
+    case "tx_internal_error":
+      throw XdrJsonError.invalidValue(type: "InnerTransactionResultBodyXDR", key: "tx_internal_error",
+                                      message: "this arm carries no value, so it is written as a bare string")
+    case "tx_not_supported":
+      throw XdrJsonError.invalidValue(type: "InnerTransactionResultBodyXDR", key: "tx_not_supported",
+                                      message: "this arm carries no value, so it is written as a bare string")
+    case "tx_bad_sponsorship":
+      throw XdrJsonError.invalidValue(type: "InnerTransactionResultBodyXDR", key: "tx_bad_sponsorship",
+                                      message: "this arm carries no value, so it is written as a bare string")
+    case "tx_bad_min_seq_age_or_gap":
+      throw XdrJsonError.invalidValue(type: "InnerTransactionResultBodyXDR", key: "tx_bad_min_seq_age_or_gap",
+                                      message: "this arm carries no value, so it is written as a bare string")
+    case "tx_malformed":
+      throw XdrJsonError.invalidValue(type: "InnerTransactionResultBodyXDR", key: "tx_malformed",
+                                      message: "this arm carries no value, so it is written as a bare string")
+    case "tx_soroban_invalid":
+      throw XdrJsonError.invalidValue(type: "InnerTransactionResultBodyXDR", key: "tx_soroban_invalid",
+                                      message: "this arm carries no value, so it is written as a bare string")
+    case "tx_frozen_key_accessed":
+      throw XdrJsonError.invalidValue(type: "InnerTransactionResultBodyXDR", key: "tx_frozen_key_accessed",
+                                      message: "this arm carries no value, so it is written as a bare string")
+    default:
+      throw XdrJsonError.unknownUnionArm(type: "InnerTransactionResultBodyXDR", key: member.key)
+    }
+  }
+}

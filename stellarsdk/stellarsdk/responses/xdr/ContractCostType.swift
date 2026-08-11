@@ -91,3 +91,190 @@ public enum ContractCostType: Int32, XDRCodable, Equatable, Sendable {
   case bn254FrInv = 84
   case bn254G1Msm = 85
 }
+
+extension ContractCostType: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .wasmInsnExec: return .string("wasm_insn_exec")
+    case .memAlloc: return .string("mem_alloc")
+    case .memCpy: return .string("mem_cpy")
+    case .memCmp: return .string("mem_cmp")
+    case .dispatchHostFunction: return .string("dispatch_host_function")
+    case .visitObject: return .string("visit_object")
+    case .valSer: return .string("val_ser")
+    case .valDeser: return .string("val_deser")
+    case .computeSha256Hash: return .string("compute_sha256_hash")
+    case .computeEd25519PubKey: return .string("compute_ed25519_pub_key")
+    case .verifyEd25519Sig: return .string("verify_ed25519_sig")
+    case .vmInstantiation: return .string("vm_instantiation")
+    case .vmCachedInstantiation: return .string("vm_cached_instantiation")
+    case .invokeVmFunction: return .string("invoke_vm_function")
+    case .computeKeccak256Hash: return .string("compute_keccak256_hash")
+    case .decodeEcdsaCurve256Sig: return .string("decode_ecdsa_curve256_sig")
+    case .recoverEcdsaSecp256k1Key: return .string("recover_ecdsa_secp256k1_key")
+    case .int256AddSub: return .string("int256_add_sub")
+    case .int256Mul: return .string("int256_mul")
+    case .int256Div: return .string("int256_div")
+    case .int256Pow: return .string("int256_pow")
+    case .int256Shift: return .string("int256_shift")
+    case .chaCha20DrawBytes: return .string("cha_cha20_draw_bytes")
+    case .parseWasmInstructions: return .string("parse_wasm_instructions")
+    case .parseWasmFunctions: return .string("parse_wasm_functions")
+    case .parseWasmGlobals: return .string("parse_wasm_globals")
+    case .parseWasmTableEntries: return .string("parse_wasm_table_entries")
+    case .parseWasmTypes: return .string("parse_wasm_types")
+    case .parseWasmDataSegments: return .string("parse_wasm_data_segments")
+    case .parseWasmElemSegments: return .string("parse_wasm_elem_segments")
+    case .parseWasmImports: return .string("parse_wasm_imports")
+    case .parseWasmExports: return .string("parse_wasm_exports")
+    case .parseWasmDataSegmentBytes: return .string("parse_wasm_data_segment_bytes")
+    case .instantiateWasmInstructions: return .string("instantiate_wasm_instructions")
+    case .instantiateWasmFunctions: return .string("instantiate_wasm_functions")
+    case .instantiateWasmGlobals: return .string("instantiate_wasm_globals")
+    case .instantiateWasmTableEntries: return .string("instantiate_wasm_table_entries")
+    case .instantiateWasmTypes: return .string("instantiate_wasm_types")
+    case .instantiateWasmDataSegments: return .string("instantiate_wasm_data_segments")
+    case .instantiateWasmElemSegments: return .string("instantiate_wasm_elem_segments")
+    case .instantiateWasmImports: return .string("instantiate_wasm_imports")
+    case .instantiateWasmExports: return .string("instantiate_wasm_exports")
+    case .instantiateWasmDataSegmentBytes: return .string("instantiate_wasm_data_segment_bytes")
+    case .sec1DecodePointUncompressed: return .string("sec1_decode_point_uncompressed")
+    case .verifyEcdsaSecp256r1Sig: return .string("verify_ecdsa_secp256r1_sig")
+    case .bls12381EncodeFp: return .string("bls12381_encode_fp")
+    case .bls12381DecodeFp: return .string("bls12381_decode_fp")
+    case .bls12381G1CheckPointOnCurve: return .string("bls12381_g1_check_point_on_curve")
+    case .bls12381G1CheckPointInSubgroup: return .string("bls12381_g1_check_point_in_subgroup")
+    case .bls12381G2CheckPointOnCurve: return .string("bls12381_g2_check_point_on_curve")
+    case .bls12381G2CheckPointInSubgroup: return .string("bls12381_g2_check_point_in_subgroup")
+    case .bls12381G1ProjectiveToAffine: return .string("bls12381_g1_projective_to_affine")
+    case .bls12381G2ProjectiveToAffine: return .string("bls12381_g2_projective_to_affine")
+    case .bls12381G1Add: return .string("bls12381_g1_add")
+    case .bls12381G1Mul: return .string("bls12381_g1_mul")
+    case .bls12381G1Msm: return .string("bls12381_g1_msm")
+    case .bls12381MapFpToG1: return .string("bls12381_map_fp_to_g1")
+    case .bls12381HashToG1: return .string("bls12381_hash_to_g1")
+    case .bls12381G2Add: return .string("bls12381_g2_add")
+    case .bls12381G2Mul: return .string("bls12381_g2_mul")
+    case .bls12381G2Msm: return .string("bls12381_g2_msm")
+    case .bls12381MapFp2ToG2: return .string("bls12381_map_fp2_to_g2")
+    case .bls12381HashToG2: return .string("bls12381_hash_to_g2")
+    case .bls12381Pairing: return .string("bls12381_pairing")
+    case .bls12381FrFromU256: return .string("bls12381_fr_from_u256")
+    case .bls12381FrToU256: return .string("bls12381_fr_to_u256")
+    case .bls12381FrAddSub: return .string("bls12381_fr_add_sub")
+    case .bls12381FrMul: return .string("bls12381_fr_mul")
+    case .bls12381FrPow: return .string("bls12381_fr_pow")
+    case .bls12381FrInv: return .string("bls12381_fr_inv")
+    case .bn254EncodeFp: return .string("bn254_encode_fp")
+    case .bn254DecodeFp: return .string("bn254_decode_fp")
+    case .bn254G1CheckPointOnCurve: return .string("bn254_g1_check_point_on_curve")
+    case .bn254G2CheckPointOnCurve: return .string("bn254_g2_check_point_on_curve")
+    case .bn254G2CheckPointInSubgroup: return .string("bn254_g2_check_point_in_subgroup")
+    case .bn254G1ProjectiveToAffine: return .string("bn254_g1_projective_to_affine")
+    case .bn254G1Add: return .string("bn254_g1_add")
+    case .bn254G1Mul: return .string("bn254_g1_mul")
+    case .bn254Pairing: return .string("bn254_pairing")
+    case .bn254FrFromU256: return .string("bn254_fr_from_u256")
+    case .bn254FrToU256: return .string("bn254_fr_to_u256")
+    case .bn254FrAddSub: return .string("bn254_fr_add_sub")
+    case .bn254FrMul: return .string("bn254_fr_mul")
+    case .bn254FrPow: return .string("bn254_fr_pow")
+    case .bn254FrInv: return .string("bn254_fr_inv")
+    case .bn254G1Msm: return .string("bn254_g1_msm")
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> ContractCostType {
+    let name = try XdrJson.string(value, type: "ContractCostType")
+    switch name {
+    case "wasm_insn_exec": return .wasmInsnExec
+    case "mem_alloc": return .memAlloc
+    case "mem_cpy": return .memCpy
+    case "mem_cmp": return .memCmp
+    case "dispatch_host_function": return .dispatchHostFunction
+    case "visit_object": return .visitObject
+    case "val_ser": return .valSer
+    case "val_deser": return .valDeser
+    case "compute_sha256_hash": return .computeSha256Hash
+    case "compute_ed25519_pub_key": return .computeEd25519PubKey
+    case "verify_ed25519_sig": return .verifyEd25519Sig
+    case "vm_instantiation": return .vmInstantiation
+    case "vm_cached_instantiation": return .vmCachedInstantiation
+    case "invoke_vm_function": return .invokeVmFunction
+    case "compute_keccak256_hash": return .computeKeccak256Hash
+    case "decode_ecdsa_curve256_sig": return .decodeEcdsaCurve256Sig
+    case "recover_ecdsa_secp256k1_key": return .recoverEcdsaSecp256k1Key
+    case "int256_add_sub": return .int256AddSub
+    case "int256_mul": return .int256Mul
+    case "int256_div": return .int256Div
+    case "int256_pow": return .int256Pow
+    case "int256_shift": return .int256Shift
+    case "cha_cha20_draw_bytes": return .chaCha20DrawBytes
+    case "parse_wasm_instructions": return .parseWasmInstructions
+    case "parse_wasm_functions": return .parseWasmFunctions
+    case "parse_wasm_globals": return .parseWasmGlobals
+    case "parse_wasm_table_entries": return .parseWasmTableEntries
+    case "parse_wasm_types": return .parseWasmTypes
+    case "parse_wasm_data_segments": return .parseWasmDataSegments
+    case "parse_wasm_elem_segments": return .parseWasmElemSegments
+    case "parse_wasm_imports": return .parseWasmImports
+    case "parse_wasm_exports": return .parseWasmExports
+    case "parse_wasm_data_segment_bytes": return .parseWasmDataSegmentBytes
+    case "instantiate_wasm_instructions": return .instantiateWasmInstructions
+    case "instantiate_wasm_functions": return .instantiateWasmFunctions
+    case "instantiate_wasm_globals": return .instantiateWasmGlobals
+    case "instantiate_wasm_table_entries": return .instantiateWasmTableEntries
+    case "instantiate_wasm_types": return .instantiateWasmTypes
+    case "instantiate_wasm_data_segments": return .instantiateWasmDataSegments
+    case "instantiate_wasm_elem_segments": return .instantiateWasmElemSegments
+    case "instantiate_wasm_imports": return .instantiateWasmImports
+    case "instantiate_wasm_exports": return .instantiateWasmExports
+    case "instantiate_wasm_data_segment_bytes": return .instantiateWasmDataSegmentBytes
+    case "sec1_decode_point_uncompressed": return .sec1DecodePointUncompressed
+    case "verify_ecdsa_secp256r1_sig": return .verifyEcdsaSecp256r1Sig
+    case "bls12381_encode_fp": return .bls12381EncodeFp
+    case "bls12381_decode_fp": return .bls12381DecodeFp
+    case "bls12381_g1_check_point_on_curve": return .bls12381G1CheckPointOnCurve
+    case "bls12381_g1_check_point_in_subgroup": return .bls12381G1CheckPointInSubgroup
+    case "bls12381_g2_check_point_on_curve": return .bls12381G2CheckPointOnCurve
+    case "bls12381_g2_check_point_in_subgroup": return .bls12381G2CheckPointInSubgroup
+    case "bls12381_g1_projective_to_affine": return .bls12381G1ProjectiveToAffine
+    case "bls12381_g2_projective_to_affine": return .bls12381G2ProjectiveToAffine
+    case "bls12381_g1_add": return .bls12381G1Add
+    case "bls12381_g1_mul": return .bls12381G1Mul
+    case "bls12381_g1_msm": return .bls12381G1Msm
+    case "bls12381_map_fp_to_g1": return .bls12381MapFpToG1
+    case "bls12381_hash_to_g1": return .bls12381HashToG1
+    case "bls12381_g2_add": return .bls12381G2Add
+    case "bls12381_g2_mul": return .bls12381G2Mul
+    case "bls12381_g2_msm": return .bls12381G2Msm
+    case "bls12381_map_fp2_to_g2": return .bls12381MapFp2ToG2
+    case "bls12381_hash_to_g2": return .bls12381HashToG2
+    case "bls12381_pairing": return .bls12381Pairing
+    case "bls12381_fr_from_u256": return .bls12381FrFromU256
+    case "bls12381_fr_to_u256": return .bls12381FrToU256
+    case "bls12381_fr_add_sub": return .bls12381FrAddSub
+    case "bls12381_fr_mul": return .bls12381FrMul
+    case "bls12381_fr_pow": return .bls12381FrPow
+    case "bls12381_fr_inv": return .bls12381FrInv
+    case "bn254_encode_fp": return .bn254EncodeFp
+    case "bn254_decode_fp": return .bn254DecodeFp
+    case "bn254_g1_check_point_on_curve": return .bn254G1CheckPointOnCurve
+    case "bn254_g2_check_point_on_curve": return .bn254G2CheckPointOnCurve
+    case "bn254_g2_check_point_in_subgroup": return .bn254G2CheckPointInSubgroup
+    case "bn254_g1_projective_to_affine": return .bn254G1ProjectiveToAffine
+    case "bn254_g1_add": return .bn254G1Add
+    case "bn254_g1_mul": return .bn254G1Mul
+    case "bn254_pairing": return .bn254Pairing
+    case "bn254_fr_from_u256": return .bn254FrFromU256
+    case "bn254_fr_to_u256": return .bn254FrToU256
+    case "bn254_fr_add_sub": return .bn254FrAddSub
+    case "bn254_fr_mul": return .bn254FrMul
+    case "bn254_fr_pow": return .bn254FrPow
+    case "bn254_fr_inv": return .bn254FrInv
+    case "bn254_g1_msm": return .bn254G1Msm
+    default:
+      throw XdrJsonError.unknownEnumValue(type: "ContractCostType", value: name)
+    }
+  }
+}

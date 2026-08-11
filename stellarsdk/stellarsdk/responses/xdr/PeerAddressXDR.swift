@@ -32,3 +32,25 @@ public struct PeerAddressXDR: XDRCodable, Sendable {
     try container.encode(numFailures)
   }
 }
+
+extension PeerAddressXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "ip", value: try self.ip.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "port", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.port, type: "PeerAddressXDR", key: "port")))
+    members.append(XdrJsonMember(key: "num_failures", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.numFailures, type: "PeerAddressXDR", key: "num_failures")))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> PeerAddressXDR {
+    let members = try XdrJson.object(value, type: "PeerAddressXDR", keys: ["ip", "port", "num_failures"])
+    let ip: PeerAddressXDRIpXDR = try PeerAddressXDRIpXDR.fromXdrJsonValue(try XdrJson.field(members, key: "ip", type: "PeerAddressXDR"))
+    let port: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "port", type: "PeerAddressXDR"), type: "PeerAddressXDR", key: "port")
+    let numFailures: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "num_failures", type: "PeerAddressXDR"), type: "PeerAddressXDR", key: "num_failures")
+    return PeerAddressXDR(
+      ip: ip,
+      port: port,
+      numFailures: numFailures
+    )
+  }
+}

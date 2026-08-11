@@ -63,3 +63,65 @@ public enum LedgerEntryChangeXDR: XDRCodable, Sendable {
     }
   }
 }
+
+extension LedgerEntryChangeXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .created(let payload):
+      return .object([XdrJsonMember(key: "created", value: try payload.toXdrJsonValue())])
+    case .updated(let payload):
+      return .object([XdrJsonMember(key: "updated", value: try payload.toXdrJsonValue())])
+    case .removed(let payload):
+      return .object([XdrJsonMember(key: "removed", value: try payload.toXdrJsonValue())])
+    case .state(let payload):
+      return .object([XdrJsonMember(key: "state", value: try payload.toXdrJsonValue())])
+    case .restored(let payload):
+      return .object([XdrJsonMember(key: "restored", value: try payload.toXdrJsonValue())])
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> LedgerEntryChangeXDR {
+    if case .string(let name) = value {
+      switch name {
+      case "created":
+        throw XdrJsonError.invalidValue(type: "LedgerEntryChangeXDR", key: "created",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "updated":
+        throw XdrJsonError.invalidValue(type: "LedgerEntryChangeXDR", key: "updated",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "removed":
+        throw XdrJsonError.invalidValue(type: "LedgerEntryChangeXDR", key: "removed",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "state":
+        throw XdrJsonError.invalidValue(type: "LedgerEntryChangeXDR", key: "state",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "restored":
+        throw XdrJsonError.invalidValue(type: "LedgerEntryChangeXDR", key: "restored",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      default:
+        throw XdrJsonError.unknownUnionArm(type: "LedgerEntryChangeXDR", key: name)
+      }
+    }
+
+    let member = try XdrJson.singleKeyObject(value, type: "LedgerEntryChangeXDR")
+    switch member.key {
+    case "created":
+      let created: LedgerEntryXDR = try LedgerEntryXDR.fromXdrJsonValue(member.value)
+      return .created(created)
+    case "updated":
+      let updated: LedgerEntryXDR = try LedgerEntryXDR.fromXdrJsonValue(member.value)
+      return .updated(updated)
+    case "removed":
+      let removed: LedgerKeyXDR = try LedgerKeyXDR.fromXdrJsonValue(member.value)
+      return .removed(removed)
+    case "state":
+      let state: LedgerEntryXDR = try LedgerEntryXDR.fromXdrJsonValue(member.value)
+      return .state(state)
+    case "restored":
+      let restored: LedgerEntryXDR = try LedgerEntryXDR.fromXdrJsonValue(member.value)
+      return .restored(restored)
+    default:
+      throw XdrJsonError.unknownUnionArm(type: "LedgerEntryChangeXDR", key: member.key)
+    }
+  }
+}

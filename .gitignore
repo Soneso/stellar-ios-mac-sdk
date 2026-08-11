@@ -90,6 +90,10 @@ maintenance/
 tools/xdr-generator/.bundle/
 tools/xdr-generator/vendor/
 
+# SEP-51 conformance tooling scratch output. refresh_corpus.sh regenerates here and
+# diffs against the committed corpus; it never writes the committed file.
+tools/sep-51-corpus/.tmp/
+
 # Scripts
 scripts/
 

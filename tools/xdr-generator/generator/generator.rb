@@ -15,10 +15,16 @@ require_relative 'member_overrides'
 require_relative 'field_overrides'
 require_relative 'type_overrides'
 require_relative 'txrep_types'
+require_relative 'json_names'
+require_relative 'json_codecs'
+require_relative 'json_overrides'
+require_relative 'json_field_overrides'
 
 AST = Xdrgen::AST
 
 class Generator < Xdrgen::Generators::Base
+  include Sep51JsonCodecs
+
   MAX_SIZE = (2**32) - 1
 
   # Swift reserved words that must be backtick-escaped when used as identifiers.
@@ -55,6 +61,7 @@ class Generator < Xdrgen::Generators::Base
   def generate
     @constants = []
     @generated_files = Set.new
+    build_json_collapse_registry
     render_definitions(@top)
     render_constants_file
   end
@@ -150,6 +157,8 @@ class Generator < Xdrgen::Generators::Base
     if TxRepTypes.should_generate_txrep?(self, struct_name)
       render_struct_txrep_methods(out, struct, struct_name)
     end
+
+    render_struct_json_methods(out, struct, struct_name)
 
     out.close
   end
@@ -408,6 +417,22 @@ class Generator < Xdrgen::Generators::Base
 
     if TxRepTypes.should_generate_txrep?(self, enum_name)
       render_enum_txrep_methods(out, enum_name, txrep_members)
+    end
+
+    # The XDR-JSON name of a member derives from the raw .x identifier, never from the
+    # Swift case name above: prefix stripping and camel-casing rewrite identifiers in ways
+    # SEP-0051 does not, and the two disagree wherever the generator's own casing differs
+    # from heck's word splitting.
+    json_members = enum_defn.members.each_with_index.map do |m, idx|
+      {
+        swift_case: txrep_members[idx][:swift_case],
+        json: Sep51JsonNames.enum_member_json_name(m.name, raw_names)
+      }
+    end
+    if json_divergent?(enum_name)
+      render_json_collapse_note(out, enum_name)
+    else
+      render_enum_json_methods(out, enum_name, json_members)
     end
 
     out.close
@@ -1003,6 +1028,8 @@ class Generator < Xdrgen::Generators::Base
         render_union_txrep_methods(out, union_name, case_entries, disc_info)
       end
     end
+
+    render_union_json_methods(out, union, union_name, case_entries)
 
     out.close
   end
@@ -1889,6 +1916,9 @@ class Generator < Xdrgen::Generators::Base
       # Array typedef: wrap in a struct for XDRCodable conformance.
       base = type_string(decl.type)
       render_typedef_array_wrapper(out, typedef_name, base, decl)
+      render_typedef_array_json_methods(out, typedef_name, base, decl)
+      out.close
+      return
     when AST::Declarations::Opaque
       # Opaque typedef: map to typealias for the appropriate data type.
       target = type_string(decl.type)
@@ -1904,6 +1934,8 @@ class Generator < Xdrgen::Generators::Base
         out.puts "public typealias #{typedef_name} = #{target}"
       end
     end
+
+    render_typedef_json_codec(out, typedef, typedef_name)
 
     out.close
   end
@@ -2333,6 +2365,743 @@ class Generator < Xdrgen::Generators::Base
     resolved.declaration.type.sub_type == :optional
   rescue
     false
+  end
+
+  # ---------------------------------------------------------------------------
+  # SEP-0051: XDR-JSON
+  # ---------------------------------------------------------------------------
+  #
+  # Each generated type gains an XdrJsonCodable conformance carrying the two tree
+  # operations; the protocol extension derives the string-boundary and depth-guarded
+  # members from them. A typedef Swift renders as a typealias cannot carry methods, so its
+  # conversion goes into a codec namespace instead.
+  #
+  # Wire names come from Sep51JsonNames, which reads the .x identifiers. They are never the
+  # Swift names above: prefix stripping, MEMBER_OVERRIDES and FIELD_OVERRIDES all rewrite
+  # identifiers, and SEP-0051 knows nothing of those rewrites.
+  #
+  # Locals a decoder introduces take the Swift property name unless it would collide with
+  # the decoder's own bindings.
+  JSON_RESERVED_LOCALS = %w[value members json element payload].freeze
+
+  def json_local_name(field)
+    base = field.to_s.delete('`')
+    JSON_RESERVED_LOCALS.include?(base) ? "#{base}Field" : swift_safe_name(base)
+  end
+
+  # -- Collapsed Swift types --------------------------------------------------
+  #
+  # NAME_OVERRIDES maps several XDR definitions onto one Swift type. The binary codec
+  # survives that because the collapsed definitions agree on field order and types; XDR-JSON
+  # does not always, because it puts field names on the wire. PathPaymentStrictReceiveOp and
+  # PathPaymentStrictSendOp are one Swift struct and disagree on two of six keys.
+  #
+  # The registry below records, for every Swift name, the XDR definitions that collapse onto
+  # it and whether their derived JSON names agree. A type whose definitions disagree carries
+  # no XDR-JSON members of its own -- there is no rendering that is right for both -- and the
+  # conversions are emitted per union arm instead, under the arm's own names. Any other
+  # reference to such a type aborts generation rather than picking a side.
+  def build_json_collapse_registry
+    @json_definitions = Hash.new { |hash, key| hash[key] = [] }
+    collect_json_definitions(@top)
+
+    @json_divergent = Set.new
+    @json_definitions.each do |swift_name, definitions|
+      next if definitions.length < 2
+
+      shapes = definitions.map { |definition| json_name_shape(definition) }.uniq
+      @json_divergent.add(swift_name) if shapes.length > 1
+    end
+  end
+
+  def collect_json_definitions(node)
+    node.definitions.each { |definition| record_json_definition(definition) }
+    node.namespaces.each { |namespace| collect_json_definitions(namespace) }
+  end
+
+  # Mirrors render_definition's traversal, so the first definition recorded for a Swift name
+  # is the one whose fields and cases the generated type actually carries.
+  def record_json_definition(defn)
+    if defn.respond_to?(:nested_definitions)
+      defn.nested_definitions.each { |nested| record_json_definition(nested) }
+    end
+
+    case defn
+    when AST::Definitions::Struct, AST::Definitions::Enum, AST::Definitions::Union
+      @json_definitions[name(defn)] << defn
+    end
+  end
+
+  # The wire names a definition derives, in declaration order. Two definitions with the same
+  # shape render identically and can share one Swift type's conversion.
+  def json_name_shape(defn)
+    case defn
+    when AST::Definitions::Struct
+      defn.members.map { |member| json_member_key(member) }
+    when AST::Definitions::Enum
+      identifiers = defn.members.map(&:name)
+      defn.members.map do |member|
+        [member.value, Sep51JsonNames.enum_member_json_name(member.name, identifiers)]
+      end
+    when AST::Definitions::Union
+      json_union_cases(defn).map { |kase| Sep51JsonNames.union_arm_json_key(kase, defn) }
+    end
+  end
+
+  def json_union_cases(union)
+    union.arms.reject { |arm| arm.is_a?(AST::Definitions::UnionDefaultArm) }.flat_map(&:cases)
+  end
+
+  def json_divergent?(swift_name) = @json_divergent.include?(swift_name)
+
+  def json_canonical_definition(swift_name) = @json_definitions[swift_name].first
+
+  # The name of the per-arm conversion for one collapsed definition. It is derived from the
+  # XDR name rather than from the arm, so the two shapes of a collapsed type stay
+  # distinguishable in the emitted Swift and in the name checks that read it back.
+  def json_inline_helper(defn)
+    raw = raw_xdr_qualified_name(defn)
+    raw[0].downcase + raw[1..].to_s
+  end
+
+  # States, in the generated file, why a collapsed type carries no conversion of its own.
+  def render_json_collapse_note(out, swift_name)
+    definitions = @json_definitions[swift_name]
+    others = definitions.map { |defn| raw_xdr_qualified_name(defn) }
+    home =
+      if definitions.first.is_a?(AST::Definitions::Enum)
+        'the union each of them discriminates'
+      else
+        'the union arm that selects each of them'
+      end
+
+    out.break
+    out.puts "// #{swift_name} is the Swift form of both #{others.join(' and ')}."
+    out.puts '// SEP-0051 renders them under different names, so no single rendering is correct for'
+    out.puts '// this type and it carries no XDR-JSON members. The conversions live on'
+    out.puts "// #{home}, under that definition's own names."
+  end
+
+  # Opens `extension <Type>: XdrJsonCodable {` and yields at the body's indentation.
+  def render_json_extension(out, type_name)
+    out.break
+    out.puts "extension #{type_name}: XdrJsonCodable {"
+    out.indent { yield }
+    out.puts '}'
+  end
+
+  # Writes an override body, which is Swift source already at function-body indentation.
+  def render_json_override_body(out, body)
+    body.to_s.split("\n").each { |line| out.puts line }
+  end
+
+  # -- Enums ------------------------------------------------------------------
+  #
+  # An enumeration renders as the bare string SEP-0051 derives from its member identifier,
+  # and reads back through the same table. An unknown string is reported rather than
+  # silently mapped, because an XDR enumeration is closed.
+  def render_enum_json_methods(out, enum_name, members)
+    duplicates = members.map { |m| m[:json] }.tally.select { |_, count| count > 1 }.keys
+    unless duplicates.empty?
+      raise "SEP-0051: enum #{enum_name} derives the same wire name for more than one " \
+            "member: #{duplicates.join(', ')}"
+    end
+
+    render_json_extension(out, enum_name) do
+      out.puts 'public func toXdrJsonValue() throws -> XdrJsonValue {'
+      out.indent do
+        out.puts 'switch self {'
+        members.each do |m|
+          out.puts "case .#{m[:swift_case]}: return .string(\"#{m[:json]}\")"
+        end
+        out.puts '}'
+      end
+      out.puts '}'
+      out.break
+
+      out.puts "public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> #{enum_name} {"
+      out.indent do
+        out.puts "let name = try XdrJson.string(value, type: \"#{enum_name}\")"
+        out.puts 'switch name {'
+        members.each do |m|
+          out.puts "case \"#{m[:json]}\": return .#{m[:swift_case]}"
+        end
+        out.puts 'default:'
+        out.indent do
+          out.puts "throw XdrJsonError.unknownEnumValue(type: \"#{enum_name}\", value: name)"
+        end
+        out.puts '}'
+      end
+      out.puts '}'
+    end
+  end
+
+  # -- Structs ----------------------------------------------------------------
+  #
+  # A struct renders as a JSON object with its keys in .x declaration order. The declared
+  # key list and the per-field reads come from one pass over the members, so a key the
+  # decoder accepts and a key it reads can never diverge.
+  def render_struct_json_methods(out, struct, struct_name)
+    if (override = Sep51JsonOverrides.nominal(struct_name))
+      return render_json_nominal_override(out, struct_name, override)
+    end
+    return render_json_collapse_note(out, struct_name) if json_divergent?(struct_name)
+
+    fields = json_struct_fields(struct, struct_name, label: struct_name)
+
+    render_json_extension(out, struct_name) do
+      out.puts 'public func toXdrJsonValue() throws -> XdrJsonValue {'
+      out.indent { render_json_struct_emit_body(out, fields, 'self') }
+      out.puts '}'
+      out.break
+
+      out.puts "public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> #{struct_name} {"
+      out.indent { render_json_struct_read_body(out, fields, struct_name, struct_name) }
+      out.puts '}'
+    end
+  end
+
+  def render_json_struct_emit_body(out, fields, subject)
+    out.puts 'var members: [XdrJsonMember] = []'
+    fields.each do |entry|
+      if entry[:extension_point]
+        out.puts "members.append(XdrJsonMember(key: \"#{entry[:key]}\", " \
+                 "value: .string(\"#{entry[:extension_point]}\")))"
+      elsif entry[:codec].expression_emit?
+        expression = entry[:codec].emit_expression("#{subject}.#{entry[:field]}")
+        out.puts "members.append(XdrJsonMember(key: \"#{entry[:key]}\", value: #{expression}))"
+      else
+        entry[:codec].write_emit(out, "#{subject}.#{entry[:field]}", "#{entry[:local]}Json")
+        out.puts "members.append(XdrJsonMember(key: \"#{entry[:key]}\", " \
+                 "value: #{entry[:local]}Json))"
+      end
+    end
+    out.puts 'return .object(members)'
+  end
+
+  def render_json_struct_read_body(out, fields, struct_name, label)
+    keys = fields.map { |entry| json_declared_key_literal(entry[:key]) }
+    out.puts "let members = try XdrJson.object(value, type: \"#{label}\", " \
+             "keys: [#{keys.join(', ')}])"
+    fields.each do |entry|
+      source = "try XdrJson.field(members, key: #{json_declared_key_literal(entry[:key])}, " \
+               "type: \"#{label}\")"
+      if entry[:extension_point]
+        out.puts "_ = try #{entry[:extension_point_type]}.fromXdrJsonValue(#{source})"
+      else
+        entry[:codec].write_read(out, source, entry[:local])
+      end
+    end
+    render_json_struct_init(out, struct_name, fields)
+  end
+
+  # Collects one entry per struct member, carrying the JSON key, the Swift property, the
+  # decoder's local name and the conversion.
+  #
+  # +names+ supplies the keys when they come from a different XDR definition than the one
+  # the Swift type was generated from, which is the collapsed-type case. Everything else
+  # still comes from the generated definition, because that is what decides the property
+  # names and types.
+  def json_struct_fields(struct, struct_name, label:, names: nil)
+    key_members = names ? names.members : struct.members
+
+    struct.members.each_with_index.map do |m, index|
+      field = resolve_field_name(struct_name, m.name)
+      key = json_member_key(key_members[index])
+      entry = { field: field, key: key, local: json_local_name(field), member: m }
+
+      if is_extension_point_field?(struct_name, field)
+        entry.merge(json_extension_point_entry(label, key, m))
+      else
+        entry.merge(codec: json_codec(m.declaration, owner: label, key: key,
+                                      swift_type: resolve_field_type(struct_name, field, m)))
+      end
+    end
+  end
+
+  # An extension point is a void-only union the type table collapses to a constant Int32
+  # field. SEP-0051 renders it as the union's own arm string, so emission writes that
+  # string and reading delegates to the union, which rejects anything else.
+  def json_extension_point_entry(struct_name, key, member)
+    union = member.declaration.type
+    unless union.is_a?(AST::Definitions::Union)
+      raise "SEP-0051: extension point #{struct_name}.#{key} does not declare a union"
+    end
+
+    arms = union.arms.reject { |arm| arm.is_a?(AST::Definitions::UnionDefaultArm) }
+    cases = arms.flat_map(&:cases)
+    unless arms.length == 1 && arms.first.void? && cases.length == 1
+      raise "SEP-0051: extension point #{struct_name}.#{key} collapses a union with " \
+            "#{cases.length} case(s); only a single void case can render as a constant"
+    end
+
+    {
+      extension_point: Sep51JsonNames.union_arm_json_key(cases.first, union),
+      extension_point_type: name(union)
+    }
+  end
+
+  # Constructs through the memberwise init, in the init's own parameter order and under its
+  # own labels, both of which can differ from .x declaration order.
+  def render_json_struct_init(out, struct_name, fields)
+    init_fields = fields.reject { |entry| entry[:extension_point] }
+    if INIT_PARAM_ORDER.key?(struct_name)
+      order = INIT_PARAM_ORDER[struct_name]
+      init_fields = init_fields.sort_by { |entry| order.index(entry[:field]) || 999 }
+    end
+
+    # An argument label is never escaped: Swift accepts a keyword there as written, and
+    # backticks around one are a warning rather than a nicety.
+    arguments = init_fields.map do |entry|
+      label = resolve_init_param_name(struct_name, entry[:field]).delete('`')
+      "#{label}: #{entry[:local]}"
+    end
+
+    if arguments.empty?
+      out.puts "return #{struct_name}()"
+    elsif arguments.length <= 2
+      out.puts "return #{struct_name}(#{arguments.join(', ')})"
+    else
+      out.puts "return #{struct_name}("
+      out.indent do
+        arguments.each_with_index do |argument, index|
+          out.puts index < arguments.length - 1 ? "#{argument}," : argument
+        end
+      end
+      out.puts ')'
+    end
+  end
+
+  # -- Unions -----------------------------------------------------------------
+  #
+  # A void arm renders as a bare string and a non-void arm as a single-key object. Both
+  # forms are read back, and supplying one where the other belongs names the arm rather
+  # than falling through to the unknown-arm message.
+  def render_union_json_methods(out, union, union_name, case_entries)
+    if (override = Sep51JsonOverrides.nominal(union_name))
+      return render_json_nominal_override(out, union_name, override)
+    end
+    return render_json_collapse_note(out, union_name) if json_divergent?(union_name)
+
+    arms = json_union_arms(union, union_name, case_entries, label: union_name)
+    inlined = arms.filter_map { |arm| arm[:inline] }
+
+    render_json_extension(out, union_name) do
+      render_json_union_body(out, arms, union_name)
+      inlined.each do |target|
+        out.break
+        render_json_inline_helper(out, target)
+      end
+    end
+  end
+
+  # The pair of conversion methods a union carries.
+  def render_json_union_body(out, arms, union_name)
+    label = union_name
+    duplicates = arms.map { |arm| arm[:key] }.tally.select { |_, count| count > 1 }.keys
+    unless duplicates.empty?
+      raise "SEP-0051: union #{label} derives the same arm key for more than one " \
+            "case: #{duplicates.join(', ')}"
+    end
+
+    void_arms, value_arms = arms.partition { |arm| arm[:void] }
+
+    out.puts 'public func toXdrJsonValue() throws -> XdrJsonValue {'
+    out.indent do
+      out.puts 'switch self {'
+      arms.each do |arm|
+        if arm[:void]
+          out.puts "case .#{arm[:swift_case]}: return .string(\"#{arm[:key]}\")"
+        else
+          out.puts "case .#{arm[:swift_case]}(let payload):"
+          out.indent do
+            expression = arm[:codec].emit_expression('payload')
+            out.puts "return .object([XdrJsonMember(key: \"#{arm[:key]}\", value: #{expression})])"
+          end
+        end
+      end
+      out.puts '}'
+    end
+    out.puts '}'
+    out.break
+
+    out.puts "public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> #{union_name} {"
+    out.indent do
+      if value_arms.empty?
+        out.puts "let name = try XdrJson.string(value, type: \"#{label}\")"
+        render_json_union_string_switch(out, label, arms, 'name')
+      else
+        out.puts 'if case .string(let name) = value {'
+        out.indent { render_json_union_string_switch(out, label, arms, 'name') }
+        out.puts '}'
+        out.break
+        out.puts "let member = try XdrJson.singleKeyObject(value, type: \"#{label}\")"
+        render_json_union_object_switch(out, label, arms, void_arms.any?)
+      end
+    end
+    out.puts '}'
+  end
+
+  # The conversion for one arm whose payload type is shared with another XDR definition that
+  # renders differently. It sits on the union that selects the arm, because the union is the
+  # only place that knows which of the shared definitions this value is.
+  def render_json_inline_helper(out, target)
+    out.puts "// MARK: - #{target[:label]}"
+    out.break
+
+    if target[:kind] == :struct
+      out.puts "private static func #{target[:helper]}ToXdrJsonValue(" \
+               "_ value: #{target[:swift_type]}) throws -> XdrJsonValue {"
+      out.indent { render_json_struct_emit_body(out, target[:fields], 'value') }
+      out.puts '}'
+      out.break
+
+      out.puts "private static func #{target[:helper]}FromXdrJsonValue(" \
+               "_ value: XdrJsonValue) throws -> #{target[:swift_type]} {"
+      out.indent do
+        render_json_struct_read_body(out, target[:fields], target[:swift_type], target[:label])
+      end
+      out.puts '}'
+      return
+    end
+
+    out.puts "private static func #{target[:helper]}ToXdrJsonValue(" \
+             "_ payload: #{target[:swift_type]}) throws -> XdrJsonValue {"
+    out.indent do
+      out.puts "switch payload {"
+      target[:arms].each do |arm|
+        if arm[:void]
+          out.puts "case .#{arm[:swift_case]}: return .string(\"#{arm[:key]}\")"
+        else
+          out.puts "case .#{arm[:swift_case]}(let inner):"
+          out.indent do
+            expression = arm[:codec].emit_expression('inner')
+            out.puts "return .object([XdrJsonMember(key: \"#{arm[:key]}\", value: #{expression})])"
+          end
+        end
+      end
+      out.puts '}'
+    end
+    out.puts '}'
+    out.break
+
+    out.puts "private static func #{target[:helper]}FromXdrJsonValue(" \
+             "_ value: XdrJsonValue) throws -> #{target[:swift_type]} {"
+    out.indent do
+      void_arms, value_arms = target[:arms].partition { |arm| arm[:void] }
+      if value_arms.empty?
+        out.puts "let name = try XdrJson.string(value, type: \"#{target[:label]}\")"
+        render_json_union_string_switch(out, target[:label], target[:arms], 'name')
+      else
+        out.puts 'if case .string(let name) = value {'
+        out.indent { render_json_union_string_switch(out, target[:label], target[:arms], 'name') }
+        out.puts '}'
+        out.break
+        out.puts "let member = try XdrJson.singleKeyObject(value, type: \"#{target[:label]}\")"
+        render_json_union_object_switch(out, target[:label], target[:arms], void_arms.any?)
+      end
+    end
+    out.puts '}'
+  end
+
+  def render_json_union_string_switch(out, union_name, arms, subject)
+    out.puts "switch #{subject} {"
+    arms.each do |arm|
+      out.puts "case \"#{arm[:key]}\":"
+      out.indent do
+        if arm[:void]
+          out.puts "return .#{arm[:swift_case]}"
+        else
+          out.puts "throw XdrJsonError.invalidValue(type: \"#{union_name}\", key: \"#{arm[:key]}\","
+          out.puts '                                message: "this arm carries a value, so it is ' \
+                   'written as a single-key object")'
+        end
+      end
+    end
+    out.puts 'default:'
+    out.indent do
+      out.puts "throw XdrJsonError.unknownUnionArm(type: \"#{union_name}\", key: #{subject})"
+    end
+    out.puts '}'
+  end
+
+  def render_json_union_object_switch(out, union_name, arms, reject_void)
+    out.puts 'switch member.key {'
+    arms.each do |arm|
+      next if arm[:void] && !reject_void
+
+      out.puts "case \"#{arm[:key]}\":"
+      out.indent do
+        if arm[:void]
+          out.puts "throw XdrJsonError.invalidValue(type: \"#{union_name}\", key: \"#{arm[:key]}\","
+          out.puts '                                message: "this arm carries no value, so it is ' \
+                   'written as a bare string")'
+        else
+          arm[:codec].write_read(out, 'member.value', arm[:local])
+          out.puts "return .#{arm[:swift_case]}(#{arm[:local]})"
+        end
+      end
+    end
+    out.puts 'default:'
+    out.indent do
+      out.puts "throw XdrJsonError.unknownUnionArm(type: \"#{union_name}\", key: member.key)"
+    end
+    out.puts '}'
+  end
+
+  # Collects one entry per Swift enum case, carrying the arm key, the payload conversion
+  # and the decoder's local name.
+  #
+  # The arm key comes from the discriminant enumeration's full member list, not from the
+  # cases this union happens to cover. A union switching over a proper subset of its
+  # discriminant would otherwise compute a different shared prefix and key its arms
+  # differently from the enumeration itself.
+  def json_union_arms(union, union_name, case_entries, label:, names: nil)
+    ordered = json_union_cases(union)
+    key_source = names || union
+    key_cases = json_union_cases(key_source)
+
+    if names && key_cases.length != ordered.length
+      raise "SEP-0051: #{raw_xdr_qualified_name(names)} declares #{key_cases.length} cases " \
+            "where #{raw_xdr_qualified_name(union)} declares #{ordered.length}; the two cannot " \
+            'share one Swift type'
+    end
+
+    case_entries.map do |entry|
+      if entry[:is_default]
+        raise "SEP-0051: union #{label} declares a default arm, which SEP-0051 has no " \
+              'rendering for'
+      end
+
+      raw = entry[:raw_disc_names].first
+      index = ordered.index { |kase| kase.value_s == raw }
+      raise "SEP-0051: union #{label} case #{raw.inspect} has no AST case" if index.nil?
+
+      key = Sep51JsonNames.union_arm_json_key(key_cases[index], key_source)
+      swift_case = swift_safe_name(entry[:case_name])
+      arm = { key: key, swift_case: swift_case, void: entry[:decode_style] == :void }
+      next arm if arm[:void]
+
+      arm.merge(
+        local: json_local_name(entry[:case_name]),
+        **json_union_arm_payload(entry, union_name, label, key)
+      )
+    end
+  end
+
+  # The conversion for one non-void arm's payload.
+  #
+  # Where the payload's Swift type is shared with an XDR definition that renders differently,
+  # the arm cannot delegate to that type -- it has no conversion, and could not tell the two
+  # shapes apart if it did -- so the arm gets a conversion of its own and the emission of it
+  # is requested through :inline.
+  def json_union_arm_payload(entry, union_name, label, key)
+    swift_type = entry[:associated_type]
+    return { codec: json_arm_codec(entry, label, key) } unless json_divergent?(swift_type)
+
+    unless entry[:decode_style] == :simple
+      raise "SEP-0051: #{label} arm #{key.inspect} carries #{swift_type} as " \
+            "#{entry[:decode_style]}, which has no per-arm conversion"
+    end
+
+    target = json_inline_target(entry, swift_type, union_name)
+    {
+      codec: Sep51JsonCodecs::Codec.new(
+        swift_type: swift_type,
+        emit: ->(accessor) { "Self.#{target[:helper]}ToXdrJsonValue(#{accessor})" },
+        read: ->(value) { "try Self.#{target[:helper]}FromXdrJsonValue(#{value})" }
+      ),
+      inline: target
+    }
+  end
+
+  def json_arm_codec(entry, label, key)
+    json_codec(entry[:arm_ast].declaration, owner: label, key: key,
+               swift_type: entry[:associated_type])
+  end
+
+  # Describes the per-arm conversion for a collapsed payload: the definition whose names it
+  # renders, the definition the Swift type was generated from, and the members or arms that
+  # pair the two together by position.
+  def json_inline_target(entry, swift_type, union_name)
+    names = resolve_union_arm_struct_defn(entry[:arm_ast])
+    canonical = json_canonical_definition(swift_type)
+
+    unless names.is_a?(AST::Definitions::Base) && names.class == canonical.class
+      raise "SEP-0051: #{union_name} arm payload #{swift_type} resolves to " \
+            "#{names.class.name}, which does not match the definition it was generated from"
+    end
+
+    label = raw_xdr_qualified_name(names)
+    target = { helper: json_inline_helper(names), label: label, swift_type: swift_type }
+
+    case canonical
+    when AST::Definitions::Struct
+      if names.members.length != canonical.members.length
+        raise "SEP-0051: #{label} declares #{names.members.length} fields where " \
+              "#{raw_xdr_qualified_name(canonical)} declares #{canonical.members.length}"
+      end
+      canonical.members.each_with_index do |member, index|
+        next if swift_type_string(member.declaration) == swift_type_string(names.members[index].declaration)
+
+        raise "SEP-0051: #{label} field #{names.members[index].name} does not have the type " \
+              "#{raw_xdr_qualified_name(canonical)} gives position #{index}"
+      end
+      target.merge(kind: :struct,
+                   fields: json_struct_fields(canonical, swift_type, label: label, names: names))
+    when AST::Definitions::Union
+      disc_info = resolve_discriminant_info(canonical)
+      case_entries = build_union_case_entries(canonical, swift_type, disc_info)
+      target.merge(kind: :union,
+                   arms: json_union_arms(canonical, swift_type, case_entries,
+                                         label: label, names: names))
+    else
+      raise "SEP-0051: #{label} collapses onto #{swift_type}, which is neither a struct nor a union"
+    end
+  end
+
+  # -- Overridden nominal types -----------------------------------------------
+
+  def render_json_nominal_override(out, type_name, override)
+    render_json_extension(out, type_name) do
+      out.puts 'public func toXdrJsonValue() throws -> XdrJsonValue {'
+      out.indent { render_json_override_body(out, override[:emit]) }
+      out.puts '}'
+      out.break
+
+      out.puts "public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> #{type_name} {"
+      out.indent { render_json_override_body(out, override[:read]) }
+      out.puts '}'
+    end
+  end
+
+  # -- Typedefs ---------------------------------------------------------------
+  #
+  # A typedef Swift renders as a typealias shares its type with every other typedef that
+  # collapses to the same target, and those targets have different wire forms, so the
+  # conversion cannot sit on the type. It goes into a namespace of its own instead, which
+  # is also what every field site declaring the typedef calls.
+  #
+  # Each direction is a pair: the public entry point of SEP-0051's five-member surface, and
+  # an overload internal to the module that carries the type and key a failure is reported
+  # against. A typedef names nothing a document carries, so a site passes its own type and
+  # key and a typedef over another typedef forwards what it received. The public entry point
+  # is the one position with no enclosing site, so it supplies the typedef's own name.
+  def render_typedef_json_codec(out, typedef, typedef_name)
+    target = json_typedef_target(typedef)
+    namespace = json_codec_namespace(typedef_name)
+    override = Sep51JsonOverrides.typedef(typedef_name)
+    forwarded = Sep51JsonCodecs::ForwardedContext.new(typedef_name)
+
+    out.break
+    out.puts "public enum #{namespace} {"
+    out.indent do
+      out.puts "public static func toXdrJsonValue(_ value: #{typedef_name}) throws -> XdrJsonValue {"
+      out.indent do
+        out.puts "try toXdrJsonValue(value, type: \"#{typedef_name}\", key: nil)"
+      end
+      out.puts '}'
+      out.break
+
+      out.puts "static func toXdrJsonValue(_ value: #{typedef_name}, type: String, " \
+               'key: String?) throws -> XdrJsonValue {'
+      out.indent do
+        if override
+          render_json_override_body(out, override[:emit])
+        else
+          codec = json_codec(typedef.declaration, owner: forwarded, key: nil, swift_type: target)
+          if codec.expression_emit?
+            expression = codec.emit('value')
+            expression = "try #{expression}" if codec.emit_throws?
+            out.puts "return #{expression}"
+          else
+            codec.write_emit(out, 'value', 'encoded')
+            out.puts 'return encoded'
+          end
+        end
+      end
+      out.puts '}'
+      out.break
+
+      out.puts "public static func toXdrJson(_ value: #{typedef_name}) throws -> String {"
+      out.indent { out.puts 'try XdrJsonWriter.canonicalString(from: try toXdrJsonValue(value))' }
+      out.puts '}'
+      out.break
+
+      out.puts "public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> #{typedef_name} {"
+      out.indent do
+        out.puts "try fromXdrJsonValue(value, type: \"#{typedef_name}\", key: nil)"
+      end
+      out.puts '}'
+      out.break
+
+      out.puts "static func fromXdrJsonValue(_ value: XdrJsonValue, type: String, " \
+               "key: String?) throws -> #{typedef_name} {"
+      out.indent do
+        if override
+          render_json_override_body(out, override[:read])
+        else
+          codec = json_codec(typedef.declaration, owner: forwarded, key: nil, swift_type: target)
+          codec.write_read(out, 'value', 'decoded')
+          out.puts 'return decoded'
+        end
+      end
+      out.puts '}'
+      out.break
+
+      out.puts "public static func fromXdrJson(_ json: String) throws -> #{typedef_name} {"
+      out.indent { out.puts 'try fromXdrJsonValue(try XdrJsonParser.parse(json))' }
+      out.puts '}'
+      out.break
+
+      out.puts "public static func fromXdrJsonTree(_ value: XdrJsonValue) throws -> #{typedef_name} {"
+      out.indent do
+        out.puts 'try XdrJson.validateDepth(value)'
+        out.puts 'return try fromXdrJsonValue(value)'
+      end
+      out.puts '}'
+    end
+    out.puts '}'
+  end
+
+  # An array typedef becomes a struct, so it carries the conformance directly. It still
+  # renders as a bare JSON array rather than as an object around its single property.
+  def render_typedef_array_json_methods(out, typedef_name, element_type, decl)
+    field_name = resolve_field_name(typedef_name, 'wrapped')
+    init_label = TYPEDEF_INIT_LABEL.fetch(typedef_name, field_name)
+    element = json_codec_for_type(decl.type, owner: typedef_name, key: nil, swift_type: element_type)
+    codec = json_array_codec(element, owner: typedef_name, key: nil,
+                             fixed_size: decl.fixed? ? resolve_size(decl) : nil)
+
+    render_json_extension(out, typedef_name) do
+      out.puts 'public func toXdrJsonValue() throws -> XdrJsonValue {'
+      out.indent do
+        expression = codec.emit("self.#{field_name}")
+        expression = "try #{expression}" if codec.emit_throws?
+        out.puts "return #{expression}"
+      end
+      out.puts '}'
+      out.break
+
+      out.puts "public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> #{typedef_name} {"
+      out.indent do
+        codec.write_read(out, 'value', 'decoded')
+        out.puts "return #{typedef_name}(#{init_label}: decoded)"
+      end
+      out.puts '}'
+    end
+  end
+
+  # The Swift type a typedef names, matching what render_typedef emits.
+  def json_typedef_target(typedef)
+    decl = typedef.declaration
+    case decl
+    when AST::Declarations::Array then "[#{type_string(decl.type)}]"
+    when AST::Declarations::String then 'String'
+    else
+      target = type_string(decl.type)
+      decl.type.sub_type == :optional ? "#{target}?" : target
+    end
   end
 
   # Resolve the init parameter name for a field, using INIT_PARAM_OVERRIDES

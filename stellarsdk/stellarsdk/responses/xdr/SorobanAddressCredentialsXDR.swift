@@ -54,3 +54,28 @@ extension SorobanAddressCredentialsXDR {
     return SorobanAddressCredentialsXDR(address: address, nonce: nonce, signatureExpirationLedger: signatureExpirationLedger, signature: signature)
   }
 }
+
+extension SorobanAddressCredentialsXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "address", value: try self.address.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "nonce", value: try Int64XDRJsonCodec.toXdrJsonValue(self.nonce, type: "SorobanAddressCredentialsXDR", key: "nonce")))
+    members.append(XdrJsonMember(key: "signature_expiration_ledger", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.signatureExpirationLedger, type: "SorobanAddressCredentialsXDR", key: "signature_expiration_ledger")))
+    members.append(XdrJsonMember(key: "signature", value: try self.signature.toXdrJsonValue()))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> SorobanAddressCredentialsXDR {
+    let members = try XdrJson.object(value, type: "SorobanAddressCredentialsXDR", keys: ["address", "nonce", "signature_expiration_ledger", "signature"])
+    let address: SCAddressXDR = try SCAddressXDR.fromXdrJsonValue(try XdrJson.field(members, key: "address", type: "SorobanAddressCredentialsXDR"))
+    let nonce: Int64 = try Int64XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "nonce", type: "SorobanAddressCredentialsXDR"), type: "SorobanAddressCredentialsXDR", key: "nonce")
+    let signatureExpirationLedger: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "signature_expiration_ledger", type: "SorobanAddressCredentialsXDR"), type: "SorobanAddressCredentialsXDR", key: "signature_expiration_ledger")
+    let signature: SCValXDR = try SCValXDR.fromXdrJsonValue(try XdrJson.field(members, key: "signature", type: "SorobanAddressCredentialsXDR"))
+    return SorobanAddressCredentialsXDR(
+      address: address,
+      nonce: nonce,
+      signatureExpirationLedger: signatureExpirationLedger,
+      signature: signature
+    )
+  }
+}

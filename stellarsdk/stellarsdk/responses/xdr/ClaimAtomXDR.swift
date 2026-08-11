@@ -49,3 +49,49 @@ public enum ClaimAtomXDR: XDRCodable, Sendable {
     }
   }
 }
+
+extension ClaimAtomXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .v0(let payload):
+      return .object([XdrJsonMember(key: "v0", value: try payload.toXdrJsonValue())])
+    case .orderBook(let payload):
+      return .object([XdrJsonMember(key: "order_book", value: try payload.toXdrJsonValue())])
+    case .liquidityPool(let payload):
+      return .object([XdrJsonMember(key: "liquidity_pool", value: try payload.toXdrJsonValue())])
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> ClaimAtomXDR {
+    if case .string(let name) = value {
+      switch name {
+      case "v0":
+        throw XdrJsonError.invalidValue(type: "ClaimAtomXDR", key: "v0",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "order_book":
+        throw XdrJsonError.invalidValue(type: "ClaimAtomXDR", key: "order_book",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "liquidity_pool":
+        throw XdrJsonError.invalidValue(type: "ClaimAtomXDR", key: "liquidity_pool",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      default:
+        throw XdrJsonError.unknownUnionArm(type: "ClaimAtomXDR", key: name)
+      }
+    }
+
+    let member = try XdrJson.singleKeyObject(value, type: "ClaimAtomXDR")
+    switch member.key {
+    case "v0":
+      let v0: ClaimOfferAtomV0XDR = try ClaimOfferAtomV0XDR.fromXdrJsonValue(member.value)
+      return .v0(v0)
+    case "order_book":
+      let orderBook: ClaimOfferAtomXDR = try ClaimOfferAtomXDR.fromXdrJsonValue(member.value)
+      return .orderBook(orderBook)
+    case "liquidity_pool":
+      let liquidityPool: ClaimLiquidityAtomXDR = try ClaimLiquidityAtomXDR.fromXdrJsonValue(member.value)
+      return .liquidityPool(liquidityPool)
+    default:
+      throw XdrJsonError.unknownUnionArm(type: "ClaimAtomXDR", key: member.key)
+    }
+  }
+}

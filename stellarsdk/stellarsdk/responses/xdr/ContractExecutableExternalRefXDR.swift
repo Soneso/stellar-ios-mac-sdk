@@ -37,3 +37,19 @@ extension ContractExecutableExternalRefXDR {
     return ContractExecutableExternalRefXDR(executableOwner: executableOwner, tag: tag)
   }
 }
+
+extension ContractExecutableExternalRefXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "executable_owner", value: try self.executableOwner.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "tag", value: try SCStringXDRJsonCodec.toXdrJsonValue(self.tag, type: "ContractExecutableExternalRefXDR", key: "tag")))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> ContractExecutableExternalRefXDR {
+    let members = try XdrJson.object(value, type: "ContractExecutableExternalRefXDR", keys: ["executable_owner", "tag"])
+    let executableOwner: SCAddressXDR = try SCAddressXDR.fromXdrJsonValue(try XdrJson.field(members, key: "executable_owner", type: "ContractExecutableExternalRefXDR"))
+    let tag: String = try SCStringXDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "tag", type: "ContractExecutableExternalRefXDR"), type: "ContractExecutableExternalRefXDR", key: "tag")
+    return ContractExecutableExternalRefXDR(executableOwner: executableOwner, tag: tag)
+  }
+}

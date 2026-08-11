@@ -13,3 +13,34 @@ public enum AccountMergeResultCode: Int32, XDRCodable, Equatable, Sendable {
   case destFull = -6
   case isSponsor = -7
 }
+
+extension AccountMergeResultCode: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .success: return .string("success")
+    case .malformed: return .string("malformed")
+    case .noAccount: return .string("no_account")
+    case .immutableSet: return .string("immutable_set")
+    case .hasSubEntries: return .string("has_sub_entries")
+    case .seqnumTooFar: return .string("seqnum_too_far")
+    case .destFull: return .string("dest_full")
+    case .isSponsor: return .string("is_sponsor")
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> AccountMergeResultCode {
+    let name = try XdrJson.string(value, type: "AccountMergeResultCode")
+    switch name {
+    case "success": return .success
+    case "malformed": return .malformed
+    case "no_account": return .noAccount
+    case "immutable_set": return .immutableSet
+    case "has_sub_entries": return .hasSubEntries
+    case "seqnum_too_far": return .seqnumTooFar
+    case "dest_full": return .destFull
+    case "is_sponsor": return .isSponsor
+    default:
+      throw XdrJsonError.unknownEnumValue(type: "AccountMergeResultCode", value: name)
+    }
+  }
+}

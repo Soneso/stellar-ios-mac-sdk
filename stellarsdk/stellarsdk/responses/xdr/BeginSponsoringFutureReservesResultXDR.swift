@@ -52,3 +52,30 @@ public enum BeginSponsoringFutureReservesResultXDR: XDRCodable, Sendable {
     }
   }
 }
+
+extension BeginSponsoringFutureReservesResultXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .success: return .string("success")
+    case .malformed: return .string("malformed")
+    case .alreadySponsored: return .string("already_sponsored")
+    case .recursive: return .string("recursive")
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> BeginSponsoringFutureReservesResultXDR {
+    let name = try XdrJson.string(value, type: "BeginSponsoringFutureReservesResultXDR")
+    switch name {
+    case "success":
+      return .success
+    case "malformed":
+      return .malformed
+    case "already_sponsored":
+      return .alreadySponsored
+    case "recursive":
+      return .recursive
+    default:
+      throw XdrJsonError.unknownUnionArm(type: "BeginSponsoringFutureReservesResultXDR", key: name)
+    }
+  }
+}

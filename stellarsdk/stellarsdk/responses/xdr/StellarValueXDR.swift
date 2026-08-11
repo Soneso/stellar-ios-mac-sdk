@@ -37,3 +37,29 @@ public struct StellarValueXDR: XDRCodable, Sendable {
     try container.encode(ext)
   }
 }
+
+extension StellarValueXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "tx_set_hash", value: try HashXDRJsonCodec.toXdrJsonValue(self.txSetHash, type: "StellarValueXDR", key: "tx_set_hash")))
+    members.append(XdrJsonMember(key: "close_time", value: try TimePointXDRJsonCodec.toXdrJsonValue(self.closeTime, type: "StellarValueXDR", key: "close_time")))
+    members.append(XdrJsonMember(key: "upgrades", value: try XdrJson.array(self.upgrades.map { element in try UpgradeTypeXDRJsonCodec.toXdrJsonValue(element, type: "StellarValueXDR", key: "upgrades") })))
+    members.append(XdrJsonMember(key: "ext", value: try self.ext.toXdrJsonValue()))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> StellarValueXDR {
+    let members = try XdrJson.object(value, type: "StellarValueXDR", keys: ["tx_set_hash", "close_time", "upgrades", "ext"])
+    let txSetHash: HashXDR = try HashXDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "tx_set_hash", type: "StellarValueXDR"), type: "StellarValueXDR", key: "tx_set_hash")
+    let closeTime: UInt64 = try TimePointXDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "close_time", type: "StellarValueXDR"), type: "StellarValueXDR", key: "close_time")
+    let upgradesElements = try XdrJson.array(try XdrJson.field(members, key: "upgrades", type: "StellarValueXDR"), type: "StellarValueXDR", key: "upgrades")
+    let upgrades: [UpgradeTypeXDR] = try upgradesElements.map { element in try UpgradeTypeXDRJsonCodec.fromXdrJsonValue(element, type: "StellarValueXDR", key: "upgrades") }
+    let ext: StellarValueXDRExtXDR = try StellarValueXDRExtXDR.fromXdrJsonValue(try XdrJson.field(members, key: "ext", type: "StellarValueXDR"))
+    return StellarValueXDR(
+      txSetHash: txSetHash,
+      closeTime: closeTime,
+      upgrades: upgrades,
+      ext: ext
+    )
+  }
+}

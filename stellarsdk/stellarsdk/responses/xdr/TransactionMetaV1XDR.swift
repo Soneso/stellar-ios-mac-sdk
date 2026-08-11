@@ -24,3 +24,20 @@ public struct TransactionMetaV1XDR: XDRCodable, Sendable {
     try container.encode(operations)
   }
 }
+
+extension TransactionMetaV1XDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "tx_changes", value: try self.txChanges.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "operations", value: try XdrJson.array(self.operations.map { element in try element.toXdrJsonValue() })))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> TransactionMetaV1XDR {
+    let members = try XdrJson.object(value, type: "TransactionMetaV1XDR", keys: ["tx_changes", "operations"])
+    let txChanges: LedgerEntryChangesXDR = try LedgerEntryChangesXDR.fromXdrJsonValue(try XdrJson.field(members, key: "tx_changes", type: "TransactionMetaV1XDR"))
+    let operationsElements = try XdrJson.array(try XdrJson.field(members, key: "operations", type: "TransactionMetaV1XDR"), type: "TransactionMetaV1XDR", key: "operations")
+    let operations: [OperationMetaXDR] = try operationsElements.map { element in try OperationMetaXDR.fromXdrJsonValue(element) }
+    return TransactionMetaV1XDR(txChanges: txChanges, operations: operations)
+  }
+}

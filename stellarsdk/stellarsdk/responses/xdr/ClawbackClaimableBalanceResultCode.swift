@@ -9,3 +9,26 @@ public enum ClawbackClaimableBalanceResultCode: Int32, XDRCodable, Equatable, Se
   case notIssuer = -2
   case notClawbackEnabled = -3
 }
+
+extension ClawbackClaimableBalanceResultCode: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .success: return .string("success")
+    case .doesNotExist: return .string("does_not_exist")
+    case .notIssuer: return .string("not_issuer")
+    case .notClawbackEnabled: return .string("not_clawback_enabled")
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> ClawbackClaimableBalanceResultCode {
+    let name = try XdrJson.string(value, type: "ClawbackClaimableBalanceResultCode")
+    switch name {
+    case "success": return .success
+    case "does_not_exist": return .doesNotExist
+    case "not_issuer": return .notIssuer
+    case "not_clawback_enabled": return .notClawbackEnabled
+    default:
+      throw XdrJsonError.unknownEnumValue(type: "ClawbackClaimableBalanceResultCode", value: name)
+    }
+  }
+}

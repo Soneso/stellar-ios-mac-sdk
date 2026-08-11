@@ -1,6 +1,6 @@
 # SEP Implementations
 
-The iOS SDK implements 17 Stellar Ecosystem Proposals (SEPs) that cover authentication, asset transfers, identity verification, and other standardized protocols for integrating with anchors and other Stellar services.
+The iOS SDK implements 18 Stellar Ecosystem Proposals (SEPs) that cover authentication, asset transfers, identity verification, and other standardized protocols for integrating with anchors and other Stellar services.
 
 ## SEP Reference Table
 
@@ -22,6 +22,7 @@ The iOS SDK implements 17 Stellar Ecosystem Proposals (SEPs) that cover authenti
 | SEP-30 | Account Recovery | Recover access to accounts via identity verification | [Details](sep-30.md) |
 | SEP-38 | Anchor RFQ API | Get exchange quotes for asset conversions | [Details](sep-38.md) |
 | SEP-45 | Web Auth for Contracts | Authenticate Soroban contract accounts | [Details](sep-45.md) |
+| SEP-51 | XDR-JSON | Convert XDR structures to JSON and back | [Details](sep-51.md) |
 | SEP-53 | Sign/Verify Messages | Sign and verify arbitrary messages with keypairs | [Details](sep-53.md) |
 
 ## Common Flow: SEP-01 → SEP-10 → SEP-24
@@ -64,4 +65,4 @@ The following SEPs depend on other SEPs:
 - **SEP-38 (Anchor RFQ API)** → Requires SEP-10 for authentication; used with SEP-06 or SEP-24
 - **SEP-45 (Web Auth for Contracts)** → Requires SEP-01 to discover web auth endpoint for contract accounts
 
-No dependencies: SEP-02, SEP-05, SEP-07, SEP-08, SEP-09, SEP-11, SEP-23, SEP-29, SEP-53
+No dependencies: SEP-02, SEP-05, SEP-07, SEP-08, SEP-09, SEP-11, SEP-23, SEP-29, SEP-51, SEP-53

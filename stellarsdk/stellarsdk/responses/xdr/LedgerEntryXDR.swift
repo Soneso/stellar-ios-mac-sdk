@@ -32,3 +32,25 @@ public struct LedgerEntryXDR: XDRCodable, Sendable {
     try container.encode(reserved)
   }
 }
+
+extension LedgerEntryXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "last_modified_ledger_seq", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.lastModifiedLedgerSeq, type: "LedgerEntryXDR", key: "last_modified_ledger_seq")))
+    members.append(XdrJsonMember(key: "data", value: try self.data.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "ext", value: try self.reserved.toXdrJsonValue()))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> LedgerEntryXDR {
+    let members = try XdrJson.object(value, type: "LedgerEntryXDR", keys: ["last_modified_ledger_seq", "data", "ext"])
+    let lastModifiedLedgerSeq: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "last_modified_ledger_seq", type: "LedgerEntryXDR"), type: "LedgerEntryXDR", key: "last_modified_ledger_seq")
+    let data: LedgerEntryDataXDR = try LedgerEntryDataXDR.fromXdrJsonValue(try XdrJson.field(members, key: "data", type: "LedgerEntryXDR"))
+    let reserved: LedgerEntryExtXDR = try LedgerEntryExtXDR.fromXdrJsonValue(try XdrJson.field(members, key: "ext", type: "LedgerEntryXDR"))
+    return LedgerEntryXDR(
+      lastModifiedLedgerSeq: lastModifiedLedgerSeq,
+      data: data,
+      reserved: reserved
+    )
+  }
+}

@@ -62,3 +62,48 @@ public struct LedgerCloseMetaV1XDR: XDRCodable, Sendable {
     try container.encode(unused)
   }
 }
+
+extension LedgerCloseMetaV1XDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "ext", value: try self.ext.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "ledger_header", value: try self.ledgerHeader.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "tx_set", value: try self.txSet.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "tx_processing", value: try XdrJson.array(self.txProcessing.map { element in try element.toXdrJsonValue() })))
+    members.append(XdrJsonMember(key: "upgrades_processing", value: try XdrJson.array(self.upgradesProcessing.map { element in try element.toXdrJsonValue() })))
+    members.append(XdrJsonMember(key: "scp_info", value: try XdrJson.array(self.scpInfo.map { element in try element.toXdrJsonValue() })))
+    members.append(XdrJsonMember(key: "total_byte_size_of_live_soroban_state", value: try Uint64XDRJsonCodec.toXdrJsonValue(self.totalByteSizeOfLiveSorobanState, type: "LedgerCloseMetaV1XDR", key: "total_byte_size_of_live_soroban_state")))
+    members.append(XdrJsonMember(key: "evicted_keys", value: try XdrJson.array(self.evictedKeys.map { element in try element.toXdrJsonValue() })))
+    members.append(XdrJsonMember(key: "unused", value: try XdrJson.array(self.unused.map { element in try element.toXdrJsonValue() })))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> LedgerCloseMetaV1XDR {
+    let members = try XdrJson.object(value, type: "LedgerCloseMetaV1XDR", keys: ["ext", "ledger_header", "tx_set", "tx_processing", "upgrades_processing", "scp_info", "total_byte_size_of_live_soroban_state", "evicted_keys", "unused"])
+    let ext: LedgerCloseMetaExtXDR = try LedgerCloseMetaExtXDR.fromXdrJsonValue(try XdrJson.field(members, key: "ext", type: "LedgerCloseMetaV1XDR"))
+    let ledgerHeader: LedgerHeaderHistoryEntryXDR = try LedgerHeaderHistoryEntryXDR.fromXdrJsonValue(try XdrJson.field(members, key: "ledger_header", type: "LedgerCloseMetaV1XDR"))
+    let txSet: GeneralizedTransactionSetXDR = try GeneralizedTransactionSetXDR.fromXdrJsonValue(try XdrJson.field(members, key: "tx_set", type: "LedgerCloseMetaV1XDR"))
+    let txProcessingElements = try XdrJson.array(try XdrJson.field(members, key: "tx_processing", type: "LedgerCloseMetaV1XDR"), type: "LedgerCloseMetaV1XDR", key: "tx_processing")
+    let txProcessing: [TransactionResultMetaXDR] = try txProcessingElements.map { element in try TransactionResultMetaXDR.fromXdrJsonValue(element) }
+    let upgradesProcessingElements = try XdrJson.array(try XdrJson.field(members, key: "upgrades_processing", type: "LedgerCloseMetaV1XDR"), type: "LedgerCloseMetaV1XDR", key: "upgrades_processing")
+    let upgradesProcessing: [UpgradeEntryMetaXDR] = try upgradesProcessingElements.map { element in try UpgradeEntryMetaXDR.fromXdrJsonValue(element) }
+    let scpInfoElements = try XdrJson.array(try XdrJson.field(members, key: "scp_info", type: "LedgerCloseMetaV1XDR"), type: "LedgerCloseMetaV1XDR", key: "scp_info")
+    let scpInfo: [SCPHistoryEntryXDR] = try scpInfoElements.map { element in try SCPHistoryEntryXDR.fromXdrJsonValue(element) }
+    let totalByteSizeOfLiveSorobanState: UInt64 = try Uint64XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "total_byte_size_of_live_soroban_state", type: "LedgerCloseMetaV1XDR"), type: "LedgerCloseMetaV1XDR", key: "total_byte_size_of_live_soroban_state")
+    let evictedKeysElements = try XdrJson.array(try XdrJson.field(members, key: "evicted_keys", type: "LedgerCloseMetaV1XDR"), type: "LedgerCloseMetaV1XDR", key: "evicted_keys")
+    let evictedKeys: [LedgerKeyXDR] = try evictedKeysElements.map { element in try LedgerKeyXDR.fromXdrJsonValue(element) }
+    let unusedElements = try XdrJson.array(try XdrJson.field(members, key: "unused", type: "LedgerCloseMetaV1XDR"), type: "LedgerCloseMetaV1XDR", key: "unused")
+    let unused: [LedgerEntryXDR] = try unusedElements.map { element in try LedgerEntryXDR.fromXdrJsonValue(element) }
+    return LedgerCloseMetaV1XDR(
+      ext: ext,
+      ledgerHeader: ledgerHeader,
+      txSet: txSet,
+      txProcessing: txProcessing,
+      upgradesProcessing: upgradesProcessing,
+      scpInfo: scpInfo,
+      totalByteSizeOfLiveSorobanState: totalByteSizeOfLiveSorobanState,
+      evictedKeys: evictedKeys,
+      unused: unused
+    )
+  }
+}

@@ -49,3 +49,49 @@ public enum TransactionEnvelopeXDR: XDRCodable, Sendable {
     }
   }
 }
+
+extension TransactionEnvelopeXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .v0(let payload):
+      return .object([XdrJsonMember(key: "tx_v0", value: try payload.toXdrJsonValue())])
+    case .v1(let payload):
+      return .object([XdrJsonMember(key: "tx", value: try payload.toXdrJsonValue())])
+    case .feeBump(let payload):
+      return .object([XdrJsonMember(key: "tx_fee_bump", value: try payload.toXdrJsonValue())])
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> TransactionEnvelopeXDR {
+    if case .string(let name) = value {
+      switch name {
+      case "tx_v0":
+        throw XdrJsonError.invalidValue(type: "TransactionEnvelopeXDR", key: "tx_v0",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "tx":
+        throw XdrJsonError.invalidValue(type: "TransactionEnvelopeXDR", key: "tx",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "tx_fee_bump":
+        throw XdrJsonError.invalidValue(type: "TransactionEnvelopeXDR", key: "tx_fee_bump",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      default:
+        throw XdrJsonError.unknownUnionArm(type: "TransactionEnvelopeXDR", key: name)
+      }
+    }
+
+    let member = try XdrJson.singleKeyObject(value, type: "TransactionEnvelopeXDR")
+    switch member.key {
+    case "tx_v0":
+      let v0: TransactionV0EnvelopeXDR = try TransactionV0EnvelopeXDR.fromXdrJsonValue(member.value)
+      return .v0(v0)
+    case "tx":
+      let v1: TransactionV1EnvelopeXDR = try TransactionV1EnvelopeXDR.fromXdrJsonValue(member.value)
+      return .v1(v1)
+    case "tx_fee_bump":
+      let feeBump: FeeBumpTransactionEnvelopeXDR = try FeeBumpTransactionEnvelopeXDR.fromXdrJsonValue(member.value)
+      return .feeBump(feeBump)
+    default:
+      throw XdrJsonError.unknownUnionArm(type: "TransactionEnvelopeXDR", key: member.key)
+    }
+  }
+}

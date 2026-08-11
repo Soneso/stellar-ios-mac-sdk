@@ -4,3 +4,37 @@
 import Foundation
 
 public typealias ContractIDXDR = HashXDR
+
+public enum ContractIDXDRJsonCodec {
+  public static func toXdrJsonValue(_ value: ContractIDXDR) throws -> XdrJsonValue {
+    try toXdrJsonValue(value, type: "ContractIDXDR", key: nil)
+  }
+
+  static func toXdrJsonValue(_ value: ContractIDXDR, type: String, key: String?) throws -> XdrJsonValue {
+    return .string(try XdrJson.strKey(value.wrapped, expectedLength: 32,
+                                      type: type, key: key) { try $0.encodeContractId() })
+  }
+
+  public static func toXdrJson(_ value: ContractIDXDR) throws -> String {
+    try XdrJsonWriter.canonicalString(from: try toXdrJsonValue(value))
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> ContractIDXDR {
+    try fromXdrJsonValue(value, type: "ContractIDXDR", key: nil)
+  }
+
+  static func fromXdrJsonValue(_ value: XdrJsonValue, type: String, key: String?) throws -> ContractIDXDR {
+    let text = try XdrJson.string(value, type: type, key: key)
+    return ContractIDXDR(try XdrJson.strKeyBytes(text, expectedLength: 32,
+                                                 type: type, key: key) { try $0.decodeContractId() })
+  }
+
+  public static func fromXdrJson(_ json: String) throws -> ContractIDXDR {
+    try fromXdrJsonValue(try XdrJsonParser.parse(json))
+  }
+
+  public static func fromXdrJsonTree(_ value: XdrJsonValue) throws -> ContractIDXDR {
+    try XdrJson.validateDepth(value)
+    return try fromXdrJsonValue(value)
+  }
+}

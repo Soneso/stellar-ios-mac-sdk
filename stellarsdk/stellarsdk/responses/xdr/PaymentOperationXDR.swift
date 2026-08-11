@@ -47,3 +47,25 @@ extension PaymentOperationXDR {
     return PaymentOperationXDR(destination: destination, asset: asset, amount: amount)
   }
 }
+
+extension PaymentOperationXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "destination", value: try self.destination.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "asset", value: try self.asset.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "amount", value: try Int64XDRJsonCodec.toXdrJsonValue(self.amount, type: "PaymentOperationXDR", key: "amount")))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> PaymentOperationXDR {
+    let members = try XdrJson.object(value, type: "PaymentOperationXDR", keys: ["destination", "asset", "amount"])
+    let destination: MuxedAccountXDR = try MuxedAccountXDR.fromXdrJsonValue(try XdrJson.field(members, key: "destination", type: "PaymentOperationXDR"))
+    let asset: AssetXDR = try AssetXDR.fromXdrJsonValue(try XdrJson.field(members, key: "asset", type: "PaymentOperationXDR"))
+    let amount: Int64 = try Int64XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "amount", type: "PaymentOperationXDR"), type: "PaymentOperationXDR", key: "amount")
+    return PaymentOperationXDR(
+      destination: destination,
+      asset: asset,
+      amount: amount
+    )
+  }
+}

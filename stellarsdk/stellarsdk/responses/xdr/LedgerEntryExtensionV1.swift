@@ -33,3 +33,19 @@ public struct LedgerEntryExtensionV1: XDRCodable, Sendable {
     try container.encode(reserved)
   }
 }
+
+extension LedgerEntryExtensionV1: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "sponsoring_id", value: try SponsorshipDescriptorXDRJsonCodec.toXdrJsonValue(self.signerSponsoringID, type: "LedgerEntryExtensionV1", key: "sponsoring_id")))
+    members.append(XdrJsonMember(key: "ext", value: .string("v0")))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> LedgerEntryExtensionV1 {
+    let members = try XdrJson.object(value, type: "LedgerEntryExtensionV1", keys: ["sponsoring_id", "ext"])
+    let signerSponsoringID: PublicKey? = try SponsorshipDescriptorXDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "sponsoring_id", type: "LedgerEntryExtensionV1"), type: "LedgerEntryExtensionV1", key: "sponsoring_id")
+    _ = try LedgerEntryExtensionV1ExtXDR.fromXdrJsonValue(try XdrJson.field(members, key: "ext", type: "LedgerEntryExtensionV1"))
+    return LedgerEntryExtensionV1(signerSponsoringID: signerSponsoringID)
+  }
+}

@@ -20,3 +20,17 @@ public struct OperationMetaXDR: XDRCodable, Sendable {
     try container.encode(changes)
   }
 }
+
+extension OperationMetaXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "changes", value: try self.changes.toXdrJsonValue()))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> OperationMetaXDR {
+    let members = try XdrJson.object(value, type: "OperationMetaXDR", keys: ["changes"])
+    let changes: LedgerEntryChangesXDR = try LedgerEntryChangesXDR.fromXdrJsonValue(try XdrJson.field(members, key: "changes", type: "OperationMetaXDR"))
+    return OperationMetaXDR(changes: changes)
+  }
+}

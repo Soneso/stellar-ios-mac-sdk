@@ -47,3 +47,25 @@ extension LedgerKeyContractDataXDR {
     return LedgerKeyContractDataXDR(contract: contract, key: key, durability: durability)
   }
 }
+
+extension LedgerKeyContractDataXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "contract", value: try self.contract.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "key", value: try self.key.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "durability", value: try self.durability.toXdrJsonValue()))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> LedgerKeyContractDataXDR {
+    let members = try XdrJson.object(value, type: "LedgerKeyContractDataXDR", keys: ["contract", "key", "durability"])
+    let contract: SCAddressXDR = try SCAddressXDR.fromXdrJsonValue(try XdrJson.field(members, key: "contract", type: "LedgerKeyContractDataXDR"))
+    let key: SCValXDR = try SCValXDR.fromXdrJsonValue(try XdrJson.field(members, key: "key", type: "LedgerKeyContractDataXDR"))
+    let durability: ContractDataDurability = try ContractDataDurability.fromXdrJsonValue(try XdrJson.field(members, key: "durability", type: "LedgerKeyContractDataXDR"))
+    return LedgerKeyContractDataXDR(
+      contract: contract,
+      key: key,
+      durability: durability
+    )
+  }
+}

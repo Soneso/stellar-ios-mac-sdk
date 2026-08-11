@@ -24,3 +24,19 @@ public struct TimeSlicedPeerDataXDR: XDRCodable, Sendable {
     try container.encode(averageLatencyMs)
   }
 }
+
+extension TimeSlicedPeerDataXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "peer_stats", value: try self.peerStats.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "average_latency_ms", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.averageLatencyMs, type: "TimeSlicedPeerDataXDR", key: "average_latency_ms")))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> TimeSlicedPeerDataXDR {
+    let members = try XdrJson.object(value, type: "TimeSlicedPeerDataXDR", keys: ["peer_stats", "average_latency_ms"])
+    let peerStats: PeerStatsXDR = try PeerStatsXDR.fromXdrJsonValue(try XdrJson.field(members, key: "peer_stats", type: "TimeSlicedPeerDataXDR"))
+    let averageLatencyMs: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "average_latency_ms", type: "TimeSlicedPeerDataXDR"), type: "TimeSlicedPeerDataXDR", key: "average_latency_ms")
+    return TimeSlicedPeerDataXDR(peerStats: peerStats, averageLatencyMs: averageLatencyMs)
+  }
+}

@@ -42,3 +42,31 @@ public struct SCPStatementXDRConfirmXDR: XDRCodable, Sendable {
     try container.encode(quorumSetHash)
   }
 }
+
+extension SCPStatementXDRConfirmXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "ballot", value: try self.ballot.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "n_prepared", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.nPrepared, type: "SCPStatementXDRConfirmXDR", key: "n_prepared")))
+    members.append(XdrJsonMember(key: "n_commit", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.nCommit, type: "SCPStatementXDRConfirmXDR", key: "n_commit")))
+    members.append(XdrJsonMember(key: "n_h", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.nH, type: "SCPStatementXDRConfirmXDR", key: "n_h")))
+    members.append(XdrJsonMember(key: "quorum_set_hash", value: try HashXDRJsonCodec.toXdrJsonValue(self.quorumSetHash, type: "SCPStatementXDRConfirmXDR", key: "quorum_set_hash")))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> SCPStatementXDRConfirmXDR {
+    let members = try XdrJson.object(value, type: "SCPStatementXDRConfirmXDR", keys: ["ballot", "n_prepared", "n_commit", "n_h", "quorum_set_hash"])
+    let ballot: SCPBallotXDR = try SCPBallotXDR.fromXdrJsonValue(try XdrJson.field(members, key: "ballot", type: "SCPStatementXDRConfirmXDR"))
+    let nPrepared: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "n_prepared", type: "SCPStatementXDRConfirmXDR"), type: "SCPStatementXDRConfirmXDR", key: "n_prepared")
+    let nCommit: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "n_commit", type: "SCPStatementXDRConfirmXDR"), type: "SCPStatementXDRConfirmXDR", key: "n_commit")
+    let nH: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "n_h", type: "SCPStatementXDRConfirmXDR"), type: "SCPStatementXDRConfirmXDR", key: "n_h")
+    let quorumSetHash: HashXDR = try HashXDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "quorum_set_hash", type: "SCPStatementXDRConfirmXDR"), type: "SCPStatementXDRConfirmXDR", key: "quorum_set_hash")
+    return SCPStatementXDRConfirmXDR(
+      ballot: ballot,
+      nPrepared: nPrepared,
+      nCommit: nCommit,
+      nH: nH,
+      quorumSetHash: quorumSetHash
+    )
+  }
+}

@@ -4,3 +4,45 @@
 import Foundation
 
 public typealias AssetCode4XDR = WrappedData4
+
+public enum AssetCode4XDRJsonCodec {
+  public static func toXdrJsonValue(_ value: AssetCode4XDR) throws -> XdrJsonValue {
+    try toXdrJsonValue(value, type: "AssetCode4XDR", key: nil)
+  }
+
+  static func toXdrJsonValue(_ value: AssetCode4XDR, type: String, key: String?) throws -> XdrJsonValue {
+    guard value.wrapped.count == 4 else {
+      throw XdrJsonError.invalidValue(
+        type: type, key: key,
+        message: "expected 4 bytes, got \(value.wrapped.count)")
+    }
+    return XdrJson.escapedString(XdrJson.trimTrailingNulls(value.wrapped, keepingAtLeast: 0))
+  }
+
+  public static func toXdrJson(_ value: AssetCode4XDR) throws -> String {
+    try XdrJsonWriter.canonicalString(from: try toXdrJsonValue(value))
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> AssetCode4XDR {
+    try fromXdrJsonValue(value, type: "AssetCode4XDR", key: nil)
+  }
+
+  static func fromXdrJsonValue(_ value: XdrJsonValue, type: String, key: String?) throws -> AssetCode4XDR {
+    let raw = try XdrJson.unescapeString(value, type: type, key: key)
+    guard raw.count <= 4 else {
+      throw XdrJsonError.invalidValue(
+        type: type, key: key,
+        message: "expected at most 4 bytes, got \(raw.count)")
+    }
+    return AssetCode4XDR(XdrJson.rightPad(raw, to: 4))
+  }
+
+  public static func fromXdrJson(_ json: String) throws -> AssetCode4XDR {
+    try fromXdrJsonValue(try XdrJsonParser.parse(json))
+  }
+
+  public static func fromXdrJsonTree(_ value: XdrJsonValue) throws -> AssetCode4XDR {
+    try XdrJson.validateDepth(value)
+    return try fromXdrJsonValue(value)
+  }
+}

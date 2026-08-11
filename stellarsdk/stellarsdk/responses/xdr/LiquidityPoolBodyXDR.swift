@@ -35,3 +35,33 @@ public enum LiquidityPoolBodyXDR: XDRCodable, Sendable {
     }
   }
 }
+
+extension LiquidityPoolBodyXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .constantProduct(let payload):
+      return .object([XdrJsonMember(key: "liquidity_pool_constant_product", value: try payload.toXdrJsonValue())])
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> LiquidityPoolBodyXDR {
+    if case .string(let name) = value {
+      switch name {
+      case "liquidity_pool_constant_product":
+        throw XdrJsonError.invalidValue(type: "LiquidityPoolBodyXDR", key: "liquidity_pool_constant_product",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      default:
+        throw XdrJsonError.unknownUnionArm(type: "LiquidityPoolBodyXDR", key: name)
+      }
+    }
+
+    let member = try XdrJson.singleKeyObject(value, type: "LiquidityPoolBodyXDR")
+    switch member.key {
+    case "liquidity_pool_constant_product":
+      let constantProduct: ConstantProductXDR = try ConstantProductXDR.fromXdrJsonValue(member.value)
+      return .constantProduct(constantProduct)
+    default:
+      throw XdrJsonError.unknownUnionArm(type: "LiquidityPoolBodyXDR", key: member.key)
+    }
+  }
+}

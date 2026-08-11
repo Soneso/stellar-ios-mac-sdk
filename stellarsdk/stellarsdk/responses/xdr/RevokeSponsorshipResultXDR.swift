@@ -64,3 +64,36 @@ public enum RevokeSponsorshipResultXDR: XDRCodable, Sendable {
     }
   }
 }
+
+extension RevokeSponsorshipResultXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .success: return .string("success")
+    case .doesNotExist: return .string("does_not_exist")
+    case .notSponsor: return .string("not_sponsor")
+    case .lowReserve: return .string("low_reserve")
+    case .onlyTransferable: return .string("only_transferable")
+    case .malformed: return .string("malformed")
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> RevokeSponsorshipResultXDR {
+    let name = try XdrJson.string(value, type: "RevokeSponsorshipResultXDR")
+    switch name {
+    case "success":
+      return .success
+    case "does_not_exist":
+      return .doesNotExist
+    case "not_sponsor":
+      return .notSponsor
+    case "low_reserve":
+      return .lowReserve
+    case "only_transferable":
+      return .onlyTransferable
+    case "malformed":
+      return .malformed
+    default:
+      throw XdrJsonError.unknownUnionArm(type: "RevokeSponsorshipResultXDR", key: name)
+    }
+  }
+}

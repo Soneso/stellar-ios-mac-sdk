@@ -45,3 +45,20 @@ extension InvokeHostFunctionOpXDR {
     return InvokeHostFunctionOpXDR(hostFunction: hostFunction, auth: auth)
   }
 }
+
+extension InvokeHostFunctionOpXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "host_function", value: try self.hostFunction.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "auth", value: try XdrJson.array(self.auth.map { element in try element.toXdrJsonValue() })))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> InvokeHostFunctionOpXDR {
+    let members = try XdrJson.object(value, type: "InvokeHostFunctionOpXDR", keys: ["host_function", "auth"])
+    let hostFunction: HostFunctionXDR = try HostFunctionXDR.fromXdrJsonValue(try XdrJson.field(members, key: "host_function", type: "InvokeHostFunctionOpXDR"))
+    let authElements = try XdrJson.array(try XdrJson.field(members, key: "auth", type: "InvokeHostFunctionOpXDR"), type: "InvokeHostFunctionOpXDR", key: "auth")
+    let auth: [SorobanAuthorizationEntryXDR] = try authElements.map { element in try SorobanAuthorizationEntryXDR.fromXdrJsonValue(element) }
+    return InvokeHostFunctionOpXDR(hostFunction: hostFunction, auth: auth)
+  }
+}

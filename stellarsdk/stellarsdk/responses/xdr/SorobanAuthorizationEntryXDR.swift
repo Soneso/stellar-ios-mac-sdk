@@ -37,3 +37,19 @@ extension SorobanAuthorizationEntryXDR {
     return SorobanAuthorizationEntryXDR(credentials: credentials, rootInvocation: rootInvocation)
   }
 }
+
+extension SorobanAuthorizationEntryXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "credentials", value: try self.credentials.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "root_invocation", value: try self.rootInvocation.toXdrJsonValue()))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> SorobanAuthorizationEntryXDR {
+    let members = try XdrJson.object(value, type: "SorobanAuthorizationEntryXDR", keys: ["credentials", "root_invocation"])
+    let credentials: SorobanCredentialsXDR = try SorobanCredentialsXDR.fromXdrJsonValue(try XdrJson.field(members, key: "credentials", type: "SorobanAuthorizationEntryXDR"))
+    let rootInvocation: SorobanAuthorizedInvocationXDR = try SorobanAuthorizedInvocationXDR.fromXdrJsonValue(try XdrJson.field(members, key: "root_invocation", type: "SorobanAuthorizationEntryXDR"))
+    return SorobanAuthorizationEntryXDR(credentials: credentials, rootInvocation: rootInvocation)
+  }
+}

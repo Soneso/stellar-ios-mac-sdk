@@ -67,3 +67,46 @@ public struct SCPStatementXDRPrepareXDR: XDRCodable, Sendable {
     try container.encode(nH)
   }
 }
+
+extension SCPStatementXDRPrepareXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "quorum_set_hash", value: try HashXDRJsonCodec.toXdrJsonValue(self.quorumSetHash, type: "SCPStatementXDRPrepareXDR", key: "quorum_set_hash")))
+    members.append(XdrJsonMember(key: "ballot", value: try self.ballot.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "prepared", value: try XdrJson.optional(self.prepared.map { element in try element.toXdrJsonValue() })))
+    members.append(XdrJsonMember(key: "prepared_prime", value: try XdrJson.optional(self.preparedPrime.map { element in try element.toXdrJsonValue() })))
+    members.append(XdrJsonMember(key: "n_c", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.nC, type: "SCPStatementXDRPrepareXDR", key: "n_c")))
+    members.append(XdrJsonMember(key: "n_h", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.nH, type: "SCPStatementXDRPrepareXDR", key: "n_h")))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> SCPStatementXDRPrepareXDR {
+    let members = try XdrJson.object(value, type: "SCPStatementXDRPrepareXDR", keys: ["quorum_set_hash", "ballot", "prepared", "prepared_prime", "n_c", "n_h"])
+    let quorumSetHash: HashXDR = try HashXDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "quorum_set_hash", type: "SCPStatementXDRPrepareXDR"), type: "SCPStatementXDRPrepareXDR", key: "quorum_set_hash")
+    let ballot: SCPBallotXDR = try SCPBallotXDR.fromXdrJsonValue(try XdrJson.field(members, key: "ballot", type: "SCPStatementXDRPrepareXDR"))
+    let preparedValue = try XdrJson.field(members, key: "prepared", type: "SCPStatementXDRPrepareXDR")
+    let prepared: SCPBallotXDR?
+    if preparedValue.isNull {
+      prepared = nil
+    } else {
+      prepared = try SCPBallotXDR.fromXdrJsonValue(preparedValue)
+    }
+    let preparedPrimeValue = try XdrJson.field(members, key: "prepared_prime", type: "SCPStatementXDRPrepareXDR")
+    let preparedPrime: SCPBallotXDR?
+    if preparedPrimeValue.isNull {
+      preparedPrime = nil
+    } else {
+      preparedPrime = try SCPBallotXDR.fromXdrJsonValue(preparedPrimeValue)
+    }
+    let nC: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "n_c", type: "SCPStatementXDRPrepareXDR"), type: "SCPStatementXDRPrepareXDR", key: "n_c")
+    let nH: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "n_h", type: "SCPStatementXDRPrepareXDR"), type: "SCPStatementXDRPrepareXDR", key: "n_h")
+    return SCPStatementXDRPrepareXDR(
+      quorumSetHash: quorumSetHash,
+      ballot: ballot,
+      prepared: prepared,
+      preparedPrime: preparedPrime,
+      nC: nC,
+      nH: nH
+    )
+  }
+}

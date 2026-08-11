@@ -24,3 +24,19 @@ public struct ConfigSettingContractLedgerCostExtV0: XDRCodable, Sendable {
     try container.encode(feeWrite1KB)
   }
 }
+
+extension ConfigSettingContractLedgerCostExtV0: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "tx_max_footprint_entries", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.txMaxFootprintEntries, type: "ConfigSettingContractLedgerCostExtV0", key: "tx_max_footprint_entries")))
+    members.append(XdrJsonMember(key: "fee_write1_kb", value: try Int64XDRJsonCodec.toXdrJsonValue(self.feeWrite1KB, type: "ConfigSettingContractLedgerCostExtV0", key: "fee_write1_kb")))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> ConfigSettingContractLedgerCostExtV0 {
+    let members = try XdrJson.object(value, type: "ConfigSettingContractLedgerCostExtV0", keys: ["tx_max_footprint_entries", "fee_write1_kb"])
+    let txMaxFootprintEntries: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "tx_max_footprint_entries", type: "ConfigSettingContractLedgerCostExtV0"), type: "ConfigSettingContractLedgerCostExtV0", key: "tx_max_footprint_entries")
+    let feeWrite1KB: Int64 = try Int64XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "fee_write1_kb", type: "ConfigSettingContractLedgerCostExtV0"), type: "ConfigSettingContractLedgerCostExtV0", key: "fee_write1_kb")
+    return ConfigSettingContractLedgerCostExtV0(txMaxFootprintEntries: txMaxFootprintEntries, feeWrite1KB: feeWrite1KB)
+  }
+}

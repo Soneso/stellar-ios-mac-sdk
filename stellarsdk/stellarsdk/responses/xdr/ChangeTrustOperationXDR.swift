@@ -37,3 +37,19 @@ extension ChangeTrustOperationXDR {
     return ChangeTrustOperationXDR(asset: asset, limit: limit)
   }
 }
+
+extension ChangeTrustOperationXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "line", value: try self.asset.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "limit", value: try Int64XDRJsonCodec.toXdrJsonValue(self.limit, type: "ChangeTrustOperationXDR", key: "limit")))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> ChangeTrustOperationXDR {
+    let members = try XdrJson.object(value, type: "ChangeTrustOperationXDR", keys: ["line", "limit"])
+    let asset: ChangeTrustAssetXDR = try ChangeTrustAssetXDR.fromXdrJsonValue(try XdrJson.field(members, key: "line", type: "ChangeTrustOperationXDR"))
+    let limit: Int64 = try Int64XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "limit", type: "ChangeTrustOperationXDR"), type: "ChangeTrustOperationXDR", key: "limit")
+    return ChangeTrustOperationXDR(asset: asset, limit: limit)
+  }
+}

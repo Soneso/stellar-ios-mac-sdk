@@ -11,3 +11,30 @@ public enum SCSpecEntryKind: Int32, XDRCodable, Equatable, Sendable {
   case errorEnumV0 = 4
   case entryEventV0 = 5
 }
+
+extension SCSpecEntryKind: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .functionV0: return .string("function_v0")
+    case .structV0: return .string("udt_struct_v0")
+    case .unionV0: return .string("udt_union_v0")
+    case .enumV0: return .string("udt_enum_v0")
+    case .errorEnumV0: return .string("udt_error_enum_v0")
+    case .entryEventV0: return .string("event_v0")
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> SCSpecEntryKind {
+    let name = try XdrJson.string(value, type: "SCSpecEntryKind")
+    switch name {
+    case "function_v0": return .functionV0
+    case "udt_struct_v0": return .structV0
+    case "udt_union_v0": return .unionV0
+    case "udt_enum_v0": return .enumV0
+    case "udt_error_enum_v0": return .errorEnumV0
+    case "event_v0": return .entryEventV0
+    default:
+      throw XdrJsonError.unknownEnumValue(type: "SCSpecEntryKind", value: name)
+    }
+  }
+}

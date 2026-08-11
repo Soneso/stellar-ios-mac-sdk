@@ -8,3 +8,24 @@ public enum TransactionEventStage: Int32, XDRCodable, Equatable, Sendable {
   case afterTx = 1
   case afterAllTx = 2
 }
+
+extension TransactionEventStage: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .beforeAllTxs: return .string("before_all_txs")
+    case .afterTx: return .string("after_tx")
+    case .afterAllTx: return .string("after_all_txs")
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> TransactionEventStage {
+    let name = try XdrJson.string(value, type: "TransactionEventStage")
+    switch name {
+    case "before_all_txs": return .beforeAllTxs
+    case "after_tx": return .afterTx
+    case "after_all_txs": return .afterAllTx
+    default:
+      throw XdrJsonError.unknownEnumValue(type: "TransactionEventStage", value: name)
+    }
+  }
+}

@@ -19,3 +19,15 @@ public struct SorobanAuthorizationEntriesXDR: XDRCodable, Sendable {
     try container.encode(wrapped)
   }
 }
+
+extension SorobanAuthorizationEntriesXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    return try XdrJson.array(self.wrapped.map { element in try element.toXdrJsonValue() })
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> SorobanAuthorizationEntriesXDR {
+    let decodedElements = try XdrJson.array(value, type: "SorobanAuthorizationEntriesXDR")
+    let decoded: [SorobanAuthorizationEntryXDR] = try decodedElements.map { element in try SorobanAuthorizationEntryXDR.fromXdrJsonValue(element) }
+    return SorobanAuthorizationEntriesXDR(wrapped: decoded)
+  }
+}

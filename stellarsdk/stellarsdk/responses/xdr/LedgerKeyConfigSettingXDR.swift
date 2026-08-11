@@ -31,3 +31,22 @@ extension LedgerKeyConfigSettingXDR {
     return LedgerKeyConfigSettingXDR(configSettingID: configSettingID)
   }
 }
+
+extension LedgerKeyConfigSettingXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    guard let configSettingIDJsonCase = ConfigSettingID(rawValue: self.configSettingID) else {
+      throw XdrJsonError.invalidValue(type: "LedgerKeyConfigSettingXDR", key: "config_setting_id", message: "ConfigSettingID declares no member \(self.configSettingID)")
+    }
+    let configSettingIDJson: XdrJsonValue = try configSettingIDJsonCase.toXdrJsonValue()
+    members.append(XdrJsonMember(key: "config_setting_id", value: configSettingIDJson))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> LedgerKeyConfigSettingXDR {
+    let members = try XdrJson.object(value, type: "LedgerKeyConfigSettingXDR", keys: ["config_setting_id"])
+    let configSettingIDCase = try ConfigSettingID.fromXdrJsonValue(try XdrJson.field(members, key: "config_setting_id", type: "LedgerKeyConfigSettingXDR"))
+    let configSettingID: Int32 = configSettingIDCase.rawValue
+    return LedgerKeyConfigSettingXDR(configSettingID: configSettingID)
+  }
+}

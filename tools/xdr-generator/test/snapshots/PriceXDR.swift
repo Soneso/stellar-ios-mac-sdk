@@ -37,3 +37,19 @@ extension PriceXDR {
     return PriceXDR(n: n, d: d)
   }
 }
+
+extension PriceXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "n", value: try Int32XDRJsonCodec.toXdrJsonValue(self.n, type: "PriceXDR", key: "n")))
+    members.append(XdrJsonMember(key: "d", value: try Int32XDRJsonCodec.toXdrJsonValue(self.d, type: "PriceXDR", key: "d")))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> PriceXDR {
+    let members = try XdrJson.object(value, type: "PriceXDR", keys: ["n", "d"])
+    let n: Int32 = try Int32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "n", type: "PriceXDR"), type: "PriceXDR", key: "n")
+    let d: Int32 = try Int32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "d", type: "PriceXDR"), type: "PriceXDR", key: "d")
+    return PriceXDR(n: n, d: d)
+  }
+}

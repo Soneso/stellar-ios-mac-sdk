@@ -64,3 +64,38 @@ extension SCErrorCode {
     return try fromTxRepName(raw)
   }
 }
+
+extension SCErrorCode: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .arithDomain: return .string("arith_domain")
+    case .indexBounds: return .string("index_bounds")
+    case .invalidInput: return .string("invalid_input")
+    case .missingValue: return .string("missing_value")
+    case .existingValue: return .string("existing_value")
+    case .exceededLimit: return .string("exceeded_limit")
+    case .invalidAction: return .string("invalid_action")
+    case .internalError: return .string("internal_error")
+    case .unexpectedType: return .string("unexpected_type")
+    case .unexpectedSize: return .string("unexpected_size")
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> SCErrorCode {
+    let name = try XdrJson.string(value, type: "SCErrorCode")
+    switch name {
+    case "arith_domain": return .arithDomain
+    case "index_bounds": return .indexBounds
+    case "invalid_input": return .invalidInput
+    case "missing_value": return .missingValue
+    case "existing_value": return .existingValue
+    case "exceeded_limit": return .exceededLimit
+    case "invalid_action": return .invalidAction
+    case "internal_error": return .internalError
+    case "unexpected_type": return .unexpectedType
+    case "unexpected_size": return .unexpectedSize
+    default:
+      throw XdrJsonError.unknownEnumValue(type: "SCErrorCode", value: name)
+    }
+  }
+}

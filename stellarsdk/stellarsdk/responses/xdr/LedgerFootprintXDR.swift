@@ -52,3 +52,21 @@ extension LedgerFootprintXDR {
     return LedgerFootprintXDR(readOnly: readOnly, readWrite: readWrite)
   }
 }
+
+extension LedgerFootprintXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "read_only", value: try XdrJson.array(self.readOnly.map { element in try element.toXdrJsonValue() })))
+    members.append(XdrJsonMember(key: "read_write", value: try XdrJson.array(self.readWrite.map { element in try element.toXdrJsonValue() })))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> LedgerFootprintXDR {
+    let members = try XdrJson.object(value, type: "LedgerFootprintXDR", keys: ["read_only", "read_write"])
+    let readOnlyElements = try XdrJson.array(try XdrJson.field(members, key: "read_only", type: "LedgerFootprintXDR"), type: "LedgerFootprintXDR", key: "read_only")
+    let readOnly: [LedgerKeyXDR] = try readOnlyElements.map { element in try LedgerKeyXDR.fromXdrJsonValue(element) }
+    let readWriteElements = try XdrJson.array(try XdrJson.field(members, key: "read_write", type: "LedgerFootprintXDR"), type: "LedgerFootprintXDR", key: "read_write")
+    let readWrite: [LedgerKeyXDR] = try readWriteElements.map { element in try LedgerKeyXDR.fromXdrJsonValue(element) }
+    return LedgerFootprintXDR(readOnly: readOnly, readWrite: readWrite)
+  }
+}

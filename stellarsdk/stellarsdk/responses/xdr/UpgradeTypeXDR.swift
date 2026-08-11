@@ -4,3 +4,35 @@
 import Foundation
 
 public typealias UpgradeTypeXDR = Data
+
+public enum UpgradeTypeXDRJsonCodec {
+  public static func toXdrJsonValue(_ value: UpgradeTypeXDR) throws -> XdrJsonValue {
+    try toXdrJsonValue(value, type: "UpgradeTypeXDR", key: nil)
+  }
+
+  static func toXdrJsonValue(_ value: UpgradeTypeXDR, type: String, key: String?) throws -> XdrJsonValue {
+    return XdrJson.hex(value)
+  }
+
+  public static func toXdrJson(_ value: UpgradeTypeXDR) throws -> String {
+    try XdrJsonWriter.canonicalString(from: try toXdrJsonValue(value))
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> UpgradeTypeXDR {
+    try fromXdrJsonValue(value, type: "UpgradeTypeXDR", key: nil)
+  }
+
+  static func fromXdrJsonValue(_ value: XdrJsonValue, type: String, key: String?) throws -> UpgradeTypeXDR {
+    let decoded: Data = try XdrJson.hex(value, type: type, key: key)
+    return decoded
+  }
+
+  public static func fromXdrJson(_ json: String) throws -> UpgradeTypeXDR {
+    try fromXdrJsonValue(try XdrJsonParser.parse(json))
+  }
+
+  public static func fromXdrJsonTree(_ value: XdrJsonValue) throws -> UpgradeTypeXDR {
+    try XdrJson.validateDepth(value)
+    return try fromXdrJsonValue(value)
+  }
+}

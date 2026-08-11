@@ -49,3 +49,28 @@ extension CryptoKeyType {
     return try fromTxRepName(raw)
   }
 }
+
+extension CryptoKeyType: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .ed25519: return .string("ed25519")
+    case .preAuthTx: return .string("pre_auth_tx")
+    case .hashX: return .string("hash_x")
+    case .ed25519SignedPayload: return .string("ed25519_signed_payload")
+    case .muxedEd25519: return .string("muxed_ed25519")
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> CryptoKeyType {
+    let name = try XdrJson.string(value, type: "CryptoKeyType")
+    switch name {
+    case "ed25519": return .ed25519
+    case "pre_auth_tx": return .preAuthTx
+    case "hash_x": return .hashX
+    case "ed25519_signed_payload": return .ed25519SignedPayload
+    case "muxed_ed25519": return .muxedEd25519
+    default:
+      throw XdrJsonError.unknownEnumValue(type: "CryptoKeyType", value: name)
+    }
+  }
+}

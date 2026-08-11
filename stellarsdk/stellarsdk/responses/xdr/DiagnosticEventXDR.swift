@@ -24,3 +24,19 @@ public struct DiagnosticEventXDR: XDRCodable, Sendable {
     try container.encode(event)
   }
 }
+
+extension DiagnosticEventXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "in_successful_contract_call", value: XdrJson.bool(self.inSuccessfulContractCall)))
+    members.append(XdrJsonMember(key: "event", value: try self.event.toXdrJsonValue()))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> DiagnosticEventXDR {
+    let members = try XdrJson.object(value, type: "DiagnosticEventXDR", keys: ["in_successful_contract_call", "event"])
+    let inSuccessfulContractCall: Bool = try XdrJson.bool(try XdrJson.field(members, key: "in_successful_contract_call", type: "DiagnosticEventXDR"), type: "DiagnosticEventXDR", key: "in_successful_contract_call")
+    let event: ContractEventXDR = try ContractEventXDR.fromXdrJsonValue(try XdrJson.field(members, key: "event", type: "DiagnosticEventXDR"))
+    return DiagnosticEventXDR(inSuccessfulContractCall: inSuccessfulContractCall, event: event)
+  }
+}

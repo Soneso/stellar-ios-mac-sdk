@@ -8,3 +8,24 @@ public enum StellarValueTypeXDR: Int32, XDRCodable, Equatable, Sendable {
   case signed = 1
   case emptyTxSet = 2
 }
+
+extension StellarValueTypeXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .basic: return .string("basic")
+    case .signed: return .string("signed")
+    case .emptyTxSet: return .string("empty_tx_set")
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> StellarValueTypeXDR {
+    let name = try XdrJson.string(value, type: "StellarValueTypeXDR")
+    switch name {
+    case "basic": return .basic
+    case "signed": return .signed
+    case "empty_tx_set": return .emptyTxSet
+    default:
+      throw XdrJsonError.unknownEnumValue(type: "StellarValueTypeXDR", value: name)
+    }
+  }
+}

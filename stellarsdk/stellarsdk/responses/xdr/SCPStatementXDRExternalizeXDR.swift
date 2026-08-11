@@ -32,3 +32,25 @@ public struct SCPStatementXDRExternalizeXDR: XDRCodable, Sendable {
     try container.encode(commitQuorumSetHash)
   }
 }
+
+extension SCPStatementXDRExternalizeXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "commit", value: try self.commit.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "n_h", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.nH, type: "SCPStatementXDRExternalizeXDR", key: "n_h")))
+    members.append(XdrJsonMember(key: "commit_quorum_set_hash", value: try HashXDRJsonCodec.toXdrJsonValue(self.commitQuorumSetHash, type: "SCPStatementXDRExternalizeXDR", key: "commit_quorum_set_hash")))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> SCPStatementXDRExternalizeXDR {
+    let members = try XdrJson.object(value, type: "SCPStatementXDRExternalizeXDR", keys: ["commit", "n_h", "commit_quorum_set_hash"])
+    let commit: SCPBallotXDR = try SCPBallotXDR.fromXdrJsonValue(try XdrJson.field(members, key: "commit", type: "SCPStatementXDRExternalizeXDR"))
+    let nH: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "n_h", type: "SCPStatementXDRExternalizeXDR"), type: "SCPStatementXDRExternalizeXDR", key: "n_h")
+    let commitQuorumSetHash: HashXDR = try HashXDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "commit_quorum_set_hash", type: "SCPStatementXDRExternalizeXDR"), type: "SCPStatementXDRExternalizeXDR", key: "commit_quorum_set_hash")
+    return SCPStatementXDRExternalizeXDR(
+      commit: commit,
+      nH: nH,
+      commitQuorumSetHash: commitQuorumSetHash
+    )
+  }
+}

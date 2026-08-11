@@ -107,3 +107,105 @@ public enum ManageOfferResultXDR: XDRCodable, Sendable {
     }
   }
 }
+
+extension ManageOfferResultXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .success(let payload):
+      return .object([XdrJsonMember(key: "success", value: try payload.toXdrJsonValue())])
+    case .malformed: return .string("malformed")
+    case .sellNoTrust: return .string("sell_no_trust")
+    case .buyNoTrust: return .string("buy_no_trust")
+    case .sellNotAuthorized: return .string("sell_not_authorized")
+    case .buyNotAuthorized: return .string("buy_not_authorized")
+    case .lineFull: return .string("line_full")
+    case .underfunded: return .string("underfunded")
+    case .crossSelf: return .string("cross_self")
+    case .sellNoIssuer: return .string("sell_no_issuer")
+    case .buyNoIssuer: return .string("buy_no_issuer")
+    case .notFound: return .string("not_found")
+    case .lowReserve: return .string("low_reserve")
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> ManageOfferResultXDR {
+    if case .string(let name) = value {
+      switch name {
+      case "success":
+        throw XdrJsonError.invalidValue(type: "ManageOfferResultXDR", key: "success",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "malformed":
+        return .malformed
+      case "sell_no_trust":
+        return .sellNoTrust
+      case "buy_no_trust":
+        return .buyNoTrust
+      case "sell_not_authorized":
+        return .sellNotAuthorized
+      case "buy_not_authorized":
+        return .buyNotAuthorized
+      case "line_full":
+        return .lineFull
+      case "underfunded":
+        return .underfunded
+      case "cross_self":
+        return .crossSelf
+      case "sell_no_issuer":
+        return .sellNoIssuer
+      case "buy_no_issuer":
+        return .buyNoIssuer
+      case "not_found":
+        return .notFound
+      case "low_reserve":
+        return .lowReserve
+      default:
+        throw XdrJsonError.unknownUnionArm(type: "ManageOfferResultXDR", key: name)
+      }
+    }
+
+    let member = try XdrJson.singleKeyObject(value, type: "ManageOfferResultXDR")
+    switch member.key {
+    case "success":
+      let success: ManageOfferSuccessResultXDR = try ManageOfferSuccessResultXDR.fromXdrJsonValue(member.value)
+      return .success(success)
+    case "malformed":
+      throw XdrJsonError.invalidValue(type: "ManageOfferResultXDR", key: "malformed",
+                                      message: "this arm carries no value, so it is written as a bare string")
+    case "sell_no_trust":
+      throw XdrJsonError.invalidValue(type: "ManageOfferResultXDR", key: "sell_no_trust",
+                                      message: "this arm carries no value, so it is written as a bare string")
+    case "buy_no_trust":
+      throw XdrJsonError.invalidValue(type: "ManageOfferResultXDR", key: "buy_no_trust",
+                                      message: "this arm carries no value, so it is written as a bare string")
+    case "sell_not_authorized":
+      throw XdrJsonError.invalidValue(type: "ManageOfferResultXDR", key: "sell_not_authorized",
+                                      message: "this arm carries no value, so it is written as a bare string")
+    case "buy_not_authorized":
+      throw XdrJsonError.invalidValue(type: "ManageOfferResultXDR", key: "buy_not_authorized",
+                                      message: "this arm carries no value, so it is written as a bare string")
+    case "line_full":
+      throw XdrJsonError.invalidValue(type: "ManageOfferResultXDR", key: "line_full",
+                                      message: "this arm carries no value, so it is written as a bare string")
+    case "underfunded":
+      throw XdrJsonError.invalidValue(type: "ManageOfferResultXDR", key: "underfunded",
+                                      message: "this arm carries no value, so it is written as a bare string")
+    case "cross_self":
+      throw XdrJsonError.invalidValue(type: "ManageOfferResultXDR", key: "cross_self",
+                                      message: "this arm carries no value, so it is written as a bare string")
+    case "sell_no_issuer":
+      throw XdrJsonError.invalidValue(type: "ManageOfferResultXDR", key: "sell_no_issuer",
+                                      message: "this arm carries no value, so it is written as a bare string")
+    case "buy_no_issuer":
+      throw XdrJsonError.invalidValue(type: "ManageOfferResultXDR", key: "buy_no_issuer",
+                                      message: "this arm carries no value, so it is written as a bare string")
+    case "not_found":
+      throw XdrJsonError.invalidValue(type: "ManageOfferResultXDR", key: "not_found",
+                                      message: "this arm carries no value, so it is written as a bare string")
+    case "low_reserve":
+      throw XdrJsonError.invalidValue(type: "ManageOfferResultXDR", key: "low_reserve",
+                                      message: "this arm carries no value, so it is written as a bare string")
+    default:
+      throw XdrJsonError.unknownUnionArm(type: "ManageOfferResultXDR", key: member.key)
+    }
+  }
+}

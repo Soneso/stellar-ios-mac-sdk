@@ -26,3 +26,60 @@ public enum MessageTypeXDR: Int32, XDRCodable, Equatable, Sendable {
   case timeSlicedSurveyStartCollecting = 23
   case timeSlicedSurveyStopCollecting = 24
 }
+
+extension MessageTypeXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .errorMsg: return .string("error_msg")
+    case .auth: return .string("auth")
+    case .dontHave: return .string("dont_have")
+    case .peers: return .string("peers")
+    case .getTxSet: return .string("get_tx_set")
+    case .txSet: return .string("tx_set")
+    case .generalizedTxSet: return .string("generalized_tx_set")
+    case .transaction: return .string("transaction")
+    case .getScpQuorumset: return .string("get_scp_quorumset")
+    case .scpQuorumset: return .string("scp_quorumset")
+    case .scpMessage: return .string("scp_message")
+    case .getScpState: return .string("get_scp_state")
+    case .hello: return .string("hello")
+    case .sendMore: return .string("send_more")
+    case .sendMoreExtended: return .string("send_more_extended")
+    case .floodAdvert: return .string("flood_advert")
+    case .floodDemand: return .string("flood_demand")
+    case .timeSlicedSurveyRequest: return .string("time_sliced_survey_request")
+    case .timeSlicedSurveyResponse: return .string("time_sliced_survey_response")
+    case .timeSlicedSurveyStartCollecting: return .string("time_sliced_survey_start_collecting")
+    case .timeSlicedSurveyStopCollecting: return .string("time_sliced_survey_stop_collecting")
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> MessageTypeXDR {
+    let name = try XdrJson.string(value, type: "MessageTypeXDR")
+    switch name {
+    case "error_msg": return .errorMsg
+    case "auth": return .auth
+    case "dont_have": return .dontHave
+    case "peers": return .peers
+    case "get_tx_set": return .getTxSet
+    case "tx_set": return .txSet
+    case "generalized_tx_set": return .generalizedTxSet
+    case "transaction": return .transaction
+    case "get_scp_quorumset": return .getScpQuorumset
+    case "scp_quorumset": return .scpQuorumset
+    case "scp_message": return .scpMessage
+    case "get_scp_state": return .getScpState
+    case "hello": return .hello
+    case "send_more": return .sendMore
+    case "send_more_extended": return .sendMoreExtended
+    case "flood_advert": return .floodAdvert
+    case "flood_demand": return .floodDemand
+    case "time_sliced_survey_request": return .timeSlicedSurveyRequest
+    case "time_sliced_survey_response": return .timeSlicedSurveyResponse
+    case "time_sliced_survey_start_collecting": return .timeSlicedSurveyStartCollecting
+    case "time_sliced_survey_stop_collecting": return .timeSlicedSurveyStopCollecting
+    default:
+      throw XdrJsonError.unknownEnumValue(type: "MessageTypeXDR", value: name)
+    }
+  }
+}

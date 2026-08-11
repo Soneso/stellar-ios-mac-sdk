@@ -49,3 +49,49 @@ public enum HotArchiveBucketEntryXDR: XDRCodable, Sendable {
     }
   }
 }
+
+extension HotArchiveBucketEntryXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .archivedEntry(let payload):
+      return .object([XdrJsonMember(key: "archived", value: try payload.toXdrJsonValue())])
+    case .key(let payload):
+      return .object([XdrJsonMember(key: "live", value: try payload.toXdrJsonValue())])
+    case .metaEntry(let payload):
+      return .object([XdrJsonMember(key: "metaentry", value: try payload.toXdrJsonValue())])
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> HotArchiveBucketEntryXDR {
+    if case .string(let name) = value {
+      switch name {
+      case "archived":
+        throw XdrJsonError.invalidValue(type: "HotArchiveBucketEntryXDR", key: "archived",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "live":
+        throw XdrJsonError.invalidValue(type: "HotArchiveBucketEntryXDR", key: "live",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "metaentry":
+        throw XdrJsonError.invalidValue(type: "HotArchiveBucketEntryXDR", key: "metaentry",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      default:
+        throw XdrJsonError.unknownUnionArm(type: "HotArchiveBucketEntryXDR", key: name)
+      }
+    }
+
+    let member = try XdrJson.singleKeyObject(value, type: "HotArchiveBucketEntryXDR")
+    switch member.key {
+    case "archived":
+      let archivedEntry: LedgerEntryXDR = try LedgerEntryXDR.fromXdrJsonValue(member.value)
+      return .archivedEntry(archivedEntry)
+    case "live":
+      let key: LedgerKeyXDR = try LedgerKeyXDR.fromXdrJsonValue(member.value)
+      return .key(key)
+    case "metaentry":
+      let metaEntry: BucketMetadataXDR = try BucketMetadataXDR.fromXdrJsonValue(member.value)
+      return .metaEntry(metaEntry)
+    default:
+      throw XdrJsonError.unknownUnionArm(type: "HotArchiveBucketEntryXDR", key: member.key)
+    }
+  }
+}

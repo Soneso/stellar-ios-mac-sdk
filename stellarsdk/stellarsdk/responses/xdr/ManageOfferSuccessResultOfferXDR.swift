@@ -48,3 +48,47 @@ public enum ManageOfferSuccessResultOfferXDR: XDRCodable, Sendable {
     }
   }
 }
+
+extension ManageOfferSuccessResultOfferXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .created(let payload):
+      return .object([XdrJsonMember(key: "created", value: try payload.toXdrJsonValue())])
+    case .updated(let payload):
+      return .object([XdrJsonMember(key: "updated", value: try payload.toXdrJsonValue())])
+    case .deleted: return .string("deleted")
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> ManageOfferSuccessResultOfferXDR {
+    if case .string(let name) = value {
+      switch name {
+      case "created":
+        throw XdrJsonError.invalidValue(type: "ManageOfferSuccessResultOfferXDR", key: "created",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "updated":
+        throw XdrJsonError.invalidValue(type: "ManageOfferSuccessResultOfferXDR", key: "updated",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "deleted":
+        return .deleted
+      default:
+        throw XdrJsonError.unknownUnionArm(type: "ManageOfferSuccessResultOfferXDR", key: name)
+      }
+    }
+
+    let member = try XdrJson.singleKeyObject(value, type: "ManageOfferSuccessResultOfferXDR")
+    switch member.key {
+    case "created":
+      let created: OfferEntryXDR = try OfferEntryXDR.fromXdrJsonValue(member.value)
+      return .created(created)
+    case "updated":
+      let updated: OfferEntryXDR = try OfferEntryXDR.fromXdrJsonValue(member.value)
+      return .updated(updated)
+    case "deleted":
+      throw XdrJsonError.invalidValue(type: "ManageOfferSuccessResultOfferXDR", key: "deleted",
+                                      message: "this arm carries no value, so it is written as a bare string")
+    default:
+      throw XdrJsonError.unknownUnionArm(type: "ManageOfferSuccessResultOfferXDR", key: member.key)
+    }
+  }
+}

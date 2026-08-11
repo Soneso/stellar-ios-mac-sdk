@@ -37,3 +37,28 @@ public struct TimeSlicedSurveyRequestMessageXDR: XDRCodable, Sendable {
     try container.encode(outboundPeersIndex)
   }
 }
+
+extension TimeSlicedSurveyRequestMessageXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "request", value: try self.request.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "nonce", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.nonce, type: "TimeSlicedSurveyRequestMessageXDR", key: "nonce")))
+    members.append(XdrJsonMember(key: "inbound_peers_index", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.inboundPeersIndex, type: "TimeSlicedSurveyRequestMessageXDR", key: "inbound_peers_index")))
+    members.append(XdrJsonMember(key: "outbound_peers_index", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.outboundPeersIndex, type: "TimeSlicedSurveyRequestMessageXDR", key: "outbound_peers_index")))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> TimeSlicedSurveyRequestMessageXDR {
+    let members = try XdrJson.object(value, type: "TimeSlicedSurveyRequestMessageXDR", keys: ["request", "nonce", "inbound_peers_index", "outbound_peers_index"])
+    let request: SurveyRequestMessageXDR = try SurveyRequestMessageXDR.fromXdrJsonValue(try XdrJson.field(members, key: "request", type: "TimeSlicedSurveyRequestMessageXDR"))
+    let nonce: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "nonce", type: "TimeSlicedSurveyRequestMessageXDR"), type: "TimeSlicedSurveyRequestMessageXDR", key: "nonce")
+    let inboundPeersIndex: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "inbound_peers_index", type: "TimeSlicedSurveyRequestMessageXDR"), type: "TimeSlicedSurveyRequestMessageXDR", key: "inbound_peers_index")
+    let outboundPeersIndex: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "outbound_peers_index", type: "TimeSlicedSurveyRequestMessageXDR"), type: "TimeSlicedSurveyRequestMessageXDR", key: "outbound_peers_index")
+    return TimeSlicedSurveyRequestMessageXDR(
+      request: request,
+      nonce: nonce,
+      inboundPeersIndex: inboundPeersIndex,
+      outboundPeersIndex: outboundPeersIndex
+    )
+  }
+}

@@ -32,3 +32,26 @@ public struct OperationMetaV2XDR: XDRCodable, Sendable {
     try container.encode(events)
   }
 }
+
+extension OperationMetaV2XDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "ext", value: try self.ext.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "changes", value: try self.changes.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "events", value: try XdrJson.array(self.events.map { element in try element.toXdrJsonValue() })))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> OperationMetaV2XDR {
+    let members = try XdrJson.object(value, type: "OperationMetaV2XDR", keys: ["ext", "changes", "events"])
+    let ext: ExtensionPoint = try ExtensionPoint.fromXdrJsonValue(try XdrJson.field(members, key: "ext", type: "OperationMetaV2XDR"))
+    let changes: LedgerEntryChangesXDR = try LedgerEntryChangesXDR.fromXdrJsonValue(try XdrJson.field(members, key: "changes", type: "OperationMetaV2XDR"))
+    let eventsElements = try XdrJson.array(try XdrJson.field(members, key: "events", type: "OperationMetaV2XDR"), type: "OperationMetaV2XDR", key: "events")
+    let events: [ContractEventXDR] = try eventsElements.map { element in try ContractEventXDR.fromXdrJsonValue(element) }
+    return OperationMetaV2XDR(
+      ext: ext,
+      changes: changes,
+      events: events
+    )
+  }
+}

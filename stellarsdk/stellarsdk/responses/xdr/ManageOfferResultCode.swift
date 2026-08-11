@@ -18,3 +18,44 @@ public enum ManageOfferResultCode: Int32, XDRCodable, Equatable, Sendable {
   case notFound = -11
   case lowReserve = -12
 }
+
+extension ManageOfferResultCode: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .success: return .string("success")
+    case .malformed: return .string("malformed")
+    case .sellNoTrust: return .string("sell_no_trust")
+    case .buyNoTrust: return .string("buy_no_trust")
+    case .sellNotAuthorized: return .string("sell_not_authorized")
+    case .buyNotAuthorized: return .string("buy_not_authorized")
+    case .lineFull: return .string("line_full")
+    case .underfunded: return .string("underfunded")
+    case .crossSelf: return .string("cross_self")
+    case .sellNoIssuer: return .string("sell_no_issuer")
+    case .buyNoIssuer: return .string("buy_no_issuer")
+    case .notFound: return .string("not_found")
+    case .lowReserve: return .string("low_reserve")
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> ManageOfferResultCode {
+    let name = try XdrJson.string(value, type: "ManageOfferResultCode")
+    switch name {
+    case "success": return .success
+    case "malformed": return .malformed
+    case "sell_no_trust": return .sellNoTrust
+    case "buy_no_trust": return .buyNoTrust
+    case "sell_not_authorized": return .sellNotAuthorized
+    case "buy_not_authorized": return .buyNotAuthorized
+    case "line_full": return .lineFull
+    case "underfunded": return .underfunded
+    case "cross_self": return .crossSelf
+    case "sell_no_issuer": return .sellNoIssuer
+    case "buy_no_issuer": return .buyNoIssuer
+    case "not_found": return .notFound
+    case "low_reserve": return .lowReserve
+    default:
+      throw XdrJsonError.unknownEnumValue(type: "ManageOfferResultCode", value: name)
+    }
+  }
+}

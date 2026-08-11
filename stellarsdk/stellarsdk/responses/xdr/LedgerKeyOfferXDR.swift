@@ -37,3 +37,19 @@ extension LedgerKeyOfferXDR {
     return LedgerKeyOfferXDR(sellerID: sellerID, offerID: offerID)
   }
 }
+
+extension LedgerKeyOfferXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "seller_id", value: try AccountIDXDRJsonCodec.toXdrJsonValue(self.sellerID, type: "LedgerKeyOfferXDR", key: "seller_id")))
+    members.append(XdrJsonMember(key: "offer_id", value: try Int64XDRJsonCodec.toXdrJsonValue(self.offerID, type: "LedgerKeyOfferXDR", key: "offer_id")))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> LedgerKeyOfferXDR {
+    let members = try XdrJson.object(value, type: "LedgerKeyOfferXDR", keys: ["seller_id", "offer_id"])
+    let sellerID: PublicKey = try AccountIDXDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "seller_id", type: "LedgerKeyOfferXDR"), type: "LedgerKeyOfferXDR", key: "seller_id")
+    let offerID: Int64 = try Int64XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "offer_id", type: "LedgerKeyOfferXDR"), type: "LedgerKeyOfferXDR", key: "offer_id")
+    return LedgerKeyOfferXDR(sellerID: sellerID, offerID: offerID)
+  }
+}

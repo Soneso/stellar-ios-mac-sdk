@@ -24,3 +24,19 @@ public struct ConfigUpgradeSetKeyXDR: XDRCodable, Sendable {
     try container.encode(contentHash)
   }
 }
+
+extension ConfigUpgradeSetKeyXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "contract_id", value: try ContractIDXDRJsonCodec.toXdrJsonValue(self.contractID, type: "ConfigUpgradeSetKeyXDR", key: "contract_id")))
+    members.append(XdrJsonMember(key: "content_hash", value: try HashXDRJsonCodec.toXdrJsonValue(self.contentHash, type: "ConfigUpgradeSetKeyXDR", key: "content_hash")))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> ConfigUpgradeSetKeyXDR {
+    let members = try XdrJson.object(value, type: "ConfigUpgradeSetKeyXDR", keys: ["contract_id", "content_hash"])
+    let contractID: WrappedData32 = try ContractIDXDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "contract_id", type: "ConfigUpgradeSetKeyXDR"), type: "ConfigUpgradeSetKeyXDR", key: "contract_id")
+    let contentHash: HashXDR = try HashXDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "content_hash", type: "ConfigUpgradeSetKeyXDR"), type: "ConfigUpgradeSetKeyXDR", key: "content_hash")
+    return ConfigUpgradeSetKeyXDR(contractID: contractID, contentHash: contentHash)
+  }
+}

@@ -63,3 +63,66 @@ public enum TransactionMetaXDR: XDRCodable, Sendable {
     }
   }
 }
+
+extension TransactionMetaXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .operations(let payload):
+      return .object([XdrJsonMember(key: "v0", value: try XdrJson.array(payload.map { element in try element.toXdrJsonValue() }))])
+    case .transactionMetaV1(let payload):
+      return .object([XdrJsonMember(key: "v1", value: try payload.toXdrJsonValue())])
+    case .transactionMetaV2(let payload):
+      return .object([XdrJsonMember(key: "v2", value: try payload.toXdrJsonValue())])
+    case .transactionMetaV3(let payload):
+      return .object([XdrJsonMember(key: "v3", value: try payload.toXdrJsonValue())])
+    case .transactionMetaV4(let payload):
+      return .object([XdrJsonMember(key: "v4", value: try payload.toXdrJsonValue())])
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> TransactionMetaXDR {
+    if case .string(let name) = value {
+      switch name {
+      case "v0":
+        throw XdrJsonError.invalidValue(type: "TransactionMetaXDR", key: "v0",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "v1":
+        throw XdrJsonError.invalidValue(type: "TransactionMetaXDR", key: "v1",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "v2":
+        throw XdrJsonError.invalidValue(type: "TransactionMetaXDR", key: "v2",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "v3":
+        throw XdrJsonError.invalidValue(type: "TransactionMetaXDR", key: "v3",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "v4":
+        throw XdrJsonError.invalidValue(type: "TransactionMetaXDR", key: "v4",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      default:
+        throw XdrJsonError.unknownUnionArm(type: "TransactionMetaXDR", key: name)
+      }
+    }
+
+    let member = try XdrJson.singleKeyObject(value, type: "TransactionMetaXDR")
+    switch member.key {
+    case "v0":
+      let operationsElements = try XdrJson.array(member.value, type: "TransactionMetaXDR", key: "v0")
+      let operations: [OperationMetaXDR] = try operationsElements.map { element in try OperationMetaXDR.fromXdrJsonValue(element) }
+      return .operations(operations)
+    case "v1":
+      let transactionMetaV1: TransactionMetaV1XDR = try TransactionMetaV1XDR.fromXdrJsonValue(member.value)
+      return .transactionMetaV1(transactionMetaV1)
+    case "v2":
+      let transactionMetaV2: TransactionMetaV2XDR = try TransactionMetaV2XDR.fromXdrJsonValue(member.value)
+      return .transactionMetaV2(transactionMetaV2)
+    case "v3":
+      let transactionMetaV3: TransactionMetaV3XDR = try TransactionMetaV3XDR.fromXdrJsonValue(member.value)
+      return .transactionMetaV3(transactionMetaV3)
+    case "v4":
+      let transactionMetaV4: TransactionMetaV4XDR = try TransactionMetaV4XDR.fromXdrJsonValue(member.value)
+      return .transactionMetaV4(transactionMetaV4)
+    default:
+      throw XdrJsonError.unknownUnionArm(type: "TransactionMetaXDR", key: member.key)
+    }
+  }
+}

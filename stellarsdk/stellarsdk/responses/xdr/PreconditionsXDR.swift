@@ -82,3 +82,47 @@ extension PreconditionsXDR {
     }
   }
 }
+
+extension PreconditionsXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .none: return .string("none")
+    case .time(let payload):
+      return .object([XdrJsonMember(key: "time", value: try payload.toXdrJsonValue())])
+    case .v2(let payload):
+      return .object([XdrJsonMember(key: "v2", value: try payload.toXdrJsonValue())])
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> PreconditionsXDR {
+    if case .string(let name) = value {
+      switch name {
+      case "none":
+        return .none
+      case "time":
+        throw XdrJsonError.invalidValue(type: "PreconditionsXDR", key: "time",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "v2":
+        throw XdrJsonError.invalidValue(type: "PreconditionsXDR", key: "v2",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      default:
+        throw XdrJsonError.unknownUnionArm(type: "PreconditionsXDR", key: name)
+      }
+    }
+
+    let member = try XdrJson.singleKeyObject(value, type: "PreconditionsXDR")
+    switch member.key {
+    case "none":
+      throw XdrJsonError.invalidValue(type: "PreconditionsXDR", key: "none",
+                                      message: "this arm carries no value, so it is written as a bare string")
+    case "time":
+      let time: TimeBoundsXDR = try TimeBoundsXDR.fromXdrJsonValue(member.value)
+      return .time(time)
+    case "v2":
+      let v2: PreconditionsV2XDR = try PreconditionsV2XDR.fromXdrJsonValue(member.value)
+      return .v2(v2)
+    default:
+      throw XdrJsonError.unknownUnionArm(type: "PreconditionsXDR", key: member.key)
+    }
+  }
+}

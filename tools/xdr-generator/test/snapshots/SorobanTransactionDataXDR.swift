@@ -47,3 +47,25 @@ extension SorobanTransactionDataXDR {
     return SorobanTransactionDataXDR(ext: ext, resources: resources, resourceFee: resourceFee)
   }
 }
+
+extension SorobanTransactionDataXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "ext", value: try self.ext.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "resources", value: try self.resources.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "resource_fee", value: try Int64XDRJsonCodec.toXdrJsonValue(self.resourceFee, type: "SorobanTransactionDataXDR", key: "resource_fee")))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> SorobanTransactionDataXDR {
+    let members = try XdrJson.object(value, type: "SorobanTransactionDataXDR", keys: ["ext", "resources", "resource_fee"])
+    let ext: SorobanResourcesExt = try SorobanResourcesExt.fromXdrJsonValue(try XdrJson.field(members, key: "ext", type: "SorobanTransactionDataXDR"))
+    let resources: SorobanResourcesXDR = try SorobanResourcesXDR.fromXdrJsonValue(try XdrJson.field(members, key: "resources", type: "SorobanTransactionDataXDR"))
+    let resourceFee: Int64 = try Int64XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "resource_fee", type: "SorobanTransactionDataXDR"), type: "SorobanTransactionDataXDR", key: "resource_fee")
+    return SorobanTransactionDataXDR(
+      ext: ext,
+      resources: resources,
+      resourceFee: resourceFee
+    )
+  }
+}

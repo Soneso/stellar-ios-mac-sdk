@@ -24,3 +24,19 @@ public struct SCPBallotXDR: XDRCodable, Sendable {
     try container.encode(value)
   }
 }
+
+extension SCPBallotXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "counter", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.counter, type: "SCPBallotXDR", key: "counter")))
+    members.append(XdrJsonMember(key: "value", value: try ValueXDRJsonCodec.toXdrJsonValue(self.value, type: "SCPBallotXDR", key: "value")))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> SCPBallotXDR {
+    let members = try XdrJson.object(value, type: "SCPBallotXDR", keys: ["counter", "value"])
+    let counter: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "counter", type: "SCPBallotXDR"), type: "SCPBallotXDR", key: "counter")
+    let valueField: ValueXDR = try ValueXDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "value", type: "SCPBallotXDR"), type: "SCPBallotXDR", key: "value")
+    return SCPBallotXDR(counter: counter, value: valueField)
+  }
+}

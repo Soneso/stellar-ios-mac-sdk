@@ -71,3 +71,69 @@ public enum OperationResultXDR: XDRCodable, Sendable {
     }
   }
 }
+
+extension OperationResultXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .tr(let payload):
+      return .object([XdrJsonMember(key: "op_inner", value: try payload.toXdrJsonValue())])
+    case .badAuth: return .string("op_bad_auth")
+    case .noAccount: return .string("op_no_account")
+    case .notSupported: return .string("op_not_supported")
+    case .tooManySubentries: return .string("op_too_many_subentries")
+    case .exceededWorkLimit: return .string("op_exceeded_work_limit")
+    case .tooManySponsoring: return .string("op_too_many_sponsoring")
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> OperationResultXDR {
+    if case .string(let name) = value {
+      switch name {
+      case "op_inner":
+        throw XdrJsonError.invalidValue(type: "OperationResultXDR", key: "op_inner",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "op_bad_auth":
+        return .badAuth
+      case "op_no_account":
+        return .noAccount
+      case "op_not_supported":
+        return .notSupported
+      case "op_too_many_subentries":
+        return .tooManySubentries
+      case "op_exceeded_work_limit":
+        return .exceededWorkLimit
+      case "op_too_many_sponsoring":
+        return .tooManySponsoring
+      default:
+        throw XdrJsonError.unknownUnionArm(type: "OperationResultXDR", key: name)
+      }
+    }
+
+    let member = try XdrJson.singleKeyObject(value, type: "OperationResultXDR")
+    switch member.key {
+    case "op_inner":
+      let tr: OperationResultXDRTrXDR = try OperationResultXDRTrXDR.fromXdrJsonValue(member.value)
+      return .tr(tr)
+    case "op_bad_auth":
+      throw XdrJsonError.invalidValue(type: "OperationResultXDR", key: "op_bad_auth",
+                                      message: "this arm carries no value, so it is written as a bare string")
+    case "op_no_account":
+      throw XdrJsonError.invalidValue(type: "OperationResultXDR", key: "op_no_account",
+                                      message: "this arm carries no value, so it is written as a bare string")
+    case "op_not_supported":
+      throw XdrJsonError.invalidValue(type: "OperationResultXDR", key: "op_not_supported",
+                                      message: "this arm carries no value, so it is written as a bare string")
+    case "op_too_many_subentries":
+      throw XdrJsonError.invalidValue(type: "OperationResultXDR", key: "op_too_many_subentries",
+                                      message: "this arm carries no value, so it is written as a bare string")
+    case "op_exceeded_work_limit":
+      throw XdrJsonError.invalidValue(type: "OperationResultXDR", key: "op_exceeded_work_limit",
+                                      message: "this arm carries no value, so it is written as a bare string")
+    case "op_too_many_sponsoring":
+      throw XdrJsonError.invalidValue(type: "OperationResultXDR", key: "op_too_many_sponsoring",
+                                      message: "this arm carries no value, so it is written as a bare string")
+    default:
+      throw XdrJsonError.unknownUnionArm(type: "OperationResultXDR", key: member.key)
+    }
+  }
+}

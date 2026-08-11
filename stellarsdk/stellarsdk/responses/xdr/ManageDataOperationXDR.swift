@@ -57,3 +57,25 @@ extension ManageDataOperationXDR {
     return ManageDataOperationXDR(dataName: dataName, dataValue: dataValue)
   }
 }
+
+extension ManageDataOperationXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "data_name", value: try String64XDRJsonCodec.toXdrJsonValue(self.dataName, type: "ManageDataOperationXDR", key: "data_name")))
+    members.append(XdrJsonMember(key: "data_value", value: try XdrJson.optional(self.dataValue.map { element in try DataValueXDRJsonCodec.toXdrJsonValue(element, type: "ManageDataOperationXDR", key: "data_value") })))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> ManageDataOperationXDR {
+    let members = try XdrJson.object(value, type: "ManageDataOperationXDR", keys: ["data_name", "data_value"])
+    let dataName: String = try String64XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "data_name", type: "ManageDataOperationXDR"), type: "ManageDataOperationXDR", key: "data_name")
+    let dataValueValue = try XdrJson.field(members, key: "data_value", type: "ManageDataOperationXDR")
+    let dataValue: DataValueXDR?
+    if dataValueValue.isNull {
+      dataValue = nil
+    } else {
+      dataValue = try DataValueXDRJsonCodec.fromXdrJsonValue(dataValueValue, type: "ManageDataOperationXDR", key: "data_value")
+    }
+    return ManageDataOperationXDR(dataName: dataName, dataValue: dataValue)
+  }
+}

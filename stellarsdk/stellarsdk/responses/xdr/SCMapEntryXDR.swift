@@ -37,3 +37,19 @@ extension SCMapEntryXDR {
     return SCMapEntryXDR(key: key, val: val)
   }
 }
+
+extension SCMapEntryXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "key", value: try self.key.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "val", value: try self.val.toXdrJsonValue()))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> SCMapEntryXDR {
+    let members = try XdrJson.object(value, type: "SCMapEntryXDR", keys: ["key", "val"])
+    let key: SCValXDR = try SCValXDR.fromXdrJsonValue(try XdrJson.field(members, key: "key", type: "SCMapEntryXDR"))
+    let val: SCValXDR = try SCValXDR.fromXdrJsonValue(try XdrJson.field(members, key: "val", type: "SCMapEntryXDR"))
+    return SCMapEntryXDR(key: key, val: val)
+  }
+}

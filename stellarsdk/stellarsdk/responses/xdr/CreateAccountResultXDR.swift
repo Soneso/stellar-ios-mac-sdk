@@ -58,3 +58,33 @@ public enum CreateAccountResultXDR: XDRCodable, Sendable {
     }
   }
 }
+
+extension CreateAccountResultXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .success: return .string("success")
+    case .malformed: return .string("malformed")
+    case .underfunded: return .string("underfunded")
+    case .lowReserve: return .string("low_reserve")
+    case .alreadyExist: return .string("already_exist")
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> CreateAccountResultXDR {
+    let name = try XdrJson.string(value, type: "CreateAccountResultXDR")
+    switch name {
+    case "success":
+      return .success
+    case "malformed":
+      return .malformed
+    case "underfunded":
+      return .underfunded
+    case "low_reserve":
+      return .lowReserve
+    case "already_exist":
+      return .alreadyExist
+    default:
+      throw XdrJsonError.unknownUnionArm(type: "CreateAccountResultXDR", key: name)
+    }
+  }
+}

@@ -32,3 +32,25 @@ public struct AccountEntryExtensionV3: XDRCodable, Sendable {
     try container.encode(seqTime)
   }
 }
+
+extension AccountEntryExtensionV3: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "ext", value: try self.ext.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "seq_ledger", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.seqLedger, type: "AccountEntryExtensionV3", key: "seq_ledger")))
+    members.append(XdrJsonMember(key: "seq_time", value: try TimePointXDRJsonCodec.toXdrJsonValue(self.seqTime, type: "AccountEntryExtensionV3", key: "seq_time")))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> AccountEntryExtensionV3 {
+    let members = try XdrJson.object(value, type: "AccountEntryExtensionV3", keys: ["ext", "seq_ledger", "seq_time"])
+    let ext: ExtensionPoint = try ExtensionPoint.fromXdrJsonValue(try XdrJson.field(members, key: "ext", type: "AccountEntryExtensionV3"))
+    let seqLedger: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "seq_ledger", type: "AccountEntryExtensionV3"), type: "AccountEntryExtensionV3", key: "seq_ledger")
+    let seqTime: UInt64 = try TimePointXDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "seq_time", type: "AccountEntryExtensionV3"), type: "AccountEntryExtensionV3", key: "seq_time")
+    return AccountEntryExtensionV3(
+      ext: ext,
+      seqLedger: seqLedger,
+      seqTime: seqTime
+    )
+  }
+}

@@ -72,3 +72,41 @@ extension RevokeSponsorshipOpXDR {
     }
   }
 }
+
+extension RevokeSponsorshipOpXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .revokeSponsorshipLedgerEntry(let payload):
+      return .object([XdrJsonMember(key: "ledger_entry", value: try payload.toXdrJsonValue())])
+    case .revokeSponsorshipSignerEntry(let payload):
+      return .object([XdrJsonMember(key: "signer", value: try payload.toXdrJsonValue())])
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> RevokeSponsorshipOpXDR {
+    if case .string(let name) = value {
+      switch name {
+      case "ledger_entry":
+        throw XdrJsonError.invalidValue(type: "RevokeSponsorshipOpXDR", key: "ledger_entry",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "signer":
+        throw XdrJsonError.invalidValue(type: "RevokeSponsorshipOpXDR", key: "signer",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      default:
+        throw XdrJsonError.unknownUnionArm(type: "RevokeSponsorshipOpXDR", key: name)
+      }
+    }
+
+    let member = try XdrJson.singleKeyObject(value, type: "RevokeSponsorshipOpXDR")
+    switch member.key {
+    case "ledger_entry":
+      let revokeSponsorshipLedgerEntry: LedgerKeyXDR = try LedgerKeyXDR.fromXdrJsonValue(member.value)
+      return .revokeSponsorshipLedgerEntry(revokeSponsorshipLedgerEntry)
+    case "signer":
+      let revokeSponsorshipSignerEntry: RevokeSponsorshipSignerXDR = try RevokeSponsorshipSignerXDR.fromXdrJsonValue(member.value)
+      return .revokeSponsorshipSignerEntry(revokeSponsorshipSignerEntry)
+    default:
+      throw XdrJsonError.unknownUnionArm(type: "RevokeSponsorshipOpXDR", key: member.key)
+    }
+  }
+}

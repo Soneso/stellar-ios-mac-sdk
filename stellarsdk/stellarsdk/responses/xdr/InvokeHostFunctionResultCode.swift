@@ -11,3 +11,30 @@ public enum InvokeHostFunctionResultCode: Int32, XDRCodable, Equatable, Sendable
   case entryArchived = -4
   case insufficientRefundableFee = -5
 }
+
+extension InvokeHostFunctionResultCode: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .success: return .string("success")
+    case .malformed: return .string("malformed")
+    case .trapped: return .string("trapped")
+    case .resourceLimitExceeded: return .string("resource_limit_exceeded")
+    case .entryArchived: return .string("entry_archived")
+    case .insufficientRefundableFee: return .string("insufficient_refundable_fee")
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> InvokeHostFunctionResultCode {
+    let name = try XdrJson.string(value, type: "InvokeHostFunctionResultCode")
+    switch name {
+    case "success": return .success
+    case "malformed": return .malformed
+    case "trapped": return .trapped
+    case "resource_limit_exceeded": return .resourceLimitExceeded
+    case "entry_archived": return .entryArchived
+    case "insufficient_refundable_fee": return .insufficientRefundableFee
+    default:
+      throw XdrJsonError.unknownEnumValue(type: "InvokeHostFunctionResultCode", value: name)
+    }
+  }
+}

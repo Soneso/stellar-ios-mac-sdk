@@ -62,3 +62,46 @@ public struct TransactionMetaV4XDR: XDRCodable, Sendable {
     try container.encode(diagnosticEvents)
   }
 }
+
+extension TransactionMetaV4XDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "ext", value: try self.ext.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "tx_changes_before", value: try self.txChangesBefore.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "operations", value: try XdrJson.array(self.operations.map { element in try element.toXdrJsonValue() })))
+    members.append(XdrJsonMember(key: "tx_changes_after", value: try self.txChangesAfter.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "soroban_meta", value: try XdrJson.optional(self.sorobanMeta.map { element in try element.toXdrJsonValue() })))
+    members.append(XdrJsonMember(key: "events", value: try XdrJson.array(self.events.map { element in try element.toXdrJsonValue() })))
+    members.append(XdrJsonMember(key: "diagnostic_events", value: try XdrJson.array(self.diagnosticEvents.map { element in try element.toXdrJsonValue() })))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> TransactionMetaV4XDR {
+    let members = try XdrJson.object(value, type: "TransactionMetaV4XDR", keys: ["ext", "tx_changes_before", "operations", "tx_changes_after", "soroban_meta", "events", "diagnostic_events"])
+    let ext: ExtensionPoint = try ExtensionPoint.fromXdrJsonValue(try XdrJson.field(members, key: "ext", type: "TransactionMetaV4XDR"))
+    let txChangesBefore: LedgerEntryChangesXDR = try LedgerEntryChangesXDR.fromXdrJsonValue(try XdrJson.field(members, key: "tx_changes_before", type: "TransactionMetaV4XDR"))
+    let operationsElements = try XdrJson.array(try XdrJson.field(members, key: "operations", type: "TransactionMetaV4XDR"), type: "TransactionMetaV4XDR", key: "operations")
+    let operations: [OperationMetaV2XDR] = try operationsElements.map { element in try OperationMetaV2XDR.fromXdrJsonValue(element) }
+    let txChangesAfter: LedgerEntryChangesXDR = try LedgerEntryChangesXDR.fromXdrJsonValue(try XdrJson.field(members, key: "tx_changes_after", type: "TransactionMetaV4XDR"))
+    let sorobanMetaValue = try XdrJson.field(members, key: "soroban_meta", type: "TransactionMetaV4XDR")
+    let sorobanMeta: SorobanTransactionMetaV2XDR?
+    if sorobanMetaValue.isNull {
+      sorobanMeta = nil
+    } else {
+      sorobanMeta = try SorobanTransactionMetaV2XDR.fromXdrJsonValue(sorobanMetaValue)
+    }
+    let eventsElements = try XdrJson.array(try XdrJson.field(members, key: "events", type: "TransactionMetaV4XDR"), type: "TransactionMetaV4XDR", key: "events")
+    let events: [TransactionEventXDR] = try eventsElements.map { element in try TransactionEventXDR.fromXdrJsonValue(element) }
+    let diagnosticEventsElements = try XdrJson.array(try XdrJson.field(members, key: "diagnostic_events", type: "TransactionMetaV4XDR"), type: "TransactionMetaV4XDR", key: "diagnostic_events")
+    let diagnosticEvents: [DiagnosticEventXDR] = try diagnosticEventsElements.map { element in try DiagnosticEventXDR.fromXdrJsonValue(element) }
+    return TransactionMetaV4XDR(
+      ext: ext,
+      txChangesBefore: txChangesBefore,
+      operations: operations,
+      txChangesAfter: txChangesAfter,
+      sorobanMeta: sorobanMeta,
+      events: events,
+      diagnosticEvents: diagnosticEvents
+    )
+  }
+}

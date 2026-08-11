@@ -1,0 +1,3774 @@
+{
+  "metadata": {
+    "description": "SEP-0051 (XDR-JSON) conformance corpus. Each entry pins the exact JSON text the SDK must emit for one XDR value and the base64 XDR that value encodes to.",
+    "reference_tool": "stellar-xdr",
+    "reference_version": "28.0.0",
+    "reference_xdr_commit": "9c9c145953e80990d6ff1ae3a6a973a0ce6d0694",
+    "sdk_xdr_commit": "911c9356277468cb588481bd90b5d4b6eda395a7",
+    "entry_count": 449,
+    "unresolvable_enum_members": [],
+    "unresolvable_struct_types": []
+  },
+  "entries": [
+    {
+      "type": "ScAddress",
+      "ios_type": "SCAddressXDR",
+      "xdr": "AAAAAAAAAAABAgMEBQYHCAkKCwwNDg8QERITFBUWFxgZGhscHR4fIA==",
+      "json": "\"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV\"",
+      "oracle": "reference",
+      "note": "Account arm renders as a G strkey."
+    },
+    {
+      "type": "ScAddress",
+      "ios_type": "SCAddressXDR",
+      "xdr": "AAAAASAhIiMkJSYnKCkqKywtLi8wMTIzNDU2Nzg5Ojs8PT4/",
+      "json": "\"CAQCCIRDEQSSMJZIFEVCWLBNFYXTAMJSGM2DKNRXHA4TUOZ4HU7D7V6Z\"",
+      "oracle": "reference",
+      "note": "Contract arm renders as a C strkey."
+    },
+    {
+      "type": "ScAddress",
+      "ios_type": "SCAddressXDR",
+      "xdr": "AAAAAgAAAAAAAATSAQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHyA=",
+      "json": "\"MAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSAAAAAAAAAAAE2LAOE\"",
+      "oracle": "reference",
+      "note": "Muxed account arm renders as an M strkey carrying the id."
+    },
+    {
+      "type": "ScAddress",
+      "ios_type": "SCAddressXDR",
+      "xdr": "AAAAAgAAAAAAAAAAAQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHyA=",
+      "json": "\"MAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSAAAAAAAAAAAAAA54K\"",
+      "oracle": "reference",
+      "note": "Muxed account arm with id zero keeps the M form."
+    },
+    {
+      "type": "ScAddress",
+      "ios_type": "SCAddressXDR",
+      "xdr": "AAAAAwAAAAABAgMEBQYHCAkKCwwNDg8QERITFBUWFxgZGhscHR4fIA==",
+      "json": "\"BAAACAQDAQCQMBYIBEFAWDANBYHRAEISCMKBKFQXDAMRUGY4DUPB6IHRSE\"",
+      "oracle": "reference",
+      "note": "Claimable balance arm renders as a B strkey."
+    },
+    {
+      "type": "ScAddress",
+      "ios_type": "SCAddressXDR",
+      "xdr": "AAAABICBgoOEhYaHiImKi4yNjo+QkZKTlJWWl5iZmpucnZ6f",
+      "json": "\"LCAIDAUDQSCYNB4IRGFIXDENR2HZBEMSSOKJLFUXTCMZVG44TWPJ744M\"",
+      "oracle": "reference",
+      "note": "Liquidity pool arm renders as an L strkey."
+    },
+    {
+      "type": "SignerKey",
+      "ios_type": "SignerKeyXDR",
+      "xdr": "AAAAAAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8g",
+      "json": "\"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV\"",
+      "oracle": "reference",
+      "note": "Ed25519 signer renders as a G strkey."
+    },
+    {
+      "type": "SignerKey",
+      "ios_type": "SignerKeyXDR",
+      "xdr": "AAAAAUBBQkNERUZHSElKS0xNTk9QUVJTVFVWV1hZWltcXV5f",
+      "json": "\"TBAECQSDIRCUMR2IJFFEWTCNJZHVAUKSKNKFKVSXLBMVUW24LVPF7EOJ\"",
+      "oracle": "reference",
+      "note": "Pre-authorized transaction signer renders as a T strkey."
+    },
+    {
+      "type": "SignerKey",
+      "ios_type": "SignerKeyXDR",
+      "xdr": "AAAAAmBhYmNkZWZnaGlqa2xtbm9wcXJzdHV2d3h5ent8fX5/",
+      "json": "\"XBQGCYTDMRSWMZ3INFVGW3DNNZXXA4LSON2HK5TXPB4XU634PV7H7YJH\"",
+      "oracle": "reference",
+      "note": "Hash-x signer renders as an X strkey."
+    },
+    {
+      "type": "SignerKey",
+      "ios_type": "SignerKeyXDR",
+      "xdr": "AAAAAwECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gAAAABAECAwQ=",
+      "json": "\"PAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSAAAAAACACAQDATYOS\"",
+      "oracle": "reference",
+      "note": "Signed payload signer with a four-byte payload renders as a P strkey."
+    },
+    {
+      "type": "SignerKey",
+      "ios_type": "SignerKeyXDR",
+      "xdr": "AAAAAwECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gAAAAIAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8g",
+      "json": "\"PAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSAAAAAAQACAQDAQCQMBYIBEFAWDANBYHRAEISCMKBKFQXDAMRUGY4DUPB6IHX7Q\"",
+      "oracle": "reference",
+      "note": "Signed payload signer at the 32-byte payload limit renders as a P strkey."
+    },
+    {
+      "type": "MuxedAccount",
+      "ios_type": "MuxedAccountXDR",
+      "xdr": "AAAAAAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8g",
+      "json": "\"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV\"",
+      "oracle": "reference",
+      "note": "Unmuxed arm renders as a G strkey."
+    },
+    {
+      "type": "MuxedAccount",
+      "ios_type": "MuxedAccountXDR",
+      "xdr": "AAABAAAAAAAAAATSAQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHyA=",
+      "json": "\"MAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSAAAAAAAAAAAE2LAOE\"",
+      "oracle": "reference",
+      "note": "Muxed arm folds the id into an M strkey."
+    },
+    {
+      "type": "MuxedAccount",
+      "ios_type": "MuxedAccountXDR",
+      "xdr": "AAABAP//////////AQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHyA=",
+      "json": "\"MAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSB7777777777777NGG\"",
+      "oracle": "reference",
+      "note": "Muxed arm carries the maximum 64-bit id."
+    },
+    {
+      "type": "PublicKey",
+      "ios_type": "PublicKey",
+      "xdr": "AAAAAAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8g",
+      "json": "\"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV\"",
+      "oracle": "reference",
+      "note": "Sole public key arm renders as a G strkey, not an object."
+    },
+    {
+      "type": "AccountId",
+      "ios_type": "AccountIDXDR",
+      "xdr": "AAAAAAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8g",
+      "json": "\"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV\"",
+      "oracle": "reference",
+      "note": "Account id typedef renders as the wrapped public key."
+    },
+    {
+      "type": "NodeId",
+      "ios_type": "NodeIDXDR",
+      "xdr": "AAAAAAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8g",
+      "json": "\"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV\"",
+      "oracle": "reference",
+      "note": "Node id typedef renders as the wrapped public key."
+    },
+    {
+      "type": "ClaimableBalanceId",
+      "ios_type": "ClaimableBalanceIDXDR",
+      "xdr": "AAAAAAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8g",
+      "json": "\"BAAACAQDAQCQMBYIBEFAWDANBYHRAEISCMKBKFQXDAMRUGY4DUPB6IHRSE\"",
+      "oracle": "reference",
+      "note": "Sole claimable balance id arm renders as a B strkey."
+    },
+    {
+      "type": "PoolId",
+      "ios_type": "PoolIDXDR",
+      "xdr": "gIGCg4SFhoeIiYqLjI2Oj5CRkpOUlZaXmJmam5ydnp8=",
+      "json": "\"LCAIDAUDQSCYNB4IRGFIXDENR2HZBEMSSOKJLFUXTCMZVG44TWPJ744M\"",
+      "oracle": "reference",
+      "note": "Pool id typedef renders as an L strkey."
+    },
+    {
+      "type": "AssetCode",
+      "ios_type": "AllowTrustOpAssetXDR",
+      "xdr": "AAAAAVVTRAA=",
+      "json": "\"USD\"",
+      "oracle": "reference",
+      "note": "Four-byte arm of the asset code union renders as a bare string."
+    },
+    {
+      "type": "AssetCode",
+      "ios_type": "AllowTrustOpAssetXDR",
+      "xdr": "AAAAAkxPTkdBU1NFVAAAAA==",
+      "json": "\"LONGASSET\"",
+      "oracle": "reference",
+      "note": "Twelve-byte arm of the asset code union renders as a bare string."
+    },
+    {
+      "type": "AssetCode4",
+      "ios_type": "AssetCode4XDR",
+      "xdr": "QQAAAA==",
+      "json": "\"A\"",
+      "oracle": "reference",
+      "note": "One-character asset code drops its three padding bytes."
+    },
+    {
+      "type": "AssetCode4",
+      "ios_type": "AssetCode4XDR",
+      "xdr": "QUJDAA==",
+      "json": "\"ABC\"",
+      "oracle": "reference",
+      "note": "Three-character asset code drops its single padding byte."
+    },
+    {
+      "type": "AssetCode4",
+      "ios_type": "AssetCode4XDR",
+      "xdr": "QUJDRA==",
+      "json": "\"ABCD\"",
+      "oracle": "reference",
+      "note": "Four-character asset code fills the field exactly."
+    },
+    {
+      "type": "AssetCode4",
+      "ios_type": "AssetCode4XDR",
+      "xdr": "wwAAAA==",
+      "json": "\"\\\\xc3\"",
+      "oracle": "reference",
+      "note": "Asset code holding a non-ASCII byte escapes it as \\xNN."
+    },
+    {
+      "type": "AssetCode4",
+      "ios_type": "AssetCode4XDR",
+      "xdr": "YVxiAA==",
+      "json": "\"a\\\\\\\\b\"",
+      "oracle": "reference",
+      "note": "Backslash inside a four-byte asset code doubles."
+    },
+    {
+      "type": "AssetCode12",
+      "ios_type": "AssetCode12XDR",
+      "xdr": "QUJDAAAAAAAAAAAA",
+      "json": "\"ABC\\\\0\\\\0\"",
+      "oracle": "reference",
+      "note": "Three-character twelve-byte asset code keeps its short form."
+    },
+    {
+      "type": "AssetCode12",
+      "ios_type": "AssetCode12XDR",
+      "xdr": "QUJDREUAAAAAAAAA",
+      "json": "\"ABCDE\"",
+      "oracle": "reference",
+      "note": "Five-character asset code sits at the twelve-byte floor."
+    },
+    {
+      "type": "AssetCode12",
+      "ios_type": "AssetCode12XDR",
+      "xdr": "QUJDREVGR0gAAAAA",
+      "json": "\"ABCDEFGH\"",
+      "oracle": "reference",
+      "note": "Eight-character twelve-byte asset code drops four padding bytes."
+    },
+    {
+      "type": "AssetCode12",
+      "ios_type": "AssetCode12XDR",
+      "xdr": "QUJDREVGR0hJSktM",
+      "json": "\"ABCDEFGHIJKL\"",
+      "oracle": "reference",
+      "note": "Twelve-character asset code fills the field exactly."
+    },
+    {
+      "type": "AssetCode12",
+      "ios_type": "AssetCode12XDR",
+      "xdr": "AAAAAAAAAAAAAAAA",
+      "json": "\"\\\\0\\\\0\\\\0\\\\0\\\\0\"",
+      "oracle": "reference",
+      "note": "All-NUL twelve-byte asset code renders as five escaped NULs."
+    },
+    {
+      "type": "AssetCode12",
+      "ios_type": "AssetCode12XDR",
+      "xdr": "aGVsbG/Dd29ybGQA",
+      "json": "\"hello\\\\xc3world\"",
+      "oracle": "reference",
+      "note": "Twelve-byte asset code holding a non-ASCII byte escapes it as \\xNN."
+    },
+    {
+      "type": "AssetCode12",
+      "ios_type": "AssetCode12XDR",
+      "xdr": "dGFiCWhlcmUAAAAA",
+      "json": "\"tab\\\\there\"",
+      "oracle": "reference",
+      "note": "Tab inside a twelve-byte asset code takes its short escape."
+    },
+    {
+      "type": "Asset",
+      "ios_type": "AssetXDR",
+      "xdr": "AAAAAA==",
+      "json": "\"native\"",
+      "oracle": "reference",
+      "note": "Native arm renders as a bare name."
+    },
+    {
+      "type": "Asset",
+      "ios_type": "AssetXDR",
+      "xdr": "AAAAAVVTRAAAAAAAAQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHyA=",
+      "json": "{\"credit_alphanum4\":{\"asset_code\":\"USD\",\"issuer\":\"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV\"}}",
+      "oracle": "reference",
+      "note": "AlphaNum4 arm nests the code and issuer."
+    },
+    {
+      "type": "Asset",
+      "ios_type": "AssetXDR",
+      "xdr": "AAAAAkxPTkdBU1NFVAAAAAAAAAABAgMEBQYHCAkKCwwNDg8QERITFBUWFxgZGhscHR4fIA==",
+      "json": "{\"credit_alphanum12\":{\"asset_code\":\"LONGASSET\",\"issuer\":\"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV\"}}",
+      "oracle": "reference",
+      "note": "AlphaNum12 arm nests the code and issuer."
+    },
+    {
+      "type": "TrustLineAsset",
+      "ios_type": "TrustlineAssetXDR",
+      "xdr": "AAAAAA==",
+      "json": "\"native\"",
+      "oracle": "reference",
+      "note": "Native arm of the trustline asset union renders as a bare name."
+    },
+    {
+      "type": "TrustLineAsset",
+      "ios_type": "TrustlineAssetXDR",
+      "xdr": "AAAAAVVTRAAAAAAAAQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHyA=",
+      "json": "{\"credit_alphanum4\":{\"asset_code\":\"USD\",\"issuer\":\"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV\"}}",
+      "oracle": "reference",
+      "note": "AlphaNum4 arm of the trustline asset union."
+    },
+    {
+      "type": "TrustLineAsset",
+      "ios_type": "TrustlineAssetXDR",
+      "xdr": "AAAAAkxPTkdBU1NFVAAAAAAAAAABAgMEBQYHCAkKCwwNDg8QERITFBUWFxgZGhscHR4fIA==",
+      "json": "{\"credit_alphanum12\":{\"asset_code\":\"LONGASSET\",\"issuer\":\"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV\"}}",
+      "oracle": "reference",
+      "note": "AlphaNum12 arm of the trustline asset union."
+    },
+    {
+      "type": "TrustLineAsset",
+      "ios_type": "TrustlineAssetXDR",
+      "xdr": "AAAAA4CBgoOEhYaHiImKi4yNjo+QkZKTlJWWl5iZmpucnZ6f",
+      "json": "{\"pool_share\":\"LCAIDAUDQSCYNB4IRGFIXDENR2HZBEMSSOKJLFUXTCMZVG44TWPJ744M\"}",
+      "oracle": "reference",
+      "note": "Pool share arm of the trustline asset union carries a pool id."
+    },
+    {
+      "type": "ChangeTrustAsset",
+      "ios_type": "ChangeTrustAssetXDR",
+      "xdr": "AAAAAA==",
+      "json": "\"native\"",
+      "oracle": "reference",
+      "note": "Native arm of the change trust asset union renders as a bare name."
+    },
+    {
+      "type": "ChangeTrustAsset",
+      "ios_type": "ChangeTrustAssetXDR",
+      "xdr": "AAAAAVVTRAAAAAAAAQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHyA=",
+      "json": "{\"credit_alphanum4\":{\"asset_code\":\"USD\",\"issuer\":\"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV\"}}",
+      "oracle": "reference",
+      "note": "AlphaNum4 arm of the change trust asset union."
+    },
+    {
+      "type": "ChangeTrustAsset",
+      "ios_type": "ChangeTrustAssetXDR",
+      "xdr": "AAAAAkxPTkdBU1NFVAAAAAAAAAABAgMEBQYHCAkKCwwNDg8QERITFBUWFxgZGhscHR4fIA==",
+      "json": "{\"credit_alphanum12\":{\"asset_code\":\"LONGASSET\",\"issuer\":\"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV\"}}",
+      "oracle": "reference",
+      "note": "AlphaNum12 arm of the change trust asset union."
+    },
+    {
+      "type": "ChangeTrustAsset",
+      "ios_type": "ChangeTrustAssetXDR",
+      "xdr": "AAAAAwAAAAAAAAAAAAAAAVVTRAAAAAAAAQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHyAAAAAe",
+      "json": "{\"pool_share\":{\"liquidity_pool_constant_product\":{\"asset_a\":\"native\",\"asset_b\":{\"credit_alphanum4\":{\"asset_code\":\"USD\",\"issuer\":\"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV\"}},\"fee\":30}}}",
+      "oracle": "reference",
+      "note": "Pool share arm of the change trust asset union carries pool parameters."
+    },
+    {
+      "type": "LiquidityPoolParameters",
+      "ios_type": "LiquidityPoolParametersXDR",
+      "xdr": "AAAAAAAAAAAAAAACTE9OR0FTU0VUAAAAAAAAAAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gAAAAHg==",
+      "json": "{\"liquidity_pool_constant_product\":{\"asset_a\":\"native\",\"asset_b\":{\"credit_alphanum12\":{\"asset_code\":\"LONGASSET\",\"issuer\":\"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV\"}},\"fee\":30}}",
+      "oracle": "reference",
+      "note": "Sole arm of the liquidity pool parameters union."
+    },
+    {
+      "type": "Int128Parts",
+      "ios_type": "Int128PartsXDR",
+      "xdr": "AAAAAAAAAAAAAAAAAAAAAA==",
+      "json": "\"0\"",
+      "oracle": "reference",
+      "note": "Signed 128-bit zero renders as a decimal string, not an object."
+    },
+    {
+      "type": "Int128Parts",
+      "ios_type": "Int128PartsXDR",
+      "xdr": "AAAAAAAAAAAAAAAAAAAAAQ==",
+      "json": "\"1\"",
+      "oracle": "reference",
+      "note": "Signed 128-bit one renders as a decimal string."
+    },
+    {
+      "type": "Int128Parts",
+      "ios_type": "Int128PartsXDR",
+      "xdr": "/////////////////////w==",
+      "json": "\"-1\"",
+      "oracle": "reference",
+      "note": "Signed 128-bit minus one crosses both halves of the struct."
+    },
+    {
+      "type": "Int128Parts",
+      "ios_type": "Int128PartsXDR",
+      "xdr": "gAAAAAAAAAAAAAAAAAAAAA==",
+      "json": "\"-170141183460469231731687303715884105728\"",
+      "oracle": "reference",
+      "note": "Signed 128-bit minimum renders as a decimal string."
+    },
+    {
+      "type": "Int128Parts",
+      "ios_type": "Int128PartsXDR",
+      "xdr": "f////////////////////w==",
+      "json": "\"170141183460469231731687303715884105727\"",
+      "oracle": "reference",
+      "note": "Signed 128-bit maximum renders as a decimal string."
+    },
+    {
+      "type": "UInt128Parts",
+      "ios_type": "UInt128PartsXDR",
+      "xdr": "AAAAAAAAAAAAAAAAAAAAAA==",
+      "json": "\"0\"",
+      "oracle": "reference",
+      "note": "Unsigned 128-bit zero renders as a decimal string."
+    },
+    {
+      "type": "UInt128Parts",
+      "ios_type": "UInt128PartsXDR",
+      "xdr": "AAAAAAAAAAAAAAAAAAAAAQ==",
+      "json": "\"1\"",
+      "oracle": "reference",
+      "note": "Unsigned 128-bit one renders as a decimal string."
+    },
+    {
+      "type": "UInt128Parts",
+      "ios_type": "UInt128PartsXDR",
+      "xdr": "/////////////////////w==",
+      "json": "\"340282366920938463463374607431768211455\"",
+      "oracle": "reference",
+      "note": "Unsigned 128-bit maximum renders as a decimal string."
+    },
+    {
+      "type": "Int256Parts",
+      "ios_type": "Int256PartsXDR",
+      "xdr": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+      "json": "\"0\"",
+      "oracle": "reference",
+      "note": "Signed 256-bit zero renders as a decimal string."
+    },
+    {
+      "type": "Int256Parts",
+      "ios_type": "Int256PartsXDR",
+      "xdr": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAE=",
+      "json": "\"1\"",
+      "oracle": "reference",
+      "note": "Signed 256-bit one renders as a decimal string."
+    },
+    {
+      "type": "Int256Parts",
+      "ios_type": "Int256PartsXDR",
+      "xdr": "//////////////////////////////////////////8=",
+      "json": "\"-1\"",
+      "oracle": "reference",
+      "note": "Signed 256-bit minus one crosses all four quarters of the struct."
+    },
+    {
+      "type": "Int256Parts",
+      "ios_type": "Int256PartsXDR",
+      "xdr": "gAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+      "json": "\"-57896044618658097711785492504343953926634992332820282019728792003956564819968\"",
+      "oracle": "reference",
+      "note": "Signed 256-bit minimum renders as a decimal string."
+    },
+    {
+      "type": "Int256Parts",
+      "ios_type": "Int256PartsXDR",
+      "xdr": "f/////////////////////////////////////////8=",
+      "json": "\"57896044618658097711785492504343953926634992332820282019728792003956564819967\"",
+      "oracle": "reference",
+      "note": "Signed 256-bit maximum renders as a decimal string."
+    },
+    {
+      "type": "UInt256Parts",
+      "ios_type": "UInt256PartsXDR",
+      "xdr": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+      "json": "\"0\"",
+      "oracle": "reference",
+      "note": "Unsigned 256-bit zero renders as a decimal string."
+    },
+    {
+      "type": "UInt256Parts",
+      "ios_type": "UInt256PartsXDR",
+      "xdr": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAE=",
+      "json": "\"1\"",
+      "oracle": "reference",
+      "note": "Unsigned 256-bit one renders as a decimal string."
+    },
+    {
+      "type": "UInt256Parts",
+      "ios_type": "UInt256PartsXDR",
+      "xdr": "//////////////////////////////////////////8=",
+      "json": "\"115792089237316195423570985008687907853269984665640564039457584007913129639935\"",
+      "oracle": "reference",
+      "note": "Unsigned 256-bit maximum renders as a decimal string."
+    },
+    {
+      "type": "TimeBounds",
+      "ios_type": "TimeBoundsXDR",
+      "xdr": "AAAAAAAAAAAAAAAAAAAAAA==",
+      "json": "{\"min_time\":\"0\",\"max_time\":\"0\"}",
+      "oracle": "reference",
+      "note": "Time bounds at zero render both endpoints as strings."
+    },
+    {
+      "type": "TimeBounds",
+      "ios_type": "TimeBoundsXDR",
+      "xdr": "AAAAAAAAAAH//////////w==",
+      "json": "{\"min_time\":\"1\",\"max_time\":\"18446744073709551615\"}",
+      "oracle": "reference",
+      "note": "Time bounds at the unsigned 64-bit maximum stay strings."
+    },
+    {
+      "type": "Liabilities",
+      "ios_type": "LiabilitiesXDR",
+      "xdr": "AAAAAAAAAAAAAAAAAAAAAA==",
+      "json": "{\"buying\":\"0\",\"selling\":\"0\"}",
+      "oracle": "reference",
+      "note": "Liabilities at zero render as strings."
+    },
+    {
+      "type": "Liabilities",
+      "ios_type": "LiabilitiesXDR",
+      "xdr": "f/////////+AAAAAAAAAAA==",
+      "json": "{\"buying\":\"9223372036854775807\",\"selling\":\"-9223372036854775808\"}",
+      "oracle": "reference",
+      "note": "Liabilities at both signed 64-bit extremes stay strings."
+    },
+    {
+      "type": "SequenceNumber",
+      "ios_type": "SequenceNumberXDR",
+      "xdr": "AAAAAAAAAAA=",
+      "json": "\"0\"",
+      "oracle": "reference",
+      "note": "Sequence number zero renders as a string."
+    },
+    {
+      "type": "SequenceNumber",
+      "ios_type": "SequenceNumberXDR",
+      "xdr": "f/////////8=",
+      "json": "\"9223372036854775807\"",
+      "oracle": "reference",
+      "note": "Sequence number at the signed 64-bit maximum renders as a string."
+    },
+    {
+      "type": "SequenceNumber",
+      "ios_type": "SequenceNumberXDR",
+      "xdr": "gAAAAAAAAAA=",
+      "json": "\"-9223372036854775808\"",
+      "oracle": "reference",
+      "note": "Sequence number at the signed 64-bit minimum renders as a string."
+    },
+    {
+      "type": "TimePoint",
+      "ios_type": "TimePointXDR",
+      "xdr": "AAAAAAAAAAA=",
+      "json": "\"0\"",
+      "oracle": "reference",
+      "note": "Time point zero renders as a string."
+    },
+    {
+      "type": "TimePoint",
+      "ios_type": "TimePointXDR",
+      "xdr": "//////////8=",
+      "json": "\"18446744073709551615\"",
+      "oracle": "reference",
+      "note": "Time point at the unsigned 64-bit maximum renders as a string."
+    },
+    {
+      "type": "Duration",
+      "ios_type": "DurationXDR",
+      "xdr": "AAAAAAAAAAA=",
+      "json": "\"0\"",
+      "oracle": "reference",
+      "note": "Duration zero renders as a string."
+    },
+    {
+      "type": "Duration",
+      "ios_type": "DurationXDR",
+      "xdr": "//////////8=",
+      "json": "\"18446744073709551615\"",
+      "oracle": "reference",
+      "note": "Duration at the unsigned 64-bit maximum renders as a string."
+    },
+    {
+      "type": "Hash",
+      "ios_type": "HashXDR",
+      "xdr": "AQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHyA=",
+      "json": "\"0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20\"",
+      "oracle": "reference",
+      "note": "Fixed 32-byte hash renders as lowercase hex."
+    },
+    {
+      "type": "Hash",
+      "ios_type": "HashXDR",
+      "xdr": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+      "json": "\"0000000000000000000000000000000000000000000000000000000000000000\"",
+      "oracle": "reference",
+      "note": "All-zero hash renders as 64 hex zeros, never as an empty string."
+    },
+    {
+      "type": "Uint256",
+      "ios_type": "Uint256XDR",
+      "xdr": "AQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHyA=",
+      "json": "\"0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20\"",
+      "oracle": "reference",
+      "note": "Fixed 32-byte unsigned value renders as lowercase hex."
+    },
+    {
+      "type": "DataValue",
+      "ios_type": "DataValueXDR",
+      "xdr": "AAAAAA==",
+      "json": "\"\"",
+      "oracle": "reference",
+      "note": "Empty variable opaque renders as an empty string."
+    },
+    {
+      "type": "DataValue",
+      "ios_type": "DataValueXDR",
+      "xdr": "AAAAAQAAAAA=",
+      "json": "\"00\"",
+      "oracle": "reference",
+      "note": "Single zero byte of variable opaque renders as two hex digits."
+    },
+    {
+      "type": "DataValue",
+      "ios_type": "DataValueXDR",
+      "xdr": "AAAABN6tvu8=",
+      "json": "\"deadbeef\"",
+      "oracle": "reference",
+      "note": "Variable opaque renders as lowercase hex."
+    },
+    {
+      "type": "DataValue",
+      "ios_type": "DataValueXDR",
+      "xdr": "AAAAQP////////////////////////////////////////////////////////////////////////////////////8=",
+      "json": "\"ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff\"",
+      "oracle": "reference",
+      "note": "Variable opaque at its declared 64-byte limit."
+    },
+    {
+      "type": "Memo",
+      "ios_type": "MemoXDR",
+      "xdr": "AAAAAA==",
+      "json": "\"none\"",
+      "oracle": "reference",
+      "note": "Void memo arm renders as a bare name."
+    },
+    {
+      "type": "Memo",
+      "ios_type": "MemoXDR",
+      "xdr": "AAAAAQAAAAVoZWxsbwAAAA==",
+      "json": "{\"text\":\"hello\"}",
+      "oracle": "reference",
+      "note": "Text memo arm carries an escaped string."
+    },
+    {
+      "type": "Memo",
+      "ios_type": "MemoXDR",
+      "xdr": "AAAAAQAAAAA=",
+      "json": "{\"text\":\"\"}",
+      "oracle": "reference",
+      "note": "Empty text memo arm renders as an empty string."
+    },
+    {
+      "type": "Memo",
+      "ios_type": "MemoXDR",
+      "xdr": "AAAAAQAAAAh0YWIJaGVyZQ==",
+      "json": "{\"text\":\"tab\\\\there\"}",
+      "oracle": "reference",
+      "note": "Text memo arm applies the short escape for tab."
+    },
+    {
+      "type": "Memo",
+      "ios_type": "MemoXDR",
+      "xdr": "AAAAAgAAAAAAAAAA",
+      "json": "{\"id\":\"0\"}",
+      "oracle": "reference",
+      "note": "Id memo arm renders its 64-bit value as a string."
+    },
+    {
+      "type": "Memo",
+      "ios_type": "MemoXDR",
+      "xdr": "AAAAAv//////////",
+      "json": "{\"id\":\"18446744073709551615\"}",
+      "oracle": "reference",
+      "note": "Id memo arm at the unsigned 64-bit maximum stays a string."
+    },
+    {
+      "type": "Memo",
+      "ios_type": "MemoXDR",
+      "xdr": "AAAAAwECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8g",
+      "json": "{\"hash\":\"0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20\"}",
+      "oracle": "reference",
+      "note": "Hash memo arm renders as lowercase hex."
+    },
+    {
+      "type": "Memo",
+      "ios_type": "MemoXDR",
+      "xdr": "AAAABAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8g",
+      "json": "{\"return\":\"0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20\"}",
+      "oracle": "reference",
+      "note": "Return-hash memo arm keys on the reserved word return."
+    },
+    {
+      "type": "ClaimPredicate",
+      "ios_type": "ClaimPredicateXDR",
+      "xdr": "AAAAAA==",
+      "json": "\"unconditional\"",
+      "oracle": "reference",
+      "note": "Unconditional predicate arm renders as a bare name."
+    },
+    {
+      "type": "ClaimPredicate",
+      "ios_type": "ClaimPredicateXDR",
+      "xdr": "AAAAAQAAAAA=",
+      "json": "{\"and\":[]}",
+      "oracle": "reference",
+      "note": "And predicate arm with an empty array."
+    },
+    {
+      "type": "ClaimPredicate",
+      "ios_type": "ClaimPredicateXDR",
+      "xdr": "AAAAAQAAAAIAAAAAAAAABQAAAAAAAAA8",
+      "json": "{\"and\":[\"unconditional\",{\"before_relative_time\":\"60\"}]}",
+      "oracle": "reference",
+      "note": "And predicate arm at its two-element limit."
+    },
+    {
+      "type": "ClaimPredicate",
+      "ios_type": "ClaimPredicateXDR",
+      "xdr": "AAAAAgAAAAIAAAAAAAAAAA==",
+      "json": "{\"or\":[\"unconditional\",\"unconditional\"]}",
+      "oracle": "reference",
+      "note": "Or predicate arm at its two-element limit."
+    },
+    {
+      "type": "ClaimPredicate",
+      "ios_type": "ClaimPredicateXDR",
+      "xdr": "AAAAAwAAAAA=",
+      "json": "{\"not\":null}",
+      "oracle": "reference",
+      "note": "Not predicate arm with the optional unset renders as null."
+    },
+    {
+      "type": "ClaimPredicate",
+      "ios_type": "ClaimPredicateXDR",
+      "xdr": "AAAAAwAAAAEAAAAA",
+      "json": "{\"not\":\"unconditional\"}",
+      "oracle": "reference",
+      "note": "Not predicate arm with the optional set nests a predicate."
+    },
+    {
+      "type": "ClaimPredicate",
+      "ios_type": "ClaimPredicateXDR",
+      "xdr": "AAAABAAAAAAAAAAA",
+      "json": "{\"before_absolute_time\":\"0\"}",
+      "oracle": "reference",
+      "note": "Absolute time predicate renders its 64-bit bound as a string."
+    },
+    {
+      "type": "ClaimPredicate",
+      "ios_type": "ClaimPredicateXDR",
+      "xdr": "AAAABX//////////",
+      "json": "{\"before_relative_time\":\"9223372036854775807\"}",
+      "oracle": "reference",
+      "note": "Relative time predicate at the signed 64-bit maximum."
+    },
+    {
+      "type": "Claimant",
+      "ios_type": "ClaimantXDR",
+      "xdr": "AAAAAAAAAAABAgMEBQYHCAkKCwwNDg8QERITFBUWFxgZGhscHR4fIAAAAAA=",
+      "json": "{\"claimant_type_v0\":{\"destination\":\"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV\",\"predicate\":\"unconditional\"}}",
+      "oracle": "reference",
+      "note": "Sole claimant arm keys on its enum member name."
+    },
+    {
+      "type": "LedgerKey",
+      "ios_type": "LedgerKeyXDR",
+      "xdr": "AAAAAAAAAAABAgMEBQYHCAkKCwwNDg8QERITFBUWFxgZGhscHR4fIA==",
+      "json": "{\"account\":{\"account_id\":\"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV\"}}",
+      "oracle": "reference",
+      "note": "Account ledger key arm."
+    },
+    {
+      "type": "LedgerKey",
+      "ios_type": "LedgerKeyXDR",
+      "xdr": "AAAAAQAAAAABAgMEBQYHCAkKCwwNDg8QERITFBUWFxgZGhscHR4fIAAAAAA=",
+      "json": "{\"trustline\":{\"account_id\":\"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV\",\"asset\":\"native\"}}",
+      "oracle": "reference",
+      "note": "Trustline ledger key arm keys on the stripped member name."
+    },
+    {
+      "type": "LedgerKey",
+      "ios_type": "LedgerKeyXDR",
+      "xdr": "AAAAAQAAAAABAgMEBQYHCAkKCwwNDg8QERITFBUWFxgZGhscHR4fIAAAAAOAgYKDhIWGh4iJiouMjY6PkJGSk5SVlpeYmZqbnJ2enw==",
+      "json": "{\"trustline\":{\"account_id\":\"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV\",\"asset\":{\"pool_share\":\"LCAIDAUDQSCYNB4IRGFIXDENR2HZBEMSSOKJLFUXTCMZVG44TWPJ744M\"}}}",
+      "oracle": "reference",
+      "note": "Trustline ledger key arm holding a pool share asset."
+    },
+    {
+      "type": "LedgerKey",
+      "ios_type": "LedgerKeyXDR",
+      "xdr": "AAAAAgAAAAABAgMEBQYHCAkKCwwNDg8QERITFBUWFxgZGhscHR4fIAAAAAAAAAAM",
+      "json": "{\"offer\":{\"seller_id\":\"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV\",\"offer_id\":\"12\"}}",
+      "oracle": "reference",
+      "note": "Offer ledger key arm renders its offer id as a string."
+    },
+    {
+      "type": "LedgerKey",
+      "ios_type": "LedgerKeyXDR",
+      "xdr": "AAAAAwAAAAABAgMEBQYHCAkKCwwNDg8QERITFBUWFxgZGhscHR4fIAAAAAZjb25maWcAAA==",
+      "json": "{\"data\":{\"account_id\":\"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV\",\"data_name\":\"config\"}}",
+      "oracle": "reference",
+      "note": "Data ledger key arm carries an escaped string name."
+    },
+    {
+      "type": "LedgerKey",
+      "ios_type": "LedgerKeyXDR",
+      "xdr": "AAAABAAAAAABAgMEBQYHCAkKCwwNDg8QERITFBUWFxgZGhscHR4fIA==",
+      "json": "{\"claimable_balance\":{\"balance_id\":\"BAAACAQDAQCQMBYIBEFAWDANBYHRAEISCMKBKFQXDAMRUGY4DUPB6IHRSE\"}}",
+      "oracle": "reference",
+      "note": "Claimable balance ledger key arm."
+    },
+    {
+      "type": "LedgerKey",
+      "ios_type": "LedgerKeyXDR",
+      "xdr": "AAAABYCBgoOEhYaHiImKi4yNjo+QkZKTlJWWl5iZmpucnZ6f",
+      "json": "{\"liquidity_pool\":{\"liquidity_pool_id\":\"LCAIDAUDQSCYNB4IRGFIXDENR2HZBEMSSOKJLFUXTCMZVG44TWPJ744M\"}}",
+      "oracle": "reference",
+      "note": "Liquidity pool ledger key arm."
+    },
+    {
+      "type": "LedgerKey",
+      "ios_type": "LedgerKeyXDR",
+      "xdr": "AAAABgAAAAEgISIjJCUmJygpKissLS4vMDEyMzQ1Njc4OTo7PD0+PwAAAAEAAAAB",
+      "json": "{\"contract_data\":{\"contract\":\"CAQCCIRDEQSSMJZIFEVCWLBNFYXTAMJSGM2DKNRXHA4TUOZ4HU7D7V6Z\",\"key\":\"void\",\"durability\":\"persistent\"}}",
+      "oracle": "reference",
+      "note": "Contract data ledger key arm with persistent durability."
+    },
+    {
+      "type": "LedgerKey",
+      "ios_type": "LedgerKeyXDR",
+      "xdr": "AAAABgAAAAAAAAAAAQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHyAAAAAPAAAAAWsAAAAAAAAA",
+      "json": "{\"contract_data\":{\"contract\":\"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV\",\"key\":{\"symbol\":\"k\"},\"durability\":\"temporary\"}}",
+      "oracle": "reference",
+      "note": "Contract data ledger key arm with temporary durability."
+    },
+    {
+      "type": "LedgerKey",
+      "ios_type": "LedgerKeyXDR",
+      "xdr": "AAAABwECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8g",
+      "json": "{\"contract_code\":{\"hash\":\"0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20\"}}",
+      "oracle": "reference",
+      "note": "Contract code ledger key arm."
+    },
+    {
+      "type": "LedgerKey",
+      "ios_type": "LedgerKeyXDR",
+      "xdr": "AAAACAAAAAA=",
+      "json": "{\"config_setting\":{\"config_setting_id\":\"contract_max_size_bytes\"}}",
+      "oracle": "reference",
+      "note": "Config setting ledger key arm keys on an enum member name."
+    },
+    {
+      "type": "LedgerKey",
+      "ios_type": "LedgerKeyXDR",
+      "xdr": "AAAACQECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8g",
+      "json": "{\"ttl\":{\"key_hash\":\"0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20\"}}",
+      "oracle": "reference",
+      "note": "TTL ledger key arm keys on the fully stripped member name."
+    },
+    {
+      "type": "ScVal",
+      "ios_type": "SCValXDR",
+      "xdr": "AAAAAAAAAAE=",
+      "json": "{\"bool\":true}",
+      "oracle": "reference",
+      "note": "Boolean arm renders a JSON boolean."
+    },
+    {
+      "type": "ScVal",
+      "ios_type": "SCValXDR",
+      "xdr": "AAAAAAAAAAA=",
+      "json": "{\"bool\":false}",
+      "oracle": "reference",
+      "note": "Boolean arm at false."
+    },
+    {
+      "type": "ScVal",
+      "ios_type": "SCValXDR",
+      "xdr": "AAAAAQ==",
+      "json": "\"void\"",
+      "oracle": "reference",
+      "note": "Void arm renders as a bare name."
+    },
+    {
+      "type": "ScVal",
+      "ios_type": "SCValXDR",
+      "xdr": "AAAAAgAAAAAAAAAH",
+      "json": "{\"error\":{\"contract\":7}}",
+      "oracle": "reference",
+      "note": "Error arm carrying a contract error code."
+    },
+    {
+      "type": "ScVal",
+      "ios_type": "SCValXDR",
+      "xdr": "AAAAAgAAAAEAAAAH",
+      "json": "{\"error\":{\"wasm_vm\":\"internal_error\"}}",
+      "oracle": "reference",
+      "note": "Error arm carrying a host error enum member."
+    },
+    {
+      "type": "ScVal",
+      "ios_type": "SCValXDR",
+      "xdr": "AAAAAwAAAAA=",
+      "json": "{\"u32\":0}",
+      "oracle": "reference",
+      "note": "Unsigned 32-bit arm renders a JSON number."
+    },
+    {
+      "type": "ScVal",
+      "ios_type": "SCValXDR",
+      "xdr": "AAAAA/////8=",
+      "json": "{\"u32\":4294967295}",
+      "oracle": "reference",
+      "note": "Unsigned 32-bit arm at its maximum stays a JSON number."
+    },
+    {
+      "type": "ScVal",
+      "ios_type": "SCValXDR",
+      "xdr": "AAAABIAAAAA=",
+      "json": "{\"i32\":-2147483648}",
+      "oracle": "reference",
+      "note": "Signed 32-bit arm at its minimum stays a JSON number."
+    },
+    {
+      "type": "ScVal",
+      "ios_type": "SCValXDR",
+      "xdr": "AAAABQAAAAAAAAAA",
+      "json": "{\"u64\":\"0\"}",
+      "oracle": "reference",
+      "note": "Unsigned 64-bit arm renders as a string."
+    },
+    {
+      "type": "ScVal",
+      "ios_type": "SCValXDR",
+      "xdr": "AAAABf//////////",
+      "json": "{\"u64\":\"18446744073709551615\"}",
+      "oracle": "reference",
+      "note": "Unsigned 64-bit arm at its maximum renders as a string."
+    },
+    {
+      "type": "ScVal",
+      "ios_type": "SCValXDR",
+      "xdr": "AAAABoAAAAAAAAAA",
+      "json": "{\"i64\":\"-9223372036854775808\"}",
+      "oracle": "reference",
+      "note": "Signed 64-bit arm at its minimum renders as a string."
+    },
+    {
+      "type": "ScVal",
+      "ios_type": "SCValXDR",
+      "xdr": "AAAABn//////////",
+      "json": "{\"i64\":\"9223372036854775807\"}",
+      "oracle": "reference",
+      "note": "Signed 64-bit arm at its maximum renders as a string."
+    },
+    {
+      "type": "ScVal",
+      "ios_type": "SCValXDR",
+      "xdr": "AAAABwAAAABndIWA",
+      "json": "{\"timepoint\":\"1735689600\"}",
+      "oracle": "reference",
+      "note": "Timepoint arm renders as a string."
+    },
+    {
+      "type": "ScVal",
+      "ios_type": "SCValXDR",
+      "xdr": "AAAACAAAAAAAAAAA",
+      "json": "{\"duration\":\"0\"}",
+      "oracle": "reference",
+      "note": "Duration arm renders as a string."
+    },
+    {
+      "type": "ScVal",
+      "ios_type": "SCValXDR",
+      "xdr": "AAAACf////////////////////8=",
+      "json": "{\"u128\":\"340282366920938463463374607431768211455\"}",
+      "oracle": "reference",
+      "note": "Unsigned 128-bit arm at its maximum."
+    },
+    {
+      "type": "ScVal",
+      "ios_type": "SCValXDR",
+      "xdr": "AAAACv////////////////////8=",
+      "json": "{\"i128\":\"-1\"}",
+      "oracle": "reference",
+      "note": "Signed 128-bit arm at minus one."
+    },
+    {
+      "type": "ScVal",
+      "ios_type": "SCValXDR",
+      "xdr": "AAAACoAAAAAAAAAAAAAAAAAAAAA=",
+      "json": "{\"i128\":\"-170141183460469231731687303715884105728\"}",
+      "oracle": "reference",
+      "note": "Signed 128-bit arm at its minimum."
+    },
+    {
+      "type": "ScVal",
+      "ios_type": "SCValXDR",
+      "xdr": "AAAAC///////////////////////////////////////////",
+      "json": "{\"u256\":\"115792089237316195423570985008687907853269984665640564039457584007913129639935\"}",
+      "oracle": "reference",
+      "note": "Unsigned 256-bit arm at its maximum."
+    },
+    {
+      "type": "ScVal",
+      "ios_type": "SCValXDR",
+      "xdr": "AAAADIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+      "json": "{\"i256\":\"-57896044618658097711785492504343953926634992332820282019728792003956564819968\"}",
+      "oracle": "reference",
+      "note": "Signed 256-bit arm at its minimum."
+    },
+    {
+      "type": "ScVal",
+      "ios_type": "SCValXDR",
+      "xdr": "AAAADQAAAAIA/wAA",
+      "json": "{\"bytes\":\"00ff\"}",
+      "oracle": "reference",
+      "note": "Bytes arm renders as lowercase hex."
+    },
+    {
+      "type": "ScVal",
+      "ios_type": "SCValXDR",
+      "xdr": "AAAADgAAAAA=",
+      "json": "{\"string\":\"\"}",
+      "oracle": "reference",
+      "note": "String arm with no content."
+    },
+    {
+      "type": "ScVal",
+      "ios_type": "SCValXDR",
+      "xdr": "AAAADgAAAANhXGIA",
+      "json": "{\"string\":\"a\\\\\\\\b\"}",
+      "oracle": "reference",
+      "note": "String arm doubles an embedded backslash."
+    },
+    {
+      "type": "ScVal",
+      "ios_type": "SCValXDR",
+      "xdr": "AAAADwAAAAh0cmFuc2Zlcg==",
+      "json": "{\"symbol\":\"transfer\"}",
+      "oracle": "reference",
+      "note": "Symbol arm renders as an escaped string."
+    },
+    {
+      "type": "ScVal",
+      "ios_type": "SCValXDR",
+      "xdr": "AAAAEAAAAAA=",
+      "json": "{\"vec\":null}",
+      "oracle": "reference",
+      "note": "Vector arm with the optional unset renders as null."
+    },
+    {
+      "type": "ScVal",
+      "ios_type": "SCValXDR",
+      "xdr": "AAAAEAAAAAEAAAAA",
+      "json": "{\"vec\":[]}",
+      "oracle": "reference",
+      "note": "Vector arm with an empty array."
+    },
+    {
+      "type": "ScVal",
+      "ios_type": "SCValXDR",
+      "xdr": "AAAAEAAAAAEAAAACAAAAAwAAAAEAAAAB",
+      "json": "{\"vec\":[{\"u32\":1},\"void\"]}",
+      "oracle": "reference",
+      "note": "Vector arm nesting two values."
+    },
+    {
+      "type": "ScVal",
+      "ios_type": "SCValXDR",
+      "xdr": "AAAAEQAAAAA=",
+      "json": "{\"map\":null}",
+      "oracle": "reference",
+      "note": "Map arm with the optional unset renders as null."
+    },
+    {
+      "type": "ScVal",
+      "ios_type": "SCValXDR",
+      "xdr": "AAAAEQAAAAEAAAAA",
+      "json": "{\"map\":[]}",
+      "oracle": "reference",
+      "note": "Map arm with an empty array."
+    },
+    {
+      "type": "ScVal",
+      "ios_type": "SCValXDR",
+      "xdr": "AAAAEQAAAAEAAAABAAAADwAAAAFrAAAAAAAAAwAAAAE=",
+      "json": "{\"map\":[{\"key\":{\"symbol\":\"k\"},\"val\":{\"u32\":1}}]}",
+      "oracle": "reference",
+      "note": "Map arm with one entry."
+    },
+    {
+      "type": "ScVal",
+      "ios_type": "SCValXDR",
+      "xdr": "AAAAEgAAAAAAAAAAAQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHyA=",
+      "json": "{\"address\":\"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV\"}",
+      "oracle": "reference",
+      "note": "Address arm carrying an account address."
+    },
+    {
+      "type": "ScVal",
+      "ios_type": "SCValXDR",
+      "xdr": "AAAAEgAAAAEgISIjJCUmJygpKissLS4vMDEyMzQ1Njc4OTo7PD0+Pw==",
+      "json": "{\"address\":\"CAQCCIRDEQSSMJZIFEVCWLBNFYXTAMJSGM2DKNRXHA4TUOZ4HU7D7V6Z\"}",
+      "oracle": "reference",
+      "note": "Address arm carrying a contract address."
+    },
+    {
+      "type": "ScVal",
+      "ios_type": "SCValXDR",
+      "xdr": "AAAAFA==",
+      "json": "\"ledger_key_contract_instance\"",
+      "oracle": "reference",
+      "note": "Ledger key contract instance arm renders as a bare name."
+    },
+    {
+      "type": "ScVal",
+      "ios_type": "SCValXDR",
+      "xdr": "AAAAFQAAAAAAAAAF",
+      "json": "{\"ledger_key_nonce\":{\"nonce\":\"5\"}}",
+      "oracle": "reference",
+      "note": "Ledger key nonce arm renders its nonce as a string."
+    },
+    {
+      "type": "ScVal",
+      "ios_type": "SCValXDR",
+      "xdr": "AAAAEwAAAAEAAAAA",
+      "json": "{\"contract_instance\":{\"executable\":\"stellar_asset\",\"storage\":null}}",
+      "oracle": "reference",
+      "note": "Contract instance arm with unset storage."
+    },
+    {
+      "type": "ScVal",
+      "ios_type": "SCValXDR",
+      "xdr": "AAAAEwAAAAABAgMEBQYHCAkKCwwNDg8QERITFBUWFxgZGhscHR4fIAAAAAEAAAAA",
+      "json": "{\"contract_instance\":{\"executable\":{\"wasm\":\"0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20\"},\"storage\":[]}}",
+      "oracle": "reference",
+      "note": "Contract instance arm with empty storage."
+    },
+    {
+      "type": "ScVal",
+      "ios_type": "SCValXDR",
+      "xdr": "AAAAFgAAAAN0YWcA",
+      "json": "{\"executable_tag\":\"tag\"}",
+      "oracle": "reference",
+      "note": "Executable tag arm renders as an escaped string."
+    },
+    {
+      "type": "ScVec",
+      "ios_type": "SCVecXDR",
+      "xdr": "AAAAAA==",
+      "json": "[]",
+      "oracle": "reference",
+      "note": "Empty vector typedef renders as an empty array."
+    },
+    {
+      "type": "ScVec",
+      "ios_type": "SCVecXDR",
+      "xdr": "AAAAAgAAAAMAAAABAAAABP////8=",
+      "json": "[{\"u32\":1},{\"i32\":-1}]",
+      "oracle": "reference",
+      "note": "Populated vector typedef."
+    },
+    {
+      "type": "ScMap",
+      "ios_type": "SCMapXDR",
+      "xdr": "AAAAAA==",
+      "json": "[]",
+      "oracle": "reference",
+      "note": "Empty map typedef renders as an empty array."
+    },
+    {
+      "type": "ScMapEntry",
+      "ios_type": "SCMapEntryXDR",
+      "xdr": "AAAADwAAAAFrAAAAAAAAAAAAAAE=",
+      "json": "{\"key\":{\"symbol\":\"k\"},\"val\":{\"bool\":true}}",
+      "oracle": "reference",
+      "note": "Map entry keys its two fields in declaration order."
+    },
+    {
+      "type": "ScBytes",
+      "ios_type": "SCBytesXDR",
+      "xdr": "AAAAAA==",
+      "json": "\"\"",
+      "oracle": "reference",
+      "note": "Empty bytes typedef renders as an empty string."
+    },
+    {
+      "type": "ScBytes",
+      "ios_type": "SCBytesXDR",
+      "xdr": "AAAAAwoLDAA=",
+      "json": "\"0a0b0c\"",
+      "oracle": "reference",
+      "note": "Bytes typedef renders as lowercase hex."
+    },
+    {
+      "type": "ScString",
+      "ios_type": "SCStringXDR",
+      "xdr": "AAAABWhlbGxvAAAA",
+      "json": "\"hello\"",
+      "oracle": "reference",
+      "note": "String typedef renders as an escaped string."
+    },
+    {
+      "type": "ScSymbol",
+      "ios_type": "SCSymbolXDR",
+      "xdr": "AAAAA3N5bQA=",
+      "json": "\"sym\"",
+      "oracle": "reference",
+      "note": "Symbol typedef renders as an escaped string."
+    },
+    {
+      "type": "ScNonceKey",
+      "ios_type": "SCNonceKeyXDR",
+      "xdr": "gAAAAAAAAAA=",
+      "json": "{\"nonce\":\"-9223372036854775808\"}",
+      "oracle": "reference",
+      "note": "Nonce key renders its 64-bit field as a string."
+    },
+    {
+      "type": "ScContractInstance",
+      "ios_type": "SCContractInstanceXDR",
+      "xdr": "AAAAAQAAAAEAAAABAAAADwAAAAFrAAAAAAAAAQ==",
+      "json": "{\"executable\":\"stellar_asset\",\"storage\":[{\"key\":{\"symbol\":\"k\"},\"val\":\"void\"}]}",
+      "oracle": "reference",
+      "note": "Contract instance with populated storage."
+    },
+    {
+      "type": "ScError",
+      "ios_type": "SCErrorXDR",
+      "xdr": "AAAAAAAAAAA=",
+      "json": "{\"contract\":0}",
+      "oracle": "reference",
+      "note": "Contract error arm carries a bare 32-bit code."
+    },
+    {
+      "type": "ScError",
+      "ios_type": "SCErrorXDR",
+      "xdr": "AAAAAP////8=",
+      "json": "{\"contract\":4294967295}",
+      "oracle": "reference",
+      "note": "Contract error arm at the unsigned 32-bit maximum."
+    },
+    {
+      "type": "ScError",
+      "ios_type": "SCErrorXDR",
+      "xdr": "AAAAAQAAAAA=",
+      "json": "{\"wasm_vm\":\"arith_domain\"}",
+      "oracle": "reference",
+      "note": "WASM VM error arm keyed on an error code member."
+    },
+    {
+      "type": "ScError",
+      "ios_type": "SCErrorXDR",
+      "xdr": "AAAAAgAAAAE=",
+      "json": "{\"context\":\"index_bounds\"}",
+      "oracle": "reference",
+      "note": "Context error arm."
+    },
+    {
+      "type": "ScError",
+      "ios_type": "SCErrorXDR",
+      "xdr": "AAAAAwAAAAI=",
+      "json": "{\"storage\":\"invalid_input\"}",
+      "oracle": "reference",
+      "note": "Storage error arm."
+    },
+    {
+      "type": "ScError",
+      "ios_type": "SCErrorXDR",
+      "xdr": "AAAABAAAAAM=",
+      "json": "{\"object\":\"missing_value\"}",
+      "oracle": "reference",
+      "note": "Object error arm."
+    },
+    {
+      "type": "ScError",
+      "ios_type": "SCErrorXDR",
+      "xdr": "AAAABQAAAAQ=",
+      "json": "{\"crypto\":\"existing_value\"}",
+      "oracle": "reference",
+      "note": "Crypto error arm."
+    },
+    {
+      "type": "ScError",
+      "ios_type": "SCErrorXDR",
+      "xdr": "AAAABgAAAAU=",
+      "json": "{\"events\":\"exceeded_limit\"}",
+      "oracle": "reference",
+      "note": "Events error arm."
+    },
+    {
+      "type": "ScError",
+      "ios_type": "SCErrorXDR",
+      "xdr": "AAAABwAAAAY=",
+      "json": "{\"budget\":\"invalid_action\"}",
+      "oracle": "reference",
+      "note": "Budget error arm."
+    },
+    {
+      "type": "ScError",
+      "ios_type": "SCErrorXDR",
+      "xdr": "AAAACAAAAAc=",
+      "json": "{\"value\":\"internal_error\"}",
+      "oracle": "reference",
+      "note": "Value error arm."
+    },
+    {
+      "type": "ScError",
+      "ios_type": "SCErrorXDR",
+      "xdr": "AAAACQAAAAg=",
+      "json": "{\"auth\":\"unexpected_type\"}",
+      "oracle": "reference",
+      "note": "Auth error arm."
+    },
+    {
+      "type": "Operation",
+      "ios_type": "OperationXDR",
+      "xdr": "AAAAAAAAAAAAAAAAAQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHyAAAAAAAAAAZA==",
+      "json": "{\"source_account\":null,\"body\":{\"create_account\":{\"destination\":\"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV\",\"starting_balance\":\"100\"}}}",
+      "oracle": "reference",
+      "note": "Operation with the optional source account unset."
+    },
+    {
+      "type": "Operation",
+      "ios_type": "OperationXDR",
+      "xdr": "AAAAAQAAAAABAgMEBQYHCAkKCwwNDg8QERITFBUWFxgZGhscHR4fIAAAAAEAAAAAAQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHyAAAAAAAAAAAAAAAAE=",
+      "json": "{\"source_account\":\"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV\",\"body\":{\"payment\":{\"destination\":\"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV\",\"asset\":\"native\",\"amount\":\"1\"}}}",
+      "oracle": "reference",
+      "note": "Operation with the optional source account set."
+    },
+    {
+      "type": "Operation",
+      "ios_type": "OperationXDR",
+      "xdr": "AAAAAQAAAQAAAAAAAAAE0gECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gAAAACQ==",
+      "json": "{\"source_account\":\"MAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSAAAAAAAAAAAE2LAOE\",\"body\":\"inflation\"}",
+      "oracle": "reference",
+      "note": "Operation whose source account is muxed and whose body is void."
+    },
+    {
+      "type": "OperationBody",
+      "ios_type": "OperationBodyXDR",
+      "xdr": "AAAAAAAAAAABAgMEBQYHCAkKCwwNDg8QERITFBUWFxgZGhscHR4fIAAAAAAAAAAB",
+      "json": "{\"create_account\":{\"destination\":\"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV\",\"starting_balance\":\"1\"}}",
+      "oracle": "reference",
+      "note": "Create account body arm."
+    },
+    {
+      "type": "OperationBody",
+      "ios_type": "OperationBodyXDR",
+      "xdr": "AAAAAQAAAQAAAAAAAAAE0gECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gAAAAAVVTRAAAAAAAAQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHyB//////////w==",
+      "json": "{\"payment\":{\"destination\":\"MAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSAAAAAAAAAAAE2LAOE\",\"asset\":{\"credit_alphanum4\":{\"asset_code\":\"USD\",\"issuer\":\"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV\"}},\"amount\":\"9223372036854775807\"}}",
+      "oracle": "reference",
+      "note": "Payment body arm at the signed 64-bit maximum amount."
+    },
+    {
+      "type": "OperationBody",
+      "ios_type": "OperationBodyXDR",
+      "xdr": "AAAAAgAAAAAAAAAAAAAACgAAAAABAgMEBQYHCAkKCwwNDg8QERITFBUWFxgZGhscHR4fIAAAAAFVU0QAAAAAAAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gAAAAAAAAAAUAAAAA",
+      "json": "{\"path_payment_strict_receive\":{\"send_asset\":\"native\",\"send_max\":\"10\",\"destination\":\"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV\",\"dest_asset\":{\"credit_alphanum4\":{\"asset_code\":\"USD\",\"issuer\":\"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV\"}},\"dest_amount\":\"5\",\"path\":[]}}",
+      "oracle": "reference",
+      "note": "Path payment strict receive body arm with an empty path."
+    },
+    {
+      "type": "OperationBody",
+      "ios_type": "OperationBodyXDR",
+      "xdr": "AAAADQAAAAJMT05HQVNTRVQAAAAAAAAAAQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHyAAAAAAAAAACgAAAAABAgMEBQYHCAkKCwwNDg8QERITFBUWFxgZGhscHR4fIAAAAAAAAAAAAAAABQAAAAIAAAAAAAAAAVVTRAAAAAAAAQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHyA=",
+      "json": "{\"path_payment_strict_send\":{\"send_asset\":{\"credit_alphanum12\":{\"asset_code\":\"LONGASSET\",\"issuer\":\"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV\"}},\"send_amount\":\"10\",\"destination\":\"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV\",\"dest_asset\":\"native\",\"dest_min\":\"5\",\"path\":[\"native\",{\"credit_alphanum4\":{\"asset_code\":\"USD\",\"issuer\":\"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV\"}}]}}",
+      "oracle": "reference",
+      "note": "Path payment strict send body arm with a two-element path."
+    },
+    {
+      "type": "OperationBody",
+      "ios_type": "OperationBodyXDR",
+      "xdr": "AAAAAwAAAAAAAAABVVNEAAAAAAABAgMEBQYHCAkKCwwNDg8QERITFBUWFxgZGhscHR4fIAAAAAAAAAABAAAAAQAAAAIAAAAAAAAAAA==",
+      "json": "{\"manage_sell_offer\":{\"selling\":\"native\",\"buying\":{\"credit_alphanum4\":{\"asset_code\":\"USD\",\"issuer\":\"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV\"}},\"amount\":\"1\",\"price\":{\"n\":1,\"d\":2},\"offer_id\":\"0\"}}",
+      "oracle": "reference",
+      "note": "Manage sell offer body arm."
+    },
+    {
+      "type": "OperationBody",
+      "ios_type": "OperationBodyXDR",
+      "xdr": "AAAADAAAAAFVU0QAAAAAAAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gAAAAAAAAAAAAAAABAAAABwAAAAMAAAAAAAAACQ==",
+      "json": "{\"manage_buy_offer\":{\"selling\":{\"credit_alphanum4\":{\"asset_code\":\"USD\",\"issuer\":\"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV\"}},\"buying\":\"native\",\"buy_amount\":\"1\",\"price\":{\"n\":7,\"d\":3},\"offer_id\":\"9\"}}",
+      "oracle": "reference",
+      "note": "Manage buy offer body arm."
+    },
+    {
+      "type": "OperationBody",
+      "ios_type": "OperationBodyXDR",
+      "xdr": "AAAABAAAAAAAAAABVVNEAAAAAAABAgMEBQYHCAkKCwwNDg8QERITFBUWFxgZGhscHR4fIAAAAAAAAAABAAAAAQAAAAE=",
+      "json": "{\"create_passive_sell_offer\":{\"selling\":\"native\",\"buying\":{\"credit_alphanum4\":{\"asset_code\":\"USD\",\"issuer\":\"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV\"}},\"amount\":\"1\",\"price\":{\"n\":1,\"d\":1}}}",
+      "oracle": "reference",
+      "note": "Create passive sell offer body arm."
+    },
+    {
+      "type": "OperationBody",
+      "ios_type": "OperationBodyXDR",
+      "xdr": "AAAABQAAAAEAAAAAAQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHyAAAAABAAAAAQAAAAEAAAACAAAAAQAAAP8AAAABAAAAAAAAAAEAAAABAAAAAQAAAAIAAAABAAAAC2V4YW1wbGUuY29tAAAAAAEAAAACYGFiY2RlZmdoaWprbG1ub3BxcnN0dXZ3eHl6e3x9fn8AAAAD",
+      "json": "{\"set_options\":{\"inflation_dest\":\"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV\",\"clear_flags\":1,\"set_flags\":2,\"master_weight\":255,\"low_threshold\":0,\"med_threshold\":1,\"high_threshold\":2,\"home_domain\":\"example.com\",\"signer\":{\"key\":\"XBQGCYTDMRSWMZ3INFVGW3DNNZXXA4LSON2HK5TXPB4XU634PV7H7YJH\",\"weight\":3}}}",
+      "oracle": "reference",
+      "note": "Set options body arm with every optional set."
+    },
+    {
+      "type": "OperationBody",
+      "ios_type": "OperationBodyXDR",
+      "xdr": "AAAABgAAAAFVU0QAAAAAAAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gf/////////8=",
+      "json": "{\"change_trust\":{\"line\":{\"credit_alphanum4\":{\"asset_code\":\"USD\",\"issuer\":\"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV\"}},\"limit\":\"9223372036854775807\"}}",
+      "oracle": "reference",
+      "note": "Change trust body arm."
+    },
+    {
+      "type": "OperationBody",
+      "ios_type": "OperationBodyXDR",
+      "xdr": "AAAABwAAAAABAgMEBQYHCAkKCwwNDg8QERITFBUWFxgZGhscHR4fIAAAAAFVU0QAAAAAAQ==",
+      "json": "{\"allow_trust\":{\"trustor\":\"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV\",\"asset\":\"USD\",\"authorize\":1}}",
+      "oracle": "reference",
+      "note": "Allow trust body arm carries an asset code union as a string."
+    },
+    {
+      "type": "OperationBody",
+      "ios_type": "OperationBodyXDR",
+      "xdr": "AAAACAAAAQAAAAAAAAAE0gECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8g",
+      "json": "{\"account_merge\":\"MAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSAAAAAAAAAAAE2LAOE\"}",
+      "oracle": "reference",
+      "note": "Account merge body arm carries a muxed account directly."
+    },
+    {
+      "type": "OperationBody",
+      "ios_type": "OperationBodyXDR",
+      "xdr": "AAAACQ==",
+      "json": "\"inflation\"",
+      "oracle": "reference",
+      "note": "Inflation body arm renders as a bare name."
+    },
+    {
+      "type": "OperationBody",
+      "ios_type": "OperationBodyXDR",
+      "xdr": "AAAACgAAAAFrAAAAAAAAAA==",
+      "json": "{\"manage_data\":{\"data_name\":\"k\",\"data_value\":null}}",
+      "oracle": "reference",
+      "note": "Manage data body arm with the optional value unset."
+    },
+    {
+      "type": "OperationBody",
+      "ios_type": "OperationBodyXDR",
+      "xdr": "AAAACwAAAAAAAAAJ",
+      "json": "{\"bump_sequence\":{\"bump_to\":\"9\"}}",
+      "oracle": "reference",
+      "note": "Bump sequence body arm."
+    },
+    {
+      "type": "OperationBody",
+      "ios_type": "OperationBodyXDR",
+      "xdr": "AAAADgAAAAAAAAAAAAAAAQAAAAEAAAAAAAAAAAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gAAAAAA==",
+      "json": "{\"create_claimable_balance\":{\"asset\":\"native\",\"amount\":\"1\",\"claimants\":[{\"claimant_type_v0\":{\"destination\":\"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV\",\"predicate\":\"unconditional\"}}]}}",
+      "oracle": "reference",
+      "note": "Create claimable balance body arm."
+    },
+    {
+      "type": "OperationBody",
+      "ios_type": "OperationBodyXDR",
+      "xdr": "AAAADwAAAAABAgMEBQYHCAkKCwwNDg8QERITFBUWFxgZGhscHR4fIA==",
+      "json": "{\"claim_claimable_balance\":{\"balance_id\":\"BAAACAQDAQCQMBYIBEFAWDANBYHRAEISCMKBKFQXDAMRUGY4DUPB6IHRSE\"}}",
+      "oracle": "reference",
+      "note": "Claim claimable balance body arm."
+    },
+    {
+      "type": "OperationBody",
+      "ios_type": "OperationBodyXDR",
+      "xdr": "AAAAEAAAAAABAgMEBQYHCAkKCwwNDg8QERITFBUWFxgZGhscHR4fIA==",
+      "json": "{\"begin_sponsoring_future_reserves\":{\"sponsored_id\":\"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV\"}}",
+      "oracle": "reference",
+      "note": "Begin sponsoring future reserves body arm."
+    },
+    {
+      "type": "OperationBody",
+      "ios_type": "OperationBodyXDR",
+      "xdr": "AAAAEQ==",
+      "json": "\"end_sponsoring_future_reserves\"",
+      "oracle": "reference",
+      "note": "End sponsoring future reserves body arm renders as a bare name."
+    },
+    {
+      "type": "OperationBody",
+      "ios_type": "OperationBodyXDR",
+      "xdr": "AAAAEgAAAAAAAAAAAAAAAAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8g",
+      "json": "{\"revoke_sponsorship\":{\"ledger_entry\":{\"account\":{\"account_id\":\"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV\"}}}}",
+      "oracle": "reference",
+      "note": "Revoke sponsorship body arm targeting a ledger entry."
+    },
+    {
+      "type": "OperationBody",
+      "ios_type": "OperationBodyXDR",
+      "xdr": "AAAAEgAAAAEAAAAAAQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHyAAAAABQEFCQ0RFRkdISUpLTE1OT1BRUlNUVVZXWFlaW1xdXl8=",
+      "json": "{\"revoke_sponsorship\":{\"signer\":{\"account_id\":\"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV\",\"signer_key\":\"TBAECQSDIRCUMR2IJFFEWTCNJZHVAUKSKNKFKVSXLBMVUW24LVPF7EOJ\"}}}",
+      "oracle": "reference",
+      "note": "Revoke sponsorship body arm targeting a signer."
+    },
+    {
+      "type": "OperationBody",
+      "ios_type": "OperationBodyXDR",
+      "xdr": "AAAAEwAAAAFVU0QAAAAAAAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gAAABAAAAAAAAAATSAQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHyAAAAAAAAAAAQ==",
+      "json": "{\"clawback\":{\"asset\":{\"credit_alphanum4\":{\"asset_code\":\"USD\",\"issuer\":\"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV\"}},\"from\":\"MAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSAAAAAAAAAAAE2LAOE\",\"amount\":\"1\"}}",
+      "oracle": "reference",
+      "note": "Clawback body arm keys on the reserved word from."
+    },
+    {
+      "type": "OperationBody",
+      "ios_type": "OperationBodyXDR",
+      "xdr": "AAAAFAAAAAABAgMEBQYHCAkKCwwNDg8QERITFBUWFxgZGhscHR4fIA==",
+      "json": "{\"clawback_claimable_balance\":{\"balance_id\":\"BAAACAQDAQCQMBYIBEFAWDANBYHRAEISCMKBKFQXDAMRUGY4DUPB6IHRSE\"}}",
+      "oracle": "reference",
+      "note": "Clawback claimable balance body arm."
+    },
+    {
+      "type": "OperationBody",
+      "ios_type": "OperationBodyXDR",
+      "xdr": "AAAAFQAAAAABAgMEBQYHCAkKCwwNDg8QERITFBUWFxgZGhscHR4fIAAAAAFVU0QAAAAAAAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gAAAAAQAAAAI=",
+      "json": "{\"set_trust_line_flags\":{\"trustor\":\"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV\",\"asset\":{\"credit_alphanum4\":{\"asset_code\":\"USD\",\"issuer\":\"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV\"}},\"clear_flags\":1,\"set_flags\":2}}",
+      "oracle": "reference",
+      "note": "Set trustline flags body arm."
+    },
+    {
+      "type": "OperationBody",
+      "ios_type": "OperationBodyXDR",
+      "xdr": "AAAAFoCBgoOEhYaHiImKi4yNjo+QkZKTlJWWl5iZmpucnZ6fAAAAAAAAAAEAAAAAAAAAAgAAAAEAAAACAAAAAwAAAAE=",
+      "json": "{\"liquidity_pool_deposit\":{\"liquidity_pool_id\":\"LCAIDAUDQSCYNB4IRGFIXDENR2HZBEMSSOKJLFUXTCMZVG44TWPJ744M\",\"max_amount_a\":\"1\",\"max_amount_b\":\"2\",\"min_price\":{\"n\":1,\"d\":2},\"max_price\":{\"n\":3,\"d\":1}}}",
+      "oracle": "reference",
+      "note": "Liquidity pool deposit body arm."
+    },
+    {
+      "type": "OperationBody",
+      "ios_type": "OperationBodyXDR",
+      "xdr": "AAAAF4CBgoOEhYaHiImKi4yNjo+QkZKTlJWWl5iZmpucnZ6fAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAA",
+      "json": "{\"liquidity_pool_withdraw\":{\"liquidity_pool_id\":\"LCAIDAUDQSCYNB4IRGFIXDENR2HZBEMSSOKJLFUXTCMZVG44TWPJ744M\",\"amount\":\"1\",\"min_amount_a\":\"0\",\"min_amount_b\":\"0\"}}",
+      "oracle": "reference",
+      "note": "Liquidity pool withdraw body arm."
+    },
+    {
+      "type": "OperationBody",
+      "ios_type": "OperationBodyXDR",
+      "xdr": "AAAAGAAAAAIAAAAEAGFzbQAAAAA=",
+      "json": "{\"invoke_host_function\":{\"host_function\":{\"upload_contract_wasm\":\"0061736d\"},\"auth\":[]}}",
+      "oracle": "reference",
+      "note": "Invoke host function body arm with no authorization entries."
+    },
+    {
+      "type": "OperationBody",
+      "ios_type": "OperationBodyXDR",
+      "xdr": "AAAAGQAAAAAAAABk",
+      "json": "{\"extend_footprint_ttl\":{\"ext\":\"v0\",\"extend_to\":100}}",
+      "oracle": "reference",
+      "note": "Extend footprint TTL body arm."
+    },
+    {
+      "type": "OperationBody",
+      "ios_type": "OperationBodyXDR",
+      "xdr": "AAAAGgAAAAA=",
+      "json": "{\"restore_footprint\":{\"ext\":\"v0\"}}",
+      "oracle": "reference",
+      "note": "Restore footprint body arm."
+    },
+    {
+      "type": "ManageDataOp",
+      "ios_type": "ManageDataOperationXDR",
+      "xdr": "AAAADHBsYWluLW5hbWVfMQAAAAEAAAACAQIAAA==",
+      "json": "{\"data_name\":\"plain-name_1\",\"data_value\":\"0102\"}",
+      "oracle": "reference",
+      "note": "Printable ASCII name survives the escape ladder unchanged."
+    },
+    {
+      "type": "ManageDataOp",
+      "ios_type": "ManageDataOperationXDR",
+      "xdr": "AAAAA2FcYgAAAAAA",
+      "json": "{\"data_name\":\"a\\\\\\\\b\",\"data_value\":null}",
+      "oracle": "reference",
+      "note": "Backslash in a string field doubles."
+    },
+    {
+      "type": "ManageDataOp",
+      "ios_type": "ManageDataOperationXDR",
+      "xdr": "AAAAA2EJYgAAAAABAAAAAA==",
+      "json": "{\"data_name\":\"a\\\\tb\",\"data_value\":\"\"}",
+      "oracle": "reference",
+      "note": "Tab in a string field takes its short escape."
+    },
+    {
+      "type": "ManageDataOp",
+      "ios_type": "ManageDataOperationXDR",
+      "xdr": "AAAAA2EAYgAAAAAA",
+      "json": "{\"data_name\":\"a\\\\0b\",\"data_value\":null}",
+      "oracle": "reference",
+      "note": "NUL in a string field takes its short escape."
+    },
+    {
+      "type": "ManageDataOp",
+      "ios_type": "ManageDataOperationXDR",
+      "xdr": "AAAAA2F/YgAAAAAA",
+      "json": "{\"data_name\":\"a\\\\x7fb\",\"data_value\":null}",
+      "oracle": "reference",
+      "note": "DEL in a string field escapes as \\x7f."
+    },
+    {
+      "type": "ManageDataOp",
+      "ios_type": "ManageDataOperationXDR",
+      "xdr": "AAAABWEKYg1jAAAAAAAAAA==",
+      "json": "{\"data_name\":\"a\\\\nb\\\\rc\",\"data_value\":null}",
+      "oracle": "reference",
+      "note": "Newline and carriage return take their short escapes."
+    },
+    {
+      "type": "ManageDataOp",
+      "ios_type": "ManageDataOperationXDR",
+      "xdr": "AAAAAiB+AAAAAAAA",
+      "json": "{\"data_name\":\" ~\",\"data_value\":null}",
+      "oracle": "reference",
+      "note": "Both ends of the printable range survive unescaped."
+    },
+    {
+      "type": "SetOptionsOp",
+      "ios_type": "SetOptionsOperationXDR",
+      "xdr": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+      "json": "{\"inflation_dest\":null,\"clear_flags\":null,\"set_flags\":null,\"master_weight\":null,\"low_threshold\":null,\"med_threshold\":null,\"high_threshold\":null,\"home_domain\":null,\"signer\":null}",
+      "oracle": "reference",
+      "note": "Every optional field unset renders as null."
+    },
+    {
+      "type": "SetOptionsOp",
+      "ios_type": "SetOptionsOperationXDR",
+      "xdr": "AAAAAQAAAAABAgMEBQYHCAkKCwwNDg8QERITFBUWFxgZGhscHR4fIAAAAAEAAAAAAAAAAQAAAAAAAAABAAAAAAAAAAEAAAAAAAAAAQAAAAAAAAABAAAAAAAAAAEAAAADYVxiAAAAAAEAAAADAQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHyAAAAAEAQIDBAAAAP8=",
+      "json": "{\"inflation_dest\":\"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV\",\"clear_flags\":0,\"set_flags\":0,\"master_weight\":0,\"low_threshold\":0,\"med_threshold\":0,\"high_threshold\":0,\"home_domain\":\"a\\\\\\\\b\",\"signer\":{\"key\":\"PAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSAAAAAACACAQDATYOS\",\"weight\":255}}",
+      "oracle": "reference",
+      "note": "Every optional field set, including an escaped home domain."
+    },
+    {
+      "type": "TransactionEnvelope",
+      "ios_type": "TransactionEnvelopeXDR",
+      "xdr": "AAAAAAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gAAAAZAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+      "json": "{\"tx_v0\":{\"tx\":{\"source_account_ed25519\":\"0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20\",\"fee\":100,\"seq_num\":\"1\",\"time_bounds\":null,\"memo\":\"none\",\"operations\":[],\"ext\":\"v0\"},\"signatures\":[]}}",
+      "oracle": "reference",
+      "note": "Version 0 transaction envelope arm."
+    },
+    {
+      "type": "TransactionEnvelope",
+      "ios_type": "TransactionEnvelopeXDR",
+      "xdr": "AAAAAgAAAAABAgMEBQYHCAkKCwwNDg8QERITFBUWFxgZGhscHR4fIAAAAGQAAAAAAAAAAQAAAAAAAAAAAAAAAQAAAAAAAAAJAAAAAAAAAAEBAgMEAAAAAgoLAAA=",
+      "json": "{\"tx\":{\"tx\":{\"source_account\":\"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV\",\"fee\":100,\"seq_num\":\"1\",\"cond\":\"none\",\"memo\":\"none\",\"operations\":[{\"source_account\":null,\"body\":\"inflation\"}],\"ext\":\"v0\"},\"signatures\":[{\"hint\":\"01020304\",\"signature\":\"0a0b\"}]}}",
+      "oracle": "reference",
+      "note": "Version 1 transaction envelope arm with one signature."
+    },
+    {
+      "type": "TransactionEnvelope",
+      "ios_type": "TransactionEnvelopeXDR",
+      "xdr": "AAAABQAAAQAAAAAAAAAE0gECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gAAAAAAAAAMgAAAACAAAAAAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gAAAAZAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+      "json": "{\"tx_fee_bump\":{\"tx\":{\"fee_source\":\"MAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSAAAAAAAAAAAE2LAOE\",\"fee\":\"200\",\"inner_tx\":{\"tx\":{\"tx\":{\"source_account\":\"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV\",\"fee\":100,\"seq_num\":\"1\",\"cond\":\"none\",\"memo\":\"none\",\"operations\":[],\"ext\":\"v0\"},\"signatures\":[]}},\"ext\":\"v0\"},\"signatures\":[]}}",
+      "oracle": "reference",
+      "note": "Fee bump transaction envelope arm wrapping a version 1 envelope."
+    },
+    {
+      "type": "FeeBumpTransactionInnerTx",
+      "ios_type": "FeeBumpTransactionXDRInnerTxXDR",
+      "xdr": "AAAAAgAAAAABAgMEBQYHCAkKCwwNDg8QERITFBUWFxgZGhscHR4fIAAAAGQAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAA",
+      "json": "{\"tx\":{\"tx\":{\"source_account\":\"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV\",\"fee\":100,\"seq_num\":\"1\",\"cond\":\"none\",\"memo\":\"none\",\"operations\":[],\"ext\":\"v0\"},\"signatures\":[]}}",
+      "oracle": "reference",
+      "note": "Union covering one member of its discriminant enum keys the arm tx, from the enum's full member list rather than from its own single case."
+    },
+    {
+      "type": "Preconditions",
+      "ios_type": "PreconditionsXDR",
+      "xdr": "AAAAAA==",
+      "json": "\"none\"",
+      "oracle": "reference",
+      "note": "Void preconditions arm renders as a bare name."
+    },
+    {
+      "type": "Preconditions",
+      "ios_type": "PreconditionsXDR",
+      "xdr": "AAAAAQAAAAAAAAAAAAAAAAAAAGQ=",
+      "json": "{\"time\":{\"min_time\":\"0\",\"max_time\":\"100\"}}",
+      "oracle": "reference",
+      "note": "Time preconditions arm."
+    },
+    {
+      "type": "Preconditions",
+      "ios_type": "PreconditionsXDR",
+      "xdr": "AAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+      "json": "{\"v2\":{\"time_bounds\":null,\"ledger_bounds\":null,\"min_seq_num\":null,\"min_seq_age\":\"0\",\"min_seq_ledger_gap\":0,\"extra_signers\":[]}}",
+      "oracle": "reference",
+      "note": "Version 2 preconditions arm with every optional unset."
+    },
+    {
+      "type": "PreconditionsV2",
+      "ios_type": "PreconditionsV2XDR",
+      "xdr": "AAAAAQAAAAAAAAABAAAAAAAAAAIAAAABAAAAAQAAAAIAAAABAAAAAAAAAAcAAAAAAAAAAwAAAAQAAAACAAAAAUBBQkNERUZHSElKS0xNTk9QUVJTVFVWV1hZWltcXV5fAAAAAmBhYmNkZWZnaGlqa2xtbm9wcXJzdHV2d3h5ent8fX5/",
+      "json": "{\"time_bounds\":{\"min_time\":\"1\",\"max_time\":\"2\"},\"ledger_bounds\":{\"min_ledger\":1,\"max_ledger\":2},\"min_seq_num\":\"7\",\"min_seq_age\":\"3\",\"min_seq_ledger_gap\":4,\"extra_signers\":[\"TBAECQSDIRCUMR2IJFFEWTCNJZHVAUKSKNKFKVSXLBMVUW24LVPF7EOJ\",\"XBQGCYTDMRSWMZ3INFVGW3DNNZXXA4LSON2HK5TXPB4XU634PV7H7YJH\"]}",
+      "oracle": "reference",
+      "note": "Version 2 preconditions with every optional set and two extra signers."
+    },
+    {
+      "type": "LedgerBounds",
+      "ios_type": "LedgerBoundsXDR",
+      "xdr": "AAAAAP////8=",
+      "json": "{\"min_ledger\":0,\"max_ledger\":4294967295}",
+      "oracle": "reference",
+      "note": "Ledger bounds render both 32-bit endpoints as numbers."
+    },
+    {
+      "type": "TransactionResult",
+      "ios_type": "TransactionResultXDR",
+      "xdr": "AAAAAAAAAGQAAAAAAAAAAQAAAAAAAAABAAAAAAAAAAA=",
+      "json": "{\"fee_charged\":\"100\",\"result\":{\"tx_success\":[{\"op_inner\":{\"payment\":\"success\"}}]},\"ext\":\"v0\"}",
+      "oracle": "reference",
+      "note": "Successful transaction result nesting an inner operation result."
+    },
+    {
+      "type": "TransactionResult",
+      "ios_type": "TransactionResultXDR",
+      "xdr": "AAAAAAAAAAD/////AAAAAAAAAAA=",
+      "json": "{\"fee_charged\":\"0\",\"result\":{\"tx_failed\":[]},\"ext\":\"v0\"}",
+      "oracle": "reference",
+      "note": "Failed transaction result with an empty operation result array."
+    },
+    {
+      "type": "TransactionResult",
+      "ios_type": "TransactionResultXDR",
+      "xdr": "f/////////8AAAABAQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHyAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAA=",
+      "json": "{\"fee_charged\":\"9223372036854775807\",\"result\":{\"tx_fee_bump_inner_success\":{\"transaction_hash\":\"0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20\",\"result\":{\"fee_charged\":\"1\",\"result\":{\"tx_success\":[]},\"ext\":\"v0\"}}},\"ext\":\"v0\"}",
+      "oracle": "reference",
+      "note": "Fee bump inner success result nests a full inner result."
+    },
+    {
+      "type": "OperationResult",
+      "ios_type": "OperationResultXDR",
+      "xdr": "/////w==",
+      "json": "\"op_bad_auth\"",
+      "oracle": "reference",
+      "note": "Operation result arm that carries nothing renders as a bare name."
+    },
+    {
+      "type": "OperationResult",
+      "ios_type": "OperationResultXDR",
+      "xdr": "AAAAAAAAAAAAAAAA",
+      "json": "{\"op_inner\":{\"create_account\":\"success\"}}",
+      "oracle": "reference",
+      "note": "Inner operation result nests the per-operation union."
+    },
+    {
+      "type": "OperationResult",
+      "ios_type": "OperationResultXDR",
+      "xdr": "AAAAAAAAAAH/////",
+      "json": "{\"op_inner\":{\"payment\":\"malformed\"}}",
+      "oracle": "reference",
+      "note": "Inner operation result carrying a failure code."
+    },
+    {
+      "type": "OperationResult",
+      "ios_type": "OperationResultXDR",
+      "xdr": "AAAAAAAAAAMAAAAAAAAAAAAAAAI=",
+      "json": "{\"op_inner\":{\"manage_sell_offer\":{\"success\":{\"offers_claimed\":[],\"offer\":\"deleted\"}}}}",
+      "oracle": "reference",
+      "note": "Inner operation result nesting a success payload."
+    },
+    {
+      "type": "OperationResult",
+      "ios_type": "OperationResultXDR",
+      "xdr": "AAAAAAAAAAkAAAAAAAAAAA==",
+      "json": "{\"op_inner\":{\"inflation\":{\"success\":[]}}}",
+      "oracle": "reference",
+      "note": "Inner inflation result with an empty payout array."
+    },
+    {
+      "type": "LedgerEntryData",
+      "ios_type": "LedgerEntryDataXDR",
+      "xdr": "AAAAAAAAAAABAgMEBQYHCAkKCwwNDg8QERITFBUWFxgZGhscHR4fIAAAAAAAAAAKAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAA",
+      "json": "{\"account\":{\"account_id\":\"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV\",\"balance\":\"10\",\"seq_num\":\"1\",\"num_sub_entries\":0,\"inflation_dest\":null,\"flags\":0,\"home_domain\":\"\",\"thresholds\":\"01000000\",\"signers\":[],\"ext\":\"v0\"}}",
+      "oracle": "reference",
+      "note": "Account ledger entry arm with no signers."
+    },
+    {
+      "type": "LedgerEntryData",
+      "ios_type": "LedgerEntryDataXDR",
+      "xdr": "AAAAAAAAAAABAgMEBQYHCAkKCwwNDg8QERITFBUWFxgZGhscHR4fIAAAAAAAAAAKAAAAAAAAAAEAAAABAAAAAQAAAAABAgMEBQYHCAkKCwwNDg8QERITFBUWFxgZGhscHR4fIAAAAAEAAAALZXhhbXBsZS5jb20AAQIDBAAAAAEAAAAAAQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHyAAAAABAAAAAQAAAAAAAAABAAAAAAAAAAIAAAAA",
+      "json": "{\"account\":{\"account_id\":\"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV\",\"balance\":\"10\",\"seq_num\":\"1\",\"num_sub_entries\":1,\"inflation_dest\":\"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV\",\"flags\":1,\"home_domain\":\"example.com\",\"thresholds\":\"01020304\",\"signers\":[{\"key\":\"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV\",\"weight\":1}],\"ext\":{\"v1\":{\"liabilities\":{\"buying\":\"1\",\"selling\":\"2\"},\"ext\":\"v0\"}}}}",
+      "oracle": "reference",
+      "note": "Account ledger entry arm with an extension and one signer."
+    },
+    {
+      "type": "LedgerEntryData",
+      "ios_type": "LedgerEntryDataXDR",
+      "xdr": "AAAAAQAAAAABAgMEBQYHCAkKCwwNDg8QERITFBUWFxgZGhscHR4fIAAAAAFVU0QAAAAAAAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gAAAAAAAAAAV//////////wAAAAEAAAAA",
+      "json": "{\"trustline\":{\"account_id\":\"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV\",\"asset\":{\"credit_alphanum4\":{\"asset_code\":\"USD\",\"issuer\":\"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV\"}},\"balance\":\"5\",\"limit\":\"9223372036854775807\",\"flags\":1,\"ext\":\"v0\"}}",
+      "oracle": "reference",
+      "note": "Trustline ledger entry arm."
+    },
+    {
+      "type": "LedgerEntryData",
+      "ios_type": "LedgerEntryDataXDR",
+      "xdr": "AAAAAgAAAAABAgMEBQYHCAkKCwwNDg8QERITFBUWFxgZGhscHR4fIAAAAAAAAAABAAAAAAAAAAFVU0QAAAAAAAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gAAAAAAAAAAEAAAABAAAAAgAAAAAAAAAA",
+      "json": "{\"offer\":{\"seller_id\":\"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV\",\"offer_id\":\"1\",\"selling\":\"native\",\"buying\":{\"credit_alphanum4\":{\"asset_code\":\"USD\",\"issuer\":\"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV\"}},\"amount\":\"1\",\"price\":{\"n\":1,\"d\":2},\"flags\":0,\"ext\":\"v0\"}}",
+      "oracle": "reference",
+      "note": "Offer ledger entry arm."
+    },
+    {
+      "type": "LedgerEntryData",
+      "ios_type": "LedgerEntryDataXDR",
+      "xdr": "AAAAAwAAAAABAgMEBQYHCAkKCwwNDg8QERITFBUWFxgZGhscHR4fIAAAAAFrAAAAAAAAAAAAAAA=",
+      "json": "{\"data\":{\"account_id\":\"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV\",\"data_name\":\"k\",\"data_value\":\"\",\"ext\":\"v0\"}}",
+      "oracle": "reference",
+      "note": "Data ledger entry arm with an empty value."
+    },
+    {
+      "type": "LedgerEntryData",
+      "ios_type": "LedgerEntryDataXDR",
+      "xdr": "AAAABAAAAAABAgMEBQYHCAkKCwwNDg8QERITFBUWFxgZGhscHR4fIAAAAAAAAAAAAAAAAAAAAAEAAAAA",
+      "json": "{\"claimable_balance\":{\"balance_id\":\"BAAACAQDAQCQMBYIBEFAWDANBYHRAEISCMKBKFQXDAMRUGY4DUPB6IHRSE\",\"claimants\":[],\"asset\":\"native\",\"amount\":\"1\",\"ext\":\"v0\"}}",
+      "oracle": "reference",
+      "note": "Claimable balance ledger entry arm."
+    },
+    {
+      "type": "LedgerEntryData",
+      "ios_type": "LedgerEntryDataXDR",
+      "xdr": "AAAABYCBgoOEhYaHiImKi4yNjo+QkZKTlJWWl5iZmpucnZ6fAAAAAAAAAAAAAAABVVNEAAAAAAABAgMEBQYHCAkKCwwNDg8QERITFBUWFxgZGhscHR4fIAAAAB4AAAAAAAAAAQAAAAAAAAACAAAAAAAAAAMAAAAAAAAABA==",
+      "json": "{\"liquidity_pool\":{\"liquidity_pool_id\":\"LCAIDAUDQSCYNB4IRGFIXDENR2HZBEMSSOKJLFUXTCMZVG44TWPJ744M\",\"body\":{\"liquidity_pool_constant_product\":{\"params\":{\"asset_a\":\"native\",\"asset_b\":{\"credit_alphanum4\":{\"asset_code\":\"USD\",\"issuer\":\"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV\"}},\"fee\":30},\"reserve_a\":\"1\",\"reserve_b\":\"2\",\"total_pool_shares\":\"3\",\"pool_shares_trust_line_count\":\"4\"}}}}",
+      "oracle": "reference",
+      "note": "Liquidity pool ledger entry arm."
+    },
+    {
+      "type": "LedgerEntryData",
+      "ios_type": "LedgerEntryDataXDR",
+      "xdr": "AAAABgAAAAAAAAABICEiIyQlJicoKSorLC0uLzAxMjM0NTY3ODk6Ozw9Pj8AAAABAAAAAQAAAAMAAAAB",
+      "json": "{\"contract_data\":{\"ext\":\"v0\",\"contract\":\"CAQCCIRDEQSSMJZIFEVCWLBNFYXTAMJSGM2DKNRXHA4TUOZ4HU7D7V6Z\",\"key\":\"void\",\"durability\":\"persistent\",\"val\":{\"u32\":1}}}",
+      "oracle": "reference",
+      "note": "Contract data ledger entry arm."
+    },
+    {
+      "type": "LedgerEntryData",
+      "ios_type": "LedgerEntryDataXDR",
+      "xdr": "AAAABwAAAAABAgMEBQYHCAkKCwwNDg8QERITFBUWFxgZGhscHR4fIAAAAAQAYXNt",
+      "json": "{\"contract_code\":{\"ext\":\"v0\",\"hash\":\"0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20\",\"code\":\"0061736d\"}}",
+      "oracle": "reference",
+      "note": "Contract code ledger entry arm."
+    },
+    {
+      "type": "LedgerEntryData",
+      "ios_type": "LedgerEntryDataXDR",
+      "xdr": "AAAACAAAAAAAAABk",
+      "json": "{\"config_setting\":{\"contract_max_size_bytes\":100}}",
+      "oracle": "reference",
+      "note": "Config setting ledger entry arm."
+    },
+    {
+      "type": "LedgerEntryData",
+      "ios_type": "LedgerEntryDataXDR",
+      "xdr": "AAAACQECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gAAAABw==",
+      "json": "{\"ttl\":{\"key_hash\":\"0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20\",\"live_until_ledger_seq\":7}}",
+      "oracle": "reference",
+      "note": "TTL ledger entry arm."
+    },
+    {
+      "type": "LedgerEntry",
+      "ios_type": "LedgerEntryXDR",
+      "xdr": "AAAAAQAAAAkBAgMEBQYHCAkKCwwNDg8QERITFBUWFxgZGhscHR4fIAAAAAcAAAAA",
+      "json": "{\"last_modified_ledger_seq\":1,\"data\":{\"ttl\":{\"key_hash\":\"0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20\",\"live_until_ledger_seq\":7}},\"ext\":\"v0\"}",
+      "oracle": "reference",
+      "note": "Ledger entry wrapping a TTL entry with a void extension."
+    },
+    {
+      "type": "LedgerEntry",
+      "ios_type": "LedgerEntryXDR",
+      "xdr": "/////wAAAAkAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAQAAAAABAgMEBQYHCAkKCwwNDg8QERITFBUWFxgZGhscHR4fIAAAAAA=",
+      "json": "{\"last_modified_ledger_seq\":4294967295,\"data\":{\"ttl\":{\"key_hash\":\"0000000000000000000000000000000000000000000000000000000000000000\",\"live_until_ledger_seq\":0}},\"ext\":{\"v1\":{\"sponsoring_id\":\"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV\",\"ext\":\"v0\"}}}",
+      "oracle": "reference",
+      "note": "Ledger entry with a populated extension."
+    },
+    {
+      "type": "LedgerEntryChange",
+      "ios_type": "LedgerEntryChangeXDR",
+      "xdr": "AAAAAAAAAAEAAAAJAQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHyAAAAAHAAAAAA==",
+      "json": "{\"created\":{\"last_modified_ledger_seq\":1,\"data\":{\"ttl\":{\"key_hash\":\"0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20\",\"live_until_ledger_seq\":7}},\"ext\":\"v0\"}}",
+      "oracle": "reference",
+      "note": "Created ledger entry change arm."
+    },
+    {
+      "type": "LedgerEntryChange",
+      "ios_type": "LedgerEntryChangeXDR",
+      "xdr": "AAAAAQAAAAIAAAAJAQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHyAAAAAIAAAAAA==",
+      "json": "{\"updated\":{\"last_modified_ledger_seq\":2,\"data\":{\"ttl\":{\"key_hash\":\"0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20\",\"live_until_ledger_seq\":8}},\"ext\":\"v0\"}}",
+      "oracle": "reference",
+      "note": "Updated ledger entry change arm."
+    },
+    {
+      "type": "LedgerEntryChange",
+      "ios_type": "LedgerEntryChangeXDR",
+      "xdr": "AAAAAgAAAAcBAgMEBQYHCAkKCwwNDg8QERITFBUWFxgZGhscHR4fIA==",
+      "json": "{\"removed\":{\"contract_code\":{\"hash\":\"0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20\"}}}",
+      "oracle": "reference",
+      "note": "Removed ledger entry change arm carries a key, not an entry."
+    },
+    {
+      "type": "LedgerEntryChange",
+      "ios_type": "LedgerEntryChangeXDR",
+      "xdr": "AAAAAwAAAAMAAAAJAQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHyAAAAAJAAAAAA==",
+      "json": "{\"state\":{\"last_modified_ledger_seq\":3,\"data\":{\"ttl\":{\"key_hash\":\"0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20\",\"live_until_ledger_seq\":9}},\"ext\":\"v0\"}}",
+      "oracle": "reference",
+      "note": "State ledger entry change arm."
+    },
+    {
+      "type": "LedgerEntryChange",
+      "ios_type": "LedgerEntryChangeXDR",
+      "xdr": "AAAABAAAAAQAAAAJAQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHyAAAAAKAAAAAA==",
+      "json": "{\"restored\":{\"last_modified_ledger_seq\":4,\"data\":{\"ttl\":{\"key_hash\":\"0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20\",\"live_until_ledger_seq\":10}},\"ext\":\"v0\"}}",
+      "oracle": "reference",
+      "note": "Restored ledger entry change arm."
+    },
+    {
+      "type": "LedgerFootprint",
+      "ios_type": "LedgerFootprintXDR",
+      "xdr": "AAAAAAAAAAA=",
+      "json": "{\"read_only\":[],\"read_write\":[]}",
+      "oracle": "reference",
+      "note": "Footprint with both arrays empty."
+    },
+    {
+      "type": "LedgerFootprint",
+      "ios_type": "LedgerFootprintXDR",
+      "xdr": "AAAAAQAAAAcBAgMEBQYHCAkKCwwNDg8QERITFBUWFxgZGhscHR4fIAAAAAEAAAAJAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+      "json": "{\"read_only\":[{\"contract_code\":{\"hash\":\"0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20\"}}],\"read_write\":[{\"ttl\":{\"key_hash\":\"0000000000000000000000000000000000000000000000000000000000000000\"}}]}",
+      "oracle": "reference",
+      "note": "Footprint with both arrays populated."
+    },
+    {
+      "type": "LedgerHeader",
+      "ios_type": "LedgerHeaderXDR",
+      "xdr": "AAAAFwECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gAQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHyAAAAAAAAAAAAAAAAAAAAAAAQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHyABAgMEBQYHCAkKCwwNDg8QERITFBUWFxgZGhscHR4fIAAAAAIAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAZABMS0AAAABkAQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHyAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+      "json": "{\"ledger_version\":23,\"previous_ledger_hash\":\"0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20\",\"scp_value\":{\"tx_set_hash\":\"0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20\",\"close_time\":\"0\",\"upgrades\":[],\"ext\":\"basic\"},\"tx_set_result_hash\":\"0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20\",\"bucket_list_hash\":\"0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20\",\"ledger_seq\":2,\"total_coins\":\"1\",\"fee_pool\":\"0\",\"inflation_seq\":0,\"id_pool\":\"0\",\"base_fee\":100,\"base_reserve\":5000000,\"max_tx_set_size\":100,\"skip_list\":[\"0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20\",\"0000000000000000000000000000000000000000000000000000000000000000\",\"0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20\",\"0000000000000000000000000000000000000000000000000000000000000000\"],\"ext\":\"v0\"}",
+      "oracle": "reference",
+      "note": "Ledger header renders its four-element fixed array of hashes."
+    },
+    {
+      "type": "SorobanCredentials",
+      "ios_type": "SorobanCredentialsXDR",
+      "xdr": "AAAAAA==",
+      "json": "\"source_account\"",
+      "oracle": "reference",
+      "note": "Source account credentials arm renders as a bare name."
+    },
+    {
+      "type": "SorobanCredentials",
+      "ios_type": "SorobanCredentialsXDR",
+      "xdr": "AAAAAQAAAAEgISIjJCUmJygpKissLS4vMDEyMzQ1Njc4OTo7PD0+PwAAAAAAAAABAAAAZAAAAAE=",
+      "json": "{\"address\":{\"address\":\"CAQCCIRDEQSSMJZIFEVCWLBNFYXTAMJSGM2DKNRXHA4TUOZ4HU7D7V6Z\",\"nonce\":\"1\",\"signature_expiration_ledger\":100,\"signature\":\"void\"}}",
+      "oracle": "reference",
+      "note": "Address credentials arm."
+    },
+    {
+      "type": "SorobanAuthorizedInvocation",
+      "ios_type": "SorobanAuthorizedInvocationXDR",
+      "xdr": "AAAAAAAAAAEgISIjJCUmJygpKissLS4vMDEyMzQ1Njc4OTo7PD0+PwAAAAh0cmFuc2ZlcgAAAAEAAAADAAAAAQAAAAA=",
+      "json": "{\"function\":{\"contract_fn\":{\"contract_address\":\"CAQCCIRDEQSSMJZIFEVCWLBNFYXTAMJSGM2DKNRXHA4TUOZ4HU7D7V6Z\",\"function_name\":\"transfer\",\"args\":[{\"u32\":1}]}},\"sub_invocations\":[]}",
+      "oracle": "reference",
+      "note": "Authorized invocation with no sub-invocations."
+    },
+    {
+      "type": "SorobanAuthorizationEntry",
+      "ios_type": "SorobanAuthorizationEntryXDR",
+      "xdr": "AAAAAAAAAAAAAAABICEiIyQlJicoKSorLC0uLzAxMjM0NTY3ODk6Ozw9Pj8AAAAFaGVsbG8AAAAAAAAAAAAAAA==",
+      "json": "{\"credentials\":\"source_account\",\"root_invocation\":{\"function\":{\"contract_fn\":{\"contract_address\":\"CAQCCIRDEQSSMJZIFEVCWLBNFYXTAMJSGM2DKNRXHA4TUOZ4HU7D7V6Z\",\"function_name\":\"hello\",\"args\":[]}},\"sub_invocations\":[]}}",
+      "oracle": "reference",
+      "note": "Authorization entry with source account credentials."
+    },
+    {
+      "type": "SorobanAuthorizationEntry",
+      "ios_type": "SorobanAuthorizationEntryXDR",
+      "xdr": "AAAAAQAAAAAAAAAAAQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHyB//////////wAAAAAAAAAQAAAAAQAAAAAAAAABAAAAAQAAAAAAAAABAAAAAA==",
+      "json": "{\"credentials\":{\"address\":{\"address\":\"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV\",\"nonce\":\"9223372036854775807\",\"signature_expiration_ledger\":0,\"signature\":{\"vec\":[]}}},\"root_invocation\":{\"function\":{\"create_contract_host_fn\":{\"contract_id_preimage\":{\"asset\":\"native\"},\"executable\":\"stellar_asset\"}},\"sub_invocations\":[]}}",
+      "oracle": "reference",
+      "note": "Authorization entry with address credentials and a create-contract root."
+    },
+    {
+      "type": "SorobanAuthorizationEntry",
+      "ios_type": "SorobanAuthorizationEntryXDR",
+      "xdr": "AAAAAAAAAAAAAAABICEiIyQlJicoKSorLC0uLzAxMjM0NTY3ODk6Ozw9Pj8AAAAFb3V0ZXIAAAAAAAAAAAAAAQAAAAAAAAABICEiIyQlJicoKSorLC0uLzAxMjM0NTY3ODk6Ozw9Pj8AAAAFaW5uZXIAAAAAAAAAAAAAAA==",
+      "json": "{\"credentials\":\"source_account\",\"root_invocation\":{\"function\":{\"contract_fn\":{\"contract_address\":\"CAQCCIRDEQSSMJZIFEVCWLBNFYXTAMJSGM2DKNRXHA4TUOZ4HU7D7V6Z\",\"function_name\":\"outer\",\"args\":[]}},\"sub_invocations\":[{\"function\":{\"contract_fn\":{\"contract_address\":\"CAQCCIRDEQSSMJZIFEVCWLBNFYXTAMJSGM2DKNRXHA4TUOZ4HU7D7V6Z\",\"function_name\":\"inner\",\"args\":[]}},\"sub_invocations\":[]}]}}",
+      "oracle": "reference",
+      "note": "Authorization entry with one level of sub-invocation nesting."
+    },
+    {
+      "type": "ContractIdPreimage",
+      "ios_type": "ContractIDPreimageXDR",
+      "xdr": "AAAAAAAAAAEgISIjJCUmJygpKissLS4vMDEyMzQ1Njc4OTo7PD0+PwECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8g",
+      "json": "{\"address\":{\"address\":\"CAQCCIRDEQSSMJZIFEVCWLBNFYXTAMJSGM2DKNRXHA4TUOZ4HU7D7V6Z\",\"salt\":\"0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20\"}}",
+      "oracle": "reference",
+      "note": "Address contract id preimage arm."
+    },
+    {
+      "type": "ContractIdPreimage",
+      "ios_type": "ContractIDPreimageXDR",
+      "xdr": "AAAAAQAAAAFVU0QAAAAAAAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8g",
+      "json": "{\"asset\":{\"credit_alphanum4\":{\"asset_code\":\"USD\",\"issuer\":\"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV\"}}}",
+      "oracle": "reference",
+      "note": "Asset contract id preimage arm."
+    },
+    {
+      "type": "ContractExecutable",
+      "ios_type": "ContractExecutableXDR",
+      "xdr": "AAAAAQ==",
+      "json": "\"stellar_asset\"",
+      "oracle": "reference",
+      "note": "Stellar asset executable arm renders as a bare name."
+    },
+    {
+      "type": "ContractExecutable",
+      "ios_type": "ContractExecutableXDR",
+      "xdr": "AAAAAAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8g",
+      "json": "{\"wasm\":\"0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20\"}",
+      "oracle": "reference",
+      "note": "WASM executable arm keys on the stripped member name."
+    },
+    {
+      "type": "ContractExecutable",
+      "ios_type": "ContractExecutableXDR",
+      "xdr": "AAAAAgAAAAEgISIjJCUmJygpKissLS4vMDEyMzQ1Njc4OTo7PD0+PwAAAANyZWYA",
+      "json": "{\"external_ref\":{\"executable_owner\":\"CAQCCIRDEQSSMJZIFEVCWLBNFYXTAMJSGM2DKNRXHA4TUOZ4HU7D7V6Z\",\"tag\":\"ref\"}}",
+      "oracle": "reference",
+      "note": "External reference executable arm."
+    },
+    {
+      "type": "HostFunction",
+      "ios_type": "HostFunctionXDR",
+      "xdr": "AAAAAAAAAAEgISIjJCUmJygpKissLS4vMDEyMzQ1Njc4OTo7PD0+PwAAAAVoZWxsbwAAAAAAAAA=",
+      "json": "{\"invoke_contract\":{\"contract_address\":\"CAQCCIRDEQSSMJZIFEVCWLBNFYXTAMJSGM2DKNRXHA4TUOZ4HU7D7V6Z\",\"function_name\":\"hello\",\"args\":[]}}",
+      "oracle": "reference",
+      "note": "Invoke contract host function arm."
+    },
+    {
+      "type": "HostFunction",
+      "ios_type": "HostFunctionXDR",
+      "xdr": "AAAAAQAAAAEAAAAAAAAAAQ==",
+      "json": "{\"create_contract\":{\"contract_id_preimage\":{\"asset\":\"native\"},\"executable\":\"stellar_asset\"}}",
+      "oracle": "reference",
+      "note": "Create contract host function arm."
+    },
+    {
+      "type": "HostFunction",
+      "ios_type": "HostFunctionXDR",
+      "xdr": "AAAAAgAAAAA=",
+      "json": "{\"upload_contract_wasm\":\"\"}",
+      "oracle": "reference",
+      "note": "Upload WASM host function arm with empty variable opaque."
+    },
+    {
+      "type": "HostFunction",
+      "ios_type": "HostFunctionXDR",
+      "xdr": "AAAAAgAAAAQAYXNt",
+      "json": "{\"upload_contract_wasm\":\"0061736d\"}",
+      "oracle": "reference",
+      "note": "Upload WASM host function arm with data."
+    },
+    {
+      "type": "HostFunction",
+      "ios_type": "HostFunctionXDR",
+      "xdr": "AAAAAwAAAAAAAAABICEiIyQlJicoKSorLC0uLzAxMjM0NTY3ODk6Ozw9Pj8BAgMEBQYHCAkKCwwNDg8QERITFBUWFxgZGhscHR4fIAAAAAABAgMEBQYHCAkKCwwNDg8QERITFBUWFxgZGhscHR4fIAAAAAEAAAADAAAAAQ==",
+      "json": "{\"create_contract_v2\":{\"contract_id_preimage\":{\"address\":{\"address\":\"CAQCCIRDEQSSMJZIFEVCWLBNFYXTAMJSGM2DKNRXHA4TUOZ4HU7D7V6Z\",\"salt\":\"0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20\"}},\"executable\":{\"wasm\":\"0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20\"},\"constructor_args\":[{\"u32\":1}]}}",
+      "oracle": "reference",
+      "note": "Create contract v2 host function arm with constructor arguments."
+    },
+    {
+      "type": "InvokeContractArgs",
+      "ios_type": "InvokeContractArgsXDR",
+      "xdr": "AAAAASAhIiMkJSYnKCkqKywtLi8wMTIzNDU2Nzg5Ojs8PT4/AAAAAWYAAAAAAAAA",
+      "json": "{\"contract_address\":\"CAQCCIRDEQSSMJZIFEVCWLBNFYXTAMJSGM2DKNRXHA4TUOZ4HU7D7V6Z\",\"function_name\":\"f\",\"args\":[]}",
+      "oracle": "reference",
+      "note": "Invoke contract arguments with an empty argument array."
+    },
+    {
+      "type": "ContractEvent",
+      "ios_type": "ContractEventXDR",
+      "xdr": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB",
+      "json": "{\"ext\":\"v0\",\"contract_id\":null,\"type\":\"system\",\"body\":{\"v0\":{\"topics\":[],\"data\":\"void\"}}}",
+      "oracle": "reference",
+      "note": "Contract event renders its discriminant field under the key type."
+    },
+    {
+      "type": "ContractEvent",
+      "ios_type": "ContractEventXDR",
+      "xdr": "AAAAAAAAAAEgISIjJCUmJygpKissLS4vMDEyMzQ1Njc4OTo7PD0+PwAAAAEAAAAAAAAAAQAAAA8AAAAIdHJhbnNmZXIAAAADAAAAAQ==",
+      "json": "{\"ext\":\"v0\",\"contract_id\":\"CAQCCIRDEQSSMJZIFEVCWLBNFYXTAMJSGM2DKNRXHA4TUOZ4HU7D7V6Z\",\"type\":\"contract\",\"body\":{\"v0\":{\"topics\":[{\"symbol\":\"transfer\"}],\"data\":{\"u32\":1}}}}",
+      "oracle": "reference",
+      "note": "Contract event with a contract id and one topic."
+    },
+    {
+      "type": "DiagnosticEvent",
+      "ios_type": "DiagnosticEventXDR",
+      "xdr": "AAAAAQAAAAAAAAAAAAAAAgAAAAAAAAAAAAAAAQ==",
+      "json": "{\"in_successful_contract_call\":true,\"event\":{\"ext\":\"v0\",\"contract_id\":null,\"type\":\"diagnostic\",\"body\":{\"v0\":{\"topics\":[],\"data\":\"void\"}}}}",
+      "oracle": "reference",
+      "note": "Diagnostic event wrapping a contract event."
+    },
+    {
+      "type": "ScSpecEventParamV0",
+      "ios_type": "SCSpecEventParamV0XDR",
+      "xdr": "AAAAAAAAAAFwAAAAAAAABAAAAAA=",
+      "json": "{\"doc\":\"\",\"name\":\"p\",\"type\":\"u32\",\"location\":\"data\"}",
+      "oracle": "reference",
+      "note": "Event parameter renders its type field under the key type."
+    },
+    {
+      "type": "ScSpecFunctionInputV0",
+      "ios_type": "SCSpecFunctionInputV0XDR",
+      "xdr": "AAAAAWQAAAAAAAADYXJnAAAAA+gAAAAB",
+      "json": "{\"doc\":\"d\",\"name\":\"arg\",\"type\":{\"option\":{\"value_type\":\"bool\"}}}",
+      "oracle": "reference",
+      "note": "Function input renders its type field under the key type."
+    },
+    {
+      "type": "ScSpecUdtStructFieldV0",
+      "ios_type": "SCSpecUDTStructFieldV0XDR",
+      "xdr": "AAAAAAAAAAVmaWVsZAAAAAAAAAc=",
+      "json": "{\"doc\":\"\",\"name\":\"field\",\"type\":\"i64\"}",
+      "oracle": "reference",
+      "note": "Struct field renders its type field under the key type."
+    },
+    {
+      "type": "ScSpecUdtUnionCaseTupleV0",
+      "ios_type": "SCSpecUDTUnionCaseTupleV0XDR",
+      "xdr": "AAAAAAAAAARjYXNlAAAAAgAAAAQAAAAB",
+      "json": "{\"doc\":\"\",\"name\":\"case\",\"type\":[\"u32\",\"bool\"]}",
+      "oracle": "reference",
+      "note": "Union case tuple renders its type array under the key type."
+    },
+    {
+      "type": "SerializedBinaryFuseFilter",
+      "ios_type": "SerializedBinaryFuseFilterXDR",
+      "xdr": "AAAAAAECAwQFBgcICQoLDA0ODxABAgMEBQYHCAkKCwwNDg8QAAAAAQAAAAIAAAADAAAABAAAAAUAAAACAQIAAA==",
+      "json": "{\"type\":\"b8_bit\",\"input_hash_seed\":{\"seed\":\"0102030405060708090a0b0c0d0e0f10\"},\"filter_seed\":{\"seed\":\"0102030405060708090a0b0c0d0e0f10\"},\"segment_length\":1,\"segement_length_mask\":2,\"segment_count\":3,\"segment_count_length\":4,\"fingerprint_length\":5,\"fingerprints\":\"0102\"}",
+      "oracle": "incomparable",
+      "note": "Serialized filter renders its type field under the key type.",
+      "reason": "SEP-0051 renders fixed-length opaque data as lowercase hex; the reference emits an array of byte numbers.",
+      "spec_form": "opaque_hex",
+      "spec_form_paths": [
+        "filter_seed.seed",
+        "input_hash_seed.seed"
+      ],
+      "oracle_json": "{\"type\":\"b8_bit\",\"input_hash_seed\":{\"seed\":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]},\"filter_seed\":{\"seed\":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]},\"segment_length\":1,\"segement_length_mask\":2,\"segment_count\":3,\"segment_count_length\":4,\"fingerprint_length\":5,\"fingerprints\":\"0102\"}"
+    },
+    {
+      "type": "SerializedBinaryFuseFilter",
+      "ios_type": "SerializedBinaryFuseFilterXDR",
+      "xdr": "AAAAAQAAAAAAAAAAAAAAAAAAAAD/////////////////////AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+      "json": "{\"type\":\"b16_bit\",\"input_hash_seed\":{\"seed\":\"00000000000000000000000000000000\"},\"filter_seed\":{\"seed\":\"ffffffffffffffffffffffffffffffff\"},\"segment_length\":0,\"segement_length_mask\":0,\"segment_count\":0,\"segment_count_length\":0,\"fingerprint_length\":0,\"fingerprints\":\"\"}",
+      "oracle": "incomparable",
+      "note": "Serialized filter with empty fingerprints and extreme seeds.",
+      "reason": "SEP-0051 renders fixed-length opaque data as lowercase hex; the reference emits an array of byte numbers.",
+      "spec_form": "opaque_hex",
+      "spec_form_paths": [
+        "filter_seed.seed",
+        "input_hash_seed.seed"
+      ],
+      "oracle_json": "{\"type\":\"b16_bit\",\"input_hash_seed\":{\"seed\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},\"filter_seed\":{\"seed\":[255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255]},\"segment_length\":0,\"segement_length_mask\":0,\"segment_count\":0,\"segment_count_length\":0,\"fingerprint_length\":0,\"fingerprints\":\"\"}"
+    },
+    {
+      "type": "SerializedBinaryFuseFilter",
+      "ios_type": "SerializedBinaryFuseFilterXDR",
+      "xdr": "AAAAAgECAwQFBgcICQoLDA0ODxABAgMEBQYHCAkKCwwNDg8Q//////////////////////////8AAAAC//8AAA==",
+      "json": "{\"type\":\"b32_bit\",\"input_hash_seed\":{\"seed\":\"0102030405060708090a0b0c0d0e0f10\"},\"filter_seed\":{\"seed\":\"0102030405060708090a0b0c0d0e0f10\"},\"segment_length\":4294967295,\"segement_length_mask\":4294967295,\"segment_count\":4294967295,\"segment_count_length\":4294967295,\"fingerprint_length\":4294967295,\"fingerprints\":\"ffff\"}",
+      "oracle": "incomparable",
+      "note": "Serialized filter at the 32-bit maximum in every counter.",
+      "reason": "SEP-0051 renders fixed-length opaque data as lowercase hex; the reference emits an array of byte numbers.",
+      "spec_form": "opaque_hex",
+      "spec_form_paths": [
+        "filter_seed.seed",
+        "input_hash_seed.seed"
+      ],
+      "oracle_json": "{\"type\":\"b32_bit\",\"input_hash_seed\":{\"seed\":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]},\"filter_seed\":{\"seed\":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]},\"segment_length\":4294967295,\"segement_length_mask\":4294967295,\"segment_count\":4294967295,\"segment_count_length\":4294967295,\"fingerprint_length\":4294967295,\"fingerprints\":\"ffff\"}"
+    },
+    {
+      "type": "BinaryFuseFilterType",
+      "ios_type": "BinaryFuseFilterTypeXDR",
+      "xdr": "AAAAAA==",
+      "json": "\"b8_bit\"",
+      "oracle": "reference",
+      "note": "Digit-leading enum member is prefixed with b."
+    },
+    {
+      "type": "BinaryFuseFilterType",
+      "ios_type": "BinaryFuseFilterTypeXDR",
+      "xdr": "AAAAAQ==",
+      "json": "\"b16_bit\"",
+      "oracle": "reference",
+      "note": "Digit-leading enum member is prefixed with b."
+    },
+    {
+      "type": "BinaryFuseFilterType",
+      "ios_type": "BinaryFuseFilterTypeXDR",
+      "xdr": "AAAAAg==",
+      "json": "\"b32_bit\"",
+      "oracle": "reference",
+      "note": "Digit-leading enum member is prefixed with b."
+    },
+    {
+      "type": "ScSpecTypeDef",
+      "ios_type": "SCSpecTypeDefXDR",
+      "xdr": "AAAAAA==",
+      "json": "\"val\"",
+      "oracle": "reference",
+      "note": "Val type renders as a bare name."
+    },
+    {
+      "type": "ScSpecTypeDef",
+      "ios_type": "SCSpecTypeDefXDR",
+      "xdr": "AAAAAQ==",
+      "json": "\"bool\"",
+      "oracle": "reference",
+      "note": "Bool type renders as a bare name."
+    },
+    {
+      "type": "ScSpecTypeDef",
+      "ios_type": "SCSpecTypeDefXDR",
+      "xdr": "AAAABA==",
+      "json": "\"u32\"",
+      "oracle": "reference",
+      "note": "Unsigned 32-bit type renders as a bare name."
+    },
+    {
+      "type": "ScSpecTypeDef",
+      "ios_type": "SCSpecTypeDefXDR",
+      "xdr": "AAAACw==",
+      "json": "\"i128\"",
+      "oracle": "reference",
+      "note": "Signed 128-bit type renders as a bare name."
+    },
+    {
+      "type": "ScSpecTypeDef",
+      "ios_type": "SCSpecTypeDefXDR",
+      "xdr": "AAAAEw==",
+      "json": "\"address\"",
+      "oracle": "reference",
+      "note": "Address type renders as a bare name."
+    },
+    {
+      "type": "ScSpecTypeDef",
+      "ios_type": "SCSpecTypeDefXDR",
+      "xdr": "AAAAFA==",
+      "json": "\"muxed_address\"",
+      "oracle": "reference",
+      "note": "Muxed address type renders as a bare name."
+    },
+    {
+      "type": "ScSpecTypeDef",
+      "ios_type": "SCSpecTypeDefXDR",
+      "xdr": "AAAD6AAAAAQ=",
+      "json": "{\"option\":{\"value_type\":\"u32\"}}",
+      "oracle": "reference",
+      "note": "Option type nests its value type."
+    },
+    {
+      "type": "ScSpecTypeDef",
+      "ios_type": "SCSpecTypeDefXDR",
+      "xdr": "AAAD6QAAAAQAAAAD",
+      "json": "{\"result\":{\"ok_type\":\"u32\",\"error_type\":\"error\"}}",
+      "oracle": "reference",
+      "note": "Result type nests both of its types."
+    },
+    {
+      "type": "ScSpecTypeDef",
+      "ios_type": "SCSpecTypeDefXDR",
+      "xdr": "AAAD6gAAAAE=",
+      "json": "{\"vec\":{\"element_type\":\"bool\"}}",
+      "oracle": "reference",
+      "note": "Vec type nests its element type."
+    },
+    {
+      "type": "ScSpecTypeDef",
+      "ios_type": "SCSpecTypeDefXDR",
+      "xdr": "AAAD7AAAABEAAAAG",
+      "json": "{\"map\":{\"key_type\":\"symbol\",\"value_type\":\"u64\"}}",
+      "oracle": "reference",
+      "note": "Map type nests both of its types."
+    },
+    {
+      "type": "ScSpecTypeDef",
+      "ios_type": "SCSpecTypeDefXDR",
+      "xdr": "AAAD7QAAAAA=",
+      "json": "{\"tuple\":{\"value_types\":[]}}",
+      "oracle": "reference",
+      "note": "Tuple type with an empty value type array."
+    },
+    {
+      "type": "ScSpecTypeDef",
+      "ios_type": "SCSpecTypeDefXDR",
+      "xdr": "AAAD7QAAAAIAAAAEAAAAAQ==",
+      "json": "{\"tuple\":{\"value_types\":[\"u32\",\"bool\"]}}",
+      "oracle": "reference",
+      "note": "Tuple type with two value types."
+    },
+    {
+      "type": "ScSpecTypeDef",
+      "ios_type": "SCSpecTypeDefXDR",
+      "xdr": "AAAD7gAAACA=",
+      "json": "{\"bytes_n\":{\"n\":32}}",
+      "oracle": "reference",
+      "note": "Fixed-length bytes type carries its length."
+    },
+    {
+      "type": "ScSpecTypeDef",
+      "ios_type": "SCSpecTypeDefXDR",
+      "xdr": "AAAH0AAAAAdBY2NvdW50AA==",
+      "json": "{\"udt\":{\"name\":\"Account\"}}",
+      "oracle": "reference",
+      "note": "User-defined type carries its name."
+    },
+    {
+      "type": "ScSpecEntry",
+      "ios_type": "SCSpecEntryXDR",
+      "xdr": "AAAAAAAAAAAAAAAFaGVsbG8AAAAAAAAAAAAAAA==",
+      "json": "{\"function_v0\":{\"doc\":\"\",\"name\":\"hello\",\"inputs\":[],\"outputs\":[]}}",
+      "oracle": "reference",
+      "note": "Function spec entry arm with no inputs or outputs."
+    },
+    {
+      "type": "ScSpecEntry",
+      "ios_type": "SCSpecEntryXDR",
+      "xdr": "AAAAAQAAAAAAAAAAAAAAAVMAAAAAAAABAAAAAAAAAAFmAAAAAAAABA==",
+      "json": "{\"udt_struct_v0\":{\"doc\":\"\",\"lib\":\"\",\"name\":\"S\",\"fields\":[{\"doc\":\"\",\"name\":\"f\",\"type\":\"u32\"}]}}",
+      "oracle": "reference",
+      "note": "Struct spec entry arm with one field."
+    },
+    {
+      "type": "ScSpecEntry",
+      "ios_type": "SCSpecEntryXDR",
+      "xdr": "AAAAAgAAAAAAAAAAAAAAAVUAAAAAAAACAAAAAAAAAAAAAAABQQAAAAAAAAEAAAAAAAAAAUIAAAAAAAABAAAABA==",
+      "json": "{\"udt_union_v0\":{\"doc\":\"\",\"lib\":\"\",\"name\":\"U\",\"cases\":[{\"void_v0\":{\"doc\":\"\",\"name\":\"A\"}},{\"tuple_v0\":{\"doc\":\"\",\"name\":\"B\",\"type\":[\"u32\"]}}]}}",
+      "oracle": "reference",
+      "note": "Union spec entry arm with both case shapes."
+    },
+    {
+      "type": "ScSpecEntry",
+      "ios_type": "SCSpecEntryXDR",
+      "xdr": "AAAAAwAAAAAAAAAAAAAAAUUAAAAAAAABAAAAAAAAAAFBAAAAAAAAAQ==",
+      "json": "{\"udt_enum_v0\":{\"doc\":\"\",\"lib\":\"\",\"name\":\"E\",\"cases\":[{\"doc\":\"\",\"name\":\"A\",\"value\":1}]}}",
+      "oracle": "reference",
+      "note": "Enum spec entry arm."
+    },
+    {
+      "type": "ScSpecEntry",
+      "ios_type": "SCSpecEntryXDR",
+      "xdr": "AAAABAAAAAAAAAAAAAAAA0VycgAAAAABAAAAAAAAAANCYWQAAAAAAg==",
+      "json": "{\"udt_error_enum_v0\":{\"doc\":\"\",\"lib\":\"\",\"name\":\"Err\",\"cases\":[{\"doc\":\"\",\"name\":\"Bad\",\"value\":2}]}}",
+      "oracle": "reference",
+      "note": "Error enum spec entry arm."
+    },
+    {
+      "type": "ScSpecUdtUnionCaseV0",
+      "ios_type": "SCSpecUDTUnionCaseV0XDR",
+      "xdr": "AAAAAAAAAAAAAAABQQAAAA==",
+      "json": "{\"void_v0\":{\"doc\":\"\",\"name\":\"A\"}}",
+      "oracle": "reference",
+      "note": "Void union case arm."
+    },
+    {
+      "type": "ScSpecUdtUnionCaseV0",
+      "ios_type": "SCSpecUDTUnionCaseV0XDR",
+      "xdr": "AAAAAQAAAAAAAAABQgAAAAAAAAEAAAAB",
+      "json": "{\"tuple_v0\":{\"doc\":\"\",\"name\":\"B\",\"type\":[\"bool\"]}}",
+      "oracle": "reference",
+      "note": "Tuple union case arm."
+    },
+    {
+      "type": "ScSpecFunctionV0",
+      "ios_type": "SCSpecFunctionV0XDR",
+      "xdr": "AAAAA2RvYwAAAAABZgAAAAAAAAEAAAAAAAAAAWEAAAAAAAAEAAAAAQAAAAE=",
+      "json": "{\"doc\":\"doc\",\"name\":\"f\",\"inputs\":[{\"doc\":\"\",\"name\":\"a\",\"type\":\"u32\"}],\"outputs\":[\"bool\"]}",
+      "oracle": "reference",
+      "note": "Function spec with one input and one output."
+    },
+    {
+      "type": "ScEnvMetaEntry",
+      "ios_type": "SCEnvMetaEntryXDR",
+      "xdr": "AAAAAAAAABcAAAAA",
+      "json": "{\"sc_env_meta_kind_interface_version\":{\"protocol\":23,\"pre_release\":0}}",
+      "oracle": "reference",
+      "note": "Sole environment meta arm keys on the unstripped member name."
+    },
+    {
+      "type": "ScMetaEntry",
+      "ios_type": "SCMetaEntryXDR",
+      "xdr": "AAAAAAAAAAFrAAAAAAAAAXYAAAA=",
+      "json": "{\"sc_meta_v0\":{\"key\":\"k\",\"val\":\"v\"}}",
+      "oracle": "reference",
+      "note": "Sole contract meta arm keys on the unstripped member name."
+    },
+    {
+      "type": "ExtensionPoint",
+      "ios_type": "ExtensionPoint",
+      "xdr": "AAAAAA==",
+      "json": "\"v0\"",
+      "oracle": "reference",
+      "note": "Extension point at its only arm renders as a bare name."
+    },
+    {
+      "type": "AccountEntryExt",
+      "ios_type": "AccountEntryExtXDR",
+      "xdr": "AAAAAA==",
+      "json": "\"v0\"",
+      "oracle": "reference",
+      "note": "Account extension at v0 renders as a bare name."
+    },
+    {
+      "type": "AccountEntryExt",
+      "ios_type": "AccountEntryExtXDR",
+      "xdr": "AAAAAQAAAAAAAAABAAAAAAAAAAIAAAAA",
+      "json": "{\"v1\":{\"liabilities\":{\"buying\":\"1\",\"selling\":\"2\"},\"ext\":\"v0\"}}",
+      "oracle": "reference",
+      "note": "Account extension at v1 nests liabilities."
+    },
+    {
+      "type": "AccountEntryExtensionV1Ext",
+      "ios_type": "AccountEntryExtV1XDR",
+      "xdr": "AAAAAA==",
+      "json": "\"v0\"",
+      "oracle": "reference",
+      "note": "Account v1 extension at v0."
+    },
+    {
+      "type": "AccountEntryExtensionV1Ext",
+      "ios_type": "AccountEntryExtV1XDR",
+      "xdr": "AAAAAgAAAAEAAAACAAAAAgAAAAAAAAABAAAAAAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gAAAAAA==",
+      "json": "{\"v2\":{\"num_sponsored\":1,\"num_sponsoring\":2,\"signer_sponsoring_i_ds\":[null,\"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV\"],\"ext\":\"v0\"}}",
+      "oracle": "reference",
+      "note": "Account v1 extension at v2 with a mixed optional array."
+    },
+    {
+      "type": "LedgerEntryExt",
+      "ios_type": "LedgerEntryExtXDR",
+      "xdr": "AAAAAA==",
+      "json": "\"v0\"",
+      "oracle": "reference",
+      "note": "Ledger entry extension at v0."
+    },
+    {
+      "type": "LedgerEntryExt",
+      "ios_type": "LedgerEntryExtXDR",
+      "xdr": "AAAAAQAAAAAAAAAA",
+      "json": "{\"v1\":{\"sponsoring_id\":null,\"ext\":\"v0\"}}",
+      "oracle": "reference",
+      "note": "Ledger entry extension at v1 with the sponsoring id unset."
+    },
+    {
+      "type": "TrustLineEntryExt",
+      "ios_type": "TrustlineEntryExtXDR",
+      "xdr": "AAAAAA==",
+      "json": "\"v0\"",
+      "oracle": "reference",
+      "note": "Trustline extension at v0."
+    },
+    {
+      "type": "TrustLineEntryExt",
+      "ios_type": "TrustlineEntryExtXDR",
+      "xdr": "AAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAA",
+      "json": "{\"v1\":{\"liabilities\":{\"buying\":\"0\",\"selling\":\"0\"},\"ext\":\"v0\"}}",
+      "oracle": "reference",
+      "note": "Trustline extension at v1."
+    },
+    {
+      "type": "SorobanTransactionMetaExt",
+      "ios_type": "SorobanTransactionMetaExt",
+      "xdr": "AAAAAA==",
+      "json": "\"v0\"",
+      "oracle": "reference",
+      "note": "Soroban transaction meta extension at v0."
+    },
+    {
+      "type": "SorobanTransactionMetaExt",
+      "ios_type": "SorobanTransactionMetaExt",
+      "xdr": "AAAAAQAAAAAAAAAAAAAAAQAAAAAAAAACAAAAAAAAAAM=",
+      "json": "{\"v1\":{\"ext\":\"v0\",\"total_non_refundable_resource_fee_charged\":\"1\",\"total_refundable_resource_fee_charged\":\"2\",\"rent_fee_charged\":\"3\"}}",
+      "oracle": "reference",
+      "note": "Soroban transaction meta extension at v1."
+    },
+    {
+      "type": "TransactionPhase",
+      "ios_type": "TransactionPhaseXDR",
+      "xdr": "AAAAAAAAAAA=",
+      "json": "{\"v0\":[]}",
+      "oracle": "reference",
+      "note": "Transaction phase at v0 with no components."
+    },
+    {
+      "type": "TransactionPhase",
+      "ios_type": "TransactionPhaseXDR",
+      "xdr": "AAAAAQAAAAAAAAAA",
+      "json": "{\"v1\":{\"base_fee\":null,\"execution_stages\":[]}}",
+      "oracle": "reference",
+      "note": "Transaction phase at its non-zero int-cased arm."
+    },
+    {
+      "type": "TransactionMeta",
+      "ios_type": "TransactionMetaXDR",
+      "xdr": "AAAAAAAAAAA=",
+      "json": "{\"v0\":[]}",
+      "oracle": "reference",
+      "note": "Transaction meta at v0 with no operations."
+    },
+    {
+      "type": "TransactionMeta",
+      "ios_type": "TransactionMetaXDR",
+      "xdr": "AAAAAQAAAAAAAAAA",
+      "json": "{\"v1\":{\"tx_changes\":[],\"operations\":[]}}",
+      "oracle": "reference",
+      "note": "Transaction meta at v1."
+    },
+    {
+      "type": "LedgerCloseMetaExt",
+      "ios_type": "LedgerCloseMetaExtXDR",
+      "xdr": "AAAAAA==",
+      "json": "\"v0\"",
+      "oracle": "reference",
+      "note": "Ledger close meta extension at v0."
+    },
+    {
+      "type": "LedgerCloseMetaExt",
+      "ios_type": "LedgerCloseMetaExtXDR",
+      "xdr": "AAAAAQAAAAAAAAAAAAAAAQ==",
+      "json": "{\"v1\":{\"ext\":\"v0\",\"soroban_fee_write1_kb\":\"1\"}}",
+      "oracle": "reference",
+      "note": "Ledger close meta extension at v1."
+    },
+    {
+      "type": "Int64",
+      "ios_type": "Int64XDR",
+      "xdr": "AAAAAAAAAAA=",
+      "json": "\"0\"",
+      "oracle": "incomparable",
+      "note": "Standalone signed 64-bit zero must render as a string.",
+      "reason": "SEP-0051 renders a 64-bit integer as a base-10 string; the reference emits a bare JSON number.",
+      "spec_form": "integer_string",
+      "spec_form_paths": [
+        ""
+      ],
+      "oracle_json": "0"
+    },
+    {
+      "type": "Int64",
+      "ios_type": "Int64XDR",
+      "xdr": "AAAAAAAAAAE=",
+      "json": "\"1\"",
+      "oracle": "incomparable",
+      "note": "Standalone signed 64-bit one must render as a string.",
+      "reason": "SEP-0051 renders a 64-bit integer as a base-10 string; the reference emits a bare JSON number.",
+      "spec_form": "integer_string",
+      "spec_form_paths": [
+        ""
+      ],
+      "oracle_json": "1"
+    },
+    {
+      "type": "Int64",
+      "ios_type": "Int64XDR",
+      "xdr": "//////////8=",
+      "json": "\"-1\"",
+      "oracle": "incomparable",
+      "note": "Standalone signed 64-bit minus one must render as a string.",
+      "reason": "SEP-0051 renders a 64-bit integer as a base-10 string; the reference emits a bare JSON number.",
+      "spec_form": "integer_string",
+      "spec_form_paths": [
+        ""
+      ],
+      "oracle_json": "-1"
+    },
+    {
+      "type": "Int64",
+      "ios_type": "Int64XDR",
+      "xdr": "gAAAAAAAAAA=",
+      "json": "\"-9223372036854775808\"",
+      "oracle": "incomparable",
+      "note": "Standalone signed 64-bit minimum must render as a string.",
+      "reason": "SEP-0051 renders a 64-bit integer as a base-10 string; the reference emits a bare JSON number.",
+      "spec_form": "integer_string",
+      "spec_form_paths": [
+        ""
+      ],
+      "oracle_json": "-9223372036854775808"
+    },
+    {
+      "type": "Int64",
+      "ios_type": "Int64XDR",
+      "xdr": "f/////////8=",
+      "json": "\"9223372036854775807\"",
+      "oracle": "incomparable",
+      "note": "Standalone signed 64-bit maximum must render as a string.",
+      "reason": "SEP-0051 renders a 64-bit integer as a base-10 string; the reference emits a bare JSON number.",
+      "spec_form": "integer_string",
+      "spec_form_paths": [
+        ""
+      ],
+      "oracle_json": "9223372036854775807"
+    },
+    {
+      "type": "Uint64",
+      "ios_type": "Uint64XDR",
+      "xdr": "AAAAAAAAAAA=",
+      "json": "\"0\"",
+      "oracle": "incomparable",
+      "note": "Standalone unsigned 64-bit zero must render as a string.",
+      "reason": "SEP-0051 renders a 64-bit integer as a base-10 string; the reference emits a bare JSON number.",
+      "spec_form": "integer_string",
+      "spec_form_paths": [
+        ""
+      ],
+      "oracle_json": "0"
+    },
+    {
+      "type": "Uint64",
+      "ios_type": "Uint64XDR",
+      "xdr": "AAAAAAAAAAE=",
+      "json": "\"1\"",
+      "oracle": "incomparable",
+      "note": "Standalone unsigned 64-bit one must render as a string.",
+      "reason": "SEP-0051 renders a 64-bit integer as a base-10 string; the reference emits a bare JSON number.",
+      "spec_form": "integer_string",
+      "spec_form_paths": [
+        ""
+      ],
+      "oracle_json": "1"
+    },
+    {
+      "type": "Uint64",
+      "ios_type": "Uint64XDR",
+      "xdr": "//////////8=",
+      "json": "\"18446744073709551615\"",
+      "oracle": "incomparable",
+      "note": "Standalone unsigned 64-bit maximum must render as a string.",
+      "reason": "SEP-0051 renders a 64-bit integer as a base-10 string; the reference emits a bare JSON number.",
+      "spec_form": "integer_string",
+      "spec_form_paths": [
+        ""
+      ],
+      "oracle_json": "18446744073709551615"
+    },
+    {
+      "type": "Curve25519Secret",
+      "ios_type": "Curve25519SecretXDR",
+      "xdr": "AQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHyA=",
+      "json": "{\"key\":\"0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20\"}",
+      "oracle": "incomparable",
+      "note": "Inline fixed opaque must render as lowercase hex.",
+      "reason": "SEP-0051 renders fixed-length opaque data as lowercase hex; the reference emits an array of byte numbers.",
+      "spec_form": "opaque_hex",
+      "spec_form_paths": [
+        "key"
+      ],
+      "oracle_json": "{\"key\":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32]}"
+    },
+    {
+      "type": "Curve25519Secret",
+      "ios_type": "Curve25519SecretXDR",
+      "xdr": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+      "json": "{\"key\":\"0000000000000000000000000000000000000000000000000000000000000000\"}",
+      "oracle": "incomparable",
+      "note": "All-zero inline fixed opaque must render as 64 hex zeros.",
+      "reason": "SEP-0051 renders fixed-length opaque data as lowercase hex; the reference emits an array of byte numbers.",
+      "spec_form": "opaque_hex",
+      "spec_form_paths": [
+        "key"
+      ],
+      "oracle_json": "{\"key\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]}"
+    },
+    {
+      "type": "Curve25519Public",
+      "ios_type": "Curve25519PublicXDR",
+      "xdr": "AQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHyA=",
+      "json": "{\"key\":\"0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20\"}",
+      "oracle": "incomparable",
+      "note": "Inline fixed opaque must render as lowercase hex.",
+      "reason": "SEP-0051 renders fixed-length opaque data as lowercase hex; the reference emits an array of byte numbers.",
+      "spec_form": "opaque_hex",
+      "spec_form_paths": [
+        "key"
+      ],
+      "oracle_json": "{\"key\":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32]}"
+    },
+    {
+      "type": "HmacSha256Key",
+      "ios_type": "HmacSha256KeyXDR",
+      "xdr": "AQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHyA=",
+      "json": "{\"key\":\"0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20\"}",
+      "oracle": "incomparable",
+      "note": "Inline fixed opaque must render as lowercase hex.",
+      "reason": "SEP-0051 renders fixed-length opaque data as lowercase hex; the reference emits an array of byte numbers.",
+      "spec_form": "opaque_hex",
+      "spec_form_paths": [
+        "key"
+      ],
+      "oracle_json": "{\"key\":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32]}"
+    },
+    {
+      "type": "HmacSha256Mac",
+      "ios_type": "HmacSha256MacXDR",
+      "xdr": "//////////////////////////////////////////8=",
+      "json": "{\"mac\":\"ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff\"}",
+      "oracle": "incomparable",
+      "note": "Inline fixed opaque must render as lowercase hex.",
+      "reason": "SEP-0051 renders fixed-length opaque data as lowercase hex; the reference emits an array of byte numbers.",
+      "spec_form": "opaque_hex",
+      "spec_form_paths": [
+        "mac"
+      ],
+      "oracle_json": "{\"mac\":[255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255]}"
+    },
+    {
+      "type": "ShortHashSeed",
+      "ios_type": "ShortHashSeedXDR",
+      "xdr": "AQIDBAUGBwgJCgsMDQ4PEA==",
+      "json": "{\"seed\":\"0102030405060708090a0b0c0d0e0f10\"}",
+      "oracle": "incomparable",
+      "note": "Inline 16-byte fixed opaque must render as lowercase hex.",
+      "reason": "SEP-0051 renders fixed-length opaque data as lowercase hex; the reference emits an array of byte numbers.",
+      "spec_form": "opaque_hex",
+      "spec_form_paths": [
+        "seed"
+      ],
+      "oracle_json": "{\"seed\":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]}"
+    },
+    {
+      "type": "Price",
+      "ios_type": "PriceXDR",
+      "xdr": "gAAAAH////8=",
+      "json": "{\"n\":-2147483648,\"d\":2147483647}",
+      "oracle": "reference",
+      "note": "Price at both signed 32-bit extremes."
+    },
+    {
+      "type": "Int32",
+      "ios_type": "Int32XDR",
+      "xdr": "gAAAAA==",
+      "json": "-2147483648",
+      "oracle": "reference",
+      "note": "Standalone signed 32-bit minimum renders as a number."
+    },
+    {
+      "type": "Uint32",
+      "ios_type": "Uint32XDR",
+      "xdr": "/////w==",
+      "json": "4294967295",
+      "oracle": "reference",
+      "note": "Standalone unsigned 32-bit maximum renders as a number."
+    },
+    {
+      "type": "DecoratedSignature",
+      "ios_type": "DecoratedSignatureXDR",
+      "xdr": "AQIDBAAAAAA=",
+      "json": "{\"hint\":\"01020304\",\"signature\":\"\"}",
+      "oracle": "reference",
+      "note": "Decorated signature with an empty variable opaque signature."
+    },
+    {
+      "type": "DecoratedSignature",
+      "ios_type": "DecoratedSignatureXDR",
+      "xdr": "/////wAAAAKquwAA",
+      "json": "{\"hint\":\"ffffffff\",\"signature\":\"aabb\"}",
+      "oracle": "reference",
+      "note": "Decorated signature with data."
+    },
+    {
+      "type": "ContractCostParams",
+      "ios_type": "ContractCostParamsXDR",
+      "xdr": "AAAAAA==",
+      "json": "[]",
+      "oracle": "reference",
+      "note": "Empty variable array typedef renders as an empty array."
+    },
+    {
+      "type": "ContractCostParams",
+      "ios_type": "ContractCostParamsXDR",
+      "xdr": "AAAAAQAAAAAAAAAAAAAAAQAAAAAAAAAC",
+      "json": "[{\"ext\":\"v0\",\"const_term\":\"1\",\"linear_term\":\"2\"}]",
+      "oracle": "reference",
+      "note": "Variable array typedef with one entry."
+    },
+    {
+      "type": "ConfigSettingEntry",
+      "ios_type": "ConfigSettingEntryXDR",
+      "xdr": "AAAAAAAAAGQ=",
+      "json": "{\"contract_max_size_bytes\":100}",
+      "oracle": "reference",
+      "note": "Config setting entry arm carrying a 32-bit value."
+    },
+    {
+      "type": "ConfigSettingEntry",
+      "ios_type": "ConfigSettingEntryXDR",
+      "xdr": "AAAAAQAAAAAAAAABAAAAAAAAAAIAAAAAAAAAAwAAAAQ=",
+      "json": "{\"contract_compute_v0\":{\"ledger_max_instructions\":\"1\",\"tx_max_instructions\":\"2\",\"fee_rate_per_instructions_increment\":\"3\",\"tx_memory_limit\":4}}",
+      "oracle": "reference",
+      "note": "Config setting entry arm carrying a struct."
+    },
+    {
+      "type": "ThresholdIndexes",
+      "ios_type": "ThresholdIndexesXDR",
+      "xdr": "AAAAAA==",
+      "json": "\"master_weight\"",
+      "oracle": "reference",
+      "note": "Threshold index enum member is stripped of its shared prefix."
+    },
+    {
+      "type": "EnvelopeType",
+      "ios_type": "EnvelopeType",
+      "xdr": "AAAAAg==",
+      "json": "\"tx\"",
+      "oracle": "reference",
+      "note": "Envelope type enum member is stripped of its shared prefix."
+    },
+    {
+      "type": "EnvelopeType",
+      "ios_type": "EnvelopeType",
+      "xdr": "AAAACQ==",
+      "json": "\"soroban_authorization\"",
+      "oracle": "reference",
+      "note": "Multi-word envelope type enum member."
+    },
+    {
+      "type": "ContractCostType",
+      "ios_type": "ContractCostType",
+      "xdr": "AAAAAA==",
+      "json": "\"wasm_insn_exec\"",
+      "oracle": "reference",
+      "note": "Contract cost type enum member."
+    },
+    {
+      "type": "ClaimAtom",
+      "ios_type": "ClaimAtomXDR",
+      "xdr": "AAAAAAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gAAAAAAAAAAEAAAAAAAAAAAAAAAEAAAABVVNEAAAAAAABAgMEBQYHCAkKCwwNDg8QERITFBUWFxgZGhscHR4fIAAAAAAAAAAC",
+      "json": "{\"v0\":{\"seller_ed25519\":\"0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20\",\"offer_id\":\"1\",\"asset_sold\":\"native\",\"amount_sold\":\"1\",\"asset_bought\":{\"credit_alphanum4\":{\"asset_code\":\"USD\",\"issuer\":\"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV\"}},\"amount_bought\":\"2\"}}",
+      "oracle": "reference",
+      "note": "Claim atom at its version 0 arm."
+    },
+    {
+      "type": "ClaimAtom",
+      "ios_type": "ClaimAtomXDR",
+      "xdr": "AAAAAoCBgoOEhYaHiImKi4yNjo+QkZKTlJWWl5iZmpucnZ6fAAAAAAAAAAAAAAABAAAAAVVTRAAAAAAAAQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHyAAAAAAAAAAAg==",
+      "json": "{\"liquidity_pool\":{\"liquidity_pool_id\":\"LCAIDAUDQSCYNB4IRGFIXDENR2HZBEMSSOKJLFUXTCMZVG44TWPJ744M\",\"asset_sold\":\"native\",\"amount_sold\":\"1\",\"asset_bought\":{\"credit_alphanum4\":{\"asset_code\":\"USD\",\"issuer\":\"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV\"}},\"amount_bought\":\"2\"}}",
+      "oracle": "reference",
+      "note": "Claim atom at its liquidity pool arm."
+    },
+    {
+      "type": "RevokeSponsorshipOp",
+      "ios_type": "RevokeSponsorshipOpXDR",
+      "xdr": "AAAAAAAAAAIAAAAAAQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHyAAAAAAAAAAAw==",
+      "json": "{\"ledger_entry\":{\"offer\":{\"seller_id\":\"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV\",\"offer_id\":\"3\"}}}",
+      "oracle": "reference",
+      "note": "Revoke sponsorship targeting a ledger entry key."
+    },
+    {
+      "type": "RevokeSponsorshipOp",
+      "ios_type": "RevokeSponsorshipOpXDR",
+      "xdr": "AAAAAQAAAAABAgMEBQYHCAkKCwwNDg8QERITFBUWFxgZGhscHR4fIAAAAAMBAgMEBQYHCAkKCwwNDg8QERITFBUWFxgZGhscHR4fIAAAAAQBAgME",
+      "json": "{\"signer\":{\"account_id\":\"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV\",\"signer_key\":\"PAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSAAAAAACACAQDATYOS\"}}",
+      "oracle": "reference",
+      "note": "Revoke sponsorship targeting a signed payload signer."
+    },
+    {
+      "type": "BucketEntry",
+      "ios_type": "BucketEntryXDR",
+      "xdr": "/////wAAABcAAAAA",
+      "json": "{\"metaentry\":{\"ledger_version\":23,\"ext\":\"v0\"}}",
+      "oracle": "reference",
+      "note": "Bucket metadata entry arm keeps its unsplit member name."
+    },
+    {
+      "type": "BucketEntry",
+      "ios_type": "BucketEntryXDR",
+      "xdr": "AAAAAQAAAAcBAgMEBQYHCAkKCwwNDg8QERITFBUWFxgZGhscHR4fIA==",
+      "json": "{\"deadentry\":{\"contract_code\":{\"hash\":\"0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20\"}}}",
+      "oracle": "reference",
+      "note": "Bucket dead entry arm carries a ledger key."
+    },
+    {
+      "type": "HotArchiveBucketEntry",
+      "ios_type": "HotArchiveBucketEntryXDR",
+      "xdr": "AAAAAAAAAAEAAAAJAQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHyAAAAACAAAAAA==",
+      "json": "{\"archived\":{\"last_modified_ledger_seq\":1,\"data\":{\"ttl\":{\"key_hash\":\"0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20\",\"live_until_ledger_seq\":2}},\"ext\":\"v0\"}}",
+      "oracle": "reference",
+      "note": "Hot archive archived entry arm."
+    },
+    {
+      "type": "HotArchiveBucketEntry",
+      "ios_type": "HotArchiveBucketEntryXDR",
+      "xdr": "AAAAAQAAAAcBAgMEBQYHCAkKCwwNDg8QERITFBUWFxgZGhscHR4fIA==",
+      "json": "{\"live\":{\"contract_code\":{\"hash\":\"0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20\"}}}",
+      "oracle": "reference",
+      "note": "Hot archive live entry arm carries a ledger key."
+    },
+    {
+      "type": "TtlEntry",
+      "ios_type": "TTLEntryXDR",
+      "xdr": "AQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHyAAAAAA",
+      "json": "{\"key_hash\":\"0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20\",\"live_until_ledger_seq\":0}",
+      "oracle": "reference",
+      "note": "TTL entry renders its hash as hex and its sequence as a number."
+    },
+    {
+      "type": "ContractDataEntry",
+      "ios_type": "ContractDataEntryXDR",
+      "xdr": "AAAAAAAAAAEgISIjJCUmJygpKissLS4vMDEyMzQ1Njc4OTo7PD0+PwAAAA8AAAABawAAAAAAAAAAAAAB",
+      "json": "{\"ext\":\"v0\",\"contract\":\"CAQCCIRDEQSSMJZIFEVCWLBNFYXTAMJSGM2DKNRXHA4TUOZ4HU7D7V6Z\",\"key\":{\"symbol\":\"k\"},\"durability\":\"temporary\",\"val\":\"void\"}",
+      "oracle": "reference",
+      "note": "Contract data entry keys its fields in declaration order."
+    },
+    {
+      "type": "IpAddrType",
+      "ios_type": "IPAddrTypeXDR",
+      "xdr": "AAAAAA==",
+      "json": "\"i_pv4\"",
+      "oracle": "reference",
+      "note": "Address family member IPv4 splits into two words and renders as i_pv4."
+    },
+    {
+      "type": "IpAddrType",
+      "ios_type": "IPAddrTypeXDR",
+      "xdr": "AAAAAQ==",
+      "json": "\"i_pv6\"",
+      "oracle": "reference",
+      "note": "Address family member IPv6 splits into two words and renders as i_pv6."
+    },
+    {
+      "type": "ErrorCode",
+      "ios_type": "ErrorCodeXDR",
+      "xdr": "AAAAAA==",
+      "json": "\"misc\"",
+      "oracle": "reference",
+      "note": "Overlay error code member is stripped of its shared prefix."
+    },
+    {
+      "type": "ErrorCode",
+      "ios_type": "ErrorCodeXDR",
+      "xdr": "AAAABA==",
+      "json": "\"load\"",
+      "oracle": "reference",
+      "note": "Overlay error code member for overload."
+    },
+    {
+      "type": "MessageType",
+      "ios_type": "MessageTypeXDR",
+      "xdr": "AAAAAA==",
+      "json": "\"error_msg\"",
+      "oracle": "reference",
+      "note": "Overlay message type member at its zero value."
+    },
+    {
+      "type": "MessageType",
+      "ios_type": "MessageTypeXDR",
+      "xdr": "AAAAAw==",
+      "json": "\"dont_have\"",
+      "oracle": "reference",
+      "note": "Overlay message type member spanning two words."
+    },
+    {
+      "type": "MessageType",
+      "ios_type": "MessageTypeXDR",
+      "xdr": "AAAAEQ==",
+      "json": "\"generalized_tx_set\"",
+      "oracle": "reference",
+      "note": "Overlay message type member whose numeric value is out of declaration order."
+    },
+    {
+      "type": "MessageType",
+      "ios_type": "MessageTypeXDR",
+      "xdr": "AAAACQ==",
+      "json": "\"get_scp_quorumset\"",
+      "oracle": "reference",
+      "note": "Overlay message type member keeping quorumset as a single word."
+    },
+    {
+      "type": "MessageType",
+      "ios_type": "MessageTypeXDR",
+      "xdr": "AAAAFw==",
+      "json": "\"time_sliced_survey_start_collecting\"",
+      "oracle": "reference",
+      "note": "Longest overlay message type member, five words after the shared prefix."
+    },
+    {
+      "type": "SurveyMessageCommandType",
+      "ios_type": "SurveyMessageCommandTypeXDR",
+      "xdr": "AAAAAQ==",
+      "json": "\"time_sliced_survey_topology\"",
+      "oracle": "reference",
+      "note": "Single-member survey command enum keeps its full identifier."
+    },
+    {
+      "type": "SurveyMessageResponseType",
+      "ios_type": "SurveyMessageResponseTypeXDR",
+      "xdr": "AAAAAg==",
+      "json": "\"survey_topology_response_v2\"",
+      "oracle": "reference",
+      "note": "Single-member survey response enum keeps its full identifier."
+    },
+    {
+      "type": "SError",
+      "ios_type": "ErrorXDR",
+      "xdr": "AAAAAAAAAARvb3Bz",
+      "json": "{\"code\":\"misc\",\"msg\":\"oops\"}",
+      "oracle": "reference",
+      "note": "Overlay error struct, which the reference addresses under the escaped name SError."
+    },
+    {
+      "type": "SError",
+      "ios_type": "ErrorXDR",
+      "xdr": "AAAAAgAAAANhCWIA",
+      "json": "{\"code\":\"conf\",\"msg\":\"a\\\\tb\"}",
+      "oracle": "reference",
+      "note": "Overlay error message applies the short escape for tab."
+    },
+    {
+      "type": "SError",
+      "ios_type": "ErrorXDR",
+      "xdr": "AAAABAAAAAVjYWbDqQAAAA==",
+      "json": "{\"code\":\"load\",\"msg\":\"caf\\\\xc3\\\\xa9\"}",
+      "oracle": "reference",
+      "note": "Overlay error message escapes each byte of a non-ASCII character separately as \\xNN and leaves the ASCII bytes verbatim."
+    },
+    {
+      "type": "PeerAddressIp",
+      "ios_type": "PeerAddressXDRIpXDR",
+      "xdr": "AAAAAAECAwQ=",
+      "json": "{\"i_pv4\":\"01020304\"}",
+      "oracle": "incomparable",
+      "note": "IPv4 arm declares its opaque inline, so SEP-0051 requires hex where the reference emits a byte array.",
+      "reason": "SEP-0051 renders fixed-length opaque data as lowercase hex; the reference emits an array of byte numbers.",
+      "spec_form": "opaque_hex",
+      "spec_form_paths": [
+        "i_pv4"
+      ],
+      "oracle_json": "{\"i_pv4\":[1,2,3,4]}"
+    },
+    {
+      "type": "PeerAddressIp",
+      "ios_type": "PeerAddressXDRIpXDR",
+      "xdr": "AAAAAQECAwQFBgcICQoLDA0ODxA=",
+      "json": "{\"i_pv6\":\"0102030405060708090a0b0c0d0e0f10\"}",
+      "oracle": "incomparable",
+      "note": "IPv6 arm declares its opaque inline, so SEP-0051 requires hex.",
+      "reason": "SEP-0051 renders fixed-length opaque data as lowercase hex; the reference emits an array of byte numbers.",
+      "spec_form": "opaque_hex",
+      "spec_form_paths": [
+        "i_pv6"
+      ],
+      "oracle_json": "{\"i_pv6\":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]}"
+    },
+    {
+      "type": "PeerAddress",
+      "ios_type": "PeerAddressXDR",
+      "xdr": "AAAAAAECAwQAABLzAAAAAQ==",
+      "json": "{\"ip\":{\"i_pv4\":\"01020304\"},\"port\":4851,\"num_failures\":1}",
+      "oracle": "incomparable",
+      "note": "Peer address carries the inline opaque inside a union arm; the two 32-bit counters stay numbers.",
+      "reason": "SEP-0051 renders fixed-length opaque data as lowercase hex; the reference emits an array of byte numbers.",
+      "spec_form": "opaque_hex",
+      "spec_form_paths": [
+        "ip.i_pv4"
+      ],
+      "oracle_json": "{\"ip\":{\"i_pv4\":[1,2,3,4]},\"port\":4851,\"num_failures\":1}"
+    },
+    {
+      "type": "PeerAddress",
+      "ios_type": "PeerAddressXDR",
+      "xdr": "AAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAA/////w==",
+      "json": "{\"ip\":{\"i_pv6\":\"00000000000000000000000000000000\"},\"port\":0,\"num_failures\":4294967295}",
+      "oracle": "incomparable",
+      "note": "Peer address at the IPv6 arm; an all-zero address renders as 32 hex zeros, never as an empty string.",
+      "reason": "SEP-0051 renders fixed-length opaque data as lowercase hex; the reference emits an array of byte numbers.",
+      "spec_form": "opaque_hex",
+      "spec_form_paths": [
+        "ip.i_pv6"
+      ],
+      "oracle_json": "{\"ip\":{\"i_pv6\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},\"port\":0,\"num_failures\":4294967295}"
+    },
+    {
+      "type": "Auth",
+      "ios_type": "AuthXDR",
+      "xdr": "AAAAyA==",
+      "json": "{\"flags\":200}",
+      "oracle": "reference",
+      "note": "Auth message carries a bare 32-bit flag word."
+    },
+    {
+      "type": "SendMore",
+      "ios_type": "SendMoreXDR",
+      "xdr": "AAAACg==",
+      "json": "{\"num_messages\":10}",
+      "oracle": "reference",
+      "note": "Flow control message renders numMessages as num_messages."
+    },
+    {
+      "type": "SendMoreExtended",
+      "ios_type": "SendMoreExtendedXDR",
+      "xdr": "AAAAAf////8=",
+      "json": "{\"num_messages\":1,\"num_bytes\":4294967295}",
+      "oracle": "reference",
+      "note": "Byte-based flow control message at the unsigned 32-bit maximum."
+    },
+    {
+      "type": "AuthCert",
+      "ios_type": "AuthCertXDR",
+      "xdr": "AQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHyAAAAAAZ3SFgAAAAAKquwAA",
+      "json": "{\"pubkey\":{\"key\":\"0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20\"},\"expiration\":\"1735689600\",\"sig\":\"aabb\"}",
+      "oracle": "incomparable",
+      "note": "Auth certificate nests an inline fixed opaque public key next to a variable opaque signature.",
+      "reason": "SEP-0051 renders fixed-length opaque data as lowercase hex; the reference emits an array of byte numbers.",
+      "spec_form": "opaque_hex",
+      "spec_form_paths": [
+        "pubkey.key"
+      ],
+      "oracle_json": "{\"pubkey\":{\"key\":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32]},\"expiration\":\"1735689600\",\"sig\":\"aabb\"}"
+    },
+    {
+      "type": "DontHave",
+      "ios_type": "DontHaveXDR",
+      "xdr": "AAAAAAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8g",
+      "json": "{\"type\":\"error_msg\",\"req_hash\":\"0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20\"}",
+      "oracle": "reference",
+      "note": "Don't-have message renders its discriminant field under the key type and accepts the escaped spelling on input.",
+      "input_variants": [
+        "{\"type_\":\"error_msg\",\"req_hash\":\"0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20\"}"
+      ]
+    },
+    {
+      "type": "DontHave",
+      "ios_type": "DontHaveXDR",
+      "xdr": "AAAABwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+      "json": "{\"type\":\"tx_set\",\"req_hash\":\"0000000000000000000000000000000000000000000000000000000000000000\"}",
+      "oracle": "reference",
+      "note": "Don't-have message naming a transaction set, with an all-zero hash.",
+      "input_variants": [
+        "{\"type_\":\"tx_set\",\"req_hash\":\"0000000000000000000000000000000000000000000000000000000000000000\"}"
+      ]
+    },
+    {
+      "type": "PeerStats",
+      "ios_type": "PeerStatsXDR",
+      "xdr": "AAAAAAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gAAAABXYyMy4wAAAAAAAAAAAAAAEAAAAAAAAAAgAAAAAAAAADAAAAAAAAAAQAAAAAAAAABQAAAAAAAAAGAAAAAAAAAAcAAAAAAAAACAAAAAAAAAAJAAAAAAAAAAoAAAAAAAAACwAAAAAAAAAMAAAAAAAAAA0=",
+      "json": "{\"id\":\"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV\",\"version_str\":\"v23.0\",\"messages_read\":\"1\",\"messages_written\":\"2\",\"bytes_read\":\"3\",\"bytes_written\":\"4\",\"seconds_connected\":\"5\",\"unique_flood_bytes_recv\":\"6\",\"duplicate_flood_bytes_recv\":\"7\",\"unique_fetch_bytes_recv\":\"8\",\"duplicate_fetch_bytes_recv\":\"9\",\"unique_flood_message_recv\":\"10\",\"duplicate_flood_message_recv\":\"11\",\"unique_fetch_message_recv\":\"12\",\"duplicate_fetch_message_recv\":\"13\"}",
+      "oracle": "reference",
+      "note": "Peer statistics render fifteen 64-bit counters as strings around a strkey and an escaped string."
+    },
+    {
+      "type": "TimeSlicedNodeData",
+      "ios_type": "TimeSlicedNodeDataXDR",
+      "xdr": "AAAAAQAAAAIAAAADAAAABAAAAAUAAAAGAAAABwAAAAEAAAAIAAAACQ==",
+      "json": "{\"added_authenticated_peers\":1,\"dropped_authenticated_peers\":2,\"total_inbound_peer_count\":3,\"total_outbound_peer_count\":4,\"p75_scp_first_to_self_latency_ms\":5,\"p75_scp_self_to_other_latency_ms\":6,\"lost_sync_count\":7,\"is_validator\":true,\"max_inbound_peer_count\":8,\"max_outbound_peer_count\":9}",
+      "oracle": "reference",
+      "note": "Node data renders p75SCPFirstToSelfLatencyMs with its digit and acronym split apart."
+    },
+    {
+      "type": "TimeSlicedNodeData",
+      "ios_type": "TimeSlicedNodeDataXDR",
+      "xdr": "AAAAAAAAAAAAAAAAAAAAAP///////////////wAAAAAAAAAAAAAAAA==",
+      "json": "{\"added_authenticated_peers\":0,\"dropped_authenticated_peers\":0,\"total_inbound_peer_count\":0,\"total_outbound_peer_count\":0,\"p75_scp_first_to_self_latency_ms\":4294967295,\"p75_scp_self_to_other_latency_ms\":4294967295,\"lost_sync_count\":4294967295,\"is_validator\":false,\"max_inbound_peer_count\":0,\"max_outbound_peer_count\":0}",
+      "oracle": "reference",
+      "note": "Node data with the boolean false and the latency counters at their maximum."
+    },
+    {
+      "type": "TimeSlicedPeerData",
+      "ios_type": "TimeSlicedPeerDataXDR",
+      "xdr": "AAAAAAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gAAAABXYyMy4wAAAAAAAAAAAAAAEAAAAAAAAAAgAAAAAAAAADAAAAAAAAAAQAAAAAAAAABQAAAAAAAAAGAAAAAAAAAAcAAAAAAAAACAAAAAAAAAAJAAAAAAAAAAoAAAAAAAAACwAAAAAAAAAMAAAAAAAAAA0AAAAq",
+      "json": "{\"peer_stats\":{\"id\":\"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV\",\"version_str\":\"v23.0\",\"messages_read\":\"1\",\"messages_written\":\"2\",\"bytes_read\":\"3\",\"bytes_written\":\"4\",\"seconds_connected\":\"5\",\"unique_flood_bytes_recv\":\"6\",\"duplicate_flood_bytes_recv\":\"7\",\"unique_fetch_bytes_recv\":\"8\",\"duplicate_fetch_bytes_recv\":\"9\",\"unique_flood_message_recv\":\"10\",\"duplicate_flood_message_recv\":\"11\",\"unique_fetch_message_recv\":\"12\",\"duplicate_fetch_message_recv\":\"13\"},\"average_latency_ms\":42}",
+      "oracle": "reference",
+      "note": "Peer data wraps the statistics struct."
+    },
+    {
+      "type": "TimeSlicedPeerDataList",
+      "ios_type": "TimeSlicedPeerDataListXDR",
+      "xdr": "AAAAAA==",
+      "json": "[]",
+      "oracle": "reference",
+      "note": "Empty bounded array typedef renders as an empty array."
+    },
+    {
+      "type": "TimeSlicedPeerDataList",
+      "ios_type": "TimeSlicedPeerDataListXDR",
+      "xdr": "AAAAAQAAAAABAgMEBQYHCAkKCwwNDg8QERITFBUWFxgZGhscHR4fIAAAAAV2MjMuMAAAAAAAAAAAAAABAAAAAAAAAAIAAAAAAAAAAwAAAAAAAAAEAAAAAAAAAAUAAAAAAAAABgAAAAAAAAAHAAAAAAAAAAgAAAAAAAAACQAAAAAAAAAKAAAAAAAAAAsAAAAAAAAADAAAAAAAAAANAAAAAA==",
+      "json": "[{\"peer_stats\":{\"id\":\"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV\",\"version_str\":\"v23.0\",\"messages_read\":\"1\",\"messages_written\":\"2\",\"bytes_read\":\"3\",\"bytes_written\":\"4\",\"seconds_connected\":\"5\",\"unique_flood_bytes_recv\":\"6\",\"duplicate_flood_bytes_recv\":\"7\",\"unique_fetch_bytes_recv\":\"8\",\"duplicate_fetch_bytes_recv\":\"9\",\"unique_flood_message_recv\":\"10\",\"duplicate_flood_message_recv\":\"11\",\"unique_fetch_message_recv\":\"12\",\"duplicate_fetch_message_recv\":\"13\"},\"average_latency_ms\":0}]",
+      "oracle": "reference",
+      "note": "Bounded array typedef with one entry."
+    },
+    {
+      "type": "TopologyResponseBodyV2",
+      "ios_type": "TopologyResponseBodyV2XDR",
+      "xdr": "AAAAAQAAAAABAgMEBQYHCAkKCwwNDg8QERITFBUWFxgZGhscHR4fIAAAAAV2MjMuMAAAAAAAAAAAAAABAAAAAAAAAAIAAAAAAAAAAwAAAAAAAAAEAAAAAAAAAAUAAAAAAAAABgAAAAAAAAAHAAAAAAAAAAgAAAAAAAAACQAAAAAAAAAKAAAAAAAAAAsAAAAAAAAADAAAAAAAAAANAAAAAQAAAAAAAAABAAAAAgAAAAMAAAAEAAAABQAAAAYAAAAHAAAAAQAAAAgAAAAJ",
+      "json": "{\"inbound_peers\":[{\"peer_stats\":{\"id\":\"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV\",\"version_str\":\"v23.0\",\"messages_read\":\"1\",\"messages_written\":\"2\",\"bytes_read\":\"3\",\"bytes_written\":\"4\",\"seconds_connected\":\"5\",\"unique_flood_bytes_recv\":\"6\",\"duplicate_flood_bytes_recv\":\"7\",\"unique_fetch_bytes_recv\":\"8\",\"duplicate_fetch_bytes_recv\":\"9\",\"unique_flood_message_recv\":\"10\",\"duplicate_flood_message_recv\":\"11\",\"unique_fetch_message_recv\":\"12\",\"duplicate_fetch_message_recv\":\"13\"},\"average_latency_ms\":1}],\"outbound_peers\":[],\"node_data\":{\"added_authenticated_peers\":1,\"dropped_authenticated_peers\":2,\"total_inbound_peer_count\":3,\"total_outbound_peer_count\":4,\"p75_scp_first_to_self_latency_ms\":5,\"p75_scp_self_to_other_latency_ms\":6,\"lost_sync_count\":7,\"is_validator\":true,\"max_inbound_peer_count\":8,\"max_outbound_peer_count\":9}}",
+      "oracle": "reference",
+      "note": "Topology response with one peer list populated and the other empty."
+    },
+    {
+      "type": "SurveyResponseBody",
+      "ios_type": "SurveyResponseBodyXDR",
+      "xdr": "AAAAAgAAAAAAAAAAAAAAAQAAAAIAAAADAAAABAAAAAUAAAAGAAAABwAAAAEAAAAIAAAACQ==",
+      "json": "{\"survey_topology_response_v2\":{\"inbound_peers\":[],\"outbound_peers\":[],\"node_data\":{\"added_authenticated_peers\":1,\"dropped_authenticated_peers\":2,\"total_inbound_peer_count\":3,\"total_outbound_peer_count\":4,\"p75_scp_first_to_self_latency_ms\":5,\"p75_scp_self_to_other_latency_ms\":6,\"lost_sync_count\":7,\"is_validator\":true,\"max_inbound_peer_count\":8,\"max_outbound_peer_count\":9}}}",
+      "oracle": "reference",
+      "note": "Sole survey response arm keys on its enum member name."
+    },
+    {
+      "type": "SurveyRequestMessage",
+      "ios_type": "SurveyRequestMessageXDR",
+      "xdr": "AAAAAAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gAAAAAAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gAAAACQECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gAAAAAQ==",
+      "json": "{\"surveyor_peer_id\":\"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV\",\"surveyed_peer_id\":\"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV\",\"ledger_num\":9,\"encryption_key\":{\"key\":\"0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20\"},\"command_type\":\"time_sliced_survey_topology\"}",
+      "oracle": "incomparable",
+      "note": "Survey request carries an inline fixed opaque encryption key.",
+      "reason": "SEP-0051 renders fixed-length opaque data as lowercase hex; the reference emits an array of byte numbers.",
+      "spec_form": "opaque_hex",
+      "spec_form_paths": [
+        "encryption_key.key"
+      ],
+      "oracle_json": "{\"surveyor_peer_id\":\"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV\",\"surveyed_peer_id\":\"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV\",\"ledger_num\":9,\"encryption_key\":{\"key\":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32]},\"command_type\":\"time_sliced_survey_topology\"}"
+    },
+    {
+      "type": "SurveyResponseMessage",
+      "ios_type": "SurveyResponseMessageXDR",
+      "xdr": "AAAAAAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gAAAAAAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gAAAABwAAAAEAAAACAP8AAA==",
+      "json": "{\"surveyor_peer_id\":\"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV\",\"surveyed_peer_id\":\"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV\",\"ledger_num\":7,\"command_type\":\"time_sliced_survey_topology\",\"encrypted_body\":\"00ff\"}",
+      "oracle": "reference",
+      "note": "Survey response renders its variable opaque body as hex."
+    },
+    {
+      "type": "TimeSlicedSurveyResponseMessage",
+      "ios_type": "TimeSlicedSurveyResponseMessageXDR",
+      "xdr": "AAAAAAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gAAAAAAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gAAAABwAAAAEAAAACAP8AAAAAAAM=",
+      "json": "{\"response\":{\"surveyor_peer_id\":\"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV\",\"surveyed_peer_id\":\"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV\",\"ledger_num\":7,\"command_type\":\"time_sliced_survey_topology\",\"encrypted_body\":\"00ff\"},\"nonce\":3}",
+      "oracle": "reference",
+      "note": "Time-sliced survey response wraps the response message."
+    },
+    {
+      "type": "SignedTimeSlicedSurveyResponseMessage",
+      "ios_type": "SignedTimeSlicedSurveyResponseMessageXDR",
+      "xdr": "AAAAAgoLAAAAAAAAAQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHyAAAAAAAQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHyAAAAAHAAAAAQAAAAIA/wAAAAAAAw==",
+      "json": "{\"response_signature\":\"0a0b\",\"response\":{\"response\":{\"surveyor_peer_id\":\"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV\",\"surveyed_peer_id\":\"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV\",\"ledger_num\":7,\"command_type\":\"time_sliced_survey_topology\",\"encrypted_body\":\"00ff\"},\"nonce\":3}}",
+      "oracle": "reference",
+      "note": "Signed time-sliced survey response nests two levels of message."
+    },
+    {
+      "type": "TimeSlicedSurveyStartCollectingMessage",
+      "ios_type": "TimeSlicedSurveyStartCollectingMessageXDR",
+      "xdr": "AAAAAAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gAAAAAQAAAAI=",
+      "json": "{\"surveyor_id\":\"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV\",\"nonce\":1,\"ledger_num\":2}",
+      "oracle": "reference",
+      "note": "Survey start signal renders surveyorID as surveyor_id."
+    },
+    {
+      "type": "SignedTimeSlicedSurveyStartCollectingMessage",
+      "ios_type": "SignedTimeSlicedSurveyStartCollectingMessageXDR",
+      "xdr": "AAAAAAAAAAABAgMEBQYHCAkKCwwNDg8QERITFBUWFxgZGhscHR4fIAAAAAEAAAAC",
+      "json": "{\"signature\":\"\",\"start_collecting\":{\"surveyor_id\":\"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV\",\"nonce\":1,\"ledger_num\":2}}",
+      "oracle": "reference",
+      "note": "Signed survey start signal with an empty variable opaque signature."
+    },
+    {
+      "type": "TimeSlicedSurveyStopCollectingMessage",
+      "ios_type": "TimeSlicedSurveyStopCollectingMessageXDR",
+      "xdr": "AAAAAAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8g/////wAAAAA=",
+      "json": "{\"surveyor_id\":\"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV\",\"nonce\":4294967295,\"ledger_num\":0}",
+      "oracle": "reference",
+      "note": "Survey stop signal at the unsigned 32-bit maximum nonce."
+    },
+    {
+      "type": "SignedTimeSlicedSurveyStopCollectingMessage",
+      "ios_type": "SignedTimeSlicedSurveyStopCollectingMessageXDR",
+      "xdr": "AAAAAf8AAAAAAAAAAQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHyD/////AAAAAA==",
+      "json": "{\"signature\":\"ff\",\"stop_collecting\":{\"surveyor_id\":\"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV\",\"nonce\":4294967295,\"ledger_num\":0}}",
+      "oracle": "reference",
+      "note": "Signed survey stop signal with a one-byte signature."
+    },
+    {
+      "type": "FloodAdvert",
+      "ios_type": "FloodAdvertXDR",
+      "xdr": "AAAAAA==",
+      "json": "{\"tx_hashes\":[]}",
+      "oracle": "reference",
+      "note": "Pull-mode advert with an empty hash vector."
+    },
+    {
+      "type": "FloodDemand",
+      "ios_type": "FloodDemandXDR",
+      "xdr": "AAAAAgECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+      "json": "{\"tx_hashes\":[\"0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20\",\"0000000000000000000000000000000000000000000000000000000000000000\"]}",
+      "oracle": "reference",
+      "note": "Pull-mode demand with two hashes."
+    },
+    {
+      "type": "EncryptedBody",
+      "ios_type": "EncryptedBodyXDR",
+      "xdr": "AAAABN6tvu8=",
+      "json": "\"deadbeef\"",
+      "oracle": "reference",
+      "note": "Variable opaque typedef renders as lowercase hex."
+    },
+    {
+      "type": "TxAdvertVector",
+      "ios_type": "TxAdvertVectorXDR",
+      "xdr": "AAAAAA==",
+      "json": "[]",
+      "oracle": "reference",
+      "note": "Empty bounded hash vector typedef renders as an empty array."
+    },
+    {
+      "type": "TxDemandVector",
+      "ios_type": "TxDemandVectorXDR",
+      "xdr": "AAAAAgECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+      "json": "[\"0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20\",\"0000000000000000000000000000000000000000000000000000000000000000\"]",
+      "oracle": "reference",
+      "note": "Bounded hash vector typedef with two hashes."
+    },
+    {
+      "type": "AuthenticatedMessageV0",
+      "ios_type": "AuthenticatedMessageXDRV0XDR",
+      "xdr": "AAAAAAAAAAEAAAACAAAAAAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8g",
+      "json": "{\"sequence\":\"1\",\"message\":{\"auth\":{\"flags\":0}},\"mac\":{\"mac\":\"0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20\"}}",
+      "oracle": "incomparable",
+      "note": "Authenticated message body carries an inline fixed opaque MAC.",
+      "reason": "SEP-0051 renders fixed-length opaque data as lowercase hex; the reference emits an array of byte numbers.",
+      "spec_form": "opaque_hex",
+      "spec_form_paths": [
+        "mac.mac"
+      ],
+      "oracle_json": "{\"sequence\":\"1\",\"message\":{\"auth\":{\"flags\":0}},\"mac\":{\"mac\":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32]}}"
+    },
+    {
+      "type": "StellarMessage",
+      "ios_type": "StellarMessageXDR",
+      "xdr": "AAAAAAAAAAAAAAAEYm9vbQ==",
+      "json": "{\"error_msg\":{\"code\":\"misc\",\"msg\":\"boom\"}}",
+      "oracle": "reference",
+      "note": "Error arm of the overlay message union."
+    },
+    {
+      "type": "StellarMessage",
+      "ios_type": "StellarMessageXDR",
+      "xdr": "AAAAAwAAAAcBAgMEBQYHCAkKCwwNDg8QERITFBUWFxgZGhscHR4fIA==",
+      "json": "{\"dont_have\":{\"type\":\"tx_set\",\"req_hash\":\"0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20\"}}",
+      "oracle": "reference",
+      "note": "Don't-have arm of the overlay message union."
+    },
+    {
+      "type": "StellarMessage",
+      "ios_type": "StellarMessageXDR",
+      "xdr": "AAAABgECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8g",
+      "json": "{\"get_tx_set\":\"0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20\"}",
+      "oracle": "reference",
+      "note": "Transaction set request arm carries a bare 32-byte hash."
+    },
+    {
+      "type": "StellarMessage",
+      "ios_type": "StellarMessageXDR",
+      "xdr": "AAAAEQAAAAEBAgMEBQYHCAkKCwwNDg8QERITFBUWFxgZGhscHR4fIAAAAAA=",
+      "json": "{\"generalized_tx_set\":{\"v1\":{\"previous_ledger_hash\":\"0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20\",\"phases\":[]}}}",
+      "oracle": "reference",
+      "note": "Generalized transaction set arm nests an int-cased union."
+    },
+    {
+      "type": "StellarMessage",
+      "ios_type": "StellarMessageXDR",
+      "xdr": "AAAACAAAAAABAgMEBQYHCAkKCwwNDg8QERITFBUWFxgZGhscHR4fIAAAAGQAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAA",
+      "json": "{\"transaction\":{\"tx_v0\":{\"tx\":{\"source_account_ed25519\":\"0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20\",\"fee\":100,\"seq_num\":\"1\",\"time_bounds\":null,\"memo\":\"none\",\"operations\":[],\"ext\":\"v0\"},\"signatures\":[]}}}",
+      "oracle": "reference",
+      "note": "Transaction arm carries a full envelope."
+    },
+    {
+      "type": "StellarMessage",
+      "ios_type": "StellarMessageXDR",
+      "xdr": "AAAACwAAAAABAgMEBQYHCAkKCwwNDg8QERITFBUWFxgZGhscHR4fIAAAAAAAAAAHAAAAAwECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gAAAAAAAAAAAAAAACCgsAAA==",
+      "json": "{\"scp_message\":{\"statement\":{\"node_id\":\"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV\",\"slot_index\":\"7\",\"pledges\":{\"nominate\":{\"quorum_set_hash\":\"0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20\",\"votes\":[],\"accepted\":[]}}},\"signature\":\"0a0b\"}}",
+      "oracle": "reference",
+      "note": "SCP message arm carries an envelope."
+    },
+    {
+      "type": "StellarMessage",
+      "ios_type": "StellarMessageXDR",
+      "xdr": "AAAADAAAAAA=",
+      "json": "{\"get_scp_state\":0}",
+      "oracle": "reference",
+      "note": "SCP state request arm carries a bare 32-bit number."
+    },
+    {
+      "type": "StellarMessage",
+      "ios_type": "StellarMessageXDR",
+      "xdr": "AAAAFgAAAAEKAAAAAAAAAAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gAAAAAAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gAAAABwAAAAEAAAACAP8AAAAAAAE=",
+      "json": "{\"time_sliced_survey_response\":{\"response_signature\":\"0a\",\"response\":{\"response\":{\"surveyor_peer_id\":\"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV\",\"surveyed_peer_id\":\"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV\",\"ledger_num\":7,\"command_type\":\"time_sliced_survey_topology\",\"encrypted_body\":\"00ff\"},\"nonce\":1}}}",
+      "oracle": "reference",
+      "note": "Time-sliced survey response arm of the overlay message union."
+    },
+    {
+      "type": "ScpStatementType",
+      "ios_type": "SCPStatementTypeXDR",
+      "xdr": "AAAAAA==",
+      "json": "\"prepare\"",
+      "oracle": "reference",
+      "note": "SCP statement type member is stripped of its shared prefix."
+    },
+    {
+      "type": "ScpStatementType",
+      "ios_type": "SCPStatementTypeXDR",
+      "xdr": "AAAAAQ==",
+      "json": "\"confirm\"",
+      "oracle": "reference",
+      "note": "SCP statement type member for confirm."
+    },
+    {
+      "type": "ScpStatementType",
+      "ios_type": "SCPStatementTypeXDR",
+      "xdr": "AAAAAg==",
+      "json": "\"externalize\"",
+      "oracle": "reference",
+      "note": "SCP statement type member for externalize."
+    },
+    {
+      "type": "ScpStatementType",
+      "ios_type": "SCPStatementTypeXDR",
+      "xdr": "AAAAAw==",
+      "json": "\"nominate\"",
+      "oracle": "reference",
+      "note": "SCP statement type member for nominate."
+    },
+    {
+      "type": "ScpBallot",
+      "ios_type": "SCPBallotXDR",
+      "xdr": "AAAAAAAAAAA=",
+      "json": "{\"counter\":0,\"value\":\"\"}",
+      "oracle": "reference",
+      "note": "Ballot with an empty variable opaque value."
+    },
+    {
+      "type": "ScpNomination",
+      "ios_type": "SCPNominationXDR",
+      "xdr": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAQAAAAAAAAACAAAAAf8AAAAAAAACAQIAAA==",
+      "json": "{\"quorum_set_hash\":\"0000000000000000000000000000000000000000000000000000000000000000\",\"votes\":[\"00\"],\"accepted\":[\"ff\",\"0102\"]}",
+      "oracle": "reference",
+      "note": "Nomination with populated vote arrays of variable opaque values."
+    },
+    {
+      "type": "ScpQuorumSet",
+      "ios_type": "SCPQuorumSetXDR",
+      "xdr": "AAAAAgAAAAAAAAABAAAAAQAAAAEAAAAAAQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHyAAAAAA",
+      "json": "{\"threshold\":2,\"validators\":[],\"inner_sets\":[{\"threshold\":1,\"validators\":[\"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV\"],\"inner_sets\":[]}]}",
+      "oracle": "reference",
+      "note": "Quorum set nesting one inner set."
+    },
+    {
+      "type": "ScpStatementPledges",
+      "ios_type": "SCPStatementXDRPledgesXDR",
+      "xdr": "AAAAAAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gAAAAAQAAAAIKCwAAAAAAAAAAAAAAAAAAAAAAAA==",
+      "json": "{\"prepare\":{\"quorum_set_hash\":\"0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20\",\"ballot\":{\"counter\":1,\"value\":\"0a0b\"},\"prepared\":null,\"prepared_prime\":null,\"n_c\":0,\"n_h\":0}}",
+      "oracle": "reference",
+      "note": "Prepare pledge arm with both optional ballots unset."
+    },
+    {
+      "type": "ScpStatementPledges",
+      "ios_type": "SCPStatementXDRPledgesXDR",
+      "xdr": "AAAAAAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gAAAAAQAAAAIKCwAAAAAAAQAAAAEAAAACCgsAAAAAAAEAAAABAAAAAgoLAAAAAAABAAAAAg==",
+      "json": "{\"prepare\":{\"quorum_set_hash\":\"0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20\",\"ballot\":{\"counter\":1,\"value\":\"0a0b\"},\"prepared\":{\"counter\":1,\"value\":\"0a0b\"},\"prepared_prime\":{\"counter\":1,\"value\":\"0a0b\"},\"n_c\":1,\"n_h\":2}}",
+      "oracle": "reference",
+      "note": "Prepare pledge arm with both optional ballots set."
+    },
+    {
+      "type": "ScpStatementPledges",
+      "ios_type": "SCPStatementXDRPledgesXDR",
+      "xdr": "AAAAAQAAAAEAAAACCgsAAAAAAAEAAAACAAAAAwECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8g",
+      "json": "{\"confirm\":{\"ballot\":{\"counter\":1,\"value\":\"0a0b\"},\"n_prepared\":1,\"n_commit\":2,\"n_h\":3,\"quorum_set_hash\":\"0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20\"}}",
+      "oracle": "reference",
+      "note": "Confirm pledge arm keys nPrepared as n_prepared."
+    },
+    {
+      "type": "ScpStatementPledges",
+      "ios_type": "SCPStatementXDRPledgesXDR",
+      "xdr": "AAAAAgAAAAEAAAACCgsAAAAAAAQBAgMEBQYHCAkKCwwNDg8QERITFBUWFxgZGhscHR4fIA==",
+      "json": "{\"externalize\":{\"commit\":{\"counter\":1,\"value\":\"0a0b\"},\"n_h\":4,\"commit_quorum_set_hash\":\"0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20\"}}",
+      "oracle": "reference",
+      "note": "Externalize pledge arm of the SCP statement union."
+    },
+    {
+      "type": "ScpStatement",
+      "ios_type": "SCPStatementXDR",
+      "xdr": "AAAAAAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8g//////////8AAAADAQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHyAAAAAAAAAAAA==",
+      "json": "{\"node_id\":\"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV\",\"slot_index\":\"18446744073709551615\",\"pledges\":{\"nominate\":{\"quorum_set_hash\":\"0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20\",\"votes\":[],\"accepted\":[]}}}",
+      "oracle": "reference",
+      "note": "SCP statement at the unsigned 64-bit maximum slot index."
+    },
+    {
+      "type": "ScpEnvelope",
+      "ios_type": "SCPEnvelopeXDR",
+      "xdr": "AAAAAAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gAAAAAAAAAAcAAAADAQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHyAAAAAAAAAAAAAAAAIKCwAA",
+      "json": "{\"statement\":{\"node_id\":\"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV\",\"slot_index\":\"7\",\"pledges\":{\"nominate\":{\"quorum_set_hash\":\"0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20\",\"votes\":[],\"accepted\":[]}}},\"signature\":\"0a0b\"}",
+      "oracle": "reference",
+      "note": "SCP envelope pairs a statement with a signature."
+    },
+    {
+      "type": "TransactionSet",
+      "ios_type": "TransactionSetXDR",
+      "xdr": "AQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHyAAAAAA",
+      "json": "{\"previous_ledger_hash\":\"0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20\",\"txs\":[]}",
+      "oracle": "reference",
+      "note": "Legacy transaction set with no transactions."
+    },
+    {
+      "type": "TransactionSetV1",
+      "ios_type": "TransactionSetV1XDR",
+      "xdr": "AQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHyAAAAAA",
+      "json": "{\"previous_ledger_hash\":\"0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20\",\"phases\":[]}",
+      "oracle": "reference",
+      "note": "Version 1 transaction set with no phases."
+    },
+    {
+      "type": "GeneralizedTransactionSet",
+      "ios_type": "GeneralizedTransactionSetXDR",
+      "xdr": "AAAAAQECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gAAAAAQAAAAAAAAAA",
+      "json": "{\"v1\":{\"previous_ledger_hash\":\"0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20\",\"phases\":[{\"v0\":[]}]}}",
+      "oracle": "reference",
+      "note": "Generalized transaction set at its sole int-cased arm."
+    },
+    {
+      "type": "StoredTransactionSet",
+      "ios_type": "StoredTransactionSetXDR",
+      "xdr": "AAAAAAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gAAAAAA==",
+      "json": "{\"v0\":{\"previous_ledger_hash\":\"0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20\",\"txs\":[]}}",
+      "oracle": "reference",
+      "note": "Stored transaction set at its zero-valued int case."
+    },
+    {
+      "type": "StoredTransactionSet",
+      "ios_type": "StoredTransactionSetXDR",
+      "xdr": "AAAAAQAAAAEBAgMEBQYHCAkKCwwNDg8QERITFBUWFxgZGhscHR4fIAAAAAA=",
+      "json": "{\"v1\":{\"v1\":{\"previous_ledger_hash\":\"0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20\",\"phases\":[]}}}",
+      "oracle": "reference",
+      "note": "Stored transaction set at its non-zero int case, nesting a second int-cased union."
+    },
+    {
+      "type": "StoredDebugTransactionSet",
+      "ios_type": "StoredDebugTransactionSetXDR",
+      "xdr": "AAAAAAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gAAAAAAAAAAcBAgMEBQYHCAkKCwwNDg8QERITFBUWFxgZGhscHR4fIAAAAAAAAAAAAAAAAAAAAAA=",
+      "json": "{\"tx_set\":{\"v0\":{\"previous_ledger_hash\":\"0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20\",\"txs\":[]}},\"ledger_seq\":7,\"scp_value\":{\"tx_set_hash\":\"0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20\",\"close_time\":\"0\",\"upgrades\":[],\"ext\":\"basic\"}}",
+      "oracle": "reference",
+      "note": "Stored debug transaction set nests a stored set and an SCP value."
+    },
+    {
+      "type": "PersistedScpStateV0",
+      "ios_type": "PersistedSCPStateV0XDR",
+      "xdr": "AAAAAQAAAAABAgMEBQYHCAkKCwwNDg8QERITFBUWFxgZGhscHR4fIAAAAAAAAAAHAAAAAwECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gAAAAAAAAAAAAAAACCgsAAAAAAAEAAAABAAAAAQAAAAABAgMEBQYHCAkKCwwNDg8QERITFBUWFxgZGhscHR4fIAAAAAAAAAABAAAAAAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gAAAAAA==",
+      "json": "{\"scp_envelopes\":[{\"statement\":{\"node_id\":\"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV\",\"slot_index\":\"7\",\"pledges\":{\"nominate\":{\"quorum_set_hash\":\"0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20\",\"votes\":[],\"accepted\":[]}}},\"signature\":\"0a0b\"}],\"quorum_sets\":[{\"threshold\":1,\"validators\":[\"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV\"],\"inner_sets\":[]}],\"tx_sets\":[{\"v0\":{\"previous_ledger_hash\":\"0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20\",\"txs\":[]}}]}",
+      "oracle": "reference",
+      "note": "Version 0 persisted SCP state with every array populated."
+    },
+    {
+      "type": "PersistedScpStateV1",
+      "ios_type": "PersistedSCPStateV1XDR",
+      "xdr": "AAAAAAAAAAA=",
+      "json": "{\"scp_envelopes\":[],\"quorum_sets\":[]}",
+      "oracle": "reference",
+      "note": "Version 1 persisted SCP state with both arrays empty."
+    },
+    {
+      "type": "PersistedScpState",
+      "ios_type": "PersistedSCPStateXDR",
+      "xdr": "AAAAAAAAAAAAAAAAAAAAAA==",
+      "json": "{\"v0\":{\"scp_envelopes\":[],\"quorum_sets\":[],\"tx_sets\":[]}}",
+      "oracle": "reference",
+      "note": "Persisted SCP state at its zero-valued int case."
+    },
+    {
+      "type": "PersistedScpState",
+      "ios_type": "PersistedSCPStateXDR",
+      "xdr": "AAAAAQAAAAEAAAAAAQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHyAAAAAAAAAABwAAAAMBAgMEBQYHCAkKCwwNDg8QERITFBUWFxgZGhscHR4fIAAAAAAAAAAAAAAAAgoLAAAAAAAA",
+      "json": "{\"v1\":{\"scp_envelopes\":[{\"statement\":{\"node_id\":\"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV\",\"slot_index\":\"7\",\"pledges\":{\"nominate\":{\"quorum_set_hash\":\"0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20\",\"votes\":[],\"accepted\":[]}}},\"signature\":\"0a0b\"}],\"quorum_sets\":[]}}",
+      "oracle": "reference",
+      "note": "Persisted SCP state at its non-zero int case."
+    },
+    {
+      "type": "LedgerCloseMetaBatch",
+      "ios_type": "LedgerCloseMetaBatchXDR",
+      "xdr": "/////wAAAAAAAAAA",
+      "json": "{\"start_sequence\":4294967295,\"end_sequence\":0,\"ledger_close_metas\":[]}",
+      "oracle": "reference",
+      "note": "Ledger close meta batch at the unsigned 32-bit maximum sequence."
+    },
+    {
+      "type": "Operation",
+      "ios_type": "OperationXDR",
+      "xdr": "AAAAAAAAAAIAAAAAAAAAAAAAAGQAAAAAAQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHyAAAAABVVNEAAAAAAABAgMEBQYHCAkKCwwNDg8QERITFBUWFxgZGhscHR4fIAAAAAAAAAAyAAAAAA==",
+      "json": "{\"source_account\":null,\"body\":{\"path_payment_strict_receive\":{\"send_asset\":\"native\",\"send_max\":\"100\",\"destination\":\"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV\",\"dest_asset\":{\"credit_alphanum4\":{\"asset_code\":\"USD\",\"issuer\":\"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV\"}},\"dest_amount\":\"50\",\"path\":[]}}}",
+      "oracle": "reference",
+      "note": "Strict receive path payment names its bounds send_max and dest_amount."
+    },
+    {
+      "type": "Operation",
+      "ios_type": "OperationXDR",
+      "xdr": "AAAAAAAAAA0AAAAAAAAAAAAAAGQAAAAAAQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHyAAAAABVVNEAAAAAAABAgMEBQYHCAkKCwwNDg8QERITFBUWFxgZGhscHR4fIAAAAAAAAAAyAAAAAA==",
+      "json": "{\"source_account\":null,\"body\":{\"path_payment_strict_send\":{\"send_asset\":\"native\",\"send_amount\":\"100\",\"destination\":\"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV\",\"dest_asset\":{\"credit_alphanum4\":{\"asset_code\":\"USD\",\"issuer\":\"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV\"}},\"dest_min\":\"50\",\"path\":[]}}}",
+      "oracle": "reference",
+      "note": "Strict send path payment names the same two positions send_amount and dest_min."
+    },
+    {
+      "type": "Operation",
+      "ios_type": "OperationXDR",
+      "xdr": "AAAAAAAAAAMAAAAAAAAAAVVTRAAAAAAAAQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHyAAAAAAAAAABwAAAAEAAAACAAAAAAAAAAA=",
+      "json": "{\"source_account\":null,\"body\":{\"manage_sell_offer\":{\"selling\":\"native\",\"buying\":{\"credit_alphanum4\":{\"asset_code\":\"USD\",\"issuer\":\"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV\"}},\"amount\":\"7\",\"price\":{\"n\":1,\"d\":2},\"offer_id\":\"0\"}}}",
+      "oracle": "reference",
+      "note": "Manage sell offer names its third position amount."
+    },
+    {
+      "type": "Operation",
+      "ios_type": "OperationXDR",
+      "xdr": "AAAAAAAAAAwAAAAAAAAAAVVTRAAAAAAAAQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHyAAAAAAAAAABwAAAAEAAAACAAAAAAAAAAA=",
+      "json": "{\"source_account\":null,\"body\":{\"manage_buy_offer\":{\"selling\":\"native\",\"buying\":{\"credit_alphanum4\":{\"asset_code\":\"USD\",\"issuer\":\"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV\"}},\"buy_amount\":\"7\",\"price\":{\"n\":1,\"d\":2},\"offer_id\":\"0\"}}}",
+      "oracle": "reference",
+      "note": "Manage buy offer names the same position buy_amount."
+    },
+    {
+      "type": "OperationResult",
+      "ios_type": "OperationResultXDR",
+      "xdr": "AAAAAAAAAAL////0",
+      "json": "{\"op_inner\":{\"path_payment_strict_receive\":\"over_sendmax\"}}",
+      "oracle": "reference",
+      "note": "Strict receive result code -12 renders as over_sendmax."
+    },
+    {
+      "type": "OperationResult",
+      "ios_type": "OperationResultXDR",
+      "xdr": "AAAAAAAAAA3////0",
+      "json": "{\"op_inner\":{\"path_payment_strict_send\":\"under_destmin\"}}",
+      "oracle": "reference",
+      "note": "Strict send result code -12 renders as under_destmin."
+    },
+    {
+      "type": "OperationResult",
+      "ios_type": "OperationResultXDR",
+      "xdr": "AAAAAAAAAAIAAAAAAAAAAAAAAAABAgMEBQYHCAkKCwwNDg8QERITFBUWFxgZGhscHR4fIAAAAAFVU0QAAAAAAAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gAAAAAAAAAAU=",
+      "json": "{\"op_inner\":{\"path_payment_strict_receive\":{\"success\":{\"offers\":[],\"last\":{\"destination\":\"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV\",\"asset\":{\"credit_alphanum4\":{\"asset_code\":\"USD\",\"issuer\":\"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV\"}},\"amount\":\"5\"}}}}}",
+      "oracle": "reference",
+      "note": "Strict receive result at its success arm."
+    },
+    {
+      "type": "OperationResult",
+      "ios_type": "OperationResultXDR",
+      "xdr": "AAAAAAAAAA0AAAAAAAAAAAAAAAABAgMEBQYHCAkKCwwNDg8QERITFBUWFxgZGhscHR4fIAAAAAFVU0QAAAAAAAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gAAAAAAAAAAU=",
+      "json": "{\"op_inner\":{\"path_payment_strict_send\":{\"success\":{\"offers\":[],\"last\":{\"destination\":\"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV\",\"asset\":{\"credit_alphanum4\":{\"asset_code\":\"USD\",\"issuer\":\"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV\"}},\"amount\":\"5\"}}}}}",
+      "oracle": "reference",
+      "note": "Strict send result at its success arm."
+    },
+    {
+      "type": "OperationResult",
+      "ios_type": "OperationResultXDR",
+      "xdr": "AAAAAAAAAAL////3AAAAAA==",
+      "json": "{\"op_inner\":{\"path_payment_strict_receive\":{\"no_issuer\":\"native\"}}}",
+      "oracle": "reference",
+      "note": "Strict receive result carrying the offending asset."
+    },
+    {
+      "type": "OperationResult",
+      "ios_type": "OperationResultXDR",
+      "xdr": "AAAAAAAAAA3////3AAAAAVVTRAAAAAAAAQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHyA=",
+      "json": "{\"op_inner\":{\"path_payment_strict_send\":{\"no_issuer\":{\"credit_alphanum4\":{\"asset_code\":\"USD\",\"issuer\":\"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV\"}}}}}",
+      "oracle": "reference",
+      "note": "Strict send result carrying the offending asset."
+    },
+    {
+      "type": "OperationResultTr",
+      "ios_type": "OperationResultXDRTrXDR",
+      "xdr": "AAAAAv////Q=",
+      "json": "{\"path_payment_strict_receive\":\"over_sendmax\"}",
+      "oracle": "reference",
+      "note": "The union that selects each path payment result, at the strict receive arm."
+    },
+    {
+      "type": "OperationResultTr",
+      "ios_type": "OperationResultXDRTrXDR",
+      "xdr": "AAAADf////Q=",
+      "json": "{\"path_payment_strict_send\":\"under_destmin\"}",
+      "oracle": "reference",
+      "note": "The same union at the strict send arm."
+    },
+    {
+      "type": "OperationResultTr",
+      "ios_type": "OperationResultXDRTrXDR",
+      "xdr": "AAAAAwAAAAAAAAAAAAAAAg==",
+      "json": "{\"manage_sell_offer\":{\"success\":{\"offers_claimed\":[],\"offer\":\"deleted\"}}}",
+      "oracle": "reference",
+      "note": "The union that selects each offer result, at the sell arm."
+    },
+    {
+      "type": "OperationResultTr",
+      "ios_type": "OperationResultXDRTrXDR",
+      "xdr": "AAAADAAAAAAAAAAAAAAAAg==",
+      "json": "{\"manage_buy_offer\":{\"success\":{\"offers_claimed\":[],\"offer\":\"deleted\"}}}",
+      "oracle": "reference",
+      "note": "The same union at the buy arm."
+    },
+    {
+      "type": "SimplePaymentResult",
+      "ios_type": "SimplePaymentResultXDR",
+      "xdr": "AAAAAAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gAAAAAVVTRAAAAAAAAQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHyAAAAAAAAAABQ==",
+      "json": "{\"destination\":\"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV\",\"asset\":{\"credit_alphanum4\":{\"asset_code\":\"USD\",\"issuer\":\"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV\"}},\"amount\":\"5\"}",
+      "oracle": "reference",
+      "note": "The payload both path payment success arms carry."
+    },
+    {
+      "type": "ContractEvent",
+      "ios_type": "ContractEventXDR",
+      "xdr": "AAAAAAAAAAEgISIjJCUmJygpKissLS4vMDEyMzQ1Njc4OTo7PD0+PwAAAAIAAAAAAAAAAQAAAA8AAAADbG9nAAAAAAMAAAAH",
+      "json": "{\"ext\":\"v0\",\"contract_id\":\"CAQCCIRDEQSSMJZIFEVCWLBNFYXTAMJSGM2DKNRXHA4TUOZ4HU7D7V6Z\",\"type\":\"diagnostic\",\"body\":{\"v0\":{\"topics\":[{\"symbol\":\"log\"}],\"data\":{\"u32\":7}}}}",
+      "oracle": "reference",
+      "note": "Contract event accepts the escaped spelling of its type key on input.",
+      "input_variants": [
+        "{\"ext\":\"v0\",\"contract_id\":\"CAQCCIRDEQSSMJZIFEVCWLBNFYXTAMJSGM2DKNRXHA4TUOZ4HU7D7V6Z\",\"type_\":\"diagnostic\",\"body\":{\"v0\":{\"topics\":[{\"symbol\":\"log\"}],\"data\":{\"u32\":7}}}}"
+      ]
+    },
+    {
+      "type": "ScSpecUdtStructFieldV0",
+      "ios_type": "SCSpecUDTStructFieldV0XDR",
+      "xdr": "AAAAAWQAAAAAAAAGYW1vdW50AAAAAAAK",
+      "json": "{\"doc\":\"d\",\"name\":\"amount\",\"type\":\"u128\"}",
+      "oracle": "reference",
+      "note": "Struct field spec accepts the escaped spelling of its type key on input.",
+      "input_variants": [
+        "{\"doc\":\"d\",\"name\":\"amount\",\"type_\":\"u128\"}"
+      ]
+    },
+    {
+      "type": "ScSpecUdtUnionCaseTupleV0",
+      "ios_type": "SCSpecUDTUnionCaseTupleV0XDR",
+      "xdr": "AAAAAWQAAAAAAAAEUGFpcgAAAAIAAAATAAAABg==",
+      "json": "{\"doc\":\"d\",\"name\":\"Pair\",\"type\":[\"address\",\"u64\"]}",
+      "oracle": "reference",
+      "note": "Union case tuple spec accepts the escaped spelling of its type key.",
+      "input_variants": [
+        "{\"doc\":\"d\",\"name\":\"Pair\",\"type_\":[\"address\",\"u64\"]}"
+      ]
+    },
+    {
+      "type": "ScSpecFunctionInputV0",
+      "ios_type": "SCSpecFunctionInputV0XDR",
+      "xdr": "AAAAAAAAAAJ0bwAAAAAAEw==",
+      "json": "{\"doc\":\"\",\"name\":\"to\",\"type\":\"address\"}",
+      "oracle": "reference",
+      "note": "Function input spec accepts the escaped spelling of its type key.",
+      "input_variants": [
+        "{\"doc\":\"\",\"name\":\"to\",\"type_\":\"address\"}"
+      ]
+    },
+    {
+      "type": "ScSpecEventParamV0",
+      "ios_type": "SCSpecEventParamV0XDR",
+      "xdr": "AAAAAAAAAAZhbW91bnQAAAAAAAsAAAAB",
+      "json": "{\"doc\":\"\",\"name\":\"amount\",\"type\":\"i128\",\"location\":\"topic_list\"}",
+      "oracle": "reference",
+      "note": "Event parameter spec accepts the escaped spelling of its type key.",
+      "input_variants": [
+        "{\"doc\":\"\",\"name\":\"amount\",\"type_\":\"i128\",\"location\":\"topic_list\"}"
+      ]
+    }
+  ]
+}

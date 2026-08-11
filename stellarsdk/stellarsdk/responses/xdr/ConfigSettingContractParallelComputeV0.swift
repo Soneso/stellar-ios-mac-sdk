@@ -20,3 +20,17 @@ public struct ConfigSettingContractParallelComputeV0: XDRCodable, Sendable {
     try container.encode(ledgerMaxDependentTxClusters)
   }
 }
+
+extension ConfigSettingContractParallelComputeV0: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "ledger_max_dependent_tx_clusters", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.ledgerMaxDependentTxClusters, type: "ConfigSettingContractParallelComputeV0", key: "ledger_max_dependent_tx_clusters")))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> ConfigSettingContractParallelComputeV0 {
+    let members = try XdrJson.object(value, type: "ConfigSettingContractParallelComputeV0", keys: ["ledger_max_dependent_tx_clusters"])
+    let ledgerMaxDependentTxClusters: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "ledger_max_dependent_tx_clusters", type: "ConfigSettingContractParallelComputeV0"), type: "ConfigSettingContractParallelComputeV0", key: "ledger_max_dependent_tx_clusters")
+    return ConfigSettingContractParallelComputeV0(ledgerMaxDependentTxClusters: ledgerMaxDependentTxClusters)
+  }
+}

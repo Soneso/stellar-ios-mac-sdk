@@ -35,3 +35,27 @@ public struct DataEntryXDR: XDRCodable, Sendable {
     try container.encode(reserved)
   }
 }
+
+extension DataEntryXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "account_id", value: try AccountIDXDRJsonCodec.toXdrJsonValue(self.accountID, type: "DataEntryXDR", key: "account_id")))
+    members.append(XdrJsonMember(key: "data_name", value: try String64XDRJsonCodec.toXdrJsonValue(self.dataName, type: "DataEntryXDR", key: "data_name")))
+    members.append(XdrJsonMember(key: "data_value", value: try DataValueXDRJsonCodec.toXdrJsonValue(self.dataValue, type: "DataEntryXDR", key: "data_value")))
+    members.append(XdrJsonMember(key: "ext", value: .string("v0")))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> DataEntryXDR {
+    let members = try XdrJson.object(value, type: "DataEntryXDR", keys: ["account_id", "data_name", "data_value", "ext"])
+    let accountID: PublicKey = try AccountIDXDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "account_id", type: "DataEntryXDR"), type: "DataEntryXDR", key: "account_id")
+    let dataName: String = try String64XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "data_name", type: "DataEntryXDR"), type: "DataEntryXDR", key: "data_name")
+    let dataValue: DataValueXDR = try DataValueXDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "data_value", type: "DataEntryXDR"), type: "DataEntryXDR", key: "data_value")
+    _ = try DataEntryXDRExtXDR.fromXdrJsonValue(try XdrJson.field(members, key: "ext", type: "DataEntryXDR"))
+    return DataEntryXDR(
+      accountID: accountID,
+      dataName: dataName,
+      dataValue: dataValue
+    )
+  }
+}

@@ -20,3 +20,17 @@ public struct SCSpecTypeBytesNXDR: XDRCodable, Sendable {
     try container.encode(n)
   }
 }
+
+extension SCSpecTypeBytesNXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "n", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.n, type: "SCSpecTypeBytesNXDR", key: "n")))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> SCSpecTypeBytesNXDR {
+    let members = try XdrJson.object(value, type: "SCSpecTypeBytesNXDR", keys: ["n"])
+    let n: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "n", type: "SCSpecTypeBytesNXDR"), type: "SCSpecTypeBytesNXDR", key: "n")
+    return SCSpecTypeBytesNXDR(n: n)
+  }
+}

@@ -6,3 +6,20 @@ import Foundation
 public enum OfferEntryFlagsXDR: Int32, XDRCodable, Equatable, Sendable {
   case passiveFlag = 1
 }
+
+extension OfferEntryFlagsXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .passiveFlag: return .string("passive_flag")
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> OfferEntryFlagsXDR {
+    let name = try XdrJson.string(value, type: "OfferEntryFlagsXDR")
+    switch name {
+    case "passive_flag": return .passiveFlag
+    default:
+      throw XdrJsonError.unknownEnumValue(type: "OfferEntryFlagsXDR", value: name)
+    }
+  }
+}

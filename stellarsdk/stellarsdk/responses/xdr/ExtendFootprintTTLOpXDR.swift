@@ -37,3 +37,19 @@ extension ExtendFootprintTTLOpXDR {
     return ExtendFootprintTTLOpXDR(ext: ext, extendTo: extendTo)
   }
 }
+
+extension ExtendFootprintTTLOpXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "ext", value: try self.ext.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "extend_to", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.extendTo, type: "ExtendFootprintTTLOpXDR", key: "extend_to")))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> ExtendFootprintTTLOpXDR {
+    let members = try XdrJson.object(value, type: "ExtendFootprintTTLOpXDR", keys: ["ext", "extend_to"])
+    let ext: ExtensionPoint = try ExtensionPoint.fromXdrJsonValue(try XdrJson.field(members, key: "ext", type: "ExtendFootprintTTLOpXDR"))
+    let extendTo: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "extend_to", type: "ExtendFootprintTTLOpXDR"), type: "ExtendFootprintTTLOpXDR", key: "extend_to")
+    return ExtendFootprintTTLOpXDR(ext: ext, extendTo: extendTo)
+  }
+}

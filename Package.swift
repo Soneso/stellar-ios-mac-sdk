@@ -39,7 +39,8 @@ let package = Package(
             dependencies: ["stellarsdk"],
             path: "stellarsdk/stellarsdkUnitTests",
             resources: [
-                .copy("soroban/soroban_token_contract.wasm")
+                .copy("soroban/soroban_token_contract.wasm"),
+                .copy("sep/xdr_json/corpus.json")
             ]
         ),
         .testTarget(

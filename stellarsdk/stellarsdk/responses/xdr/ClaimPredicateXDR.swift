@@ -155,3 +155,79 @@ extension ClaimPredicateXDR {
     }
   }
 }
+
+extension ClaimPredicateXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .claimPredicateUnconditional: return .string("unconditional")
+    case .claimPredicateAnd(let payload):
+      return .object([XdrJsonMember(key: "and", value: try XdrJson.array(payload.map { element in try element.toXdrJsonValue() }))])
+    case .claimPredicateOr(let payload):
+      return .object([XdrJsonMember(key: "or", value: try XdrJson.array(payload.map { element in try element.toXdrJsonValue() }))])
+    case .claimPredicateNot(let payload):
+      return .object([XdrJsonMember(key: "not", value: try XdrJson.optional(payload.map { element in try element.toXdrJsonValue() }))])
+    case .claimPredicateBeforeAbsTime(let payload):
+      return .object([XdrJsonMember(key: "before_absolute_time", value: try Int64XDRJsonCodec.toXdrJsonValue(payload, type: "ClaimPredicateXDR", key: "before_absolute_time"))])
+    case .claimPredicateBeforeRelTime(let payload):
+      return .object([XdrJsonMember(key: "before_relative_time", value: try Int64XDRJsonCodec.toXdrJsonValue(payload, type: "ClaimPredicateXDR", key: "before_relative_time"))])
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> ClaimPredicateXDR {
+    if case .string(let name) = value {
+      switch name {
+      case "unconditional":
+        return .claimPredicateUnconditional
+      case "and":
+        throw XdrJsonError.invalidValue(type: "ClaimPredicateXDR", key: "and",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "or":
+        throw XdrJsonError.invalidValue(type: "ClaimPredicateXDR", key: "or",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "not":
+        throw XdrJsonError.invalidValue(type: "ClaimPredicateXDR", key: "not",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "before_absolute_time":
+        throw XdrJsonError.invalidValue(type: "ClaimPredicateXDR", key: "before_absolute_time",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "before_relative_time":
+        throw XdrJsonError.invalidValue(type: "ClaimPredicateXDR", key: "before_relative_time",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      default:
+        throw XdrJsonError.unknownUnionArm(type: "ClaimPredicateXDR", key: name)
+      }
+    }
+
+    let member = try XdrJson.singleKeyObject(value, type: "ClaimPredicateXDR")
+    switch member.key {
+    case "unconditional":
+      throw XdrJsonError.invalidValue(type: "ClaimPredicateXDR", key: "unconditional",
+                                      message: "this arm carries no value, so it is written as a bare string")
+    case "and":
+      let claimPredicateAndElements = try XdrJson.array(member.value, type: "ClaimPredicateXDR", key: "and")
+      let claimPredicateAnd: [ClaimPredicateXDR] = try claimPredicateAndElements.map { element in try ClaimPredicateXDR.fromXdrJsonValue(element) }
+      return .claimPredicateAnd(claimPredicateAnd)
+    case "or":
+      let claimPredicateOrElements = try XdrJson.array(member.value, type: "ClaimPredicateXDR", key: "or")
+      let claimPredicateOr: [ClaimPredicateXDR] = try claimPredicateOrElements.map { element in try ClaimPredicateXDR.fromXdrJsonValue(element) }
+      return .claimPredicateOr(claimPredicateOr)
+    case "not":
+      let claimPredicateNotValue = member.value
+      let claimPredicateNot: ClaimPredicateXDR?
+      if claimPredicateNotValue.isNull {
+        claimPredicateNot = nil
+      } else {
+        claimPredicateNot = try ClaimPredicateXDR.fromXdrJsonValue(claimPredicateNotValue)
+      }
+      return .claimPredicateNot(claimPredicateNot)
+    case "before_absolute_time":
+      let claimPredicateBeforeAbsTime: Int64 = try Int64XDRJsonCodec.fromXdrJsonValue(member.value, type: "ClaimPredicateXDR", key: "before_absolute_time")
+      return .claimPredicateBeforeAbsTime(claimPredicateBeforeAbsTime)
+    case "before_relative_time":
+      let claimPredicateBeforeRelTime: Int64 = try Int64XDRJsonCodec.fromXdrJsonValue(member.value, type: "ClaimPredicateXDR", key: "before_relative_time")
+      return .claimPredicateBeforeRelTime(claimPredicateBeforeRelTime)
+    default:
+      throw XdrJsonError.unknownUnionArm(type: "ClaimPredicateXDR", key: member.key)
+    }
+  }
+}

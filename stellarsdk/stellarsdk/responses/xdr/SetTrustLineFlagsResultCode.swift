@@ -11,3 +11,30 @@ public enum SetTrustLineFlagsResultCode: Int32, XDRCodable, Equatable, Sendable 
   case invalidState = -4
   case lowReserve = -5
 }
+
+extension SetTrustLineFlagsResultCode: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .success: return .string("success")
+    case .malformed: return .string("malformed")
+    case .noTrustLine: return .string("no_trust_line")
+    case .cantRevoke: return .string("cant_revoke")
+    case .invalidState: return .string("invalid_state")
+    case .lowReserve: return .string("low_reserve")
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> SetTrustLineFlagsResultCode {
+    let name = try XdrJson.string(value, type: "SetTrustLineFlagsResultCode")
+    switch name {
+    case "success": return .success
+    case "malformed": return .malformed
+    case "no_trust_line": return .noTrustLine
+    case "cant_revoke": return .cantRevoke
+    case "invalid_state": return .invalidState
+    case "low_reserve": return .lowReserve
+    default:
+      throw XdrJsonError.unknownEnumValue(type: "SetTrustLineFlagsResultCode", value: name)
+    }
+  }
+}

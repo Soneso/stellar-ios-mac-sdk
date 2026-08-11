@@ -103,3 +103,64 @@ extension SCValType {
     return try fromTxRepName(raw)
   }
 }
+
+extension SCValType: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .bool: return .string("bool")
+    case .void: return .string("void")
+    case .error: return .string("error")
+    case .u32: return .string("u32")
+    case .i32: return .string("i32")
+    case .u64: return .string("u64")
+    case .i64: return .string("i64")
+    case .timepoint: return .string("timepoint")
+    case .duration: return .string("duration")
+    case .u128: return .string("u128")
+    case .i128: return .string("i128")
+    case .u256: return .string("u256")
+    case .i256: return .string("i256")
+    case .bytes: return .string("bytes")
+    case .string: return .string("string")
+    case .symbol: return .string("symbol")
+    case .vec: return .string("vec")
+    case .map: return .string("map")
+    case .address: return .string("address")
+    case .contractInstance: return .string("contract_instance")
+    case .ledgerKeyContractInstance: return .string("ledger_key_contract_instance")
+    case .ledgerKeyNonce: return .string("ledger_key_nonce")
+    case .executableTag: return .string("executable_tag")
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> SCValType {
+    let name = try XdrJson.string(value, type: "SCValType")
+    switch name {
+    case "bool": return .bool
+    case "void": return .void
+    case "error": return .error
+    case "u32": return .u32
+    case "i32": return .i32
+    case "u64": return .u64
+    case "i64": return .i64
+    case "timepoint": return .timepoint
+    case "duration": return .duration
+    case "u128": return .u128
+    case "i128": return .i128
+    case "u256": return .u256
+    case "i256": return .i256
+    case "bytes": return .bytes
+    case "string": return .string
+    case "symbol": return .symbol
+    case "vec": return .vec
+    case "map": return .map
+    case "address": return .address
+    case "contract_instance": return .contractInstance
+    case "ledger_key_contract_instance": return .ledgerKeyContractInstance
+    case "ledger_key_nonce": return .ledgerKeyNonce
+    case "executable_tag": return .executableTag
+    default:
+      throw XdrJsonError.unknownEnumValue(type: "SCValType", value: name)
+    }
+  }
+}

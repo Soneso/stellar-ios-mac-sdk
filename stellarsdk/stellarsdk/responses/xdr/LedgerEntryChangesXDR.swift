@@ -19,3 +19,15 @@ public struct LedgerEntryChangesXDR: XDRCodable, Sendable {
     try container.encode(ledgerEntryChanges)
   }
 }
+
+extension LedgerEntryChangesXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    return try XdrJson.array(self.ledgerEntryChanges.map { element in try element.toXdrJsonValue() })
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> LedgerEntryChangesXDR {
+    let decodedElements = try XdrJson.array(value, type: "LedgerEntryChangesXDR")
+    let decoded: [LedgerEntryChangeXDR] = try decodedElements.map { element in try LedgerEntryChangeXDR.fromXdrJsonValue(element) }
+    return LedgerEntryChangesXDR(LedgerEntryChanges: decoded)
+  }
+}

@@ -20,3 +20,17 @@ public struct AuthXDR: XDRCodable, Sendable {
     try container.encode(flags)
   }
 }
+
+extension AuthXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "flags", value: XdrJson.int32(self.flags)))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> AuthXDR {
+    let members = try XdrJson.object(value, type: "AuthXDR", keys: ["flags"])
+    let flags: Int32 = try XdrJson.int32(try XdrJson.field(members, key: "flags", type: "AuthXDR"), type: "AuthXDR", key: "flags")
+    return AuthXDR(flags: flags)
+  }
+}

@@ -41,3 +41,39 @@ public enum TransactionExtXDR: XDRCodable, Sendable {
     }
   }
 }
+
+extension TransactionExtXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .void: return .string("v0")
+    case .sorobanTransactionData(let payload):
+      return .object([XdrJsonMember(key: "v1", value: try payload.toXdrJsonValue())])
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> TransactionExtXDR {
+    if case .string(let name) = value {
+      switch name {
+      case "v0":
+        return .void
+      case "v1":
+        throw XdrJsonError.invalidValue(type: "TransactionExtXDR", key: "v1",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      default:
+        throw XdrJsonError.unknownUnionArm(type: "TransactionExtXDR", key: name)
+      }
+    }
+
+    let member = try XdrJson.singleKeyObject(value, type: "TransactionExtXDR")
+    switch member.key {
+    case "v0":
+      throw XdrJsonError.invalidValue(type: "TransactionExtXDR", key: "v0",
+                                      message: "this arm carries no value, so it is written as a bare string")
+    case "v1":
+      let sorobanTransactionData: SorobanTransactionDataXDR = try SorobanTransactionDataXDR.fromXdrJsonValue(member.value)
+      return .sorobanTransactionData(sorobanTransactionData)
+    default:
+      throw XdrJsonError.unknownUnionArm(type: "TransactionExtXDR", key: member.key)
+    }
+  }
+}

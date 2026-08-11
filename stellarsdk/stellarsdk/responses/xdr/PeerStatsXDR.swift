@@ -92,3 +92,61 @@ public struct PeerStatsXDR: XDRCodable, Sendable {
     try container.encode(duplicateFetchMessageRecv)
   }
 }
+
+extension PeerStatsXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "id", value: try NodeIDXDRJsonCodec.toXdrJsonValue(self.id, type: "PeerStatsXDR", key: "id")))
+    members.append(XdrJsonMember(key: "version_str", value: XdrJson.escapedString(self.versionStr)))
+    members.append(XdrJsonMember(key: "messages_read", value: try Uint64XDRJsonCodec.toXdrJsonValue(self.messagesRead, type: "PeerStatsXDR", key: "messages_read")))
+    members.append(XdrJsonMember(key: "messages_written", value: try Uint64XDRJsonCodec.toXdrJsonValue(self.messagesWritten, type: "PeerStatsXDR", key: "messages_written")))
+    members.append(XdrJsonMember(key: "bytes_read", value: try Uint64XDRJsonCodec.toXdrJsonValue(self.bytesRead, type: "PeerStatsXDR", key: "bytes_read")))
+    members.append(XdrJsonMember(key: "bytes_written", value: try Uint64XDRJsonCodec.toXdrJsonValue(self.bytesWritten, type: "PeerStatsXDR", key: "bytes_written")))
+    members.append(XdrJsonMember(key: "seconds_connected", value: try Uint64XDRJsonCodec.toXdrJsonValue(self.secondsConnected, type: "PeerStatsXDR", key: "seconds_connected")))
+    members.append(XdrJsonMember(key: "unique_flood_bytes_recv", value: try Uint64XDRJsonCodec.toXdrJsonValue(self.uniqueFloodBytesRecv, type: "PeerStatsXDR", key: "unique_flood_bytes_recv")))
+    members.append(XdrJsonMember(key: "duplicate_flood_bytes_recv", value: try Uint64XDRJsonCodec.toXdrJsonValue(self.duplicateFloodBytesRecv, type: "PeerStatsXDR", key: "duplicate_flood_bytes_recv")))
+    members.append(XdrJsonMember(key: "unique_fetch_bytes_recv", value: try Uint64XDRJsonCodec.toXdrJsonValue(self.uniqueFetchBytesRecv, type: "PeerStatsXDR", key: "unique_fetch_bytes_recv")))
+    members.append(XdrJsonMember(key: "duplicate_fetch_bytes_recv", value: try Uint64XDRJsonCodec.toXdrJsonValue(self.duplicateFetchBytesRecv, type: "PeerStatsXDR", key: "duplicate_fetch_bytes_recv")))
+    members.append(XdrJsonMember(key: "unique_flood_message_recv", value: try Uint64XDRJsonCodec.toXdrJsonValue(self.uniqueFloodMessageRecv, type: "PeerStatsXDR", key: "unique_flood_message_recv")))
+    members.append(XdrJsonMember(key: "duplicate_flood_message_recv", value: try Uint64XDRJsonCodec.toXdrJsonValue(self.duplicateFloodMessageRecv, type: "PeerStatsXDR", key: "duplicate_flood_message_recv")))
+    members.append(XdrJsonMember(key: "unique_fetch_message_recv", value: try Uint64XDRJsonCodec.toXdrJsonValue(self.uniqueFetchMessageRecv, type: "PeerStatsXDR", key: "unique_fetch_message_recv")))
+    members.append(XdrJsonMember(key: "duplicate_fetch_message_recv", value: try Uint64XDRJsonCodec.toXdrJsonValue(self.duplicateFetchMessageRecv, type: "PeerStatsXDR", key: "duplicate_fetch_message_recv")))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> PeerStatsXDR {
+    let members = try XdrJson.object(value, type: "PeerStatsXDR", keys: ["id", "version_str", "messages_read", "messages_written", "bytes_read", "bytes_written", "seconds_connected", "unique_flood_bytes_recv", "duplicate_flood_bytes_recv", "unique_fetch_bytes_recv", "duplicate_fetch_bytes_recv", "unique_flood_message_recv", "duplicate_flood_message_recv", "unique_fetch_message_recv", "duplicate_fetch_message_recv"])
+    let id: NodeIDXDR = try NodeIDXDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "id", type: "PeerStatsXDR"), type: "PeerStatsXDR", key: "id")
+    let versionStr: String = try XdrJson.unescapedText(try XdrJson.field(members, key: "version_str", type: "PeerStatsXDR"), type: "PeerStatsXDR", key: "version_str")
+    let messagesRead: UInt64 = try Uint64XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "messages_read", type: "PeerStatsXDR"), type: "PeerStatsXDR", key: "messages_read")
+    let messagesWritten: UInt64 = try Uint64XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "messages_written", type: "PeerStatsXDR"), type: "PeerStatsXDR", key: "messages_written")
+    let bytesRead: UInt64 = try Uint64XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "bytes_read", type: "PeerStatsXDR"), type: "PeerStatsXDR", key: "bytes_read")
+    let bytesWritten: UInt64 = try Uint64XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "bytes_written", type: "PeerStatsXDR"), type: "PeerStatsXDR", key: "bytes_written")
+    let secondsConnected: UInt64 = try Uint64XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "seconds_connected", type: "PeerStatsXDR"), type: "PeerStatsXDR", key: "seconds_connected")
+    let uniqueFloodBytesRecv: UInt64 = try Uint64XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "unique_flood_bytes_recv", type: "PeerStatsXDR"), type: "PeerStatsXDR", key: "unique_flood_bytes_recv")
+    let duplicateFloodBytesRecv: UInt64 = try Uint64XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "duplicate_flood_bytes_recv", type: "PeerStatsXDR"), type: "PeerStatsXDR", key: "duplicate_flood_bytes_recv")
+    let uniqueFetchBytesRecv: UInt64 = try Uint64XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "unique_fetch_bytes_recv", type: "PeerStatsXDR"), type: "PeerStatsXDR", key: "unique_fetch_bytes_recv")
+    let duplicateFetchBytesRecv: UInt64 = try Uint64XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "duplicate_fetch_bytes_recv", type: "PeerStatsXDR"), type: "PeerStatsXDR", key: "duplicate_fetch_bytes_recv")
+    let uniqueFloodMessageRecv: UInt64 = try Uint64XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "unique_flood_message_recv", type: "PeerStatsXDR"), type: "PeerStatsXDR", key: "unique_flood_message_recv")
+    let duplicateFloodMessageRecv: UInt64 = try Uint64XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "duplicate_flood_message_recv", type: "PeerStatsXDR"), type: "PeerStatsXDR", key: "duplicate_flood_message_recv")
+    let uniqueFetchMessageRecv: UInt64 = try Uint64XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "unique_fetch_message_recv", type: "PeerStatsXDR"), type: "PeerStatsXDR", key: "unique_fetch_message_recv")
+    let duplicateFetchMessageRecv: UInt64 = try Uint64XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "duplicate_fetch_message_recv", type: "PeerStatsXDR"), type: "PeerStatsXDR", key: "duplicate_fetch_message_recv")
+    return PeerStatsXDR(
+      id: id,
+      versionStr: versionStr,
+      messagesRead: messagesRead,
+      messagesWritten: messagesWritten,
+      bytesRead: bytesRead,
+      bytesWritten: bytesWritten,
+      secondsConnected: secondsConnected,
+      uniqueFloodBytesRecv: uniqueFloodBytesRecv,
+      duplicateFloodBytesRecv: duplicateFloodBytesRecv,
+      uniqueFetchBytesRecv: uniqueFetchBytesRecv,
+      duplicateFetchBytesRecv: duplicateFetchBytesRecv,
+      uniqueFloodMessageRecv: uniqueFloodMessageRecv,
+      duplicateFloodMessageRecv: duplicateFloodMessageRecv,
+      uniqueFetchMessageRecv: uniqueFetchMessageRecv,
+      duplicateFetchMessageRecv: duplicateFetchMessageRecv
+    )
+  }
+}

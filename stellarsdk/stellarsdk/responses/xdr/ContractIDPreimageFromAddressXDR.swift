@@ -37,3 +37,19 @@ extension ContractIDPreimageFromAddressXDR {
     return ContractIDPreimageFromAddressXDR(address: address, salt: salt)
   }
 }
+
+extension ContractIDPreimageFromAddressXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "address", value: try self.address.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "salt", value: try Uint256XDRJsonCodec.toXdrJsonValue(self.salt, type: "ContractIDPreimageFromAddressXDR", key: "salt")))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> ContractIDPreimageFromAddressXDR {
+    let members = try XdrJson.object(value, type: "ContractIDPreimageFromAddressXDR", keys: ["address", "salt"])
+    let address: SCAddressXDR = try SCAddressXDR.fromXdrJsonValue(try XdrJson.field(members, key: "address", type: "ContractIDPreimageFromAddressXDR"))
+    let salt: Uint256XDR = try Uint256XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "salt", type: "ContractIDPreimageFromAddressXDR"), type: "ContractIDPreimageFromAddressXDR", key: "salt")
+    return ContractIDPreimageFromAddressXDR(address: address, salt: salt)
+  }
+}

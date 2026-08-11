@@ -56,3 +56,21 @@ extension TransactionV0XDRExtXDR {
     }
   }
 }
+
+extension TransactionV0XDRExtXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .void: return .string("v0")
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> TransactionV0XDRExtXDR {
+    let name = try XdrJson.string(value, type: "TransactionV0XDRExtXDR")
+    switch name {
+    case "v0":
+      return .void
+    default:
+      throw XdrJsonError.unknownUnionArm(type: "TransactionV0XDRExtXDR", key: name)
+    }
+  }
+}

@@ -20,3 +20,17 @@ public struct HmacSha256KeyXDR: XDRCodable, Sendable {
     try container.encode(key)
   }
 }
+
+extension HmacSha256KeyXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "key", value: try XdrJson.hex(self.key.wrapped, expectedLength: 32, type: "HmacSha256KeyXDR", key: "key")))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> HmacSha256KeyXDR {
+    let members = try XdrJson.object(value, type: "HmacSha256KeyXDR", keys: ["key"])
+    let key: WrappedData32 = WrappedData32(try XdrJson.hex(try XdrJson.field(members, key: "key", type: "HmacSha256KeyXDR"), expectedLength: 32, type: "HmacSha256KeyXDR", key: "key"))
+    return HmacSha256KeyXDR(key: key)
+  }
+}

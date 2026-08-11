@@ -9,3 +9,26 @@ public enum AccountFlags: Int32, XDRCodable, Equatable, Sendable {
   case immutableFlag = 4
   case clawbackEnabledFlag = 8
 }
+
+extension AccountFlags: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .requiredFlag: return .string("required_flag")
+    case .revocableFlag: return .string("revocable_flag")
+    case .immutableFlag: return .string("immutable_flag")
+    case .clawbackEnabledFlag: return .string("clawback_enabled_flag")
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> AccountFlags {
+    let name = try XdrJson.string(value, type: "AccountFlags")
+    switch name {
+    case "required_flag": return .requiredFlag
+    case "revocable_flag": return .revocableFlag
+    case "immutable_flag": return .immutableFlag
+    case "clawback_enabled_flag": return .clawbackEnabledFlag
+    default:
+      throw XdrJsonError.unknownEnumValue(type: "AccountFlags", value: name)
+    }
+  }
+}

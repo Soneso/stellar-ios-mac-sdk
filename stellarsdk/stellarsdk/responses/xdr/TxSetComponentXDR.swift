@@ -35,3 +35,33 @@ public enum TxSetComponentXDR: XDRCodable, Sendable {
     }
   }
 }
+
+extension TxSetComponentXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .txsMaybeDiscountedFee(let payload):
+      return .object([XdrJsonMember(key: "txset_comp_txs_maybe_discounted_fee", value: try payload.toXdrJsonValue())])
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> TxSetComponentXDR {
+    if case .string(let name) = value {
+      switch name {
+      case "txset_comp_txs_maybe_discounted_fee":
+        throw XdrJsonError.invalidValue(type: "TxSetComponentXDR", key: "txset_comp_txs_maybe_discounted_fee",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      default:
+        throw XdrJsonError.unknownUnionArm(type: "TxSetComponentXDR", key: name)
+      }
+    }
+
+    let member = try XdrJson.singleKeyObject(value, type: "TxSetComponentXDR")
+    switch member.key {
+    case "txset_comp_txs_maybe_discounted_fee":
+      let txsMaybeDiscountedFee: TxSetComponentXDRTxsMaybeDiscountedFeeXDR = try TxSetComponentXDRTxsMaybeDiscountedFeeXDR.fromXdrJsonValue(member.value)
+      return .txsMaybeDiscountedFee(txsMaybeDiscountedFee)
+    default:
+      throw XdrJsonError.unknownUnionArm(type: "TxSetComponentXDR", key: member.key)
+    }
+  }
+}

@@ -52,3 +52,38 @@ public struct TransactionMetaV3XDR: XDRCodable, Sendable {
     }
   }
 }
+
+extension TransactionMetaV3XDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "ext", value: try self.ext.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "tx_changes_before", value: try self.txChangesBefore.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "operations", value: try XdrJson.array(self.operations.map { element in try element.toXdrJsonValue() })))
+    members.append(XdrJsonMember(key: "tx_changes_after", value: try self.txChangesAfter.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "soroban_meta", value: try XdrJson.optional(self.sorobanMeta.map { element in try element.toXdrJsonValue() })))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> TransactionMetaV3XDR {
+    let members = try XdrJson.object(value, type: "TransactionMetaV3XDR", keys: ["ext", "tx_changes_before", "operations", "tx_changes_after", "soroban_meta"])
+    let ext: ExtensionPoint = try ExtensionPoint.fromXdrJsonValue(try XdrJson.field(members, key: "ext", type: "TransactionMetaV3XDR"))
+    let txChangesBefore: LedgerEntryChangesXDR = try LedgerEntryChangesXDR.fromXdrJsonValue(try XdrJson.field(members, key: "tx_changes_before", type: "TransactionMetaV3XDR"))
+    let operationsElements = try XdrJson.array(try XdrJson.field(members, key: "operations", type: "TransactionMetaV3XDR"), type: "TransactionMetaV3XDR", key: "operations")
+    let operations: [OperationMetaXDR] = try operationsElements.map { element in try OperationMetaXDR.fromXdrJsonValue(element) }
+    let txChangesAfter: LedgerEntryChangesXDR = try LedgerEntryChangesXDR.fromXdrJsonValue(try XdrJson.field(members, key: "tx_changes_after", type: "TransactionMetaV3XDR"))
+    let sorobanMetaValue = try XdrJson.field(members, key: "soroban_meta", type: "TransactionMetaV3XDR")
+    let sorobanMeta: SorobanTransactionMetaXDR?
+    if sorobanMetaValue.isNull {
+      sorobanMeta = nil
+    } else {
+      sorobanMeta = try SorobanTransactionMetaXDR.fromXdrJsonValue(sorobanMetaValue)
+    }
+    return TransactionMetaV3XDR(
+      ext: ext,
+      txChangesBefore: txChangesBefore,
+      operations: operations,
+      txChangesAfter: txChangesAfter,
+      sorobanMeta: sorobanMeta
+    )
+  }
+}

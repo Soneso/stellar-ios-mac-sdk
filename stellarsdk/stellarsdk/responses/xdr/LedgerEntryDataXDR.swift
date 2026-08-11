@@ -98,3 +98,105 @@ public enum LedgerEntryDataXDR: XDRCodable, Sendable {
     }
   }
 }
+
+extension LedgerEntryDataXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .account(let payload):
+      return .object([XdrJsonMember(key: "account", value: try payload.toXdrJsonValue())])
+    case .trustline(let payload):
+      return .object([XdrJsonMember(key: "trustline", value: try payload.toXdrJsonValue())])
+    case .offer(let payload):
+      return .object([XdrJsonMember(key: "offer", value: try payload.toXdrJsonValue())])
+    case .data(let payload):
+      return .object([XdrJsonMember(key: "data", value: try payload.toXdrJsonValue())])
+    case .claimableBalance(let payload):
+      return .object([XdrJsonMember(key: "claimable_balance", value: try payload.toXdrJsonValue())])
+    case .liquidityPool(let payload):
+      return .object([XdrJsonMember(key: "liquidity_pool", value: try payload.toXdrJsonValue())])
+    case .contractData(let payload):
+      return .object([XdrJsonMember(key: "contract_data", value: try payload.toXdrJsonValue())])
+    case .contractCode(let payload):
+      return .object([XdrJsonMember(key: "contract_code", value: try payload.toXdrJsonValue())])
+    case .configSetting(let payload):
+      return .object([XdrJsonMember(key: "config_setting", value: try payload.toXdrJsonValue())])
+    case .ttl(let payload):
+      return .object([XdrJsonMember(key: "ttl", value: try payload.toXdrJsonValue())])
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> LedgerEntryDataXDR {
+    if case .string(let name) = value {
+      switch name {
+      case "account":
+        throw XdrJsonError.invalidValue(type: "LedgerEntryDataXDR", key: "account",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "trustline":
+        throw XdrJsonError.invalidValue(type: "LedgerEntryDataXDR", key: "trustline",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "offer":
+        throw XdrJsonError.invalidValue(type: "LedgerEntryDataXDR", key: "offer",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "data":
+        throw XdrJsonError.invalidValue(type: "LedgerEntryDataXDR", key: "data",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "claimable_balance":
+        throw XdrJsonError.invalidValue(type: "LedgerEntryDataXDR", key: "claimable_balance",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "liquidity_pool":
+        throw XdrJsonError.invalidValue(type: "LedgerEntryDataXDR", key: "liquidity_pool",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "contract_data":
+        throw XdrJsonError.invalidValue(type: "LedgerEntryDataXDR", key: "contract_data",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "contract_code":
+        throw XdrJsonError.invalidValue(type: "LedgerEntryDataXDR", key: "contract_code",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "config_setting":
+        throw XdrJsonError.invalidValue(type: "LedgerEntryDataXDR", key: "config_setting",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "ttl":
+        throw XdrJsonError.invalidValue(type: "LedgerEntryDataXDR", key: "ttl",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      default:
+        throw XdrJsonError.unknownUnionArm(type: "LedgerEntryDataXDR", key: name)
+      }
+    }
+
+    let member = try XdrJson.singleKeyObject(value, type: "LedgerEntryDataXDR")
+    switch member.key {
+    case "account":
+      let account: AccountEntryXDR = try AccountEntryXDR.fromXdrJsonValue(member.value)
+      return .account(account)
+    case "trustline":
+      let trustline: TrustlineEntryXDR = try TrustlineEntryXDR.fromXdrJsonValue(member.value)
+      return .trustline(trustline)
+    case "offer":
+      let offer: OfferEntryXDR = try OfferEntryXDR.fromXdrJsonValue(member.value)
+      return .offer(offer)
+    case "data":
+      let data: DataEntryXDR = try DataEntryXDR.fromXdrJsonValue(member.value)
+      return .data(data)
+    case "claimable_balance":
+      let claimableBalance: ClaimableBalanceEntryXDR = try ClaimableBalanceEntryXDR.fromXdrJsonValue(member.value)
+      return .claimableBalance(claimableBalance)
+    case "liquidity_pool":
+      let liquidityPool: LiquidityPoolEntryXDR = try LiquidityPoolEntryXDR.fromXdrJsonValue(member.value)
+      return .liquidityPool(liquidityPool)
+    case "contract_data":
+      let contractData: ContractDataEntryXDR = try ContractDataEntryXDR.fromXdrJsonValue(member.value)
+      return .contractData(contractData)
+    case "contract_code":
+      let contractCode: ContractCodeEntryXDR = try ContractCodeEntryXDR.fromXdrJsonValue(member.value)
+      return .contractCode(contractCode)
+    case "config_setting":
+      let configSetting: ConfigSettingEntryXDR = try ConfigSettingEntryXDR.fromXdrJsonValue(member.value)
+      return .configSetting(configSetting)
+    case "ttl":
+      let ttl: TTLEntryXDR = try TTLEntryXDR.fromXdrJsonValue(member.value)
+      return .ttl(ttl)
+    default:
+      throw XdrJsonError.unknownUnionArm(type: "LedgerEntryDataXDR", key: member.key)
+    }
+  }
+}

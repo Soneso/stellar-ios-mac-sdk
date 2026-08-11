@@ -37,3 +37,19 @@ extension LedgerKeyDataXDR {
     return LedgerKeyDataXDR(accountID: accountID, dataName: dataName)
   }
 }
+
+extension LedgerKeyDataXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "account_id", value: try AccountIDXDRJsonCodec.toXdrJsonValue(self.accountID, type: "LedgerKeyDataXDR", key: "account_id")))
+    members.append(XdrJsonMember(key: "data_name", value: try String64XDRJsonCodec.toXdrJsonValue(self.dataName, type: "LedgerKeyDataXDR", key: "data_name")))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> LedgerKeyDataXDR {
+    let members = try XdrJson.object(value, type: "LedgerKeyDataXDR", keys: ["account_id", "data_name"])
+    let accountID: PublicKey = try AccountIDXDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "account_id", type: "LedgerKeyDataXDR"), type: "LedgerKeyDataXDR", key: "account_id")
+    let dataName: String = try String64XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "data_name", type: "LedgerKeyDataXDR"), type: "LedgerKeyDataXDR", key: "data_name")
+    return LedgerKeyDataXDR(accountID: accountID, dataName: dataName)
+  }
+}

@@ -40,3 +40,22 @@ extension ContractDataDurability {
     return try fromTxRepName(raw)
   }
 }
+
+extension ContractDataDurability: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .temporary: return .string("temporary")
+    case .persistent: return .string("persistent")
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> ContractDataDurability {
+    let name = try XdrJson.string(value, type: "ContractDataDurability")
+    switch name {
+    case "temporary": return .temporary
+    case "persistent": return .persistent
+    default:
+      throw XdrJsonError.unknownEnumValue(type: "ContractDataDurability", value: name)
+    }
+  }
+}

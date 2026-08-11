@@ -42,3 +42,41 @@ public enum StoredTransactionSetXDR: XDRCodable, Sendable {
     }
   }
 }
+
+extension StoredTransactionSetXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .txSet(let payload):
+      return .object([XdrJsonMember(key: "v0", value: try payload.toXdrJsonValue())])
+    case .generalizedTxSet(let payload):
+      return .object([XdrJsonMember(key: "v1", value: try payload.toXdrJsonValue())])
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> StoredTransactionSetXDR {
+    if case .string(let name) = value {
+      switch name {
+      case "v0":
+        throw XdrJsonError.invalidValue(type: "StoredTransactionSetXDR", key: "v0",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "v1":
+        throw XdrJsonError.invalidValue(type: "StoredTransactionSetXDR", key: "v1",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      default:
+        throw XdrJsonError.unknownUnionArm(type: "StoredTransactionSetXDR", key: name)
+      }
+    }
+
+    let member = try XdrJson.singleKeyObject(value, type: "StoredTransactionSetXDR")
+    switch member.key {
+    case "v0":
+      let txSet: TransactionSetXDR = try TransactionSetXDR.fromXdrJsonValue(member.value)
+      return .txSet(txSet)
+    case "v1":
+      let generalizedTxSet: GeneralizedTransactionSetXDR = try GeneralizedTransactionSetXDR.fromXdrJsonValue(member.value)
+      return .generalizedTxSet(generalizedTxSet)
+    default:
+      throw XdrJsonError.unknownUnionArm(type: "StoredTransactionSetXDR", key: member.key)
+    }
+  }
+}

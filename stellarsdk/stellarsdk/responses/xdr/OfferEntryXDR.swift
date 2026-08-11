@@ -55,3 +55,39 @@ public struct OfferEntryXDR: XDRCodable, Sendable {
     try container.encode(reserved)
   }
 }
+
+extension OfferEntryXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "seller_id", value: try AccountIDXDRJsonCodec.toXdrJsonValue(self.sellerID, type: "OfferEntryXDR", key: "seller_id")))
+    members.append(XdrJsonMember(key: "offer_id", value: XdrJson.int64(Int64(bitPattern: self.offerID))))
+    members.append(XdrJsonMember(key: "selling", value: try self.selling.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "buying", value: try self.buying.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "amount", value: try Int64XDRJsonCodec.toXdrJsonValue(self.amount, type: "OfferEntryXDR", key: "amount")))
+    members.append(XdrJsonMember(key: "price", value: try self.price.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "flags", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.flags, type: "OfferEntryXDR", key: "flags")))
+    members.append(XdrJsonMember(key: "ext", value: .string("v0")))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> OfferEntryXDR {
+    let members = try XdrJson.object(value, type: "OfferEntryXDR", keys: ["seller_id", "offer_id", "selling", "buying", "amount", "price", "flags", "ext"])
+    let sellerID: PublicKey = try AccountIDXDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "seller_id", type: "OfferEntryXDR"), type: "OfferEntryXDR", key: "seller_id")
+    let offerID: UInt64 = UInt64(bitPattern: try XdrJson.int64(try XdrJson.field(members, key: "offer_id", type: "OfferEntryXDR"), type: "OfferEntryXDR", key: "offer_id"))
+    let selling: AssetXDR = try AssetXDR.fromXdrJsonValue(try XdrJson.field(members, key: "selling", type: "OfferEntryXDR"))
+    let buying: AssetXDR = try AssetXDR.fromXdrJsonValue(try XdrJson.field(members, key: "buying", type: "OfferEntryXDR"))
+    let amount: Int64 = try Int64XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "amount", type: "OfferEntryXDR"), type: "OfferEntryXDR", key: "amount")
+    let price: PriceXDR = try PriceXDR.fromXdrJsonValue(try XdrJson.field(members, key: "price", type: "OfferEntryXDR"))
+    let flags: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "flags", type: "OfferEntryXDR"), type: "OfferEntryXDR", key: "flags")
+    _ = try OfferEntryXDRExtXDR.fromXdrJsonValue(try XdrJson.field(members, key: "ext", type: "OfferEntryXDR"))
+    return OfferEntryXDR(
+      sellerID: sellerID,
+      offerID: offerID,
+      selling: selling,
+      buying: buying,
+      amount: amount,
+      price: price,
+      flags: flags
+    )
+  }
+}

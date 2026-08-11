@@ -57,3 +57,25 @@ extension OperationXDR {
     return OperationXDR(sourceAccount: sourceAccount, body: body)
   }
 }
+
+extension OperationXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "source_account", value: try XdrJson.optional(self.sourceAccount.map { element in try element.toXdrJsonValue() })))
+    members.append(XdrJsonMember(key: "body", value: try self.body.toXdrJsonValue()))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> OperationXDR {
+    let members = try XdrJson.object(value, type: "OperationXDR", keys: ["source_account", "body"])
+    let sourceAccountValue = try XdrJson.field(members, key: "source_account", type: "OperationXDR")
+    let sourceAccount: MuxedAccountXDR?
+    if sourceAccountValue.isNull {
+      sourceAccount = nil
+    } else {
+      sourceAccount = try MuxedAccountXDR.fromXdrJsonValue(sourceAccountValue)
+    }
+    let body: OperationBodyXDR = try OperationBodyXDR.fromXdrJsonValue(try XdrJson.field(members, key: "body", type: "OperationXDR"))
+    return OperationXDR(sourceAccount: sourceAccount, body: body)
+  }
+}

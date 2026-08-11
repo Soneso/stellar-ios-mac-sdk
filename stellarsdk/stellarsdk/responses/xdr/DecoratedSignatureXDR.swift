@@ -37,3 +37,19 @@ extension DecoratedSignatureXDR {
     return DecoratedSignatureXDR(hint: hint, signature: signature)
   }
 }
+
+extension DecoratedSignatureXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "hint", value: try SignatureHintXDRJsonCodec.toXdrJsonValue(self.hint, type: "DecoratedSignatureXDR", key: "hint")))
+    members.append(XdrJsonMember(key: "signature", value: try SignatureXDRJsonCodec.toXdrJsonValue(self.signature, type: "DecoratedSignatureXDR", key: "signature")))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> DecoratedSignatureXDR {
+    let members = try XdrJson.object(value, type: "DecoratedSignatureXDR", keys: ["hint", "signature"])
+    let hint: SignatureHintXDR = try SignatureHintXDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "hint", type: "DecoratedSignatureXDR"), type: "DecoratedSignatureXDR", key: "hint")
+    let signature: SignatureXDR = try SignatureXDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "signature", type: "DecoratedSignatureXDR"), type: "DecoratedSignatureXDR", key: "signature")
+    return DecoratedSignatureXDR(hint: hint, signature: signature)
+  }
+}

@@ -24,3 +24,20 @@ public struct SCPHistoryEntryV0XDR: XDRCodable, Sendable {
     try container.encode(ledgerMessages)
   }
 }
+
+extension SCPHistoryEntryV0XDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "quorum_sets", value: try XdrJson.array(self.quorumSets.map { element in try element.toXdrJsonValue() })))
+    members.append(XdrJsonMember(key: "ledger_messages", value: try self.ledgerMessages.toXdrJsonValue()))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> SCPHistoryEntryV0XDR {
+    let members = try XdrJson.object(value, type: "SCPHistoryEntryV0XDR", keys: ["quorum_sets", "ledger_messages"])
+    let quorumSetsElements = try XdrJson.array(try XdrJson.field(members, key: "quorum_sets", type: "SCPHistoryEntryV0XDR"), type: "SCPHistoryEntryV0XDR", key: "quorum_sets")
+    let quorumSets: [SCPQuorumSetXDR] = try quorumSetsElements.map { element in try SCPQuorumSetXDR.fromXdrJsonValue(element) }
+    let ledgerMessages: LedgerSCPMessagesXDR = try LedgerSCPMessagesXDR.fromXdrJsonValue(try XdrJson.field(members, key: "ledger_messages", type: "SCPHistoryEntryV0XDR"))
+    return SCPHistoryEntryV0XDR(quorumSets: quorumSets, ledgerMessages: ledgerMessages)
+  }
+}

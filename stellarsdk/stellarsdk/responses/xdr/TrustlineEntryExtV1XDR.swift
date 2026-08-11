@@ -41,3 +41,39 @@ public enum TrustlineEntryExtV1XDR: XDRCodable, Sendable {
     }
   }
 }
+
+extension TrustlineEntryExtV1XDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .void: return .string("v0")
+    case .trustlineEntryExtensionV2(let payload):
+      return .object([XdrJsonMember(key: "v2", value: try payload.toXdrJsonValue())])
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> TrustlineEntryExtV1XDR {
+    if case .string(let name) = value {
+      switch name {
+      case "v0":
+        return .void
+      case "v2":
+        throw XdrJsonError.invalidValue(type: "TrustlineEntryExtV1XDR", key: "v2",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      default:
+        throw XdrJsonError.unknownUnionArm(type: "TrustlineEntryExtV1XDR", key: name)
+      }
+    }
+
+    let member = try XdrJson.singleKeyObject(value, type: "TrustlineEntryExtV1XDR")
+    switch member.key {
+    case "v0":
+      throw XdrJsonError.invalidValue(type: "TrustlineEntryExtV1XDR", key: "v0",
+                                      message: "this arm carries no value, so it is written as a bare string")
+    case "v2":
+      let trustlineEntryExtensionV2: TrustlineEntryExtensionV2 = try TrustlineEntryExtensionV2.fromXdrJsonValue(member.value)
+      return .trustlineEntryExtensionV2(trustlineEntryExtensionV2)
+    default:
+      throw XdrJsonError.unknownUnionArm(type: "TrustlineEntryExtV1XDR", key: member.key)
+    }
+  }
+}

@@ -175,3 +175,194 @@ public enum ConfigSettingEntryXDR: XDRCodable, Sendable {
     }
   }
 }
+
+extension ConfigSettingEntryXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .contractMaxSizeBytes(let payload):
+      return .object([XdrJsonMember(key: "contract_max_size_bytes", value: try Uint32XDRJsonCodec.toXdrJsonValue(payload, type: "ConfigSettingEntryXDR", key: "contract_max_size_bytes"))])
+    case .contractCompute(let payload):
+      return .object([XdrJsonMember(key: "contract_compute_v0", value: try payload.toXdrJsonValue())])
+    case .contractLedgerCost(let payload):
+      return .object([XdrJsonMember(key: "contract_ledger_cost_v0", value: try payload.toXdrJsonValue())])
+    case .contractHistoricalData(let payload):
+      return .object([XdrJsonMember(key: "contract_historical_data_v0", value: try payload.toXdrJsonValue())])
+    case .contractEvents(let payload):
+      return .object([XdrJsonMember(key: "contract_events_v0", value: try payload.toXdrJsonValue())])
+    case .contractBandwidth(let payload):
+      return .object([XdrJsonMember(key: "contract_bandwidth_v0", value: try payload.toXdrJsonValue())])
+    case .contractCostParamsCpuInsns(let payload):
+      return .object([XdrJsonMember(key: "contract_cost_params_cpu_instructions", value: try payload.toXdrJsonValue())])
+    case .contractCostParamsMemBytes(let payload):
+      return .object([XdrJsonMember(key: "contract_cost_params_memory_bytes", value: try payload.toXdrJsonValue())])
+    case .contractDataKeySizeBytes(let payload):
+      return .object([XdrJsonMember(key: "contract_data_key_size_bytes", value: try Uint32XDRJsonCodec.toXdrJsonValue(payload, type: "ConfigSettingEntryXDR", key: "contract_data_key_size_bytes"))])
+    case .contractDataEntrySizeBytes(let payload):
+      return .object([XdrJsonMember(key: "contract_data_entry_size_bytes", value: try Uint32XDRJsonCodec.toXdrJsonValue(payload, type: "ConfigSettingEntryXDR", key: "contract_data_entry_size_bytes"))])
+    case .stateArchivalSettings(let payload):
+      return .object([XdrJsonMember(key: "state_archival", value: try payload.toXdrJsonValue())])
+    case .contractExecutionLanes(let payload):
+      return .object([XdrJsonMember(key: "contract_execution_lanes", value: try payload.toXdrJsonValue())])
+    case .liveSorobanStateSizeWindow(let payload):
+      return .object([XdrJsonMember(key: "live_soroban_state_size_window", value: try XdrJson.array(payload.map { element in try Uint64XDRJsonCodec.toXdrJsonValue(element, type: "ConfigSettingEntryXDR", key: "live_soroban_state_size_window") }))])
+    case .evictionIterator(let payload):
+      return .object([XdrJsonMember(key: "eviction_iterator", value: try payload.toXdrJsonValue())])
+    case .contractParallelCompute(let payload):
+      return .object([XdrJsonMember(key: "contract_parallel_compute_v0", value: try payload.toXdrJsonValue())])
+    case .contractLedgerCostExt(let payload):
+      return .object([XdrJsonMember(key: "contract_ledger_cost_ext_v0", value: try payload.toXdrJsonValue())])
+    case .contractSCPTiming(let payload):
+      return .object([XdrJsonMember(key: "scp_timing", value: try payload.toXdrJsonValue())])
+    case .frozenLedgerKeys(let payload):
+      return .object([XdrJsonMember(key: "frozen_ledger_keys", value: try payload.toXdrJsonValue())])
+    case .frozenLedgerKeysDelta(let payload):
+      return .object([XdrJsonMember(key: "frozen_ledger_keys_delta", value: try payload.toXdrJsonValue())])
+    case .freezeBypassTxs(let payload):
+      return .object([XdrJsonMember(key: "freeze_bypass_txs", value: try payload.toXdrJsonValue())])
+    case .freezeBypassTxsDelta(let payload):
+      return .object([XdrJsonMember(key: "freeze_bypass_txs_delta", value: try payload.toXdrJsonValue())])
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> ConfigSettingEntryXDR {
+    if case .string(let name) = value {
+      switch name {
+      case "contract_max_size_bytes":
+        throw XdrJsonError.invalidValue(type: "ConfigSettingEntryXDR", key: "contract_max_size_bytes",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "contract_compute_v0":
+        throw XdrJsonError.invalidValue(type: "ConfigSettingEntryXDR", key: "contract_compute_v0",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "contract_ledger_cost_v0":
+        throw XdrJsonError.invalidValue(type: "ConfigSettingEntryXDR", key: "contract_ledger_cost_v0",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "contract_historical_data_v0":
+        throw XdrJsonError.invalidValue(type: "ConfigSettingEntryXDR", key: "contract_historical_data_v0",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "contract_events_v0":
+        throw XdrJsonError.invalidValue(type: "ConfigSettingEntryXDR", key: "contract_events_v0",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "contract_bandwidth_v0":
+        throw XdrJsonError.invalidValue(type: "ConfigSettingEntryXDR", key: "contract_bandwidth_v0",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "contract_cost_params_cpu_instructions":
+        throw XdrJsonError.invalidValue(type: "ConfigSettingEntryXDR", key: "contract_cost_params_cpu_instructions",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "contract_cost_params_memory_bytes":
+        throw XdrJsonError.invalidValue(type: "ConfigSettingEntryXDR", key: "contract_cost_params_memory_bytes",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "contract_data_key_size_bytes":
+        throw XdrJsonError.invalidValue(type: "ConfigSettingEntryXDR", key: "contract_data_key_size_bytes",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "contract_data_entry_size_bytes":
+        throw XdrJsonError.invalidValue(type: "ConfigSettingEntryXDR", key: "contract_data_entry_size_bytes",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "state_archival":
+        throw XdrJsonError.invalidValue(type: "ConfigSettingEntryXDR", key: "state_archival",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "contract_execution_lanes":
+        throw XdrJsonError.invalidValue(type: "ConfigSettingEntryXDR", key: "contract_execution_lanes",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "live_soroban_state_size_window":
+        throw XdrJsonError.invalidValue(type: "ConfigSettingEntryXDR", key: "live_soroban_state_size_window",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "eviction_iterator":
+        throw XdrJsonError.invalidValue(type: "ConfigSettingEntryXDR", key: "eviction_iterator",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "contract_parallel_compute_v0":
+        throw XdrJsonError.invalidValue(type: "ConfigSettingEntryXDR", key: "contract_parallel_compute_v0",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "contract_ledger_cost_ext_v0":
+        throw XdrJsonError.invalidValue(type: "ConfigSettingEntryXDR", key: "contract_ledger_cost_ext_v0",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "scp_timing":
+        throw XdrJsonError.invalidValue(type: "ConfigSettingEntryXDR", key: "scp_timing",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "frozen_ledger_keys":
+        throw XdrJsonError.invalidValue(type: "ConfigSettingEntryXDR", key: "frozen_ledger_keys",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "frozen_ledger_keys_delta":
+        throw XdrJsonError.invalidValue(type: "ConfigSettingEntryXDR", key: "frozen_ledger_keys_delta",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "freeze_bypass_txs":
+        throw XdrJsonError.invalidValue(type: "ConfigSettingEntryXDR", key: "freeze_bypass_txs",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "freeze_bypass_txs_delta":
+        throw XdrJsonError.invalidValue(type: "ConfigSettingEntryXDR", key: "freeze_bypass_txs_delta",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      default:
+        throw XdrJsonError.unknownUnionArm(type: "ConfigSettingEntryXDR", key: name)
+      }
+    }
+
+    let member = try XdrJson.singleKeyObject(value, type: "ConfigSettingEntryXDR")
+    switch member.key {
+    case "contract_max_size_bytes":
+      let contractMaxSizeBytes: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(member.value, type: "ConfigSettingEntryXDR", key: "contract_max_size_bytes")
+      return .contractMaxSizeBytes(contractMaxSizeBytes)
+    case "contract_compute_v0":
+      let contractCompute: ConfigSettingContractComputeV0XDR = try ConfigSettingContractComputeV0XDR.fromXdrJsonValue(member.value)
+      return .contractCompute(contractCompute)
+    case "contract_ledger_cost_v0":
+      let contractLedgerCost: ConfigSettingContractLedgerCostV0XDR = try ConfigSettingContractLedgerCostV0XDR.fromXdrJsonValue(member.value)
+      return .contractLedgerCost(contractLedgerCost)
+    case "contract_historical_data_v0":
+      let contractHistoricalData: ConfigSettingContractHistoricalDataV0XDR = try ConfigSettingContractHistoricalDataV0XDR.fromXdrJsonValue(member.value)
+      return .contractHistoricalData(contractHistoricalData)
+    case "contract_events_v0":
+      let contractEvents: ConfigSettingContractEventsV0XDR = try ConfigSettingContractEventsV0XDR.fromXdrJsonValue(member.value)
+      return .contractEvents(contractEvents)
+    case "contract_bandwidth_v0":
+      let contractBandwidth: ConfigSettingContractBandwidthV0XDR = try ConfigSettingContractBandwidthV0XDR.fromXdrJsonValue(member.value)
+      return .contractBandwidth(contractBandwidth)
+    case "contract_cost_params_cpu_instructions":
+      let contractCostParamsCpuInsns: ContractCostParamsXDR = try ContractCostParamsXDR.fromXdrJsonValue(member.value)
+      return .contractCostParamsCpuInsns(contractCostParamsCpuInsns)
+    case "contract_cost_params_memory_bytes":
+      let contractCostParamsMemBytes: ContractCostParamsXDR = try ContractCostParamsXDR.fromXdrJsonValue(member.value)
+      return .contractCostParamsMemBytes(contractCostParamsMemBytes)
+    case "contract_data_key_size_bytes":
+      let contractDataKeySizeBytes: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(member.value, type: "ConfigSettingEntryXDR", key: "contract_data_key_size_bytes")
+      return .contractDataKeySizeBytes(contractDataKeySizeBytes)
+    case "contract_data_entry_size_bytes":
+      let contractDataEntrySizeBytes: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(member.value, type: "ConfigSettingEntryXDR", key: "contract_data_entry_size_bytes")
+      return .contractDataEntrySizeBytes(contractDataEntrySizeBytes)
+    case "state_archival":
+      let stateArchivalSettings: StateArchivalSettingsXDR = try StateArchivalSettingsXDR.fromXdrJsonValue(member.value)
+      return .stateArchivalSettings(stateArchivalSettings)
+    case "contract_execution_lanes":
+      let contractExecutionLanes: ConfigSettingContractExecutionLanesV0XDR = try ConfigSettingContractExecutionLanesV0XDR.fromXdrJsonValue(member.value)
+      return .contractExecutionLanes(contractExecutionLanes)
+    case "live_soroban_state_size_window":
+      let liveSorobanStateSizeWindowElements = try XdrJson.array(member.value, type: "ConfigSettingEntryXDR", key: "live_soroban_state_size_window")
+      let liveSorobanStateSizeWindow: [UInt64] = try liveSorobanStateSizeWindowElements.map { element in try Uint64XDRJsonCodec.fromXdrJsonValue(element, type: "ConfigSettingEntryXDR", key: "live_soroban_state_size_window") }
+      return .liveSorobanStateSizeWindow(liveSorobanStateSizeWindow)
+    case "eviction_iterator":
+      let evictionIterator: EvictionIteratorXDR = try EvictionIteratorXDR.fromXdrJsonValue(member.value)
+      return .evictionIterator(evictionIterator)
+    case "contract_parallel_compute_v0":
+      let contractParallelCompute: ConfigSettingContractParallelComputeV0 = try ConfigSettingContractParallelComputeV0.fromXdrJsonValue(member.value)
+      return .contractParallelCompute(contractParallelCompute)
+    case "contract_ledger_cost_ext_v0":
+      let contractLedgerCostExt: ConfigSettingContractLedgerCostExtV0 = try ConfigSettingContractLedgerCostExtV0.fromXdrJsonValue(member.value)
+      return .contractLedgerCostExt(contractLedgerCostExt)
+    case "scp_timing":
+      let contractSCPTiming: ConfigSettingSCPTiming = try ConfigSettingSCPTiming.fromXdrJsonValue(member.value)
+      return .contractSCPTiming(contractSCPTiming)
+    case "frozen_ledger_keys":
+      let frozenLedgerKeys: FrozenLedgerKeysXDR = try FrozenLedgerKeysXDR.fromXdrJsonValue(member.value)
+      return .frozenLedgerKeys(frozenLedgerKeys)
+    case "frozen_ledger_keys_delta":
+      let frozenLedgerKeysDelta: FrozenLedgerKeysDeltaXDR = try FrozenLedgerKeysDeltaXDR.fromXdrJsonValue(member.value)
+      return .frozenLedgerKeysDelta(frozenLedgerKeysDelta)
+    case "freeze_bypass_txs":
+      let freezeBypassTxs: FreezeBypassTxsXDR = try FreezeBypassTxsXDR.fromXdrJsonValue(member.value)
+      return .freezeBypassTxs(freezeBypassTxs)
+    case "freeze_bypass_txs_delta":
+      let freezeBypassTxsDelta: FreezeBypassTxsDeltaXDR = try FreezeBypassTxsDeltaXDR.fromXdrJsonValue(member.value)
+      return .freezeBypassTxsDelta(freezeBypassTxsDelta)
+    default:
+      throw XdrJsonError.unknownUnionArm(type: "ConfigSettingEntryXDR", key: member.key)
+    }
+  }
+}

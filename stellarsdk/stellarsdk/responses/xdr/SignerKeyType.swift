@@ -46,3 +46,26 @@ extension SignerKeyType {
     return try fromTxRepName(raw)
   }
 }
+
+extension SignerKeyType: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .ed25519: return .string("ed25519")
+    case .preAuthTx: return .string("pre_auth_tx")
+    case .hashX: return .string("hash_x")
+    case .signedPayload: return .string("ed25519_signed_payload")
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> SignerKeyType {
+    let name = try XdrJson.string(value, type: "SignerKeyType")
+    switch name {
+    case "ed25519": return .ed25519
+    case "pre_auth_tx": return .preAuthTx
+    case "hash_x": return .hashX
+    case "ed25519_signed_payload": return .signedPayload
+    default:
+      throw XdrJsonError.unknownEnumValue(type: "SignerKeyType", value: name)
+    }
+  }
+}

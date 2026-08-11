@@ -32,3 +32,25 @@ public struct ConfigSettingContractBandwidthV0XDR: XDRCodable, Sendable {
     try container.encode(feeTxSize1KB)
   }
 }
+
+extension ConfigSettingContractBandwidthV0XDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "ledger_max_txs_size_bytes", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.ledgerMaxTxsSizeBytes, type: "ConfigSettingContractBandwidthV0XDR", key: "ledger_max_txs_size_bytes")))
+    members.append(XdrJsonMember(key: "tx_max_size_bytes", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.txMaxSizeBytes, type: "ConfigSettingContractBandwidthV0XDR", key: "tx_max_size_bytes")))
+    members.append(XdrJsonMember(key: "fee_tx_size1_kb", value: try Int64XDRJsonCodec.toXdrJsonValue(self.feeTxSize1KB, type: "ConfigSettingContractBandwidthV0XDR", key: "fee_tx_size1_kb")))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> ConfigSettingContractBandwidthV0XDR {
+    let members = try XdrJson.object(value, type: "ConfigSettingContractBandwidthV0XDR", keys: ["ledger_max_txs_size_bytes", "tx_max_size_bytes", "fee_tx_size1_kb"])
+    let ledgerMaxTxsSizeBytes: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "ledger_max_txs_size_bytes", type: "ConfigSettingContractBandwidthV0XDR"), type: "ConfigSettingContractBandwidthV0XDR", key: "ledger_max_txs_size_bytes")
+    let txMaxSizeBytes: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "tx_max_size_bytes", type: "ConfigSettingContractBandwidthV0XDR"), type: "ConfigSettingContractBandwidthV0XDR", key: "tx_max_size_bytes")
+    let feeTxSize1KB: Int64 = try Int64XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "fee_tx_size1_kb", type: "ConfigSettingContractBandwidthV0XDR"), type: "ConfigSettingContractBandwidthV0XDR", key: "fee_tx_size1_kb")
+    return ConfigSettingContractBandwidthV0XDR(
+      ledgerMaxTxsSizeBytes: ledgerMaxTxsSizeBytes,
+      txMaxSizeBytes: txMaxSizeBytes,
+      feeTxSize1KB: feeTxSize1KB
+    )
+  }
+}

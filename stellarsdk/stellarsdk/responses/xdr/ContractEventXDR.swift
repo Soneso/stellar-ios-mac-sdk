@@ -47,3 +47,39 @@ public struct ContractEventXDR: XDRCodable, Sendable {
     try container.encode(body)
   }
 }
+
+extension ContractEventXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "ext", value: try self.ext.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "contract_id", value: try XdrJson.optional(self.hash.map { element in try ContractIDXDRJsonCodec.toXdrJsonValue(element, type: "ContractEventXDR", key: "contract_id") })))
+    guard let typeJsonCase = ContractEventType(rawValue: self.type) else {
+      throw XdrJsonError.invalidValue(type: "ContractEventXDR", key: "type", message: "ContractEventType declares no member \(self.type)")
+    }
+    let typeJson: XdrJsonValue = try typeJsonCase.toXdrJsonValue()
+    members.append(XdrJsonMember(key: "type", value: typeJson))
+    members.append(XdrJsonMember(key: "body", value: try self.body.toXdrJsonValue()))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> ContractEventXDR {
+    let members = try XdrJson.object(value, type: "ContractEventXDR", keys: ["ext", "contract_id", XdrJson.DeclaredKey("type", alias: "type_"), "body"])
+    let ext: ExtensionPoint = try ExtensionPoint.fromXdrJsonValue(try XdrJson.field(members, key: "ext", type: "ContractEventXDR"))
+    let hashValue = try XdrJson.field(members, key: "contract_id", type: "ContractEventXDR")
+    let hash: WrappedData32?
+    if hashValue.isNull {
+      hash = nil
+    } else {
+      hash = try ContractIDXDRJsonCodec.fromXdrJsonValue(hashValue, type: "ContractEventXDR", key: "contract_id")
+    }
+    let typeCase = try ContractEventType.fromXdrJsonValue(try XdrJson.field(members, key: XdrJson.DeclaredKey("type", alias: "type_"), type: "ContractEventXDR"))
+    let type: Int32 = typeCase.rawValue
+    let body: ContractEventBodyXDR = try ContractEventBodyXDR.fromXdrJsonValue(try XdrJson.field(members, key: "body", type: "ContractEventXDR"))
+    return ContractEventXDR(
+      ext: ext,
+      hash: hash,
+      type: type,
+      body: body
+    )
+  }
+}

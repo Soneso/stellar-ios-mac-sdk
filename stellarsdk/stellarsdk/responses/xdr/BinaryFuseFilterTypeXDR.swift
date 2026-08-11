@@ -8,3 +8,24 @@ public enum BinaryFuseFilterTypeXDR: Int32, XDRCodable, Equatable, Sendable {
   case sixteenBit = 1
   case thirtyTwoBit = 2
 }
+
+extension BinaryFuseFilterTypeXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .eightBit: return .string("b8_bit")
+    case .sixteenBit: return .string("b16_bit")
+    case .thirtyTwoBit: return .string("b32_bit")
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> BinaryFuseFilterTypeXDR {
+    let name = try XdrJson.string(value, type: "BinaryFuseFilterTypeXDR")
+    switch name {
+    case "b8_bit": return .eightBit
+    case "b16_bit": return .sixteenBit
+    case "b32_bit": return .thirtyTwoBit
+    default:
+      throw XdrJsonError.unknownEnumValue(type: "BinaryFuseFilterTypeXDR", value: name)
+    }
+  }
+}

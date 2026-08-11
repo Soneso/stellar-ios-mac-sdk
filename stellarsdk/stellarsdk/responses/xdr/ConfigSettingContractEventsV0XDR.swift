@@ -24,3 +24,19 @@ public struct ConfigSettingContractEventsV0XDR: XDRCodable, Sendable {
     try container.encode(feeContractEvents1KB)
   }
 }
+
+extension ConfigSettingContractEventsV0XDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "tx_max_contract_events_size_bytes", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.txMaxContractEventsSizeBytes, type: "ConfigSettingContractEventsV0XDR", key: "tx_max_contract_events_size_bytes")))
+    members.append(XdrJsonMember(key: "fee_contract_events1_kb", value: try Int64XDRJsonCodec.toXdrJsonValue(self.feeContractEvents1KB, type: "ConfigSettingContractEventsV0XDR", key: "fee_contract_events1_kb")))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> ConfigSettingContractEventsV0XDR {
+    let members = try XdrJson.object(value, type: "ConfigSettingContractEventsV0XDR", keys: ["tx_max_contract_events_size_bytes", "fee_contract_events1_kb"])
+    let txMaxContractEventsSizeBytes: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "tx_max_contract_events_size_bytes", type: "ConfigSettingContractEventsV0XDR"), type: "ConfigSettingContractEventsV0XDR", key: "tx_max_contract_events_size_bytes")
+    let feeContractEvents1KB: Int64 = try Int64XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "fee_contract_events1_kb", type: "ConfigSettingContractEventsV0XDR"), type: "ConfigSettingContractEventsV0XDR", key: "fee_contract_events1_kb")
+    return ConfigSettingContractEventsV0XDR(txMaxContractEventsSizeBytes: txMaxContractEventsSizeBytes, feeContractEvents1KB: feeContractEvents1KB)
+  }
+}

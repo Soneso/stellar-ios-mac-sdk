@@ -24,3 +24,19 @@ public struct HashIDPreimageContractIDXDR: XDRCodable, Sendable {
     try container.encode(contractIDPreimage)
   }
 }
+
+extension HashIDPreimageContractIDXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "network_id", value: try HashXDRJsonCodec.toXdrJsonValue(self.networkID, type: "HashIDPreimageContractIDXDR", key: "network_id")))
+    members.append(XdrJsonMember(key: "contract_id_preimage", value: try self.contractIDPreimage.toXdrJsonValue()))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> HashIDPreimageContractIDXDR {
+    let members = try XdrJson.object(value, type: "HashIDPreimageContractIDXDR", keys: ["network_id", "contract_id_preimage"])
+    let networkID: HashXDR = try HashXDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "network_id", type: "HashIDPreimageContractIDXDR"), type: "HashIDPreimageContractIDXDR", key: "network_id")
+    let contractIDPreimage: ContractIDPreimageXDR = try ContractIDPreimageXDR.fromXdrJsonValue(try XdrJson.field(members, key: "contract_id_preimage", type: "HashIDPreimageContractIDXDR"))
+    return HashIDPreimageContractIDXDR(networkID: networkID, contractIDPreimage: contractIDPreimage)
+  }
+}

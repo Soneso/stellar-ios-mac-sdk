@@ -24,3 +24,19 @@ public struct ContractCodeEntryExtV1: XDRCodable, Sendable {
     try container.encode(costInputs)
   }
 }
+
+extension ContractCodeEntryExtV1: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "ext", value: try self.ext.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "cost_inputs", value: try self.costInputs.toXdrJsonValue()))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> ContractCodeEntryExtV1 {
+    let members = try XdrJson.object(value, type: "ContractCodeEntryExtV1", keys: ["ext", "cost_inputs"])
+    let ext: ExtensionPoint = try ExtensionPoint.fromXdrJsonValue(try XdrJson.field(members, key: "ext", type: "ContractCodeEntryExtV1"))
+    let costInputs: ContractCodeCostInputsXDR = try ContractCodeCostInputsXDR.fromXdrJsonValue(try XdrJson.field(members, key: "cost_inputs", type: "ContractCodeEntryExtV1"))
+    return ContractCodeEntryExtV1(ext: ext, costInputs: costInputs)
+  }
+}

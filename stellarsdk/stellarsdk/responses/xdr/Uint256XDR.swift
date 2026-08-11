@@ -4,3 +4,35 @@
 import Foundation
 
 public typealias Uint256XDR = WrappedData32
+
+public enum Uint256XDRJsonCodec {
+  public static func toXdrJsonValue(_ value: Uint256XDR) throws -> XdrJsonValue {
+    try toXdrJsonValue(value, type: "Uint256XDR", key: nil)
+  }
+
+  static func toXdrJsonValue(_ value: Uint256XDR, type: String, key: String?) throws -> XdrJsonValue {
+    return try XdrJson.hex(value.wrapped, expectedLength: 32, type: type, key: key)
+  }
+
+  public static func toXdrJson(_ value: Uint256XDR) throws -> String {
+    try XdrJsonWriter.canonicalString(from: try toXdrJsonValue(value))
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> Uint256XDR {
+    try fromXdrJsonValue(value, type: "Uint256XDR", key: nil)
+  }
+
+  static func fromXdrJsonValue(_ value: XdrJsonValue, type: String, key: String?) throws -> Uint256XDR {
+    let decoded: WrappedData32 = WrappedData32(try XdrJson.hex(value, expectedLength: 32, type: type, key: key))
+    return decoded
+  }
+
+  public static func fromXdrJson(_ json: String) throws -> Uint256XDR {
+    try fromXdrJsonValue(try XdrJsonParser.parse(json))
+  }
+
+  public static func fromXdrJsonTree(_ value: XdrJsonValue) throws -> Uint256XDR {
+    try XdrJson.validateDepth(value)
+    return try fromXdrJsonValue(value)
+  }
+}

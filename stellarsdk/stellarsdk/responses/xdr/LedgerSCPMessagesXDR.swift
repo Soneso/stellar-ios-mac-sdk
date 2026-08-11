@@ -24,3 +24,20 @@ public struct LedgerSCPMessagesXDR: XDRCodable, Sendable {
     try container.encode(messages)
   }
 }
+
+extension LedgerSCPMessagesXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "ledger_seq", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.ledgerSeq, type: "LedgerSCPMessagesXDR", key: "ledger_seq")))
+    members.append(XdrJsonMember(key: "messages", value: try XdrJson.array(self.messages.map { element in try element.toXdrJsonValue() })))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> LedgerSCPMessagesXDR {
+    let members = try XdrJson.object(value, type: "LedgerSCPMessagesXDR", keys: ["ledger_seq", "messages"])
+    let ledgerSeq: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "ledger_seq", type: "LedgerSCPMessagesXDR"), type: "LedgerSCPMessagesXDR", key: "ledger_seq")
+    let messagesElements = try XdrJson.array(try XdrJson.field(members, key: "messages", type: "LedgerSCPMessagesXDR"), type: "LedgerSCPMessagesXDR", key: "messages")
+    let messages: [SCPEnvelopeXDR] = try messagesElements.map { element in try SCPEnvelopeXDR.fromXdrJsonValue(element) }
+    return LedgerSCPMessagesXDR(ledgerSeq: ledgerSeq, messages: messages)
+  }
+}

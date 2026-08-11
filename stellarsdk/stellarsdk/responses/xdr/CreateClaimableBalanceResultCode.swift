@@ -11,3 +11,30 @@ public enum CreateClaimableBalanceResultCode: Int32, XDRCodable, Equatable, Send
   case notAuthorized = -4
   case underfunded = -5
 }
+
+extension CreateClaimableBalanceResultCode: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .success: return .string("success")
+    case .malformed: return .string("malformed")
+    case .lowReserve: return .string("low_reserve")
+    case .noTrust: return .string("no_trust")
+    case .notAuthorized: return .string("not_authorized")
+    case .underfunded: return .string("underfunded")
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> CreateClaimableBalanceResultCode {
+    let name = try XdrJson.string(value, type: "CreateClaimableBalanceResultCode")
+    switch name {
+    case "success": return .success
+    case "malformed": return .malformed
+    case "low_reserve": return .lowReserve
+    case "no_trust": return .noTrust
+    case "not_authorized": return .notAuthorized
+    case "underfunded": return .underfunded
+    default:
+      throw XdrJsonError.unknownEnumValue(type: "CreateClaimableBalanceResultCode", value: name)
+    }
+  }
+}

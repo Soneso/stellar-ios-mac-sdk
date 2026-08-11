@@ -37,3 +37,30 @@ public struct SorobanTransactionMetaXDR: XDRCodable, Sendable {
     try container.encode(diagnosticEvents)
   }
 }
+
+extension SorobanTransactionMetaXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "ext", value: try self.ext.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "events", value: try XdrJson.array(self.events.map { element in try element.toXdrJsonValue() })))
+    members.append(XdrJsonMember(key: "return_value", value: try self.returnValue.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "diagnostic_events", value: try XdrJson.array(self.diagnosticEvents.map { element in try element.toXdrJsonValue() })))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> SorobanTransactionMetaXDR {
+    let members = try XdrJson.object(value, type: "SorobanTransactionMetaXDR", keys: ["ext", "events", "return_value", "diagnostic_events"])
+    let ext: SorobanTransactionMetaExt = try SorobanTransactionMetaExt.fromXdrJsonValue(try XdrJson.field(members, key: "ext", type: "SorobanTransactionMetaXDR"))
+    let eventsElements = try XdrJson.array(try XdrJson.field(members, key: "events", type: "SorobanTransactionMetaXDR"), type: "SorobanTransactionMetaXDR", key: "events")
+    let events: [ContractEventXDR] = try eventsElements.map { element in try ContractEventXDR.fromXdrJsonValue(element) }
+    let returnValue: SCValXDR = try SCValXDR.fromXdrJsonValue(try XdrJson.field(members, key: "return_value", type: "SorobanTransactionMetaXDR"))
+    let diagnosticEventsElements = try XdrJson.array(try XdrJson.field(members, key: "diagnostic_events", type: "SorobanTransactionMetaXDR"), type: "SorobanTransactionMetaXDR", key: "diagnostic_events")
+    let diagnosticEvents: [DiagnosticEventXDR] = try diagnosticEventsElements.map { element in try DiagnosticEventXDR.fromXdrJsonValue(element) }
+    return SorobanTransactionMetaXDR(
+      ext: ext,
+      events: events,
+      returnValue: returnValue,
+      diagnosticEvents: diagnosticEvents
+    )
+  }
+}

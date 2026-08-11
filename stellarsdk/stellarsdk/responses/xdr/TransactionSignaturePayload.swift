@@ -24,3 +24,19 @@ public struct TransactionSignaturePayload: XDRCodable, Sendable {
     try container.encode(taggedTransaction)
   }
 }
+
+extension TransactionSignaturePayload: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "network_id", value: try HashXDRJsonCodec.toXdrJsonValue(self.networkId, type: "TransactionSignaturePayload", key: "network_id")))
+    members.append(XdrJsonMember(key: "tagged_transaction", value: try self.taggedTransaction.toXdrJsonValue()))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> TransactionSignaturePayload {
+    let members = try XdrJson.object(value, type: "TransactionSignaturePayload", keys: ["network_id", "tagged_transaction"])
+    let networkId: HashXDR = try HashXDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "network_id", type: "TransactionSignaturePayload"), type: "TransactionSignaturePayload", key: "network_id")
+    let taggedTransaction: TransactionSignaturePayloadTaggedTransactionXDR = try TransactionSignaturePayloadTaggedTransactionXDR.fromXdrJsonValue(try XdrJson.field(members, key: "tagged_transaction", type: "TransactionSignaturePayload"))
+    return TransactionSignaturePayload(networkId: networkId, taggedTransaction: taggedTransaction)
+  }
+}

@@ -294,6 +294,19 @@ let dataBase64 = txData.xdrEncoded!
 let decodedData = try SorobanTransactionDataXDR(fromBase64: dataBase64)
 ```
 
+## XDR-JSON Serialization
+
+Every XDR type also converts to and from canonical JSON, for logs, diffs and fixtures rather than for submission.
+
+```swift
+import stellarsdk
+
+let json = try SCValXDR.symbol("hello").toXdrJson()  // {"symbol":"hello"}
+let back = try SCValXDR.fromXdrJson(json)
+```
+
+See [SEP-51](sep-51.md) for the mapping rules, the error cases and the types that carry no members.
+
 ## Soroban Authorization Credentials
 
 `SorobanCredentialsXDR` is a union with four arms:

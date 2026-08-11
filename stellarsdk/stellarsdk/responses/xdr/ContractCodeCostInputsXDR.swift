@@ -72,3 +72,49 @@ public struct ContractCodeCostInputsXDR: XDRCodable, Sendable {
     try container.encode(nDataSegmentBytes)
   }
 }
+
+extension ContractCodeCostInputsXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "ext", value: try self.ext.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "n_instructions", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.nInstructions, type: "ContractCodeCostInputsXDR", key: "n_instructions")))
+    members.append(XdrJsonMember(key: "n_functions", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.nFunctions, type: "ContractCodeCostInputsXDR", key: "n_functions")))
+    members.append(XdrJsonMember(key: "n_globals", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.nGlobals, type: "ContractCodeCostInputsXDR", key: "n_globals")))
+    members.append(XdrJsonMember(key: "n_table_entries", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.nTableEntries, type: "ContractCodeCostInputsXDR", key: "n_table_entries")))
+    members.append(XdrJsonMember(key: "n_types", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.nTypes, type: "ContractCodeCostInputsXDR", key: "n_types")))
+    members.append(XdrJsonMember(key: "n_data_segments", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.nDataSegments, type: "ContractCodeCostInputsXDR", key: "n_data_segments")))
+    members.append(XdrJsonMember(key: "n_elem_segments", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.nElemSegments, type: "ContractCodeCostInputsXDR", key: "n_elem_segments")))
+    members.append(XdrJsonMember(key: "n_imports", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.nImports, type: "ContractCodeCostInputsXDR", key: "n_imports")))
+    members.append(XdrJsonMember(key: "n_exports", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.nExports, type: "ContractCodeCostInputsXDR", key: "n_exports")))
+    members.append(XdrJsonMember(key: "n_data_segment_bytes", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.nDataSegmentBytes, type: "ContractCodeCostInputsXDR", key: "n_data_segment_bytes")))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> ContractCodeCostInputsXDR {
+    let members = try XdrJson.object(value, type: "ContractCodeCostInputsXDR", keys: ["ext", "n_instructions", "n_functions", "n_globals", "n_table_entries", "n_types", "n_data_segments", "n_elem_segments", "n_imports", "n_exports", "n_data_segment_bytes"])
+    let ext: ExtensionPoint = try ExtensionPoint.fromXdrJsonValue(try XdrJson.field(members, key: "ext", type: "ContractCodeCostInputsXDR"))
+    let nInstructions: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "n_instructions", type: "ContractCodeCostInputsXDR"), type: "ContractCodeCostInputsXDR", key: "n_instructions")
+    let nFunctions: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "n_functions", type: "ContractCodeCostInputsXDR"), type: "ContractCodeCostInputsXDR", key: "n_functions")
+    let nGlobals: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "n_globals", type: "ContractCodeCostInputsXDR"), type: "ContractCodeCostInputsXDR", key: "n_globals")
+    let nTableEntries: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "n_table_entries", type: "ContractCodeCostInputsXDR"), type: "ContractCodeCostInputsXDR", key: "n_table_entries")
+    let nTypes: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "n_types", type: "ContractCodeCostInputsXDR"), type: "ContractCodeCostInputsXDR", key: "n_types")
+    let nDataSegments: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "n_data_segments", type: "ContractCodeCostInputsXDR"), type: "ContractCodeCostInputsXDR", key: "n_data_segments")
+    let nElemSegments: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "n_elem_segments", type: "ContractCodeCostInputsXDR"), type: "ContractCodeCostInputsXDR", key: "n_elem_segments")
+    let nImports: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "n_imports", type: "ContractCodeCostInputsXDR"), type: "ContractCodeCostInputsXDR", key: "n_imports")
+    let nExports: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "n_exports", type: "ContractCodeCostInputsXDR"), type: "ContractCodeCostInputsXDR", key: "n_exports")
+    let nDataSegmentBytes: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "n_data_segment_bytes", type: "ContractCodeCostInputsXDR"), type: "ContractCodeCostInputsXDR", key: "n_data_segment_bytes")
+    return ContractCodeCostInputsXDR(
+      ext: ext,
+      nInstructions: nInstructions,
+      nFunctions: nFunctions,
+      nGlobals: nGlobals,
+      nTableEntries: nTableEntries,
+      nTypes: nTypes,
+      nDataSegments: nDataSegments,
+      nElemSegments: nElemSegments,
+      nImports: nImports,
+      nExports: nExports,
+      nDataSegmentBytes: nDataSegmentBytes
+    )
+  }
+}

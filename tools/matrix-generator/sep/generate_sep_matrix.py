@@ -9130,6 +9130,598 @@ class SEP53Analyzer:
             logger.warning(f"Error analyzing SEP-53 section: {e}")
 
 
+class SEP51Analyzer:
+    """Analyzer for SEP-51: XDR-JSON - A standard mapping between Stellar's XDR structures and a JSON representation"""
+
+    DEFINITION_FILE = 'sep_0051_definition.json'
+
+    # A public XDR type declaration: either a typedef collapsed onto a Swift typealias, or a
+    # struct, enum or class that participates in XDR encoding.
+    XDR_TYPE_DECLARATION = re.compile(
+        r"public (?:typealias (?P<alias>\w+)"
+        r"|(?:final |indirect )?(?:struct|enum|class) (?P<name>\w+)\s*:[^\n]*XDR(?:Codable|Encodable|Decodable))"
+    )
+
+    # The escape ladder SEP-51 defines for the string data type, one branch per rule.
+    STRING_ESCAPE_LADDER = [
+        r'case 0x00: text += "\\0"',
+        r'case 0x09: text += "\\t"',
+        r'case 0x0A: text += "\\n"',
+        r'case 0x0D: text += "\\r"',
+        r'case 0x5C: text += "\\\\"',
+        'case 0x20...0x7E: text.unicodeScalars.append(UnicodeScalar(byte))',
+        r'text += "\\x"',
+    ]
+
+    def __init__(self, sdk_analyzer: SDKAnalyzer):
+        self.sdk_analyzer = sdk_analyzer
+        self.runtime_dir = sdk_analyzer.stellarsdk_path / 'xdr_json'
+        self.handwritten_dir = self.runtime_dir / 'handwritten'
+        self.generated_dir = sdk_analyzer.stellarsdk_path / 'responses' / 'xdr'
+        self.runtime: Dict[str, str] = {}
+        self.handwritten: Dict[str, str] = {}
+        self.generated: Dict[str, str] = {}
+
+    def analyze(self, sep_info: SEPInfo) -> CompatibilityMatrix:
+        """Analyze SEP-51 implementation"""
+        logger.info("Analyzing SEP-51 (XDR-JSON) implementation")
+
+        sections = self._load_sep51_definition()
+        self._load_sources()
+
+        implementation_files = [
+            self.sdk_analyzer.get_relative_path(path)
+            for path in sorted(self.runtime_dir.glob('*.swift'))
+        ]
+        implementation_files += [
+            self.sdk_analyzer.get_relative_path(path)
+            for path in sorted(self.handwritten_dir.glob('*.swift'))
+        ]
+        if self.generated:
+            # The generated XDR types are one file per type, so the directory stands for them.
+            implementation_files.append(
+                self.sdk_analyzer.get_relative_path(self.generated_dir) + '/')
+
+        analyzers = {
+            'XDR Data Types': self._analyze_xdr_data_types,
+            'Address Types': self._analyze_address_types,
+            'Asset Code Types': self._analyze_asset_code_types,
+            'Integer Types': self._analyze_integer_types,
+            'JSON Schema': self._analyze_json_schema,
+            'XDR-JSON v1 Compatibility': self._analyze_v1_compatibility,
+            'Implementation Support': self._analyze_implementation_support,
+        }
+
+        for section in sections:
+            analyze_section = analyzers.get(section.name)
+            if analyze_section is None:
+                logger.warning(f"No analysis implemented for SEP-51 section: {section.name}")
+                continue
+            analyze_section(section)
+
+        matrix = CompatibilityMatrix(
+            sep_info=sep_info,
+            sections=sections,
+            sdk_version=SDK_VERSION,
+            implementation_files=implementation_files
+        )
+
+        matrix.implementation_notes = [
+            "Every XDR type in the SDK converts to and from XDR-JSON",
+            "XdrJsonCodable declares toXdrJsonValue() and fromXdrJsonValue(_:); toXdrJson(), fromXdrJson(_:) and fromXdrJsonTree(_:) are derived from them",
+            "XdrJsonValue holds object members in XDR declaration order, which is the order SEP-51 output uses",
+            "XdrJson carries the shared escaping, hex, strkey, integer and validation rules, so each type's conversion is one call per field",
+            "64-bit integers are written as base-10 strings; a JSON number is accepted on input for XDR-JSON version 1 documents",
+            "128-bit and 256-bit integer parts are written as a single base-10 string",
+            "Address, signer and key types are written as SEP-23 strkeys",
+            "A $schema property is accepted on any object, stripped on input, and never emitted",
+            "XDR types that a Swift typealias collapses onto another type keep their own conversion entry points in a <Name>JsonCodec namespace",
+        ]
+
+        if matrix.overall_coverage >= 100:
+            matrix.recommendations = [
+                "The SDK has full compatibility with SEP-51!",
+            ]
+        else:
+            missing_fields = []
+            for section in sections:
+                for field in section.fields:
+                    if not field.implemented:
+                        missing_fields.append(f"{section.name}: {field.name}")
+
+            matrix.recommendations = [
+                f"{len(missing_fields)} field(s) are not yet implemented:",
+                *[f"  - {f}" for f in missing_fields[:10]],
+                "Consider adding support for these fields to achieve full SEP-51 compliance",
+            ]
+
+        return matrix
+
+    def _load_sep51_definition(self) -> List[SEPSection]:
+        """Load SEP-51 feature definitions from JSON file
+
+        SEP-51 is prose and JSON snippets rather than field tables, so its features are
+        bundled as a definition file instead of parsed from the specification markdown.
+        """
+        definition_path = Path(__file__).parent / 'data' / self.DEFINITION_FILE
+
+        if not definition_path.exists():
+            raise ValueError(f"SEP-51 definition file not found at {definition_path}")
+
+        try:
+            with open(definition_path, 'r', encoding='utf-8') as f:
+                definition = json.load(f)
+        except (OSError, json.JSONDecodeError) as e:
+            raise ValueError(f"Error loading SEP-51 definition from {definition_path}: {e}")
+
+        sections = []
+        for section_data in definition.get('sections', []):
+            section = SEPSection(name=section_data['title'])
+            for feature_data in section_data.get('xdr_json_features', []):
+                section.fields.append(SEPField(
+                    name=feature_data['name'],
+                    section=section_data['title'],
+                    required=feature_data.get('required', True),
+                    description=feature_data['description'],
+                    requirements=feature_data.get('category', '')
+                ))
+            sections.append(section)
+
+        if not sections:
+            raise ValueError(f"SEP-51 definition at {definition_path} declares no sections")
+
+        logger.info(f"Loaded SEP-51 definition with {len(sections)} sections")
+        return sections
+
+    def _load_sources(self) -> None:
+        """Read the XDR-JSON runtime, the hand-written conversions and the generated XDR types"""
+        self.runtime = self._read_directory(self.runtime_dir)
+        self.handwritten = self._read_directory(self.handwritten_dir)
+        self.generated = self._read_directory(self.generated_dir)
+
+        logger.info(
+            f"Read {len(self.runtime)} runtime file(s), {len(self.handwritten)} hand-written "
+            f"conversion file(s) and {len(self.generated)} generated XDR file(s)"
+        )
+
+    def _read_directory(self, directory: Path) -> Dict[str, str]:
+        """Read every Swift file directly inside a directory, keyed by file name"""
+        sources = {}
+        for path in sorted(directory.glob('*.swift')):
+            try:
+                sources[path.name] = path.read_text(encoding='utf-8')
+            except OSError as e:
+                logger.warning(f"Error reading {path}: {e}")
+        return sources
+
+    def _runtime_source(self, name: str) -> str:
+        """The text of an XDR-JSON runtime file, or an empty string when it is absent"""
+        return self.runtime.get(name, '')
+
+    def _handwritten_source(self, name: str) -> str:
+        """The text of a hand-written conversion file, or an empty string when it is absent"""
+        return self.handwritten.get(name, '')
+
+    def _generated_source(self, name: str) -> str:
+        """The text of a generated XDR type file, or an empty string when it is absent"""
+        return self.generated.get(name, '')
+
+    @staticmethod
+    def _mark(field: SEPField, detected: bool, sdk_property: str) -> None:
+        """Record a detection result on a field"""
+        if detected:
+            field.implemented = True
+            field.sdk_property = sdk_property
+
+    def _analyze_xdr_data_types(self, section: SEPSection) -> None:
+        """Analyze the mapping of the RFC 4506 data types"""
+        runtime = self._runtime_source('XdrJson.swift')
+        writer = self._runtime_source('XdrJsonWriter.swift')
+        hash_xdr = self._generated_source('HashXDR.swift')
+        bytes_xdr = self._generated_source('SCBytesXDR.swift')
+        vec_xdr = self._generated_source('SCVecXDR.swift')
+        asset_type = self._generated_source('AssetType.swift')
+        time_bounds = self._generated_source('TimeBoundsXDR.swift')
+        asset = self._generated_source('AssetXDR.swift')
+        account_ext = self._generated_source('AccountEntryExtXDR.swift')
+        set_options = self._generated_source('SetOptionsOperationXDR.swift')
+
+        for field in section.fields:
+            if field.name == 'integer_32bit':
+                self._mark(
+                    field,
+                    'static func int32(_ value: Int32) -> XdrJsonValue { .number(String(value)) }' in runtime,
+                    'XdrJson.int32')
+            elif field.name == 'unsigned_integer_32bit':
+                self._mark(
+                    field,
+                    'static func uint32(_ value: UInt32) -> XdrJsonValue { .number(String(value)) }' in runtime,
+                    'XdrJson.uint32')
+            elif field.name == 'hyper_integer_64bit':
+                self._mark(
+                    field,
+                    'static func int64(_ value: Int64) -> XdrJsonValue { .string(String(value)) }' in runtime,
+                    'XdrJson.int64')
+            elif field.name == 'unsigned_hyper_integer_64bit':
+                self._mark(
+                    field,
+                    'static func uint64(_ value: UInt64) -> XdrJsonValue { .string(String(value)) }' in runtime,
+                    'XdrJson.uint64')
+            elif field.name == 'boolean':
+                self._mark(
+                    field,
+                    'static func bool(_ value: Bool) -> XdrJsonValue { .bool(value) }' in runtime
+                    and 'guard case .bool(let flag) = value else' in runtime,
+                    'XdrJson.bool')
+            elif field.name == 'opaque_fixed_length':
+                self._mark(
+                    field,
+                    'static func hex(_ data: Data, expectedLength: Int, type: String, key: String? = nil) throws -> XdrJsonValue' in runtime
+                    and 'XdrJson.hex(value.wrapped, expectedLength: 32, type: type, key: key)' in hash_xdr,
+                    'XdrJson.hex (declared width checked)')
+            elif field.name == 'opaque_variable_length':
+                self._mark(
+                    field,
+                    'static func hex(_ data: Data) -> XdrJsonValue' in runtime
+                    and 'XdrJson.hex(' in bytes_xdr,
+                    'XdrJson.hex')
+            elif field.name == 'string_escape_ladder':
+                self._mark(
+                    field,
+                    all(rule in runtime for rule in self.STRING_ESCAPE_LADDER)
+                    and 'static func unescapeString(' in runtime,
+                    'XdrJson.escapedText / XdrJson.unescapeString')
+            elif field.name == 'string_json_escaping':
+                self._mark(
+                    field,
+                    r'case "\\":' in writer and r'buffer += "\\\\"' in writer,
+                    'XdrJsonWriter.writeString')
+            elif field.name == 'array_fixed_length':
+                self._mark(
+                    field,
+                    any(re.search(r'Elements\.count == Int\(\d+\)', source)
+                        for source in self.generated.values()),
+                    'XdrJson.array (declared element count enforced)')
+            elif field.name == 'array_variable_length':
+                self._mark(
+                    field,
+                    'static func array(_ values: [XdrJsonValue]) -> XdrJsonValue' in runtime
+                    and 'static func array(_ value: XdrJsonValue, type: String, key: String? = nil) throws -> [XdrJsonValue]' in runtime
+                    and 'XdrJson.array(self.wrapped.map' in vec_xdr,
+                    'XdrJson.array')
+            elif field.name == 'enum_name_mapping':
+                self._mark(
+                    field,
+                    'return "ASSET_TYPE_CREDIT_ALPHANUM4"' in asset_type
+                    and 'return .string("credit_alphanum4")' in asset_type
+                    and 'XdrJsonError.unknownEnumValue' in asset_type,
+                    'AssetType (snake_case, shared prefix removed)')
+            elif field.name == 'struct_object_keys':
+                self._mark(
+                    field,
+                    'static func object(_ value: XdrJsonValue, type: String,' in runtime
+                    and 'XdrJsonMember(key: "min_time"' in time_bounds
+                    and 'XdrJson.object(value, type: "TimeBoundsXDR", keys: ["min_time", "max_time"])' in time_bounds,
+                    'XdrJson.object')
+            elif field.name == 'union_void_arm':
+                self._mark(
+                    field,
+                    'case .native: return .string("native")' in asset
+                    and re.search(r'case "native":\s*\n\s*return \.native', asset) is not None,
+                    'AssetXDR (void arm as a bare string)')
+            elif field.name == 'union_valued_arm':
+                self._mark(
+                    field,
+                    'static func singleKeyObject(' in runtime
+                    and 'XdrJsonMember(key: "credit_alphanum4", value: try payload.toXdrJsonValue())' in asset
+                    and 'XdrJson.singleKeyObject(value, type: "AssetXDR")' in asset,
+                    'XdrJson.singleKeyObject')
+            elif field.name == 'union_integer_cases':
+                self._mark(
+                    field,
+                    'case .void: return .string("v0")' in account_ext
+                    and 'XdrJsonMember(key: "v1"' in account_ext,
+                    'AccountEntryExtXDR (v0, v1)')
+            elif field.name == 'void':
+                self._mark(
+                    field,
+                    'this arm carries no value, so it is written as a bare string' in asset
+                    and 'this arm carries a value, so it is written as a single-key object' in asset,
+                    'AssetXDR (object form of a void arm rejected)')
+            elif field.name == 'optional_null':
+                self._mark(
+                    field,
+                    'static func optional(_ value: XdrJsonValue?) -> XdrJsonValue { value ?? .null }' in runtime
+                    and 'XdrJson.optional(' in set_options
+                    and '.isNull' in set_options,
+                    'XdrJson.optional')
+
+    def _analyze_address_types(self, section: SEPSection) -> None:
+        """Analyze the Stellar address, signer and key types"""
+        sc_address = self._generated_source('SCAddressXDR.swift')
+        account_id = self._generated_source('AccountIDXDR.swift')
+        contract_id = self._generated_source('ContractIDXDR.swift')
+        pool_id = self._generated_source('PoolIDXDR.swift')
+        balance_id = self._generated_source('ClaimableBalanceIDXDR.swift')
+        node_id = self._generated_source('NodeIDXDR.swift')
+        signer_key = self._generated_source('SignerKeyXDR.swift')
+        signed_payload = self._generated_source('Ed25519SignedPayload.swift')
+        account_keys = self._handwritten_source('PublicKey+XdrJson.swift')
+
+        for field in section.fields:
+            if field.name == 'sc_address':
+                self._mark(
+                    field,
+                    'extension SCAddressXDR: XdrJsonCodable' in sc_address
+                    and all(f'case "{prefix}":' in sc_address for prefix in ('G', 'C', 'M', 'B', 'L')),
+                    'SCAddressXDR')
+            elif field.name == 'account_id':
+                self._mark(
+                    field,
+                    'public typealias AccountIDXDR = PublicKey' in account_id
+                    and 'public enum AccountIDXDRJsonCodec {' in account_id
+                    and 'PublicKey.fromXdrJsonValue(value)' in account_id,
+                    'AccountIDXDRJsonCodec')
+            elif field.name == 'contract_id':
+                self._mark(
+                    field,
+                    'encodeContractId()' in contract_id and 'decodeContractId()' in contract_id,
+                    'ContractIDXDRJsonCodec')
+            elif field.name == 'muxed_account':
+                self._mark(
+                    field,
+                    'extension MuxedAccountXDR: XdrJsonCodable' in account_keys
+                    and 'case "G":' in account_keys and 'case "M":' in account_keys,
+                    'MuxedAccountXDR')
+            elif field.name == 'muxed_account_med25519':
+                self._mark(
+                    field,
+                    'extension MuxedAccountMed25519XDR: XdrJsonCodable' in account_keys
+                    and 'encodeMEd25519AccountId()' in account_keys
+                    and 'decodeMed25519PublicKey()' in account_keys,
+                    'MuxedAccountMed25519XDR')
+            elif field.name == 'muxed_ed25519_account':
+                self._mark(
+                    field,
+                    'return .muxedAccount(try MuxedAccountMed25519XDR.fromXdrJsonValue(value))' in sc_address,
+                    'SCAddressXDR.muxedAccount')
+            elif field.name == 'pool_id':
+                self._mark(
+                    field,
+                    'encodeLiquidityPoolId()' in pool_id and 'decodeLiquidityPoolId()' in pool_id,
+                    'PoolIDXDRJsonCodec')
+            elif field.name == 'claimable_balance_id':
+                self._mark(
+                    field,
+                    'encodeClaimableBalanceId()' in balance_id and 'decodeClaimableBalanceId()' in balance_id,
+                    'ClaimableBalanceIDXDR')
+            elif field.name == 'public_key':
+                self._mark(
+                    field,
+                    'extension PublicKey: XdrJsonCodable' in account_keys
+                    and 'encodeEd25519PublicKey()' in account_keys
+                    and 'decodeEd25519PublicKey()' in account_keys,
+                    'PublicKey')
+            elif field.name == 'node_id':
+                self._mark(
+                    field,
+                    'public typealias NodeIDXDR = PublicKey' in node_id
+                    and 'public enum NodeIDXDRJsonCodec {' in node_id,
+                    'NodeIDXDRJsonCodec')
+            elif field.name == 'signer_key':
+                self._mark(
+                    field,
+                    all(anchor in signer_key for anchor in (
+                        'encodeEd25519PublicKey()', 'encodePreAuthTx()', 'encodeSha256Hash()',
+                        'case "T":', 'case "X":', 'case "P":')),
+                    'SignerKeyXDR')
+            elif field.name == 'signer_key_ed25519_signed_payload':
+                self._mark(
+                    field,
+                    'encodeSignedPayload()' in signed_payload and 'decodeSignedPayload()' in signed_payload,
+                    'Ed25519SignedPayload')
+
+    def _analyze_asset_code_types(self, section: SEPSection) -> None:
+        """Analyze the asset code types"""
+        asset_code = self._generated_source('AllowTrustOpAssetXDR.swift')
+        asset_code4 = self._generated_source('AssetCode4XDR.swift')
+        asset_code12 = self._generated_source('AssetCode12XDR.swift')
+
+        for field in section.fields:
+            if field.name == 'asset_code':
+                self._mark(
+                    field,
+                    'XdrJson.unescapeString(value, type: "AllowTrustOpAssetXDR")' in asset_code
+                    and 'raw.count <= 4' in asset_code and 'raw.count <= 12' in asset_code,
+                    'AllowTrustOpAssetXDR')
+            elif field.name == 'asset_code4':
+                self._mark(
+                    field,
+                    'XdrJson.trimTrailingNulls(value.wrapped, keepingAtLeast: 0)' in asset_code4
+                    and 'XdrJson.rightPad(raw, to: 4)' in asset_code4,
+                    'AssetCode4XDRJsonCodec')
+            elif field.name == 'asset_code12':
+                self._mark(
+                    field,
+                    'XdrJson.trimTrailingNulls(value.wrapped, keepingAtLeast: 5)' in asset_code12
+                    and 'XdrJson.rightPad(raw, to: 12)' in asset_code12,
+                    'AssetCode12XDRJsonCodec')
+
+    def _analyze_integer_types(self, section: SEPSection) -> None:
+        """Analyze the 128-bit and 256-bit integer parts types"""
+        parts_types = {
+            'uint128_parts': ('UInt128PartsXDR', 128, 'false'),
+            'int128_parts': ('Int128PartsXDR', 128, 'true'),
+            'uint256_parts': ('UInt256PartsXDR', 256, 'false'),
+            'int256_parts': ('Int256PartsXDR', 256, 'true'),
+        }
+
+        for field in section.fields:
+            entry = parts_types.get(field.name)
+            if entry is None:
+                continue
+            type_name, bit_size, signed = entry
+            source = self._generated_source(f'{type_name}.swift')
+            self._mark(
+                field,
+                f'signed: {signed})' in source
+                and f'XdrJson.wideDecimal(value, bitSize: {bit_size}, signed: {signed}, type: "{type_name}")' in source,
+                f'{type_name} (XdrJson.wideDecimal)')
+
+    def _analyze_json_schema(self, section: SEPSection) -> None:
+        """Analyze handling of the optional $schema property"""
+        runtime = self._runtime_source('XdrJson.swift')
+
+        for field in section.fields:
+            if field.name == 'schema_property':
+                self._mark(
+                    field,
+                    'static let schemaKey = "$schema"' in runtime
+                    and 'static func stripSchema(_ members: [XdrJsonMember]) -> [XdrJsonMember]' in runtime
+                    and 'members.filter { $0.key != schemaKey }' in runtime,
+                    'XdrJson.stripSchema')
+
+    def _analyze_v1_compatibility(self, section: SEPSection) -> None:
+        """Analyze the XDR-JSON version 1 allowances for 64-bit integers
+
+        Both allowances are about reading: a JSON number is accepted where a 64-bit integer
+        is expected. Emission is unaffected and stays a string, which the Hyper and Unsigned
+        Hyper features in the XDR Data Types section cover.
+        """
+        runtime = self._runtime_source('XdrJson.swift')
+
+        fixed_width = re.search(
+            r'private static func fixedWidth<T: FixedWidthInteger>\(.*?\n    \}',
+            runtime, re.DOTALL)
+        accepts_number = fixed_width is not None and 'case .number(let text):' in fixed_width.group(0)
+
+        readers = {
+            'hyper_json_number_input': ('int64', 'Int64', 'XdrJson.int64'),
+            'unsigned_hyper_json_number_input': ('uint64', 'UInt64', 'XdrJson.uint64'),
+        }
+
+        for field in section.fields:
+            entry = readers.get(field.name)
+            if entry is None:
+                continue
+            method, return_type, sdk_property = entry
+            delegates = re.search(
+                r'static func %s\(_ value: XdrJsonValue, type: String, key: String\? = nil\) '
+                r'throws -> %s \{\s*try fixedWidth\(' % (method, return_type),
+                runtime)
+            self._mark(field, accepts_number and delegates is not None,
+                       f'{sdk_property} (JSON number accepted on input)')
+
+    def _analyze_implementation_support(self, section: SEPSection) -> None:
+        """Analyze the conversion surface the SDK exposes"""
+        codable = self._runtime_source('XdrJsonCodable.swift')
+        codec_namespaces = sum(
+            1 for source in self.generated.values()
+            if re.search(r'public enum \w+JsonCodec \{', source)
+        )
+
+        for field in section.fields:
+            if field.name == 'to_xdr_json':
+                self._mark(field, 'func toXdrJson() throws -> String' in codable,
+                           'XdrJsonCodable.toXdrJson()')
+            elif field.name == 'to_xdr_json_value':
+                self._mark(field, 'func toXdrJsonValue() throws -> XdrJsonValue' in codable,
+                           'XdrJsonCodable.toXdrJsonValue()')
+            elif field.name == 'from_xdr_json':
+                self._mark(field, 'static func fromXdrJson(_ json: String) throws -> Self' in codable,
+                           'XdrJsonCodable.fromXdrJson(_:)')
+            elif field.name == 'from_xdr_json_value':
+                self._mark(field, 'static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> Self' in codable,
+                           'XdrJsonCodable.fromXdrJsonValue(_:)')
+            elif field.name == 'from_xdr_json_tree':
+                self._mark(
+                    field,
+                    'static func fromXdrJsonTree(_ value: XdrJsonValue) throws -> Self' in codable
+                    and 'XdrJson.validateDepth(value)' in codable,
+                    'XdrJsonCodable.fromXdrJsonTree(_:)')
+            elif field.name == 'typedef_codec_namespace':
+                self._mark(field, codec_namespaces > 0,
+                           f'{codec_namespaces} <Name>JsonCodec namespace(s)')
+            elif field.name == 'xdr_type_conversions':
+                total, uncovered = self._xdr_type_conversion_coverage()
+                if uncovered:
+                    logger.warning(
+                        "XDR types without an XDR-JSON conversion: "
+                        + ", ".join(f"{type_name} ({file_name})" for file_name, type_name in uncovered))
+                self._mark(field, total > 0 and not uncovered,
+                           f'{total} XDR type(s), all convertible')
+
+    @staticmethod
+    def _declares_conversion(source: str) -> bool:
+        """Whether a Swift file carries an XDR-JSON conversion of its own"""
+        return (re.search(r':\s*XdrJsonCodable\b', source) is not None
+                or re.search(r'public enum \w+JsonCodec \{', source) is not None)
+
+    def _xdr_type_conversion_coverage(self) -> Tuple[int, List[Tuple[str, str]]]:
+        """Count the XDR types and report those without an XDR-JSON conversion
+
+        A type is convertible when
+
+        - its own file carries the conversion,
+        - a hand-written conversion converts it or uses it as an encoding intermediary,
+        - another generated file converts it through a private helper, which is what happens
+          when one Swift type stands in for two XDR types, or
+        - it only ever appears as the discriminant of a union that is itself converted
+          elsewhere, in which case its XDR-JSON form is the union's arm name rather than a
+          value of its own.
+
+        Returns:
+            The number of XDR types declared and the (file, type) pairs left unconverted
+        """
+        handwritten_text = '\n'.join(self.handwritten.values())
+
+        total = 0
+        uncovered = []
+
+        for file_name, source in self.generated.items():
+            declared = [match.group('alias') or match.group('name')
+                        for match in self.XDR_TYPE_DECLARATION.finditer(source)]
+            total += len(declared)
+
+            if self._declares_conversion(source):
+                continue
+
+            for type_name in declared:
+                escaped = re.escape(type_name)
+
+                # The conversion is hand-written for it.
+                if re.search(rf'^extension {escaped}\b', handwritten_text, re.MULTILINE):
+                    continue
+
+                # A hand-written conversion uses it as an encoding intermediary. Calling the
+                # type's own conversion does not count: that conversion is what this check is
+                # looking for.
+                if (re.search(rf'\b{escaped}\b', handwritten_text)
+                        and not re.search(rf'\b{escaped}(?:JsonCodec)?\.fromXdrJson', handwritten_text)):
+                    continue
+
+                if any(re.search(rf'ToXdrJsonValue\(_ \w+: {escaped}\)', other)
+                       for other in self.generated.values()):
+                    continue
+
+                # Referenced only as the raw value of a union discriminant, from files that
+                # carry no conversion of their own and are therefore converted elsewhere.
+                referencing = {
+                    other_name: [match for match in re.finditer(rf'\b{escaped}\b(\.\w+\.rawValue)?', other)]
+                    for other_name, other in self.generated.items() if other_name != file_name
+                }
+                referencing = {name: matches for name, matches in referencing.items() if matches}
+                if referencing and all(
+                    match.group(1) and not self._declares_conversion(self.generated[name])
+                    for name, matches in referencing.items() for match in matches
+                ):
+                    continue
+
+                uncovered.append((file_name, type_name))
+
+        return total, uncovered
+
+
 class SEPAnalyzerFactory:
     """Factory for creating SEP-specific analyzers"""
 
@@ -9183,6 +9775,8 @@ class SEPAnalyzerFactory:
             "0048": SEP48Analyzer,
             "45": SEP45Analyzer,
             "0045": SEP45Analyzer,
+            "51": SEP51Analyzer,
+            "0051": SEP51Analyzer,
             "53": SEP53Analyzer,
             "0053": SEP53Analyzer,
         }
@@ -9505,6 +10099,18 @@ class MatrixRenderer:
                 'GetContractChallengeResponseEnum': 'Result enum for challenge request',
                 'SubmitContractChallengeResponseEnum': 'Result enum for signed challenge submission',
             }
+        elif sep_number in ["51", "0051"]:
+            class_descriptions = {
+                'XdrJsonCodable': 'Protocol every XDR type conforms to, declaring toXdrJsonValue() and fromXdrJsonValue(_:) and deriving toXdrJson(), fromXdrJson(_:) and fromXdrJsonTree(_:)',
+                'XdrJsonValue': 'XDR-JSON document tree (null, bool, number, string, array, object) holding object members in XDR declaration order',
+                'XdrJsonMember': 'One key and value of an XdrJsonValue object',
+                'XdrJson': 'Shared runtime carrying the escaping, hex, strkey, integer, container and depth rules every conversion applies',
+                'XdrJsonWriter': 'Renders an XdrJsonValue as XDR-JSON text with no insignificant whitespace',
+                'XdrJsonParser': 'Parses XDR-JSON text into an XdrJsonValue',
+                'XdrWideInteger': 'Base-10 conversion for the 128-bit and 256-bit integer parts types',
+                'XdrJsonError': 'Error enum for conversion failures (malformedJson, unexpectedType, missingField, duplicateKey, unknownEnumValue, unknownUnionArm, unknownField, invalidValue, recursionLimitExceeded, unrepresentable)',
+                '<Name>JsonCodec': 'Conversion entry points for XDR types a Swift typealias collapses onto another type, such as HashXDRJsonCodec, AccountIDXDRJsonCodec and AssetCode4XDRJsonCodec',
+            }
         elif sep_number in ["53", "0053"]:
             class_descriptions = {
                 'KeyPair': 'Stellar key pair with SEP-53 message signing and verification methods (signMessage, verifyMessage, calculateMessageHash)',
@@ -9678,7 +10284,7 @@ class SEPMatrixGenerator:
     @staticmethod
     def list_available_seps() -> List[str]:
         """List SEPs with implemented analyzers"""
-        return ["01", "02", "05", "06", "07", "08", "09", "10", "11", "12", "24", "30", "38", "45", "46", "47", "48", "53"]
+        return ["01", "02", "05", "06", "07", "08", "09", "10", "11", "12", "24", "30", "38", "45", "46", "47", "48", "51", "53"]
 
 
 def main():

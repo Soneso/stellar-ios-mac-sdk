@@ -54,3 +54,28 @@ extension CreatePassiveOfferOperationXDR {
     return CreatePassiveOfferOperationXDR(selling: selling, buying: buying, amount: amount, price: price)
   }
 }
+
+extension CreatePassiveOfferOperationXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "selling", value: try self.selling.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "buying", value: try self.buying.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "amount", value: try Int64XDRJsonCodec.toXdrJsonValue(self.amount, type: "CreatePassiveOfferOperationXDR", key: "amount")))
+    members.append(XdrJsonMember(key: "price", value: try self.price.toXdrJsonValue()))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> CreatePassiveOfferOperationXDR {
+    let members = try XdrJson.object(value, type: "CreatePassiveOfferOperationXDR", keys: ["selling", "buying", "amount", "price"])
+    let selling: AssetXDR = try AssetXDR.fromXdrJsonValue(try XdrJson.field(members, key: "selling", type: "CreatePassiveOfferOperationXDR"))
+    let buying: AssetXDR = try AssetXDR.fromXdrJsonValue(try XdrJson.field(members, key: "buying", type: "CreatePassiveOfferOperationXDR"))
+    let amount: Int64 = try Int64XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "amount", type: "CreatePassiveOfferOperationXDR"), type: "CreatePassiveOfferOperationXDR", key: "amount")
+    let price: PriceXDR = try PriceXDR.fromXdrJsonValue(try XdrJson.field(members, key: "price", type: "CreatePassiveOfferOperationXDR"))
+    return CreatePassiveOfferOperationXDR(
+      selling: selling,
+      buying: buying,
+      amount: amount,
+      price: price
+    )
+  }
+}

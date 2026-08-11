@@ -92,3 +92,65 @@ public struct LedgerHeaderXDR: XDRCodable, Sendable {
     try container.encode(ext)
   }
 }
+
+extension LedgerHeaderXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "ledger_version", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.ledgerVersion, type: "LedgerHeaderXDR", key: "ledger_version")))
+    members.append(XdrJsonMember(key: "previous_ledger_hash", value: try HashXDRJsonCodec.toXdrJsonValue(self.previousLedgerHash, type: "LedgerHeaderXDR", key: "previous_ledger_hash")))
+    members.append(XdrJsonMember(key: "scp_value", value: try self.scpValue.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "tx_set_result_hash", value: try HashXDRJsonCodec.toXdrJsonValue(self.txSetResultHash, type: "LedgerHeaderXDR", key: "tx_set_result_hash")))
+    members.append(XdrJsonMember(key: "bucket_list_hash", value: try HashXDRJsonCodec.toXdrJsonValue(self.bucketListHash, type: "LedgerHeaderXDR", key: "bucket_list_hash")))
+    members.append(XdrJsonMember(key: "ledger_seq", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.ledgerSeq, type: "LedgerHeaderXDR", key: "ledger_seq")))
+    members.append(XdrJsonMember(key: "total_coins", value: try Int64XDRJsonCodec.toXdrJsonValue(self.totalCoins, type: "LedgerHeaderXDR", key: "total_coins")))
+    members.append(XdrJsonMember(key: "fee_pool", value: try Int64XDRJsonCodec.toXdrJsonValue(self.feePool, type: "LedgerHeaderXDR", key: "fee_pool")))
+    members.append(XdrJsonMember(key: "inflation_seq", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.inflationSeq, type: "LedgerHeaderXDR", key: "inflation_seq")))
+    members.append(XdrJsonMember(key: "id_pool", value: try Uint64XDRJsonCodec.toXdrJsonValue(self.idPool, type: "LedgerHeaderXDR", key: "id_pool")))
+    members.append(XdrJsonMember(key: "base_fee", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.baseFee, type: "LedgerHeaderXDR", key: "base_fee")))
+    members.append(XdrJsonMember(key: "base_reserve", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.baseReserve, type: "LedgerHeaderXDR", key: "base_reserve")))
+    members.append(XdrJsonMember(key: "max_tx_set_size", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.maxTxSetSize, type: "LedgerHeaderXDR", key: "max_tx_set_size")))
+    members.append(XdrJsonMember(key: "skip_list", value: try XdrJson.array(self.skipList.map { element in try HashXDRJsonCodec.toXdrJsonValue(element, type: "LedgerHeaderXDR", key: "skip_list") })))
+    members.append(XdrJsonMember(key: "ext", value: try self.ext.toXdrJsonValue()))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> LedgerHeaderXDR {
+    let members = try XdrJson.object(value, type: "LedgerHeaderXDR", keys: ["ledger_version", "previous_ledger_hash", "scp_value", "tx_set_result_hash", "bucket_list_hash", "ledger_seq", "total_coins", "fee_pool", "inflation_seq", "id_pool", "base_fee", "base_reserve", "max_tx_set_size", "skip_list", "ext"])
+    let ledgerVersion: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "ledger_version", type: "LedgerHeaderXDR"), type: "LedgerHeaderXDR", key: "ledger_version")
+    let previousLedgerHash: HashXDR = try HashXDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "previous_ledger_hash", type: "LedgerHeaderXDR"), type: "LedgerHeaderXDR", key: "previous_ledger_hash")
+    let scpValue: StellarValueXDR = try StellarValueXDR.fromXdrJsonValue(try XdrJson.field(members, key: "scp_value", type: "LedgerHeaderXDR"))
+    let txSetResultHash: HashXDR = try HashXDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "tx_set_result_hash", type: "LedgerHeaderXDR"), type: "LedgerHeaderXDR", key: "tx_set_result_hash")
+    let bucketListHash: HashXDR = try HashXDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "bucket_list_hash", type: "LedgerHeaderXDR"), type: "LedgerHeaderXDR", key: "bucket_list_hash")
+    let ledgerSeq: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "ledger_seq", type: "LedgerHeaderXDR"), type: "LedgerHeaderXDR", key: "ledger_seq")
+    let totalCoins: Int64 = try Int64XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "total_coins", type: "LedgerHeaderXDR"), type: "LedgerHeaderXDR", key: "total_coins")
+    let feePool: Int64 = try Int64XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "fee_pool", type: "LedgerHeaderXDR"), type: "LedgerHeaderXDR", key: "fee_pool")
+    let inflationSeq: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "inflation_seq", type: "LedgerHeaderXDR"), type: "LedgerHeaderXDR", key: "inflation_seq")
+    let idPool: UInt64 = try Uint64XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "id_pool", type: "LedgerHeaderXDR"), type: "LedgerHeaderXDR", key: "id_pool")
+    let baseFee: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "base_fee", type: "LedgerHeaderXDR"), type: "LedgerHeaderXDR", key: "base_fee")
+    let baseReserve: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "base_reserve", type: "LedgerHeaderXDR"), type: "LedgerHeaderXDR", key: "base_reserve")
+    let maxTxSetSize: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "max_tx_set_size", type: "LedgerHeaderXDR"), type: "LedgerHeaderXDR", key: "max_tx_set_size")
+    let skipListElements = try XdrJson.array(try XdrJson.field(members, key: "skip_list", type: "LedgerHeaderXDR"), type: "LedgerHeaderXDR", key: "skip_list")
+    guard skipListElements.count == Int(4) else {
+      throw XdrJsonError.invalidValue(type: "LedgerHeaderXDR", key: "skip_list", message: "expected \(Int(4)) elements, got \(skipListElements.count)")
+    }
+    let skipList: [HashXDR] = try skipListElements.map { element in try HashXDRJsonCodec.fromXdrJsonValue(element, type: "LedgerHeaderXDR", key: "skip_list") }
+    let ext: LedgerHeaderXDRExtXDR = try LedgerHeaderXDRExtXDR.fromXdrJsonValue(try XdrJson.field(members, key: "ext", type: "LedgerHeaderXDR"))
+    return LedgerHeaderXDR(
+      ledgerVersion: ledgerVersion,
+      previousLedgerHash: previousLedgerHash,
+      scpValue: scpValue,
+      txSetResultHash: txSetResultHash,
+      bucketListHash: bucketListHash,
+      ledgerSeq: ledgerSeq,
+      totalCoins: totalCoins,
+      feePool: feePool,
+      inflationSeq: inflationSeq,
+      idPool: idPool,
+      baseFee: baseFee,
+      baseReserve: baseReserve,
+      maxTxSetSize: maxTxSetSize,
+      skipList: skipList,
+      ext: ext
+    )
+  }
+}

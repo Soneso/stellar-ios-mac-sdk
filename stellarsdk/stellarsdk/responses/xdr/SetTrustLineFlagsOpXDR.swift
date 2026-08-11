@@ -54,3 +54,28 @@ extension SetTrustLineFlagsOpXDR {
     return SetTrustLineFlagsOpXDR(accountID: accountID, asset: asset, setFlags: setFlags, clearFlags: clearFlags)
   }
 }
+
+extension SetTrustLineFlagsOpXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "trustor", value: try AccountIDXDRJsonCodec.toXdrJsonValue(self.accountID, type: "SetTrustLineFlagsOpXDR", key: "trustor")))
+    members.append(XdrJsonMember(key: "asset", value: try self.asset.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "clear_flags", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.clearFlags, type: "SetTrustLineFlagsOpXDR", key: "clear_flags")))
+    members.append(XdrJsonMember(key: "set_flags", value: try Uint32XDRJsonCodec.toXdrJsonValue(self.setFlags, type: "SetTrustLineFlagsOpXDR", key: "set_flags")))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> SetTrustLineFlagsOpXDR {
+    let members = try XdrJson.object(value, type: "SetTrustLineFlagsOpXDR", keys: ["trustor", "asset", "clear_flags", "set_flags"])
+    let accountID: PublicKey = try AccountIDXDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "trustor", type: "SetTrustLineFlagsOpXDR"), type: "SetTrustLineFlagsOpXDR", key: "trustor")
+    let asset: AssetXDR = try AssetXDR.fromXdrJsonValue(try XdrJson.field(members, key: "asset", type: "SetTrustLineFlagsOpXDR"))
+    let clearFlags: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "clear_flags", type: "SetTrustLineFlagsOpXDR"), type: "SetTrustLineFlagsOpXDR", key: "clear_flags")
+    let setFlags: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "set_flags", type: "SetTrustLineFlagsOpXDR"), type: "SetTrustLineFlagsOpXDR", key: "set_flags")
+    return SetTrustLineFlagsOpXDR(
+      accountID: accountID,
+      asset: asset,
+      setFlags: setFlags,
+      clearFlags: clearFlags
+    )
+  }
+}

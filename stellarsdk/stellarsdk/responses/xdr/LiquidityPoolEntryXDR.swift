@@ -24,3 +24,19 @@ public struct LiquidityPoolEntryXDR: XDRCodable, Sendable {
     try container.encode(body)
   }
 }
+
+extension LiquidityPoolEntryXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "liquidity_pool_id", value: try PoolIDXDRJsonCodec.toXdrJsonValue(self.liquidityPoolID, type: "LiquidityPoolEntryXDR", key: "liquidity_pool_id")))
+    members.append(XdrJsonMember(key: "body", value: try self.body.toXdrJsonValue()))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> LiquidityPoolEntryXDR {
+    let members = try XdrJson.object(value, type: "LiquidityPoolEntryXDR", keys: ["liquidity_pool_id", "body"])
+    let liquidityPoolID: WrappedData32 = try PoolIDXDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "liquidity_pool_id", type: "LiquidityPoolEntryXDR"), type: "LiquidityPoolEntryXDR", key: "liquidity_pool_id")
+    let body: LiquidityPoolBodyXDR = try LiquidityPoolBodyXDR.fromXdrJsonValue(try XdrJson.field(members, key: "body", type: "LiquidityPoolEntryXDR"))
+    return LiquidityPoolEntryXDR(liquidityPoolID: liquidityPoolID, body: body)
+  }
+}

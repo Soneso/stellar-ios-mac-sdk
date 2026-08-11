@@ -40,3 +40,24 @@ public enum EndSponsoringFutureReservesResultXDR: XDRCodable, Sendable {
     }
   }
 }
+
+extension EndSponsoringFutureReservesResultXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .success: return .string("success")
+    case .notSponsored: return .string("not_sponsored")
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> EndSponsoringFutureReservesResultXDR {
+    let name = try XdrJson.string(value, type: "EndSponsoringFutureReservesResultXDR")
+    switch name {
+    case "success":
+      return .success
+    case "not_sponsored":
+      return .notSponsored
+    default:
+      throw XdrJsonError.unknownUnionArm(type: "EndSponsoringFutureReservesResultXDR", key: name)
+    }
+  }
+}

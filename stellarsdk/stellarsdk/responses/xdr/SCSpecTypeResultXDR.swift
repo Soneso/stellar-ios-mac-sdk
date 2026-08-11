@@ -24,3 +24,19 @@ public struct SCSpecTypeResultXDR: XDRCodable, Sendable {
     try container.encode(errorType)
   }
 }
+
+extension SCSpecTypeResultXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "ok_type", value: try self.okType.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "error_type", value: try self.errorType.toXdrJsonValue()))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> SCSpecTypeResultXDR {
+    let members = try XdrJson.object(value, type: "SCSpecTypeResultXDR", keys: ["ok_type", "error_type"])
+    let okType: SCSpecTypeDefXDR = try SCSpecTypeDefXDR.fromXdrJsonValue(try XdrJson.field(members, key: "ok_type", type: "SCSpecTypeResultXDR"))
+    let errorType: SCSpecTypeDefXDR = try SCSpecTypeDefXDR.fromXdrJsonValue(try XdrJson.field(members, key: "error_type", type: "SCSpecTypeResultXDR"))
+    return SCSpecTypeResultXDR(okType: okType, errorType: errorType)
+  }
+}

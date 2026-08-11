@@ -32,3 +32,25 @@ public struct TopologyResponseBodyV2XDR: XDRCodable, Sendable {
     try container.encode(nodeData)
   }
 }
+
+extension TopologyResponseBodyV2XDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "inbound_peers", value: try self.inboundPeers.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "outbound_peers", value: try self.outboundPeers.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "node_data", value: try self.nodeData.toXdrJsonValue()))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> TopologyResponseBodyV2XDR {
+    let members = try XdrJson.object(value, type: "TopologyResponseBodyV2XDR", keys: ["inbound_peers", "outbound_peers", "node_data"])
+    let inboundPeers: TimeSlicedPeerDataListXDR = try TimeSlicedPeerDataListXDR.fromXdrJsonValue(try XdrJson.field(members, key: "inbound_peers", type: "TopologyResponseBodyV2XDR"))
+    let outboundPeers: TimeSlicedPeerDataListXDR = try TimeSlicedPeerDataListXDR.fromXdrJsonValue(try XdrJson.field(members, key: "outbound_peers", type: "TopologyResponseBodyV2XDR"))
+    let nodeData: TimeSlicedNodeDataXDR = try TimeSlicedNodeDataXDR.fromXdrJsonValue(try XdrJson.field(members, key: "node_data", type: "TopologyResponseBodyV2XDR"))
+    return TopologyResponseBodyV2XDR(
+      inboundPeers: inboundPeers,
+      outboundPeers: outboundPeers,
+      nodeData: nodeData
+    )
+  }
+}

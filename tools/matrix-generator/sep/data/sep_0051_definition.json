@@ -1,0 +1,358 @@
+{
+  "sep_number": "0051",
+  "preamble": {
+    "sep": "0051",
+    "title": "XDR-JSON",
+    "author": "Leigh McCulloch",
+    "status": "Draft",
+    "created": "2025-04-16",
+    "updated": "2025-05-13",
+    "version": "2.0.1"
+  },
+  "summary": "A standard mapping between Stellar's XDR structures and a JSON representation.",
+  "sections": [
+    {
+      "title": "XDR Data Types",
+      "key": "xdr_data_types",
+      "content": "Mapping of the RFC 4506 data types to JSON",
+      "xdr_json_features": [
+        {
+          "name": "integer_32bit",
+          "description": "32-bit signed integer maps to a JSON number",
+          "required": true,
+          "category": "Integer (32-bit)"
+        },
+        {
+          "name": "unsigned_integer_32bit",
+          "description": "32-bit unsigned integer maps to a JSON number",
+          "required": true,
+          "category": "Unsigned Integer (32-bit)"
+        },
+        {
+          "name": "hyper_integer_64bit",
+          "description": "64-bit signed integer maps to a JSON string holding a base-10 integer",
+          "required": true,
+          "category": "Hyper Integer (64-bit)"
+        },
+        {
+          "name": "unsigned_hyper_integer_64bit",
+          "description": "64-bit unsigned integer maps to a JSON string holding a base-10 integer",
+          "required": true,
+          "category": "Unsigned Hyper Integer (64-bit)"
+        },
+        {
+          "name": "boolean",
+          "description": "Boolean maps to a JSON boolean",
+          "required": true,
+          "category": "Boolean"
+        },
+        {
+          "name": "opaque_fixed_length",
+          "description": "Fixed-length opaque data maps to a hexadecimal string of the declared width",
+          "required": true,
+          "category": "Opaque Data (Fixed Length)"
+        },
+        {
+          "name": "opaque_variable_length",
+          "description": "Variable-length opaque data maps to a hexadecimal string",
+          "required": true,
+          "category": "Opaque Data (Variable Length)"
+        },
+        {
+          "name": "string_escape_ladder",
+          "description": "String bytes escape nul, tab, line feed, carriage return and backslash by name, keep printable ASCII verbatim, and write every other byte as \\xNN",
+          "required": true,
+          "category": "String"
+        },
+        {
+          "name": "string_json_escaping",
+          "description": "Backslashes in an escaped string are escaped a second time when stored in JSON",
+          "required": true,
+          "category": "String"
+        },
+        {
+          "name": "array_fixed_length",
+          "description": "Fixed-length array maps to a JSON array of the declared element count",
+          "required": true,
+          "category": "Arrays (Fixed Length)"
+        },
+        {
+          "name": "array_variable_length",
+          "description": "Variable-length array maps to a JSON array",
+          "required": true,
+          "category": "Arrays (Variable Length)"
+        },
+        {
+          "name": "enum_name_mapping",
+          "description": "Enum maps to a JSON string: the identifier in snake_case with any shared prefix removed",
+          "required": true,
+          "category": "Enum"
+        },
+        {
+          "name": "struct_object_keys",
+          "description": "Struct maps to a JSON object keyed by the member names in snake_case",
+          "required": true,
+          "category": "Struct"
+        },
+        {
+          "name": "union_void_arm",
+          "description": "A union whose active arm is void maps to a JSON string holding the arm name",
+          "required": true,
+          "category": "Discriminated Union"
+        },
+        {
+          "name": "union_valued_arm",
+          "description": "A union whose active arm carries a value maps to a single-key JSON object",
+          "required": true,
+          "category": "Discriminated Union"
+        },
+        {
+          "name": "union_integer_cases",
+          "description": "A union switching on an integer names its arms by discriminant plus integer, such as v0",
+          "required": true,
+          "category": "Discriminated Union"
+        },
+        {
+          "name": "void",
+          "description": "Void carries no JSON value of its own; the object form of a void arm is rejected",
+          "required": true,
+          "category": "Void"
+        },
+        {
+          "name": "optional_null",
+          "description": "An absent optional maps to null and its key stays present in the parent object",
+          "required": true,
+          "category": "Optional Data"
+        }
+      ],
+      "feature_count": 18
+    },
+    {
+      "title": "Address Types",
+      "key": "address_types",
+      "content": "Stellar address, signer and key types rendered as SEP-23 strkeys",
+      "xdr_json_features": [
+        {
+          "name": "sc_address",
+          "description": "ScAddress maps to a G, C, M, B or L strkey according to its arm",
+          "required": true,
+          "category": "Address Types"
+        },
+        {
+          "name": "account_id",
+          "description": "AccountID maps to a G strkey",
+          "required": true,
+          "category": "Address Types"
+        },
+        {
+          "name": "contract_id",
+          "description": "ContractID maps to a C strkey",
+          "required": true,
+          "category": "Address Types"
+        },
+        {
+          "name": "muxed_account",
+          "description": "MuxedAccount maps to a G strkey for ed25519 and an M strkey for muxed ed25519",
+          "required": true,
+          "category": "Address Types"
+        },
+        {
+          "name": "muxed_account_med25519",
+          "description": "MuxedAccountMed25519 maps to an M strkey",
+          "required": true,
+          "category": "Address Types"
+        },
+        {
+          "name": "muxed_ed25519_account",
+          "description": "MuxedEd25519Account maps to an M strkey",
+          "required": true,
+          "category": "Address Types"
+        },
+        {
+          "name": "pool_id",
+          "description": "PoolID maps to an L strkey",
+          "required": true,
+          "category": "Address Types"
+        },
+        {
+          "name": "claimable_balance_id",
+          "description": "ClaimableBalanceID maps to a B strkey",
+          "required": true,
+          "category": "Address Types"
+        },
+        {
+          "name": "public_key",
+          "description": "PublicKey maps to a G strkey",
+          "required": true,
+          "category": "Address Types"
+        },
+        {
+          "name": "node_id",
+          "description": "NodeID maps to a G strkey",
+          "required": true,
+          "category": "Address Types"
+        },
+        {
+          "name": "signer_key",
+          "description": "SignerKey maps to a G, T, X or P strkey according to its arm",
+          "required": true,
+          "category": "Address Types"
+        },
+        {
+          "name": "signer_key_ed25519_signed_payload",
+          "description": "SignerKeyEd25519SignedPayload maps to a P strkey",
+          "required": true,
+          "category": "Address Types"
+        }
+      ],
+      "feature_count": 12
+    },
+    {
+      "title": "Asset Code Types",
+      "key": "asset_code_types",
+      "content": "Asset code types rendered as trimmed, escaped strings",
+      "xdr_json_features": [
+        {
+          "name": "asset_code",
+          "description": "AssetCode reads back as AssetCode4 at four encoded characters or fewer, otherwise AssetCode12",
+          "required": true,
+          "category": "Asset Code Types"
+        },
+        {
+          "name": "asset_code4",
+          "description": "AssetCode4 drops all trailing zero bytes, then escapes the remaining bytes as a string",
+          "required": true,
+          "category": "Asset Code Types"
+        },
+        {
+          "name": "asset_code12",
+          "description": "AssetCode12 drops trailing zero bytes down to a floor of five, then escapes the remaining bytes",
+          "required": true,
+          "category": "Asset Code Types"
+        }
+      ],
+      "feature_count": 3
+    },
+    {
+      "title": "Integer Types",
+      "key": "integer_types",
+      "content": "128-bit and 256-bit integer parts rendered as a single base-10 string",
+      "xdr_json_features": [
+        {
+          "name": "uint128_parts",
+          "description": "UInt128Parts maps to a JSON string holding the 128-bit unsigned value in base 10",
+          "required": true,
+          "category": "Integer Types"
+        },
+        {
+          "name": "int128_parts",
+          "description": "Int128Parts maps to a JSON string holding the 128-bit signed value in base 10",
+          "required": true,
+          "category": "Integer Types"
+        },
+        {
+          "name": "uint256_parts",
+          "description": "UInt256Parts maps to a JSON string holding the 256-bit unsigned value in base 10",
+          "required": true,
+          "category": "Integer Types"
+        },
+        {
+          "name": "int256_parts",
+          "description": "Int256Parts maps to a JSON string holding the 256-bit signed value in base 10",
+          "required": true,
+          "category": "Integer Types"
+        }
+      ],
+      "feature_count": 4
+    },
+    {
+      "title": "JSON Schema",
+      "key": "json_schema",
+      "content": "The optional $schema property the specification allows on any object",
+      "xdr_json_features": [
+        {
+          "name": "schema_property",
+          "description": "A $schema property is allowed but not required on any JSON object",
+          "required": false,
+          "category": "JSON Schema"
+        }
+      ],
+      "feature_count": 1
+    },
+    {
+      "title": "XDR-JSON v1 Compatibility",
+      "key": "v1_compatibility",
+      "content": "Allowances the specification makes for reading XDR-JSON version 1 documents",
+      "xdr_json_features": [
+        {
+          "name": "hyper_json_number_input",
+          "description": "A JSON number is accepted where a Hyper is read; output stays a string",
+          "required": false,
+          "category": "Hyper Integer (64-bit)"
+        },
+        {
+          "name": "unsigned_hyper_json_number_input",
+          "description": "A JSON number is accepted where an Unsigned Hyper is read; output stays a string",
+          "required": false,
+          "category": "Unsigned Hyper Integer (64-bit)"
+        }
+      ],
+      "feature_count": 2
+    },
+    {
+      "title": "Implementation Support",
+      "key": "implementation_support",
+      "content": "The conversion surface an SDK exposes for XDR-JSON",
+      "xdr_json_features": [
+        {
+          "name": "to_xdr_json",
+          "description": "Convert an XDR value to XDR-JSON text",
+          "required": true,
+          "category": "Implementation Support"
+        },
+        {
+          "name": "to_xdr_json_value",
+          "description": "Convert an XDR value to an XDR-JSON tree",
+          "required": true,
+          "category": "Implementation Support"
+        },
+        {
+          "name": "from_xdr_json",
+          "description": "Read an XDR value from XDR-JSON text",
+          "required": true,
+          "category": "Implementation Support"
+        },
+        {
+          "name": "from_xdr_json_value",
+          "description": "Read an XDR value from an XDR-JSON tree",
+          "required": true,
+          "category": "Implementation Support"
+        },
+        {
+          "name": "from_xdr_json_tree",
+          "description": "Read an XDR value from a tree built by hand, with container nesting bounded",
+          "required": true,
+          "category": "Implementation Support"
+        },
+        {
+          "name": "typedef_codec_namespace",
+          "description": "XDR types a typedef collapses onto another Swift type keep their own conversion entry points",
+          "required": true,
+          "category": "Implementation Support"
+        },
+        {
+          "name": "xdr_type_conversions",
+          "description": "Every XDR type in the SDK has an XDR-JSON conversion",
+          "required": true,
+          "category": "Implementation Support"
+        }
+      ],
+      "feature_count": 7
+    }
+  ],
+  "metadata": {
+    "source_url": "https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0051.md",
+    "spec_version": "2.0.1",
+    "content_length": 23222
+  }
+}

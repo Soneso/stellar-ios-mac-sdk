@@ -32,3 +32,27 @@ public struct SCPNominationXDR: XDRCodable, Sendable {
     try container.encode(accepted)
   }
 }
+
+extension SCPNominationXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "quorum_set_hash", value: try HashXDRJsonCodec.toXdrJsonValue(self.quorumSetHash, type: "SCPNominationXDR", key: "quorum_set_hash")))
+    members.append(XdrJsonMember(key: "votes", value: try XdrJson.array(self.votes.map { element in try ValueXDRJsonCodec.toXdrJsonValue(element, type: "SCPNominationXDR", key: "votes") })))
+    members.append(XdrJsonMember(key: "accepted", value: try XdrJson.array(self.accepted.map { element in try ValueXDRJsonCodec.toXdrJsonValue(element, type: "SCPNominationXDR", key: "accepted") })))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> SCPNominationXDR {
+    let members = try XdrJson.object(value, type: "SCPNominationXDR", keys: ["quorum_set_hash", "votes", "accepted"])
+    let quorumSetHash: HashXDR = try HashXDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "quorum_set_hash", type: "SCPNominationXDR"), type: "SCPNominationXDR", key: "quorum_set_hash")
+    let votesElements = try XdrJson.array(try XdrJson.field(members, key: "votes", type: "SCPNominationXDR"), type: "SCPNominationXDR", key: "votes")
+    let votes: [ValueXDR] = try votesElements.map { element in try ValueXDRJsonCodec.fromXdrJsonValue(element, type: "SCPNominationXDR", key: "votes") }
+    let acceptedElements = try XdrJson.array(try XdrJson.field(members, key: "accepted", type: "SCPNominationXDR"), type: "SCPNominationXDR", key: "accepted")
+    let accepted: [ValueXDR] = try acceptedElements.map { element in try ValueXDRJsonCodec.fromXdrJsonValue(element, type: "SCPNominationXDR", key: "accepted") }
+    return SCPNominationXDR(
+      quorumSetHash: quorumSetHash,
+      votes: votes,
+      accepted: accepted
+    )
+  }
+}

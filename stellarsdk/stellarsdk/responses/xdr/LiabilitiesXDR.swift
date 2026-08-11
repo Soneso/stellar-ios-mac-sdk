@@ -24,3 +24,19 @@ public struct LiabilitiesXDR: XDRCodable, Sendable {
     try container.encode(selling)
   }
 }
+
+extension LiabilitiesXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "buying", value: try Int64XDRJsonCodec.toXdrJsonValue(self.buying, type: "LiabilitiesXDR", key: "buying")))
+    members.append(XdrJsonMember(key: "selling", value: try Int64XDRJsonCodec.toXdrJsonValue(self.selling, type: "LiabilitiesXDR", key: "selling")))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> LiabilitiesXDR {
+    let members = try XdrJson.object(value, type: "LiabilitiesXDR", keys: ["buying", "selling"])
+    let buying: Int64 = try Int64XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "buying", type: "LiabilitiesXDR"), type: "LiabilitiesXDR", key: "buying")
+    let selling: Int64 = try Int64XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "selling", type: "LiabilitiesXDR"), type: "LiabilitiesXDR", key: "selling")
+    return LiabilitiesXDR(buying: buying, selling: selling)
+  }
+}

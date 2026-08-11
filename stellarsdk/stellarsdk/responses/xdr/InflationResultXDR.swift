@@ -41,3 +41,40 @@ public enum InflationResultXDR: XDRCodable, Sendable {
     }
   }
 }
+
+extension InflationResultXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .payouts(let payload):
+      return .object([XdrJsonMember(key: "success", value: try XdrJson.array(payload.map { element in try element.toXdrJsonValue() }))])
+    case .notTime: return .string("not_time")
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> InflationResultXDR {
+    if case .string(let name) = value {
+      switch name {
+      case "success":
+        throw XdrJsonError.invalidValue(type: "InflationResultXDR", key: "success",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "not_time":
+        return .notTime
+      default:
+        throw XdrJsonError.unknownUnionArm(type: "InflationResultXDR", key: name)
+      }
+    }
+
+    let member = try XdrJson.singleKeyObject(value, type: "InflationResultXDR")
+    switch member.key {
+    case "success":
+      let payoutsElements = try XdrJson.array(member.value, type: "InflationResultXDR", key: "success")
+      let payouts: [InflationPayoutXDR] = try payoutsElements.map { element in try InflationPayoutXDR.fromXdrJsonValue(element) }
+      return .payouts(payouts)
+    case "not_time":
+      throw XdrJsonError.invalidValue(type: "InflationResultXDR", key: "not_time",
+                                      message: "this arm carries no value, so it is written as a bare string")
+    default:
+      throw XdrJsonError.unknownUnionArm(type: "InflationResultXDR", key: member.key)
+    }
+  }
+}

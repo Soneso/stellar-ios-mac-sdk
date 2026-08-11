@@ -7,3 +7,22 @@ public enum BucketListTypeXDR: Int32, XDRCodable, Equatable, Sendable {
   case live = 0
   case hotArchive = 1
 }
+
+extension BucketListTypeXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .live: return .string("live")
+    case .hotArchive: return .string("hot_archive")
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> BucketListTypeXDR {
+    let name = try XdrJson.string(value, type: "BucketListTypeXDR")
+    switch name {
+    case "live": return .live
+    case "hot_archive": return .hotArchive
+    default:
+      throw XdrJsonError.unknownEnumValue(type: "BucketListTypeXDR", value: name)
+    }
+  }
+}

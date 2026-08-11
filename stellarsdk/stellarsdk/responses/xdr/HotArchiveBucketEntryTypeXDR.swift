@@ -8,3 +8,24 @@ public enum HotArchiveBucketEntryTypeXDR: Int32, XDRCodable, Equatable, Sendable
   case archived = 0
   case live = 1
 }
+
+extension HotArchiveBucketEntryTypeXDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    switch self {
+    case .metaentry: return .string("metaentry")
+    case .archived: return .string("archived")
+    case .live: return .string("live")
+    }
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> HotArchiveBucketEntryTypeXDR {
+    let name = try XdrJson.string(value, type: "HotArchiveBucketEntryTypeXDR")
+    switch name {
+    case "metaentry": return .metaentry
+    case "archived": return .archived
+    case "live": return .live
+    default:
+      throw XdrJsonError.unknownEnumValue(type: "HotArchiveBucketEntryTypeXDR", value: name)
+    }
+  }
+}

@@ -24,3 +24,19 @@ public struct LedgerCloseMetaExtV1XDR: XDRCodable, Sendable {
     try container.encode(sorobanFeeWrite1KB)
   }
 }
+
+extension LedgerCloseMetaExtV1XDR: XdrJsonCodable {
+  public func toXdrJsonValue() throws -> XdrJsonValue {
+    var members: [XdrJsonMember] = []
+    members.append(XdrJsonMember(key: "ext", value: try self.ext.toXdrJsonValue()))
+    members.append(XdrJsonMember(key: "soroban_fee_write1_kb", value: try Int64XDRJsonCodec.toXdrJsonValue(self.sorobanFeeWrite1KB, type: "LedgerCloseMetaExtV1XDR", key: "soroban_fee_write1_kb")))
+    return .object(members)
+  }
+
+  public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> LedgerCloseMetaExtV1XDR {
+    let members = try XdrJson.object(value, type: "LedgerCloseMetaExtV1XDR", keys: ["ext", "soroban_fee_write1_kb"])
+    let ext: ExtensionPoint = try ExtensionPoint.fromXdrJsonValue(try XdrJson.field(members, key: "ext", type: "LedgerCloseMetaExtV1XDR"))
+    let sorobanFeeWrite1KB: Int64 = try Int64XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "soroban_fee_write1_kb", type: "LedgerCloseMetaExtV1XDR"), type: "LedgerCloseMetaExtV1XDR", key: "soroban_fee_write1_kb")
+    return LedgerCloseMetaExtV1XDR(ext: ext, sorobanFeeWrite1KB: sorobanFeeWrite1KB)
+  }
+}
