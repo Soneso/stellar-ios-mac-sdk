@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="index.html">
-          stellarsdk 3.8.1 Docs
+          stellarsdk 3.9.0 Docs
         </a>
          (94% documented)
       </p>
@@ -1433,6 +1433,12 @@
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Enums/WordList.html">WordList</a>
               </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/XdrJsonError.html">XdrJsonError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/XdrJsonValue.html">XdrJsonValue</a>
+              </li>
             </ul>
           </li>
           <li class="nav-group-name">
@@ -1567,6 +1573,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Protocols/XDREncodable.html">XDREncodable</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Protocols/XdrJsonCodable.html">XdrJsonCodable</a>
               </li>
             </ul>
           </li>
@@ -2238,6 +2247,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Structs/WrappedData4.html">WrappedData4</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/XdrJsonMember.html">XdrJsonMember</a>
               </li>
             </ul>
           </li>
@@ -7829,6 +7841,95 @@ These errors represent failures when executing the authentication flow to obtain
                       </div>
                       <div class="slightly-smaller">
                         <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/xdr_helpers/TransactionMetaXDR+Helpers.swift#L10-L16">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10stellarsdk12XdrJsonErrorO"></a>
+                    <a name="//apple_ref/swift/Enum/XdrJsonError" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk12XdrJsonErrorO">XdrJsonError</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Errors raised while converting between XDR values and XDR-JSON.</p>
+
+<p>Every case names the type being converted and, where one applies, the offending key, so
+a failure deep inside a transaction envelope can be located without re-running the
+conversion.</p>
+
+<p>Payloads carry the offending text verbatim, so a caller can act on it. <code>message</code> is
+where the four cases whose payload comes from the document &ndash; a duplicate key, an
+unknown enumeration value, an unknown union arm and an undeclared field &ndash; neutralise it
+through <code>XdrJson/preview(_:)</code>, so an error echoed into a terminal or a log cannot carry
+escape sequences of its own.</p>
+
+                        <a href="Enums/XdrJsonError.html" class="slightly-smaller">See more</a>
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">XdrJsonError</span> <span class="p">:</span> <span class="kt">Error</span><span class="p">,</span> <span class="kt">Sendable</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/xdr_json/XdrJsonError.swift#L22-L58">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10stellarsdk12XdrJsonValueO"></a>
+                    <a name="//apple_ref/swift/Enum/XdrJsonValue" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk12XdrJsonValueO">XdrJsonValue</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>An XDR-JSON document, as defined by
+<a href="https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0051.md">SEP-0051</a>.</p>
+
+<p>This is the tree form every XDR type converts to and from. It is deliberately not a
+Foundation type: SEP-0051 output places object keys in XDR declaration order, and no
+Foundation container preserves that. <code>Dictionary</code> is unordered, and sorting keys
+alphabetically is a different order. Making the order a property of the data rather
+than of a serializer setting removes the possibility of a non-canonical rendering.</p>
+
+<p>A number is carried as its literal decimal text rather than as a numeric type. XDR-JSON
+renders 64-bit integers as strings, and the specification&rsquo;s version 1 compatibility rule
+allows a JSON number on input; keeping the literal means such a value cannot lose
+precision by passing through a binary floating-point type.</p>
+<pre class="highlight swift"><code><span class="k">let</span> <span class="nv">tree</span> <span class="o">=</span> <span class="kt">XdrJsonValue</span><span class="o">.</span><span class="nf">object</span><span class="p">([</span>
+    <span class="kt">XdrJsonMember</span><span class="p">(</span><span class="nv">key</span><span class="p">:</span> <span class="s">"min_time"</span><span class="p">,</span> <span class="nv">value</span><span class="p">:</span> <span class="o">.</span><span class="nf">string</span><span class="p">(</span><span class="s">"0"</span><span class="p">)),</span>
+    <span class="kt">XdrJsonMember</span><span class="p">(</span><span class="nv">key</span><span class="p">:</span> <span class="s">"max_time"</span><span class="p">,</span> <span class="nv">value</span><span class="p">:</span> <span class="o">.</span><span class="nf">string</span><span class="p">(</span><span class="s">"1"</span><span class="p">))</span>
+<span class="p">])</span>
+</code></pre>
+
+                        <a href="Enums/XdrJsonValue.html" class="slightly-smaller">See more</a>
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">XdrJsonValue</span> <span class="p">:</span> <span class="kt">Sendable</span><span class="p">,</span> <span class="kt">Equatable</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/xdr_json/XdrJsonValue.swift#L31-L49">Show on GitHub</a>
                       </div>
                     </section>
                   </div>

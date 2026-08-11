@@ -20,7 +20,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="index.html">
-          stellarsdk 3.8.1 Docs
+          stellarsdk 3.9.0 Docs
         </a>
          (94% documented)
       </p>
@@ -1430,6 +1430,12 @@
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Enums/WordList.html">WordList</a>
               </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/XdrJsonError.html">XdrJsonError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/XdrJsonValue.html">XdrJsonValue</a>
+              </li>
             </ul>
           </li>
           <li class="nav-group-name">
@@ -1564,6 +1570,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Protocols/XDREncodable.html">XDREncodable</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Protocols/XdrJsonCodable.html">XdrJsonCodable</a>
               </li>
             </ul>
           </li>
@@ -2236,6 +2245,9 @@
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Structs/WrappedData4.html">WrappedData4</a>
               </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/XdrJsonMember.html">XdrJsonMember</a>
+              </li>
             </ul>
           </li>
           <li class="nav-group-name">
@@ -2287,13 +2299,13 @@
 
 <p><a href="https://github.com/Soneso/stellar-ios-mac-sdk/releases"><img src="https://img.shields.io/github/v/release/Soneso/stellar-ios-mac-sdk" alt="GitHub release"></a> <a href="https://github.com/Soneso/stellar-ios-mac-sdk/actions/workflows/tests.yml"><img src="https://github.com/Soneso/stellar-ios-mac-sdk/actions/workflows/tests.yml/badge.svg" alt="Tests"></a> <a href="https://codecov.io/gh/Soneso/stellar-ios-mac-sdk"><img src="https://codecov.io/gh/Soneso/stellar-ios-mac-sdk/branch/master/graph/badge.svg" alt="codecov"></a> <a href="https://deepwiki.com/Soneso/stellar-ios-mac-sdk"><img src="https://deepwiki.com/badge.svg" alt="Ask DeepWiki"></a></p>
 
-<p>Build and sign Stellar transactions, query <a href="https://developers.stellar.org/docs/data/apis/horizon">Horizon</a>, and interact with <a href="https://developers.stellar.org/docs/build/smart-contracts/overview">Soroban</a> smart contracts via RPC. Communicate with anchors and external services using built-in support for 17 SEPs.</p>
+<p>Build and sign Stellar transactions, query <a href="https://developers.stellar.org/docs/data/apis/horizon">Horizon</a>, and interact with <a href="https://developers.stellar.org/docs/build/smart-contracts/overview">Soroban</a> smart contracts via RPC. Communicate with anchors and external services using built-in support for 18 SEPs.</p>
 <h2 id='installation' class='heading'>Installation</h2>
 <h3 id='swift-package-manager' class='heading'>Swift Package Manager</h3>
-<pre class="highlight swift"><code><span class="o">.</span><span class="nf">package</span><span class="p">(</span><span class="nv">name</span><span class="p">:</span> <span class="s">"stellarsdk"</span><span class="p">,</span> <span class="nv">url</span><span class="p">:</span> <span class="s">"git@github.com:Soneso/stellar-ios-mac-sdk.git"</span><span class="p">,</span> <span class="nv">from</span><span class="p">:</span> <span class="s">"3.8.1"</span><span class="p">),</span>
+<pre class="highlight swift"><code><span class="o">.</span><span class="nf">package</span><span class="p">(</span><span class="nv">name</span><span class="p">:</span> <span class="s">"stellarsdk"</span><span class="p">,</span> <span class="nv">url</span><span class="p">:</span> <span class="s">"git@github.com:Soneso/stellar-ios-mac-sdk.git"</span><span class="p">,</span> <span class="nv">from</span><span class="p">:</span> <span class="s">"3.9.0"</span><span class="p">),</span>
 </code></pre>
 <h3 id='cocoapods' class='heading'>CocoaPods</h3>
-<pre class="highlight ruby"><code><span class="n">pod</span> <span class="s1">'stellar-ios-mac-sdk'</span><span class="p">,</span> <span class="s1">'~&gt; 3.8.1'</span>
+<pre class="highlight ruby"><code><span class="n">pod</span> <span class="s1">'stellar-ios-mac-sdk'</span><span class="p">,</span> <span class="s1">'~&gt; 3.9.0'</span>
 </code></pre>
 
 <p>Requires iOS 13+, macOS 10.15+, Swift 5.7+.</p>

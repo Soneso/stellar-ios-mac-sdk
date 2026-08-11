@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          stellarsdk 3.8.1 Docs
+          stellarsdk 3.9.0 Docs
         </a>
          (94% documented)
       </p>
@@ -1435,6 +1435,12 @@
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Enums/WordList.html">WordList</a>
               </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/XdrJsonError.html">XdrJsonError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/XdrJsonValue.html">XdrJsonValue</a>
+              </li>
             </ul>
           </li>
           <li class="nav-group-name">
@@ -1569,6 +1575,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Protocols/XDREncodable.html">XDREncodable</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Protocols/XdrJsonCodable.html">XdrJsonCodable</a>
               </li>
             </ul>
           </li>
@@ -2241,6 +2250,9 @@
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/WrappedData4.html">WrappedData4</a>
               </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/XdrJsonMember.html">XdrJsonMember</a>
+              </li>
             </ul>
           </li>
           <li class="nav-group-name">
@@ -2351,7 +2363,7 @@ For more control over transaction construction, use AssembledTransaction directl
 </ul>
 
               <div class="slightly-smaller">
-                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/SorobanClient.swift#L57-L311">Show on GitHub</a>
+                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/SorobanClient.swift#L57-L332">Show on GitHub</a>
               </div>
           </div>
         </section>
@@ -2467,7 +2479,7 @@ For more control over transaction construction, use AssembledTransaction directl
                         </table>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/SorobanClient.swift#L94-L105">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/SorobanClient.swift#L94-L106">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2568,7 +2580,7 @@ upload the contract code and obtain a wasm hash, then use that hash in the deplo
                         <p>SorobanClient instance connected to the newly deployed contract</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/SorobanClient.swift#L147-L171">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/SorobanClient.swift#L148-L192">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2679,7 +2691,7 @@ and can return the existing hash without submitting a transaction (unless force 
                         <p>Hex-encoded hash of the installed WASM code</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/SorobanClient.swift#L213-L241">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/SorobanClient.swift#L234-L262">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2709,7 +2721,7 @@ and can return the existing hash without submitting a transaction (unless force 
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/SorobanClient.swift#L244-L246">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/SorobanClient.swift#L265-L267">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2799,7 +2811,7 @@ If you want to force signing and submission even if it is a read only call set <
                         </table>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/SorobanClient.swift#L258-L276">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/SorobanClient.swift#L279-L297">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2876,7 +2888,7 @@ This is usefully if you need to manipulate the transaction before signing and se
                         </table>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/SorobanClient.swift#L286-L297">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/SorobanClient.swift#L307-L318">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2910,7 +2922,7 @@ This is usefully if you need to manipulate the transaction before signing and se
                         <p>Array of SCSpecEntryXDR objects</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/SorobanClient.swift#L301-L303">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/SorobanClient.swift#L322-L324">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2944,7 +2956,7 @@ This is usefully if you need to manipulate the transaction before signing and se
                         <p>ContractSpec instance that can be used for type conversions</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/SorobanClient.swift#L307-L309">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/SorobanClient.swift#L328-L330">Show on GitHub</a>
                       </div>
                     </section>
                   </div>

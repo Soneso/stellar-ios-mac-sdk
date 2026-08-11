@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          stellarsdk 3.8.1 Docs
+          stellarsdk 3.9.0 Docs
         </a>
          (94% documented)
       </p>
@@ -1435,6 +1435,12 @@
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Enums/WordList.html">WordList</a>
               </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/XdrJsonError.html">XdrJsonError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/XdrJsonValue.html">XdrJsonValue</a>
+              </li>
             </ul>
           </li>
           <li class="nav-group-name">
@@ -1569,6 +1575,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Protocols/XDREncodable.html">XDREncodable</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Protocols/XdrJsonCodable.html">XdrJsonCodable</a>
               </li>
             </ul>
           </li>
@@ -2241,6 +2250,9 @@
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/WrappedData4.html">WrappedData4</a>
               </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/XdrJsonMember.html">XdrJsonMember</a>
+              </li>
             </ul>
           </li>
           <li class="nav-group-name">
@@ -2299,7 +2311,7 @@
 These values define thresholds for HTTP response handling and network operations.</p>
 
               <div class="slightly-smaller">
-                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/NetworkConstants.swift#L13-L37">Show on GitHub</a>
+                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/NetworkConstants.swift#L13-L42">Show on GitHub</a>
               </div>
           </div>
         </section>
@@ -2439,20 +2451,25 @@ Reference: <a href="https://developers.stellar.org">Stellar developer docs</a></
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Transaction time buffer in seconds (10 seconds)
-Used to account for clock skew when setting transaction time bounds</p>
+                        <p>Transaction time buffer in seconds (10 seconds)</p>
+
+<p>Unused by the SDK: Soroban transactions set no lower time bound
+(minTime = 0). A lower bound derived from the client clock is seen as
+lying in the future by any submission node whose clock or ledger state
+lags the client, which rejects the transaction with tx_too_early.</p>
 
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">static</span> <span class="k">let</span> <span class="nv">TRANSACTION_TIME_BUFFER_SECONDS</span><span class="p">:</span> <span class="kt">Int</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">@available</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">deprecated</span><span class="p">,</span> <span class="nv">message</span><span class="p">:</span> <span class="s">"Unused by the SDK; Soroban transactions set no lower time bound (minTime = 0﹚."</span><span class="p">)</span>
+<span class="kd">public</span> <span class="kd">static</span> <span class="k">let</span> <span class="nv">TRANSACTION_TIME_BUFFER_SECONDS</span><span class="p">:</span> <span class="kt">Int</span></code></pre>
 
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/NetworkConstants.swift#L36">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/NetworkConstants.swift#L41">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
