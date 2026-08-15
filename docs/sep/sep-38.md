@@ -514,7 +514,7 @@ case .failure(let error):
 
 ## Further reading
 
-- [SDK source code](https://github.com/nicobigger/stellar-ios-mac-sdk/tree/main/stellarsdk/stellarsdk/quote) - QuoteService implementation
+- [SDK source code](https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/quote) - QuoteService implementation
 
 ## Reference
 

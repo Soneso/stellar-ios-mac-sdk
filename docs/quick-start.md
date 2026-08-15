@@ -14,14 +14,14 @@ By the end of this guide, you'll:
 Add the SDK to your project using Swift Package Manager. In Xcode, go to **File > Add Packages** and enter the repository URL:
 
 ```
-https://github.com/nickkjordan/stellar-ios-mac-sdk
+https://github.com/Soneso/stellar-ios-mac-sdk
 ```
 
 Or add it to your `Package.swift`:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/nickkjordan/stellar-ios-mac-sdk.git", from: "2.0.0")
+    .package(url: "https://github.com/Soneso/stellar-ios-mac-sdk.git", from: "3.9.0")
 ]
 ```
 
