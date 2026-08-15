@@ -104,6 +104,63 @@ final class TxRepCoverageTestCase: XCTestCase {
         }
     }
 
+    // MARK: - TxRepHelper require* helpers — fixed width fields
+
+    /// A fixed width field carries no length, so a value of any other width names a different
+    /// value than the one written down and is rejected rather than padded or truncated.
+    private func assertRejectsWidth<Field>(_ value: String,
+                                           _ require: ([String: String], String) throws -> Field,
+                                           line: UInt = #line) {
+        XCTAssertThrowsError(try require(["field": value], "field"), line: line) { error in
+            if case TxRepError.invalidValue(let key) = error {
+                XCTAssertEqual(key, "field", line: line)
+            } else {
+                XCTFail("Expected invalidValue with key 'field', got \(error)", line: line)
+            }
+        }
+    }
+
+    func testRequireWrappedData32RejectsAnyOtherWidth() {
+        assertRejectsWidth("00", TxRepHelper.requireWrappedData32)
+        assertRejectsWidth(String(repeating: "ab", count: 31), TxRepHelper.requireWrappedData32)
+        assertRejectsWidth(String(repeating: "ab", count: 33), TxRepHelper.requireWrappedData32)
+    }
+
+    func testRequireWrappedData4RejectsAnyOtherWidth() {
+        assertRejectsWidth("5553", TxRepHelper.requireWrappedData4)
+        assertRejectsWidth("5553440000", TxRepHelper.requireWrappedData4)
+    }
+
+    func testRequireWrappedData12RejectsAnyOtherWidth() {
+        assertRejectsWidth(String(repeating: "ab", count: 11), TxRepHelper.requireWrappedData12)
+        assertRejectsWidth(String(repeating: "ab", count: 13), TxRepHelper.requireWrappedData12)
+    }
+
+    /// The pool id of an expanded pool share trustline asset holds 32 bytes like every other
+    /// fixed width field, whether it is read on its own or through a trustline ledger key.
+    func testTrustlineAssetPoolShareRejectsAPoolIdOfAnotherWidth() {
+        let key = "key.asset.liquidityPoolID"
+        for width in ["00", String(repeating: "bb", count: 31), String(repeating: "bb", count: 33)] {
+            let map = [
+                "key.accountID": destAccountId,
+                "key.asset.type": "ASSET_TYPE_POOL_SHARE",
+                key: width
+            ]
+            XCTAssertThrowsError(try TrustlineAssetXDR.fromTxRep(map, prefix: "key.asset"), "width: \(width)") { error in
+                guard case TxRepError.invalidValue(let reportedKey) = error else {
+                    return XCTFail("Expected invalidValue, got \(error)")
+                }
+                XCTAssertEqual(reportedKey, key)
+            }
+            XCTAssertThrowsError(try LedgerKeyTrustLineXDR.fromTxRep(map, prefix: "key"), "width: \(width)") { error in
+                guard case TxRepError.invalidValue(let reportedKey) = error else {
+                    return XCTFail("Expected invalidValue, got \(error)")
+                }
+                XCTAssertEqual(reportedKey, key)
+            }
+        }
+    }
+
     func testRequireStringHappyPath() throws {
         let map = ["name": "\"hello world\""]
         let s = try TxRepHelper.requireString(map, "name")
@@ -1274,7 +1331,7 @@ final class TxRepCoverageTestCase: XCTestCase {
         let source = try KeyPair(secretSeed: sourceSeed)
         let infOp = OperationXDR(sourceAccount: MuxedAccountXDR?.none, body: .inflation)
 
-        var tx = TransactionXDR(
+        let tx = TransactionXDR(
             sourceAccount: MuxedAccountXDR.ed25519(source.publicKey.bytes),
             seqNum: 120_001,
             cond: .none,

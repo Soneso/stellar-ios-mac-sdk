@@ -81,6 +81,24 @@ class ServiceHelper: @unchecked Sendable {
         }
     }
     
+    /// Resolves a claimable balance id, in any of its spellings, to the hex of its XDR
+    /// encoding: the four byte union discriminant ahead of the 32 byte id, the id Horizon
+    /// serves and the only one its claimable balance routes accept.
+    ///
+    /// - Parameter claimableBalanceId: the id as a "B..." strkey, as the hex of the bare id,
+    /// or as the hex of either discriminant prefixed form
+    /// - Returns: the id as 72 lower case hexadecimal characters
+    /// - Throws: HorizonRequestError.badRequest naming the spelling rule the id breaks
+    static func claimableBalanceIdHorizonHex(_ claimableBalanceId: String) throws(HorizonRequestError) -> String {
+        do {
+            return try ClaimableBalanceIDXDR(claimableBalanceId: claimableBalanceId).paddedBalanceIdHex
+        } catch StellarSDKError.encodingError(let message) {
+            throw HorizonRequestError.badRequest(message: message, horizonErrorResponse: nil)
+        } catch {
+            throw HorizonRequestError.badRequest(message: "claimable balance id \"\(claimableBalanceId)\" is not a well formed strkey", horizonErrorResponse: nil)
+        }
+    }
+
     /// Constructs a complete request URL by combining the base URL with the given path.
     ///
     /// Merges any query items from the base URL with those in the path.

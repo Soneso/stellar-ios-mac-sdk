@@ -133,16 +133,19 @@ public class TransactionsService: @unchecked Sendable {
     
     /// Retrieves transactions for a specific claimable balance.
     ///
-    /// - Parameter claimableBalanceId: The claimable balance ID (hex or B-prefixed format, auto-decoded)
+    /// - Parameter claimableBalanceId: The claimable balance ID, as a "B..." strkey or as hex
+    /// in any of its widths
     /// - Parameter cursor: Optional cursor for pagination continuation
     /// - Parameter order: Optional sort order (ascending or descending by ledger sequence)
     /// - Parameter limit: Optional maximum number of records to return (default 10, max 200)
-    /// - Returns: PageResponse containing transaction records or error
+    /// - Returns: PageResponse containing transaction records, or a badRequest error naming
+    /// the reason when the id holds none of those spellings
     open func getTransactions(forClaimableBalance claimableBalanceId:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil) async -> PageResponse<TransactionResponse>.ResponseEnum {
-        var id = claimableBalanceId
-        if claimableBalanceId.hasPrefix("B"),
-            let cid = try? claimableBalanceId.decodeClaimableBalanceIdToHex() {
-            id = cid
+        let id: String
+        do {
+            id = try ServiceHelper.claimableBalanceIdHorizonHex(claimableBalanceId)
+        } catch {
+            return .failure(error: error)
         }
         let path = "/claimable_balances/" + id.urlPathEncoded + "/transactions"
         return await getTransactions(onPath: path, from:cursor, order:order, limit:limit)
@@ -474,12 +477,13 @@ public class TransactionsService: @unchecked Sendable {
                 subpath = subpath + "?cursor=" + cursor.urlQueryValueEncoded
             }
         case .transactionsForClaimableBalance(let claimableBalanceId, let cursor):
-            var idHex = claimableBalanceId
-            if claimableBalanceId.hasPrefix("B"),
-                let cid = try? claimableBalanceId.decodeClaimableBalanceIdToHex() {
-                idHex = cid
+            let idHex: String
+            do {
+                idHex = try ServiceHelper.claimableBalanceIdHorizonHex(claimableBalanceId)
+            } catch {
+                return TransactionsStreamItem(failure: error)
             }
-            subpath = "/balances/" + idHex.urlPathEncoded + "/transactions"
+            subpath = "/claimable_balances/" + idHex.urlPathEncoded + "/transactions"
             if let cursor = cursor {
                 subpath = subpath + "?cursor=" + cursor.urlQueryValueEncoded
             }

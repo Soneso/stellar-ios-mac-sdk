@@ -60,13 +60,16 @@ public class ClaimableBalancesService: @unchecked Sendable {
     }
     
     /// Retrieves detailed information about a specific claimable balance.
-    /// - Parameter balanceId: The claimable balance ID (hex or B-encoded format)
-    /// - Returns: ClaimableBalanceDetailsResponseEnum with balance details or error
+    /// - Parameter balanceId: The claimable balance ID, as a "B..." strkey or as hex in any
+    /// of its widths
+    /// - Returns: ClaimableBalanceDetailsResponseEnum with balance details, or a badRequest
+    /// error naming the reason when the id holds none of those spellings
     open func getClaimableBalance(balanceId:String) async -> ClaimableBalanceDetailsResponseEnum {
-        var idHex = balanceId
-        if balanceId.hasPrefix("B"),
-            let cid = try? balanceId.decodeClaimableBalanceIdToHex() {
-            idHex = cid
+        let idHex: String
+        do {
+            idHex = try ServiceHelper.claimableBalanceIdHorizonHex(balanceId)
+        } catch {
+            return .failure(error: error)
         }
         let requestPath = "/claimable_balances/" + idHex.urlPathEncoded
         let result = await serviceHelper.GETRequestWithPath(path: requestPath)

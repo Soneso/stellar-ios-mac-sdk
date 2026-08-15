@@ -40,15 +40,17 @@ internal enum ClaimableBalanceIdFraming {
     static let xdrBodySize = MemoryLayout<Int32>.size
         + StellarProtocolConstants.CLAIMABLE_BALANCE_ID_SIZE
 
+    /// The XDR encoding of the union discriminant: the type as a big endian Int32.
+    static let xdrDiscriminant = withUnsafeBytes(
+        of: ClaimableBalanceIDType.claimableBalanceIDTypeV0.rawValue.bigEndian) { Data($0) }
+
     /// Returns true if `body` is `xdrBodySize` bytes wide and opens with the four byte XDR
     /// union discriminant of CLAIMABLE_BALANCE_ID_TYPE_V0.
     ///
     /// - Parameter body: an XDR encoded claimable balance id, the union discriminant followed
     /// by the id
     static func isValidXdrBody<Body: Collection>(_ body: Body) -> Bool where Body.Element == UInt8 {
-        // The big endian XDR encoding of the Int32 union discriminant.
-        let discriminant: [UInt8] = [0, 0, 0, typeDiscriminant]
         return body.count == xdrBodySize
-            && body.prefix(discriminant.count).elementsEqual(discriminant)
+            && body.prefix(xdrDiscriminant.count).elementsEqual(xdrDiscriminant)
     }
 }

@@ -75,8 +75,7 @@ extension TrustlineAssetXDR {
         case "ASSET_TYPE_NATIVE":
             return .native
         case "ASSET_TYPE_POOL_SHARE":
-            let poolIdKey = "\(prefix).liquidityPoolID"
-            let poolId = WrappedData32(try TxRepHelper.requireHex(map, poolIdKey))
+            let poolId = try TxRepHelper.requireWrappedData32(map, "\(prefix).liquidityPoolID")
             return .poolShare(poolId)
         default:
             throw TxRepError.invalidValue(key: typeKey)

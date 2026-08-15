@@ -250,4 +250,37 @@ public struct TransactionResponse: Decodable, Sendable {
         innerTransactionResponse = try values.decodeIfPresent(InnerTransactionResponse.self, forKey: .innerTransaction)
         preconditions = try values.decodeIfPresent(TransactionPreconditionsResponse.self, forKey: .preconditions)
     }
+
+    /// The id of the claimable balance created by the operation at `operationIndex`, as a
+    /// "B..." strkey.
+    ///
+    /// For a fee bump transaction the inner transaction's operation results are read.
+    ///
+    /// - Parameter operationIndex: the position of the CreateClaimableBalance operation
+    /// within the transaction, 0 for the first
+    /// - Returns: the created balance id, or nil when the transaction did not succeed, when
+    /// no operation sits at the index, or when the operation there is not a
+    /// CreateClaimableBalance
+    public func getCreatedClaimableBalanceId(operationIndex: Int = 0) -> String? {
+        let operationResults: [OperationResultXDR]
+        switch transactionResult.result {
+        case .success(let results):
+            operationResults = results
+        case .feeBumpInnerSuccess(let pair):
+            guard case .success(let results) = pair.result.result else {
+                return nil
+            }
+            operationResults = results
+        default:
+            return nil
+        }
+
+        guard operationResults.indices.contains(operationIndex),
+              case .tr(let operationResult) = operationResults[operationIndex],
+              case .createClaimableBalanceResult(let createResult) = operationResult,
+              case .balanceID(let balanceId) = createResult else {
+            return nil
+        }
+        return try? balanceId.claimableBalanceIdString.encodeClaimableBalanceIdHex()
+    }
 }

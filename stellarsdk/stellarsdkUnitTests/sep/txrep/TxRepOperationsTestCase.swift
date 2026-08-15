@@ -477,6 +477,32 @@ class TxRepOperationsTestCase: XCTestCase {
         XCTAssertEqual(try transaction.encodedEnvelope(), reconstructed)
     }
 
+    /// The balance id field holds 32 bytes and carries no length, so a value of any other
+    /// width is rejected rather than zero padded or truncated into a different id.
+    func testClaimClaimableBalanceRejectsABalanceIdOfAnotherWidth() throws {
+        let source = try KeyPair(secretSeed: "SC4CGETADVYTCR5HEAVZRB3DZQY5Y4J7RFNJTRA6ESMHIPEZUSTE2QDK")
+        let account = Account(keyPair: source, sequenceNumber: 15000)
+
+        let balanceId = "0101010101010101010101010101010101010101010101010101010101010101"
+        let operation = ClaimClaimableBalanceOperation(balanceId: balanceId, sourceAccountId: nil)
+        let transaction = try Transaction(sourceAccount: account, operations: [operation], memo: Memo.none)
+        try transaction.sign(keyPair: source, network: .testnet)
+
+        let key = "tx.operations[0].body.claimClaimableBalanceOp.balanceID.v0"
+        let txRep = try TxRep.toTxRep(transactionEnvelope: transaction.encodedEnvelope())
+        XCTAssertTrue(txRep.contains("\(key): \(balanceId)"))
+
+        for width in ["00", balanceId + "00", String(balanceId.dropFirst(2))] {
+            let corrupted = txRep.replacingOccurrences(of: "\(key): \(balanceId)", with: "\(key): \(width)")
+            XCTAssertThrowsError(try TxRep.fromTxRep(txRep: corrupted), "width: \(width)") { error in
+                guard case TxRepError.invalidValue(let reportedKey) = error else {
+                    return XCTFail("Expected invalidValue, got \(error)")
+                }
+                XCTAssertEqual(reportedKey, key)
+            }
+        }
+    }
+
     func testBeginSponsoringFutureReservesOperationTxRep() throws {
         let source = try KeyPair(secretSeed: "SC4CGETADVYTCR5HEAVZRB3DZQY5Y4J7RFNJTRA6ESMHIPEZUSTE2QDK")
         let sponsored = try KeyPair(accountId: "GDW6AUTBXTOC7FIKUO5BOO3OGLK4SF7ZPOBLMQHMZDI45J2Z6VXRB5NR")
