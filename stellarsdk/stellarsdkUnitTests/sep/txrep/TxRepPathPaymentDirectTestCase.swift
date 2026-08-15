@@ -23,7 +23,7 @@ final class TxRepPathPaymentDirectTestCase: XCTestCase {
     private let accountId = "GDW6AUTBXTOC7FIKUO5BOO3OGLK4SF7ZPOBLMQHMZDI45J2Z6VXRB5NR"
 
     /// A second account ID used as an issuer.
-    private let issuerId = "GCMUFBSB6OB6R2MJKXB5G5UXZHE3XO4H5T4FNV2VDVMQRJZEQHWJFHZV"
+    private let issuerId = "GCMUFBSB6OB6R2MJKXB5G5UXZHE3XO4H5T4FNV2VDVMQRJZEQHWJFRP5"
 
     // MARK: - Helpers
 

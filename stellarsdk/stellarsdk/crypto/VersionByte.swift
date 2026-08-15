@@ -62,29 +62,25 @@ enum VersionByte:UInt8 {
     case claimableBalance = 8 // 1 << 3 - B
 }
 
-extension VersionByte: RawRepresentable {
-    typealias RawValue = UInt8
-    
-    var rawValue: UInt8 {
+extension VersionByte {
+
+    /// The strkey encoded string lengths a strkey carrying this version byte may have.
+    ///
+    /// A strkey encodes the version byte, the body and the CRC-16 checksum, so a type with a
+    /// fixed body size has exactly one valid encoded length. Only the signed payload has a
+    /// variable body and therefore a range of lengths: its body is the 32 signer bytes, a 4
+    /// byte length field and the signed data zero padded to a multiple of 4 bytes. The signed
+    /// data is 1 to 64 bytes, so the body spans 40 to 100 bytes.
+    var encodedLengthRange: ClosedRange<Int> {
         switch self {
-        case .ed25519PublicKey:
-            return 48
+        case .ed25519PublicKey, .ed25519SecretSeed, .preAuthTX, .sha256Hash, .contract, .liquidityPool:
+            return StellarProtocolConstants.STRKEY_ENCODED_LENGTH_STANDARD...StellarProtocolConstants.STRKEY_ENCODED_LENGTH_STANDARD
         case .med25519PublicKey:
-            return 96
+            return StellarProtocolConstants.STRKEY_ENCODED_LENGTH_MUXED...StellarProtocolConstants.STRKEY_ENCODED_LENGTH_MUXED
         case .signedPayload:
-            return 120
-        case .ed25519SecretSeed:
-            return 144
-        case .preAuthTX:
-            return 152
-        case .sha256Hash:
-            return 184
-        case .contract:
-            return 16
-        case .liquidityPool:
-            return 88
+            return StellarProtocolConstants.STRKEY_SIGNED_PAYLOAD_MIN_LENGTH...StellarProtocolConstants.STRKEY_ENCODED_LENGTH_SIGNED_PAYLOAD_MAX
         case .claimableBalance:
-            return 8
+            return StellarProtocolConstants.STRKEY_ENCODED_LENGTH_CLAIMABLE_BALANCE...StellarProtocolConstants.STRKEY_ENCODED_LENGTH_CLAIMABLE_BALANCE
         }
     }
 }

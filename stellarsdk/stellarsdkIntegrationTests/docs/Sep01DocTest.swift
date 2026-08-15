@@ -142,7 +142,7 @@ class Sep01DocTest: XCTestCase {
         FEDERATION_SERVER="https://example.com/federation"
         TRANSFER_SERVER_SEP0024="https://example.com/sep24"
         WEB_AUTH_ENDPOINT="https://example.com/auth"
-        SIGNING_KEY="GCKX7PGTILCAM6NKST6PWNCBSMLHZJKFWXFHQLE4SUVKBQY3HOOYUNK"
+        SIGNING_KEY="GBBHQ7H4V6RRORKYLHTCAWP6MOHNORRFJSDPXDFYDGJB2LPZUFPXUEW3"
 
         [DOCUMENTATION]
         ORG_NAME="Example Anchor"
@@ -156,7 +156,7 @@ class Sep01DocTest: XCTestCase {
             XCTAssertEqual("https://example.com/federation", info.federationServer)
             XCTAssertEqual("https://example.com/sep24", info.transferServerSep24)
             XCTAssertEqual("https://example.com/auth", info.webAuthEndpoint)
-            XCTAssertEqual("GCKX7PGTILCAM6NKST6PWNCBSMLHZJKFWXFHQLE4SUVKBQY3HOOYUNK", info.signingKey)
+            XCTAssertEqual("GBBHQ7H4V6RRORKYLHTCAWP6MOHNORRFJSDPXDFYDGJB2LPZUFPXUEW3", info.signingKey)
         } catch {
             XCTFail("Failed to parse TOML: \(error)")
         }

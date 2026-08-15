@@ -36,7 +36,7 @@ class LedgerKeyXDRUnitTests: XCTestCase {
 
     func testLedgerKeyXDRTrustline() throws {
         let accountIdString = "GCEZWKCA5VLDNRLN3RPRJMRZOX3Z6G5CHCGSNFHEYVXM3XOJMDS674JZ"
-        let issuerString = "GA2C5RFPE6GCKMY3US5PAB6UZLKIGSPIUKSLRB6Q723BM2OEZ4KM5GAA"
+        let issuerString = "GA2C5RFPE6GCKMY3US5PAB6UZLKIGSPIUKSLRB6Q723BM2OEZ4KM4Z6R"
         let accountPublicKey = try PublicKey(accountId: accountIdString)
         let issuerKeyPair = try KeyPair(accountId: issuerString)
 
@@ -127,6 +127,35 @@ class LedgerKeyXDRUnitTests: XCTestCase {
         default:
             XCTFail("Expected claimable balance ledger key")
         }
+    }
+
+    func testClaimableBalanceIdSpellings() throws {
+        let hashHex = "c582697b67cbec7f9ce64f4dc67bfb2bfd26318bb9f964f4d70e3f41f650b1e6"
+        let bodyHex = "00" + hashHex
+        let horizonHex = "00000000" + hashHex
+        let bAddress = try bodyHex.encodeClaimableBalanceIdHex()
+
+        // Every spelling names the same claimable balance id.
+        for spelling in [hashHex, bodyHex, horizonHex, bAddress] {
+            let id = try ClaimableBalanceIDXDR(claimableBalanceId: spelling)
+            XCTAssertEqual(id.claimableBalanceIdString, bodyHex)
+        }
+
+        // The hex encoder accepts the same three hex spellings and gives the same B-address.
+        for hexSpelling in [hashHex, bodyHex, horizonHex] {
+            XCTAssertEqual(try hexSpelling.encodeClaimableBalanceIdHex(), bAddress)
+        }
+
+        // A discriminant naming a type the XDR union does not define is rejected in both widths.
+        XCTAssertThrowsError(try ClaimableBalanceIDXDR(claimableBalanceId: "01" + hashHex))
+        XCTAssertThrowsError(try ClaimableBalanceIDXDR(claimableBalanceId: "00000001" + hashHex))
+        XCTAssertThrowsError(try ("01" + hashHex).encodeClaimableBalanceIdHex())
+        XCTAssertThrowsError(try ("00000001" + hashHex).encodeClaimableBalanceIdHex())
+
+        // A hex of any other width names no claimable balance id.
+        XCTAssertThrowsError(try ClaimableBalanceIDXDR(claimableBalanceId: String(hashHex.dropFirst(2))))
+        XCTAssertThrowsError(try ClaimableBalanceIDXDR(claimableBalanceId: horizonHex + "00"))
+        XCTAssertThrowsError(try ClaimableBalanceIDXDR(claimableBalanceId: ""))
     }
 
     func testLedgerKeyXDRLiquidityPool() throws {
@@ -403,7 +432,7 @@ class LedgerKeyXDRUnitTests: XCTestCase {
 
     func testLedgerKeyTrustlineXDRFields() throws {
         let accountIdString = "GCEZWKCA5VLDNRLN3RPRJMRZOX3Z6G5CHCGSNFHEYVXM3XOJMDS674JZ"
-        let issuerString = "GA2C5RFPE6GCKMY3US5PAB6UZLKIGSPIUKSLRB6Q723BM2OEZ4KM5GAA"
+        let issuerString = "GA2C5RFPE6GCKMY3US5PAB6UZLKIGSPIUKSLRB6Q723BM2OEZ4KM4Z6R"
         let accountPublicKey = try PublicKey(accountId: accountIdString)
         let issuerKeyPair = try KeyPair(accountId: issuerString)
 
@@ -439,7 +468,7 @@ class LedgerKeyXDRUnitTests: XCTestCase {
 
     func testLedgerKeyTrustlineXDRWithAlphanum12() throws {
         let accountIdString = "GCEZWKCA5VLDNRLN3RPRJMRZOX3Z6G5CHCGSNFHEYVXM3XOJMDS674JZ"
-        let issuerString = "GA2C5RFPE6GCKMY3US5PAB6UZLKIGSPIUKSLRB6Q723BM2OEZ4KM5GAA"
+        let issuerString = "GA2C5RFPE6GCKMY3US5PAB6UZLKIGSPIUKSLRB6Q723BM2OEZ4KM4Z6R"
         let accountPublicKey = try PublicKey(accountId: accountIdString)
         let issuerKeyPair = try KeyPair(accountId: issuerString)
 

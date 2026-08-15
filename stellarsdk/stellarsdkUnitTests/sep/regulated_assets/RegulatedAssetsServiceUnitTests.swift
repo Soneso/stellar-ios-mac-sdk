@@ -1198,7 +1198,7 @@ final class RegulatedAssetsServiceUnitTests: XCTestCase {
 
     func testAuthorizationRequiredAccountNotFound() async throws{
         // Use a valid format account ID that doesn't exist
-        let notFoundAccountId = "GDIODQRBHD32QZWTGOHO2MRZQY2TRG5KTI2NNTFYH2JDYZGMU3NJVXXX"
+        let notFoundAccountId = "GDIODQRBHD32QZWTGOHO2MRZQY2TRG5KTI2NNTFYH2JDYZGMU3NJVAUI"
         let tomlString = """
         NETWORK_PASSPHRASE = "Test SDF Network ; September 2015"
         HORIZON_URL = "http://\(horizonServer)"

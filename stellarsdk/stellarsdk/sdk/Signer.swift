@@ -48,11 +48,12 @@ public final class Signer: Sendable {
     /// Creates a signed payload signer that combines an account ID with custom payload data (CAP-40).
     /// - Parameters:
     ///   - accountId: The Stellar account ID to use as the signer.
-    ///   - payload: The custom payload data (max 64 bytes).
+    ///   - payload: The custom payload data (1 to 64 bytes).
     /// - Returns: A signer key representing the signed payload.
     public static func signedPayload(accountId: String, payload: Data) throws -> SignerKeyXDR {
-        if payload.count > StellarProtocolConstants.SIGNED_PAYLOAD_MAX_PAYLOAD {
-            throw StellarSDKError.invalidArgument(message: "invalid payload length, must be less than \(StellarProtocolConstants.SIGNED_PAYLOAD_MAX_PAYLOAD)")
+        let allowed = SignedPayloadFraming.payloadLengthRange
+        if !allowed.contains(payload.count) {
+            throw StellarSDKError.invalidArgument(message: "invalid payload length \(payload.count), must be \(allowed.lowerBound) to \(allowed.upperBound) bytes")
         }
         let pk = try PublicKey(accountId: accountId)
         return SignerKeyXDR.signedPayload(Ed25519SignedPayload(ed25519: pk.wrappedData32(), payload: payload))

@@ -1523,11 +1523,28 @@ final class ExtensionsTestCase: XCTestCase {
         let emptyDecoded = empty.base32DecodedData
         XCTAssertNotNil(emptyDecoded, "Empty string should decode")
         XCTAssertEqual(emptyDecoded?.count, 0, "Empty decode should be empty data")
+    }
 
-        // Test invalid base32 (contains invalid character '1')
-        let invalid = "1234ABCD"
-        let invalidDecoded = invalid.base32DecodedData
-        XCTAssertNil(invalidDecoded, "Invalid base32 should return nil")
+    func testBase32DecodedDataRejectsMalformedInput() {
+        // Characters outside the base32 alphabet (A-Z, 2-7)
+        let invalidCharacters = ["1234ABCD", "ABCDEF8A", "ABCD*FGH", "ABCDEFG?", "ABCDEFGä"]
+        for invalid in invalidCharacters {
+            XCTAssertNil(invalid.base32DecodedData,
+                         "'\(invalid)' carries characters the base32 alphabet does not have")
+        }
+
+        // Base32 encodes five bytes as eight characters, so a trailing block of 1, 3 or 6
+        // characters names no whole number of bytes
+        let invalidLengths = ["A", "ABC", "ABCDEF", "ABCDEFGHA", "ABCDEFGHABC", "ABCDEFGHABCDEF"]
+        for invalid in invalidLengths {
+            XCTAssertNil(invalid.base32DecodedData,
+                         "'\(invalid)' is \(invalid.count) characters long, which decodes to no whole number of bytes")
+        }
+
+        // base32DecodedData reads the same alphabet and the same block widths as the free
+        // function it forwards to, which callers outside the SDK reach directly
+        XCTAssertNil(base32DecodeToData(invalidCharacters[0]))
+        XCTAssertNil(base32DecodeToData(invalidLengths[0]))
     }
 
     func testBase32DecodedString() {

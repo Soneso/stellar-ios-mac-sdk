@@ -1170,7 +1170,7 @@ final class AssembledTransactionDeepUnitTests: XCTestCase {
         let otherKeyPair = try KeyPair.generateRandomKeyPair()
 
         let addressCredentials1 = SorobanAddressCredentialsXDR(
-            address: try SCAddressXDR(accountId: "GCQHNAXSI55GX2GN6D67GK7BHVPSLJUGZQEU7WJ5LKR5PNUCGLIMAO4K"),
+            address: try SCAddressXDR(accountId: "GCQHNAXSI55GX2GN6D67GK7BHVPSLJUGZQEU7WJ5LKR5PNUCGLIMAMSW"),
             nonce: 123,
             signatureExpirationLedger: 1000,
             signature: SCValXDR.void

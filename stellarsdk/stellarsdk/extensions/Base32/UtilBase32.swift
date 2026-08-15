@@ -299,7 +299,6 @@ internal func base32decode(_ string: String, _ table: [UInt8]) -> [UInt8]? {
         let pos = string.unicodeScalars.distance(from: string.unicodeScalars.startIndex, to: index)
         // if pos points padding "=", it's valid.
         if pos != length - leastPaddingLength {
-            print("string contains some invalid characters.")
             return nil
         }
     }
@@ -314,7 +313,6 @@ internal func base32decode(_ string: String, _ table: [UInt8]) -> [UInt8]? {
     case 5: additionalBytes = 3
     case 7: additionalBytes = 4
     default:
-        print("string length is invalid.")
         return nil
     }
     

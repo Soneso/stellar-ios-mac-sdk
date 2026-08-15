@@ -74,34 +74,28 @@ public final class Seed: Sendable {
 
     /// Creates a seed from a Stellar secret seed string (S-address).
     ///
-    /// Decodes a base32-encoded secret seed string (starting with 'S') into its binary form.
-    /// The secret seed is the strkey-encoded representation of a seed, including version byte
-    /// and checksum for error detection.
+    /// The secret must be a strkey encoded ed25519 secret seed ("S..."): canonical base32
+    /// carrying the ed25519 secret seed version byte and a matching CRC-16 checksum. The
+    /// checksum is verified, so a corrupted secret is rejected.
     ///
     /// - Parameter secret: A Stellar secret seed string (e.g., "SXXX...")
     ///
     /// - Throws:
-    ///   - Ed25519Error.invalidSeed if the secret format is invalid
-    ///   - Ed25519Error.invalidSeedLength if decoded bytes are not 32 bytes
+    ///   - Ed25519Error.invalidSeed if the secret is not a well formed strkey encoded ed25519 secret seed
     ///
     /// Example:
     /// ```swift
-    /// let seed = try Seed(secret: "SAVZ4FJLGPUXPN4EPLWJBLZW3FZSHH2GQJA6KPB47BQZBZJ7XHVI3T6N")
+    /// let seed = try Seed(secret: "SAVZ4FJLGPUXPN4EPLWJBLZW3FZSHH2GQJA6KPB47BQZBZJ7XHVI32D7")
     /// ```
     public convenience init(secret: String) throws {
-
-        if !secret.hasPrefix(StellarProtocolConstants.STRKEY_PREFIX_SEED) {
+        let decoded: Data
+        do {
+            decoded = try secret.decodeEd25519SecretSeed()
+        } catch is KeyUtilsError {
             throw Ed25519Error.invalidSeed
         }
 
-        if let data = secret.base32DecodedData {
-            if data.count - StellarProtocolConstants.STRKEY_OVERHEAD_SIZE <= StellarProtocolConstants.STRKEY_VERSION_BYTE_SIZE {
-                throw Ed25519Error.invalidSeed
-            }
-            try self.init(bytes:Array(([UInt8](data))[StellarProtocolConstants.STRKEY_VERSION_BYTE_SIZE...data.count - StellarProtocolConstants.STRKEY_OVERHEAD_SIZE]))
-        } else {
-            throw Ed25519Error.invalidSeed
-        }
+        try self.init(bytes: [UInt8](decoded))
     }
 
     /// The raw seed bytes (32 bytes).

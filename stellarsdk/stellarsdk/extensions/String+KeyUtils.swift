@@ -168,7 +168,8 @@ extension String {
     /// Encodes a contract id from its hex representation into its strkey representation ("C...").
     ///
     /// - Returns: StrKey encoded contract id
-    /// - Throws: StellarSDKError if the string is not valid hexadecimal
+    /// - Throws: StellarSDKError.invalidArgument if the string is not valid hexadecimal, or
+    /// if it does not hold the 32 bytes a contract id is wide
     public func encodeContractIdHex() throws -> String {
         if let data = data(using: .hexadecimal) {
             return try data.encodeContractId()
@@ -179,7 +180,10 @@ extension String {
     /// Encodes a claimable balance id from its hex representation into its strkey representation ("B...").
     ///
     /// - Returns: StrKey encoded claimable balance id
-    /// - Throws: StellarSDKError if the string is not valid hexadecimal
+    /// - Throws: StellarSDKError.invalidArgument if the string is not valid hexadecimal, or
+    /// if it holds neither the 32 bytes an id is wide, nor the 33 bytes of a body opening
+    /// with the claimable balance type discriminant, nor the 36 bytes of the XDR encoding
+    /// opening with the four byte union discriminant, the shape Horizon reports
     public func encodeClaimableBalanceIdHex() throws -> String {
         if let data = data(using: .hexadecimal) {
             return try data.encodeClaimableBalanceId()
@@ -190,7 +194,8 @@ extension String {
     /// Encodes a liquidity pool id from its hex representation into its strkey representation ("L...").
     ///
     /// - Returns: StrKey encoded liquidity pool id
-    /// - Throws: StellarSDKError if the string is not valid hexadecimal
+    /// - Throws: StellarSDKError.invalidArgument if the string is not valid hexadecimal, or
+    /// if it does not hold the 32 bytes a liquidity pool id is wide
     public func encodeLiquidityPoolIdHex() throws -> String {
         if let data = data(using: .hexadecimal) {
             return try data.encodeLiquidityPoolId()
@@ -209,25 +214,10 @@ extension String {
     }
     
     private func isValid(versionByte:VersionByte) -> Bool {
-        switch versionByte {
-        case .ed25519PublicKey, .ed25519SecretSeed, .preAuthTX, .sha256Hash, .contract, .liquidityPool:
-            if self.count != StellarProtocolConstants.STRKEY_ENCODED_LENGTH_STANDARD {
-                return false
-            }
-        case .med25519PublicKey:
-            if self.count != StellarProtocolConstants.STRKEY_ENCODED_LENGTH_MUXED {
-                return false
-            }
-        case .signedPayload:
-            if self.count < StellarProtocolConstants.STRKEY_SIGNED_PAYLOAD_MIN_LENGTH || self.count > StellarProtocolConstants.STRKEY_ENCODED_LENGTH_SIGNED_PAYLOAD_MAX {
-                return false
-            }
-        case .claimableBalance:
-            if self.count != StellarProtocolConstants.STRKEY_ENCODED_LENGTH_CLAIMABLE_BALANCE {
-                return false
-            }
+        if !versionByte.encodedLengthRange.contains(self.count) {
+            return false
         }
-        
+
         do {
             let data = try decodeCheck(versionByte: versionByte)
             switch versionByte {
@@ -248,12 +238,33 @@ extension String {
         }
     }
     
+    /// Decodes a strkey to its raw payload, verifying the encoded length, the canonical
+    /// base32 encoding, the version byte, the CRC-16 checksum and, for a signed payload or a
+    /// claimable balance id, the shape of the decoded body.
+    ///
+    /// - Parameter versionByte: the version byte the strkey must carry
+    ///
+    /// - Throws: KeyUtilsError.invalidEncodedString if the length is not one the version byte
+    /// allows, if the string is not canonical base32, if a signed payload body does not
+    /// carry the framing SEP-23 defines, or if a claimable balance id body opens with a type
+    /// the XDR union does not define,
+    /// KeyUtilsError.invalidVersionByte if it carries a different version byte,
+    /// KeyUtilsError.invalidChecksum if the checksum does not match the payload
+    ///
     private func decodeCheck(versionByte:VersionByte) throws -> Data {
+        // Counting characters bounds the length safely: a character spanning more than one
+        // unicode scalar carries one outside the base32 alphabet, which the decode rejects.
+        if !versionByte.encodedLengthRange.contains(self.count) {
+            throw KeyUtilsError.invalidEncodedString
+        }
         if let decoded = base32DecodedData {
             if self != decoded.base32EncodedString.replacingOccurrences(of: "=", with: "") {
                 throw KeyUtilsError.invalidEncodedString
             }
             let buffer = decoded.bytes
+            if buffer.count < StellarProtocolConstants.STRKEY_MIN_DECODED_SIZE {
+                throw KeyUtilsError.invalidEncodedString
+            }
             if let byte = buffer.first, let dataVersionByte = VersionByte(rawValue: byte), dataVersionByte == versionByte {
                 let payload = Array(buffer[0...buffer.count - StellarProtocolConstants.STRKEY_OVERHEAD_SIZE])
                 let data = Array(payload[StellarProtocolConstants.STRKEY_VERSION_BYTE_SIZE...payload.count - 1])
@@ -265,7 +276,16 @@ extension String {
                 if checksum != checksumedData {
                     throw KeyUtilsError.invalidChecksum
                 }
-                
+
+                if versionByte == .signedPayload && !SignedPayloadFraming.isValidBody(data) {
+                    throw KeyUtilsError.invalidEncodedString
+                }
+
+                if versionByte == .claimableBalance
+                    && !ClaimableBalanceIdFraming.isValidBody(data) {
+                    throw KeyUtilsError.invalidEncodedString
+                }
+
                 return Data(bytes: data, count: data.count)
             } else {
                 throw KeyUtilsError.invalidVersionByte

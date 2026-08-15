@@ -222,9 +222,9 @@ class WebAuthForContractsChallengeMock: ResponsesMock {
                 else if account == "CA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE" {
                     mock.statusCode = 200
                     let clientDomain = "client.example.com"
-                    // Use the public key from the test's secret seed SBXFU2EMT2Y3IRGN2MSXIBIAXEPT77PYKN5HHQSDBLNCT7OCYYBA2K3L
+                    // Use the public key from the test's secret seed SBXFU2EMT2Y3IRGN2MSXIBIAXEPT77PYKN5HHQSDBLNCT7OCYYBA3G4L
                     // which is GAIWNNJMDNZTSKEIWBZIERE3WCRIW2LCA3PK3GRX2K7DGWDA7Z5MVUZN
-                    let clientDomainKeyPair = try! KeyPair(secretSeed: "SBXFU2EMT2Y3IRGN2MSXIBIAXEPT77PYKN5HHQSDBLNCT7OCYYBA2K3L")
+                    let clientDomainKeyPair = try! KeyPair(secretSeed: "SBXFU2EMT2Y3IRGN2MSXIBIAXEPT77PYKN5HHQSDBLNCT7OCYYBA3G4L")
                     return self.buildValidChallengeWithClientDomain(
                         clientAccountId: account,
                         homeDomain: self.domain,
