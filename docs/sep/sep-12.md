@@ -607,7 +607,7 @@ import stellarsdk
 let kycService = KycService(kycServiceAddress: "https://api.anchor.com/kyc")
 
 // First argument is the Stellar account ID (G... address), NOT the customer UUID
-let accountId = "GXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+let accountId = "GXXXXX..."
 
 // Delete customer data
 let result = await kycService.deleteCustomerInfo(account: accountId, jwt: jwtToken)
@@ -665,7 +665,7 @@ import stellarsdk
 let kycService = KycService(kycServiceAddress: "https://api.anchor.com/kyc")
 
 // Contract account address (starts with C...)
-let contractAccount = "CXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+let contractAccount = "CXXXXX..."
 
 // Get customer info for contract account
 // JWT obtained via SEP-45 authentication

@@ -35,10 +35,10 @@ The `jwtToken()` method handles the entire flow automatically. This example load
 import stellarsdk
 
 // Your contract account (must implement __check_auth)
-let contractId = "CCIBUCGPOHWMMMFPFTDWBSVHQRT4DIBJ7AD6BZJYDITBK2LCVBYW7HUQ"
+let contractId = "CDZJIDQW5WTPAZ64PGIJGVEIDNK72LL3LKUZWG3G6GWXYQKI2JNIVFNV"
 
 // Signer registered in your contract's __check_auth implementation
-let signer = try KeyPair(secretSeed: "SXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX")
+let signer = try KeyPair(secretSeed: "SXXXXX...")
 
 // Create instance from domain and authenticate in one step
 let authResult = await WebAuthForContracts.from(domain: "anchor.example.com", network: Network.testnet)
@@ -88,7 +88,7 @@ import stellarsdk
 
 let webAuth = try WebAuthForContracts(
     authEndpoint: "https://anchor.example.com/auth/sep45",
-    webAuthContractId: "CCALHRGH5RXIDJDRLPPG4ZX2S563TB2QKKJR4STWKVQCYB6JVPYQXHRG", // webAuthContractId (C...)
+    webAuthContractId: "CA7A3N2BB35XMTFPAYWVZEF4TEYXW7DAEWDXJNQGUPR5SWSM2UVZCJM2", // webAuthContractId (C...)
     serverSigningKey: "GBWMCCC3NHSKLAOJDBKKYW7SSH2PFTTNVFKWSGLWGDLEBKLOVP5JLBBP", // serverSigningKey (G...)
     serverHomeDomain: "anchor.example.com",
     network: Network.testnet
@@ -104,7 +104,7 @@ import stellarsdk
 
 let webAuth = try WebAuthForContracts(
     authEndpoint: "https://anchor.example.com/auth/sep45",
-    webAuthContractId: "CCALHRGH5RXIDJDRLPPG4ZX2S563TB2QKKJR4STWKVQCYB6JVPYQXHRG",
+    webAuthContractId: "CA7A3N2BB35XMTFPAYWVZEF4TEYXW7DAEWDXJNQGUPR5SWSM2UVZCJM2",
     serverSigningKey: "GBWMCCC3NHSKLAOJDBKKYW7SSH2PFTTNVFKWSGLWGDLEBKLOVP5JLBBP",
     serverHomeDomain: "anchor.example.com",
     network: Network.testnet,
@@ -119,8 +119,8 @@ The `jwtToken()` method executes the complete SEP-45 flow: requesting the challe
 ```swift
 import stellarsdk
 
-let contractId = "CCIBUCGPOHWMMMFPFTDWBSVHQRT4DIBJ7AD6BZJYDITBK2LCVBYW7HUQ"
-let signer = try KeyPair(secretSeed: "SXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX")
+let contractId = "CDZJIDQW5WTPAZ64PGIJGVEIDNK72LL3LKUZWG3G6GWXYQKI2JNIVFNV"
+let signer = try KeyPair(secretSeed: "SXXXXX...")
 
 let authResult = await WebAuthForContracts.from(domain: "anchor.example.com", network: Network.testnet)
 guard case .success(let webAuth) = authResult else { return }
@@ -190,11 +190,11 @@ When you have direct access to the client domain's signing key, you can sign loc
 ```swift
 import stellarsdk
 
-let contractId = "CCIBUCGPOHWMMMFPFTDWBSVHQRT4DIBJ7AD6BZJYDITBK2LCVBYW7HUQ"
-let signer = try KeyPair(secretSeed: "SXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX")
+let contractId = "CDZJIDQW5WTPAZ64PGIJGVEIDNK72LL3LKUZWG3G6GWXYQKI2JNIVFNV"
+let signer = try KeyPair(secretSeed: "SXXXXX...")
 
 // Your wallet's SIGNING_KEY from stellar.toml
-let clientDomainKeyPair = try KeyPair(secretSeed: "SYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY")
+let clientDomainKeyPair = try KeyPair(secretSeed: "SYYYYY...")
 
 let authResult = await WebAuthForContracts.from(domain: "anchor.example.com", network: Network.testnet)
 guard case .success(let webAuth) = authResult else { return }
@@ -215,8 +215,8 @@ If the client domain signing key is on a remote server, use a callback function.
 ```swift
 import stellarsdk
 
-let contractId = "CCIBUCGPOHWMMMFPFTDWBSVHQRT4DIBJ7AD6BZJYDITBK2LCVBYW7HUQ"
-let signer = try KeyPair(secretSeed: "SXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX")
+let contractId = "CDZJIDQW5WTPAZ64PGIJGVEIDNK72LL3LKUZWG3G6GWXYQKI2JNIVFNV"
+let signer = try KeyPair(secretSeed: "SXXXXX...")
 
 let signingCallback: (SorobanAuthorizationEntryXDR) async throws -> SorobanAuthorizationEntryXDR = { entry in
     // Send the entry to your remote signing service
@@ -264,7 +264,7 @@ For more control, you can execute each step individually. Helpful for debugging 
 ```swift
 import stellarsdk
 
-let contractAccountId = "CCIBUCGPOHWMMMFPFTDWBSVHQRT4DIBJ7AD6BZJYDITBK2LCVBYW7HUQ"
+let contractAccountId = "CDZJIDQW5WTPAZ64PGIJGVEIDNK72LL3LKUZWG3G6GWXYQKI2JNIVFNV"
 let signerKeyPair = try KeyPair(secretSeed: "SXXXXX...")
 let homeDomain = "anchor.example.com"
 

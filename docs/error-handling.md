@@ -433,46 +433,54 @@ do {
 
 ### Key Validation Errors
 
-`KeyPair(accountId:)` can throw either `KeyUtilsError` or `Ed25519Error` depending on how the input fails validation. You must catch both:
+`KeyPair(accountId:)` reports every malformed account ID as `Ed25519Error.invalidPublicKey`, and `KeyPair(secretSeed:)` reports every malformed secret seed as `Ed25519Error.invalidSeed`:
 
 ```swift
 import stellarsdk
 
+let accountIdInput = "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ"
+
 do {
-    let keyPair = try KeyPair(accountId: someString)
+    let keyPair = try KeyPair(accountId: accountIdInput)
     print("Valid account: \(keyPair.accountId)")
-} catch let error as KeyUtilsError {
-    switch error {
-    case .invalidEncodedString:
-        print("Not a valid Base32-encoded string")
-    case .invalidVersionByte:
-        print("Wrong key prefix (expected G for public key)")
-    case .invalidChecksum:
-        print("Checksum mismatch, key may be corrupted")
-    }
-} catch let error as Ed25519Error {
-    switch error {
-    case .invalidPublicKey:
-        print("Decoded key fails Ed25519 validation")
-    case .invalidPublicKeyLength:
-        print("Decoded key has wrong byte length")
-    default:
-        print("Key error: \(error)")
-    }
+} catch Ed25519Error.invalidPublicKey {
+    print("Not a valid account ID")
 } catch {
     print("Unexpected error: \(error)")
 }
 ```
 
-Which error is thrown depends on the input:
+To tell apart the ways an account ID can be malformed, decode it with the strkey decoder, which reports each failure as its own `KeyUtilsError` case:
+
+```swift
+import stellarsdk
+
+let accountIdInput = "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ"
+
+do {
+    let rawKey = try accountIdInput.decodeEd25519PublicKey()
+    print("Raw key bytes: \(rawKey.count)")
+} catch KeyUtilsError.invalidEncodedString {
+    print("Not 56 characters of canonical Base32")
+} catch KeyUtilsError.invalidVersionByte {
+    print("Wrong key prefix (expected G for public key)")
+} catch KeyUtilsError.invalidChecksum {
+    print("Checksum mismatch, key may be corrupted")
+} catch {
+    print("Unexpected error: \(error)")
+}
+```
+
+Which `KeyUtilsError` is thrown depends on the input:
 
 | Input | Error |
 |---|---|
 | Random string, not valid Base32 | `KeyUtilsError.invalidEncodedString` |
+| Valid Base32 but not 56 characters | `KeyUtilsError.invalidEncodedString` |
 | Valid Base32 but wrong version byte prefix | `KeyUtilsError.invalidVersionByte` |
 | Correct format but corrupted checksum | `KeyUtilsError.invalidChecksum` |
-| Passes Base32 decode but fails key validation | `Ed25519Error.invalidPublicKey` |
-| Decoded bytes have wrong length | `Ed25519Error.invalidPublicKeyLength` |
+
+The other strkey decoders report the same three cases. One exception: `decodeMuxedAccount()` takes an account ID or a muxed address and picks its error type by input length — a malformed 56-character account ID comes back as `Ed25519Error.invalidPublicKey`, everything else as `KeyUtilsError` — so catch both types. See the [SEP-23 guide](sep/sep-23.md) for the full set of validation rules.
 
 ## Debugging Tips
 

@@ -168,7 +168,7 @@ import stellarsdk
 let sdk = StellarSDK.testNet()
 
 // Sender's keypair
-let senderKeyPair = try! KeyPair(secretSeed: "SCZANGBA5YHTNYVVV3C7CAZMTQDBJHJG6C34CPMLIHJPFV5RXN5M6CSS")
+let senderKeyPair = try! KeyPair(secretSeed: "SCZANGBA5YHTNYVVV3C7CAZMTQDBJHJG6C34CPMLIHJPFV5RXN5M6ELU")
 let senderAccountId = senderKeyPair.accountId
 
 // Resolve recipient's Stellar address

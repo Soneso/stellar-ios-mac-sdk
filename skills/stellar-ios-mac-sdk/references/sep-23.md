@@ -1,6 +1,6 @@
 # SEP-23: Strkey Encoding
 
-**Purpose:** Encode and decode Stellar addresses (public keys, seeds, contract IDs, muxed accounts, etc.) using the StrKey format — versioned base32 with CRC-16 checksum.
+**Purpose:** Encode and decode Stellar addresses (public keys, seeds, contract IDs, muxed accounts, etc.) using the strkey format — versioned base32 with CRC-16 checksum.
 
 **Prerequisites:** None — these are pure utility methods on `String` and `Data`.
 
@@ -44,7 +44,7 @@ All standard address types (G, S, T, X, C, L) encode to **56 characters**. Muxed
 
 ## Decoding Addresses
 
-`String` extensions decode StrKey strings back to raw `Data`. All decode methods throw `KeyUtilsError` on failure.
+`String` extensions decode strkey strings back to raw `Data`. All decode methods throw `KeyUtilsError` on failure, and `decodeMuxedAccount()` reports a malformed 56-character account ID as `Ed25519Error.invalidPublicKey` instead.
 
 ```swift
 import stellarsdk
@@ -97,7 +97,7 @@ let payloadBytes: Data = signedPayload.payload              // the raw payload
 
 ## Encoding Addresses
 
-`Data` extensions encode raw bytes into StrKey strings. All encode methods throw on failure.
+`Data` extensions encode raw bytes into strkey strings. All encode methods throw on failure.
 
 ```swift
 import stellarsdk
@@ -157,7 +157,7 @@ let bAddress: String = try "3f0c34bf93ad0d9971d04ccc90f705511c838aad9734a4a2fb0d
 ```swift
 // Build from public key + payload bytes
 let pk = try PublicKey(accountId: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ")
-let payload = Data([0x01, 0x02, 0x03, 0x04])  // 4–64 bytes
+let payload = Data([0x01, 0x02, 0x03, 0x04])  // 1–64 bytes
 let signedPayload = Ed25519SignedPayload(ed25519: pk.wrappedData32(), payload: payload)
 let pAddress: String = try signedPayload.encodeSignedPayload()
 
@@ -172,6 +172,17 @@ let recoveredPayload: Data = decoded.payload
 ## Validation
 
 Validation methods return `Bool` and never throw. Use them to check user input before attempting a decode.
+
+`isValid*` returns false for exactly the inputs its matching `decode*` throws on. Both apply the same rules:
+
+| Rule | What must hold |
+|------|----------------|
+| Encoded length | Exactly 56 characters for G, S, T, X, C, L; 69 for M; 58 for B; 69–165 for P. A length outside the range is rejected before anything is decoded |
+| Base32 | Only A–Z and 2–7, no `=` padding, and the string must be the canonical encoding of the bytes it decodes to |
+| Version byte | The leading decoded byte must be the one the requested type uses |
+| Checksum | The trailing CRC-16 must match the version byte plus the body |
+| Signed payload framing (P) | Body is the 32-byte signer key, a 4-byte big-endian length field naming **1 to 64** bytes, the signed data, and zero padding to a multiple of four. Body width must be exactly `36 + paddedWidth(declaredLength)`, and every padding byte must be `0x00` |
+| Claimable balance discriminant (B) | Body must open with `CLAIMABLE_BALANCE_ID_TYPE_V0` (`0x00`), the only type the XDR union defines |
 
 ```swift
 // Ed25519 public key (G-address, 56 chars)
@@ -266,14 +277,14 @@ let roundTripped: String = try rawMuxedData.encodeMEd25519AccountId()
 
 ## Signed Payloads
 
-Signed payloads (P-addresses, CAP-40) combine an Ed25519 public key with an arbitrary payload (4–64 bytes).
+Signed payloads (P-addresses, CAP-40) combine an Ed25519 public key with an arbitrary payload (1–64 bytes).
 
 ```swift
 import stellarsdk
 
 // Build a signed payload signer using Signer utility
 let accountId = "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ"
-let payload = Data([0x01, 0x02, 0x03, 0x04])   // 4–64 bytes
+let payload = Data([0x01, 0x02, 0x03, 0x04])   // 1–64 bytes
 
 // Creates a SignerKeyXDR for use in SetOptions
 let signerKey: SignerKeyXDR = try Signer.signedPayload(accountId: accountId, payload: payload)
@@ -295,10 +306,9 @@ let payloadData: Data = decoded.payload
 let tooLarge = Data(repeating: 0, count: 65)
 _ = try Signer.signedPayload(accountId: accountId, payload: tooLarge)  // throws
 
-// WRONG: empty payload encodes but fails isValidSignedPayload()
+// WRONG: an empty payload has no P-address, so encoding throws StellarSDKError.invalidArgument
 let emptyPayload = Ed25519SignedPayload(ed25519: pk.wrappedData32(), payload: Data())
-let emptyEncoded = try emptyPayload.encodeSignedPayload()
-emptyEncoded.isValidSignedPayload()  // false — payload too short (min 4 bytes)
+_ = try emptyPayload.encodeSignedPayload()  // throws
 ```
 
 ---
@@ -403,7 +413,7 @@ let strKey = try address.getClaimableBalanceIdStrKey()  // → Optional("BAAD6DB
 
 ## Error Handling
 
-All decode methods throw `KeyUtilsError`. Hex-from-string encode methods (`encodeContractIdHex`, `encodeLiquidityPoolIdHex`, `encodeClaimableBalanceIdHex`) throw `StellarSDKError.invalidArgument`.
+All decode methods throw `KeyUtilsError`, and `decodeMuxedAccount()` throws `Ed25519Error.invalidPublicKey` as well. No malformed input escapes as a partially decoded value, and none of them trap — a short or truncated string throws like any other malformed string.
 
 ```swift
 import stellarsdk
@@ -411,8 +421,9 @@ import stellarsdk
 do {
     let data = try "GBPXX0A5N4JYPESHAADMQKBPWZWQDQ64ZV6ZL2S3LAGW4SY7NTCMWIVL".decodeEd25519PublicKey()
 } catch KeyUtilsError.invalidEncodedString {
-    // Base32 decode failed, or re-encoding doesn't match (malformed string)
-    print("Malformed StrKey string")
+    // Encoded length outside the range the version byte allows, base32 decode failed,
+    // re-encoding doesn't match, or the decoded body is malformed (P framing, B discriminant)
+    print("Malformed strkey string")
 } catch KeyUtilsError.invalidVersionByte {
     // Version byte doesn't match expected type (e.g. S-address passed to decodeEd25519PublicKey)
     print("Wrong address type")
@@ -422,14 +433,79 @@ do {
 } catch {
     print("Unexpected error: \(error)")
 }
+```
+
+`decodeMuxedAccount()` takes either address form and picks its error by input length: a malformed 56-character account ID throws `Ed25519Error.invalidPublicKey`, because that branch runs `PublicKey(accountId:)`, a malformed 69-character muxed address throws `KeyUtilsError`, and an input of any other length throws `KeyUtilsError.invalidEncodedString`. Catch both types.
+
+```swift
+import stellarsdk
+
+let address = "GCZHXL5HXQX5ABDM26LHYRCQZ5OJFHLOPLZX47WEBP3V2PF5AVFK2A5E" // last character changed
+
+do {
+    let _: MuxedAccountXDR = try address.decodeMuxedAccount()
+} catch let error as Ed25519Error {
+    print("Malformed account ID: \(error)")      // 56 characters
+} catch let error as KeyUtilsError {
+    print("Malformed muxed address: \(error)")   // 69 characters
+} catch {
+    print("Unexpected error: \(error)")
+}
+```
+
+### Encode-side errors
+
+The encoders reject the payloads that would produce a strkey no decoder reads back, and throw `StellarSDKError.invalidArgument`:
+
+| Method | Requirement |
+|--------|-------------|
+| `encodeEd25519PublicKey`, `encodeEd25519SecretSeed`, `encodePreAuthTx`, `encodeSha256Hash`, `encodeContractId`, `encodeLiquidityPoolId` | Exactly 32 bytes |
+| `encodeMEd25519AccountId` | Exactly 40 bytes |
+| `encodeClaimableBalanceId` | 32 bytes (discriminant prepended), 33 bytes opening with `0x00`, or the 36-byte XDR form Horizon reports (verified, discriminant stripped) |
+| `encodeSignedPayload` | A body carrying the signed payload framing, signed data 1–64 bytes |
+| `Signer.signedPayload(accountId:payload:)` | Payload 1–64 bytes |
+| `encodeContractIdHex`, `encodeLiquidityPoolIdHex`, `encodeClaimableBalanceIdHex` | A valid hex string of the width above |
+
+```swift
+import stellarsdk
+
+// Wrong width — there is no G-address for a 31-byte key
+do {
+    let _ = try Data(repeating: 0, count: 31).encodeEd25519PublicKey()
+} catch StellarSDKError.invalidArgument(message: let message) {
+    print("Cannot encode: \(message)")
+} catch {
+    print("Unexpected error: \(error)")
+}
 
 // Hex encode errors
 do {
     let _ = try "not-hex".encodeContractIdHex()
 } catch StellarSDKError.invalidArgument(message: let message) {
     print("Invalid hex: \(message)")
+} catch {
+    print("Unexpected error: \(error)")
 }
 ```
+
+### Key and seed import
+
+`PublicKey(accountId:)`, `Seed(secret:)`, `KeyPair(accountId:)`, `KeyPair(secretSeed:)`, `MuxedAccount(accountId:)` and `SCAddressXDR(accountId:)` all run the strkey decoder, so they accept exactly the strkeys `decode*` accepts — version byte and CRC-16 checksum included. A secret seed with one wrong character fails its checksum and is rejected.
+
+```swift
+import stellarsdk
+
+do {
+    // Last character changed: the checksum no longer matches the body
+    let _ = try KeyPair(secretSeed: "SBGWKM3CD4IL47QN6X54N6Y33T3JDNVI6AIJ6CD5IM47HG3IG4O36XCV")
+} catch Ed25519Error.invalidSeed {
+    print("Corrupted secret seed — do not fall back to a derived key, ask the user to re-enter it")
+} catch {
+    print("Unexpected error: \(error)")
+}
+```
+
+`KeyPair(accountId:)` reports a malformed account ID the same way, as `Ed25519Error.invalidPublicKey` — see `troubleshooting.md` for the full error contract.
 
 ---
 
@@ -446,22 +522,21 @@ let data = try sAddress.decodeEd25519PublicKey()
 let data = try sAddress.decodeEd25519SecretSeed()
 ```
 
-**Hex decode returns hex with discriminant; hex encode expects hex without:**
+**Claimable balance hex carries the discriminant, encoding accepts it with or without:**
 ```swift
 // decodeClaimableBalanceIdToHex() returns 33-byte hex (WITH 00 prefix)
 let cbHex = try cbStrKey.decodeClaimableBalanceIdToHex()
 // → "003f0c34bf93ad0d9971d04ccc90f705511c838aad9734a4a2fb0d7a03fc7fe89a"
 
-// WRONG: passing the 33-byte hex back to encodeClaimableBalanceIdHex() double-prepends the discriminant
-let wrong = try cbHex.encodeClaimableBalanceIdHex()  // incorrect result
+// The 33-byte form, the 32-byte id and Horizon's 36-byte XDR form (72 hex chars) encode
+// to the same B-address: the discriminant is prepended or stripped as needed
+let fromBody = try cbHex.encodeClaimableBalanceIdHex()
+let fromId = try String(cbHex.dropFirst(2)).encodeClaimableBalanceIdHex()          // same B-address
+let fromHorizon = try ("000000" + cbHex).encodeClaimableBalanceIdHex()             // same B-address
 
-// CORRECT option 1: use Data.encodeClaimableBalanceId() with the full 33-byte data
-let cbData = try cbStrKey.decodeClaimableBalanceId()   // 33 bytes
-let correct = try cbData.encodeClaimableBalanceId()    // correct B-address
-
-// CORRECT option 2: strip the 2-char discriminant from hex first (32-byte hex)
-let hexWithout = String(cbHex.dropFirst(2))  // remove "00" prefix
-let correct2 = try hexWithout.encodeClaimableBalanceIdHex()  // correct B-address
+// WRONG: any other discriminant, and any length that is neither 32, 33 nor 36 bytes, throws
+// StellarSDKError.invalidArgument, since CLAIMABLE_BALANCE_ID_TYPE_V0 is the only type
+let wrong = try ("01" + String(cbHex.dropFirst(2))).encodeClaimableBalanceIdHex()  // throws
 ```
 
 **`isHexString()` returns true for empty string:**
@@ -492,15 +567,30 @@ let result = try xdrData.encodeMuxedAccount()  // M- or G-address depending on c
 let mAddress = try rawPayloadBytes.encodeMEd25519AccountId()  // always M-address
 ```
 
-**Validation checks both prefix AND checksum AND length:**
+**Validation checks length AND base32 AND prefix AND checksum AND body shape:**
 ```swift
 // isValidEd25519PublicKey() returns false if:
 // - String length != 56 characters
+// - Base32 decode fails, or the string is not the canonical encoding of its bytes
 // - Version byte != ed25519PublicKey (0x30)
 // - CRC-16 checksum doesn't match
-// - Base32 decode fails
 
 // Do NOT assume isValid*() only checks the prefix
 let checksumedWrong = "GBPXXOA5N4JYPESHAADMQKBPWZWQDQ64ZV6ZL2S3LAGW4SY7NTCMWIVT"  // last char changed
 checksumedWrong.isValidEd25519PublicKey()  // false — checksum mismatch
+
+// isValidSignedPayload() and isValidClaimableBalanceId() additionally check the body:
+// - P: length field outside 1–64, body width != 36 + padded data width, or non-zero padding
+// - B: body not opening with the CLAIMABLE_BALANCE_ID_TYPE_V0 discriminant (0x00)
+// Each of these also makes the matching decode* throw KeyUtilsError.invalidEncodedString
+```
+
+**Do not hand-roll strkey validation from the prefix or the length alone:**
+```swift
+// WRONG: a G prefix and 56 characters say nothing about the checksum, so a
+// transcription error slips through as a valid-looking address for another account
+if address.hasPrefix("G") && address.count == 56 { /* accept */ }
+
+// CORRECT: let the SDK apply every rule
+guard address.isValidEd25519PublicKey() else { throw MyError.invalidAddress(address) }
 ```

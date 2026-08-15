@@ -19,7 +19,7 @@ import stellarsdk
 // 1. Authenticate with the anchor via SEP-10
 let webAuthResult = await WebAuthenticator.from(domain: "testanchor.stellar.org", network: .testnet)
 guard case .success(let webAuth) = webAuthResult else { return }
-let userKeyPair = try! KeyPair(secretSeed: "SCZANGBA5YHTNYVVV3C7CAZMTQDBJHJG6C34CJDQ66EQ7DZTPBRJFN4A")
+let userKeyPair = try! KeyPair(secretSeed: "SCZANGBA5YHTNYVVV3C7CAZMTQDBJHJG6C34CJDQ66EQ7DZTPBRJFYGJ")
 let jwtResult = await webAuth.jwtToken(forUserAccount: userKeyPair.accountId, signers: [userKeyPair])
 guard case .success(let jwtToken) = jwtResult else { return }
 
@@ -774,7 +774,7 @@ This example shows a complete deposit flow: authentication, info discovery, depo
 import stellarsdk
 
 let anchorDomain = "testanchor.stellar.org"
-let userKeyPair = try! KeyPair(secretSeed: "SCZANGBA5YHTNYVVV3C7CAZMTQDBJHJG6C34CJDQ66EQ7DZTPBRJFN4A")
+let userKeyPair = try! KeyPair(secretSeed: "SCZANGBA5YHTNYVVV3C7CAZMTQDBJHJG6C34CJDQ66EQ7DZTPBRJFYGJ")
 
 // 1. Authenticate via SEP-10
 let webAuthResult = await WebAuthenticator.from(domain: anchorDomain, network: .testnet)

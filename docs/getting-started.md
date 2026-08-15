@@ -94,6 +94,8 @@ Manage cryptographic keys for signing transactions and identifying accounts.
 
 Create a new wallet with a random keypair. The account ID is your public address; the secret seed is your private key for signing transactions.
 
+The examples in this guide use `try!` when the input is fixed and known good, like a hardcoded address: a failure there is a programming error, and crashing early is the point. When a value arrives at runtime, from the user or the network, use `do`/`catch` instead — the import sections below show the pattern.
+
 ```swift
 import stellarsdk
 
@@ -110,9 +112,20 @@ If you already have a secret seed (from a backup or another wallet), you can res
 ```swift
 import stellarsdk
 
+let userInput = "SDJHRQF4GCMIIKAAAQ6IHY42X73FQFLHUULAPSKKD4DFDM7UXWWCRHBE"
+
 // Restore keypair from seed (can sign transactions)
-let keyPair = try! KeyPair(secretSeed: "SDJHRQF4GCMIIKAAAQ6IHY42X73FQFLHUULAPSKKD4DFDM7UXWWCRHBE")
+do {
+    let keyPair = try KeyPair(secretSeed: userInput)
+    print("Restored \(keyPair.accountId)")
+} catch Ed25519Error.invalidSeed {
+    print("That is not a valid secret seed")
+} catch {
+    print("Could not restore the keypair: \(error)")
+}
 ```
+
+A mistyped seed throws `Ed25519Error.invalidSeed`. This constructor is the first place a seed typed by a user is checked, so catch that error rather than forcing the call with `try!`.
 
 ### Import from Account ID
 
@@ -121,9 +134,20 @@ You can create a keypair from just an account ID (public key). This is useful fo
 ```swift
 import stellarsdk
 
+let destination = "GCZHXL5HXQX5ABDM26LHYRCQZ5OJFHLOPLZX47WEBP3V2PF5AVFK2A5D"
+
 // Public key only (cannot sign)
-let keyPair = try! KeyPair(accountId: "GCZHXL5HXQX5ABDM26LHYRCQZ5OJFHLOPLZX47WEBP3V2PF5AVFK2A5D")
+do {
+    let keyPair = try KeyPair(accountId: destination)
+    print("Paying \(keyPair.accountId)")
+} catch Ed25519Error.invalidPublicKey {
+    print("That is not a valid account id")
+} catch {
+    print("Could not read the account id: \(error)")
+}
 ```
+
+Account IDs are checked the same way: a malformed account ID throws `Ed25519Error.invalidPublicKey`. Catch it here for the same reason. For live UI feedback, such as enabling the import button while the user types, check `isValidEd25519SecretSeed()` or `isValidEd25519PublicKey()` first; when you then create the keypair, still use `do`/`catch`. See [Error handling](error-handling.md) for the full picture.
 
 ### Mnemonic Phrases (SEP-5)
 

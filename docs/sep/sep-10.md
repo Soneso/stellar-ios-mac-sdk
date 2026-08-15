@@ -22,7 +22,7 @@ let authResult = await WebAuthenticator.from(domain: "testanchor.stellar.org", n
 guard case .success(let webAuth) = authResult else { return }
 
 // Get JWT token - handles challenge request, signing, and submission
-let userKeyPair = try KeyPair(secretSeed: "SCZANGBA5YHTNYVVV3C7CAZMTQDBJHJG6C34CJDQ66EQ7DZTPBRJFN4A")
+let userKeyPair = try KeyPair(secretSeed: "SBAYNYLQFXVLVAHW4BXDQYNJLMDQMZ5NQDDOHVJD3PTBAUIJRNRK5LGX")
 let jwtResult = await webAuth.jwtToken(forUserAccount: userKeyPair.accountId, signers: [userKeyPair])
 guard case .success(let jwtToken) = jwtResult else { return }
 
@@ -72,7 +72,7 @@ import stellarsdk
 
 let authResult = await WebAuthenticator.from(domain: "testanchor.stellar.org", network: Network.testnet)
 guard case .success(let webAuth) = authResult else { return }
-let userKeyPair = try KeyPair(secretSeed: "SCZANGBA5YHTNYVVV3C7CAZMTQDBJHJG6C34CJDQ66EQ7DZTPBRJFN4A")
+let userKeyPair = try KeyPair(secretSeed: "SBAYNYLQFXVLVAHW4BXDQYNJLMDQMZ5NQDDOHVJD3PTBAUIJRNRK5LGX")
 
 let jwtResult = await webAuth.jwtToken(
     forUserAccount: userKeyPair.accountId,
@@ -98,8 +98,8 @@ let authResult = await WebAuthenticator.from(domain: "testanchor.stellar.org", n
 guard case .success(let webAuth) = authResult else { return }
 
 // Provide all signers needed to meet the account's threshold
-let signer1 = try KeyPair(secretSeed: "SCZANGBA5YHTNYVVV3C7CAZMTQDBJHJG6C34CJDQ66EQ7DZTPBRJFN4A")
-let signer2 = try KeyPair(secretSeed: "SBGWSG6BTNCKCOB3DIFBGCVMUPQFYPA2HIF74DBGCZ6V5CSBRROPGKVZ")
+let signer1 = try KeyPair(secretSeed: "SBAYNYLQFXVLVAHW4BXDQYNJLMDQMZ5NQDDOHVJD3PTBAUIJRNRK5LGX")
+let signer2 = try KeyPair(secretSeed: "SBGWSG6BTNCKCOB3DIFBGCVMUPQFYPA2HIF74DBGCZ6V5CSBRROPHSMI")
 
 let jwtResult = await webAuth.jwtToken(
     forUserAccount: signer1.accountId,
@@ -116,7 +116,7 @@ import stellarsdk
 
 let authResult = await WebAuthenticator.from(domain: "testanchor.stellar.org", network: Network.testnet)
 guard case .success(let webAuth) = authResult else { return }
-let userKeyPair = try KeyPair(secretSeed: "SCZANGBA5YHTNYVVV3C7CAZMTQDBJHJG6C34CJDQ66EQ7DZTPBRJFN4A")
+let userKeyPair = try KeyPair(secretSeed: "SBAYNYLQFXVLVAHW4BXDQYNJLMDQMZ5NQDDOHVJD3PTBAUIJRNRK5LGX")
 
 // Create muxed account with user ID embedded in the address
 let muxedAccount = try MuxedAccount(accountId: userKeyPair.accountId, id: 1234567890)
@@ -136,7 +136,7 @@ import stellarsdk
 
 let authResult = await WebAuthenticator.from(domain: "testanchor.stellar.org", network: Network.testnet)
 guard case .success(let webAuth) = authResult else { return }
-let userKeyPair = try KeyPair(secretSeed: "SCZANGBA5YHTNYVVV3C7CAZMTQDBJHJG6C34CJDQ66EQ7DZTPBRJFN4A")
+let userKeyPair = try KeyPair(secretSeed: "SBAYNYLQFXVLVAHW4BXDQYNJLMDQMZ5NQDDOHVJD3PTBAUIJRNRK5LGX")
 
 let jwtResult = await webAuth.jwtToken(
     forUserAccount: userKeyPair.accountId,
@@ -161,8 +161,8 @@ import stellarsdk
 let authResult = await WebAuthenticator.from(domain: "testanchor.stellar.org", network: Network.testnet)
 guard case .success(let webAuth) = authResult else { return }
 
-let userKeyPair = try KeyPair(secretSeed: "SCZANGBA5YHTNYVVV3C7CAZMTQDBJHJG6C34CJDQ66EQ7DZTPBRJFN4A")
-let clientDomainKeyPair = try KeyPair(secretSeed: "SBGWSG6BTNCKCOB3DIFBGCVMUPQFYPA2HIF74DBGCZ6V5CSBRROPGKVZ")
+let userKeyPair = try KeyPair(secretSeed: "SBAYNYLQFXVLVAHW4BXDQYNJLMDQMZ5NQDDOHVJD3PTBAUIJRNRK5LGX")
+let clientDomainKeyPair = try KeyPair(secretSeed: "SBE64KCQLJXJPMYLF22YCUSTH7WXJ7VZSCTPHXY3VDSIF3QUHJDBE6R6")
 
 let jwtResult = await webAuth.jwtToken(
     forUserAccount: userKeyPair.accountId,
@@ -181,7 +181,7 @@ import stellarsdk
 
 let authResult = await WebAuthenticator.from(domain: "testanchor.stellar.org", network: Network.testnet)
 guard case .success(let webAuth) = authResult else { return }
-let userKeyPair = try KeyPair(secretSeed: "SCZANGBA5YHTNYVVV3C7CAZMTQDBJHJG6C34CJDQ66EQ7DZTPBRJFN4A")
+let userKeyPair = try KeyPair(secretSeed: "SBAYNYLQFXVLVAHW4BXDQYNJLMDQMZ5NQDDOHVJD3PTBAUIJRNRK5LGX")
 
 // Public-key-only keypair — no private key, triggers use of signing function
 let clientDomainAccountKeyPair = try KeyPair(accountId: "GBWW7NMWWIKPDEWZZKTTCSUGV2ZMVN23IZ5JFOZ4FWZBNVQNHMU47HOR")
@@ -227,7 +227,7 @@ import stellarsdk
 
 let authResult = await WebAuthenticator.from(domain: "testanchor.stellar.org", network: Network.testnet)
 guard case .success(let webAuth) = authResult else { return }
-let userKeyPair = try KeyPair(secretSeed: "SCZANGBA5YHTNYVVV3C7CAZMTQDBJHJG6C34CJDQ66EQ7DZTPBRJFN4A")
+let userKeyPair = try KeyPair(secretSeed: "SBAYNYLQFXVLVAHW4BXDQYNJLMDQMZ5NQDDOHVJD3PTBAUIJRNRK5LGX")
 
 let jwtResult = await webAuth.jwtToken(
     forUserAccount: userKeyPair.accountId,
@@ -257,7 +257,7 @@ case .failure(let error):
     }
     return
 case .success(let webAuth):
-    let userKeyPair = try KeyPair(secretSeed: "SCZANGBA5YHTNYVVV3C7CAZMTQDBJHJG6C34CJDQ66EQ7DZTPBRJFN4A")
+    let userKeyPair = try KeyPair(secretSeed: "SBAYNYLQFXVLVAHW4BXDQYNJLMDQMZ5NQDDOHVJD3PTBAUIJRNRK5LGX")
 
     let jwtResult = await webAuth.jwtToken(forUserAccount: userKeyPair.accountId, signers: [userKeyPair])
 
@@ -399,7 +399,7 @@ func authenticateWithRetry(
 // Usage
 let authResult = await WebAuthenticator.from(domain: "testanchor.stellar.org", network: Network.testnet)
 guard case .success(let webAuth) = authResult else { return }
-let userKeyPair = try KeyPair(secretSeed: "SCZANGBA5YHTNYVVV3C7CAZMTQDBJHJG6C34CJDQ66EQ7DZTPBRJFN4A")
+let userKeyPair = try KeyPair(secretSeed: "SBAYNYLQFXVLVAHW4BXDQYNJLMDQMZ5NQDDOHVJD3PTBAUIJRNRK5LGX")
 
 let jwtResult = await authenticateWithRetry(webAuth: webAuth, accountId: userKeyPair.accountId, signers: [userKeyPair])
 ```

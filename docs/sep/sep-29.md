@@ -17,8 +17,8 @@ The iOS/macOS SDK checks memo requirements automatically inside `submitTransacti
 import stellarsdk
 
 let sdk = StellarSDK.testNet()
-let senderKeyPair = try KeyPair(secretSeed: "SCZANGBA5YHTNYVVV3C7CAZMTQDBJHJG6C34CJDQ66EQ7DZTPBRJFN4A")
-let destinationId = "GDQP2KPQGKIHYJGXNUIYOMHARUARCA7DJT5FO2FFOOUJ3UBEZ3ENO5GT"
+let senderKeyPair = try KeyPair(secretSeed: "SCZANGBA5YHTNYVVV3C7CAZMTQDBJHJG6C34CJDQ66EQ7DZTPBRJFYGJ")
+let destinationId = "GDQP2KPQGKIHYJGXNUIYOMHARUARCA7DJT5FO2FFOOUJ3UBEZ3ENPLAY"
 
 let accountEnum = await sdk.accounts.getAccountDetails(accountId: senderKeyPair.accountId)
 guard case .success(let accountResponse) = accountEnum else { return }
@@ -161,7 +161,7 @@ When a transaction contains multiple payment operations, the check examines each
 import stellarsdk
 
 let sdk = StellarSDK.testNet()
-let senderKeyPair = try KeyPair(secretSeed: "SCZANGBA5YHTNYVVV3C7CAZMTQDBJHJG6C34CJDQ66EQ7DZTPBRJFN4A")
+let senderKeyPair = try KeyPair(secretSeed: "SCZANGBA5YHTNYVVV3C7CAZMTQDBJHJG6C34CJDQ66EQ7DZTPBRJFYGJ")
 
 let accountEnum = await sdk.accounts.getAccountDetails(accountId: senderKeyPair.accountId)
 guard case .success(let accountResponse) = accountEnum else { return }
@@ -172,8 +172,8 @@ let sourceAccount = try Account(
 )
 
 // Batch payment to multiple recipients
-let dest1 = "GDQP2KPQGKIHYJGXNUIYOMHARUARCA7DJT5FO2FFOOUJ3UBEZ3ENO5GT"
-let dest2 = "GCKUD4BHIYSBER7DI6TPMYQ4KNDEUKVMN44VKSUQGEFXWLNTHIIQE7FB"
+let dest1 = "GDQP2KPQGKIHYJGXNUIYOMHARUARCA7DJT5FO2FFOOUJ3UBEZ3ENPLAY"
+let dest2 = "GCKUD4BHIYSBER7DI6TPMYQ4KNDEUKVMN44VKSUQGEFXWLNTHIIQF22Z"
 
 let op1 = try PaymentOperation(
     sourceAccountId: nil,
@@ -215,8 +215,8 @@ The memo check also applies to `AccountMergeOperation`, since merging sends the 
 import stellarsdk
 
 let sdk = StellarSDK.testNet()
-let sourceKeyPair = try KeyPair(secretSeed: "SCZANGBA5YHTNYVVV3C7CAZMTQDBJHJG6C34CJDQ66EQ7DZTPBRJFN4A")
-let destinationId = "GDQP2KPQGKIHYJGXNUIYOMHARUARCA7DJT5FO2FFOOUJ3UBEZ3ENO5GT"
+let sourceKeyPair = try KeyPair(secretSeed: "SCZANGBA5YHTNYVVV3C7CAZMTQDBJHJG6C34CJDQ66EQ7DZTPBRJFYGJ")
+let destinationId = "GDQP2KPQGKIHYJGXNUIYOMHARUARCA7DJT5FO2FFOOUJ3UBEZ3ENPLAY"
 
 let accountEnum = await sdk.accounts.getAccountDetails(accountId: sourceKeyPair.accountId)
 guard case .success(let accountResponse) = accountEnum else { return }
@@ -274,7 +274,7 @@ Per the SEP-29 specification, multiplexed accounts are excluded from memo requir
 import stellarsdk
 
 let sdk = StellarSDK.testNet()
-let senderKeyPair = try KeyPair(secretSeed: "SCZANGBA5YHTNYVVV3C7CAZMTQDBJHJG6C34CJDQ66EQ7DZTPBRJFN4A")
+let senderKeyPair = try KeyPair(secretSeed: "SCZANGBA5YHTNYVVV3C7CAZMTQDBJHJG6C34CJDQ66EQ7DZTPBRJFYGJ")
 
 let accountEnum = await sdk.accounts.getAccountDetails(accountId: senderKeyPair.accountId)
 guard case .success(let accountResponse) = accountEnum else { return }
@@ -285,7 +285,7 @@ let sourceAccount = try Account(
 )
 
 // Create a muxed destination with user ID embedded
-let baseAccountId = "GDQP2KPQGKIHYJGXNUIYOMHARUARCA7DJT5FO2FFOOUJ3UBEZ3ENO5GT"
+let baseAccountId = "GDQP2KPQGKIHYJGXNUIYOMHARUARCA7DJT5FO2FFOOUJ3UBEZ3ENPLAY"
 let muxedDestination = try MuxedAccount(accountId: baseAccountId, id: 12345)
 
 let paymentOp = try PaymentOperation(
@@ -398,8 +398,8 @@ The SDK's automatic check queries Horizon for each destination account's data. C
 import stellarsdk
 
 let sdk = StellarSDK.testNet()
-let senderKeyPair = try KeyPair(secretSeed: "SCZANGBA5YHTNYVVV3C7CAZMTQDBJHJG6C34CJDQ66EQ7DZTPBRJFN4A")
-let destinationId = "GDQP2KPQGKIHYJGXNUIYOMHARUARCA7DJT5FO2FFOOUJ3UBEZ3ENO5GT"
+let senderKeyPair = try KeyPair(secretSeed: "SCZANGBA5YHTNYVVV3C7CAZMTQDBJHJG6C34CJDQ66EQ7DZTPBRJFYGJ")
+let destinationId = "GDQP2KPQGKIHYJGXNUIYOMHARUARCA7DJT5FO2FFOOUJ3UBEZ3ENPLAY"
 
 let accountEnum = await sdk.accounts.getAccountDetails(accountId: senderKeyPair.accountId)
 guard case .success(let accountResponse) = accountEnum else { return }

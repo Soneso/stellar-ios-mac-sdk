@@ -353,13 +353,14 @@ do {
 
 ### StellarSDKError
 
-Thrown during local validation before any network call.
+Thrown during local validation before any network call. The strkey encoders on `Data` use it to report a payload they cannot encode: the wrong byte width for the version byte, a signed payload body that does not carry the CAP-40 framing, or a claimable balance ID that does not open with the `CLAIMABLE_BALANCE_ID_TYPE_V0` discriminant.
 
 ```swift
 import stellarsdk
 
 do {
-    let keyPair = try KeyPair(accountId: "INVALID_ID")
+    // 31 bytes is not an ed25519 public key, so there is no G-address for it
+    let gAddress = try Data(repeating: 0, count: 31).encodeEd25519PublicKey()
 } catch let error as StellarSDKError {
     switch error {
     case .invalidArgument(let message):
@@ -380,47 +381,71 @@ do {
 
 ### KeyUtilsError and Ed25519Error
 
-`KeyPair(accountId:)` can throw **either** `KeyUtilsError` or `Ed25519Error` depending on the input. Catch both:
+`KeyPair(accountId:)` throws `Ed25519Error.invalidPublicKey` for every malformed account ID, and `KeyPair(secretSeed:)` throws `Ed25519Error.invalidSeed` for every malformed secret seed:
 
 ```swift
 import stellarsdk
 
 do {
     let keyPair = try KeyPair(accountId: "INVALID_ACCOUNT_ID")
-} catch let error as KeyUtilsError {
-    // Thrown for strings that fail Base32 decoding
-    switch error {
-    case .invalidEncodedString:
-        print("Invalid format — not valid Base32")
-    case .invalidVersionByte:
-        print("Wrong version byte")
-    case .invalidChecksum:
-        print("Checksum validation failed")
-    }
-} catch let error as Ed25519Error {
-    // Thrown for strings that decode but fail key validation
-    switch error {
-    case .invalidPublicKey:
-        print("Decoded but not a valid public key")
-    case .invalidPublicKeyLength:
-        print("Decoded bytes have wrong length (must be 32)")
-    default:
-        print("Ed25519 error: \(error)")
-    }
+} catch Ed25519Error.invalidPublicKey {
+    print("Not a valid account ID")
 } catch {
     print("Other error: \(error)")
 }
 ```
 
-**Which error gets thrown depends on the input:**
+`KeyUtilsError` carries the detail of why an account ID is malformed. Decode with the strkey decoder to get it:
+
+```swift
+import stellarsdk
+
+do {
+    let rawKey = try "INVALID_ACCOUNT_ID".decodeEd25519PublicKey()
+    print("Raw key bytes: \(rawKey.count)")
+} catch KeyUtilsError.invalidEncodedString {
+    print("Not 56 characters of canonical Base32")
+} catch KeyUtilsError.invalidVersionByte {
+    print("Wrong version byte")
+} catch KeyUtilsError.invalidChecksum {
+    print("Checksum validation failed")
+} catch {
+    print("Other error: \(error)")
+}
+```
+
+**Which `KeyUtilsError` gets thrown depends on the input:**
 - Completely random strings (not Base32) → `KeyUtilsError.invalidEncodedString`
+- Valid Base32 but not 56 characters → `KeyUtilsError.invalidEncodedString`
+- Not the canonical Base32 encoding of the bytes it decodes to → `KeyUtilsError.invalidEncodedString`
+- P-address whose length field is outside 1–64, whose body width is not `36 + paddedWidth(declaredLength)`, or whose padding is not zero → `KeyUtilsError.invalidEncodedString`
+- B-address not opening with the `CLAIMABLE_BALANCE_ID_TYPE_V0` discriminant (`0x00`) → `KeyUtilsError.invalidEncodedString`
 - Valid Base32 but wrong version byte → `KeyUtilsError.invalidVersionByte`
 - Valid format but bad checksum → `KeyUtilsError.invalidChecksum`
-- Passes Base32 decode but fails key validation → `Ed25519Error.invalidPublicKey`
-- Decoded bytes wrong length → `Ed25519Error.invalidPublicKeyLength`
 
-> **WRONG:** Only catching `KeyUtilsError` — some invalid inputs throw `Ed25519Error` instead
-> **CORRECT:** Catch both `KeyUtilsError` and `Ed25519Error`, or use a generic `catch` fallback
+`isValid*` returns false for exactly these inputs, so validating first and then decoding never surprises you with a throw.
+
+> **WRONG:** Catching `KeyUtilsError` around `KeyPair(accountId:)` — it reports failures as `Ed25519Error`
+> **CORRECT:** Catch `Ed25519Error.invalidPublicKey`, or use a generic `catch` fallback
+
+### Corrupted secret seeds
+
+`KeyPair(secretSeed:)` and `Seed(secret:)` verify the version byte and the CRC-16 checksum, so a seed with a transcription error throws `Ed25519Error.invalidSeed`.
+
+```swift
+import stellarsdk
+
+do {
+    let keyPair = try KeyPair(secretSeed: userEnteredSeed)
+    print("Imported \(keyPair.accountId)")
+} catch Ed25519Error.invalidSeed {
+    // Ask the user to re-enter the seed. Never fall back to a derived or truncated key:
+    // the account this seed was meant to unlock is not recoverable from a corrupted copy.
+    print("That secret seed is not valid — check it against your backup")
+} catch {
+    print("Other error: \(error)")
+}
+```
 
 ## Debugging Techniques
 

@@ -30,10 +30,10 @@ print(keyPair.accountId)    // G... public key
 print(keyPair.secretSeed!)  // S... secret seed
 
 // Create from existing secret seed
-let keyPair2 = try! KeyPair(secretSeed: "SCZANGBA5YHTNYVVV3C7CAZMTQDBJHJG6C34JFD6XVEAEPTBED53FETV")
+let keyPair2 = try! KeyPair(secretSeed: "SDJHRQF4GCMIIKAAAQ6IHY42X73FQFLHUULAPSKKD4DFDM7UXWWCRHBE")
 
 // Create public-key-only keypair (cannot sign)
-let publicOnly = try! KeyPair(accountId: "GABC123...")
+let publicOnly = try! KeyPair(accountId: "GCZHXL5HXQX5ABDM26LHYRCQZ5OJFHLOPLZX47WEBP3V2PF5AVFK2A5D")
 ```
 
 ### Loading an Account
@@ -135,14 +135,17 @@ Muxed accounts let multiple virtual users share one Stellar account. Useful for 
 import stellarsdk
 
 // Create muxed account from base account + ID
-let muxedAccount = try! MuxedAccount(accountId: "GABC...", id: 123456789)
+let muxedAccount = try! MuxedAccount(
+    accountId: "GCZHXL5HXQX5ABDM26LHYRCQZ5OJFHLOPLZX47WEBP3V2PF5AVFK2A5D",
+    id: 123456789
+)
 
 print(muxedAccount.accountId)          // M... address
 print(muxedAccount.id!)                // 123456789
-print(muxedAccount.ed25519AccountId)   // GABC... (base account)
+print(muxedAccount.ed25519AccountId)   // G... base account
 
 // Parse existing muxed address
-let muxed = try! MuxedAccount(accountId: "MABC...")
+let muxed = try! MuxedAccount(accountId: "MCZHXL5HXQX5ABDM26LHYRCQZ5OJFHLOPLZX47WEBP3V2PF5AVFK2AAAAAAAOW6NCVLYS")
 print(muxed.accountId)          // M... address
 print(muxed.ed25519AccountId)   // Underlying G... address
 print(muxed.id!)                // The 64-bit ID
@@ -194,7 +197,7 @@ import stellarsdk
 
 let sdk = StellarSDK.testNet()
 
-let senderKeyPair = try! KeyPair(secretSeed: "SCZANGBA5YHTNYVVV3C7CAZMTQDBJHJG6C34JFD6XVEAEPTBED53FETV")
+let senderKeyPair = try! KeyPair(secretSeed: "SDJHRQF4GCMIIKAAAQ6IHY42X73FQFLHUULAPSKKD4DFDM7UXWWCRHBE")
 
 let accResponse = await sdk.accounts.getAccountDetails(accountId: senderKeyPair.accountId)
 switch accResponse {
@@ -2495,7 +2498,7 @@ Create a cryptographic signature for any text using your secret key.
 import Foundation
 import stellarsdk
 
-let keyPair = try! KeyPair(secretSeed: "SCZANGBA5YHTNYVVV3C7CAZMTQDBJHJG6C34JFD6XVEAEPTBED53FETV")
+let keyPair = try! KeyPair(secretSeed: "SDJHRQF4GCMIIKAAAQ6IHY42X73FQFLHUULAPSKKD4DFDM7UXWWCRHBE")
 
 // Sign a message
 let message = "Please sign this message to verify your identity"
@@ -2515,7 +2518,7 @@ import Foundation
 import stellarsdk
 
 // Verify with the signing keypair
-let keyPair = try! KeyPair(secretSeed: "SCZANGBA5YHTNYVVV3C7CAZMTQDBJHJG6C34JFD6XVEAEPTBED53FETV")
+let keyPair = try! KeyPair(secretSeed: "SDJHRQF4GCMIIKAAAQ6IHY42X73FQFLHUULAPSKKD4DFDM7UXWWCRHBE")
 
 let message = "Please sign this message to verify your identity"
 let signature = try! keyPair.signMessage(message)

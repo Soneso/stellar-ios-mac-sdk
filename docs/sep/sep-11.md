@@ -54,7 +54,7 @@ import stellarsdk
 let sdk = StellarSDK.testNet()
 
 // Build a transaction
-let sourceKeyPair = try KeyPair(secretSeed: "SCZANGBA5YHTNYVVV3C7CAZMTQDBJHJG6C34CPMLIHJPFV5RXN5M6CSS")
+let sourceKeyPair = try KeyPair(secretSeed: "SCZANGBA5YHTNYVVV3C7CAZMTQDBJHJG6C34CPMLIHJPFV5RXN5M6ELU")
 let accountResponse = await sdk.accounts.getAccountDetails(accountId: sourceKeyPair.accountId)
 switch accountResponse {
 case .success(let sourceAccount):

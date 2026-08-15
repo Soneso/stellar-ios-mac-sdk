@@ -43,7 +43,7 @@ Sign a message and encode the signature for transmission. The raw signature is 6
 import stellarsdk
 import Foundation
 
-let keyPair = try! KeyPair(secretSeed: "SXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX")
+let keyPair = try! KeyPair(secretSeed: "SAKICEVQLYWGSOJS4WW7HZJWAHZVEEBS527LHK5V4MLJALYKICQCJXMW")
 
 let message = "User consent granted at 2025-01-15T12:00:00Z"
 let signature = try keyPair.signMessage(message)
@@ -106,7 +106,7 @@ The message doesn't have to be text. You can sign any binary data such as file c
 import stellarsdk
 import Foundation
 
-let keyPair = try! KeyPair(secretSeed: "SXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX")
+let keyPair = try! KeyPair(secretSeed: "SAKICEVQLYWGSOJS4WW7HZJWAHZVEEBS527LHK5V4MLJALYKICQCJXMW")
 
 // Sign file contents
 let fileContents = [UInt8](try Data(contentsOf: URL(fileURLWithPath: "document.pdf")))
@@ -130,7 +130,7 @@ _ = SecRandomCopyBytes(kSecRandomDefault, 16, &randomBytes)
 let challenge = "authenticate:\(Data(randomBytes).base16EncodedString()):\(Int(Date().timeIntervalSince1970))"
 
 // === CLIENT: Sign the challenge ===
-let clientKeyPair = try! KeyPair(secretSeed: "SXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX")
+let clientKeyPair = try! KeyPair(secretSeed: "SAKICEVQLYWGSOJS4WW7HZJWAHZVEEBS527LHK5V4MLJALYKICQCJXMW")
 let signature = try clientKeyPair.signMessage(challenge)
 
 let response: [String: String] = [
@@ -178,7 +178,7 @@ Check `privateKey != nil` to determine whether a keypair has a private key befor
 import stellarsdk
 import Foundation
 
-let keyPair = try! KeyPair(secretSeed: "SXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX")
+let keyPair = try! KeyPair(secretSeed: "SAKICEVQLYWGSOJS4WW7HZJWAHZVEEBS527LHK5V4MLJALYKICQCJXMW")
 
 if keyPair.privateKey != nil {
     let signature = try keyPair.signMessage("Important message")
