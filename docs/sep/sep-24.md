@@ -933,7 +933,7 @@ func pollTransaction(
 
 ## Further reading
 
-- [SDK test cases](https://github.com/nicorescu/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdkUnitTests/sep/interactive) - examples covering deposits, withdrawals, transaction queries, and error handling
+- [SDK test cases](https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdkUnitTests/sep/interactive) - examples covering deposits, withdrawals, transaction queries, and error handling
 
 ---
 
