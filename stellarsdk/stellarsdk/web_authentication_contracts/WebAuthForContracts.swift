@@ -912,11 +912,7 @@ public final class WebAuthForContracts: @unchecked Sendable {
         case .muxedAccount(let muxedAccount):
             return muxedAccount.accountId
         case .claimableBalanceId(let balanceId):
-            // Encode claimable balance ID to string
-            switch balanceId {
-            case .claimableBalanceIDTypeV0(let data):
-                return try data.wrapped.encodeClaimableBalanceId()
-            }
+            return try balanceId.paddedBalanceIdHex.encodeClaimableBalanceIdHex()
         case .liquidityPoolId(let poolId):
             return try poolId.wrapped.encodeLiquidityPoolId()
         }
@@ -935,10 +931,9 @@ public final class WebAuthForContracts: @unchecked Sendable {
             let data = try muxedAccount.accountId.decodeEd25519PublicKey()
             return data.base16EncodedString()
         case .claimableBalanceId(let balanceId):
-            switch balanceId {
-            case .claimableBalanceIDTypeV0(let data):
-                return data.wrapped.base16EncodedString()
-            }
+            // The 72-character form Horizon serves: the four-byte big-endian union
+            // discriminant ahead of the 32-byte hash.
+            return balanceId.paddedBalanceIdHex
         case .liquidityPoolId(let poolId):
             return poolId.wrapped.base16EncodedString()
         }

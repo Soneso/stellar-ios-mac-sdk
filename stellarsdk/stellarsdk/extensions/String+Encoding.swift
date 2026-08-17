@@ -100,36 +100,27 @@ public extension String {
         return newData
     }
     
-    /// Converts a hexadecimal string to WrappedData32.
+    /// Reads the hexadecimal spelling of a 32 byte id.
     ///
-    /// Removes leading zeros and converts the hex string to 32-byte wrapped data.
-    /// Used for Soroban contract data encoding.
+    /// The string must hold exactly the 64 hexadecimal characters those 32 bytes are wide,
+    /// with no "0x" prefix. A string of any other width spells an id of another size, and a
+    /// character outside the hexadecimal alphabet spells no byte at all; both are refused,
+    /// because a 32 byte id derived from them would name a ledger entry the caller never wrote.
     ///
-    /// - Returns: WrappedData32 representation of the hex string
-    func wrappedData32FromHex() -> WrappedData32 {
-        var hex = self
-        // remove leading zeros
-        while hex.hasPrefix("00") && hex.count >= 66 {
-            hex = String(hex.dropFirst(2))
+    /// - Parameter idKind: the name the id goes by in the error message, e.g. "contract id"
+    /// - Returns: the 32 bytes the string spells
+    /// - Throws: StellarSDKError.invalidArgument if the string is not exactly 64 hexadecimal
+    /// characters
+    func wrappedData32FromHex(idKind: String) throws -> WrappedData32 {
+        let size = StellarProtocolConstants.SHA256_HASH_SIZE
+        guard self.count == size * 2 else {
+            throw StellarSDKError.invalidArgument(message: "invalid \(idKind) length \(self.count), must be \(size * 2) hex characters")
         }
-
-        // Pad to even length if necessary
-        if hex.count % 2 != 0 {
-            hex = "0" + hex
-        }
-
-        var data = Data()
-        while(hex.count > 0) {
-            // Safely get index for next 2 characters
-            guard let subIndex = hex.index(hex.startIndex, offsetBy: 2, limitedBy: hex.endIndex) else {
-                break
-            }
-            let c = String(hex[..<subIndex])
-            hex = String(hex[subIndex...])
-            var ch: UInt64 = 0
-            Scanner(string: c).scanHexInt64(&ch)
-            var char = UInt8(ch)
-            data.append(&char, count: 1)
+        // UInt8(_:radix:) reads a signed pair like "+1" as a byte, so the alphabet is
+        // checked directly rather than left to the pair parser.
+        guard self.allSatisfy({ $0.isASCII && $0.isHexDigit }),
+              let data = self.data(using: .hexadecimal), data.count == size else {
+            throw StellarSDKError.invalidArgument(message: "invalid \(idKind), not a hex string \(self)")
         }
         return WrappedData32(data)
     }

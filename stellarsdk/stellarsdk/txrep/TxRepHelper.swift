@@ -843,8 +843,7 @@ public final class TxRepHelper: Sendable {
     /// Require a hex-encoded field holding exactly `width` bytes.
     ///
     /// The fixed width fields of the XDR carry no length, so a value of any other width
-    /// names a different field. Zero padding a short value or carrying an over long one
-    /// through would put a different value in the envelope than the one written down.
+    /// names a different field.
     ///
     /// - Parameters:
     ///   - map: Key-value map from `parse(_:)`.

@@ -347,8 +347,9 @@ class OperationsServiceUnitTests: XCTestCase {
         }
     }
 
-    /// The strkey naming the same balance as `testClaimableBalanceIdHex`, so both spellings
-    /// ask for the same route.
+    /// The strkey naming the same balance as `testClaimableBalanceIdHex` is read and served.
+    /// The mock answers every path, so the route the strkey takes is not pinned here;
+    /// ClaimableBalanceRoutingUnitTests records the paths and pins both spellings to one route.
     func testGetOperationsForClaimableBalanceBPrefix() async {
         let bAddress = "BAAJFGZAW4XFREFLKHBE6HGEN6QBYTZRRWGTGNT5ETOWCTH56VERA4SHWU"
         let responseEnum = await sdk.operations.getOperations(forClaimableBalance: bAddress)

@@ -53,9 +53,6 @@ public struct StellarProtocolConstants: Sendable {
     /// Reference: [Stellar developer docs](https://developers.stellar.org)
     public static let STRKEY_OVERHEAD_SIZE = 3
 
-    /// Smallest decoded StrKey buffer in bytes (overhead + one data byte = 4 bytes)
-    static let STRKEY_MIN_DECODED_SIZE = STRKEY_OVERHEAD_SIZE + 1
-
     // MARK: - StrKey Encoded String Lengths
 
     /// Standard StrKey encoded string length for ed25519PublicKey, ed25519SecretSeed,

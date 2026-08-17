@@ -213,29 +213,9 @@ extension String {
         return false
     }
     
+    /// Returns true if `decodeCheck` reads the string as a strkey carrying `versionByte`.
     private func isValid(versionByte:VersionByte) -> Bool {
-        if !versionByte.encodedLengthRange.contains(self.count) {
-            return false
-        }
-
-        do {
-            let data = try decodeCheck(versionByte: versionByte)
-            switch versionByte {
-            case .ed25519PublicKey, .ed25519SecretSeed, .preAuthTX, .sha256Hash, .contract, .liquidityPool:
-                return data.count == StellarProtocolConstants.STRKEY_DECODED_SIZE_STANDARD
-            case .med25519PublicKey:
-                return data.count == StellarProtocolConstants.STRKEY_DECODED_SIZE_MUXED
-            case .signedPayload:
-                // Signer key + payload size field + payload data
-                let minSize = StellarProtocolConstants.SIGNED_PAYLOAD_SIGNER_SIZE + StellarProtocolConstants.SIGNED_PAYLOAD_SIZE_FIELD + StellarProtocolConstants.SIGNED_PAYLOAD_MIN_PAYLOAD
-                let maxSize = StellarProtocolConstants.SIGNED_PAYLOAD_SIGNER_SIZE + StellarProtocolConstants.SIGNED_PAYLOAD_SIZE_FIELD + StellarProtocolConstants.SIGNED_PAYLOAD_MAX_PAYLOAD
-                return data.count >= minSize && data.count <= maxSize
-            case .claimableBalance:
-                return data.count == StellarProtocolConstants.STRKEY_DECODED_SIZE_STANDARD + StellarProtocolConstants.CLAIMABLE_BALANCE_DISCRIMINANT_SIZE
-            }
-        } catch {
-            return false
-        }
+        return (try? decodeCheck(versionByte: versionByte)) != nil
     }
     
     /// Decodes a strkey to its raw payload, verifying the encoded length, the canonical
@@ -258,13 +238,13 @@ extension String {
             throw KeyUtilsError.invalidEncodedString
         }
         if let decoded = base32DecodedData {
+            // Re-encoding canonically ties the decoded width to the character count, which
+            // the gate above floors at 56 characters, so the buffer holds at least the 35
+            // bytes the version byte, the payload and the checksum are sliced out of below.
             if self != decoded.base32EncodedString.replacingOccurrences(of: "=", with: "") {
                 throw KeyUtilsError.invalidEncodedString
             }
             let buffer = decoded.bytes
-            if buffer.count < StellarProtocolConstants.STRKEY_MIN_DECODED_SIZE {
-                throw KeyUtilsError.invalidEncodedString
-            }
             if let byte = buffer.first, let dataVersionByte = VersionByte(rawValue: byte), dataVersionByte == versionByte {
                 let payload = Array(buffer[0...buffer.count - StellarProtocolConstants.STRKEY_OVERHEAD_SIZE])
                 let data = Array(payload[StellarProtocolConstants.STRKEY_VERSION_BYTE_SIZE...payload.count - 1])

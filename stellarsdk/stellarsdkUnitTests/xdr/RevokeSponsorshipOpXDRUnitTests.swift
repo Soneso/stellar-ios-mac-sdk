@@ -165,7 +165,7 @@ class RevokeSponsorshipOpXDRUnitTests: XCTestCase {
     // MARK: - LedgerKey LiquidityPool Tests
 
     func testRevokeSponsorshipOpXDRLedgerKeyLiquidityPool() throws {
-        let poolIdData = testPoolIdHex.wrappedData32FromHex()
+        let poolIdData = try testPoolIdHex.wrappedData32FromHex(idKind: "liquidity pool id")
         let ledgerKey = LedgerKeyXDR.liquidityPool(LedgerKeyLiquidityPoolXDR(liquidityPoolID: poolIdData))
         let op = RevokeSponsorshipOpXDR.revokeSponsorshipLedgerEntry(ledgerKey)
 
@@ -221,7 +221,7 @@ class RevokeSponsorshipOpXDRUnitTests: XCTestCase {
 
     func testRevokeSponsorshipOpXDRSignerPreAuthTx() throws {
         let accountPublicKey = try PublicKey(accountId: testAccountId1)
-        let preAuthTxHash = testBalanceIdHex.wrappedData32FromHex()
+        let preAuthTxHash = try testBalanceIdHex.wrappedData32FromHex(idKind: "pre-auth transaction hash")
         let signerKey = SignerKeyXDR.preAuthTx(preAuthTxHash)
         let signerEntry = RevokeSponsorshipSignerXDR(accountID: accountPublicKey, signerKey: signerKey)
         let op = RevokeSponsorshipOpXDR.revokeSponsorshipSignerEntry(signerEntry)
@@ -250,7 +250,7 @@ class RevokeSponsorshipOpXDRUnitTests: XCTestCase {
 
     func testRevokeSponsorshipOpXDRSignerSha256Hash() throws {
         let accountPublicKey = try PublicKey(accountId: testAccountId1)
-        let sha256Hash = testPoolIdHex.wrappedData32FromHex()
+        let sha256Hash = try testPoolIdHex.wrappedData32FromHex(idKind: "sha256 hash")
         let signerKey = SignerKeyXDR.hashX(sha256Hash)
         let signerEntry = RevokeSponsorshipSignerXDR(accountID: accountPublicKey, signerKey: signerKey)
         let op = RevokeSponsorshipOpXDR.revokeSponsorshipSignerEntry(signerEntry)
@@ -390,7 +390,7 @@ class RevokeSponsorshipOpXDRUnitTests: XCTestCase {
 
     func testRevokeSponsorshipOpXDRSignerRoundTrip() throws {
         let accountPublicKey = try PublicKey(accountId: testAccountId1)
-        let preAuthTxHash = testBalanceIdHex.wrappedData32FromHex()
+        let preAuthTxHash = try testBalanceIdHex.wrappedData32FromHex(idKind: "pre-auth transaction hash")
         let signerKey = SignerKeyXDR.preAuthTx(preAuthTxHash)
         let signerEntry = RevokeSponsorshipSignerXDR(accountID: accountPublicKey, signerKey: signerKey)
         let op = RevokeSponsorshipOpXDR.revokeSponsorshipSignerEntry(signerEntry)

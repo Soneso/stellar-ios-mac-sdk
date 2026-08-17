@@ -13,7 +13,7 @@ import Foundation
 /// and zero padding up to the next multiple of four bytes.
 ///
 /// The strkey decoder and the strkey encoder both hold bodies in this shape, so the rule
-/// lives here and is applied on both sides rather than written twice.
+/// lives here.
 ///
 /// See: [SEP-0023](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0023.md)
 /// and [CAP-40](https://github.com/stellar/stellar-protocol/blob/master/core/cap-0040.md)
@@ -34,10 +34,6 @@ internal enum SignedPayloadFraming {
     private static let paddingAlignment = 4
 
     /// Returns true if `body` is framed as a signed payload signer body.
-    ///
-    /// The body must be wide enough to hold the signer key and the length field, the length
-    /// field must name a length `payloadLengthRange` allows, the body must be exactly as wide
-    /// as that length padded to a multiple of four bytes, and the padding must be zero bytes.
     ///
     /// - Parameter body: the decoded strkey body, without version byte and checksum
     static func isValidBody(_ body: [UInt8]) -> Bool {

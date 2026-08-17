@@ -35,24 +35,15 @@ extension ClaimableBalanceIDXDR {
         guard let data = claimableBalanceId.data(using: .hexadecimal) else {
             throw StellarSDKError.encodingError(message: ClaimableBalanceIDXDR.spellingMessage(claimableBalanceId))
         }
-        switch data.count {
-        case StellarProtocolConstants.CLAIMABLE_BALANCE_ID_SIZE:
-            self = .claimableBalanceIDTypeV0(WrappedData32(data))
-        case ClaimableBalanceIdFraming.bodySize:
-            guard ClaimableBalanceIdFraming.isValidBody(data) else {
-                throw StellarSDKError.encodingError(message: ClaimableBalanceIDXDR.discriminantMessage(Int32(data[data.startIndex])))
-            }
-            self = .claimableBalanceIDTypeV0(WrappedData32(Data(data.dropFirst(StellarProtocolConstants.CLAIMABLE_BALANCE_DISCRIMINANT_SIZE))))
-        case ClaimableBalanceIdFraming.xdrBodySize:
-            guard ClaimableBalanceIdFraming.isValidXdrBody(data) else {
-                let carried = data.prefix(ClaimableBalanceIdFraming.xdrDiscriminant.count)
-                    .reduce(UInt32(0)) { $0 << 8 | UInt32($1) }
-                throw StellarSDKError.encodingError(message: ClaimableBalanceIDXDR.discriminantMessage(Int32(bitPattern: carried)))
-            }
-            self = .claimableBalanceIDTypeV0(WrappedData32(Data(data.suffix(StellarProtocolConstants.CLAIMABLE_BALANCE_ID_SIZE))))
-        default:
+        let bareId: Data
+        do {
+            bareId = try ClaimableBalanceIdFraming.bareId(from: data)
+        } catch ClaimableBalanceIdFraming.MalformedId.discriminant(let carried) {
+            throw StellarSDKError.encodingError(message: ClaimableBalanceIdFraming.discriminantMessage(carried))
+        } catch ClaimableBalanceIdFraming.MalformedId.width {
             throw StellarSDKError.encodingError(message: ClaimableBalanceIDXDR.spellingMessage(claimableBalanceId))
         }
+        self = .claimableBalanceIDTypeV0(WrappedData32(bareId))
     }
 
     /// The id as the hex of the 33 byte body: the one byte type discriminant followed by the
@@ -80,10 +71,5 @@ extension ClaimableBalanceIDXDR {
     /// Names the spellings an id may hold and the length the given one has.
     private static func spellingMessage(_ claimableBalanceId: String) -> String {
         return "claimable balance id must be a \(StellarProtocolConstants.STRKEY_ENCODED_LENGTH_CLAIMABLE_BALANCE) character strkey (\(StellarProtocolConstants.STRKEY_PREFIX_CLAIMABLE_BALANCE)...), or hex of the bare id (\(StellarProtocolConstants.CLAIMABLE_BALANCE_ID_SIZE * 2) characters), which a discriminant may prefix to \(ClaimableBalanceIdFraming.bodySize * 2) or \(ClaimableBalanceIdFraming.xdrBodySize * 2) characters; \(claimableBalanceId.count) characters given"
-    }
-
-    /// Names a discriminant the XDR union does not define.
-    private static func discriminantMessage(_ carried: Int32) -> String {
-        return "claimable balance id carries the discriminant \(carried), which names no claimable balance id type"
     }
 }

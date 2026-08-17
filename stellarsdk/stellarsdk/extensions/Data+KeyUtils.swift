@@ -160,29 +160,17 @@ extension Data {
     /// 32 bytes an id is wide, nor the 33 bytes of a body, nor the 36 bytes of the XDR
     /// encoding, or if a body does not open with that discriminant
     public func encodeClaimableBalanceId() throws -> String {
-        let type = ClaimableBalanceIdFraming.typeDiscriminant
-        let idSize = StellarProtocolConstants.CLAIMABLE_BALANCE_ID_SIZE
-        switch self.count {
-        case idSize:
-            // type is missing so let's append it
-            var typedData = Data([type]) // put the type into the first byte
-            typedData.append(self)
-            return try typedData.encodeCheck(versionByte: .claimableBalance)
-        case ClaimableBalanceIdFraming.bodySize:
-            guard ClaimableBalanceIdFraming.isValidBody(self) else {
-                throw StellarSDKError.invalidArgument(message: "invalid claimable balance id type, must be \(type)")
-            }
-            return try encodeCheck(versionByte: .claimableBalance)
-        case ClaimableBalanceIdFraming.xdrBodySize:
-            guard ClaimableBalanceIdFraming.isValidXdrBody(self) else {
-                throw StellarSDKError.invalidArgument(message: "invalid claimable balance id type, must be \(type)")
-            }
-            var typedData = Data([type])
-            typedData.append(self.suffix(idSize))
-            return try typedData.encodeCheck(versionByte: .claimableBalance)
-        default:
-            throw StellarSDKError.invalidArgument(message: "invalid claimable balance id length \(self.count), must be \(idSize), \(ClaimableBalanceIdFraming.bodySize) or \(ClaimableBalanceIdFraming.xdrBodySize) bytes")
+        let bareId: Data
+        do {
+            bareId = try ClaimableBalanceIdFraming.bareId(from: self)
+        } catch ClaimableBalanceIdFraming.MalformedId.discriminant(let carried) {
+            throw StellarSDKError.invalidArgument(message: ClaimableBalanceIdFraming.discriminantMessage(carried))
+        } catch ClaimableBalanceIdFraming.MalformedId.width(let width) {
+            throw StellarSDKError.invalidArgument(message: "invalid claimable balance id length \(width), must be \(StellarProtocolConstants.CLAIMABLE_BALANCE_ID_SIZE), \(ClaimableBalanceIdFraming.bodySize) or \(ClaimableBalanceIdFraming.xdrBodySize) bytes")
         }
+        var body = Data([ClaimableBalanceIdFraming.typeDiscriminant])
+        body.append(bareId)
+        return try body.encodeCheck(versionByte: .claimableBalance)
     }
     
     /// Encodes raw data to strkey liquidity pool id ("L...").
@@ -218,11 +206,7 @@ extension Data {
 
     /// Throws unless the data is exactly `size` bytes wide.
     ///
-    /// A version byte stands for a payload of one width, so data of any other width would
-    /// encode to a strkey the decoder refuses to read back.
-    ///
-    /// - Parameter size: the width the payload of this strkey type has
-    /// - Parameter description: the name of the payload, for the error message
+    /// A version byte stands for a payload of one width.
     private func requireSize(_ size: Int, _ description: String) throws {
         guard self.count == size else {
             throw StellarSDKError.invalidArgument(message: "invalid \(description) length \(self.count), must be \(size) bytes")

@@ -12,10 +12,22 @@ import Foundation
 /// the 32 byte id.
 ///
 /// The strkey decoder and the strkey encoder both hold bodies in this shape, so the rule
-/// lives here and is applied on both sides rather than written twice.
+/// lives here.
 ///
 /// See: [SEP-0023](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0023.md)
 internal enum ClaimableBalanceIdFraming {
+
+    /// Why data holding a claimable balance id is not one.
+    ///
+    /// The caller words the width case itself: the encoder counts the bytes it was handed,
+    /// the reader the characters of the hexadecimal it was given.
+    enum MalformedId: Error {
+        /// The data has none of the widths a claimable balance id is written in.
+        case width(Int)
+
+        /// The data opens with a discriminant naming no claimable balance id type.
+        case discriminant(Int32)
+    }
 
     /// The type discriminant a body opens with.
     ///
@@ -28,8 +40,6 @@ internal enum ClaimableBalanceIdFraming {
         + StellarProtocolConstants.CLAIMABLE_BALANCE_ID_SIZE
 
     /// Returns true if `body` is `bodySize` bytes wide and opens with the type discriminant.
-    ///
-    /// - Parameter body: a claimable balance id body, the discriminant followed by the id
     static func isValidBody<Body: Collection>(_ body: Body) -> Bool where Body.Element == UInt8 {
         return body.count == bodySize && body.first == typeDiscriminant
     }
@@ -46,11 +56,46 @@ internal enum ClaimableBalanceIdFraming {
 
     /// Returns true if `body` is `xdrBodySize` bytes wide and opens with the four byte XDR
     /// union discriminant of CLAIMABLE_BALANCE_ID_TYPE_V0.
-    ///
-    /// - Parameter body: an XDR encoded claimable balance id, the union discriminant followed
-    /// by the id
     static func isValidXdrBody<Body: Collection>(_ body: Body) -> Bool where Body.Element == UInt8 {
         return body.count == xdrBodySize
             && body.prefix(xdrDiscriminant.count).elementsEqual(xdrDiscriminant)
+    }
+
+    /// The bare 32 byte id `data` carries, in whichever width a claimable balance id is
+    /// written in: the id on its own, the body opening with the one byte type discriminant,
+    /// or the XDR encoding opening with the four byte union discriminant.
+    ///
+    /// - Throws: MalformedId.width if the data has none of those widths,
+    /// MalformedId.discriminant if it opens with a discriminant naming no type
+    static func bareId(from data: Data) throws -> Data {
+        switch data.count {
+        case StellarProtocolConstants.CLAIMABLE_BALANCE_ID_SIZE:
+            break
+        case bodySize:
+            guard isValidBody(data) else {
+                throw MalformedId.discriminant(Int32(data[data.startIndex]))
+            }
+        case xdrBodySize:
+            guard isValidXdrBody(data) else {
+                throw MalformedId.discriminant(carriedXdrDiscriminant(data))
+            }
+        default:
+            throw MalformedId.width(data.count)
+        }
+        // A discriminant only ever precedes the id, so the id is the trailing 32 bytes.
+        return Data(data.suffix(StellarProtocolConstants.CLAIMABLE_BALANCE_ID_SIZE))
+    }
+
+    /// Names a discriminant the XDR union does not define.
+    static func discriminantMessage(_ carried: Int32) -> String {
+        return "claimable balance id carries the discriminant \(carried), which names no claimable balance id type"
+    }
+
+    /// The value the four leading bytes of an XDR encoded id spell, read as the big endian
+    /// Int32 the union discriminant is.
+    private static func carriedXdrDiscriminant(_ data: Data) -> Int32 {
+        let carried = data.prefix(xdrDiscriminant.count)
+            .reduce(UInt32(0)) { $0 << 8 | UInt32($1) }
+        return Int32(bitPattern: carried)
     }
 }

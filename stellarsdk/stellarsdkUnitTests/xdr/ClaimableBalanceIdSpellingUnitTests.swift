@@ -65,10 +65,22 @@ final class ClaimableBalanceIdSpellingUnitTests: XCTestCase {
                             message: "a 58 character claimable balance id must be a strkey beginning with \"B\"")
     }
 
+    /// The two ways a 58 character strkey can be malformed, each reported as what it is.
+    ///
+    /// The final symbol carries the low three bits of the checksum and two bits the encoding
+    /// leaves unused. A final "A" keeps those unused bits zero, so the string is canonical
+    /// base32 and only the checksum is wrong; a final "T" sets them, so the canonical
+    /// re-encode rejects the string before the checksum is compared.
     func testMalformedStrKeyIsRejected() {
-        let brokenChecksum = strKey.dropLast() + "T"
-        XCTAssertThrowsError(try ClaimableBalanceIDXDR(claimableBalanceId: String(brokenChecksum))) { error in
-            XCTAssertTrue(error is KeyUtilsError, "expected a strkey error, got \(error)")
+        XCTAssertThrowsError(try ClaimableBalanceIDXDR(claimableBalanceId: String(strKey.dropLast() + "A"))) { error in
+            guard case KeyUtilsError.invalidChecksum = error else {
+                return XCTFail("expected an invalid checksum error, got \(error)")
+            }
+        }
+        XCTAssertThrowsError(try ClaimableBalanceIDXDR(claimableBalanceId: String(strKey.dropLast() + "T"))) { error in
+            guard case KeyUtilsError.invalidEncodedString = error else {
+                return XCTFail("expected an invalid encoded string error, got \(error)")
+            }
         }
     }
 

@@ -290,12 +290,14 @@ final class ClaimableBalanceRoutingUnitTests: XCTestCase {
             assertBadRequest(horizonError)
         }
 
-        let brokenStrKey = String(strKey.dropLast() + "T")
-        XCTAssertThrowsError(try ServiceHelper.claimableBalanceIdHorizonHex(brokenStrKey)) { error in
+        // A strkey whose checksum does not match the body it follows. The resolver reports
+        // every malformed strkey the same way, so this stands for all of them.
+        let brokenChecksum = String(strKey.dropLast() + "A")
+        XCTAssertThrowsError(try ServiceHelper.claimableBalanceIdHorizonHex(brokenChecksum)) { error in
             guard case HorizonRequestError.badRequest(let message, _) = error else {
                 return XCTFail("expected a badRequest error, got \(error)")
             }
-            XCTAssertEqual(message, "claimable balance id \"\(brokenStrKey)\" is not a well formed strkey")
+            XCTAssertEqual(message, "claimable balance id \"\(brokenChecksum)\" is not a well formed strkey")
         }
     }
 }

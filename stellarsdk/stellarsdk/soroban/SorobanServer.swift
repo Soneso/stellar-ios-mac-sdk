@@ -543,7 +543,14 @@ public class SorobanServer: @unchecked Sendable {
     /// - Parameter wasmId: Hex-encoded hash of the contract WASM
     /// - Returns: Contract code entry containing the WASM bytecode
     public func getContractCodeForWasmId(wasmId: String) async -> GetContractCodeResponseEnum {
-        let contractCodeKey = LedgerKeyContractCodeXDR(wasmId: wasmId)
+        let contractCodeKey:LedgerKeyContractCodeXDR
+        do {
+            contractCodeKey = try LedgerKeyContractCodeXDR(wasmId: wasmId)
+        } catch StellarSDKError.invalidArgument(let message) {
+            return .failure(error: .requestFailed(message: message))
+        } catch {
+            return .failure(error: .requestFailed(message: "invalid wasm id"))
+        }
         let ledgerKey = LedgerKeyXDR.contractCode(contractCodeKey)
         if let ledgerKeyBase64 = ledgerKey.xdrEncoded {
             let response = await self.getLedgerEntries(base64EncodedKeys: [ledgerKeyBase64])

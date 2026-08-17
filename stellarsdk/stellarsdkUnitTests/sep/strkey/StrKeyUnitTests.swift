@@ -991,6 +991,12 @@ final class StrKeyUnitTests: XCTestCase {
         XCTAssertEqual(claimableBalanceStrKey, "BAAD6DBUX6J22DMZOHIEZTEQ64CVCHEDRKWZONFEUL5Q26QD7R76RGR4TU")
         XCTAssertTrue(claimableBalanceStrKey.isValidClaimableBalanceId())
 
+        // The 72 character hex Horizon reports, the four byte XDR union discriminant in front
+        // of the same id, names that same claimable balance id
+        let horizonHex = "00000000" + claimableBalanceHex
+        XCTAssertEqual(horizonHex.count, 72)
+        XCTAssertEqual(try horizonHex.encodeClaimableBalanceIdHex(), claimableBalanceStrKey)
+
         // Test encodeClaimableBalanceIdHex with invalid hex
         XCTAssertThrowsError(try "xyz123".encodeClaimableBalanceIdHex()) { error in
             guard case StellarSDKError.invalidArgument = error else {
@@ -1081,8 +1087,27 @@ final class StrKeyUnitTests: XCTestCase {
         // Wrong prefix
         XCTAssertFalse("GAAD6DBUX6J22DMZOHIEZTEQ64CVCHEDRKWZONFEUL5Q26QD7R76RGR4TU".isValidClaimableBalanceId())
 
-        // Invalid checksum
-        XCTAssertFalse("BAAD6DBUX6J22DMZOHIEZTEQ64CVCHEDRKWZONFEUL5Q26QD7R76RGR4TX".isValidClaimableBalanceId())
+        // A checksum that does not match the body it follows. The final symbol of a 58
+        // character strkey carries the low three bits of the checksum and two bits the
+        // encoding leaves unused, and a final "A" keeps those unused bits zero, so the
+        // string is canonical base32 and only the checksum is wrong.
+        let brokenChecksum = "BAAD6DBUX6J22DMZOHIEZTEQ64CVCHEDRKWZONFEUL5Q26QD7R76RGR4TA"
+        XCTAssertFalse(brokenChecksum.isValidClaimableBalanceId())
+        XCTAssertThrowsError(try brokenChecksum.decodeClaimableBalanceId()) { error in
+            guard case KeyUtilsError.invalidChecksum = error else {
+                return XCTFail("Unexpected error type: \(error)")
+            }
+        }
+
+        // A final "X" sets those unused bits instead, which the canonical re-encode rejects
+        // before the checksum is compared.
+        let nonCanonical = "BAAD6DBUX6J22DMZOHIEZTEQ64CVCHEDRKWZONFEUL5Q26QD7R76RGR4TX"
+        XCTAssertFalse(nonCanonical.isValidClaimableBalanceId())
+        XCTAssertThrowsError(try nonCanonical.decodeClaimableBalanceId()) { error in
+            guard case KeyUtilsError.invalidEncodedString = error else {
+                return XCTFail("Unexpected error type: \(error)")
+            }
+        }
 
         // Wrong length
         XCTAssertFalse("BAAD6DBUX6".isValidClaimableBalanceId())
@@ -1359,8 +1384,12 @@ final class StrKeyUnitTests: XCTestCase {
             let newAddress = try SCAddressXDR(claimableBalanceId: strKey)
             XCTAssertEqual(bid, newAddress.claimableBalanceId)
             
+            // The address reports the id in the 72 character form Horizon serves, while the
+            // strkey decodes to the 66 character body: the same hash, behind a discriminant
+            // one byte wide instead of four.
             let hext = try strKey.decodeClaimableBalanceIdToHex()
-            XCTAssertEqual(bid, hext)
+            XCTAssertTrue(hext.hasPrefix("00"))
+            XCTAssertEqual(bid, "00000000" + hext.dropFirst(2))
         default:
             XCTFail("not invoke contract host function")
             
