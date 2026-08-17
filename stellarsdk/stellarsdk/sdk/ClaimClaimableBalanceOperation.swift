@@ -13,8 +13,12 @@ import Foundation
 public class ClaimClaimableBalanceOperation:Operation, @unchecked Sendable {
 
     /// The claimable balance id to be claimed.
+    ///
+    /// An operation read from XDR reports the 72-character form Horizon serves: the four-byte
+    /// big-endian union discriminant ahead of the 32-byte hash. An operation built from a
+    /// string reports that string as given.
     public let balanceId:String
-    
+
     /// Creates a new ClaimClaimableBalanceOperation object.
     ///
     /// - Parameter balanceId: The claimable balance id to be claimed.
@@ -29,10 +33,7 @@ public class ClaimClaimableBalanceOperation:Operation, @unchecked Sendable {
     /// - Parameter fromXDR: the ClaimClaimableBalanceOpXDR object to be used to create a new ClaimClaimableBalanceOperation object.
     /// - Parameter sourceAccountId: (optional) source account Id, must be valid, otherwise it will be ignored.
     public init(fromXDR:ClaimClaimableBalanceOpXDR, sourceAccountId:String?) throws {
-        switch fromXDR.balanceID {
-        case .claimableBalanceIDTypeV0(let hash):
-            self.balanceId = hash.wrapped.base16EncodedString()
-        }
+        self.balanceId = fromXDR.balanceID.paddedBalanceIdHex
         super.init(sourceAccountId: sourceAccountId)
     }
     

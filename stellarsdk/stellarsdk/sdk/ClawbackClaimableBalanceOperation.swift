@@ -12,11 +12,15 @@ import Foundation
 public class ClawbackClaimableBalanceOperation:Operation, @unchecked Sendable {
 
     /// The claimable balance id to be clawed back.
+    ///
+    /// An operation read from XDR reports the 72-character form Horizon serves: the four-byte
+    /// big-endian union discriminant ahead of the 32-byte hash. An operation built from a
+    /// string reports that string as given.
     public let claimableBalanceID:String
-    
+
     /// Creates a new ClawbackClaimableBalanceOperation object.
     ///
-    /// - Parameter claimableBalanceID: The claimable balance id to be claimed.
+    /// - Parameter claimableBalanceID: The claimable balance id to be clawed back.
     /// - Parameter sourceAccountId: The source account of the operation. Optional. Defaults to the transaction's source account.
     public init(claimableBalanceID:String, sourceAccountId:String? = nil) {
         self.claimableBalanceID = claimableBalanceID
@@ -28,10 +32,7 @@ public class ClawbackClaimableBalanceOperation:Operation, @unchecked Sendable {
     /// - Parameter fromXDR: the ClawbackClaimableBalanceOpXDR object to be used to create a new ClawbackClaimableBalanceOperation object.
     /// - Parameter sourceAccountId: (optional) source account Id, must be valid, otherwise it will be ignored.
     public init(fromXDR:ClawbackClaimableBalanceOpXDR, sourceAccountId:String?) throws {
-        switch fromXDR.claimableBalanceID {
-        case .claimableBalanceIDTypeV0(let hash):
-            self.claimableBalanceID = hash.wrapped.base16EncodedString()
-        }
+        self.claimableBalanceID = fromXDR.claimableBalanceID.paddedBalanceIdHex
         super.init(sourceAccountId: sourceAccountId)
     }
     

@@ -614,7 +614,28 @@ class OperationXDRTestCase: XCTestCase {
             let parsedOperation = try Operation.fromXDR(operationXDR: operationXdr) as! ClaimClaimableBalanceOperation
 
             XCTAssertEqual(source.accountId, parsedOperation.sourceAccountId)
-            XCTAssertEqual(balanceId, parsedOperation.balanceId)
+            // Read back in the spelling Horizon serves: the four byte union discriminant ahead
+            // of the id.
+            XCTAssertEqual("00000000" + balanceId, parsedOperation.balanceId)
+            // The wider spelling names the same id, so re-encoding restores the same bytes.
+            XCTAssertEqual(try operation.toXDRBase64(), try parsedOperation.toXDRBase64())
+        } catch {
+            XCTFail()
+        }
+    }
+
+    func testClaimClaimableBalanceOperationDecodedBytesReportPaddedId() {
+        do {
+            let balanceId = "da0d57da7d4850e7fc10d2a9d0ebc731f7afb40574c03395b17d49149b91f5be"
+            let operation = ClaimClaimableBalanceOperation(balanceId: balanceId)
+            var encoded = try XDREncoder.encode(operation.toXDR())
+            let decoded = try XDRDecoder.decode(OperationXDR.self, data: Data(bytes: &encoded, count: encoded.count))
+            let parsedOperation = try Operation.fromXDR(operationXDR: decoded) as! ClaimClaimableBalanceOperation
+
+            // Decoding real bytes leaves the union holding the bare hash; the operation
+            // reports the spelling Horizon serves.
+            XCTAssertEqual("00000000" + balanceId, parsedOperation.balanceId)
+            XCTAssertEqual(try operation.toXDRBase64(), try parsedOperation.toXDRBase64())
         } catch {
             XCTFail()
         }
@@ -822,7 +843,28 @@ class OperationXDRTestCase: XCTestCase {
             let parsedOperation = try Operation.fromXDR(operationXDR: operationXdr) as! ClawbackClaimableBalanceOperation
 
             XCTAssertEqual(source.accountId, parsedOperation.sourceAccountId)
-            XCTAssertEqual(balanceId, parsedOperation.claimableBalanceID)
+            // Read back in the spelling Horizon serves: the four byte union discriminant ahead
+            // of the id.
+            XCTAssertEqual("00000000" + balanceId, parsedOperation.claimableBalanceID)
+            // The wider spelling names the same id, so re-encoding restores the same bytes.
+            XCTAssertEqual(try operation.toXDRBase64(), try parsedOperation.toXDRBase64())
+        } catch {
+            XCTFail()
+        }
+    }
+
+    func testClawbackClaimableBalanceOperationDecodedBytesReportPaddedId() {
+        do {
+            let balanceId = "da0d57da7d4850e7fc10d2a9d0ebc731f7afb40574c03395b17d49149b91f5be"
+            let operation = ClawbackClaimableBalanceOperation(claimableBalanceID: balanceId)
+            var encoded = try XDREncoder.encode(operation.toXDR())
+            let decoded = try XDRDecoder.decode(OperationXDR.self, data: Data(bytes: &encoded, count: encoded.count))
+            let parsedOperation = try Operation.fromXDR(operationXDR: decoded) as! ClawbackClaimableBalanceOperation
+
+            // Decoding real bytes leaves the union holding the bare hash; the operation
+            // reports the spelling Horizon serves.
+            XCTAssertEqual("00000000" + balanceId, parsedOperation.claimableBalanceID)
+            XCTAssertEqual(try operation.toXDRBase64(), try parsedOperation.toXDRBase64())
         } catch {
             XCTFail()
         }
