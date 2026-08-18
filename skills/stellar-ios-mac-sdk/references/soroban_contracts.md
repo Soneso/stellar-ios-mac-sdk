@@ -61,6 +61,14 @@ let infoEnum2 = await server.getContractInfoForContractId(contractId: "CCONTRACT
 guard case .success(let info2) = infoEnum2 else { /* handle error */ return }
 ```
 
+The `...ForContractId` loaders resolve a CAP-85 external reference executable (Protocol 28)
+automatically: the instance names an owner contract and a tag, and the owner's persistent tag
+entry holds the wasm hash. `getExternalRefWasmHash(ref: ContractExecutableExternalRefXDR) async
+-> GetExternalRefWasmHashResponseEnum` resolves a reference directly: `.success(response: Data)`
+carries the 32-byte hash, `.failure` names the condition that fired (non-contract owner, missing
+tag entry, entry not contract data, value not a 32-byte hash). A Stellar Asset Contract has no
+wasm, so the code loader fails with a message saying so.
+
 ### SorobanContractInfo Properties
 
 | Property | Type | Description |

@@ -220,7 +220,9 @@ case .failure(let error):
 
 ### Load Contract Code
 
-Helper methods to load contract bytecode from the network.
+Helper methods to load contract bytecode from the network. An instance created from a CAP-85
+external reference resolves automatically; a Stellar Asset Contract has no wasm bytecode on
+chain and fails with a message saying so.
 
 ```swift
 import stellarsdk
@@ -239,6 +241,40 @@ case .failure(let error):
 // By WASM ID
 let codeResponse2 = await server.getContractCodeForWasmId(wasmId: wasmId)
 ```
+
+### External Reference Executables (CAP-85)
+
+From Protocol 28 on, a contract can be created from an external reference: instead of
+carrying its own wasm hash, the instance names an owner contract and a tag, and the owner
+holds a persistent contract data entry under that tag whose value is the 32-byte hash of an
+already uploaded wasm. `getContractCodeForContractId` and `getContractInfoForContractId`
+resolve such instances without any extra step. To resolve a reference directly, use
+`getExternalRefWasmHash`:
+
+```swift
+import stellarsdk
+
+let server = SorobanServer(endpoint: "https://soroban-testnet.stellar.org")
+
+// Read the contract instance to inspect its executable.
+let dataResponse = await server.getContractData(contractId: "CCXYZ...",
+                                                key: SCValXDR.ledgerKeyContractInstance,
+                                                durability: ContractDataDurability.persistent)
+if case .success(let entry) = dataResponse,
+   let entryData = try? LedgerEntryDataXDR(fromBase64: entry.xdr),
+   case .externalRef(let ref)? = entryData.contractData?.val.contractInstance?.executable {
+    // The tag entry on the owner contract holds the wasm hash the instance runs.
+    let hashResponse = await server.getExternalRefWasmHash(ref: ref)
+    if case .success(let wasmHash) = hashResponse {
+        print("runs wasm \(wasmHash.base16EncodedString())")
+    }
+}
+```
+
+`getExternalRefWasmHash` returns the 32-byte wasm hash. The failure message states which
+condition fired: the owner is not a contract address, the owner has no entry under the tag,
+the entry is not a contract data entry, or the entry value does not hold a 32-byte wasm
+hash. The owner contract is read, never invoked.
 
 ## SorobanClient
 
@@ -1357,7 +1393,8 @@ let meta = contractInfo.metaEntries
 
 ### Parse from Network
 
-Load and parse contract info from a deployed contract.
+Load and parse contract info from a deployed contract. A contract created from a CAP-85
+external reference (Protocol 28) is resolved automatically.
 
 ```swift
 import stellarsdk
