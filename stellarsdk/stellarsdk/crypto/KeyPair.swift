@@ -16,7 +16,7 @@ import ed25519C
 /// - With private key: Used for signing transactions (full keypair)
 /// - Without private key: Used for verification only (public key only)
 ///
-/// The public key is encoded as a Stellar account ID starting with 'G' (or 'M' for muxed accounts).
+/// The public key is encoded as a Stellar account ID starting with 'G'.
 /// The private key (seed) is encoded as a secret seed starting with 'S'.
 ///
 /// Security considerations:
@@ -114,10 +114,11 @@ public final class KeyPair: @unchecked Sendable {
     /// Creates a new Stellar KeyPair from a Stellar account ID.
     ///
     /// Creates a public-only keypair that can be used for signature verification but
-    /// cannot sign transactions. The account ID must be a valid G-address or M-address.
+    /// cannot sign transactions. The account ID must be a valid G-address. Muxed account
+    /// addresses (M-addresses) are not accepted.
     ///
-    /// - Parameter accountId: The Stellar account ID (G-address or M-address)
-    /// - Throws: An error if the account ID is invalid
+    /// - Parameter accountId: The Stellar account ID (G-address)
+    /// - Throws: Ed25519Error.invalidPublicKey if the account ID is not a valid G-address
     public convenience init(accountId: String) throws {
         let publicKeyFromAccountId = try PublicKey(accountId: accountId)
         self.init(publicKey: publicKeyFromAccountId, privateKey:nil)
@@ -129,7 +130,7 @@ public final class KeyPair: @unchecked Sendable {
     /// secret seed (S-address). This keypair can sign transactions.
     ///
     /// - Parameter secretSeed: The Stellar secret seed (S-address)
-    /// - Throws: An error if the secret seed is invalid
+    /// - Throws: Ed25519Error.invalidSeed if the secret seed is not a valid S-address
     ///
     /// Warning: Handle secret seeds with care. Avoid logging or transmitting them insecurely.
     public convenience init(secretSeed: String) throws {

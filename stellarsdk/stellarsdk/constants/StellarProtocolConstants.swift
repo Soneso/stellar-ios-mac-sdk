@@ -75,12 +75,10 @@ public struct StellarProtocolConstants: Sendable {
     /// This is the minimum because signed payloads encode:
     /// - 32 bytes for the signer public key
     /// - 4 bytes for the payload length field
-    /// - 4 bytes minimum payload
+    /// - 4 bytes for the signed data field at its smallest width, the signed data being zero
+    ///   padded up to a multiple of four bytes
     /// Total: (1 version + 40 data + 2 checksum) bytes × 8 bits ÷ 5 bits/char = 69 chars
-    ///
-    /// Note: This fixes an issue found in the Flutter SDK where it was incorrectly set to 56.
     /// Reference: CAP-40 https://github.com/stellar/stellar-protocol/blob/master/core/cap-0040.md
-    /// See also: https://github.com/Soneso/stellar_flutter_sdk/pull/116
     public static let STRKEY_SIGNED_PAYLOAD_MIN_LENGTH = 69
 
     /// Maximum StrKey encoded string length for signed payload (165 characters)
@@ -112,7 +110,9 @@ public struct StellarProtocolConstants: Sendable {
     /// Reference: CAP-40 https://github.com/stellar/stellar-protocol/blob/master/core/cap-0040.md
     public static let SIGNED_PAYLOAD_SIZE_FIELD = 4
 
-    /// Minimum payload size in a signed payload (4 bytes)
+    /// Smallest width the signed data field of a signed payload occupies (4 bytes)
+    /// The signed data is zero padded up to a multiple of four bytes, so signed data of
+    /// one to four bytes occupies a field four bytes wide.
     /// Reference: CAP-40 https://github.com/stellar/stellar-protocol/blob/master/core/cap-0040.md
     public static let SIGNED_PAYLOAD_MIN_PAYLOAD = 4
 

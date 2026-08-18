@@ -227,14 +227,18 @@ final class Sep51StellarTypesUnitTests: XCTestCase {
         }
     }
 
+    /// The strkey a zero length payload would encode to is shorter than the shortest signed
+    /// payload strkey, so it is rejected as not being a signed payload strkey at all.
     func testZeroLengthSignedPayloadStrkeyIsRejectedOnInput() {
         XCTAssertThrowsError(
             try Ed25519SignedPayload.fromXdrJson(Self.quoted(Self.signedPayloadEmptyStrKey))
         ) { error in
-            guard case XdrJsonError.unrepresentable(let type, _) = error else {
+            guard case XdrJsonError.invalidValue(let type, let key, let message) = error else {
                 return XCTFail("wrong error: \(error)")
             }
             XCTAssertEqual(type, "Ed25519SignedPayload")
+            XCTAssertNil(key)
+            XCTAssertTrue(message.contains("not a signed payload strkey"), message)
         }
     }
 
@@ -267,14 +271,16 @@ final class Sep51StellarTypesUnitTests: XCTestCase {
         XCTAssertEqual(raw.first, 0x00)
     }
 
-    func testClaimableBalanceIdRejectsAnUnknownLeadingTypeByte() throws {
-        let strKey = try (Data([0x01]) + Data(Self.keyBytes)).encodeClaimableBalanceId()
-
-        XCTAssertThrowsError(try ClaimableBalanceIDXDR.fromXdrJson(Self.quoted(strKey))) { error in
-            guard case XdrJsonError.invalidValue(let type, _, _) = error else {
+    func testClaimableBalanceIdRejectsAnUnknownLeadingTypeByte() {
+        XCTAssertThrowsError(
+            try ClaimableBalanceIDXDR.fromXdrJson(Self.quoted(Self.balanceStrKeyUnknownType))
+        ) { error in
+            guard case XdrJsonError.invalidValue(let type, let key, let message) = error else {
                 return XCTFail("wrong error: \(error)")
             }
             XCTAssertEqual(type, "ClaimableBalanceIDXDR")
+            XCTAssertNil(key)
+            XCTAssertTrue(message.contains("not a valid strkey"), message)
         }
     }
 
@@ -443,6 +449,12 @@ final class Sep51StellarTypesUnitTests: XCTestCase {
     private static let contractStrKey = "CAAACAQDAQCQMBYIBEFAWDANBYHRAEISCMKBKFQXDAMRUGY4DUPB6N4O"
     private static let poolStrKey = "LAAACAQDAQCQMBYIBEFAWDANBYHRAEISCMKBKFQXDAMRUGY4DUPB6UWD"
     private static let balanceStrKey = "BAAAAAICAMCAKBQHBAEQUCYMBUHA6EARCIJRIFIWC4MBSGQ3DQOR4H2TOM"
+
+    /// The claimable balance strkey SEP-23 lists as invalid: canonical base-32 over a body of
+    /// the 33 bytes a claimable balance id is wide, carrying the checksum that body produces,
+    /// whose leading type discriminant reads 1 where CLAIMABLE_BALANCE_ID_TYPE_V0 is the only
+    /// type the XDR union defines.
+    private static let balanceStrKeyUnknownType = "BAAT6DBUX6J22DMZOHIEZTEQ64CVCHEDRKWZONFEUL5Q26QD7R76RGXACA"
 
     private static let muxedStrKeyId0 =
         "MAAACAQDAQCQMBYIBEFAWDANBYHRAEISCMKBKFQXDAMRUGY4DUPB6AAAAAAAAAAAABEJ6"

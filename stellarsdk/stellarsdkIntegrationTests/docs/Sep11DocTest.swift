@@ -40,7 +40,7 @@ class Sep11DocTest: XCTestCase {
 
     func testStandardTransactionToTxRep() throws {
         // Snippet 2: Build a transaction and convert to TxRep
-        let sourceKeyPair = try KeyPair(secretSeed: "SCZANGBA5YHTNYVVV3C7CAZMTQDBJHJG6C34CPMLIHJPFV5RXN5M6CSS")
+        let sourceKeyPair = try KeyPair(secretSeed: "SCZANGBA5YHTNYVVV3C7CAZMTQDBJHJG6C34CPMLIHJPFV5RXN5M6ELU")
         let account = Account(keyPair: sourceKeyPair, sequenceNumber: 100)
 
         let payment = try PaymentOperation(

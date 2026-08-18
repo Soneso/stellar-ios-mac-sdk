@@ -16,7 +16,7 @@ final class OZExternalSignerManagerTests: XCTestCase {
 
     private let testNetworkPassphrase = Network.testnet.passphrase
 
-    private let validAddress1 = "GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN5"
+    private let validAddress1 = "GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7"
     private let validAddress2 = "GBBM6BKZPEHWYO3E3YKREDPQXMS4VK35YLNU7NFBRI26RAN7GI5POFBB"
     private let validAddress3 = "GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWHF"
 

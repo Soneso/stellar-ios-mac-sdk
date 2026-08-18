@@ -36,7 +36,7 @@ class LedgerKeyXDRUnitTests: XCTestCase {
 
     func testLedgerKeyXDRTrustline() throws {
         let accountIdString = "GCEZWKCA5VLDNRLN3RPRJMRZOX3Z6G5CHCGSNFHEYVXM3XOJMDS674JZ"
-        let issuerString = "GA2C5RFPE6GCKMY3US5PAB6UZLKIGSPIUKSLRB6Q723BM2OEZ4KM5GAA"
+        let issuerString = "GA2C5RFPE6GCKMY3US5PAB6UZLKIGSPIUKSLRB6Q723BM2OEZ4KM4Z6R"
         let accountPublicKey = try PublicKey(accountId: accountIdString)
         let issuerKeyPair = try KeyPair(accountId: issuerString)
 
@@ -129,9 +129,69 @@ class LedgerKeyXDRUnitTests: XCTestCase {
         }
     }
 
+    /// Asserts reading `claimableBalanceId` fails with an encoding error carrying `expected`.
+    private func assertEncodingError(_ claimableBalanceId: String,
+                                     message expected: String,
+                                     line: UInt = #line) {
+        XCTAssertThrowsError(try ClaimableBalanceIDXDR(claimableBalanceId: claimableBalanceId), line: line) { error in
+            guard case StellarSDKError.encodingError(let message) = error else {
+                XCTFail("expected an encoding error, got \(error)", line: line)
+                return
+            }
+            XCTAssertEqual(message, expected, line: line)
+        }
+    }
+
+    /// Asserts encoding `hex` to a strkey fails with an invalid argument error carrying
+    /// `expected`.
+    private func assertInvalidArgument(_ hex: String,
+                                       message expected: String,
+                                       line: UInt = #line) {
+        XCTAssertThrowsError(try hex.encodeClaimableBalanceIdHex(), line: line) { error in
+            guard case StellarSDKError.invalidArgument(let message) = error else {
+                XCTFail("expected an invalid argument error, got \(error)", line: line)
+                return
+            }
+            XCTAssertEqual(message, expected, line: line)
+        }
+    }
+
+    func testClaimableBalanceIdSpellings() throws {
+        let hashHex = "c582697b67cbec7f9ce64f4dc67bfb2bfd26318bb9f964f4d70e3f41f650b1e6"
+        let bodyHex = "00" + hashHex
+        let horizonHex = "00000000" + hashHex
+        let bAddress = try bodyHex.encodeClaimableBalanceIdHex()
+
+        // Every spelling names the same claimable balance id.
+        for spelling in [hashHex, bodyHex, horizonHex, bAddress] {
+            let id = try ClaimableBalanceIDXDR(claimableBalanceId: spelling)
+            XCTAssertEqual(id.claimableBalanceIdString, bodyHex)
+        }
+
+        // The hex encoder accepts the same three hex spellings and gives the same B-address.
+        for hexSpelling in [hashHex, bodyHex, horizonHex] {
+            XCTAssertEqual(try hexSpelling.encodeClaimableBalanceIdHex(), bAddress)
+        }
+
+        // A discriminant naming a type the XDR union does not define is rejected in both
+        // widths, by the reader and by the encoder alike, each naming the discriminant it
+        // found.
+        let discriminant = "claimable balance id carries the discriminant 1, which names no claimable balance id type"
+        assertEncodingError("01" + hashHex, message: discriminant)
+        assertEncodingError("00000001" + hashHex, message: discriminant)
+        assertInvalidArgument("01" + hashHex, message: discriminant)
+        assertInvalidArgument("00000001" + hashHex, message: discriminant)
+
+        // A hex of any other width names no claimable balance id.
+        let spellings = "claimable balance id must be a 58 character strkey (B...), or hex of the bare id (64 characters), which a discriminant may prefix to 66 or 72 characters"
+        assertEncodingError(String(hashHex.dropFirst(2)), message: spellings + "; 62 characters given")
+        assertEncodingError(horizonHex + "00", message: spellings + "; 74 characters given")
+        assertEncodingError("", message: spellings + "; 0 characters given")
+    }
+
     func testLedgerKeyXDRLiquidityPool() throws {
         let poolIdHex = "dd7b1ab831c273310ddbec6f97870aa83c2fbd78ce22aded37ecbf4f3380fac7"
-        let poolIdData = WrappedData32(poolIdHex.wrappedData32FromHex().wrapped)
+        let poolIdData = try poolIdHex.wrappedData32FromHex(idKind: "liquidity pool id")
         let ledgerKey = LedgerKeyXDR.liquidityPool(LedgerKeyLiquidityPoolXDR(liquidityPoolID: poolIdData))
 
         XCTAssertEqual(ledgerKey.type(), LedgerEntryType.liquidityPool.rawValue)
@@ -348,7 +408,7 @@ class LedgerKeyXDRUnitTests: XCTestCase {
 
     func testLedgerKeyContractCodeXDRFromWasmId() throws {
         let wasmIdHex = "abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789"
-        let contractCodeKey = LedgerKeyContractCodeXDR(wasmId: wasmIdHex)
+        let contractCodeKey = try LedgerKeyContractCodeXDR(wasmId: wasmIdHex)
 
         let encoded = try XDREncoder.encode(contractCodeKey)
         let decoded = try XDRDecoder.decode(LedgerKeyContractCodeXDR.self, data: encoded)
@@ -403,7 +463,7 @@ class LedgerKeyXDRUnitTests: XCTestCase {
 
     func testLedgerKeyTrustlineXDRFields() throws {
         let accountIdString = "GCEZWKCA5VLDNRLN3RPRJMRZOX3Z6G5CHCGSNFHEYVXM3XOJMDS674JZ"
-        let issuerString = "GA2C5RFPE6GCKMY3US5PAB6UZLKIGSPIUKSLRB6Q723BM2OEZ4KM5GAA"
+        let issuerString = "GA2C5RFPE6GCKMY3US5PAB6UZLKIGSPIUKSLRB6Q723BM2OEZ4KM4Z6R"
         let accountPublicKey = try PublicKey(accountId: accountIdString)
         let issuerKeyPair = try KeyPair(accountId: issuerString)
 
@@ -439,7 +499,7 @@ class LedgerKeyXDRUnitTests: XCTestCase {
 
     func testLedgerKeyTrustlineXDRWithAlphanum12() throws {
         let accountIdString = "GCEZWKCA5VLDNRLN3RPRJMRZOX3Z6G5CHCGSNFHEYVXM3XOJMDS674JZ"
-        let issuerString = "GA2C5RFPE6GCKMY3US5PAB6UZLKIGSPIUKSLRB6Q723BM2OEZ4KM5GAA"
+        let issuerString = "GA2C5RFPE6GCKMY3US5PAB6UZLKIGSPIUKSLRB6Q723BM2OEZ4KM4Z6R"
         let accountPublicKey = try PublicKey(accountId: accountIdString)
         let issuerKeyPair = try KeyPair(accountId: issuerString)
 
@@ -579,7 +639,7 @@ class LedgerKeyXDRUnitTests: XCTestCase {
 
     func testLedgerKeyContractCodeXDRFields() throws {
         let wasmHashHex = "1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"
-        let wasmHash = wasmHashHex.wrappedData32FromHex()
+        let wasmHash = try wasmHashHex.wrappedData32FromHex(idKind: "wasm id")
 
         let contractCodeKey = LedgerKeyContractCodeXDR(hash: wasmHash)
 
@@ -603,7 +663,7 @@ class LedgerKeyXDRUnitTests: XCTestCase {
     func testLedgerKeyXDRWithContractAddress() throws {
         // Test with contract address (not account address) for contract data
         let contractIdHex = "abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789"
-        let contractId = contractIdHex.wrappedData32FromHex()
+        let contractId = try contractIdHex.wrappedData32FromHex(idKind: "contract id")
         let contractAddress = SCAddressXDR.contract(contractId)
         let key = SCValXDR.u32(42)
         let durability = ContractDataDurability.temporary

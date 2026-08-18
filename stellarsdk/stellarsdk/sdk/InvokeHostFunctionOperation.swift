@@ -51,22 +51,28 @@ public class InvokeHostFunctionOperation:Operation, @unchecked Sendable {
     }
 
     /// Creates an operation to instantiate a contract from uploaded Wasm using contract ID preimage.
+    ///
+    /// - Parameter wasmId: the 64 character hex of the 32 byte wasm hash
+    /// - Throws: StellarSDKError.invalidArgument if the wasm id is not exactly 64 hexadecimal characters
     public static func forCreatingContract(wasmId:String, address: SCAddressXDR, salt:WrappedData32? = nil, sourceAccountId:String? = nil) throws -> InvokeHostFunctionOperation {
         let saltToSet = try salt ?? randomSalt()
         let contractIdPreimageFormAddress = ContractIDPreimageFromAddressXDR(address: address, salt: saltToSet)
         let contractIDPreimage = ContractIDPreimageXDR.fromAddress(contractIdPreimageFormAddress)
-        let executable = ContractExecutableXDR.wasm(wasmId.wrappedData32FromHex())
+        let executable = ContractExecutableXDR.wasm(try wasmId.wrappedData32FromHex(idKind: "wasm id"))
         let createContractArgs = CreateContractArgsXDR(contractIDPreimage: contractIDPreimage, executable: executable)
         let hostFunction = HostFunctionXDR.createContract(createContractArgs)
         return InvokeHostFunctionOperation(hostFunction: hostFunction, sourceAccountId: sourceAccountId)
     }
     
     /// Creates an operation to instantiate a contract with constructor arguments (protocol >= 22).
+    ///
+    /// - Parameter wasmId: the 64 character hex of the 32 byte wasm hash
+    /// - Throws: StellarSDKError.invalidArgument if the wasm id is not exactly 64 hexadecimal characters
     public static func forCreatingContractWithConstructor(wasmId:String, address: SCAddressXDR, constructorArguments:[SCValXDR] = [], salt:WrappedData32? = nil, sourceAccountId:String? = nil) throws -> InvokeHostFunctionOperation {
         let saltToSet = try salt ?? randomSalt()
         let contractIdPreimageFormAddress = ContractIDPreimageFromAddressXDR(address: address, salt: saltToSet)
         let contractIDPreimage = ContractIDPreimageXDR.fromAddress(contractIdPreimageFormAddress)
-        let executable = ContractExecutableXDR.wasm(wasmId.wrappedData32FromHex())
+        let executable = ContractExecutableXDR.wasm(try wasmId.wrappedData32FromHex(idKind: "wasm id"))
         let createContractV2Args = CreateContractV2ArgsXDR(contractIDPreimage: contractIDPreimage, executable: executable, constructorArgs: constructorArguments)
         let hostFunction = HostFunctionXDR.createContractV2(createContractV2Args)
         return InvokeHostFunctionOperation(hostFunction: hostFunction, sourceAccountId: sourceAccountId)

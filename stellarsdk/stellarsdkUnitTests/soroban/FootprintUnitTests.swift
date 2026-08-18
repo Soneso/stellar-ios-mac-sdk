@@ -267,7 +267,7 @@ class FootprintUnitTests: XCTestCase {
 
     private func createAccountLedgerKey() throws -> LedgerKeyXDR {
         // Create an account ledger key
-        let accountId = "GBDQ3KSNQ4ZRJFQFYAOBQJF7FCCR5MQUUTF6FJ6OHB4DMFK4YA5KTZLV"
+        let accountId = "GBDQ3KSNQ4ZRJFQFYAOBQJF7FCCR5MQUUTF6FJ6OHB4DMFK4YA5KTEFG"
         let publicKey = try PublicKey(accountId: accountId)
 
         return LedgerKeyXDR.account(

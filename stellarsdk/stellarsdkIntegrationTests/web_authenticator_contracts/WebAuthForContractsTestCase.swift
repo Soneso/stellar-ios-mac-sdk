@@ -56,9 +56,9 @@ class WebAuthForContractsTestCase: XCTestCase {
             webAuthContractId: webAuthContractId
         )
 
-        // Use the public key that corresponds to the secret seed SBXFU2EMT2Y3IRGN2MSXIBIAXEPT77PYKN5HHQSDBLNCT7OCYYBA2K3L
+        // Use the public key that corresponds to the secret seed SBXFU2EMT2Y3IRGN2MSXIBIAXEPT77PYKN5HHQSDBLNCT7OCYYBA3G4L
         // which is GAIWNNJMDNZTSKEIWBZIERE3WCRIW2LCA3PK3GRX2K7DGWDA7Z5MVUZN
-        let clientDomainKeyPair = try! KeyPair(secretSeed: "SBXFU2EMT2Y3IRGN2MSXIBIAXEPT77PYKN5HHQSDBLNCT7OCYYBA2K3L")
+        let clientDomainKeyPair = try! KeyPair(secretSeed: "SBXFU2EMT2Y3IRGN2MSXIBIAXEPT77PYKN5HHQSDBLNCT7OCYYBA3G4L")
         clientDomainTomlMock = WebAuthForContractsClientDomainTomlMock(
             address: "client.example.com",
             serverSigningKey: clientDomainKeyPair.accountId
@@ -138,7 +138,7 @@ class WebAuthForContractsTestCase: XCTestCase {
         )
 
         let clientSigner = try! KeyPair.generateRandomKeyPair()
-        let clientDomainKeyPair = try! KeyPair(secretSeed: "SBXFU2EMT2Y3IRGN2MSXIBIAXEPT77PYKN5HHQSDBLNCT7OCYYBA2K3L")
+        let clientDomainKeyPair = try! KeyPair(secretSeed: "SBXFU2EMT2Y3IRGN2MSXIBIAXEPT77PYKN5HHQSDBLNCT7OCYYBA3G4L")
 
         let responseEnum = await webAuth.jwtToken(
             forContractAccount: clientDomainTestId,
@@ -167,7 +167,7 @@ class WebAuthForContractsTestCase: XCTestCase {
         )
 
         let clientSigner = try! KeyPair.generateRandomKeyPair()
-        let clientDomainSigner = try! KeyPair(secretSeed: "SBXFU2EMT2Y3IRGN2MSXIBIAXEPT77PYKN5HHQSDBLNCT7OCYYBA2K3L")
+        let clientDomainSigner = try! KeyPair(secretSeed: "SBXFU2EMT2Y3IRGN2MSXIBIAXEPT77PYKN5HHQSDBLNCT7OCYYBA3G4L")
 
         let signingCallback: (SorobanAuthorizationEntryXDR) async throws -> SorobanAuthorizationEntryXDR = { entry in
             var signedEntry = entry

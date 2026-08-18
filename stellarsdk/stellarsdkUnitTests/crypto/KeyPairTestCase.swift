@@ -280,70 +280,52 @@ final class KeyPairTestCase: XCTestCase {
     // MARK: - Test 13: Invalid Secret Seed Throws
 
     func testInvalidSecretSeedThrows() {
-        // Invalid prefix (should start with S)
-        XCTAssertThrowsError(try KeyPair(secretSeed: "GBCUXLFLSL2JE3NWLHAWXQZN6SQC6577YMAU3M3BEMWKYPFWXBSRCWV4")) { error in
-            XCTAssertTrue(error is Ed25519Error)
-            if case Ed25519Error.invalidSeed = error {
-                // Expected error
-            } else {
-                XCTFail("Wrong error type: \(error)")
+        let invalidSecretSeeds: [(secretSeed: String, reason: String)] = [
+            ("GBCUXLFLSL2JE3NWLHAWXQZN6SQC6577YMAU3M3BEMWKYPFWXBSRCWV4",
+             "the ed25519 public key version byte instead of the secret seed one"),
+            ("SB0WKTN3OKOK5JXZXOAJCGRZGVQQR4EWIVPS52PON2GGKDHUOWDAIZNQ",
+             "the character '0', which the base32 alphabet does not have"),
+            ("SBGWKM3CD4IL47QN6X54N6Y33T3JDNVI6AIJ6CD5IM47HG3IG4O36X",
+             "fewer characters than a secret seed is encoded in"),
+            ("SBGWSG6BTNCKCOB3DIFBGCVMUPQFYPA2G4O34RMTB343OYPXU5DJDVMNT",
+             "more characters than a secret seed is encoded in")
+        ]
+
+        for (secretSeed, reason) in invalidSecretSeeds {
+            XCTAssertThrowsError(try KeyPair(secretSeed: secretSeed), "Expected \(reason) to be rejected") { error in
+                guard case Ed25519Error.invalidSeed = error else {
+                    return XCTFail("Unexpected error type for \(reason): \(error)")
+                }
             }
-        }
-
-        // Invalid base32 encoding (contains invalid character '0')
-        XCTAssertThrowsError(try KeyPair(secretSeed: "SB0WKTN3OKOK5JXZXOAJCGRZGVQQR4EWIVPS52PON2GGKDHUOWDAIZNQ")) { error in
-            XCTAssertTrue(error is Ed25519Error)
-        }
-
-        // Note: The SDK's Seed initializer uses base32DecodedData which may not validate checksums
-        // properly. This is a potential SDK issue. We test what actually throws errors.
-        // Invalid base32 decoding (missing characters)
-        XCTAssertThrowsError(try KeyPair(secretSeed: "SBGWKM3CD4IL47QN6X54N6Y33T3JDNVI6AIJ6CD5IM47HG3IG4O36X")) { error in
-            XCTAssertTrue(error is Ed25519Error)
-        }
-
-        // Too short
-        XCTAssertThrowsError(try KeyPair(secretSeed: "SAFGAMN5Z6IHVI3IVEPIILS7ITZDYSCEPLN4FN5Z3IY63DRH4CIYEV")) { error in
-            XCTAssertTrue(error is Ed25519Error)
-        }
-
-        // Too long
-        XCTAssertThrowsError(try KeyPair(secretSeed: "SBGWSG6BTNCKCOB3DIFBGCVMUPQFYPA2G4O34RMTB343OYPXU5DJDVMNT")) { error in
-            XCTAssertTrue(error is Ed25519Error)
         }
     }
 
     // MARK: - Test 14: Invalid Account ID Throws
 
     func testInvalidAccountIdThrows() {
-        // Invalid prefix (should start with G)
-        XCTAssertThrowsError(try KeyPair(accountId: "SBGWSG6BTNCKCOB3DIFBGCVMUPQFYPA2G4O34RMTB343OYPXU5DJDVMN")) { error in
-            XCTAssertTrue(error is Ed25519Error)
-            if case Ed25519Error.invalidPublicKey = error {
-                // Expected error
-            } else {
-                XCTFail("Wrong error type: \(error)")
+        let invalidAccountIds: [(accountId: String, reason: String)] = [
+            ("SBGWSG6BTNCKCOB3DIFBGCVMUPQFYPA2G4O34RMTB343OYPXU5DJDVMN",
+             "the ed25519 secret seed version byte instead of the public key one"),
+            ("GBPXX0A5N4JYPESHAADMQKBPWZWQDQ64ZV6ZL2S3LAGW4SY7NTCMWIVL",
+             "the character '0', which the base32 alphabet does not have"),
+            ("GCFZB6L25D26RQFDWSSBDEYQ32JHLRMTT44ZYE3DZQUTYOL7WY43PLBG++",
+             "two trailing '+' characters taking it past the length an account id is encoded in"),
+            ("GAAAAAAAACGC6",
+             "fewer characters than an account id is encoded in"),
+            ("GB6OWYST45X57HCJY5XWOHDEBULB6XUROWPIKW77L5DSNANBEQGUPADT2T",
+             "more characters than an account id is encoded in"),
+            // The account id GB6OWYST...UPADT with its last character changed, so it carries
+            // the same 32 key bytes and only the CRC-16 differs.
+            ("GB6OWYST45X57HCJY5XWOHDEBULB6XUROWPIKW77L5DSNANBEQGUPADA",
+             "a checksum that does not match the key it carries")
+        ]
+
+        for (accountId, reason) in invalidAccountIds {
+            XCTAssertThrowsError(try KeyPair(accountId: accountId), "Expected \(reason) to be rejected") { error in
+                guard case Ed25519Error.invalidPublicKey = error else {
+                    return XCTFail("Unexpected error type for \(reason): \(error)")
+                }
             }
-        }
-
-        // Invalid base32 encoding
-        XCTAssertThrowsError(try KeyPair(accountId: "GBPXX0A5N4JYPESHAADMQKBPWZWQDQ64ZV6ZL2S3LAGW4SY7NTCMWIVL")) { error in
-            XCTAssertTrue(error is Ed25519Error)
-        }
-
-        // Invalid characters
-        XCTAssertThrowsError(try KeyPair(accountId: "GCFZB6L25D26RQFDWSSBDEYQ32JHLRMTT44ZYE3DZQUTYOL7WY43PLBG++")) { error in
-            XCTAssertTrue(error is Ed25519Error)
-        }
-
-        // Too short
-        XCTAssertThrowsError(try KeyPair(accountId: "GAAAAAAAACGC6")) { error in
-            XCTAssertTrue(error is Ed25519Error)
-        }
-
-        // Too long
-        XCTAssertThrowsError(try KeyPair(accountId: "GB6OWYST45X57HCJY5XWOHDEBULB6XUROWPIKW77L5DSNANBEQGUPADT2T")) { error in
-            XCTAssertTrue(error is Ed25519Error)
         }
     }
 

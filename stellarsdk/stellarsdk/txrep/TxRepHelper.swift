@@ -825,19 +825,39 @@ public final class TxRepHelper: Sendable {
         }
     }
 
-    /// Require a hex-encoded field and wrap the result in a `WrappedData4`.
+    /// Require a hex-encoded field of exactly 4 bytes and wrap it in a `WrappedData4`.
     public static func requireWrappedData4(_ map: [String: String], _ key: String) throws -> WrappedData4 {
-        return WrappedData4(try requireHex(map, key))
+        return WrappedData4(try requireFixedWidthHex(map, key, WrappedData4.capacity))
     }
 
-    /// Require a hex-encoded field and wrap the result in a `WrappedData12`.
+    /// Require a hex-encoded field of exactly 12 bytes and wrap it in a `WrappedData12`.
     public static func requireWrappedData12(_ map: [String: String], _ key: String) throws -> WrappedData12 {
-        return WrappedData12(try requireHex(map, key))
+        return WrappedData12(try requireFixedWidthHex(map, key, WrappedData12.capacity))
     }
 
-    /// Require a hex-encoded field and wrap the result in a `WrappedData32`.
+    /// Require a hex-encoded field of exactly 32 bytes and wrap it in a `WrappedData32`.
     public static func requireWrappedData32(_ map: [String: String], _ key: String) throws -> WrappedData32 {
-        return WrappedData32(try requireHex(map, key))
+        return WrappedData32(try requireFixedWidthHex(map, key, WrappedData32.capacity))
+    }
+
+    /// Require a hex-encoded field holding exactly `width` bytes.
+    ///
+    /// The fixed width fields of the XDR carry no length, so a value of any other width
+    /// names a different field.
+    ///
+    /// - Parameters:
+    ///   - map: Key-value map from `parse(_:)`.
+    ///   - key: The TxRep field key.
+    ///   - width: The number of bytes the field holds.
+    /// - Returns: Decoded binary `Data` of exactly `width` bytes.
+    /// - Throws: `TxRepError.missingValue(key:)` if the key is absent,
+    ///           `TxRepError.invalidValue(key:)` if the value is not hex of that width.
+    private static func requireFixedWidthHex(_ map: [String: String], _ key: String, _ width: Int) throws -> Data {
+        let data = try requireHex(map, key)
+        guard data.count == width else {
+            throw TxRepError.invalidValue(key: key)
+        }
+        return data
     }
 
     /// Require a quoted/escaped string field from the map.

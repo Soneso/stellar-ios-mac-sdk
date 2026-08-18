@@ -74,7 +74,7 @@ class TxRepOperationsTestCase: XCTestCase {
     func testPathPaymentStrictReceiveOperationTxRep() throws {
         let source = try KeyPair(secretSeed: "SC4CGETADVYTCR5HEAVZRB3DZQY5Y4J7RFNJTRA6ESMHIPEZUSTE2QDK")
         let destination = try KeyPair(accountId: "GDW6AUTBXTOC7FIKUO5BOO3OGLK4SF7ZPOBLMQHMZDI45J2Z6VXRB5NR")
-        let issuer = try KeyPair(accountId: "GCMUFBSB6OB6R2MJKXB5G5UXZHE3XO4H5T4FNV2VDVMQRJZEQHWJFHZV")
+        let issuer = try KeyPair(accountId: "GCMUFBSB6OB6R2MJKXB5G5UXZHE3XO4H5T4FNV2VDVMQRJZEQHWJFRP5")
         let account = Account(keyPair: source, sequenceNumber: 3000)
 
         let sendAsset = Asset(type: AssetType.ASSET_TYPE_NATIVE)!
@@ -110,7 +110,7 @@ class TxRepOperationsTestCase: XCTestCase {
     func testPathPaymentStrictSendOperationTxRep() throws {
         let source = try KeyPair(secretSeed: "SC4CGETADVYTCR5HEAVZRB3DZQY5Y4J7RFNJTRA6ESMHIPEZUSTE2QDK")
         let destination = try KeyPair(accountId: "GDW6AUTBXTOC7FIKUO5BOO3OGLK4SF7ZPOBLMQHMZDI45J2Z6VXRB5NR")
-        let issuer = try KeyPair(accountId: "GCMUFBSB6OB6R2MJKXB5G5UXZHE3XO4H5T4FNV2VDVMQRJZEQHWJFHZV")
+        let issuer = try KeyPair(accountId: "GCMUFBSB6OB6R2MJKXB5G5UXZHE3XO4H5T4FNV2VDVMQRJZEQHWJFRP5")
         let account = Account(keyPair: source, sequenceNumber: 4000)
 
         let sendAsset = Asset(type: AssetType.ASSET_TYPE_NATIVE)!
@@ -145,7 +145,7 @@ class TxRepOperationsTestCase: XCTestCase {
 
     func testManageSellOfferOperationTxRep() throws {
         let source = try KeyPair(secretSeed: "SC4CGETADVYTCR5HEAVZRB3DZQY5Y4J7RFNJTRA6ESMHIPEZUSTE2QDK")
-        let issuer = try KeyPair(accountId: "GCMUFBSB6OB6R2MJKXB5G5UXZHE3XO4H5T4FNV2VDVMQRJZEQHWJFHZV")
+        let issuer = try KeyPair(accountId: "GCMUFBSB6OB6R2MJKXB5G5UXZHE3XO4H5T4FNV2VDVMQRJZEQHWJFRP5")
         let account = Account(keyPair: source, sequenceNumber: 5000)
 
         let selling = Asset(type: AssetType.ASSET_TYPE_NATIVE)!
@@ -179,7 +179,7 @@ class TxRepOperationsTestCase: XCTestCase {
 
     func testManageBuyOfferOperationTxRep() throws {
         let source = try KeyPair(secretSeed: "SC4CGETADVYTCR5HEAVZRB3DZQY5Y4J7RFNJTRA6ESMHIPEZUSTE2QDK")
-        let issuer = try KeyPair(accountId: "GCMUFBSB6OB6R2MJKXB5G5UXZHE3XO4H5T4FNV2VDVMQRJZEQHWJFHZV")
+        let issuer = try KeyPair(accountId: "GCMUFBSB6OB6R2MJKXB5G5UXZHE3XO4H5T4FNV2VDVMQRJZEQHWJFRP5")
         let account = Account(keyPair: source, sequenceNumber: 6000)
 
         let selling = Asset(type: AssetType.ASSET_TYPE_NATIVE)!
@@ -213,7 +213,7 @@ class TxRepOperationsTestCase: XCTestCase {
 
     func testCreatePassiveSellOfferOperationTxRep() throws {
         let source = try KeyPair(secretSeed: "SC4CGETADVYTCR5HEAVZRB3DZQY5Y4J7RFNJTRA6ESMHIPEZUSTE2QDK")
-        let issuer = try KeyPair(accountId: "GCMUFBSB6OB6R2MJKXB5G5UXZHE3XO4H5T4FNV2VDVMQRJZEQHWJFHZV")
+        let issuer = try KeyPair(accountId: "GCMUFBSB6OB6R2MJKXB5G5UXZHE3XO4H5T4FNV2VDVMQRJZEQHWJFRP5")
         let account = Account(keyPair: source, sequenceNumber: 7000)
 
         let selling = Asset(type: AssetType.ASSET_TYPE_NATIVE)!
@@ -281,7 +281,7 @@ class TxRepOperationsTestCase: XCTestCase {
 
     func testChangeTrustOperationTxRep() throws {
         let source = try KeyPair(secretSeed: "SC4CGETADVYTCR5HEAVZRB3DZQY5Y4J7RFNJTRA6ESMHIPEZUSTE2QDK")
-        let issuer = try KeyPair(accountId: "GCMUFBSB6OB6R2MJKXB5G5UXZHE3XO4H5T4FNV2VDVMQRJZEQHWJFHZV")
+        let issuer = try KeyPair(accountId: "GCMUFBSB6OB6R2MJKXB5G5UXZHE3XO4H5T4FNV2VDVMQRJZEQHWJFRP5")
         let account = Account(keyPair: source, sequenceNumber: 9000)
 
         let asset = ChangeTrustAsset(canonicalForm: "USD:\(issuer.accountId)")!
@@ -475,6 +475,32 @@ class TxRepOperationsTestCase: XCTestCase {
 
         let reconstructed = try TxRep.fromTxRep(txRep: txRep)
         XCTAssertEqual(try transaction.encodedEnvelope(), reconstructed)
+    }
+
+    /// The balance id field holds 32 bytes and carries no length, so a value of any other
+    /// width is rejected rather than zero padded or truncated into a different id.
+    func testClaimClaimableBalanceRejectsABalanceIdOfAnotherWidth() throws {
+        let source = try KeyPair(secretSeed: "SC4CGETADVYTCR5HEAVZRB3DZQY5Y4J7RFNJTRA6ESMHIPEZUSTE2QDK")
+        let account = Account(keyPair: source, sequenceNumber: 15000)
+
+        let balanceId = "0101010101010101010101010101010101010101010101010101010101010101"
+        let operation = ClaimClaimableBalanceOperation(balanceId: balanceId, sourceAccountId: nil)
+        let transaction = try Transaction(sourceAccount: account, operations: [operation], memo: Memo.none)
+        try transaction.sign(keyPair: source, network: .testnet)
+
+        let key = "tx.operations[0].body.claimClaimableBalanceOp.balanceID.v0"
+        let txRep = try TxRep.toTxRep(transactionEnvelope: transaction.encodedEnvelope())
+        XCTAssertTrue(txRep.contains("\(key): \(balanceId)"))
+
+        for width in ["00", balanceId + "00", String(balanceId.dropFirst(2))] {
+            let corrupted = txRep.replacingOccurrences(of: "\(key): \(balanceId)", with: "\(key): \(width)")
+            XCTAssertThrowsError(try TxRep.fromTxRep(txRep: corrupted), "width: \(width)") { error in
+                guard case TxRepError.invalidValue(let reportedKey) = error else {
+                    return XCTFail("Expected invalidValue, got \(error)")
+                }
+                XCTAssertEqual(reportedKey, key)
+            }
+        }
     }
 
     func testBeginSponsoringFutureReservesOperationTxRep() throws {

@@ -543,7 +543,7 @@ class SCValUnitTests: XCTestCase {
 
     func testSCValAddress() throws {
         // Test account address
-        let accountId = "GBDQ3KSNQ4ZRJFQFYAOBQJF7FCCR5MQUUTF6FJ6OHB4DMFK4YA5KTZLV"
+        let accountId = "GBDQ3KSNQ4ZRJFQFYAOBQJF7FCCR5MQUUTF6FJ6OHB4DMFK4YA5KTEFG"
         let address = try SCAddressXDR(accountId: accountId)
         let addressVal = SCValXDR.address(address)
 

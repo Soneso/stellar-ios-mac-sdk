@@ -21,10 +21,12 @@ public enum Ed25519Error: Error, Sendable {
 
     /// The provided seed string (S-address) is invalid or malformed.
     ///
-    /// This occurs when:
-    /// - The seed string doesn't start with 'S'
-    /// - The base32 decoding fails
-    /// - The checksum validation fails
+    /// Thrown when a secret seed string is decoded into a seed and it is not a well formed
+    /// strkey encoded ed25519 secret seed. This occurs when:
+    /// - The string is not 56 characters long, the length a 32 byte seed is encoded in
+    /// - The string is not canonical base32
+    /// - The string carries a version byte other than the ed25519 secret seed one
+    /// - The CRC-16 checksum does not match the body it covers
     case invalidSeed
 
     /// The seed byte array has an incorrect length.
@@ -40,10 +42,12 @@ public enum Ed25519Error: Error, Sendable {
 
     /// The provided public key string (G-address) is invalid or malformed.
     ///
-    /// This occurs when:
-    /// - The account ID doesn't start with 'G'
-    /// - The base32 decoding fails
-    /// - The checksum validation fails
+    /// Thrown when an account id is decoded into a public key and it is not a well formed
+    /// strkey encoded ed25519 public key. This occurs when:
+    /// - The string is not 56 characters long, the length a 32 byte key is encoded in
+    /// - The string is not canonical base32
+    /// - The string carries a version byte other than the ed25519 public key one
+    /// - The CRC-16 checksum does not match the body it covers
     case invalidPublicKey
 
     /// The public key byte array has an incorrect length.

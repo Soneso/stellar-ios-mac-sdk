@@ -103,20 +103,21 @@ public class OperationsService: @unchecked Sendable {
 
     /// Retrieves operations for a specific claimable balance with pagination support.
     ///
-    /// Supports both encoded (B-prefixed) and hex claimable balance IDs.
-    ///
-    /// - Parameter claimableBalanceId: The claimable balance ID (B-address or hex format)
+    /// - Parameter claimableBalanceId: The claimable balance ID, as a "B..." strkey or as hex
+    /// in any of its widths
     /// - Parameter cursor: Optional paging token, specifying where to start returning records from
     /// - Parameter order: Optional sort order - .ascending or .descending
     /// - Parameter limit: Optional maximum number of records to return. Default: 10, max: 200
     /// - Parameter includeFailed: Optional. Set to true to include failed operations
     /// - Parameter join: Optional. Set to "transactions" to include transaction data in response
-    /// - Returns: PageResponse containing operations for the claimable balance or error
+    /// - Returns: PageResponse containing operations for the claimable balance, or a badRequest
+    /// error naming the reason when the id holds none of those spellings
     open func getOperations(forClaimableBalance claimableBalanceId:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, includeFailed:Bool? = nil, join:String? = nil) async -> PageResponse<OperationResponse>.ResponseEnum {
-        var id = claimableBalanceId
-        if claimableBalanceId.hasPrefix("B"),
-            let cid = try? claimableBalanceId.decodeClaimableBalanceIdToHex() {
-            id = cid
+        let id: String
+        do {
+            id = try ServiceHelper.claimableBalanceIdHorizonHex(claimableBalanceId)
+        } catch {
+            return .failure(error: error)
         }
         let path = "/claimable_balances/" + id.urlPathEncoded + "/operations"
         return await getOperations(onPath: path, from:cursor, order:order, limit:limit, includeFailed:includeFailed, join:join)
@@ -224,10 +225,11 @@ public class OperationsService: @unchecked Sendable {
                 subpath = subpath + "?cursor=" + cursor.urlQueryValueEncoded
             }
         case .operationsForClaimableBalance(let claimableBalanceId, let cursor):
-            var idHex = claimableBalanceId
-            if claimableBalanceId.hasPrefix("B"),
-                let cid = try? claimableBalanceId.decodeClaimableBalanceIdToHex() {
-                idHex = cid
+            let idHex: String
+            do {
+                idHex = try ServiceHelper.claimableBalanceIdHorizonHex(claimableBalanceId)
+            } catch {
+                return OperationsStreamItem(failure: error)
             }
             subpath = "/claimable_balances/" + idHex.urlPathEncoded + "/operations"
             if let cursor = cursor {

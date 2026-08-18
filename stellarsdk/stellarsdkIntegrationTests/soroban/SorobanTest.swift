@@ -420,7 +420,7 @@ class SorobanTest: XCTestCase {
                                            operations: [extendOperation], memo: Memo.none)
         
         
-        let ledgerKeyContractCode = LedgerKeyContractCodeXDR(wasmId:wasmId)
+        let ledgerKeyContractCode = try! LedgerKeyContractCodeXDR(wasmId:wasmId)
         let codeKey = LedgerKeyXDR.contractCode(ledgerKeyContractCode)
         let footprint = LedgerFootprintXDR(readOnly: [codeKey], readWrite: [])
         let ressources = SorobanResourcesXDR(footprint: footprint, instructions: 0, diskReadBytes: 0, writeBytes: 0)

@@ -30,7 +30,7 @@ final class WebAuthForContractsUnitTests: XCTestCase {
 
     // Client domain keys
     let clientDomainPublicKey = "GAIWNNJMDNZTSKEIWBZIERE3WCRIW2LCA3PK3GRX2K7DGWDA7Z5MVUZN"
-    let clientDomainPrivateKey = "SBXFU2EMT2Y3IRGN2MSXIBIAXEPT77PYKN5HHQSDBLNCT7OCYYBA2K3L"
+    let clientDomainPrivateKey = "SBXFU2EMT2Y3IRGN2MSXIBIAXEPT77PYKN5HHQSDBLNCT7OCYYBA3G4L"
 
     // Mock instances
     var tomlServerMock: WebAuthForContractsTomlUnitMock!

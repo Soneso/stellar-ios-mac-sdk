@@ -1214,17 +1214,56 @@ final class TxRepHelperTestCase: XCTestCase {
 
     // MARK: - formatSignerKey() — error catch branches
     //
-    // The underlying StrKey encode functions (encodeEd25519PublicKey, encodePreAuthTx,
-    // encodeSha256Hash) delegate to encodeCheck() which is infallible in practice —
-    // it always produces a valid base32 string for any byte sequence. Therefore the
-    // catch/rethrow branches on lines 623, 629, 635 are genuinely unreachable with any
-    // legitimately constructed SignerKeyXDR value.
-    //
-    // The signedPayload branch (line 641) routes through XDREncoder.encode which can
-    // theoretically throw, but in practice does not for a well-formed Ed25519SignedPayload.
-    //
-    // These four catch clauses are defensive guards against future SDK changes; they are
-    // documented here as confirmed-unreachable with the current SDK implementation.
+    // A strkey carries a payload of one width per type, so a signer key field of any other
+    // width has no strkey and formatting it fails. Uint256XDR pads a value narrower than 32
+    // bytes out to 32 bytes and keeps a wider one as it is, so a 33 byte value is the way to
+    // hold a width the encoder rejects.
+
+    /// An ed25519 signer key of a width other than 32 bytes is reported as an invalid value
+    /// rather than encoded into an address the decoder refuses to read back.
+    func testFormatSignerKeyEd25519WrongWidthThrows() {
+        let signerKey = SignerKeyXDR.ed25519(Uint256XDR(Data(count: 33)))
+        XCTAssertThrowsError(try TxRepHelper.formatSignerKey(signerKey)) { error in
+            guard case TxRepError.invalidValue(let key) = error, key == "signerKeyEd25519" else {
+                return XCTFail("Expected TxRepError.invalidValue(key: \"signerKeyEd25519\"), got \(error)")
+            }
+        }
+    }
+
+    /// A pre authorized transaction hash of a width other than 32 bytes is reported as an
+    /// invalid value.
+    func testFormatSignerKeyPreAuthTxWrongWidthThrows() {
+        let signerKey = SignerKeyXDR.preAuthTx(Uint256XDR(Data(count: 33)))
+        XCTAssertThrowsError(try TxRepHelper.formatSignerKey(signerKey)) { error in
+            guard case TxRepError.invalidValue(let key) = error, key == "signerKeyPreAuthTx" else {
+                return XCTFail("Expected TxRepError.invalidValue(key: \"signerKeyPreAuthTx\"), got \(error)")
+            }
+        }
+    }
+
+    /// A sha256 hash of a width other than 32 bytes is reported as an invalid value.
+    func testFormatSignerKeyHashXWrongWidthThrows() {
+        let signerKey = SignerKeyXDR.hashX(Uint256XDR(Data(count: 33)))
+        XCTAssertThrowsError(try TxRepHelper.formatSignerKey(signerKey)) { error in
+            guard case TxRepError.invalidValue(let key) = error, key == "signerKeyHashX" else {
+                return XCTFail("Expected TxRepError.invalidValue(key: \"signerKeyHashX\"), got \(error)")
+            }
+        }
+    }
+
+    /// A signed payload signer authorizes one specific payload, so a signer over an empty
+    /// payload has no strkey and is reported as an invalid value.
+    func testFormatSignerKeySignedPayloadEmptyPayloadThrows() {
+        let payload = Ed25519SignedPayload(
+            ed25519: Uint256XDR(Data(kTestBytes32)),
+            payload: Data()
+        )
+        XCTAssertThrowsError(try TxRepHelper.formatSignerKey(.signedPayload(payload))) { error in
+            guard case TxRepError.invalidValue(let key) = error, key == "signerKeySignedPayload" else {
+                return XCTFail("Expected TxRepError.invalidValue(key: \"signerKeySignedPayload\"), got \(error)")
+            }
+        }
+    }
 
     // MARK: - formatMuxedAccount() — empty accountId branch
     //

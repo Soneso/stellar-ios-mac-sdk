@@ -16,8 +16,11 @@ extension TrustlineAssetXDR {
         throw StellarSDKError.invalidArgument(message: "Invalid asset type")
     }
 
-    public init(poolId: String) {
-        self = .poolShare(poolId.wrappedData32FromHex())
+    /// Creates a pool share trustline asset from the 64 character hex of the 32 byte pool id.
+    ///
+    /// - Throws: StellarSDKError.invalidArgument if the id is not exactly 64 hexadecimal characters
+    public init(poolId: String) throws {
+        self = .poolShare(try poolId.wrappedData32FromHex(idKind: "liquidity pool id"))
     }
 
     public var assetCode: String? {

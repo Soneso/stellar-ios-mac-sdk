@@ -64,21 +64,22 @@ public final class PublicKey: XDRCodable, Sendable {
 
     /// Creates a new Stellar public key from the Stellar account ID
     ///
+    /// The account ID must be a strkey encoded ed25519 public key ("G..."): canonical base32
+    /// carrying the ed25519 public key version byte and a matching CRC-16 checksum.
+    ///
     /// - Parameter accountId: The Stellar account ID
     ///
-    /// - Throws Ed25519Error.invalidPublicKey if the accountId is invalid
+    /// - Throws Ed25519Error.invalidPublicKey if the accountId is not a well formed strkey encoded ed25519 public key
     ///
     public convenience init(accountId: String) throws {
-
-        if !accountId.hasPrefix(StellarProtocolConstants.STRKEY_PREFIX_ACCOUNT) {
+        let decoded: Data
+        do {
+            decoded = try accountId.decodeEd25519PublicKey()
+        } catch is KeyUtilsError {
             throw Ed25519Error.invalidPublicKey
         }
 
-        if let data = accountId.base32DecodedData {
-            try self.init(Array(([UInt8](data))[StellarProtocolConstants.STRKEY_VERSION_BYTE_SIZE...data.count - StellarProtocolConstants.STRKEY_OVERHEAD_SIZE]))
-        } else {
-            throw Ed25519Error.invalidPublicKey
-        }
+        try self.init([UInt8](decoded))
     }
     
     /// Creates a new Stellar public key the given XDR Decoder

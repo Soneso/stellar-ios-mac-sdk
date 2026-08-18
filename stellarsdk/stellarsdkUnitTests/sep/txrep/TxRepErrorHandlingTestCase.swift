@@ -992,7 +992,7 @@ class TxRepErrorHandlingTestCase: XCTestCase {
     func testTxRepWithCreditAlphanum4Asset() throws {
         let source = try KeyPair(secretSeed: "SC4CGETADVYTCR5HEAVZRB3DZQY5Y4J7RFNJTRA6ESMHIPEZUSTE2QDK")
         let destination = try KeyPair(accountId: "GDW6AUTBXTOC7FIKUO5BOO3OGLK4SF7ZPOBLMQHMZDI45J2Z6VXRB5NR")
-        let issuer = try KeyPair(accountId: "GCMUFBSB6OB6R2MJKXB5G5UXZHE3XO4H5T4FNV2VDVMQRJZEQHWJFHZV")
+        let issuer = try KeyPair(accountId: "GCMUFBSB6OB6R2MJKXB5G5UXZHE3XO4H5T4FNV2VDVMQRJZEQHWJFRP5")
         let account = Account(keyPair: source, sequenceNumber: 400000)
 
         let asset = Asset(canonicalForm: "USD:\(issuer.accountId)")!
@@ -1022,7 +1022,7 @@ class TxRepErrorHandlingTestCase: XCTestCase {
     func testTxRepWithCreditAlphanum12Asset() throws {
         let source = try KeyPair(secretSeed: "SC4CGETADVYTCR5HEAVZRB3DZQY5Y4J7RFNJTRA6ESMHIPEZUSTE2QDK")
         let destination = try KeyPair(accountId: "GDW6AUTBXTOC7FIKUO5BOO3OGLK4SF7ZPOBLMQHMZDI45J2Z6VXRB5NR")
-        let issuer = try KeyPair(accountId: "GCMUFBSB6OB6R2MJKXB5G5UXZHE3XO4H5T4FNV2VDVMQRJZEQHWJFHZV")
+        let issuer = try KeyPair(accountId: "GCMUFBSB6OB6R2MJKXB5G5UXZHE3XO4H5T4FNV2VDVMQRJZEQHWJFRP5")
         let account = Account(keyPair: source, sequenceNumber: 500000)
 
         let asset = Asset(canonicalForm: "LONGASSET123:\(issuer.accountId)")!

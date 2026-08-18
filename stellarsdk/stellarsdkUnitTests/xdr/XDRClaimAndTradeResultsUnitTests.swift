@@ -159,7 +159,7 @@ class XDRClaimAndTradeResultsUnitTests: XCTestCase {
             }
 
             if case .encodingError(let message) = sdkError {
-                XCTAssertTrue(message.contains("invalid claimable balance id"))
+                XCTAssertEqual(message, "claimable balance id must be a 58 character strkey (B...), or hex of the bare id (64 characters), which a discriminant may prefix to 66 or 72 characters; \(invalidHex.count) characters given")
             } else {
                 XCTFail("Expected encodingError")
             }
@@ -177,7 +177,7 @@ class XDRClaimAndTradeResultsUnitTests: XCTestCase {
             }
 
             if case .encodingError(let message) = sdkError {
-                XCTAssertTrue(message.contains("unknown discriminant"))
+                XCTAssertEqual(message, "claimable balance id carries the discriminant 99, which names no claimable balance id type")
             } else {
                 XCTFail("Expected encodingError")
             }

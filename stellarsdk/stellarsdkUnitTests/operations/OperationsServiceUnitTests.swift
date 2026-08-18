@@ -347,12 +347,16 @@ class OperationsServiceUnitTests: XCTestCase {
         }
     }
 
+    /// The strkey naming the same balance as `testClaimableBalanceIdHex` is read and served.
+    /// The mock answers every path, so the route the strkey takes is not pinned here;
+    /// ClaimableBalanceRoutingUnitTests records the paths and pins both spellings to one route.
     func testGetOperationsForClaimableBalanceBPrefix() async {
-        let bAddress = "B00000000929b20b72e5890ab51c24f1cc46fa01c4f318d8d33367d24dd614cfdf5491072"
+        let bAddress = "BAAJFGZAW4XFREFLKHBE6HGEN6QBYTZRRWGTGNT5ETOWCTH56VERA4SHWU"
         let responseEnum = await sdk.operations.getOperations(forClaimableBalance: bAddress)
         switch responseEnum {
         case .success(let page):
-            XCTAssertNotNil(page.records)
+            XCTAssertEqual(page.records.count, 5, "Expected 5 operations from mock response")
+            XCTAssertEqual(page.records[0].id, testOperationId)
         case .failure(let error):
             XCTFail("Failed with error: \(error)")
         }
@@ -376,16 +380,19 @@ class OperationsServiceUnitTests: XCTestCase {
         }
     }
 
+    /// An id that spells no claimable balance names no route, so it is reported before a
+    /// request is made rather than sent on for Horizon to reject.
     func testGetOperationsForInvalidClaimableBalance() async {
         let responseEnum = await sdk.operations.getOperations(forClaimableBalance: "invalid")
         switch responseEnum {
         case .success(_):
             XCTFail("Should have failed with invalid claimable balance ID")
         case .failure(let error):
-            if case .notFound(let message, _) = error {
-                XCTAssertFalse(message.isEmpty, "Error message should not be empty")
+            if case .badRequest(let message, let horizonErrorResponse) = error {
+                XCTAssertNil(horizonErrorResponse)
+                XCTAssertEqual(message, "claimable balance id must be a 58 character strkey (B...), or hex of the bare id (64 characters), which a discriminant may prefix to 66 or 72 characters; 7 characters given")
             } else {
-                XCTFail("Expected notFound error, got: \(error)")
+                XCTFail("Expected badRequest error, got: \(error)")
             }
         }
     }

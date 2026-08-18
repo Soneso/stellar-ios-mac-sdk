@@ -770,7 +770,8 @@ class OperationsRemoteTestCase: XCTestCase, @unchecked Sendable {
             // test also acceptance of claimable balance ids in their strkey representation
             var requestBalanceId = balanceId
             if (requestBalanceId.isHexString()) {
-                // convert to strkey representation
+                // convert to strkey representation. hexEncodedBalanceId reports the id in
+                // the 72 character XDR form, which the encoder takes directly
                 requestBalanceId = try! requestBalanceId.encodeClaimableBalanceIdHex()
             }
             let claimClaimableBalanceOp = ClaimClaimableBalanceOperation(balanceId: requestBalanceId)
