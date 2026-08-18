@@ -150,6 +150,16 @@ public enum GetContractCodeResponseEnum: Sendable {
     case failure(error: SorobanRpcRequestError)
 }
 
+/// Response enum for external reference resolution requests.
+///
+/// Returns the 32-byte wasm hash a CAP-85 external reference names.
+public enum GetExternalRefWasmHashResponseEnum: Sendable {
+    /// Successfully resolved the external reference to its wasm hash.
+    case success(response: Data)
+    /// Failed to resolve the external reference, error details in associated value.
+    case failure(error: SorobanRpcRequestError)
+}
+
 /// Response enum for contract information requests.
 ///
 /// Returns parsed contract metadata including spec entries, environment info, and contract metadata.
@@ -576,6 +586,12 @@ public class SorobanServer: @unchecked Sendable {
     
     /// Loads the contract code (wasm binary) for the given contractId.
     ///
+    /// The contract instance's executable decides how the code is found: a wasm
+    /// executable carries the hash directly, a CAP-85 external reference is resolved
+    /// through the owner contract's tag entry via `getExternalRefWasmHash(ref:)`, and a
+    /// Stellar Asset Contract has no wasm bytecode on chain and fails with a message
+    /// saying so.
+    ///
     /// - Parameter contractId: Stellar contract address (C...)
     /// - Returns: Contract code entry containing the WASM bytecode
     public func getContractCodeForContractId(contractId: String) async -> GetContractCodeResponseEnum {
@@ -587,27 +603,32 @@ public class SorobanServer: @unchecked Sendable {
         } catch {
             return .failure(error: .requestFailed(message: "invalid contract id"))
         }
-        
+
         let ledgerKey = LedgerKeyXDR.contractData(contractDataKey!)
         if let ledgerKeyBase64 = ledgerKey.xdrEncoded {
             let response = await self.getLedgerEntries(base64EncodedKeys: [ledgerKeyBase64])
             switch response {
             case .success(let response):
                 guard let firstEntry = response.entries.first else {
-                    return .failure(error: .requestFailed(message: "could not extract wasm id"))
+                    return .failure(error: .requestFailed(message: "no contract instance entry found for contract id \(contractId)"))
                 }
                 let data = try? LedgerEntryDataXDR(fromBase64: firstEntry.xdr)
-                if let contractData = data?.contractData, let wasmId = contractData.val.contractInstance?.executable.wasm?.wrapped.base16EncodedString() {
-                    let response = await self.getContractCodeForWasmId(wasmId: wasmId)
-                    switch response {
-                    case .success(let response):
-                        return .success(response: response)
+                guard let instance = data?.contractData?.val.contractInstance else {
+                    return .failure(error: .requestFailed(message: "ledger entry for contract id \(contractId) is not a contract instance"))
+                }
+                switch instance.executable {
+                case .wasm(let hash):
+                    return await self.getContractCodeForWasmId(wasmId: hash.wrapped.base16EncodedString())
+                case .externalRef(let ref):
+                    let hashResponse = await self.getExternalRefWasmHash(ref: ref)
+                    switch hashResponse {
+                    case .success(let wasmHash):
+                        return await self.getContractCodeForWasmId(wasmId: wasmHash.base16EncodedString())
                     case .failure(let error):
                         return .failure(error: error)
                     }
-                }
-                else {
-                    return .failure(error: .requestFailed(message: "could not extract wasm id"))
+                case .token:
+                    return .failure(error: .requestFailed(message: "contract \(contractId) is a Stellar Asset Contract and has no wasm bytecode on chain"))
                 }
             case .failure(let error):
                 return .failure(error: error)
@@ -617,6 +638,52 @@ public class SorobanServer: @unchecked Sendable {
         }
     }
     
+    /// Resolves a CAP-85 external reference to the 32-byte wasm hash it names.
+    ///
+    /// A contract created from an external reference does not carry its own code hash.
+    /// The reference names an owner contract and a tag, and the owner holds a persistent
+    /// contract data entry keyed by that tag whose value is the 32-byte hash of an
+    /// already uploaded wasm. This method reads that entry off the ledger; the owner
+    /// contract is not invoked. The tag entry is matched byte for byte, so the tag is
+    /// passed through exactly as the reference carries it.
+    ///
+    /// The failure message states which condition fired: the owner is not a contract
+    /// address, the owner has no entry under the tag (missing or archived), the entry
+    /// is not a contract data entry, or the entry value does not hold a 32-byte wasm
+    /// hash. RPC transport errors are propagated unchanged.
+    ///
+    /// - Parameter ref: The external reference naming the owner contract and the tag
+    /// - Returns: The 32-byte wasm hash on success
+    public func getExternalRefWasmHash(ref: ContractExecutableExternalRefXDR) async -> GetExternalRefWasmHashResponseEnum {
+        guard case .contract = ref.executableOwner, let ownerHex = ref.executableOwner.contractId else {
+            let described = ref.executableOwner.accountId ?? ref.executableOwner.liquidityPoolId ?? ref.executableOwner.claimableBalanceId ?? "of an unsupported address type"
+            return .failure(error: .requestFailed(message: "external reference owner \(described) is not a contract address; only a contract can hold the executable tag entry"))
+        }
+        let owner = (try? ownerHex.encodeContractIdHex()) ?? ownerHex
+        let contractDataKey = LedgerKeyContractDataXDR(contract: ref.executableOwner,
+                                                       key: SCValXDR.executableTag(ref.tag),
+                                                       durability: ContractDataDurability.persistent)
+        let ledgerKey = LedgerKeyXDR.contractData(contractDataKey)
+        guard let ledgerKeyBase64 = ledgerKey.xdrEncoded else { return .failure(error: .requestFailed(message: "could not create ledger key")) }
+        let response = await self.getLedgerEntries(base64EncodedKeys: [ledgerKeyBase64])
+        switch response {
+        case .success(let response):
+            guard let firstEntry = response.entries.first else {
+                return .failure(error: .requestFailed(message: "no executable tag entry found on owner contract \(owner) for tag \(ref.tag)"))
+            }
+            let data = try? LedgerEntryDataXDR(fromBase64: firstEntry.xdr)
+            guard let contractData = data?.contractData else {
+                return .failure(error: .requestFailed(message: "executable tag entry on owner contract \(owner) is not a contract data entry"))
+            }
+            guard let wasmHash = contractData.val.bytes, wasmHash.count == 32 else {
+                return .failure(error: .requestFailed(message: "executable tag entry on owner contract \(owner) does not hold a 32-byte wasm hash"))
+            }
+            return .success(response: wasmHash)
+        case .failure(let error):
+            return .failure(error: error)
+        }
+    }
+
     /// Loads contract source byte code for the given contractId and extracts
     /// the information (Environment Meta, Contract Spec, Contract Meta).
     ///
