@@ -102,8 +102,9 @@ public final class AssetBalanceChange: Decodable, Sendable {
     /// Source account of the transfer (if applicable).
     public let from:String?
 
-    /// Destination account of the transfer.
-    public let to:String
+    /// Destination account of the transfer (if applicable). Horizon omits it
+    /// on burn and clawback balance changes.
+    public let to:String?
 
     /// Amount transferred or changed.
     public let amount:String
@@ -136,7 +137,7 @@ public final class AssetBalanceChange: Decodable, Sendable {
         assetIssuer = try values.decodeIfPresent(String.self, forKey: .assetIssuer)
         type = try values.decode(String.self, forKey: .type)
         from = try values.decodeIfPresent(String.self, forKey: .from)
-        to = try values.decode(String.self, forKey: .to)
+        to = try values.decodeIfPresent(String.self, forKey: .to)
         amount = try values.decode(String.self, forKey: .amount)
         destinationMuxedId = try values.decodeIfPresent(String.self, forKey: .destinationMuxedId)
     }

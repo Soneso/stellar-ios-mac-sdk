@@ -338,6 +338,14 @@ class OperationResponsesUnitTests: XCTestCase {
                     "type": "mint",
                     "to": "GBIA4FH6TV64KSPDAJCNUQSM7PFL4ILGUVJDPCLUOPJ7ONMKBBVUQHRO",
                     "amount": "50.0000000"
+                },
+                {
+                    "asset_type": "credit_alphanum4",
+                    "asset_code": "USDC",
+                    "asset_issuer": "GDWGJSTUVRNFTR7STPUUHFWQYAN6KBVWCZT2YN7MY276GCSSXSWPS6JY",
+                    "type": "burn",
+                    "from": "GBIA4FH6TV64KSPDAJCNUQSM7PFL4ILGUVJDPCLUOPJ7ONMKBBVUQHRO",
+                    "amount": "25.0000000"
                 }
             ]
 """
@@ -348,7 +356,7 @@ class OperationResponsesUnitTests: XCTestCase {
 
         // Verify asset balance changes
         XCTAssertNotNil(response.assetBalanceChanges)
-        XCTAssertEqual(response.assetBalanceChanges?.count, 2)
+        XCTAssertEqual(response.assetBalanceChanges?.count, 3)
 
         let firstChange = response.assetBalanceChanges?[0]
         XCTAssertEqual(firstChange?.assetType, "credit_alphanum4")
@@ -367,6 +375,13 @@ class OperationResponsesUnitTests: XCTestCase {
         XCTAssertNil(secondChange?.from)
         XCTAssertEqual(secondChange?.to, "GBIA4FH6TV64KSPDAJCNUQSM7PFL4ILGUVJDPCLUOPJ7ONMKBBVUQHRO")
         XCTAssertEqual(secondChange?.amount, "50.0000000")
+
+        // Horizon omits "to" on a burn; the change must still decode.
+        let thirdChange = response.assetBalanceChanges?[2]
+        XCTAssertEqual(thirdChange?.type, "burn")
+        XCTAssertEqual(thirdChange?.from, "GBIA4FH6TV64KSPDAJCNUQSM7PFL4ILGUVJDPCLUOPJ7ONMKBBVUQHRO")
+        XCTAssertNil(thirdChange?.to)
+        XCTAssertEqual(thirdChange?.amount, "25.0000000")
     }
 
     func testParseInvokeHostFunctionOperationResponseWithDestinationMuxedId() throws {
