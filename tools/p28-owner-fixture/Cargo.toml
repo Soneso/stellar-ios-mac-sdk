@@ -1,0 +1,22 @@
+[package]
+name = "p28-owner-fixture"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[lib]
+crate-type = ["cdylib"]
+doctest = false
+
+[dependencies]
+soroban-sdk = { git = "https://github.com/stellar/rs-soroban-sdk", rev = "e9c2c0b6a160a1c30b4823266f6fb6ebaed65ad1" }
+
+[profile.release]
+opt-level = "z"
+overflow-checks = true
+debug = 0
+strip = "symbols"
+debug-assertions = false
+panic = "abort"
+codegen-units = 1
+lto = true

@@ -191,6 +191,98 @@ public final class SorobanClient: Sendable {
         
     }
     
+    /// Deploys a new contract instance from a CAP-85 external reference (protocol >= 28)
+    /// and creates a SorobanClient for it.
+    ///
+    /// The executable of the new instance names an owner contract and a tag; the owner's
+    /// persistent entry under that tag holds the hash of the wasm the instance runs.
+    /// Nothing is installed as part of the deployment.
+    ///
+    /// The reference is resolved before the transaction is built, so an unresolvable
+    /// reference fails here with a `SorobanClientError.deployFailed` naming the owner
+    /// and the tag and carrying the resolver's message.
+    ///
+    /// The returned client's spec comes from the wasm the tag names at deployment
+    /// time. Re-pointing the tag later changes the code the instance runs, not the
+    /// spec this client loaded.
+    ///
+    /// - Parameter deployRequest: Deployment parameters including the executable owner, the tag, constructor args, and salt
+    /// - Returns: The client for the newly deployed contract
+    /// - Throws: SorobanClientError if the reference does not resolve or deployment fails
+    public static func deployFromExternalRef(deployRequest:DeployFromExternalRefRequest) async throws -> SorobanClient {
+        let server = SorobanServer(endpoint: deployRequest.rpcUrl)
+        server.enableLogging = deployRequest.enableServerLogging
+
+        let ownerAddress = try SCAddressXDR(contractId: deployRequest.executableOwner)
+        // Spell the owner as its "C..." strkey in the failure message.
+        let owner = (try? ownerAddress.contractId?.encodeContractIdHex()) ?? deployRequest.executableOwner
+        let ref = ContractExecutableExternalRefXDR(executableOwner: ownerAddress, tag: deployRequest.tag)
+        let hashResponse = await server.getExternalRefWasmHash(ref: ref)
+        let wasmHash: Data
+        switch hashResponse {
+        case .success(let hash):
+            wasmHash = hash
+        case .failure(let error):
+            let reason: String
+            switch error {
+            case .requestFailed(let message):
+                reason = message
+            case .errorResponse(let errorData):
+                reason = errorData.message ?? "rpc error code \(errorData.code)"
+            case .parsingResponseFailed(let message, _):
+                reason = message
+            }
+            throw SorobanClientError.deployFailed(message: "external reference of owner contract \(owner) with tag \(deployRequest.tag) does not resolve: \(reason)")
+        }
+
+        // Load the spec from the resolved wasm code entry before deploying: the
+        // code entry is already settled, while reading the contract instance
+        // right after deployment races the RPC's ledger-entry ingestion, so a
+        // successful deployment could surface as a load failure. Loading by
+        // contract id below remains the fallback when the code entry cannot be
+        // read or parsed up front.
+        var contractInfo:SorobanContractInfo? = nil
+        let infoEnum = await server.getContractInfoForWasmId(wasmId: wasmHash.base16EncodedString())
+        switch infoEnum {
+        case .success(let info):
+            contractInfo = info
+        case .parsingFailure, .rpcFailure:
+            contractInfo = nil
+        }
+
+        let sourceAddress = try SCAddressXDR(accountId: deployRequest.sourceAccountKeyPair.accountId)
+        let constructorArgs = deployRequest.constructorArgs ?? []
+        let createContractOp: InvokeHostFunctionOperation
+        if constructorArgs.isEmpty {
+            createContractOp = try InvokeHostFunctionOperation.forCreatingContractFromExternalRef(executableOwner: ownerAddress, tag: deployRequest.tag, address: sourceAddress, salt: deployRequest.salt)
+        } else {
+            createContractOp = try InvokeHostFunctionOperation.forCreatingContractFromExternalRefWithConstructor(executableOwner: ownerAddress, tag: deployRequest.tag, address: sourceAddress, constructorArguments: constructorArgs, salt: deployRequest.salt)
+        }
+        let clientOptions = ClientOptions(sourceAccountKeyPair: deployRequest.sourceAccountKeyPair,
+                                          contractId: "ignored",
+                                          network: deployRequest.network,
+                                          rpcUrl: deployRequest.rpcUrl,
+                                          enableServerLogging: deployRequest.enableServerLogging)
+        let options = AssembledTransactionOptions(clientOptions: clientOptions,
+                                                  methodOptions: deployRequest.methodOptions,
+                                                  method: self.constructorFunc,
+                                                  enableServerLogging: deployRequest.enableServerLogging)
+        let tx = try await AssembledTransaction.buildWithOp(operation: createContractOp, options: options)
+        let response = try await tx.signAndSend()
+        guard let contractId = response.createdContractId else {
+            throw SorobanClientError.deployFailed(message: "Could not get contract id for deployed contract.")
+        }
+        let finalOptions = ClientOptions(sourceAccountKeyPair: deployRequest.sourceAccountKeyPair,
+                                          contractId: try contractId.encodeContractIdHex(),
+                                          network: deployRequest.network,
+                                          rpcUrl: deployRequest.rpcUrl,
+                                          enableServerLogging: deployRequest.enableServerLogging)
+        if let contractInfo = contractInfo {
+            return SorobanClient(specEntries: contractInfo.specEntries, clientOptions: finalOptions)
+        }
+        return try await SorobanClient.forClientOptions(options: finalOptions)
+    }
+
     /// Installs (uploads) contract WebAssembly code to the Stellar network.
     ///
     /// Installing a contract is the first step in contract deployment. This operation uploads
