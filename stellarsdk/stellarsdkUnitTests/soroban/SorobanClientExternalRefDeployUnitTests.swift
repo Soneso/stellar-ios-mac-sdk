@@ -83,6 +83,12 @@ final class SorobanClientExternalRefDeployUnitTests: XCTestCase {
         return key.xdrEncoded!
     }
 
+    private func codeKeyB64() -> String {
+        let key = LedgerKeyXDR.contractCode(LedgerKeyContractCodeXDR(
+            hash: WrappedData32(wasmHashBytes)))
+        return key.xdrEncoded!
+    }
+
     private func tagEntry() -> LedgerEntryDataXDR {
         return LedgerEntryDataXDR.contractData(ContractDataEntryXDR(
             ext: .void,
@@ -123,6 +129,7 @@ final class SorobanClientExternalRefDeployUnitTests: XCTestCase {
     private func setupDeployFlowMock(tagEntryExists: Bool = true) {
         let log = requestLog
         let tagKey = tagKeyB64()
+        let codeKey = codeKeyB64()
         let mock = RequestMock(
             host: "soroban-testnet.stellar.org",
             path: "*",
@@ -176,10 +183,11 @@ final class SorobanClientExternalRefDeployUnitTests: XCTestCase {
                     }
                     return self.ledgerEntryResponseJson(entryData: self.tagEntry())
                 }
-                // CONTRACT_CODE keys encode with discriminant 7 ("AAAABw"),
-                // CONTRACT_DATA with 6 ("AAAABg"); anything else is the
-                // account fetch.
-                if bodyString.contains("AAAABw") {
+                // The code answer requires the exact CONTRACT_CODE key of the
+                // resolved wasm hash, so a preload from any other value gets
+                // no entry. CONTRACT_DATA keys encode with discriminant 6
+                // ("AAAABg"); anything else is the account fetch.
+                if bodyString.contains(codeKey) {
                     log.entries.append("code")
                     return self.ledgerEntryResponseJson(entryData: self.contractCodeEntry(code: self.tokenWasm))
                 }

@@ -49,6 +49,7 @@ let package = Package(
             path: "stellarsdk/stellarsdkIntegrationTests",
             resources: [
                 .copy("soroban/soroban_hello_world_contract.wasm"),
+                .copy("soroban/p28_owner_fixture.wasm"),
                 .copy("soroban/soroban_token_contract.wasm"),
                 .copy("soroban/soroban_auth_contract.wasm"),
                 .copy("soroban/soroban_modular_account_contract.wasm"),

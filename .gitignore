@@ -94,6 +94,9 @@ tools/xdr-generator/vendor/
 # diffs against the committed corpus; it never writes the committed file.
 tools/sep-51-corpus/.tmp/
 
+# P28 owner fixture build output
+tools/p28-owner-fixture/target/
+
 # Scripts
 scripts/
 

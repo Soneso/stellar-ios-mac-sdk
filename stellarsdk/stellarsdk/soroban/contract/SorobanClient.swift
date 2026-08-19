@@ -202,6 +202,10 @@ public final class SorobanClient: Sendable {
     /// reference fails here with a `SorobanClientError.deployFailed` naming the owner
     /// and the tag and carrying the resolver's message.
     ///
+    /// The returned client's spec comes from the wasm the tag names at deployment
+    /// time. Re-pointing the tag later changes the code the instance runs, not the
+    /// spec this client loaded.
+    ///
     /// - Parameter deployRequest: Deployment parameters including the executable owner, the tag, constructor args, and salt
     /// - Returns: The client for the newly deployed contract
     /// - Throws: SorobanClientError if the reference does not resolve or deployment fails
@@ -210,7 +214,7 @@ public final class SorobanClient: Sendable {
         server.enableLogging = deployRequest.enableServerLogging
 
         let ownerAddress = try SCAddressXDR(contractId: deployRequest.executableOwner)
-        // Spell the owner as its "C..." strkey in every message below.
+        // Spell the owner as its "C..." strkey in the failure message.
         let owner = (try? ownerAddress.contractId?.encodeContractIdHex()) ?? deployRequest.executableOwner
         let ref = ContractExecutableExternalRefXDR(executableOwner: ownerAddress, tag: deployRequest.tag)
         let hashResponse = await server.getExternalRefWasmHash(ref: ref)
