@@ -276,6 +276,9 @@ condition fired: the owner is not a contract address, the owner has no entry und
 the entry is not a contract data entry, or the entry value does not hold a 32-byte wasm
 hash. The owner contract is read, never invoked.
 
+To deploy a contract from an external reference, see "Deployment from an External
+Reference (Protocol 28)" under Installing and Deploying.
+
 ## SorobanClient
 
 High-level API for contract interaction.
@@ -396,6 +399,61 @@ let client2 = try await SorobanClient.deploy(
         enableServerLogging: false
     )
 )
+```
+
+### Deployment from an External Reference (Protocol 28)
+
+Create a contract instance that runs the wasm named by a CAP-85 external reference:
+the owner contract holds a persistent entry under a tag, and its value is the hash of
+the wasm the instance runs. There is no install step; the owner already holds the tag
+entry. The reference is resolved before the transaction is built, so an unresolvable
+reference throws `SorobanClientError.deployFailed` naming the owner and the tag rather
+than failing on-chain.
+
+```swift
+import stellarsdk
+
+let client = try await SorobanClient.deployFromExternalRef(
+    deployRequest: DeployFromExternalRefRequest(
+        rpcUrl: "https://soroban-testnet.stellar.org",
+        network: Network.testnet,
+        sourceAccountKeyPair: try KeyPair(secretSeed: "SXXX..."),
+        executableOwner: "CCXYZ...", // "C..." strkey or the 64 character hex of the id
+        tag: "token-v1", // Tag of the executable entry on the owner; matched byte for byte
+        enableServerLogging: false
+    )
+)
+```
+
+`constructorArgs` and `salt` work as in `DeployRequest`. The contract spec is loaded
+from the resolved wasm before submission and the returned client is ready to invoke.
+The underlying create operations can also be built directly with
+`InvokeHostFunctionOperation.forCreatingContractFromExternalRef` and
+`forCreatingContractFromExternalRefWithConstructor`, next to their wasm siblings.
+
+### Deriving a Contract Id Before Deploying
+
+`ContractIdUtils.deriveContractId` returns the contract id ("C...") a deployment by a
+given deployer with a given salt creates on a given network. The id derives from the
+deployer, the salt and the network only; the executable (wasm hash, external reference
+or Stellar asset) does not enter the derivation. Use it when the address is needed
+before the deployment, for example in constructor arguments of another contract.
+
+```swift
+import Security
+import stellarsdk
+
+let deployer = try SCAddressXDR(accountId: "GABC...")
+var salt = Data(count: 32)
+_ = salt.withUnsafeMutableBytes { SecRandomCopyBytes(kSecRandomDefault, 32, $0.baseAddress!) }
+
+let futureContractId = try ContractIdUtils.deriveContractId(
+    deployer: deployer,
+    salt: salt,
+    network: Network.testnet
+)
+
+// Deploying with the same deployer and salt creates exactly this contract id
 ```
 
 ## AssembledTransaction

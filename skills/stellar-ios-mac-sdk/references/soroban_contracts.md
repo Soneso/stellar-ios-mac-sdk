@@ -349,6 +349,42 @@ let args = try spec.funcArgsToXdrSCValues(name: "transfer", args: [
 ])
 ```
 
+### Deploy from an External Reference (Protocol 28)
+
+A CAP-85 external reference names an owner contract and a tag; the owner's persistent
+entry under that tag holds the wasm hash the new instance runs. There is no install
+step. `SorobanClient.deployFromExternalRef` resolves the reference before the
+transaction is built (an unresolvable reference throws `SorobanClientError.deployFailed`
+naming the owner and the tag), loads the spec from the resolved wasm, and returns a
+ready client:
+
+```swift
+import stellarsdk
+
+let client = try await SorobanClient.deployFromExternalRef(
+    deployRequest: DeployFromExternalRefRequest(
+        rpcUrl: "https://soroban-testnet.stellar.org",
+        network: Network.testnet,
+        sourceAccountKeyPair: sourceKeyPair,
+        executableOwner: "CCXYZ...", // "C..." strkey or the 64 character hex of the id
+        tag: "token-v1", // matched byte for byte
+        enableServerLogging: false
+    )
+)
+// constructorArgs and salt work as in DeployRequest
+```
+
+The underlying create operations can be built directly with
+`InvokeHostFunctionOperation.forCreatingContractFromExternalRef(executableOwner:
+SCAddressXDR, tag: String, address: SCAddressXDR, salt: WrappedData32? = nil)` and
+`forCreatingContractFromExternalRefWithConstructor(... constructorArguments: [SCValXDR]
+...)`, next to their wasm siblings.
+
+`ContractIdUtils.deriveContractId(deployer: SCAddressXDR, salt: Data, network: Network)
+throws -> String` returns the contract id ("C...") a deployment creates. The id derives
+from deployer, salt and network only (the executable does not enter it), so the address
+is known before deploying. The salt is 32 raw bytes, not hex.
+
 ### Invoke Contract Methods
 
 `invokeMethod` automatically distinguishes read-only vs write calls. Read-only calls return simulation results without signing or submitting.
