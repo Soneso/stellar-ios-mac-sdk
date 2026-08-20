@@ -481,7 +481,7 @@ public final class TransferServerService: @unchecked Sendable {
     /// - Parameter request: Fee request containing operation type, asset code, and transaction amount
     /// - Returns: AnchorFeeResponseEnum with calculated fee details for the specified operation, or an error
     public func fee(request: FeeRequest) async -> AnchorFeeResponseEnum {
-        var requestPath = "/fee?operation=\(request.operation.urlQueryValueEncoded)&asset_code=\(request.assetCode.urlQueryValueEncoded)&amount=\(String(request.amount).urlQueryValueEncoded)"
+        var requestPath = "/fee?operation=\(request.operation.urlQueryValueEncoded)&asset_code=\(request.assetCode.urlQueryValueEncoded)&amount=\(SepRequestAmount.format(request.amount).urlQueryValueEncoded)"
 
         if let type = request.type {
             requestPath += "&type=\(type.urlQueryValueEncoded)"
