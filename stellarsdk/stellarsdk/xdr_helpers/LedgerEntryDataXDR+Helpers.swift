@@ -6,10 +6,6 @@ extension LedgerEntryDataXDR {
         self = try LedgerEntryDataXDR(from: xdrDecoder)
     }
 
-    public var isBool: Bool {
-        return type() == SCValType.bool.rawValue
-    }
-
     public var account: AccountEntryXDR? {
         switch self {
         case .account(let val):
