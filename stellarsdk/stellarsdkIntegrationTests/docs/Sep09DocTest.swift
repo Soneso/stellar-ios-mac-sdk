@@ -178,10 +178,12 @@ class Sep09DocTest: XCTestCase {
     }
 
     func testNaturalPersonOccupationParameter() {
-        // occupation takes an Int
+        // occupation takes an Int and is sent as its decimal representation
         let field = KYCNaturalPersonFieldsEnum.occupation(2511)
-        let (key, _) = field.parameter
+        let (key, data) = field.parameter
         XCTAssertEqual(key, "occupation")
+        XCTAssertEqual(String(data: data, encoding: .utf8), "2511")
+        XCTAssertEqual(data.count, 4)
     }
 
     func testNaturalPersonBinaryFieldsParameter() {
@@ -254,10 +256,12 @@ class Sep09DocTest: XCTestCase {
     }
 
     func testOrganizationNumberOfShareholdersParameter() {
-        // numberOfShareholders takes an Int
+        // numberOfShareholders takes an Int and is sent as its decimal representation
         let field = KYCOrganizationFieldsEnum.numberOfShareholders(3)
-        let (key, _) = field.parameter
+        let (key, data) = field.parameter
         XCTAssertEqual(key, "organization.number_of_shareholders")
+        XCTAssertEqual(String(data: data, encoding: .utf8), "3")
+        XCTAssertEqual(data.count, 1)
     }
 
     func testOrganizationBinaryFieldsParameter() {

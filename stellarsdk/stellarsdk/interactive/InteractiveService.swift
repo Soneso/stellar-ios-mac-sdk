@@ -299,7 +299,7 @@ public final class InteractiveService: @unchecked Sendable {
     /// - Parameter request: Sep24FeeRequest containing operation type, asset code, amount, and JWT token
     /// - Returns: Sep24FeeResponseEnum with fee amount, or an error
     public func fee(request: Sep24FeeRequest) async -> Sep24FeeResponseEnum {
-        var requestPath = "/fee?operation=\(request.operation.urlQueryValueEncoded)&asset_code=\(request.assetCode.urlQueryValueEncoded)&amount=\(String(request.amount).urlQueryValueEncoded)"
+        var requestPath = "/fee?operation=\(request.operation.urlQueryValueEncoded)&asset_code=\(request.assetCode.urlQueryValueEncoded)&amount=\(SepRequestAmount.format(request.amount).urlQueryValueEncoded)"
 
         if let type = request.type {
             requestPath += "&type=\(type.urlQueryValueEncoded)"

@@ -834,6 +834,7 @@ class InteractiveServiceTestCase: XCTestCase {
         let params = req.toParameters()
 
         XCTAssertNotNil(params["occupation"])
+        XCTAssertEqual("1234", String(data: params["occupation"]!, encoding: .utf8))
     }
 
     func testDepositRequestWithOrganizationNumberOfShareholders() {
@@ -846,6 +847,7 @@ class InteractiveServiceTestCase: XCTestCase {
         let params = req.toParameters()
 
         XCTAssertNotNil(params["organization.number_of_shareholders"])
+        XCTAssertEqual("5", String(data: params["organization.number_of_shareholders"]!, encoding: .utf8))
     }
 
     // MARK: - Service Initialization Tests

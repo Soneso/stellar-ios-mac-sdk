@@ -155,8 +155,8 @@ public enum KYCNaturalPersonFieldsEnum: Sendable {
                 return (KYCNaturalPersonFieldKey.taxId, value.data(using: .utf8)!)
             case .taxIdName(let value):
                 return (KYCNaturalPersonFieldKey.taxIdName, value.data(using: .utf8)!)
-            case .occupation(var value):
-                return (KYCNaturalPersonFieldKey.occupation, Data(bytes: &value, count: MemoryLayout.size(ofValue: value)))
+            case .occupation(let value):
+                return (KYCNaturalPersonFieldKey.occupation, String(value).data(using: .utf8)!)
             case .employerName(let value):
                 return (KYCNaturalPersonFieldKey.employerName, value.data(using: .utf8)!)
             case .employerAddress(let value):
@@ -360,8 +360,8 @@ public enum KYCOrganizationFieldsEnum: Sendable {
                 return (KYCOrganizationFieldKey.registrationDate, value.data(using: .utf8)!)
             case .registeredAddress(let value):
                 return (KYCOrganizationFieldKey.registeredAddress, value.data(using: .utf8)!)
-            case .numberOfShareholders(var value):
-                return (KYCOrganizationFieldKey.numberOfShareholders, Data(bytes: &value, count: MemoryLayout.size(ofValue: value)))
+            case .numberOfShareholders(let value):
+                return (KYCOrganizationFieldKey.numberOfShareholders, String(value).data(using: .utf8)!)
             case .shareholderName(let value):
                 return (KYCOrganizationFieldKey.shareholderName, value.data(using: .utf8)!)
             case .photoIncorporationDoc(let value):

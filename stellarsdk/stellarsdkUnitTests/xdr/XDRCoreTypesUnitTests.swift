@@ -761,7 +761,7 @@ class XDRCoreTypesUnitTests: XCTestCase {
 
     // MARK: - Edge Cases and Additional Coverage
 
-    func testLedgerEntryDataXDRIsBoolProperty() throws {
+    func testLedgerEntryDataXDRArmAccessors() throws {
         let accountIdString = "GCEZWKCA5VLDNRLN3RPRJMRZOX3Z6G5CHCGSNFHEYVXM3XOJMDS674JZ"
         let publicKey = try PublicKey(accountId: accountIdString)
         let thresholds = WrappedData4(Data([1, 2, 3, 4]))
@@ -780,10 +780,19 @@ class XDRCoreTypesUnitTests: XCTestCase {
 
         let ledgerData = LedgerEntryDataXDR.account(accountEntry)
 
-        // The isBool property checks if type equals SCValType.bool.rawValue
-        // Since account type is 0 and SCValType.bool.rawValue is also likely 0, this might be true
-        // This tests the isBool property
-        _ = ledgerData.isBool
+        // Each accessor answers only for its own arm.
+        XCTAssertEqual(ledgerData.type(), LedgerEntryType.account.rawValue)
+        XCTAssertEqual(ledgerData.account?.accountID.accountId, accountIdString)
+        XCTAssertEqual(ledgerData.account?.balance, 1000000)
+        XCTAssertNil(ledgerData.trustline)
+        XCTAssertNil(ledgerData.offer)
+        XCTAssertNil(ledgerData.data)
+        XCTAssertNil(ledgerData.claimableBalance)
+        XCTAssertNil(ledgerData.liquidityPool)
+        XCTAssertNil(ledgerData.contractData)
+        XCTAssertNil(ledgerData.contractCode)
+        XCTAssertNil(ledgerData.configSetting)
+        XCTAssertNil(ledgerData.ttl)
     }
 
     func testAccountEntryExtensionV2() throws {

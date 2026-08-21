@@ -160,7 +160,8 @@ final class KycAmlFieldsUnitTests: XCTestCase {
         let (key, data) = field.parameter
 
         XCTAssertEqual(key, "occupation")
-        XCTAssertGreaterThan(data.count, 0)
+        XCTAssertEqual(String(data: data, encoding: .utf8), "2310")
+        XCTAssertEqual(data.count, 4)
     }
 
     func testNaturalPersonEmployerName() {
@@ -467,7 +468,8 @@ final class KycAmlFieldsUnitTests: XCTestCase {
         let (key, data) = field.parameter
 
         XCTAssertEqual(key, "organization.number_of_shareholders")
-        XCTAssertGreaterThan(data.count, 0)
+        XCTAssertEqual(String(data: data, encoding: .utf8), "5")
+        XCTAssertEqual(data.count, 1)
     }
 
     func testOrganizationShareholderName() {
@@ -712,7 +714,8 @@ final class KycAmlFieldsUnitTests: XCTestCase {
         let (key, data) = field.parameter
 
         XCTAssertEqual(key, "occupation")
-        XCTAssertGreaterThan(data.count, 0)
+        XCTAssertEqual(String(data: data, encoding: .utf8), "0")
+        XCTAssertEqual(data.count, 1)
     }
 
     func testNegativeOccupationCode() {
@@ -720,7 +723,17 @@ final class KycAmlFieldsUnitTests: XCTestCase {
         let (key, data) = field.parameter
 
         XCTAssertEqual(key, "occupation")
-        XCTAssertGreaterThan(data.count, 0)
+        XCTAssertEqual(String(data: data, encoding: .utf8), "-1")
+        XCTAssertEqual(data.count, 2)
+    }
+
+    func testLargeOccupationCode() {
+        let field = KYCNaturalPersonFieldsEnum.occupation(999999)
+        let (key, data) = field.parameter
+
+        XCTAssertEqual(key, "occupation")
+        XCTAssertEqual(String(data: data, encoding: .utf8), "999999")
+        XCTAssertEqual(data.count, 6)
     }
 
     func testZeroNumberOfShareholders() {
@@ -728,7 +741,8 @@ final class KycAmlFieldsUnitTests: XCTestCase {
         let (key, data) = field.parameter
 
         XCTAssertEqual(key, "organization.number_of_shareholders")
-        XCTAssertGreaterThan(data.count, 0)
+        XCTAssertEqual(String(data: data, encoding: .utf8), "0")
+        XCTAssertEqual(data.count, 1)
     }
 
     func testEmailWithSpecialCharacters() {
