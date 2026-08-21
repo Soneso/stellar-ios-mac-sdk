@@ -56,6 +56,16 @@ class Sep24FeeAmountQueryTestCase: XCTestCase {
         assertNoExponent(in: query)
     }
 
+    func testLargeAmountKeepsTheWrittenDecimals() async {
+        // The stored Double is 100000000000.100006103515625; the query must carry the
+        // shortest representation, not the binary expansion behind it.
+        let request = Sep24FeeRequest(operation: "deposit", assetCode: "USD", amount: 100_000_000_000.1)
+        let query = await feeQuery(for: request)
+
+        XCTAssertEqual("100000000000.1", amountValue(in: query))
+        assertNoExponent(in: query)
+    }
+
     func testWholeAmountIsSentWithoutADecimalPoint() async {
         let request = Sep24FeeRequest(operation: "deposit", assetCode: "USD", amount: 10.0)
         let query = await feeQuery(for: request)
