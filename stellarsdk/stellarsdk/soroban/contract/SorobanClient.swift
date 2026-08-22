@@ -198,6 +198,11 @@ public final class SorobanClient: Sendable {
     /// persistent entry under that tag holds the hash of the wasm the instance runs.
     /// Nothing is installed as part of the deployment.
     ///
+    /// The create operation uses the CREATE_CONTRACT_V2 host function form with the given
+    /// constructor arguments (an empty vector when none are given), as `deploy` does. For
+    /// the plain CREATE_CONTRACT form, build the operation directly with
+    /// `InvokeHostFunctionOperation.forCreatingContractFromExternalRef`.
+    ///
     /// The reference is resolved before the transaction is built, so an unresolvable
     /// reference fails here with a `SorobanClientError.deployFailed` naming the owner
     /// and the tag and carrying the resolver's message.
@@ -251,13 +256,7 @@ public final class SorobanClient: Sendable {
         }
 
         let sourceAddress = try SCAddressXDR(accountId: deployRequest.sourceAccountKeyPair.accountId)
-        let constructorArgs = deployRequest.constructorArgs ?? []
-        let createContractOp: InvokeHostFunctionOperation
-        if constructorArgs.isEmpty {
-            createContractOp = try InvokeHostFunctionOperation.forCreatingContractFromExternalRef(executableOwner: ownerAddress, tag: deployRequest.tag, address: sourceAddress, salt: deployRequest.salt)
-        } else {
-            createContractOp = try InvokeHostFunctionOperation.forCreatingContractFromExternalRefWithConstructor(executableOwner: ownerAddress, tag: deployRequest.tag, address: sourceAddress, constructorArguments: constructorArgs, salt: deployRequest.salt)
-        }
+        let createContractOp = try InvokeHostFunctionOperation.forCreatingContractFromExternalRefWithConstructor(executableOwner: ownerAddress, tag: deployRequest.tag, address: sourceAddress, constructorArguments: deployRequest.constructorArgs ?? [], salt: deployRequest.salt)
         let clientOptions = ClientOptions(sourceAccountKeyPair: deployRequest.sourceAccountKeyPair,
                                           contractId: "ignored",
                                           network: deployRequest.network,

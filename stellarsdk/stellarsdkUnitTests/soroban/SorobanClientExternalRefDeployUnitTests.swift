@@ -369,7 +369,7 @@ final class SorobanClientExternalRefDeployUnitTests: XCTestCase {
         XCTAssertEqual(createArgs.constructorArgs.first?.u32, 7)
     }
 
-    func testDeployWithoutConstructorArgsUsesCreateContract() async throws {
+    func testDeployWithoutConstructorArgsUsesCreateContractV2WithEmptyVector() async throws {
         setupDeployFlowMock()
 
         let client = try await SorobanClient.deployFromExternalRef(
@@ -378,8 +378,8 @@ final class SorobanClientExternalRefDeployUnitTests: XCTestCase {
         XCTAssertEqual(client.contractId, mockContractId)
 
         guard let hostFunction = try submittedHostFunction(),
-              case .createContract(let createArgs) = hostFunction else {
-            XCTFail("expected a createContract host function")
+              case .createContractV2(let createArgs) = hostFunction else {
+            XCTFail("expected a createContractV2 host function")
             return
         }
         guard case .externalRef(let ref) = createArgs.executable else {
@@ -388,11 +388,33 @@ final class SorobanClientExternalRefDeployUnitTests: XCTestCase {
         }
         XCTAssertEqual(ref.executableOwner.contractId, ownerContractIdHex)
         XCTAssertEqual(ref.tag, executableTag)
+        XCTAssertEqual(createArgs.constructorArgs.count, 0)
         guard case .fromAddress(let preimage) = createArgs.contractIDPreimage else {
             XCTFail("expected a fromAddress preimage")
             return
         }
         XCTAssertEqual(preimage.salt.wrapped.count, 32)
+    }
+
+    func testDeployWithEmptyConstructorArgsUsesCreateContractV2WithEmptyVector() async throws {
+        setupDeployFlowMock()
+
+        let client = try await SorobanClient.deployFromExternalRef(
+            deployRequest: deployRequest(constructorArgs: []))
+
+        XCTAssertEqual(client.contractId, mockContractId)
+
+        guard let hostFunction = try submittedHostFunction(),
+              case .createContractV2(let createArgs) = hostFunction else {
+            XCTFail("expected a createContractV2 host function")
+            return
+        }
+        guard case .externalRef(let ref) = createArgs.executable else {
+            XCTFail("expected an external ref executable")
+            return
+        }
+        XCTAssertEqual(ref.executableOwner.contractId, ownerContractIdHex)
+        XCTAssertEqual(createArgs.constructorArgs.count, 0)
     }
 
     func testDeployFailsNamingOwnerAndTagWhenTagEntryMissing() async throws {
