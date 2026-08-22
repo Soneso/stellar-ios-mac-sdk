@@ -1229,7 +1229,7 @@ public enum OZContextRuleType: Sendable, Hashable {
 Three operation-matching types:
 - `defaultRule` — matches any operation (fallback / default rule).
 - `callContract(contractAddress:)` — matches invocations to a specific contract address (`C…`, 56 characters).
-- `createContract(wasmHash:)` — matches contract deployments using a specific 32-byte WASM hash.
+- `createContract(wasmHash:)` — matches contract deployments using a specific 32-byte WASM hash. CreateContract rules identify a deployment by its WASM hash only, matching the on-chain rule schema; a create-contract invocation whose executable is a CAP-85 external reference or a Stellar Asset Contract carries no WASM hash, so rule resolution rejects it with a validation error during signing.
 
 Equality and hashing use constant-time comparison on the `wasmHash` field to avoid leaking information about the byte content through timing side channels. `toScVal()` produces the on-chain encoding: `Default` is `vec([Symbol("Default")])`; `CallContract` is `vec([Symbol("CallContract"), Address(contractAddress)])`; `CreateContract` is `vec([Symbol("CreateContract"), Bytes(wasmHash)])`.
 

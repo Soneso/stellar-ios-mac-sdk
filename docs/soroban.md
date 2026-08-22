@@ -425,11 +425,15 @@ let client = try await SorobanClient.deployFromExternalRef(
 )
 ```
 
-`constructorArgs` and `salt` work as in `DeployRequest`. The contract spec is loaded
-from the resolved wasm before submission and the returned client is ready to invoke.
+`constructorArgs` and `salt` work as in `DeployRequest`; the create operation uses the
+`CREATE_CONTRACT_V2` host function form with an empty constructor-argument vector when
+`constructorArgs` is not given, as `deploy` does. The contract spec is loaded from the
+resolved wasm before submission and the returned client is ready to invoke.
 The underlying create operations can also be built directly with
 `InvokeHostFunctionOperation.forCreatingContractFromExternalRef` and
-`forCreatingContractFromExternalRefWithConstructor`, next to their wasm siblings.
+`forCreatingContractFromExternalRefWithConstructor`, next to their wasm siblings. Both
+builders throw `StellarSDKError.invalidArgument` for an executable owner that is not a
+contract address — only a contract can hold the tag entry.
 
 ### Deriving a Contract Id Before Deploying
 

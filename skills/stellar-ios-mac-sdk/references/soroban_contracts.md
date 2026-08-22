@@ -374,11 +374,16 @@ let client = try await SorobanClient.deployFromExternalRef(
 // constructorArgs and salt work as in DeployRequest
 ```
 
+`deployFromExternalRef` builds the `CREATE_CONTRACT_V2` host function form (empty
+constructor-argument vector when no args are given), as `deploy` does.
+
 The underlying create operations can be built directly with
 `InvokeHostFunctionOperation.forCreatingContractFromExternalRef(executableOwner:
 SCAddressXDR, tag: String, address: SCAddressXDR, salt: WrappedData32? = nil)` and
 `forCreatingContractFromExternalRefWithConstructor(... constructorArguments: [SCValXDR]
-...)`, next to their wasm siblings.
+...)`, next to their wasm siblings. Both builders throw
+`StellarSDKError.invalidArgument` for an `executableOwner` that is not a contract
+address.
 
 `ContractIdUtils.deriveContractId(deployer: SCAddressXDR, salt: Data, network: Network)
 throws -> String` returns the contract id ("C...") a deployment creates. The id derives

@@ -379,6 +379,11 @@ callContract    ->  vec([Symbol("CallContract"), Address(contractAddress)])
 createContract  ->  vec([Symbol("CreateContract"), Bytes(wasmHash)])
 ```
 
+CreateContract rules identify a deployment by its 32-byte wasm hash only. A
+create-contract invocation whose executable is a CAP-85 external reference (or a
+Stellar Asset Contract) carries no wasm hash, so rule resolution rejects it with a
+validation error during signing.
+
 ```swift
 // WRONG: OZContextRuleType.callContract("CBCD...")
 //   — the case has a labeled associated value
