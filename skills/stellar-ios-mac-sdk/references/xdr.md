@@ -330,7 +330,7 @@ func withAddressCredentials(_ c: SorobanAddressCredentialsXDR) throws -> Soroban
 
 The signing preimage is selected by arm: `.address` uses `HashIDPreimageXDR.sorobanAuthorization` (`EnvelopeType.sorobanAuthorization`); `.addressV2` and `.addressWithDelegates` use `HashIDPreimageXDR.sorobanAuthorizationWithAddress` (`EnvelopeType.sorobanAuthorizationWithAddress` = 10, protocol 27), which additionally binds the top-level credential address. Build preimages via `SorobanAuthorizationEntryXDR.buildPreimage(network:)` -- see [soroban_contracts.md](./soroban_contracts.md) for signing and delegated authorization.
 
-The V2 and WITH_DELEGATES arms are opt-in; emitting them on a pre-protocol-27 network invalidates the transaction.
+Simulation requests the V2 arm by default (`useUpgradedAuth`); emitting the V2 or WITH_DELEGATES arms on a pre-protocol-27 network invalidates the transaction, so opt out with `useUpgradedAuth: false` there.
 
 ## Ledger Key Construction
 

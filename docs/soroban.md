@@ -618,22 +618,21 @@ Protocol 27 adds two address-credential arms to `SorobanCredentialsXDR`:
 - `.addressV2` -- carries the same `SorobanAddressCredentialsXDR` body as the legacy `.address` arm, but the signature payload additionally binds the credential address.
 - `.addressWithDelegates` -- address credentials plus a tree of delegate signatures, allowing additional addresses to co-sign one authorization entry.
 
-The legacy `.address` arm remains the default everywhere and stays fully valid. The new arms are opt-in: emitting them on a network below protocol 27 invalidates the transaction.
+`ADDRESS_V2` is the default arm for simulation: `useUpgradedAuth` defaults to `true` on `MethodOptions` and `SimulateTransactionRequest`. The legacy `.address` arm stays fully valid, and entry construction is arm-explicit — the `SorobanCredentialsXDR` cases name the arm directly. Set `useUpgradedAuth` to `false` on a network below protocol 27, where the newer arms invalidate the transaction.
 
 All signing APIs (`signAuthEntries`, `SorobanAuthorizationEntryXDR.sign`, SEP-45) support all three arms and preserve the arm on write-back. `needsNonInvokerSigningBy` reports the address of every node whose signature is void, including each unsigned delegate node of a `WITH_DELEGATES` entry.
 
-#### Requesting V2 Entries from Simulation
+#### V2 Entries from Simulation
 
-Set `useUpgradedAuth` to request `ADDRESS_V2` credential arms in the simulation response. A supporting RPC records V2 arms in recording mode; RPC servers without support silently ignore the flag and return legacy `ADDRESS` entries. Detect whether the flag was honored by inspecting the credential arm of the returned entries, never by expecting an error.
+Simulation requests `ADDRESS_V2` credential arms by default (`useUpgradedAuth` is `true`, and the key is always sent in the JSON-RPC params). A supporting RPC records V2 arms in recording mode; RPC servers without support silently ignore the flag and return legacy `ADDRESS` entries. Detect whether the flag was honored by inspecting the credential arm of the returned entries, never by expecting an error. Set `useUpgradedAuth` to `false` to request legacy `ADDRESS` entries, for example on a network below protocol 27.
 
 ```swift
 import stellarsdk
 
-// Contract client: opt in via MethodOptions
+// Contract client: ADDRESS_V2 entries are requested by default
 let tx = try await client.buildInvokeMethodTx(
     name: "swap",
-    args: args,
-    methodOptions: MethodOptions(useUpgradedAuth: true)
+    args: args
 )
 
 // Detect whether the RPC honored the flag
@@ -643,12 +642,10 @@ let gotV2 = entries.contains { entry in
     return false
 }
 
-// Low-level: opt in on the request
-let request = SimulateTransactionRequest(transaction: transaction, useUpgradedAuth: true)
+// Low-level: request legacy ADDRESS entries on the request
+let request = SimulateTransactionRequest(transaction: transaction, useUpgradedAuth: false)
 let simEnum = await server.simulateTransaction(simulateTxRequest: request)
 ```
-
-When `useUpgradedAuth` is `false` (the default), the key is omitted from the JSON-RPC params entirely.
 
 #### Delegated Authorization
 
@@ -684,7 +681,7 @@ let simEnum = await server.simulateTransaction(
 )
 guard case .success(let sim) = simEnum else { return }
 
-// Simulation returns an ADDRESS entry; withDelegates also accepts an ADDRESS_V2 entry
+// A protocol-27 RPC returns an ADDRESS_V2 entry by default; withDelegates also accepts a legacy ADDRESS entry
 let entry = sim.sorobanAuth![0]
 
 // Latest ledger, used to set the signature expiration

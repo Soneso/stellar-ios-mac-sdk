@@ -437,7 +437,7 @@ let methodOptions = MethodOptions(
     timeoutInSeconds: 60,   // 1 minute validity
     simulate: true,         // auto-simulate (default)
     restore: true,          // auto-restore archived entries
-    useUpgradedAuth: false  // opt-in: request protocol-27 V2 credential arms (default false)
+    useUpgradedAuth: false  // legacy opt-out: request legacy ADDRESS credential arms (default true)
 )
 
 let result = try await client.invokeMethod(
@@ -447,7 +447,7 @@ let result = try await client.invokeMethod(
 )
 ```
 
-`useUpgradedAuth: true` adds `"useUpgradedAuth": true` to the simulation request so a protocol-27 RPC returns `ADDRESS_V2` credential arms; the key is omitted when `false`. Legacy `ADDRESS` remains the default and fully valid; emitting V2 arms on a pre-protocol-27 network invalidates the transaction. A supporting RPC records V2 arms; RPC servers without support silently ignore the flag and return legacy `ADDRESS` entries -- detect support by inspecting the credential arm of the returned entries, never by expecting an error.
+Simulation requests `ADDRESS_V2` credential arms by default (`useUpgradedAuth` is `true` and the key is always sent in the request); pass `false` for legacy `ADDRESS` entries. Legacy `ADDRESS` stays fully valid; emitting V2 arms on a pre-protocol-27 network invalidates the transaction, so opt out there. A supporting RPC records V2 arms; RPC servers without support silently ignore the flag and return legacy `ADDRESS` entries -- detect support by inspecting the credential arm of the returned entries, never by expecting an error.
 
 ## Low-Level API: InvokeHostFunctionOperation
 
@@ -659,7 +659,7 @@ try await tx.signAuthEntries(
 
 ### Protocol 27 Credential Arms and Delegated Authorization (CAP-71)
 
-`SorobanCredentialsXDR` has four arms: `.sourceAccount`, `.address` (legacy, default), `.addressV2`, and `.addressWithDelegates` (both protocol 27). The new arms are opt-in; emitting them on a pre-protocol-27 network invalidates the transaction.
+`SorobanCredentialsXDR` has four arms: `.sourceAccount`, `.address` (legacy, valid on all protocols), `.addressV2` (the arm simulation requests by default), and `.addressWithDelegates` (both protocol 27). Emitting the newer arms on a pre-protocol-27 network invalidates the transaction; construction is arm-explicit through the enum cases.
 
 Key signatures:
 
