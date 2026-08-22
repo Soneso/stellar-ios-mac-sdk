@@ -669,7 +669,7 @@ public class SorobanServer: @unchecked Sendable {
         switch response {
         case .success(let response):
             guard let firstEntry = response.entries.first else {
-                return .failure(error: .requestFailed(message: "no executable tag entry found on owner contract \(owner) for tag \(ref.tag)"))
+                return .failure(error: .requestFailed(message: "no executable tag entry found on owner contract \(owner) for tag \(TxRepHelper.escapeBytes(ref.tag))"))
             }
             let data = try? LedgerEntryDataXDR(fromBase64: firstEntry.xdr)
             guard let contractData = data?.contractData else {

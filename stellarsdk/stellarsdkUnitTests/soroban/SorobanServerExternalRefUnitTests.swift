@@ -72,6 +72,11 @@ final class SorobanServerExternalRefUnitTests: XCTestCase {
                                                 tag: tag ?? executableTag)
     }
 
+    private func externalRef(tag: Data, owner: SCAddressXDR? = nil) -> ContractExecutableExternalRefXDR {
+        return ContractExecutableExternalRefXDR(executableOwner: owner ?? ownerAddress(),
+                                                tag: tag)
+    }
+
     private func instanceKeyB64() -> String {
         let key = LedgerKeyXDR.contractData(LedgerKeyContractDataXDR(
             contract: try! SCAddressXDR(contractId: mockContractId),
@@ -80,10 +85,10 @@ final class SorobanServerExternalRefUnitTests: XCTestCase {
         return key.xdrEncoded!
     }
 
-    private func tagKeyB64() -> String {
+    private func tagKeyB64(tag: Data? = nil) -> String {
         let key = LedgerKeyXDR.contractData(LedgerKeyContractDataXDR(
             contract: ownerAddress(),
-            key: SCValXDR.executableTag(executableTag),
+            key: SCValXDR.executableTag(tag ?? Data(executableTag.utf8)),
             durability: .persistent))
         return key.xdrEncoded!
     }
@@ -103,11 +108,11 @@ final class SorobanServerExternalRefUnitTests: XCTestCase {
             val: SCValXDR.contractInstance(instance)))
     }
 
-    private func tagEntry(val: SCValXDR) -> LedgerEntryDataXDR {
+    private func tagEntry(val: SCValXDR, tag: Data? = nil) -> LedgerEntryDataXDR {
         return LedgerEntryDataXDR.contractData(ContractDataEntryXDR(
             ext: .void,
             contract: ownerAddress(),
-            key: SCValXDR.executableTag(executableTag),
+            key: SCValXDR.executableTag(tag ?? Data(executableTag.utf8)),
             durability: .persistent,
             val: val))
     }
@@ -271,7 +276,8 @@ final class SorobanServerExternalRefUnitTests: XCTestCase {
         }
         XCTAssertTrue(directMessage.contains("no executable tag entry found on owner contract"),
                       "unexpected message: \(directMessage)")
-        XCTAssertTrue(directMessage.contains(executableTag), "unexpected message: \(directMessage)")
+        // A text tag renders in the message as its quoted escaped form.
+        XCTAssertTrue(directMessage.contains(#""token-v1""#), "unexpected message: \(directMessage)")
 
         let viaLoader = await server.getContractCodeForContractId(contractId: mockContractId)
         guard let loaderMessage = codeFailureMessage(viaLoader) else {
@@ -280,6 +286,41 @@ final class SorobanServerExternalRefUnitTests: XCTestCase {
         }
         XCTAssertEqual(loaderMessage, directMessage)
         XCTAssertEqual(requestLog.entries, [tagKeyB64(), instanceKeyB64(), tagKeyB64()])
+    }
+
+    func testBinaryTagResolvesThroughTheLedgerKeyOfTheExactBytes() async throws {
+        let binaryTag = Data([0xC0, 0x00, 0xFF, 0xFE])
+        setupMock(answers: [
+            tagKeyB64(tag: binaryTag): tagEntry(val: SCValXDR.bytes(wasmHashBytes), tag: binaryTag),
+        ])
+
+        let result = await server.getExternalRefWasmHash(ref: externalRef(tag: binaryTag))
+
+        guard case .success(let hash) = result else {
+            XCTFail("Expected success, got \(result)")
+            return
+        }
+        XCTAssertEqual(hash, wasmHashBytes)
+        // The mock answers only the exact base64 ledger key, so the log pins
+        // that the request carried the persistent executable-tag key built
+        // from the exact tag bytes.
+        XCTAssertEqual(requestLog.entries, [tagKeyB64(tag: binaryTag)])
+    }
+
+    func testMissingBinaryTagEntryFailsNamingTheEscapedTag() async throws {
+        let binaryTag = Data([0xC0, 0x00, 0xFF, 0xFE])
+        setupMock(answers: [tagKeyB64(tag: binaryTag): nil])
+
+        let result = await server.getExternalRefWasmHash(ref: externalRef(tag: binaryTag))
+
+        guard let message = resolverFailureMessage(result) else {
+            XCTFail("Expected requestFailed, got \(result)")
+            return
+        }
+        XCTAssertTrue(message.contains("no executable tag entry found on owner contract"),
+                      "unexpected message: \(message)")
+        // A tag that is not printable text renders as \xNN escapes inside quotes.
+        XCTAssertTrue(message.contains(#""\xc0\x00\xff\xfe""#), "unexpected message: \(message)")
     }
 
     func testMissingInstanceEntryFails() async throws {
@@ -478,7 +519,7 @@ final class SorobanServerExternalRefUnitTests: XCTestCase {
             XCTFail("decoded value carries no external ref tag")
             return
         }
-        XCTAssertEqual(decodedTag, tag)
+        XCTAssertEqual(decodedTag, Data(tag.utf8))
         XCTAssertEqual(SCValXDR.executableTag(decodedTag).xdrEncoded!, writtenKey)
     }
 }

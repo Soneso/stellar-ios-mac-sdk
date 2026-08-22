@@ -196,6 +196,7 @@ public final class SorobanClient: Sendable {
     ///
     /// The executable of the new instance names an owner contract and a tag; the owner's
     /// persistent entry under that tag holds the hash of the wasm the instance runs.
+    /// The tag is matched byte for byte as the request carries it.
     /// Nothing is installed as part of the deployment.
     ///
     /// The create operation uses the CREATE_CONTRACT_V2 host function form with the given
@@ -237,7 +238,7 @@ public final class SorobanClient: Sendable {
             case .parsingResponseFailed(let message, _):
                 reason = message
             }
-            throw SorobanClientError.deployFailed(message: "external reference of owner contract \(owner) with tag \(deployRequest.tag) does not resolve: \(reason)")
+            throw SorobanClientError.deployFailed(message: "external reference of owner contract \(owner) with tag \(TxRepHelper.escapeBytes(deployRequest.tag)) does not resolve: \(reason)")
         }
 
         // Load the spec from the resolved wasm code entry before deploying: the

@@ -300,7 +300,7 @@ extension SCValXDR {
     public var executableTag: String? {
         switch self {
         case .executableTag(let val):
-            return val
+            return String(data: val, encoding: .utf8)
         default:
             return nil
         }

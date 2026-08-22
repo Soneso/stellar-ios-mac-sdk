@@ -24,7 +24,7 @@ final class GeneratedXdrJsonStellarContractUnitTests: XCTestCase {
     }
 
     func test_ContractExecutableExternalRefXDR_roundTrip() throws {
-        let original: ContractExecutableExternalRefXDR = ContractExecutableExternalRefXDR(executableOwner: .account(try PublicKey([UInt8](repeating: 0xAB, count: 32))), tag: "test_string")
+        let original: ContractExecutableExternalRefXDR = ContractExecutableExternalRefXDR(executableOwner: .account(try PublicKey([UInt8](repeating: 0xAB, count: 32))), tag: Data([0x74, 0x61, 0x67, 0x00, 0xff, 0x10]))
         let tree = try original.toXdrJsonValue()
         let json = try original.toXdrJson()
         let decoded = try ContractExecutableExternalRefXDR.fromXdrJson(json)
@@ -96,7 +96,7 @@ final class GeneratedXdrJsonStellarContractUnitTests: XCTestCase {
     }
 
     func test_ContractExecutableXDR_externalRef_roundTrip() throws {
-        let original: ContractExecutableXDR = .externalRef(ContractExecutableExternalRefXDR(executableOwner: .account(try PublicKey([UInt8](repeating: 0xAB, count: 32))), tag: "test_string"))
+        let original: ContractExecutableXDR = .externalRef(ContractExecutableExternalRefXDR(executableOwner: .account(try PublicKey([UInt8](repeating: 0xAB, count: 32))), tag: Data([0x74, 0x61, 0x67, 0x00, 0xff, 0x10])))
         let tree = try original.toXdrJsonValue()
         let json = try original.toXdrJson()
         let decoded = try ContractExecutableXDR.fromXdrJson(json)
@@ -1613,7 +1613,7 @@ final class GeneratedXdrJsonStellarContractUnitTests: XCTestCase {
     }
 
     func test_SCValXDR_executableTag_roundTrip() throws {
-        let original: SCValXDR = .executableTag("test_string")
+        let original: SCValXDR = .executableTag(Data([0x74, 0x61, 0x67, 0x00, 0xff, 0x10]))
         let tree = try original.toXdrJsonValue()
         let json = try original.toXdrJson()
         let decoded = try SCValXDR.fromXdrJson(json)

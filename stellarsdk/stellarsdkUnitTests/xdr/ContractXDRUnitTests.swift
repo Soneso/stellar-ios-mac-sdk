@@ -603,7 +603,24 @@ class ContractXDRUnitTests: XCTestCase {
         XCTAssertEqual(decoded.isExternalRef, true)
         XCTAssertNil(decoded.wasm)
         XCTAssertEqual(decoded.externalRef?.executableOwner.contractId, owner.contractId)
-        XCTAssertEqual(decoded.externalRef?.tag, "my-tag")
+        XCTAssertEqual(decoded.externalRef?.tag, Data("my-tag".utf8))
+    }
+
+    func testContractExecutableXDRExternalRefBinaryTagRoundTrips() throws {
+        // An executable tag is an XDR string and may carry bytes that are not
+        // valid UTF-8; the tag must survive decode and re-encode byte for byte.
+        let binaryTag = Data([0xC0, 0x00, 0xFF, 0xFE])
+        let owner = try SCAddressXDR(contractId: "CA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE")
+        let executable = ContractExecutableXDR.externalRef(
+            ContractExecutableExternalRefXDR(executableOwner: owner, tag: binaryTag))
+        let encoded = try XDREncoder.encode(executable)
+        let decoded = try XDRDecoder.decode(ContractExecutableXDR.self, data: encoded)
+
+        XCTAssertEqual(decoded.isExternalRef, true)
+        XCTAssertEqual(decoded.externalRef?.executableOwner.contractId, owner.contractId)
+        XCTAssertEqual(decoded.externalRef?.tag, binaryTag)
+        XCTAssertNil(decoded.externalRef?.tagString)
+        XCTAssertEqual(try XDREncoder.encode(decoded), encoded)
     }
 
     func testContractExecutableXDRTypeDiscriminants() throws {

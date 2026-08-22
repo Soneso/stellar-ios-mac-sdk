@@ -5,17 +5,27 @@ import Foundation
 
 public struct ContractExecutableExternalRefXDR: XDRCodable, Sendable {
   public var executableOwner: SCAddressXDR
-  public var tag: String
+  public var tag: Data
 
-  public init(executableOwner: SCAddressXDR, tag: String) {
+  /// The text `tag` spells, read as UTF-8; nil when the bytes are not valid UTF-8.
+  public var tagString: String? {
+    return String(data: tag, encoding: .utf8)
+  }
+
+  public init(executableOwner: SCAddressXDR, tag: Data) {
     self.executableOwner = executableOwner
     self.tag = tag
+  }
+
+  /// Builds the value with `tag` stored as the UTF-8 bytes of the given text.
+  public init(executableOwner: SCAddressXDR, tag: String) {
+    self.init(executableOwner: executableOwner, tag: Data(tag.utf8))
   }
 
   public init(from decoder: Decoder) throws {
     var container = try decoder.unkeyedContainer()
     executableOwner = try container.decode(SCAddressXDR.self)
-    tag = try container.decode(String.self)
+    tag = try container.decode(Data.self)
   }
 
   public func encode(to encoder: Encoder) throws {
@@ -28,12 +38,12 @@ public struct ContractExecutableExternalRefXDR: XDRCodable, Sendable {
 extension ContractExecutableExternalRefXDR {
   public func toTxRep(prefix: String, lines: inout [String]) throws {
     try self.executableOwner.toTxRep(prefix: "\(prefix).executable_owner", lines: &lines)
-    lines.append("\(prefix).tag: \(TxRepHelper.escapeString(self.tag))")
+    lines.append("\(prefix).tag: \(TxRepHelper.escapeBytes(self.tag))")
   }
 
   public static func fromTxRep(_ map: [String: String], prefix: String) throws -> ContractExecutableExternalRefXDR {
     let executableOwner: SCAddressXDR = try SCAddressXDR.fromTxRep(map, prefix: "\(prefix).executable_owner")
-    let tag: String = try TxRepHelper.requireString(map, "\(prefix).tag")
+    let tag: Data = try TxRepHelper.requireStringBytes(map, "\(prefix).tag")
     return ContractExecutableExternalRefXDR(executableOwner: executableOwner, tag: tag)
   }
 }
@@ -42,14 +52,14 @@ extension ContractExecutableExternalRefXDR: XdrJsonCodable {
   public func toXdrJsonValue() throws -> XdrJsonValue {
     var members: [XdrJsonMember] = []
     members.append(XdrJsonMember(key: "executable_owner", value: try self.executableOwner.toXdrJsonValue()))
-    members.append(XdrJsonMember(key: "tag", value: try SCStringXDRJsonCodec.toXdrJsonValue(self.tag, type: "ContractExecutableExternalRefXDR", key: "tag")))
+    members.append(XdrJsonMember(key: "tag", value: XdrJson.escapedString(self.tag)))
     return .object(members)
   }
 
   public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> ContractExecutableExternalRefXDR {
     let members = try XdrJson.object(value, type: "ContractExecutableExternalRefXDR", keys: ["executable_owner", "tag"])
     let executableOwner: SCAddressXDR = try SCAddressXDR.fromXdrJsonValue(try XdrJson.field(members, key: "executable_owner", type: "ContractExecutableExternalRefXDR"))
-    let tag: String = try SCStringXDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "tag", type: "ContractExecutableExternalRefXDR"), type: "ContractExecutableExternalRefXDR", key: "tag")
+    let tag: Data = try XdrJson.unescapeString(try XdrJson.field(members, key: "tag", type: "ContractExecutableExternalRefXDR"), type: "ContractExecutableExternalRefXDR", key: "tag")
     return ContractExecutableExternalRefXDR(executableOwner: executableOwner, tag: tag)
   }
 }

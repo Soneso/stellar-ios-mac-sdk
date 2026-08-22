@@ -18,6 +18,11 @@
 module Sep51JsonTestValues
   MAX_DEPTH = 8
 
+  # The fixture for a `string` position carried as raw bytes (see
+  # BYTES_BACKED_STRING_FIELDS). 0xff begins no UTF-8 sequence, so the round
+  # trip only passes when the bytes themselves survive the escape ladder.
+  BYTES_BACKED_STRING_SAMPLE = 'Data([0x74, 0x61, 0x67, 0x00, 0xff, 0x10])'
+
   # -- Entry points -----------------------------------------------------------
 
   # A fully populated struct. Returns nil when a required field cannot be built.
@@ -31,6 +36,13 @@ module Sep51JsonTestValues
     struct_defn.members.each do |member|
       field = gen.pub_resolve_field_name(swift_name, member.name)
       next if gen.pub_is_extension_point_field?(swift_name, field)
+
+      if defined?(::BYTES_BACKED_STRING_FIELDS) &&
+         ::BYTES_BACKED_STRING_FIELDS.dig(swift_name, member.name.to_s)
+        label = gen.pub_resolve_init_param_name(swift_name, field).to_s.delete('`')
+        arguments << { param: label, expr: BYTES_BACKED_STRING_SAMPLE }
+        next
+      end
 
       type_str = gen.pub_resolve_field_type(swift_name, field, member)
       optional = member.type.sub_type == :optional ||
@@ -53,6 +65,7 @@ module Sep51JsonTestValues
   # One union arm, as a Swift case expression.
   def self.union_case_expr(driver, entry, depth)
     return ".#{entry[:case_name]}" if entry[:decode_style] == :void
+    return ".#{entry[:case_name]}(#{BYTES_BACKED_STRING_SAMPLE})" if entry[:bytes_backed]
 
     payload = type_expr(driver, strip_optional(entry[:associated_type]), depth + 1)
     return nil unless payload

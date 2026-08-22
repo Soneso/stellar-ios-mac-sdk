@@ -61,9 +61,11 @@ class Generator < Xdrgen::Generators::Base
   def generate
     @constants = []
     @generated_files = Set.new
+    @bytes_backed_applied = Set.new
     build_json_collapse_registry
     render_definitions(@top)
     render_constants_file
+    verify_bytes_backed_string_fields!
   end
 
   private
@@ -137,6 +139,10 @@ class Generator < Xdrgen::Generators::Base
         else
           keyword = use_let ? "let" : "var"
           out.puts "public #{keyword} #{field}: #{type_str}"
+          if (getter = bytes_backed_string_getter(struct_name, m.name, m.declaration))
+            out.break
+            render_bytes_backed_string_getter(out, getter, field)
+          end
         end
       end
       out.break
@@ -144,6 +150,11 @@ class Generator < Xdrgen::Generators::Base
       # -- Memberwise init --
       render_struct_init(out, struct, struct_name)
       out.break
+
+      # -- String-taking convenience init for bytes-backed string fields --
+      if render_struct_bytes_string_init(out, struct, struct_name)
+        out.break
+      end
 
       # -- init(from decoder:) --
       render_struct_decode(out, struct, struct_name)
@@ -214,6 +225,70 @@ class Generator < Xdrgen::Generators::Base
     out.puts "}"
   end
 
+  # Emit a convenience initializer that takes each bytes-backed string field as
+  # Swift text and stores its UTF-8 bytes. Returns false when the struct has no
+  # bytes-backed string fields and nothing was emitted.
+  def render_struct_bytes_string_init(out, struct, struct_name)
+    bytes_names = struct.members.filter_map do |m|
+      field = resolve_field_name(struct_name, m.name)
+      next if is_extension_point_field?(struct_name, field)
+      field if BYTES_BACKED_STRING_FIELDS.dig(struct_name, m.name.to_s)
+    end
+    return false if bytes_names.empty?
+
+    init_fields = []
+    struct.members.each do |m|
+      field = resolve_field_name(struct_name, m.name)
+      next if is_extension_point_field?(struct_name, field)
+      bytes_backed = !BYTES_BACKED_STRING_FIELDS.dig(struct_name, m.name.to_s).nil?
+      type_str = bytes_backed ? "String" : resolve_field_type(struct_name, field, m)
+      param_label = resolve_init_param_name(struct_name, field)
+      init_fields << {
+        field: field, param: param_label, type: type_str,
+        member: m, bytes_backed: bytes_backed,
+      }
+    end
+
+    if INIT_PARAM_ORDER.key?(struct_name)
+      order = INIT_PARAM_ORDER[struct_name]
+      init_fields.sort_by! { |f| order.index(f[:field]) || 999 }
+    end
+
+    params = init_fields.map do |f|
+      is_opt = f[:member].type.sub_type == :optional || typedef_is_optional?(f[:member].declaration.type)
+      is_array = f[:member].declaration.is_a?(AST::Declarations::Array)
+      if is_opt && !is_array && !f[:bytes_backed]
+        "#{f[:param]}: #{f[:type]} = nil"
+      else
+        "#{f[:param]}: #{f[:type]}"
+      end
+    end
+
+    described = bytes_names.map { |n| "`#{n}`" }.join(", ")
+    out.puts "/// Builds the value with #{described} stored as the UTF-8 bytes of the given text."
+    if params.length <= 2
+      out.puts "public init(#{params.join(', ')}) {"
+    else
+      out.puts "public init("
+      out.indent do
+        params.each_with_index do |p, i|
+          out.puts i < params.length - 1 ? "#{p}," : p
+        end
+      end
+      out.puts ") {"
+    end
+
+    arguments = init_fields.map do |f|
+      value = f[:bytes_backed] ? "Data(#{f[:param]}.utf8)" : f[:param]
+      "#{f[:param]}: #{value}"
+    end
+    out.indent do
+      out.puts "self.init(#{arguments.join(', ')})"
+    end
+    out.puts "}"
+    true
+  end
+
   # Emit init(from decoder:) for a struct.
   def render_struct_decode(out, struct, struct_name)
     out.puts "public init(from decoder: Decoder) throws {"
@@ -248,6 +323,13 @@ class Generator < Xdrgen::Generators::Base
 
   # Emit a single field decode statement.
   def render_decode_field(out, field, member, struct_name = nil)
+    # A bytes-backed `string` field decodes as Data: the string wire form (length
+    # prefix, bytes, padding to four) is the one Data's XDR conformance reads.
+    if struct_name && bytes_backed_string_getter(struct_name, member.name, member.declaration)
+      out.puts "#{field} = try container.decode(Data.self)"
+      return
+    end
+
     decl = member.declaration
     is_optional = member.type.sub_type == :optional
     # Also detect optional typedefs (e.g. SponsorshipDescriptor = AccountID*).
@@ -553,7 +635,12 @@ class Generator < Xdrgen::Generators::Base
 
       type_str = resolve_field_type(struct_name, field, m)
       xdr_name = txrep_field_name(struct_name, field)
-      kind = txrep_field_kind(m, type_str)
+      if bytes_backed_string_getter(struct_name, m.name, m.declaration)
+        is_opt = m.type.sub_type == :optional || typedef_is_optional?(m.declaration.type)
+        kind = { style: :string_bytes, is_optional: is_opt }
+      else
+        kind = txrep_field_kind(m, type_str)
+      end
       entries << {
         field: field,
         xdr_name: xdr_name,
@@ -778,6 +865,8 @@ class Generator < Xdrgen::Generators::Base
       out.puts "lines.append(\"#{prefix_frag}: \\(#{accessor})\")"
     when :string
       out.puts "lines.append(\"#{prefix_frag}: \\(TxRepHelper.escapeString(#{accessor}))\")"
+    when :string_bytes
+      out.puts "lines.append(\"#{prefix_frag}: \\(TxRepHelper.escapeBytes(#{accessor}))\")"
     when :opaque
       if kind[:wrapped_type]
         out.puts "lines.append(\"#{prefix_frag}: \\(TxRepHelper.bytesToHex(#{accessor}.wrapped))\")"
@@ -862,7 +951,7 @@ class Generator < Xdrgen::Generators::Base
     # Required non-optional scalar fields: use require* helpers for opaque,
     # compact, and string styles so that a missing key throws missingValue and
     # an invalid value throws invalidValue with the field key (not the raw value).
-    req = %i[opaque compact string].include?(kind[:style])
+    req = %i[opaque compact string string_bytes].include?(kind[:style])
 
     # Special case: liquidity pool ID fields accept both 64-char hex AND L-address
     # StrKey input. Override the generated parse expression for these specific fields.
@@ -939,6 +1028,12 @@ class Generator < Xdrgen::Generators::Base
         "try TxRepHelper.requireString(map, #{prefix_expr})"
       else
         "try TxRepHelper.unescapeString(TxRepHelper.getValue(map, #{prefix_expr}) ?? \"\")"
+      end
+    when :string_bytes
+      if required
+        "try TxRepHelper.requireStringBytes(map, #{prefix_expr})"
+      else
+        "try TxRepHelper.unescapeBytes(TxRepHelper.getValue(map, #{prefix_expr}) ?? \"\")"
       end
     when :opaque
       if required
@@ -1020,6 +1115,9 @@ class Generator < Xdrgen::Generators::Base
     end
     out.puts "}"
 
+    # -- String-taking conveniences for bytes-backed string arms --
+    render_union_bytes_string_extension(out, union_name, case_entries)
+
     # Phase 6: TxRep methods for TXREP_UNION_SKIP types are hand-written in
     # stellarsdk/stellarsdk/txrep/extensions/. The generator emits nothing for
     # those types so there is no duplicate-extension conflict.
@@ -1032,6 +1130,40 @@ class Generator < Xdrgen::Generators::Base
     render_union_json_methods(out, union, union_name, case_entries)
 
     out.close
+  end
+
+  # Emits, for every bytes-backed string arm, a static factory taking Swift text
+  # and an accessor reading the arm's bytes as UTF-8. The factory overloads the
+  # case constructor by parameter type, so a call site holding text builds the
+  # arm without spelling the UTF-8 encoding itself.
+  def render_union_bytes_string_extension(out, union_name, case_entries)
+    bytes_entries = case_entries.select { |e| e[:bytes_backed] }
+    return if bytes_entries.empty?
+
+    out.break
+    out.puts "extension #{union_name} {"
+    out.indent do
+      bytes_entries.each_with_index do |entry, index|
+        out.break if index > 0
+        case_name = swift_safe_name(entry[:case_name])
+        out.puts "/// Builds the #{entry[:xdr_arm_name]} arm carrying the UTF-8 bytes of the given text."
+        out.puts "public static func #{case_name}(_ string: String) -> #{union_name} {"
+        out.indent do
+          out.puts "return .#{case_name}(Data(string.utf8))"
+        end
+        out.puts "}"
+        out.break
+        out.puts "/// The text the #{entry[:xdr_arm_name]} arm spells, read as UTF-8; nil when the"
+        out.puts "/// value is another arm or the bytes are not valid UTF-8."
+        out.puts "public var #{entry[:bytes_backed]}: String? {"
+        out.indent do
+          out.puts "guard case .#{case_name}(let bytes) = self else { return nil }"
+          out.puts "return String(data: bytes, encoding: .utf8)"
+        end
+        out.puts "}"
+      end
+    end
+    out.puts "}"
   end
 
   # ---------------------------------------------------------------------------
@@ -1226,7 +1358,7 @@ class Generator < Xdrgen::Generators::Base
             out.puts "return .#{swift_case}(val)"
           else
             # Union arm required scalar: use require* helpers for opaque/compact/string.
-            arm_req = %i[opaque compact string].include?(kind[:style])
+            arm_req = %i[opaque compact string string_bytes].include?(kind[:style])
             out.puts "let val = #{txrep_parse_expr(kind, prefix_expr, required: arm_req)}"
             out.puts "return .#{swift_case}(val)"
           end
@@ -1239,6 +1371,8 @@ class Generator < Xdrgen::Generators::Base
   # txrep_field_kind but works off the arm metadata already gathered in
   # build_union_case_entries.
   def union_arm_txrep_kind(entry)
+    return { style: :string_bytes } if entry[:bytes_backed]
+
     arm = entry[:arm_ast]
     decl = arm.declaration
     base_kind =
@@ -1591,6 +1725,14 @@ class Generator < Xdrgen::Generators::Base
         assoc_type, decode_style = resolve_arm_type(arm)
         decode_type = resolve_arm_decode_type(arm)
 
+        # A bytes-backed `string` arm carries Data. The wire form is unchanged:
+        # a string and variable-length opaque data encode identically.
+        bytes_getter = bytes_backed_string_getter(union_name, arm.name, arm.declaration)
+        if bytes_getter
+          assoc_type = "Data"
+          decode_type = "Data"
+        end
+
         if arm.cases.length > 1
           # Multi-case non-void arm (fallthrough): expand into separate Swift enum cases
           # to preserve each discriminant. Case names derived from discriminant values.
@@ -1612,6 +1754,7 @@ class Generator < Xdrgen::Generators::Base
               xdr_arm_name: xdr_arm_name,
               raw_disc_names: [txrep_raw_disc_name(c.value, disc_info)],
               arm_ast: arm,
+              bytes_backed: bytes_getter,
             }
           end
         else
@@ -1634,6 +1777,7 @@ class Generator < Xdrgen::Generators::Base
             xdr_arm_name: xdr_arm_name,
             raw_disc_names: arm.cases.map { |c| txrep_raw_disc_name(c.value, disc_info) },
             arm_ast: arm,
+            bytes_backed: bytes_getter,
           }
         end
       end
@@ -2329,9 +2473,14 @@ class Generator < Xdrgen::Generators::Base
       EXTENSION_POINT_FIELDS[struct_name].include?(field_name)
   end
 
-  # Resolve the Swift type for a struct field, applying FIELD_TYPE_OVERRIDES
-  # and TYPE_OVERRIDES.
+  # Resolve the Swift type for a struct field, applying BYTES_BACKED_STRING_FIELDS,
+  # FIELD_TYPE_OVERRIDES and TYPE_OVERRIDES.
   def resolve_field_type(struct_name, field, member)
+    if bytes_backed_string_getter(struct_name, member.name, member.declaration)
+      is_opt = member.type.sub_type == :optional || typedef_is_optional?(member.declaration.type)
+      return is_opt ? "Data?" : "Data"
+    end
+
     if FIELD_TYPE_OVERRIDES.key?(struct_name) &&
        FIELD_TYPE_OVERRIDES[struct_name].key?(field)
       type_str = FIELD_TYPE_OVERRIDES[struct_name][field]
@@ -2344,6 +2493,88 @@ class Generator < Xdrgen::Generators::Base
     else
       swift_type_string(member.declaration)
     end
+  end
+
+  # ---------------------------------------------------------------------------
+  # Bytes-backed string fields
+  # ---------------------------------------------------------------------------
+  #
+  # An XDR `string` carries arbitrary bytes; a position listed in
+  # BYTES_BACKED_STRING_FIELDS keeps those bytes as `Data`. The binary form of a
+  # string and of variable-length opaque data is identical (length prefix, bytes,
+  # padding to four), so `Data`'s XDRCodable conformance reads and writes the
+  # same wire bytes the String form does. TxRep and XDR-JSON apply their escape
+  # ladders to the bytes, which renders a text-valued field exactly as its
+  # String form would.
+
+  # The accessor name a bytes-backed `string` position exposes its text under,
+  # or nil where the position is ordinary Swift text. Records the hit so the
+  # registry check can tell an applied entry from a stale one.
+  def bytes_backed_string_getter(type_name, xdr_field_name, decl)
+    getter = BYTES_BACKED_STRING_FIELDS.dig(type_name, xdr_field_name.to_s)
+    return nil if getter.nil?
+
+    unless string_valued?(decl)
+      raise "#{type_name}.#{xdr_field_name} is listed in BYTES_BACKED_STRING_FIELDS " \
+            "but does not declare an XDR string"
+    end
+
+    (@bytes_backed_applied ||= Set.new).add("#{type_name}.#{xdr_field_name}")
+    getter
+  end
+
+  # Every position listed as bytes-backed must reach a generated type, so a
+  # rename cannot quietly drop one and leave the position emitted as text.
+  def verify_bytes_backed_string_fields!
+    expected = BYTES_BACKED_STRING_FIELDS.flat_map do |type_name, fields|
+      fields.keys.map { |field| "#{type_name}.#{field}" }
+    end
+    missing = expected.reject { |entry| @bytes_backed_applied&.include?(entry) }
+    return if missing.empty?
+
+    raise "BYTES_BACKED_STRING_FIELDS names #{missing.join(', ')}, which no generated " \
+          "position matches; update the table"
+  end
+
+  # True when a declaration names an XDR string, directly or through typedefs.
+  def string_valued?(decl)
+    return true if decl.is_a?(AST::Declarations::String)
+    return false if decl.is_a?(AST::Declarations::Opaque) ||
+                    decl.is_a?(AST::Declarations::Array)
+    return false unless decl.respond_to?(:type)
+
+    typespec = decl.type
+    return true if typespec.is_a?(AST::Typespecs::String)
+    return false unless typespec.is_a?(AST::Typespecs::Simple)
+    return false unless typespec.respond_to?(:resolved_type)
+
+    resolved = typespec.resolved_type
+    return false unless resolved.is_a?(AST::Definitions::Typedef)
+
+    string_valued?(resolved.declaration)
+  end
+
+  # Emits the accessor that reads a bytes-backed `string` position as text.
+  def render_bytes_backed_string_getter(out, getter, field)
+    out.puts "/// The text `#{field}` spells, read as UTF-8; nil when the bytes are not valid UTF-8."
+    out.puts "public var #{getter}: String? {"
+    out.indent do
+      out.puts "return String(data: #{field}, encoding: .utf8)"
+    end
+    out.puts "}"
+  end
+
+  # The XDR-JSON conversion for a bytes-backed `string` position: the same
+  # SEP-0051 escape ladder a string's UTF-8 bytes go through, applied to the
+  # bytes the position holds.
+  def json_bytes_backed_string_codec(owner:, key:)
+    context = json_context(owner, key)
+    Sep51JsonCodecs::Codec.new(
+      swift_type: 'Data',
+      emit: ->(accessor) { "XdrJson.escapedString(#{accessor})" },
+      read: ->(value) { "try XdrJson.unescapeString(#{value}, #{context})" },
+      emit_throws: false
+    )
   end
 
   # Check if a typespec resolves to a typedef whose underlying type is optional.
@@ -2612,6 +2843,8 @@ class Generator < Xdrgen::Generators::Base
 
       if is_extension_point_field?(struct_name, field)
         entry.merge(json_extension_point_entry(label, key, m))
+      elsif bytes_backed_string_getter(struct_name, m.name, m.declaration)
+        entry.merge(codec: json_bytes_backed_string_codec(owner: label, key: key))
       else
         entry.merge(codec: json_codec(m.declaration, owner: label, key: key,
                                       swift_type: resolve_field_type(struct_name, field, m)))
@@ -2916,6 +3149,8 @@ class Generator < Xdrgen::Generators::Base
   end
 
   def json_arm_codec(entry, label, key)
+    return json_bytes_backed_string_codec(owner: label, key: key) if entry[:bytes_backed]
+
     json_codec(entry[:arm_ast].declaration, owner: label, key: key,
                swift_type: entry[:associated_type])
   end

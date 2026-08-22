@@ -199,3 +199,25 @@ FIELD_OVERRIDES = {
     "lo_lo" => "loLo",
   },
 }.freeze
+
+# XDR `string` positions the SDK carries as raw bytes rather than as Swift text.
+#
+# An XDR `string` holds arbitrary bytes. A struct field or union arm listed here
+# is emitted as `Data` and keeps the `string` wire form -- a length prefix, the
+# bytes, and padding to a multiple of four -- so its encoding is unchanged.
+# Beside it the generator emits the named accessor, which reads the bytes as
+# UTF-8 for a caller that wants text, plus a String-taking convenience (an
+# initializer on a struct, a static factory on a union) that encodes UTF-8 once.
+# TxRep and XDR-JSON apply their escape ladders to the bytes directly, so a
+# value that spells text keeps the rendering its String form would produce.
+#
+# Format:
+#   "SwiftTypeName" => { "xdrFieldName" => "utf8AccessorName" }
+#
+# The xdrFieldName is the name from the .x file, before any FIELD_OVERRIDES
+# renaming.
+
+BYTES_BACKED_STRING_FIELDS = {
+  "ContractExecutableExternalRefXDR" => { "tag" => "tagString" },
+  "SCValXDR" => { "executable_tag" => "executableTagString" },
+}.freeze

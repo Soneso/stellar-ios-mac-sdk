@@ -82,14 +82,16 @@ public class InvokeHostFunctionOperation:Operation, @unchecked Sendable {
     ///
     /// The executable names an owner contract and a tag; the owner holds a persistent
     /// contract data entry under that tag whose value is the 32-byte hash of an already
-    /// uploaded wasm, and the created instance runs that code.
+    /// uploaded wasm, and the created instance runs that code. An executable tag is an
+    /// XDR string and may carry arbitrary bytes; the operation carries the given bytes
+    /// unchanged.
     ///
     /// - Parameter executableOwner: the contract holding the executable tag entry; must be a contract address
     /// - Parameter tag: the tag of the executable entry on the owner; matched byte for byte
     /// - Parameter address: the deployer address (account or contract)
     /// - Parameter salt: optional 32 byte salt for contract id generation; random if not provided
     /// - Throws: `StellarSDKError.invalidArgument` if the executable owner is not a contract address
-    public static func forCreatingContractFromExternalRef(executableOwner: SCAddressXDR, tag: String, address: SCAddressXDR, salt:WrappedData32? = nil, sourceAccountId:String? = nil) throws -> InvokeHostFunctionOperation {
+    public static func forCreatingContractFromExternalRef(executableOwner: SCAddressXDR, tag: Data, address: SCAddressXDR, salt:WrappedData32? = nil, sourceAccountId:String? = nil) throws -> InvokeHostFunctionOperation {
         try requireContractExecutableOwner(executableOwner)
         let saltToSet = try salt ?? randomSalt()
         let contractIdPreimageFormAddress = ContractIDPreimageFromAddressXDR(address: address, salt: saltToSet)
@@ -101,7 +103,25 @@ public class InvokeHostFunctionOperation:Operation, @unchecked Sendable {
     }
 
     /// Creates an operation to instantiate a contract from a CAP-85 external reference
-    /// with constructor arguments (protocol >= 28).
+    /// (protocol >= 28) with a text tag. The operation carries the tag as the UTF-8
+    /// bytes of the given text; the entry is matched byte for byte against those bytes.
+    ///
+    /// - Parameter executableOwner: the contract holding the executable tag entry; must be a contract address
+    /// - Parameter tag: the tag of the executable entry on the owner, carried as its UTF-8 bytes
+    /// - Parameter address: the deployer address (account or contract)
+    /// - Parameter salt: optional 32 byte salt for contract id generation; random if not provided
+    /// - Throws: `StellarSDKError.invalidArgument` if the executable owner is not a contract address
+    public static func forCreatingContractFromExternalRef(executableOwner: SCAddressXDR, tag: String, address: SCAddressXDR, salt:WrappedData32? = nil, sourceAccountId:String? = nil) throws -> InvokeHostFunctionOperation {
+        return try forCreatingContractFromExternalRef(executableOwner: executableOwner,
+                                                      tag: Data(tag.utf8),
+                                                      address: address,
+                                                      salt: salt,
+                                                      sourceAccountId: sourceAccountId)
+    }
+
+    /// Creates an operation to instantiate a contract from a CAP-85 external reference
+    /// with constructor arguments (protocol >= 28). An executable tag is an XDR string
+    /// and may carry arbitrary bytes; the operation carries the given bytes unchanged.
     ///
     /// - Parameter executableOwner: the contract holding the executable tag entry; must be a contract address
     /// - Parameter tag: the tag of the executable entry on the owner; matched byte for byte
@@ -109,7 +129,7 @@ public class InvokeHostFunctionOperation:Operation, @unchecked Sendable {
     /// - Parameter constructorArguments: arguments passed to the contract constructor
     /// - Parameter salt: optional 32 byte salt for contract id generation; random if not provided
     /// - Throws: `StellarSDKError.invalidArgument` if the executable owner is not a contract address
-    public static func forCreatingContractFromExternalRefWithConstructor(executableOwner: SCAddressXDR, tag: String, address: SCAddressXDR, constructorArguments:[SCValXDR] = [], salt:WrappedData32? = nil, sourceAccountId:String? = nil) throws -> InvokeHostFunctionOperation {
+    public static func forCreatingContractFromExternalRefWithConstructor(executableOwner: SCAddressXDR, tag: Data, address: SCAddressXDR, constructorArguments:[SCValXDR] = [], salt:WrappedData32? = nil, sourceAccountId:String? = nil) throws -> InvokeHostFunctionOperation {
         try requireContractExecutableOwner(executableOwner)
         let saltToSet = try salt ?? randomSalt()
         let contractIdPreimageFormAddress = ContractIDPreimageFromAddressXDR(address: address, salt: saltToSet)
@@ -118,6 +138,26 @@ public class InvokeHostFunctionOperation:Operation, @unchecked Sendable {
         let createContractV2Args = CreateContractV2ArgsXDR(contractIDPreimage: contractIDPreimage, executable: executable, constructorArgs: constructorArguments)
         let hostFunction = HostFunctionXDR.createContractV2(createContractV2Args)
         return InvokeHostFunctionOperation(hostFunction: hostFunction, sourceAccountId: sourceAccountId)
+    }
+
+    /// Creates an operation to instantiate a contract from a CAP-85 external reference
+    /// with constructor arguments (protocol >= 28) and a text tag. The operation carries
+    /// the tag as the UTF-8 bytes of the given text; the entry is matched byte for byte
+    /// against those bytes.
+    ///
+    /// - Parameter executableOwner: the contract holding the executable tag entry; must be a contract address
+    /// - Parameter tag: the tag of the executable entry on the owner, carried as its UTF-8 bytes
+    /// - Parameter address: the deployer address (account or contract)
+    /// - Parameter constructorArguments: arguments passed to the contract constructor
+    /// - Parameter salt: optional 32 byte salt for contract id generation; random if not provided
+    /// - Throws: `StellarSDKError.invalidArgument` if the executable owner is not a contract address
+    public static func forCreatingContractFromExternalRefWithConstructor(executableOwner: SCAddressXDR, tag: String, address: SCAddressXDR, constructorArguments:[SCValXDR] = [], salt:WrappedData32? = nil, sourceAccountId:String? = nil) throws -> InvokeHostFunctionOperation {
+        return try forCreatingContractFromExternalRefWithConstructor(executableOwner: executableOwner,
+                                                                     tag: Data(tag.utf8),
+                                                                     address: address,
+                                                                     constructorArguments: constructorArguments,
+                                                                     salt: salt,
+                                                                     sourceAccountId: sourceAccountId)
     }
 
     /// Creates an operation to deploy a Stellar Asset Contract for a specific asset.
