@@ -276,6 +276,11 @@ condition fired: the owner is not a contract address, the owner has no entry und
 the entry is not a contract data entry, or the entry value does not hold a 32-byte wasm
 hash. The owner contract is read, never invoked.
 
+An executable tag is an XDR string and may carry arbitrary bytes.
+`ContractExecutableExternalRefXDR.tag` carries the raw bytes (`Data`), with a `tagString`
+view reading them as UTF-8 when they spell text; a failure message names a tag through its
+byte escape, so a binary tag appears as `\xNN` escapes inside quotes.
+
 To deploy a contract from an external reference, see "Deployment from an External
 Reference (Protocol 28)" under Installing and Deploying.
 
@@ -427,7 +432,10 @@ let client = try await SorobanClient.deployFromExternalRef(
 
 `constructorArgs` and `salt` work as in `DeployRequest`; the create operation uses the
 `CREATE_CONTRACT_V2` host function form with an empty constructor-argument vector when
-`constructorArgs` is not given, as `deploy` does. The contract spec is loaded from the
+`constructorArgs` is not given, as `deploy` does. `DeployFromExternalRefRequest.tag`
+carries the tag as raw bytes (`Data`); the `String` initializer takes a text tag and
+encodes it as UTF-8 exactly once, and the same bytes resolve the owner's entry and build
+the create operation. The contract spec is loaded from the
 resolved wasm before submission and the returned client is ready to invoke.
 The underlying create operations can also be built directly with
 `InvokeHostFunctionOperation.forCreatingContractFromExternalRef` and

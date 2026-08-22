@@ -67,7 +67,10 @@ entry holds the wasm hash. `getExternalRefWasmHash(ref: ContractExecutableExtern
 -> GetExternalRefWasmHashResponseEnum` resolves a reference directly: `.success(response: Data)`
 carries the 32-byte hash, `.failure` names the condition that fired (non-contract owner, missing
 tag entry, entry not contract data, value not a 32-byte hash). A Stellar Asset Contract has no
-wasm, so the code loader fails with a message saying so.
+wasm, so the code loader fails with a message saying so. An executable tag is an XDR string
+carrying arbitrary bytes: `ContractExecutableExternalRefXDR.tag` is `Data` (a `tagString` view
+reads it as UTF-8 when it spells text), the ledger key is built from the exact bytes, and a
+failure message renders a binary tag as `\xNN` escapes inside quotes.
 
 ### SorobanContractInfo Properties
 
@@ -376,12 +379,16 @@ let client = try await SorobanClient.deployFromExternalRef(
 
 `deployFromExternalRef` builds the `CREATE_CONTRACT_V2` host function form (empty
 constructor-argument vector when no args are given), as `deploy` does.
+`DeployFromExternalRefRequest.tag` is `Data` (an executable tag carries arbitrary
+bytes); the `String` initializer encodes a text tag as UTF-8 exactly once, and the same
+bytes resolve the owner's entry and build the create operation.
 
 The underlying create operations can be built directly with
 `InvokeHostFunctionOperation.forCreatingContractFromExternalRef(executableOwner:
-SCAddressXDR, tag: String, address: SCAddressXDR, salt: WrappedData32? = nil)` and
+SCAddressXDR, tag: Data, address: SCAddressXDR, salt: WrappedData32? = nil)` and
 `forCreatingContractFromExternalRefWithConstructor(... constructorArguments: [SCValXDR]
-...)`, next to their wasm siblings. Both builders throw
+...)`, next to their wasm siblings; each has a `tag: String` overload encoding the text
+as UTF-8 once. Both builders throw
 `StellarSDKError.invalidArgument` for an `executableOwner` that is not a contract
 address.
 
