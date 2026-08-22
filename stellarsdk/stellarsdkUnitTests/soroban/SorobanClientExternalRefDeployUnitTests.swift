@@ -464,6 +464,36 @@ final class SorobanClientExternalRefDeployUnitTests: XCTestCase {
         XCTAssertEqual(decoded.xdrEncoded!, encoded)
     }
 
+    func testBuilderRejectsNonContractExecutableOwner() throws {
+        let deployer = try SCAddressXDR(accountId: keyPair.accountId)
+        let nonContractOwners: [SCAddressXDR] = [
+            try SCAddressXDR(accountId: keyPair.accountId),
+            SCAddressXDR.muxedAccount(MuxedAccountMed25519XDR(id: 1, sourceAccountEd25519: [UInt8](repeating: 0, count: 32))),
+            SCAddressXDR.claimableBalanceId(ClaimableBalanceIDXDR.claimableBalanceIDTypeV0(WrappedData32(Data(count: 32)))),
+            SCAddressXDR.liquidityPoolId(WrappedData32(Data(count: 32))),
+        ]
+
+        for owner in nonContractOwners {
+            XCTAssertThrowsError(try InvokeHostFunctionOperation.forCreatingContractFromExternalRef(
+                executableOwner: owner, tag: executableTag, address: deployer, salt: fixedSalt)) { error in
+                guard case StellarSDKError.invalidArgument(let message) = error else {
+                    return XCTFail("expected StellarSDKError.invalidArgument, got \(error)")
+                }
+                XCTAssertTrue(message.contains("only a contract can hold the executable tag entry"),
+                              "unexpected message: \(message)")
+            }
+            XCTAssertThrowsError(try InvokeHostFunctionOperation.forCreatingContractFromExternalRefWithConstructor(
+                executableOwner: owner, tag: executableTag, address: deployer,
+                constructorArguments: [SCValXDR.u32(7)], salt: fixedSalt)) { error in
+                guard case StellarSDKError.invalidArgument(let message) = error else {
+                    return XCTFail("expected StellarSDKError.invalidArgument, got \(error)")
+                }
+                XCTAssertTrue(message.contains("only a contract can hold the executable tag entry"),
+                              "unexpected message: \(message)")
+            }
+        }
+    }
+
     func testBuilderGeneratesRandomSaltWhenOmitted() throws {
         let deployer = try SCAddressXDR(accountId: keyPair.accountId)
         let op = try InvokeHostFunctionOperation.forCreatingContractFromExternalRef(
