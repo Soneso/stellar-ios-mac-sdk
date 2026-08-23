@@ -398,6 +398,70 @@ final class TxRepHelperTestCase: XCTestCase {
         XCTAssertEqual(result, "\\x")
     }
 
+    // MARK: - escapeBytes() / unescapeBytes()
+
+    /// Bytes that spell valid UTF-8 render exactly as `escapeString` renders that text.
+    func testEscapeBytesMatchesEscapeStringForUtf8Bytes() {
+        let text = "caf\u{00E9}\ttab \"quoted\"\\"
+        XCTAssertEqual(TxRepHelper.escapeBytes(Data(text.utf8)),
+                       TxRepHelper.escapeString(text))
+    }
+
+    /// Bytes outside printable ASCII are encoded one byte at a time as `\xNN`,
+    /// including sequences that are not valid UTF-8.
+    func testEscapeBytesEncodesNonUtf8BytesAsHex() {
+        XCTAssertEqual(TxRepHelper.escapeBytes(Data([0xFF, 0xFE])), "\"\\xff\\xfe\"")
+    }
+
+    func testEscapeBytesEmptyData() {
+        XCTAssertEqual(TxRepHelper.escapeBytes(Data()), "\"\"")
+    }
+
+    /// An unquoted value contributes the UTF-8 bytes of its text unchanged.
+    func testUnescapeBytesUnquotedReturnsUtf8Bytes() throws {
+        XCTAssertEqual(try TxRepHelper.unescapeBytes("caf\u{00E9}"),
+                       Data("caf\u{00E9}".utf8))
+    }
+
+    func testUnescapeBytesUnquotedEmptyString() throws {
+        XCTAssertEqual(try TxRepHelper.unescapeBytes(""), Data())
+    }
+
+    func testUnescapeBytesStripsEnclosingQuotes() throws {
+        XCTAssertEqual(try TxRepHelper.unescapeBytes("\"hello\""), Data("hello".utf8))
+    }
+
+    /// Byte sequences that are not valid UTF-8 survive the escape round trip, which
+    /// `unescapeString` cannot do because it must produce a `String`.
+    func testUnescapeBytesRoundtripsNonUtf8Bytes() throws {
+        let original = Data([0x74, 0x61, 0x67, 0x00, 0xFF, 0x10])
+        let escaped = TxRepHelper.escapeBytes(original)
+        XCTAssertEqual(try TxRepHelper.unescapeBytes(escaped), original)
+        XCTAssertThrowsError(try TxRepHelper.unescapeString(escaped),
+                             "the same value has no String reading")
+    }
+
+    func testUnescapeBytesReadsEscapeLadder() throws {
+        XCTAssertEqual(try TxRepHelper.unescapeBytes("\"a\\\\b\\\"c\\nd\\re\\tf\""),
+                       Data("a\\b\"c\nd\re\tf".utf8))
+    }
+
+    func testUnescapeBytesThrowsOnInvalidHexInXSequence() {
+        XCTAssertThrowsError(try TxRepHelper.unescapeBytes("\"\\xZZ\"")) { error in
+            guard case TxRepError.invalidValue = error else {
+                return XCTFail("Expected invalidValue, got \(error)")
+            }
+        }
+    }
+
+    func testUnescapeBytesThrowsForUnclosedQuotedString() {
+        XCTAssertThrowsError(try TxRepHelper.unescapeBytes("\"unclosed")) { error in
+            guard case TxRepError.invalidValue = error else {
+                return XCTFail("Expected invalidValue, got \(error)")
+            }
+        }
+    }
+
     // MARK: - parseInt()
 
     func testParseIntDecimalPositive() throws {

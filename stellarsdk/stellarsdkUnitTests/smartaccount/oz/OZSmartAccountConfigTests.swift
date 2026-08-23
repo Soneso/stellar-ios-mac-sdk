@@ -611,6 +611,101 @@ final class OZSmartAccountConfigTests: XCTestCase {
         XCTAssertFalse(walletOptOut.useUpgradedAuthForWalletSigners)
     }
 
+    // MARK: - useUpgradedAuthForWalletSigners
+
+    func test_useUpgradedAuthForWalletSigners_defaultsToTrue() throws {
+        let config = try makeValidConfig()
+        XCTAssertTrue(
+            config.useUpgradedAuthForWalletSigners,
+            "delegated wallet entries must carry ADDRESS_V2 credentials unless opted out"
+        )
+    }
+
+    func test_builder_useUpgradedAuthForWalletSigners_optOutIsCarriedThrough() throws {
+        let config = try OZSmartAccountConfig.builder(
+            rpcUrl: validRpcUrl,
+            networkPassphrase: validPassphrase,
+            accountWasmHash: validWasmHash,
+            webauthnVerifierAddress: validVerifier
+        )
+        .useUpgradedAuthForWalletSigners(false)
+        .build()
+
+        XCTAssertFalse(config.useUpgradedAuthForWalletSigners)
+        XCTAssertTrue(
+            config.useUpgradedAuth,
+            "the simulation flag is independent and keeps its own default"
+        )
+    }
+
+    func test_builder_useUpgradedAuthForWalletSigners_defaultsToTrue() throws {
+        let config = try OZSmartAccountConfig.builder(
+            rpcUrl: validRpcUrl,
+            networkPassphrase: validPassphrase,
+            accountWasmHash: validWasmHash,
+            webauthnVerifierAddress: validVerifier
+        ).build()
+
+        XCTAssertTrue(config.useUpgradedAuthForWalletSigners)
+    }
+
+    func test_builder_useUpgradedAuthForWalletSigners_matchesConstructor() throws {
+        let constructorConfig = try OZSmartAccountConfig(
+            rpcUrl: validRpcUrl,
+            networkPassphrase: validPassphrase,
+            accountWasmHash: validWasmHash,
+            webauthnVerifierAddress: validVerifier,
+            useUpgradedAuthForWalletSigners: false
+        )
+        let builderConfig = try OZSmartAccountConfig.builder(
+            rpcUrl: validRpcUrl,
+            networkPassphrase: validPassphrase,
+            accountWasmHash: validWasmHash,
+            webauthnVerifierAddress: validVerifier
+        )
+        .useUpgradedAuthForWalletSigners(false)
+        .build()
+
+        XCTAssertEqual(constructorConfig, builderConfig)
+    }
+
+    /// Both builder setters address their own field: setting them apart produces
+    /// configs that differ in exactly the flag that was set.
+    func test_builder_bothAuthFlagsAreSetIndependently() throws {
+        let config = try OZSmartAccountConfig.builder(
+            rpcUrl: validRpcUrl,
+            networkPassphrase: validPassphrase,
+            accountWasmHash: validWasmHash,
+            webauthnVerifierAddress: validVerifier
+        )
+        .useUpgradedAuth(true)
+        .useUpgradedAuthForWalletSigners(false)
+        .build()
+
+        XCTAssertTrue(config.useUpgradedAuth)
+        XCTAssertFalse(config.useUpgradedAuthForWalletSigners)
+    }
+
+    func test_equality_differentUseUpgradedAuthForWalletSignersNotEqual() throws {
+        let upgraded = try OZSmartAccountConfig(
+            rpcUrl: validRpcUrl,
+            networkPassphrase: validPassphrase,
+            accountWasmHash: validWasmHash,
+            webauthnVerifierAddress: validVerifier,
+            useUpgradedAuthForWalletSigners: true
+        )
+        let legacy = try OZSmartAccountConfig(
+            rpcUrl: validRpcUrl,
+            networkPassphrase: validPassphrase,
+            accountWasmHash: validWasmHash,
+            webauthnVerifierAddress: validVerifier,
+            useUpgradedAuthForWalletSigners: false
+        )
+
+        XCTAssertNotEqual(upgraded, legacy)
+        XCTAssertNotEqual(upgraded.hashValue, legacy.hashValue)
+    }
+
     // MARK: - isValidWasmHashHex — invalid character in 64-char string (line 328)
 
     /// A 64-character string that is otherwise the right length but contains a

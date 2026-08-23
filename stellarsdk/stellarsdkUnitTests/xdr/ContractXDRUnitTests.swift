@@ -520,6 +520,43 @@ class ContractXDRUnitTests: XCTestCase {
         XCTAssertNil(SCValXDR.void.executableTag)
     }
 
+    /// The string factory stores the text's UTF-8 bytes, and `executableTagString`
+    /// reads them back through an XDR round trip.
+    func testSCValXDRExecutableTagStringRoundTripsUtf8() throws {
+        let val = SCValXDR.executableTag("caf\u{00E9}-v1")
+        guard case .executableTag(let bytes) = val else {
+            return XCTFail("the string factory must build the executableTag arm, got \(val)")
+        }
+        XCTAssertEqual(bytes, Data("caf\u{00E9}-v1".utf8))
+
+        let decoded = try XDRDecoder.decode(SCValXDR.self, data: try XDREncoder.encode(val))
+        XCTAssertEqual(decoded.executableTagString, "caf\u{00E9}-v1")
+    }
+
+    /// A tag whose bytes are not valid UTF-8 survives the XDR round trip intact
+    /// while reading back as no text at all.
+    func testSCValXDRExecutableTagStringNilForNonUtf8Bytes() throws {
+        let rawTag = Data([0x74, 0x61, 0x67, 0xFF, 0xFE])
+        let val = SCValXDR.executableTag(rawTag)
+        let decoded = try XDRDecoder.decode(SCValXDR.self, data: try XDREncoder.encode(val))
+
+        guard case .executableTag(let bytes) = decoded else {
+            return XCTFail("expected the executableTag arm, got \(decoded)")
+        }
+        XCTAssertEqual(bytes, rawTag, "the raw tag bytes must survive the round trip")
+        XCTAssertNil(
+            decoded.executableTagString,
+            "bytes that are not valid UTF-8 must not be reported as text"
+        )
+    }
+
+    /// `executableTagString` reads only the executableTag arm.
+    func testSCValXDRExecutableTagStringNilForOtherArms() throws {
+        XCTAssertNil(SCValXDR.void.executableTagString)
+        XCTAssertNil(SCValXDR.string("my-tag").executableTagString)
+        XCTAssertNil(SCValXDR.bytes(Data("my-tag".utf8)).executableTagString)
+    }
+
     func testSCValXDRError() throws {
         let error = SCErrorXDR.budget(.arithDomain)
         let val = SCValXDR.error(error)

@@ -189,6 +189,53 @@ final class TxRepCoverageTestCase: XCTestCase {
         }
     }
 
+    func testRequireStringBytesHappyPath() throws {
+        let map = ["tag": "\"hello world\""]
+        XCTAssertEqual(try TxRepHelper.requireStringBytes(map, "tag"), Data("hello world".utf8))
+    }
+
+    /// The bytes reading keeps values that `requireString` would reject for not
+    /// spelling valid UTF-8.
+    func testRequireStringBytesKeepsNonUtf8Bytes() throws {
+        let map = ["tag": "\"tag\\x00\\xff\\x10\""]
+        XCTAssertEqual(try TxRepHelper.requireStringBytes(map, "tag"),
+                       Data([0x74, 0x61, 0x67, 0x00, 0xFF, 0x10]))
+        XCTAssertThrowsError(try TxRepHelper.requireString(map, "tag"))
+    }
+
+    func testRequireStringBytesMissingKeyThrows() {
+        XCTAssertThrowsError(try TxRepHelper.requireStringBytes([:], "tag")) { error in
+            if case TxRepError.missingValue(let key) = error {
+                XCTAssertEqual(key, "tag")
+            } else {
+                XCTFail("Expected missingValue, got \(error)")
+            }
+        }
+    }
+
+    /// An unescape failure is reported against the field key, not the raw value.
+    func testRequireStringBytesInvalidValueThrows() {
+        let map = ["tag": "\"unclosed"]
+        XCTAssertThrowsError(try TxRepHelper.requireStringBytes(map, "tag")) { error in
+            if case TxRepError.invalidValue(let key) = error {
+                XCTAssertEqual(key, "tag")
+            } else {
+                XCTFail("Expected invalidValue with key 'tag', got \(error)")
+            }
+        }
+    }
+
+    func testRequireStringBytesInvalidHexEscapeThrows() {
+        let map = ["tag": "\"\\xZZ\""]
+        XCTAssertThrowsError(try TxRepHelper.requireStringBytes(map, "tag")) { error in
+            if case TxRepError.invalidValue(let key) = error {
+                XCTAssertEqual(key, "tag")
+            } else {
+                XCTFail("Expected invalidValue with key 'tag', got \(error)")
+            }
+        }
+    }
+
     func testRequireInt64HappyPath() throws {
         let map = ["seqNum": "9223372036854775807"]
         let val = try TxRepHelper.requireInt64(map, "seqNum")
