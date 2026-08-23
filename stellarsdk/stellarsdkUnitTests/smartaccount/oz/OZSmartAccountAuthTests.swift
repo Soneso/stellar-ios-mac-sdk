@@ -114,6 +114,97 @@ final class OZSmartAccountAuthTests: XCTestCase {
         XCTAssertEqual(h, manual, "hash must match manual WITH_ADDRESS preimage construction")
     }
 
+    /// `useUpgradedAuth: false` selects the legacy `ENVELOPE_TYPE_SOROBAN_AUTHORIZATION`
+    /// preimage, which binds no address.
+    func testBuildSourceAccountAuthPayloadHash_legacyArmMatchesManualPreimageConstruction() async throws {
+        let entry = try makeEntry()
+        let h = try await OZSmartAccountAuth.buildSourceAccountAuthPayloadHash(
+            entry: entry,
+            address: try tempAccountAddress(),
+            nonce: 12,
+            expirationLedger: 300,
+            networkPassphrase: testNetwork,
+            useUpgradedAuth: false
+        )
+        let preimage = HashIDPreimageXDR.sorobanAuthorization(
+            HashIDPreimageSorobanAuthorizationXDR(
+                networkID: HashXDR(testNetwork.sha256Hash),
+                nonce: 12,
+                signatureExpirationLedger: 300,
+                invocation: entry.rootInvocation
+            )
+        )
+        let manual = Data(try XDREncoder.encode(preimage)).sha256Hash
+        XCTAssertEqual(h, manual, "hash must match manual legacy preimage construction")
+    }
+
+    /// The legacy preimage carries no address, so the address argument cannot move
+    /// the hash the way it does for the V2 arm.
+    func testBuildSourceAccountAuthPayloadHash_legacyArmIgnoresAddress() async throws {
+        let entry = try makeEntry()
+        let h1 = try await OZSmartAccountAuth.buildSourceAccountAuthPayloadHash(
+            entry: entry,
+            address: try tempAccountAddress(),
+            nonce: 1,
+            expirationLedger: 100,
+            networkPassphrase: testNetwork,
+            useUpgradedAuth: false
+        )
+        let h2 = try await OZSmartAccountAuth.buildSourceAccountAuthPayloadHash(
+            entry: entry,
+            address: try SCAddressXDR(contractId: validContractC),
+            nonce: 1,
+            expirationLedger: 100,
+            networkPassphrase: testNetwork,
+            useUpgradedAuth: false
+        )
+        XCTAssertEqual(
+            h1, h2,
+            "ENVELOPE_TYPE_SOROBAN_AUTHORIZATION binds no address, so both must hash alike"
+        )
+    }
+
+    /// The two arms hash different envelope types for otherwise identical inputs.
+    func testBuildSourceAccountAuthPayloadHash_armsProduceDifferentHashes() async throws {
+        let entry = try makeEntry()
+        let address = try tempAccountAddress()
+        let upgraded = try await OZSmartAccountAuth.buildSourceAccountAuthPayloadHash(
+            entry: entry,
+            address: address,
+            nonce: 7,
+            expirationLedger: 250,
+            networkPassphrase: testNetwork,
+            useUpgradedAuth: true
+        )
+        let legacy = try await OZSmartAccountAuth.buildSourceAccountAuthPayloadHash(
+            entry: entry,
+            address: address,
+            nonce: 7,
+            expirationLedger: 250,
+            networkPassphrase: testNetwork,
+            useUpgradedAuth: false
+        )
+        XCTAssertNotEqual(
+            upgraded, legacy,
+            "the credential arm selects the envelope type, so the hashes must differ"
+        )
+    }
+
+    /// Omitting the flag keeps the address-bound V2 preimage.
+    func testBuildSourceAccountAuthPayloadHash_defaultsToUpgradedArm() async throws {
+        let entry = try makeEntry()
+        let address = try tempAccountAddress()
+        let defaulted = try await OZSmartAccountAuth.buildSourceAccountAuthPayloadHash(
+            entry: entry, address: address, nonce: 9, expirationLedger: 400,
+            networkPassphrase: testNetwork
+        )
+        let explicitUpgraded = try await OZSmartAccountAuth.buildSourceAccountAuthPayloadHash(
+            entry: entry, address: address, nonce: 9, expirationLedger: 400,
+            networkPassphrase: testNetwork, useUpgradedAuth: true
+        )
+        XCTAssertEqual(defaulted, explicitUpgraded)
+    }
+
     func testBuildAuthPayloadHash_throwsOnVoidCredentials() async throws {
         let entry = SorobanAuthorizationEntryXDR(
             credentials: .sourceAccount,

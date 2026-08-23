@@ -71,11 +71,18 @@ extension OZManagerHelpers {
 
     /// Wraps the kit's RPC `simulateTransaction` and lifts transport-level and
     /// simulation-error responses into `SmartAccountTransactionException.SimulationFailed`.
+    ///
+    /// Every simulation the kit runs flows through here, so
+    /// ``OZSmartAccountConfig/useUpgradedAuth`` decides for the whole kit whether the
+    /// RPC records `ADDRESS_V2` or legacy `ADDRESS` credential arms.
     func simulate(
         transaction: Transaction,
         failureMessagePrefix: String
     ) async throws -> SimulateTransactionResponse {
-        let request = SimulateTransactionRequest(transaction: transaction)
+        let request = SimulateTransactionRequest(
+            transaction: transaction,
+            useUpgradedAuth: kit.config.useUpgradedAuth
+        )
         let response = await kit.sorobanServer.simulateTransaction(
             simulateTxRequest: request
         )

@@ -125,22 +125,28 @@ public enum OZSmartAccountAuth {
 
     /// Builds the authorisation payload hash for source-account credentials.
     ///
-    /// Used when converting source-account (`Void`) credentials to fresh `ADDRESS_V2`
-    /// credentials, typically for relayer fee sponsoring. The preimage is the
-    /// address-bound `ENVELOPE_TYPE_SOROBAN_AUTHORIZATION_WITH_ADDRESS` preimage built
-    /// from `address`, `nonce` and `expirationLedger` combined with the entry's root
-    /// invocation.
+    /// Used when converting source-account (`Void`) credentials to fresh address
+    /// credentials, typically for relayer fee sponsoring.
     ///
-    /// The host reconstructs this preimage from the submitted `ADDRESS_V2` credentials,
-    /// so `address` must be the address carried by the credentials the resulting
-    /// signature is attached to.
+    /// `useUpgradedAuth` selects the credential arm of the replacement credentials, and
+    /// with it the preimage: `true` (the default) hashes the address-bound
+    /// `ENVELOPE_TYPE_SOROBAN_AUTHORIZATION_WITH_ADDRESS` preimage built from `address`,
+    /// `nonce` and `expirationLedger` combined with the entry's root invocation; `false`
+    /// hashes the legacy `ENVELOPE_TYPE_SOROBAN_AUTHORIZATION` preimage, which carries
+    /// no address.
+    ///
+    /// The host reconstructs the preimage from the submitted credentials, so `address`
+    /// must be the address carried by the credentials the resulting signature is attached
+    /// to, and `useUpgradedAuth` must match their arm.
     ///
     /// - Parameters:
     ///   - entry: Authorisation entry whose root invocation is bound into the preimage.
-    ///   - address: Address carried by the new `ADDRESS_V2` credentials.
+    ///   - address: Address carried by the new address credentials.
     ///   - nonce: Nonce to use for the new address credentials.
     ///   - expirationLedger: Ledger number at which the signature expires.
     ///   - networkPassphrase: Network passphrase.
+    ///   - useUpgradedAuth: `true` (the default) for `ADDRESS_V2` replacement credentials,
+    ///     `false` for the legacy `ADDRESS` arm.
     /// - Returns: 32-byte SHA-256 hash of the authorisation payload.
     /// - Throws: `SmartAccountTransactionException.SigningFailed` when XDR encoding fails.
     public static func buildSourceAccountAuthPayloadHash(
@@ -148,18 +154,22 @@ public enum OZSmartAccountAuth {
         address: SCAddressXDR,
         nonce: Int64,
         expirationLedger: UInt32,
-        networkPassphrase: String
+        networkPassphrase: String,
+        useUpgradedAuth: Bool = true
     ) async throws -> Data {
-        // Build a temporary ADDRESS_V2 entry so buildPreimage derives the address-bound
-        // preimage from the same fields the replacement credentials carry.
+        // Build a temporary entry in the arm the replacement credentials will carry so
+        // buildPreimage derives the matching preimage from the same fields.
         let tempCreds = SorobanAddressCredentialsXDR(
             address: address,
             nonce: nonce,
             signatureExpirationLedger: expirationLedger,
             signature: .void
         )
+        let credentials: SorobanCredentialsXDR = useUpgradedAuth
+            ? .addressV2(tempCreds)
+            : .address(tempCreds)
         let tempEntry = SorobanAuthorizationEntryXDR(
-            credentials: .addressV2(tempCreds),
+            credentials: credentials,
             rootInvocation: entry.rootInvocation
         )
         return try await hashAuthPreimage(

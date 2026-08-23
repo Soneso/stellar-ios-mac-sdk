@@ -678,9 +678,10 @@ public final class OZTransactionOperations: OZManagerHelpers, @unchecked Sendabl
     /// XLM balance via the native token contract, and transfers the surplus
     /// (balance minus the protocol minimum-balance reserve) to the smart account
     /// contract. Source-account authorization entries from the transfer
-    /// simulation are converted to `ADDRESS_V2` credentials carrying the
-    /// temporary account address, so the relayer can substitute its own channel
-    /// accounts for fee sponsoring.
+    /// simulation are converted to address credentials carrying the temporary
+    /// account address, so the relayer can substitute its own channel accounts
+    /// for fee sponsoring. ``OZSmartAccountConfig/useUpgradedAuth`` selects the
+    /// `ADDRESS_V2` or the legacy `ADDRESS` arm for the replacement credentials.
     ///
     /// The conversion uses the classical Stellar Ed25519 signature shape
     /// (`Vec([Map({public_key, signature})])`), NOT the OpenZeppelin AuthPayload
@@ -798,7 +799,7 @@ public final class OZTransactionOperations: OZManagerHelpers, @unchecked Sendabl
             )
         }
 
-        // why: source-account credentials are converted to ADDRESS_V2 credentials
+        // why: source-account credentials are converted to address credentials
         // signed by the temp keypair so the relayer can substitute its own
         // channel accounts for fee sponsoring.
         let signedAuthEntries = try await convertAndSignAuthEntries(
@@ -1242,11 +1243,16 @@ public final class OZTransactionOperations: OZManagerHelpers, @unchecked Sendabl
 
     /// Converts the simulation-supplied auth entries for the funding flow into a
     /// shape acceptable to the relayer. Source-account credentials are replaced
-    /// with `ADDRESS_V2` credentials carrying the temporary account address, a
-    /// fresh nonce, and a classical Ed25519 signature over the address-bound
-    /// `ENVELOPE_TYPE_SOROBAN_AUTHORIZATION_WITH_ADDRESS` preimage; existing
-    /// address credentials are re-signed by the temp keypair using the same
-    /// classical Ed25519 shape, with their arm preserved.
+    /// with address credentials carrying the temporary account address, a fresh
+    /// nonce, and a classical Ed25519 signature over the matching preimage;
+    /// existing address credentials are re-signed by the temp keypair using the
+    /// same classical Ed25519 shape, with their arm preserved.
+    ///
+    /// ``OZSmartAccountConfig/useUpgradedAuth`` selects the arm of the replacement
+    /// credentials: `ADDRESS_V2` over the address-bound
+    /// `ENVELOPE_TYPE_SOROBAN_AUTHORIZATION_WITH_ADDRESS` preimage when `true`, the
+    /// legacy `ADDRESS` arm over `ENVELOPE_TYPE_SOROBAN_AUTHORIZATION` when `false`.
+    /// Both arms carry the temporary account address in the credentials.
     ///
     /// The signature shape is `Vec([Map({"public_key", "signature"})])` — the
     /// classical Stellar Ed25519 ScVal used by stock accounts, NOT the smart
@@ -1265,14 +1271,16 @@ public final class OZTransactionOperations: OZManagerHelpers, @unchecked Sendabl
             case .sourceAccount:
                 let nonce = try OZTransactionOperations.generateNonce()
                 let tempAddress = try SCAddressXDR(accountId: tempKeypair.accountId)
-                // The signature commits to the temp account address, which the host
-                // reads back out of the ADDRESS_V2 credentials assembled below.
+                let useUpgradedAuth = kit.config.useUpgradedAuth
+                // The credential arm drives the preimage the host reconstructs, so the
+                // hash signed here is built in the same arm the credentials below carry.
                 let payloadHash = try await OZSmartAccountAuth.buildSourceAccountAuthPayloadHash(
                     entry: entry,
                     address: tempAddress,
                     nonce: nonce,
                     expirationLedger: expirationLedger,
-                    networkPassphrase: kit.config.networkPassphrase
+                    networkPassphrase: kit.config.networkPassphrase,
+                    useUpgradedAuth: useUpgradedAuth
                 )
                 let signature = Data(tempKeypair.sign([UInt8](payloadHash)))
                 let signatureVec = OZTransactionOperations.classicalEd25519SignatureScVal(
@@ -1287,7 +1295,9 @@ public final class OZTransactionOperations: OZManagerHelpers, @unchecked Sendabl
                 )
                 result.append(
                     SorobanAuthorizationEntryXDR(
-                        credentials: .addressV2(addressCredentials),
+                        credentials: useUpgradedAuth
+                            ? .addressV2(addressCredentials)
+                            : .address(addressCredentials),
                         rootInvocation: entry.rootInvocation
                     )
                 )
