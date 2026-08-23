@@ -151,6 +151,16 @@ public struct OZSmartAccountConfig: @unchecked Sendable {
     /// default. Defaults to no policies.
     public let defaultPolicies: [String: SCValXDR]
 
+    /// Governs the credential arm of delegated external-wallet auth entries.
+    ///
+    /// When `true`, delegated entries built for ``OZSelectedSigner/wallet(accountId:)``
+    /// signers carry upgraded `ADDRESS_V2` credentials, whose signed preimage
+    /// (`ENVELOPE_TYPE_SOROBAN_AUTHORIZATION_WITH_ADDRESS`: `networkID`, `nonce`,
+    /// `signatureExpirationLedger`, `address`, `invocation`) carries the wallet address.
+    /// When `false`, they carry the legacy `ADDRESS` arm with its non-address-bound
+    /// preimage, for wallet software that cannot sign the address-bound preimage type.
+    public let useUpgradedAuthForWalletSigners: Bool
+
     // MARK: - Initialization
 
     /// Initializes a new `OZSmartAccountConfig`.
@@ -174,7 +184,8 @@ public struct OZSmartAccountConfig: @unchecked Sendable {
         externalWallet: OZExternalWalletAdapter? = nil,
         externalEd25519Adapter: OZExternalEd25519SignerAdapter? = nil,
         maxContextRuleScanId: UInt32 = 50,
-        defaultPolicies: [String: SCValXDR] = [:]
+        defaultPolicies: [String: SCValXDR] = [:],
+        useUpgradedAuthForWalletSigners: Bool = true
     ) throws {
         if rpcUrl.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             throw SmartAccountConfigurationException.missingConfig(param: "rpcUrl")
@@ -234,6 +245,7 @@ public struct OZSmartAccountConfig: @unchecked Sendable {
         self.externalEd25519Adapter = externalEd25519Adapter
         self.maxContextRuleScanId = maxContextRuleScanId
         self.defaultPolicies = defaultPolicies
+        self.useUpgradedAuthForWalletSigners = useUpgradedAuthForWalletSigners
     }
 
     // MARK: - Static factories
@@ -375,6 +387,7 @@ public struct OZSmartAccountConfig: @unchecked Sendable {
         private var _externalEd25519Adapter: OZExternalEd25519SignerAdapter? = nil
         private var _maxContextRuleScanId: UInt32 = 50
         private var _defaultPolicies: [String: SCValXDR] = [:]
+        private var _useUpgradedAuthForWalletSigners: Bool = true
 
         /// Initializes a new `Builder` with the four required configuration fields.
         ///
@@ -524,6 +537,19 @@ public struct OZSmartAccountConfig: @unchecked Sendable {
             return self
         }
 
+        /// Sets the credential arm used for delegated external-wallet auth entries.
+        ///
+        /// - Parameter value: `true` (the default) builds `ADDRESS_V2` credentials, whose
+        ///   signed preimage carries the wallet address; `false` builds the legacy
+        ///   `ADDRESS` arm for wallet software that cannot sign the address-bound
+        ///   preimage type.
+        /// - Returns: `self` for chaining.
+        @discardableResult
+        public func useUpgradedAuthForWalletSigners(_ value: Bool) -> Builder {
+            _useUpgradedAuthForWalletSigners = value
+            return self
+        }
+
         /// Builds the `OZSmartAccountConfig`.
         ///
         /// - Returns: A new `OZSmartAccountConfig` instance.
@@ -545,7 +571,8 @@ public struct OZSmartAccountConfig: @unchecked Sendable {
                 externalWallet: _externalWallet,
                 externalEd25519Adapter: _externalEd25519Adapter,
                 maxContextRuleScanId: _maxContextRuleScanId,
-                defaultPolicies: _defaultPolicies
+                defaultPolicies: _defaultPolicies,
+                useUpgradedAuthForWalletSigners: _useUpgradedAuthForWalletSigners
             )
         }
     }
@@ -573,7 +600,8 @@ extension OZSmartAccountConfig: Equatable {
               lhs.timeoutInSeconds == rhs.timeoutInSeconds,
               lhs.relayerUrl == rhs.relayerUrl,
               lhs.indexerUrl == rhs.indexerUrl,
-              lhs.maxContextRuleScanId == rhs.maxContextRuleScanId
+              lhs.maxContextRuleScanId == rhs.maxContextRuleScanId,
+              lhs.useUpgradedAuthForWalletSigners == rhs.useUpgradedAuthForWalletSigners
         else {
             return false
         }
@@ -609,6 +637,7 @@ extension OZSmartAccountConfig: Equatable {
         hasher.combine(relayerUrl)
         hasher.combine(indexerUrl)
         hasher.combine(maxContextRuleScanId)
+        hasher.combine(useUpgradedAuthForWalletSigners)
         hasher.combine(deployerKeypair?.accountId)
         if storage is OZInMemoryStorageAdapter {
             hasher.combine(OZInMemoryStorageAdapter.sharedTypeHashTag)

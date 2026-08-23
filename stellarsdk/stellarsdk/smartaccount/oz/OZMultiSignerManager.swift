@@ -21,11 +21,12 @@ import Security
 /// implicitly — include it explicitly when it should sign.
 ///
 /// Each delegated wallet signer produces its own signed auth entry (root
-/// invocation `__check_auth(authDigest)`) plus an empty-bytes placeholder in
-/// the smart account's signature map. Direct wallet entries are signed via the
-/// external wallet adapter and written into the classical
-/// `Vec([Map({public_key, signature})])` shape; the smart account signature
-/// map is not modified for those entries.
+/// invocation `__check_auth(authDigest)`, `ADDRESS_V2` credentials by default —
+/// see ``OZSmartAccountConfig/useUpgradedAuthForWalletSigners``) plus an
+/// empty-bytes placeholder in the smart account's signature map. Direct wallet
+/// entries are signed via the external wallet adapter and written into the
+/// classical `Vec([Map({public_key, signature})])` shape; the smart account
+/// signature map is not modified for those entries.
 ///
 /// Example:
 /// ```swift
@@ -984,7 +985,10 @@ public class OZMultiSignerManager: OZManagerHelpers, @unchecked Sendable {
     }
 
     /// Produces one delegated-signer auth entry per wallet signer and
-    /// appends it to `signedAuthEntries`. Each delegated entry is signed via
+    /// appends it to `signedAuthEntries`. Each delegated entry carries
+    /// `ADDRESS_V2` credentials by default, with
+    /// ``OZSmartAccountConfig/useUpgradedAuthForWalletSigners`` selecting the
+    /// legacy `ADDRESS` arm instead. Each entry is signed via
     /// the kit's external-signer manager and contributes a signature-map entry
     /// keyed by the delegated signer with an empty-bytes signature value, so
     /// the rule engine counts the delegated signer when evaluating the active
@@ -1021,6 +1025,7 @@ public class OZMultiSignerManager: OZManagerHelpers, @unchecked Sendable {
                 validUntilLedger: expirationLedger,
                 invocation: checkAuthInvocation,
                 networkPassphrase: kit.config.networkPassphrase,
+                useUpgradedAuth: kit.config.useUpgradedAuthForWalletSigners,
                 externalSigners: kit.externalSigners
             )
             signedAuthEntries.append(signedDelegatedEntry)
@@ -1209,35 +1214,45 @@ public class OZMultiSignerManager: OZManagerHelpers, @unchecked Sendable {
         )
     }
 
-    // MARK: - Hand-rolled Auth.authorizeInvocation equivalent
+    // MARK: - Delegated external-wallet auth entries
 
     /// Builds and signs a delegated wallet auth entry for `walletAddress` via the
-    /// kit's external-signer manager. Produces the `Vec([Map({public_key, signature})])`
-    /// credential shape using the legacy `ADDRESS` arm; delegated wallet entries are
-    /// always classical Stellar accounts, not smart accounts, so the legacy preimage
-    /// (`ENVELOPE_TYPE_SOROBAN_AUTHORIZATION`) is correct here.
+    /// kit's external-signer manager. Produces the
+    /// `Vec([Map({public_key, signature})])` credential shape.
+    ///
+    /// `useUpgradedAuth` selects the credential arm, and with it the preimage the
+    /// wallet signs: `true` builds `SOROBAN_CREDENTIALS_ADDRESS_V2`, whose preimage
+    /// (`ENVELOPE_TYPE_SOROBAN_AUTHORIZATION_WITH_ADDRESS`) carries the wallet
+    /// address; `false` builds the legacy `ADDRESS` arm and its non-address-bound
+    /// preimage (`ENVELOPE_TYPE_SOROBAN_AUTHORIZATION`) for wallet software that
+    /// cannot sign the address-bound preimage type.
     /// - Throws: ``SmartAccountTransactionException/SigningFailed``.
     private static func authorizeInvocation(
         walletAddress: String,
         validUntilLedger: UInt32,
         invocation: SorobanAuthorizedInvocationXDR,
         networkPassphrase: String,
+        useUpgradedAuth: Bool,
         externalSigners: OZExternalSignerManager
     ) async throws -> SorobanAuthorizationEntryXDR {
         // Generate a cryptographically random nonce. The Soroban host
         // requires unique nonces per credentials value within an envelope.
         let nonce = try OZTransactionOperations.generateNonce()
 
-        // Build the entry with legacy ADDRESS credentials so buildPreimage selects
-        // ENVELOPE_TYPE_SOROBAN_AUTHORIZATION, matching the classical wallet signing shape.
         let addressCreds = SorobanAddressCredentialsXDR(
             address: try SCAddressXDR(accountId: walletAddress),
             nonce: nonce,
             signatureExpirationLedger: validUntilLedger,
             signature: .void
         )
+        // The credential arm drives buildPreimage's envelope-type selection, so the
+        // hash the wallet signs matches the one the host reconstructs from the
+        // submitted credentials.
+        let credentials: SorobanCredentialsXDR = useUpgradedAuth
+            ? .addressV2(addressCreds)
+            : .address(addressCreds)
         let unsignedEntry = SorobanAuthorizationEntryXDR(
-            credentials: .address(addressCreds),
+            credentials: credentials,
             rootInvocation: invocation
         )
 
@@ -1293,13 +1308,20 @@ public class OZMultiSignerManager: OZManagerHelpers, @unchecked Sendable {
             signature: signatureBytes
         )
 
+        var signedCreds = addressCreds
+        signedCreds.signature = signatureScVal
+        let signedCredentials: SorobanCredentialsXDR
+        do {
+            signedCredentials = try credentials.withAddressCredentials(signedCreds)
+        } catch {
+            throw SmartAccountTransactionException.signingFailed(
+                reason: "Failed to write back signed credentials for delegated wallet entry \(walletAddress): " +
+                    (SmartAccountException.messageOf(error) ?? "unknown"),
+                cause: error
+            )
+        }
         return SorobanAuthorizationEntryXDR(
-            credentials: .address(SorobanAddressCredentialsXDR(
-                address: try SCAddressXDR(accountId: walletAddress),
-                nonce: nonce,
-                signatureExpirationLedger: validUntilLedger,
-                signature: signatureScVal
-            )),
+            credentials: signedCredentials,
             rootInvocation: invocation
         )
     }

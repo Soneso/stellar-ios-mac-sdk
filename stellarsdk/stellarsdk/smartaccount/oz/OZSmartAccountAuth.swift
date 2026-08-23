@@ -125,15 +125,19 @@ public enum OZSmartAccountAuth {
 
     /// Builds the authorisation payload hash for source-account credentials.
     ///
-    /// Used when converting source-account credentials to address credentials, typically
-    /// for relayer fee sponsoring. A temporary legacy `ADDRESS` preimage is constructed
-    /// from the supplied `nonce` and `expirationLedger` combined with the entry's root
-    /// invocation. The legacy `ENVELOPE_TYPE_SOROBAN_AUTHORIZATION` arm is used because the
-    /// replacement credentials are always classical `ADDRESS` credentials (a stock Stellar
-    /// account signing on behalf of the temp keypair).
+    /// Used when converting source-account (`Void`) credentials to fresh `ADDRESS_V2`
+    /// credentials, typically for relayer fee sponsoring. The preimage is the
+    /// address-bound `ENVELOPE_TYPE_SOROBAN_AUTHORIZATION_WITH_ADDRESS` preimage built
+    /// from `address`, `nonce` and `expirationLedger` combined with the entry's root
+    /// invocation.
+    ///
+    /// The host reconstructs this preimage from the submitted `ADDRESS_V2` credentials,
+    /// so `address` must be the address carried by the credentials the resulting
+    /// signature is attached to.
     ///
     /// - Parameters:
     ///   - entry: Authorisation entry whose root invocation is bound into the preimage.
+    ///   - address: Address carried by the new `ADDRESS_V2` credentials.
     ///   - nonce: Nonce to use for the new address credentials.
     ///   - expirationLedger: Ledger number at which the signature expires.
     ///   - networkPassphrase: Network passphrase.
@@ -141,22 +145,21 @@ public enum OZSmartAccountAuth {
     /// - Throws: `SmartAccountTransactionException.SigningFailed` when XDR encoding fails.
     public static func buildSourceAccountAuthPayloadHash(
         entry: SorobanAuthorizationEntryXDR,
+        address: SCAddressXDR,
         nonce: Int64,
         expirationLedger: UInt32,
         networkPassphrase: String
     ) async throws -> Data {
-        // Build a temporary ADDRESS entry so buildPreimage can derive the legacy preimage.
-        // The address field is not part of the legacy preimage (ENVELOPE_TYPE_SOROBAN_AUTHORIZATION
-        // does not include an address), so a zero-byte placeholder key is sufficient here.
-        let zeroKey = try PublicKey([UInt8](repeating: 0, count: 32))
+        // Build a temporary ADDRESS_V2 entry so buildPreimage derives the address-bound
+        // preimage from the same fields the replacement credentials carry.
         let tempCreds = SorobanAddressCredentialsXDR(
-            address: SCAddressXDR.account(zeroKey),
+            address: address,
             nonce: nonce,
             signatureExpirationLedger: expirationLedger,
             signature: .void
         )
         let tempEntry = SorobanAuthorizationEntryXDR(
-            credentials: .address(tempCreds),
+            credentials: .addressV2(tempCreds),
             rootInvocation: entry.rootInvocation
         )
         return try await hashAuthPreimage(

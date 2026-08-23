@@ -678,8 +678,9 @@ public final class OZTransactionOperations: OZManagerHelpers, @unchecked Sendabl
     /// XLM balance via the native token contract, and transfers the surplus
     /// (balance minus the protocol minimum-balance reserve) to the smart account
     /// contract. Source-account authorization entries from the transfer
-    /// simulation are converted to classical Ed25519 `Address` credentials so
-    /// the relayer can substitute its own channel accounts for fee sponsoring.
+    /// simulation are converted to `ADDRESS_V2` credentials carrying the
+    /// temporary account address, so the relayer can substitute its own channel
+    /// accounts for fee sponsoring.
     ///
     /// The conversion uses the classical Stellar Ed25519 signature shape
     /// (`Vec([Map({public_key, signature})])`), NOT the OpenZeppelin AuthPayload
@@ -797,7 +798,7 @@ public final class OZTransactionOperations: OZManagerHelpers, @unchecked Sendabl
             )
         }
 
-        // why: source-account credentials are converted to Address credentials
+        // why: source-account credentials are converted to ADDRESS_V2 credentials
         // signed by the temp keypair so the relayer can substitute its own
         // channel accounts for fee sponsoring.
         let signedAuthEntries = try await convertAndSignAuthEntries(
@@ -1241,9 +1242,11 @@ public final class OZTransactionOperations: OZManagerHelpers, @unchecked Sendabl
 
     /// Converts the simulation-supplied auth entries for the funding flow into a
     /// shape acceptable to the relayer. Source-account credentials are replaced
-    /// with `Address` credentials carrying a fresh nonce and a classical Ed25519
-    /// signature over the auth payload; existing `Address` credentials are
-    /// re-signed by the temp keypair using the same classical Ed25519 shape.
+    /// with `ADDRESS_V2` credentials carrying the temporary account address, a
+    /// fresh nonce, and a classical Ed25519 signature over the address-bound
+    /// `ENVELOPE_TYPE_SOROBAN_AUTHORIZATION_WITH_ADDRESS` preimage; existing
+    /// address credentials are re-signed by the temp keypair using the same
+    /// classical Ed25519 shape, with their arm preserved.
     ///
     /// The signature shape is `Vec([Map({"public_key", "signature"})])` — the
     /// classical Stellar Ed25519 ScVal used by stock accounts, NOT the smart
@@ -1261,8 +1264,12 @@ public final class OZTransactionOperations: OZManagerHelpers, @unchecked Sendabl
             switch entry.credentials {
             case .sourceAccount:
                 let nonce = try OZTransactionOperations.generateNonce()
+                let tempAddress = try SCAddressXDR(accountId: tempKeypair.accountId)
+                // The signature commits to the temp account address, which the host
+                // reads back out of the ADDRESS_V2 credentials assembled below.
                 let payloadHash = try await OZSmartAccountAuth.buildSourceAccountAuthPayloadHash(
                     entry: entry,
+                    address: tempAddress,
                     nonce: nonce,
                     expirationLedger: expirationLedger,
                     networkPassphrase: kit.config.networkPassphrase
@@ -1273,14 +1280,14 @@ public final class OZTransactionOperations: OZManagerHelpers, @unchecked Sendabl
                     signature: signature
                 )
                 let addressCredentials = SorobanAddressCredentialsXDR(
-                    address: try SCAddressXDR(accountId: tempKeypair.accountId),
+                    address: tempAddress,
                     nonce: nonce,
                     signatureExpirationLedger: expirationLedger,
                     signature: signatureVec
                 )
                 result.append(
                     SorobanAuthorizationEntryXDR(
-                        credentials: .address(addressCredentials),
+                        credentials: .addressV2(addressCredentials),
                         rootInvocation: entry.rootInvocation
                     )
                 )

@@ -2257,7 +2257,9 @@ extension OZMultiSignerManagerTests {
         deployer: KeyPair,
         provider: WebAuthnProvider? = nil,
         contractId: String? = nil,
-        signatureExpirationLedgers: Int = StellarProtocolConstants.ledgersPerHour
+        signatureExpirationLedgers: Int = StellarProtocolConstants.ledgersPerHour,
+        externalWallet: OZExternalWalletAdapter? = nil,
+        useUpgradedAuthForWalletSigners: Bool = true
     ) throws -> (MockOZSmartAccountKit, OZMultiSignerManager) {
         let config = try OZSmartAccountConfig(
             rpcUrl: "https://mock-rpc.invalid/rpc",
@@ -2266,7 +2268,9 @@ extension OZMultiSignerManagerTests {
             webauthnVerifierAddress: pipelineContractId,
             deployerKeypair: deployer,
             signatureExpirationLedgers: signatureExpirationLedgers,
-            webauthnProvider: provider
+            webauthnProvider: provider,
+            externalWallet: externalWallet,
+            useUpgradedAuthForWalletSigners: useUpgradedAuthForWalletSigners
         )
         let liveServer = MockSorobanServer.makeMockedSorobanServer()
         let kit = MockOZSmartAccountKit(config: config, sorobanServer: liveServer)
@@ -3165,6 +3169,251 @@ extension OZMultiSignerManagerTests {
     }
 
     // ------------------------------------------------------------------------
+    // Delegated wallet entries — credential arm and signed preimage
+    // ------------------------------------------------------------------------
+
+    /// A delegated wallet entry carries the upgraded `ADDRESS_V2` arm by default,
+    /// with the wallet address in the credentials.
+    func test_submitWithMultipleSigners_delegatedWalletEntry_usesAddressV2ArmByDefault() async throws {
+        let script = MockSorobanServerScript()
+        MockSorobanServer.activate(script: script)
+        defer {
+            MockSorobanServer.deactivate()
+            MockURLProtocol.reset()
+        }
+
+        let deployer = try deterministicDeployer(seed: 0x91)
+        let walletKeypair = try KeyPair.generateRandomKeyPair()
+        let walletAdapter = RecordingKeypairWalletAdapter(keypair: walletKeypair)
+        let (_, manager) = try scriptedKit(
+            script: script,
+            deployer: deployer,
+            externalWallet: walletAdapter
+        )
+
+        try scriptDelegatedWalletPipeline(
+            script: script,
+            deployer: deployer,
+            sequence: 11,
+            hash: "delegated-v2-default"
+        )
+
+        let result = try await manager.submitWithMultipleSigners(
+            hostFunction: try delegatedPipelineHostFunction(),
+            selectedSigners: [.wallet(accountId: walletAdapter.address)]
+        )
+        XCTAssertTrue(result.success, "expected success, got error: \(result.error ?? "nil")")
+
+        let delegatedEntry = try delegatedWalletAuthEntry(
+            fromSendBody: script.sendCalls.last,
+            walletAddress: walletAdapter.address
+        )
+        guard case .addressV2(let credentials) = delegatedEntry.credentials else {
+            return XCTFail(
+                "delegated wallet entry must carry the ADDRESS_V2 arm, got \(delegatedEntry.credentials)"
+            )
+        }
+        XCTAssertEqual(
+            OZAddressStrKey.fromXdr(credentials.address), walletAdapter.address,
+            "the V2 credentials must carry the delegated wallet address"
+        )
+    }
+
+    /// `useUpgradedAuthForWalletSigners = false` serves wallet software that cannot
+    /// sign the address-bound preimage: the delegated entry then carries the legacy
+    /// `ADDRESS` arm.
+    func test_submitWithMultipleSigners_delegatedWalletEntry_configOptOutUsesLegacyAddressArm() async throws {
+        let script = MockSorobanServerScript()
+        MockSorobanServer.activate(script: script)
+        defer {
+            MockSorobanServer.deactivate()
+            MockURLProtocol.reset()
+        }
+
+        let deployer = try deterministicDeployer(seed: 0x92)
+        let walletKeypair = try KeyPair.generateRandomKeyPair()
+        let walletAdapter = RecordingKeypairWalletAdapter(keypair: walletKeypair)
+        let (_, manager) = try scriptedKit(
+            script: script,
+            deployer: deployer,
+            externalWallet: walletAdapter,
+            useUpgradedAuthForWalletSigners: false
+        )
+
+        try scriptDelegatedWalletPipeline(
+            script: script,
+            deployer: deployer,
+            sequence: 12,
+            hash: "delegated-legacy-optout"
+        )
+
+        let result = try await manager.submitWithMultipleSigners(
+            hostFunction: try delegatedPipelineHostFunction(),
+            selectedSigners: [.wallet(accountId: walletAdapter.address)]
+        )
+        XCTAssertTrue(result.success, "expected success, got error: \(result.error ?? "nil")")
+
+        let delegatedEntry = try delegatedWalletAuthEntry(
+            fromSendBody: script.sendCalls.last,
+            walletAddress: walletAdapter.address
+        )
+        guard case .address = delegatedEntry.credentials else {
+            return XCTFail(
+                "with the config opt-out the delegated wallet entry must carry the legacy " +
+                    "ADDRESS arm, got \(delegatedEntry.credentials)"
+            )
+        }
+
+        let preimage = try XDRDecoder.decode(
+            HashIDPreimageXDR.self,
+            data: [UInt8](try XCTUnwrap(
+                Data(base64Encoded: try XCTUnwrap(walletAdapter.capturedPreimages.first))
+            ))
+        )
+        guard case .sorobanAuthorization = preimage else {
+            return XCTFail(
+                "the opt-out must deliver the non-address-bound preimage, got \(preimage)"
+            )
+        }
+    }
+
+    /// The preimage handed to the external wallet signer is the address-bound
+    /// `ENVELOPE_TYPE_SOROBAN_AUTHORIZATION_WITH_ADDRESS` preimage and carries the
+    /// delegated wallet address.
+    func test_submitWithMultipleSigners_delegatedWalletEntry_signerReceivesAddressBoundPreimage() async throws {
+        let script = MockSorobanServerScript()
+        MockSorobanServer.activate(script: script)
+        defer {
+            MockSorobanServer.deactivate()
+            MockURLProtocol.reset()
+        }
+
+        let deployer = try deterministicDeployer(seed: 0x93)
+        let walletKeypair = try KeyPair.generateRandomKeyPair()
+        let walletAdapter = RecordingKeypairWalletAdapter(keypair: walletKeypair)
+        let (_, manager) = try scriptedKit(
+            script: script,
+            deployer: deployer,
+            externalWallet: walletAdapter
+        )
+
+        try scriptDelegatedWalletPipeline(
+            script: script,
+            deployer: deployer,
+            sequence: 13,
+            hash: "delegated-v2-preimage"
+        )
+
+        let result = try await manager.submitWithMultipleSigners(
+            hostFunction: try delegatedPipelineHostFunction(),
+            selectedSigners: [.wallet(accountId: walletAdapter.address)]
+        )
+        XCTAssertTrue(result.success, "expected success, got error: \(result.error ?? "nil")")
+
+        XCTAssertEqual(
+            walletAdapter.capturedPreimages.count, 1,
+            "the wallet adapter must be asked to sign exactly one preimage"
+        )
+        let preimageBase64 = try XCTUnwrap(walletAdapter.capturedPreimages.first)
+        let preimageBytes = try XCTUnwrap(
+            Data(base64Encoded: preimageBase64),
+            "the adapter must receive base64-encoded preimage XDR"
+        )
+        let preimage = try XDRDecoder.decode(HashIDPreimageXDR.self, data: [UInt8](preimageBytes))
+        guard case .sorobanAuthorizationWithAddress(let body) = preimage else {
+            return XCTFail(
+                "the delegated wallet signer must receive the address-bound preimage, got \(preimage)"
+            )
+        }
+        XCTAssertEqual(
+            OZAddressStrKey.fromXdr(body.address), walletAdapter.address,
+            "the signed preimage must carry the delegated wallet address"
+        )
+    }
+
+    /// Scripts one full delegated-wallet submission: account fetch, the initial
+    /// simulate carrying a smart-account auth entry, the ledger read, the
+    /// re-simulate, the send and the confirmation poll.
+    private func scriptDelegatedWalletPipeline(
+        script: MockSorobanServerScript,
+        deployer: KeyPair,
+        sequence: Int64,
+        hash: String
+    ) throws {
+        script.setGetAccountResponse(accountId: deployer.accountId, sequence: sequence)
+        let authEntry = try OZPipelineFixtures.addressCredentialsAuthEntry(
+            contractAddress: pipelineContractId,
+            targetContract: pipelineTargetContract,
+            targetFn: "noop"
+        )
+        script.enqueueSimulate(authEntries: [authEntry])
+        script.setGetLatestLedger(sequence: 1000)
+        script.enqueueSimulate(authEntries: [], minResourceFee: 200)
+        script.setSendSuccess(status: SendTransactionResponse.STATUS_PENDING, hash: hash)
+        script.enqueueGetTransactionResponse(
+            status: GetTransactionResponse.STATUS_SUCCESS,
+            ledger: 1002
+        )
+    }
+
+    /// The host function driven through the delegated-wallet pipeline.
+    private func delegatedPipelineHostFunction() throws -> HostFunctionXDR {
+        return HostFunctionXDR.invokeContract(
+            InvokeContractArgsXDR(
+                contractAddress: try SCAddressXDR(contractId: pipelineTargetContract),
+                functionName: "noop",
+                args: []
+            )
+        )
+    }
+
+    /// Returns the auth entry addressed to `walletAddress` from the envelope carried
+    /// by a scripted `sendTransaction` request body.
+    private func delegatedWalletAuthEntry(
+        fromSendBody body: Data?,
+        walletAddress: String,
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) throws -> SorobanAuthorizationEntryXDR {
+        let body = try XCTUnwrap(body, "no transaction was submitted", file: file, line: line)
+        let json = try XCTUnwrap(
+            try JSONSerialization.jsonObject(with: body) as? [String: Any],
+            "send request body is not a JSON object", file: file, line: line
+        )
+        let params = try XCTUnwrap(json["params"] as? [String: Any],
+                                   "send request carries no params", file: file, line: line)
+        let envelopeBase64 = try XCTUnwrap(params["transaction"] as? String,
+                                           "send request carries no envelope", file: file, line: line)
+        let envelope = try TransactionEnvelopeXDR(xdr: envelopeBase64)
+        let operations: [OperationXDR]
+        switch envelope {
+        case .v0(let env): operations = env.tx.operations
+        case .v1(let env): operations = env.tx.operations
+        case .feeBump(let env):
+            guard case .v1(let inner) = env.tx.innerTx else {
+                XCTFail("fee-bump envelope did not wrap a v1 transaction", file: file, line: line)
+                return try XCTUnwrap(nil as SorobanAuthorizationEntryXDR?, file: file, line: line)
+            }
+            operations = inner.tx.operations
+        }
+        var match: SorobanAuthorizationEntryXDR?
+        for op in operations {
+            guard case .invokeHostFunctionOp(let invoke) = op.body else { continue }
+            for entry in invoke.auth {
+                guard let credentials = entry.credentials.addressCredentials else { continue }
+                if OZAddressStrKey.fromXdr(credentials.address) == walletAddress {
+                    match = entry
+                }
+            }
+        }
+        return try XCTUnwrap(
+            match,
+            "the submitted envelope carries no auth entry for \(walletAddress)",
+            file: file, line: line
+        )
+    }
+
+    // ------------------------------------------------------------------------
     // multiSignerTransfer — decimals resolution (auto-fetch vs explicit)
     // ------------------------------------------------------------------------
 
@@ -3535,6 +3784,55 @@ private final class FakeShortSignatureEd25519Adapter: OZExternalEd25519SignerAda
     func canSignFor(verifierAddress: String, publicKey: Data) -> Bool { return true }
     func signAuthDigest(authDigest: Data, publicKey: Data) async throws -> Data {
         return Data(repeating: 0x00, count: 32)
+    }
+}
+
+/// `OZExternalWalletAdapter` backed by a real keypair: signs `SHA-256(preimage)`
+/// the way a conforming wallet does, and records every preimage it is handed so
+/// tests can decode what the SDK asked the wallet to sign.
+private final class RecordingKeypairWalletAdapter: OZExternalWalletAdapter, @unchecked Sendable {
+    private let keypair: KeyPair
+    private let lock = NSLock()
+    private var _capturedPreimages: [String] = []
+
+    let address: String
+
+    init(keypair: KeyPair) {
+        self.keypair = keypair
+        self.address = keypair.accountId
+    }
+
+    /// Every base64 preimage delivered to `signAuthEntry`, in call order.
+    var capturedPreimages: [String] {
+        lock.lock(); defer { lock.unlock() }
+        return _capturedPreimages
+    }
+
+    func canSignFor(address: String) -> Bool { return address == self.address }
+    func connect() async throws -> OZConnectedWallet? { return nil }
+    func disconnect() async throws {}
+    func getConnectedWallets() -> [OZConnectedWallet] { return [] }
+
+    private func record(preimage: String) {
+        lock.lock(); defer { lock.unlock() }
+        _capturedPreimages.append(preimage)
+    }
+
+    func signAuthEntry(
+        preimageXdr: String,
+        options: OZSignAuthEntryOptions?
+    ) async throws -> OZSignAuthEntryResult {
+        record(preimage: preimageXdr)
+        guard let preimageBytes = Data(base64Encoded: preimageXdr) else {
+            throw SmartAccountTransactionException.signingFailed(
+                reason: "adapter received non-base64 preimage"
+            )
+        }
+        let signature = Data(keypair.sign([UInt8](preimageBytes.sha256Hash)))
+        return OZSignAuthEntryResult(
+            signedAuthEntry: signature.base64EncodedString(),
+            signerAddress: address
+        )
     }
 }
 
