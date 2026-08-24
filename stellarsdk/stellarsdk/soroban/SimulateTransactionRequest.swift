@@ -17,7 +17,7 @@ import Foundation
 /// - transaction: The transaction to simulate (must contain InvokeHostFunction operation)
 /// - resourceConfig: Optional resource budget configuration (default: 3000000 instruction leeway)
 /// - authMode: Authorization simulation mode (protocol 23+)
-/// - useUpgradedAuth: Request protocol-27 V2 credential arms in the simulation response (default false)
+/// - useUpgradedAuth: Request protocol-27 V2 credential arms in the simulation response (default true)
 ///
 /// Authorization modes (protocol 23+):
 /// - "enforce": Strict authorization checking (default)
@@ -26,10 +26,11 @@ import Foundation
 ///
 /// **`useUpgradedAuth` flag**
 ///
-/// When `useUpgradedAuth` is `true`, the key `"useUpgradedAuth": true` is included as a sibling of
-/// `"transaction"` in the JSON-RPC params. The key is omitted entirely when `false`
-/// (never sent as `"useUpgradedAuth": false`). Emitting V2 credential arms on a network below
-/// protocol 27 invalidates the transaction, so this flag defaults to `false`.
+/// The key `"useUpgradedAuth"` is always included as a sibling of `"transaction"` in the
+/// JSON-RPC params, carrying the current flag value. When `true` (the default), the RPC
+/// records `ADDRESS_V2` credential arms; when `false`, legacy `ADDRESS` arms. Set the flag
+/// to `false` on a network below protocol 27, where V2 credential arms invalidate the
+/// transaction.
 ///
 /// RPC servers that do not support `useUpgradedAuth` silently ignore the key and return legacy
 /// `ADDRESS` credential arms. The caller must detect V2 support by inspecting the
@@ -61,16 +62,17 @@ public final class SimulateTransactionRequest: @unchecked Sendable {
     /// Possible values: "enforce" | "record" | "record_allow_nonroot"
     public let authMode: String?
 
-    /// Request protocol-27 V2 credential arms in the simulation response.
+    /// Selects the credential arm the simulation records.
     ///
-    /// When `true`, `"useUpgradedAuth": true` is included in the JSON-RPC params. The key is
-    /// omitted entirely when `false`. Requires protocol 27; emitting V2 on older networks
-    /// invalidates the transaction. RPC servers without support silently ignore this flag
-    /// and return legacy `ADDRESS` entries.
+    /// When `true` (the default), `ADDRESS_V2` credential arms are requested; when `false`,
+    /// legacy `ADDRESS` arms. The key is always sent in the JSON-RPC params with the current
+    /// value. Set to `false` on a network below protocol 27, where V2 arms invalidate the
+    /// transaction. RPC servers without support silently ignore this flag and return legacy
+    /// `ADDRESS` entries.
     public let useUpgradedAuth: Bool
 
     /// Creates a request for simulating Soroban transaction execution.
-    public init(transaction: Transaction, resourceConfig: ResourceConfig? = nil, authMode: String? = nil, useUpgradedAuth: Bool = false) {
+    public init(transaction: Transaction, resourceConfig: ResourceConfig? = nil, authMode: String? = nil, useUpgradedAuth: Bool = true) {
         self.transaction = transaction
         self.resourceConfig = resourceConfig
         self.authMode = authMode
@@ -87,9 +89,7 @@ public final class SimulateTransactionRequest: @unchecked Sendable {
         if let authMode = authMode {
             result["authMode"] = authMode
         }
-        if useUpgradedAuth {
-            result["useUpgradedAuth"] = true
-        }
+        result["useUpgradedAuth"] = useUpgradedAuth
         return result
     }
 }

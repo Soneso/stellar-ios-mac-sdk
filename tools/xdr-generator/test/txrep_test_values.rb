@@ -19,6 +19,11 @@
 module TxRepTestValues
   MAX_DEPTH = 5
 
+  # The fixture for a `string` position carried as raw bytes (see
+  # BYTES_BACKED_STRING_FIELDS). 0xff begins no UTF-8 sequence, so the TxRep
+  # round trip only passes when the bytes themselves survive it.
+  BYTES_BACKED_STRING_SAMPLE = 'Data([0x74, 0x61, 0x67, 0x00, 0xff, 0x10])'
+
   # -- Entry points ------------------------------------------------------------
 
   # Build a Swift expression for a fully-populated struct.
@@ -34,6 +39,12 @@ module TxRepTestValues
       next if gen.pub_is_extension_point_field?(swift_name, field)
       type_str = gen.pub_resolve_field_type(swift_name, field, m)
       param = gen.pub_resolve_init_param_name(swift_name, field)
+
+      if defined?(::BYTES_BACKED_STRING_FIELDS) &&
+         ::BYTES_BACKED_STRING_FIELDS.dig(swift_name, m.name.to_s)
+        init_fields << { param: param, expr: BYTES_BACKED_STRING_SAMPLE }
+        next
+      end
 
       is_opt = m.type.sub_type == :optional ||
                (m.declaration.type.respond_to?(:sub_type) &&
@@ -67,6 +78,8 @@ module TxRepTestValues
     case_name = entry[:case_name]
     if entry[:decode_style] == :void
       ".#{case_name}"
+    elsif entry[:bytes_backed]
+      ".#{case_name}(#{BYTES_BACKED_STRING_SAMPLE})"
     else
       payload_type = entry[:associated_type]
       # Optional payload: allow nil since TxRep methods handle ._present = false.

@@ -159,34 +159,43 @@ public final class TxRepHelper: Sendable {
     /// - Parameter s: The string to escape.
     /// - Returns: Escaped, double-quoted string.
     public static func escapeString(_ s: String) -> String {
+        return escapeBytes(Data(s.utf8))
+    }
+
+    /// Escape raw bytes for the TxRep double-quoted format.
+    ///
+    /// Applies the ladder of `escapeString(_:)` one byte at a time, so bytes that
+    /// spell valid UTF-8 render exactly as `escapeString(_:)` renders that text.
+    /// Inside the surrounding double quotes:
+    /// - `\` is encoded as `\\`
+    /// - `"` is encoded as `\"`
+    /// - `\n` (LF) is encoded as `\n`
+    /// - `\r` (CR) is encoded as `\r`
+    /// - `\t` (HT) is encoded as `\t`
+    /// - Every other byte outside printable ASCII 0x20–0x7E is encoded as `\xNN`
+    ///   where NN is two lowercase hex digits.
+    ///
+    /// - Parameter data: The bytes to escape.
+    /// - Returns: Escaped, double-quoted string.
+    public static func escapeBytes(_ data: Data) -> String {
         var buf = "\""
-        let utf8Bytes = Array(s.utf8)
-        var i = 0
-        while i < utf8Bytes.count {
-            let byte = utf8Bytes[i]
+        for byte in data {
             switch byte {
             case 0x5C: // backslash
                 buf += "\\\\"
-                i += 1
             case 0x22: // double quote
                 buf += "\\\""
-                i += 1
             case 0x0A: // newline LF
                 buf += "\\n"
-                i += 1
             case 0x0D: // carriage return CR
                 buf += "\\r"
-                i += 1
             case 0x09: // horizontal tab HT
                 buf += "\\t"
-                i += 1
             case 0x20...0x7E: // printable ASCII
                 buf += String(UnicodeScalar(byte))
-                i += 1
             default:
                 // Non-printable or non-ASCII — encode as \xNN per byte.
                 buf += "\\x" + String(format: "%02x", byte)
-                i += 1
             }
         }
         buf += "\""
@@ -208,7 +217,34 @@ public final class TxRepHelper: Sendable {
             // Not quoted — return as-is per SEP-0011.
             return s
         }
-        // Quoted string — strip surrounding quotes and unescape.
+        let result = try unescapeQuotedBytes(s)
+        guard let str = String(bytes: result, encoding: .utf8) else {
+            throw TxRepError.invalidValue(key: s)
+        }
+        return str
+    }
+
+    /// Unescape a TxRep string value to the bytes it spells.
+    ///
+    /// Reads the escape sequences `unescapeString(_:)` reads and returns the bytes
+    /// behind them, so a value whose bytes are not valid UTF-8 survives the round
+    /// trip. An unquoted input contributes its UTF-8 bytes unchanged.
+    ///
+    /// - Parameter s: The possibly-quoted string to unescape.
+    /// - Returns: The decoded bytes.
+    /// - Throws: `TxRepError.invalidValue(key:)` if the string is quoted but unterminated,
+    ///           or if a `\xNN` sequence contains invalid hex digits.
+    public static func unescapeBytes(_ s: String) throws -> Data {
+        guard s.hasPrefix("\"") else {
+            // Not quoted — the value's bytes are the text's UTF-8 encoding.
+            return Data(s.utf8)
+        }
+        return Data(try unescapeQuotedBytes(s))
+    }
+
+    /// Decode the escape sequences of a double-quoted TxRep string to the bytes
+    /// they spell. The input must start with `"`; the closing quote is required.
+    private static func unescapeQuotedBytes(_ s: String) throws -> [UInt8] {
         guard s.hasSuffix("\""), s.count >= 2 else {
             throw TxRepError.invalidValue(key: s)
         }
@@ -279,10 +315,7 @@ public final class TxRepHelper: Sendable {
                 i += 1
             }
         }
-        guard let str = String(bytes: result, encoding: .utf8) else {
-            throw TxRepError.invalidValue(key: s)
-        }
-        return str
+        return result
     }
 
     // MARK: - Numeric parsing
@@ -870,6 +903,21 @@ public final class TxRepHelper: Sendable {
         }
         do {
             return try unescapeString(raw)
+        } catch {
+            throw TxRepError.invalidValue(key: key)
+        }
+    }
+
+    /// Require a quoted/escaped string field from the map, as the bytes it spells.
+    ///
+    /// Throws `missingValue` when absent, `invalidValue` (with the field key) when
+    /// the string cannot be unescaped.
+    public static func requireStringBytes(_ map: [String: String], _ key: String) throws -> Data {
+        guard let raw = getValue(map, key) else {
+            throw TxRepError.missingValue(key: key)
+        }
+        do {
+            return try unescapeBytes(raw)
         } catch {
             throw TxRepError.invalidValue(key: key)
         }

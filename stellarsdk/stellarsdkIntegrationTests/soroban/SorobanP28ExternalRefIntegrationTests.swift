@@ -131,7 +131,7 @@ final class SorobanP28ExternalRefIntegrationTests: XCTestCase {
             return
         }
         XCTAssertEqual(instanceRef.executableOwner.contractId, owner.contractId)
-        XCTAssertEqual(instanceRef.tag, executableTag)
+        XCTAssertEqual(instanceRef.tag, Data(executableTag.utf8))
 
         // The code loader resolves the reference to the target's code.
         let codeResponse = await sorobanServer.getContractCodeForContractId(contractId: client.contractId)

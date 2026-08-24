@@ -529,6 +529,12 @@ class GeneratorHelper
   end
 
   def resolve_field_type(struct_name, field, member)
+    # A bytes-backed `string` field is emitted as Data (BYTES_BACKED_STRING_FIELDS).
+    if BYTES_BACKED_STRING_FIELDS.dig(struct_name, member.name.to_s)
+      is_opt = member.type.sub_type == :optional || typedef_is_optional?(member.declaration.type)
+      return is_opt ? "Data?" : "Data"
+    end
+
     if FIELD_TYPE_OVERRIDES.key?(struct_name) &&
        FIELD_TYPE_OVERRIDES[struct_name].key?(field)
       type_str = FIELD_TYPE_OVERRIDES[struct_name][field]
@@ -768,6 +774,12 @@ class GeneratorHelper
       else
         assoc_type, decode_style = resolve_arm_type(arm)
         decode_type = resolve_arm_decode_type(arm)
+
+        # A bytes-backed `string` arm is emitted as Data (BYTES_BACKED_STRING_FIELDS).
+        if BYTES_BACKED_STRING_FIELDS.dig(union_name, arm.name.to_s)
+          assoc_type = "Data"
+          decode_type = "Data"
+        end
 
         if arm.cases.length > 1
           arm.cases.each do |c|

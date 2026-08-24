@@ -196,7 +196,13 @@ public final class SorobanClient: Sendable {
     ///
     /// The executable of the new instance names an owner contract and a tag; the owner's
     /// persistent entry under that tag holds the hash of the wasm the instance runs.
+    /// The tag is matched byte for byte as the request carries it.
     /// Nothing is installed as part of the deployment.
+    ///
+    /// The create operation uses the CREATE_CONTRACT_V2 host function form with the given
+    /// constructor arguments (an empty vector when none are given), as `deploy` does. For
+    /// the plain CREATE_CONTRACT form, build the operation directly with
+    /// `InvokeHostFunctionOperation.forCreatingContractFromExternalRef`.
     ///
     /// The reference is resolved before the transaction is built, so an unresolvable
     /// reference fails here with a `SorobanClientError.deployFailed` naming the owner
@@ -232,7 +238,7 @@ public final class SorobanClient: Sendable {
             case .parsingResponseFailed(let message, _):
                 reason = message
             }
-            throw SorobanClientError.deployFailed(message: "external reference of owner contract \(owner) with tag \(deployRequest.tag) does not resolve: \(reason)")
+            throw SorobanClientError.deployFailed(message: "external reference of owner contract \(owner) with tag \(TxRepHelper.escapeBytes(deployRequest.tag)) does not resolve: \(reason)")
         }
 
         // Load the spec from the resolved wasm code entry before deploying: the
@@ -251,13 +257,7 @@ public final class SorobanClient: Sendable {
         }
 
         let sourceAddress = try SCAddressXDR(accountId: deployRequest.sourceAccountKeyPair.accountId)
-        let constructorArgs = deployRequest.constructorArgs ?? []
-        let createContractOp: InvokeHostFunctionOperation
-        if constructorArgs.isEmpty {
-            createContractOp = try InvokeHostFunctionOperation.forCreatingContractFromExternalRef(executableOwner: ownerAddress, tag: deployRequest.tag, address: sourceAddress, salt: deployRequest.salt)
-        } else {
-            createContractOp = try InvokeHostFunctionOperation.forCreatingContractFromExternalRefWithConstructor(executableOwner: ownerAddress, tag: deployRequest.tag, address: sourceAddress, constructorArguments: constructorArgs, salt: deployRequest.salt)
-        }
+        let createContractOp = try InvokeHostFunctionOperation.forCreatingContractFromExternalRefWithConstructor(executableOwner: ownerAddress, tag: deployRequest.tag, address: sourceAddress, constructorArguments: deployRequest.constructorArgs ?? [], salt: deployRequest.salt)
         let clientOptions = ClientOptions(sourceAccountKeyPair: deployRequest.sourceAccountKeyPair,
                                           contractId: "ignored",
                                           network: deployRequest.network,

@@ -107,7 +107,8 @@ final class OZTransactionOperationsPipelineTests: XCTestCase {
     }
 
     private func buildPipelineHarness(
-        relayer: OZRelayerClient? = nil
+        relayer: OZRelayerClient? = nil,
+        useUpgradedAuth: Bool = true
     ) async throws -> PipelineHarness {
         let provider = RecordingWebAuthnProvider()
         let deployer = try deterministicDeployer()
@@ -119,7 +120,8 @@ final class OZTransactionOperationsPipelineTests: XCTestCase {
             webauthnVerifierAddress: contractA,
             deployerKeypair: deployer,
             webauthnProvider: provider,
-            storage: storage
+            storage: storage,
+            useUpgradedAuth: useUpgradedAuth
         )
         let liveServer = MockSorobanServer.makeMockedSorobanServer()
         let kit = MockOZSmartAccountKit(
@@ -709,7 +711,7 @@ final class OZTransactionOperationsPipelineTests: XCTestCase {
     // fundWallet conversion
     // ========================================================================
 
-    func test_fundWallet_convertsVoidCredentialsToAddress_withNonce() async throws {
+    func test_fundWallet_convertsVoidCredentialsToAddressV2_withNonce() async throws {
         // The fundWallet path performs Friendbot funding via a static
         // `URLSession.shared.data` call, which is intercepted by the global
         // MockURLProtocol. The Friendbot URL (https://friendbot.stellar.org/)
@@ -773,7 +775,7 @@ final class OZTransactionOperationsPipelineTests: XCTestCase {
         // path runs to completion and the conversion assertions run unconditionally.
         _ = try await h.txOps.fundWallet(nativeTokenContract: contractA)
 
-        // The sent transaction must carry address-credentials with a non-zero
+        // The sent transaction must carry ADDRESS_V2 credentials with a non-zero
         // nonce (the void-to-address conversion generated it) — verify on the
         // captured envelope.
         let sentEnvelopeBase64 = try XCTUnwrap(
@@ -782,8 +784,10 @@ final class OZTransactionOperationsPipelineTests: XCTestCase {
         )
         let envelope = try TransactionEnvelopeXDR(xdr: sentEnvelopeBase64)
         let signed = try firstSorobanAuthEntry(envelope: envelope)
-        guard case .address(let creds) = signed.credentials else {
-            return XCTFail("conversion did not produce address credentials")
+        guard case .addressV2(let creds) = signed.credentials else {
+            return XCTFail(
+                "conversion must produce ADDRESS_V2 credentials, got \(signed.credentials)"
+            )
         }
         XCTAssertNotEqual(creds.nonce, 0, "fresh nonce must be non-zero")
     }
@@ -3216,6 +3220,277 @@ final class OZTransactionOperationsPipelineTests: XCTestCase {
         } catch let e as SmartAccountTransactionException.SimulationFailed {
             XCTAssertTrue(e.message.contains("No return value"),
                           "got: \(e.message)")
+        }
+    }
+
+    // ========================================================================
+    // fundWallet: convertAndSignAuthEntries source-account branch
+    // ========================================================================
+
+    /// The converted entry binds the temporary account address into both the
+    /// `ADDRESS_V2` credentials and the signed payload: its signature verifies
+    /// against a WITH_ADDRESS preimage this test builds from the raw XDR types,
+    /// independently of the SDK's payload-hash helper.
+    func test_fundWallet_convertsSourceAccountCredentials_signsWithAddressPreimage() async throws {
+        let h = try await buildPipelineHarness()
+        installCustomURLHandler(script: script, friendbotSucceeds: true)
+
+        enqueueDeployerAccount(deployer: h.deployer)
+        let balance = SCValXDR.i128(Int128PartsXDR(hi: 0, lo: 200_000_000))
+        script.enqueueSimulate(authEntries: [], resultXdr: balance.xdrEncoded)
+        let tempPlaceholderKp = try KeyPair.generateRandomKeyPair()
+        script.setGetAccountResponse(accountId: tempPlaceholderKp.accountId, sequence: 1)
+        let sourceEntry = try OZPipelineFixtures.sourceAccountAuthEntry(targetContract: contractA)
+        script.enqueueSimulate(authEntries: [sourceEntry])
+        script.setGetLatestLedger(sequence: 1000)
+        script.enqueueSimulate(authEntries: [])
+        script.setSendSuccess(
+            status: SendTransactionResponse.STATUS_PENDING,
+            hash: "fund-source-v2-hash"
+        )
+        script.enqueueGetTransactionResponse(
+            status: GetTransactionResponse.STATUS_SUCCESS,
+            ledger: 1001
+        )
+
+        _ = try await h.txOps.fundWallet(nativeTokenContract: contractA)
+
+        let sentEnvelopeBase64 = try XCTUnwrap(
+            extractEnvelopeBase64(from: script.sendCalls.last),
+            "fundWallet must have submitted a transaction"
+        )
+        let envelope = try TransactionEnvelopeXDR(xdr: sentEnvelopeBase64)
+        let signed = try firstSorobanAuthEntry(envelope: envelope)
+        guard case .addressV2(let creds) = signed.credentials else {
+            return XCTFail(
+                "the converted entry must carry ADDRESS_V2 credentials, got \(signed.credentials)"
+            )
+        }
+
+        let (publicKeyBytes, signatureBytes) = try classicalEd25519SignatureFields(creds.signature)
+        let signerKeyPair = KeyPair(publicKey: try PublicKey([UInt8](publicKeyBytes)))
+        XCTAssertEqual(
+            OZAddressStrKey.fromXdr(creds.address), signerKeyPair.accountId,
+            "the credential address must be the temporary account that signed the entry"
+        )
+
+        // Ground-truth preimage: networkID, nonce, signatureExpirationLedger,
+        // address and invocation under ENVELOPE_TYPE_SOROBAN_AUTHORIZATION_WITH_ADDRESS.
+        let preimage = HashIDPreimageXDR.sorobanAuthorizationWithAddress(
+            HashIDPreimageSorobanAuthorizationWithAddressXDR(
+                networkID: HashXDR(Network.testnet.passphrase.sha256Hash),
+                nonce: creds.nonce,
+                signatureExpirationLedger: creds.signatureExpirationLedger,
+                address: creds.address,
+                invocation: sourceEntry.rootInvocation
+            )
+        )
+        let payloadHash = Data(try XDREncoder.encode(preimage)).sha256Hash
+        XCTAssertTrue(
+            try signerKeyPair.verify(
+                signature: [UInt8](signatureBytes),
+                message: [UInt8](payloadHash)
+            ),
+            "the signature must verify over the WITH_ADDRESS preimage carrying the temp account address"
+        )
+    }
+
+    /// Reads the `public_key` and `signature` byte fields out of the classical
+    /// Stellar Ed25519 `Vec([Map({public_key, signature})])` ScVal shape.
+    private func classicalEd25519SignatureFields(
+        _ signature: SCValXDR,
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) throws -> (publicKey: Data, signature: Data) {
+        guard case .vec(let optionalElements) = signature,
+              let elements = optionalElements,
+              elements.count == 1,
+              case .map(let optionalEntries) = elements[0],
+              let entries = optionalEntries else {
+            XCTFail("expected Vec([Map([...])]), got \(signature)", file: file, line: line)
+            return (Data(), Data())
+        }
+        var publicKey: Data?
+        var rawSignature: Data?
+        for entry in entries {
+            guard case .symbol(let key) = entry.key, case .bytes(let value) = entry.val else {
+                continue
+            }
+            if key == "public_key" { publicKey = value }
+            if key == "signature" { rawSignature = value }
+        }
+        return (
+            try XCTUnwrap(publicKey, "signature map carries no public_key", file: file, line: line),
+            try XCTUnwrap(rawSignature, "signature map carries no signature", file: file, line: line)
+        )
+    }
+
+    // ========================================================================
+    // useUpgradedAuth: relayer opt-out
+    // ========================================================================
+
+    /// Every kit-internal simulation is issued through the shared `simulate`
+    /// helper, so an opted-out config must put boolean `false` on the wire.
+    func test_simulate_optedOut_sendsUseUpgradedAuthFalseOnTheWire() async throws {
+        let h = try await buildPipelineHarness(useUpgradedAuth: false)
+
+        enqueueDeployerAccount(deployer: h.deployer)
+        script.enqueueSimulate(resultXdr: SCValXDR.void.xdrEncoded)
+
+        _ = try await h.txOps.simulateAndExtractResult(hostFunction: noopHostFunction())
+
+        XCTAssertEqual(
+            try simulateUseUpgradedAuthFlags(), [false],
+            "an opted-out kit must ask simulation for legacy entries"
+        )
+    }
+
+    /// The default config keeps requesting `ADDRESS_V2` entries from simulation.
+    func test_simulate_defaultConfig_sendsUseUpgradedAuthTrueOnTheWire() async throws {
+        let h = try await buildPipelineHarness()
+
+        enqueueDeployerAccount(deployer: h.deployer)
+        script.enqueueSimulate(resultXdr: SCValXDR.void.xdrEncoded)
+
+        _ = try await h.txOps.simulateAndExtractResult(hostFunction: noopHostFunction())
+
+        XCTAssertEqual(
+            try simulateUseUpgradedAuthFlags(), [true],
+            "the default kit must ask simulation for ADDRESS_V2 entries"
+        )
+    }
+
+    /// With the opt-out set, the funding-flow conversion emits the legacy
+    /// `ADDRESS` arm and its signature verifies against a plain
+    /// `ENVELOPE_TYPE_SOROBAN_AUTHORIZATION` preimage this test builds from the
+    /// raw XDR types, independently of the SDK's payload-hash helper. The same
+    /// signature must not verify against the address-bound V2 preimage.
+    func test_fundWallet_optedOut_convertsSourceAccountCredentials_signsLegacyPreimage() async throws {
+        let h = try await buildPipelineHarness(useUpgradedAuth: false)
+        installCustomURLHandler(script: script, friendbotSucceeds: true)
+
+        enqueueDeployerAccount(deployer: h.deployer)
+        let balance = SCValXDR.i128(Int128PartsXDR(hi: 0, lo: 200_000_000))
+        script.enqueueSimulate(authEntries: [], resultXdr: balance.xdrEncoded)
+        let tempPlaceholderKp = try KeyPair.generateRandomKeyPair()
+        script.setGetAccountResponse(accountId: tempPlaceholderKp.accountId, sequence: 1)
+        let sourceEntry = try OZPipelineFixtures.sourceAccountAuthEntry(targetContract: contractA)
+        script.enqueueSimulate(authEntries: [sourceEntry])
+        script.setGetLatestLedger(sequence: 1000)
+        script.enqueueSimulate(authEntries: [])
+        script.setSendSuccess(
+            status: SendTransactionResponse.STATUS_PENDING,
+            hash: "fund-source-legacy-hash"
+        )
+        script.enqueueGetTransactionResponse(
+            status: GetTransactionResponse.STATUS_SUCCESS,
+            ledger: 1001
+        )
+
+        _ = try await h.txOps.fundWallet(nativeTokenContract: contractA)
+
+        let flags = try simulateUseUpgradedAuthFlags()
+        XCTAssertFalse(flags.isEmpty, "fundWallet must have run at least one simulation")
+        XCTAssertEqual(
+            flags, [Bool](repeating: false, count: flags.count),
+            "every simulation of an opted-out kit must request legacy entries, got \(flags)"
+        )
+
+        let sentEnvelopeBase64 = try XCTUnwrap(
+            extractEnvelopeBase64(from: script.sendCalls.last),
+            "fundWallet must have submitted a transaction"
+        )
+        let envelope = try TransactionEnvelopeXDR(xdr: sentEnvelopeBase64)
+        let signed = try firstSorobanAuthEntry(envelope: envelope)
+        guard case .address(let creds) = signed.credentials else {
+            return XCTFail(
+                "the opted-out conversion must produce legacy ADDRESS credentials, " +
+                    "got \(signed.credentials)"
+            )
+        }
+
+        let (publicKeyBytes, signatureBytes) = try classicalEd25519SignatureFields(creds.signature)
+        let signerKeyPair = KeyPair(publicKey: try PublicKey([UInt8](publicKeyBytes)))
+        XCTAssertEqual(
+            OZAddressStrKey.fromXdr(creds.address), signerKeyPair.accountId,
+            "the legacy credentials must carry the temporary account that signed the entry"
+        )
+
+        // Ground-truth preimage: networkID, nonce, signatureExpirationLedger and
+        // invocation under ENVELOPE_TYPE_SOROBAN_AUTHORIZATION, which binds no address.
+        let legacyPreimage = HashIDPreimageXDR.sorobanAuthorization(
+            HashIDPreimageSorobanAuthorizationXDR(
+                networkID: HashXDR(Network.testnet.passphrase.sha256Hash),
+                nonce: creds.nonce,
+                signatureExpirationLedger: creds.signatureExpirationLedger,
+                invocation: sourceEntry.rootInvocation
+            )
+        )
+        let legacyHash = Data(try XDREncoder.encode(legacyPreimage)).sha256Hash
+        XCTAssertTrue(
+            try signerKeyPair.verify(
+                signature: [UInt8](signatureBytes),
+                message: [UInt8](legacyHash)
+            ),
+            "the signature must verify over the legacy ENVELOPE_TYPE_SOROBAN_AUTHORIZATION preimage"
+        )
+
+        let v2Preimage = HashIDPreimageXDR.sorobanAuthorizationWithAddress(
+            HashIDPreimageSorobanAuthorizationWithAddressXDR(
+                networkID: HashXDR(Network.testnet.passphrase.sha256Hash),
+                nonce: creds.nonce,
+                signatureExpirationLedger: creds.signatureExpirationLedger,
+                address: creds.address,
+                invocation: sourceEntry.rootInvocation
+            )
+        )
+        let v2Hash = Data(try XDREncoder.encode(v2Preimage)).sha256Hash
+        XCTAssertFalse(
+            try signerKeyPair.verify(
+                signature: [UInt8](signatureBytes),
+                message: [UInt8](v2Hash)
+            ),
+            "the legacy arm must not be signed over the address-bound V2 preimage"
+        )
+    }
+
+    /// Builds a no-argument host function used by the simulate-flag cases, which
+    /// assert on the JSON-RPC params rather than on the invoked contract.
+    private func noopHostFunction() throws -> HostFunctionXDR {
+        return HostFunctionXDR.invokeContract(
+            InvokeContractArgsXDR(
+                contractAddress: try SCAddressXDR(contractId: contractB),
+                functionName: "noop",
+                args: []
+            )
+        )
+    }
+
+    /// Returns the `useUpgradedAuth` JSON-RPC param of every captured
+    /// `simulateTransaction` request, in call order.
+    private func simulateUseUpgradedAuthFlags(
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) throws -> [Bool] {
+        return try script.simulateCalls.map { body in
+            let json = try XCTUnwrap(
+                JSONSerialization.jsonObject(with: body) as? [String: Any],
+                "simulate request body is not a JSON object",
+                file: file,
+                line: line
+            )
+            let params = try XCTUnwrap(
+                json["params"] as? [String: Any],
+                "simulate request carries no params object",
+                file: file,
+                line: line
+            )
+            return try XCTUnwrap(
+                params["useUpgradedAuth"] as? Bool,
+                "simulate params must carry a boolean useUpgradedAuth key, got \(params.keys.sorted())",
+                file: file,
+                line: line
+            )
         }
     }
 

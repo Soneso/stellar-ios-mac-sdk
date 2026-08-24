@@ -75,10 +75,10 @@ final class SorobanClientExternalRefDeployUnitTests: XCTestCase {
         return try! ownerContractIdHex.encodeContractIdHex()
     }
 
-    private func tagKeyB64() -> String {
+    private func tagKeyB64(tag: Data? = nil) -> String {
         let key = LedgerKeyXDR.contractData(LedgerKeyContractDataXDR(
             contract: ownerAddress(),
-            key: SCValXDR.executableTag(executableTag),
+            key: SCValXDR.executableTag(tag ?? Data(executableTag.utf8)),
             durability: .persistent))
         return key.xdrEncoded!
     }
@@ -89,11 +89,11 @@ final class SorobanClientExternalRefDeployUnitTests: XCTestCase {
         return key.xdrEncoded!
     }
 
-    private func tagEntry() -> LedgerEntryDataXDR {
+    private func tagEntry(tag: Data? = nil) -> LedgerEntryDataXDR {
         return LedgerEntryDataXDR.contractData(ContractDataEntryXDR(
             ext: .void,
             contract: ownerAddress(),
-            key: SCValXDR.executableTag(executableTag),
+            key: SCValXDR.executableTag(tag ?? Data(executableTag.utf8)),
             durability: .persistent,
             val: SCValXDR.bytes(wasmHashBytes)))
     }
@@ -126,9 +126,9 @@ final class SorobanClientExternalRefDeployUnitTests: XCTestCase {
     /// the resolution, the wasm code entry for the spec preload, the source
     /// account, simulate, send and getTransaction. When [tagEntryExists] is
     /// false, the resolution request is answered with no entries.
-    private func setupDeployFlowMock(tagEntryExists: Bool = true) {
+    private func setupDeployFlowMock(tagEntryExists: Bool = true, tag: Data? = nil) {
         let log = requestLog
-        let tagKey = tagKeyB64()
+        let tagKey = tagKeyB64(tag: tag)
         let codeKey = codeKeyB64()
         let mock = RequestMock(
             host: "soroban-testnet.stellar.org",
@@ -181,7 +181,7 @@ final class SorobanClientExternalRefDeployUnitTests: XCTestCase {
                     guard tagEntryExists else {
                         return self.emptyEntriesJson()
                     }
-                    return self.ledgerEntryResponseJson(entryData: self.tagEntry())
+                    return self.ledgerEntryResponseJson(entryData: self.tagEntry(tag: tag))
                 }
                 // The code answer requires the exact CONTRACT_CODE key of the
                 // resolved wasm hash, so a preload from any other value gets
@@ -298,7 +298,21 @@ final class SorobanClientExternalRefDeployUnitTests: XCTestCase {
         """
     }
 
-    private func deployRequest(constructorArgs: [SCValXDR]? = nil, salt: WrappedData32? = nil) -> DeployFromExternalRefRequest {
+    private func deployRequest(constructorArgs: [SCValXDR]? = nil, salt: WrappedData32? = nil, tag: Data? = nil) -> DeployFromExternalRefRequest {
+        if let tag = tag {
+            return DeployFromExternalRefRequest(
+                rpcUrl: mockRpcUrl,
+                network: Network.testnet,
+                sourceAccountKeyPair: keyPair,
+                executableOwner: ownerStrKey(),
+                tag: tag,
+                constructorArgs: constructorArgs,
+                salt: salt,
+                enableServerLogging: false
+            )
+        }
+        // Deliberately the String initializer, so the deploy-flow tests cover
+        // the text-tag convenience end to end.
         return DeployFromExternalRefRequest(
             rpcUrl: mockRpcUrl,
             network: Network.testnet,
@@ -359,7 +373,7 @@ final class SorobanClientExternalRefDeployUnitTests: XCTestCase {
             return
         }
         XCTAssertEqual(ref.executableOwner.contractId, ownerContractIdHex)
-        XCTAssertEqual(ref.tag, executableTag)
+        XCTAssertEqual(ref.tag, Data(executableTag.utf8))
         guard case .fromAddress(let preimage) = createArgs.contractIDPreimage else {
             XCTFail("expected a fromAddress preimage")
             return
@@ -369,7 +383,7 @@ final class SorobanClientExternalRefDeployUnitTests: XCTestCase {
         XCTAssertEqual(createArgs.constructorArgs.first?.u32, 7)
     }
 
-    func testDeployWithoutConstructorArgsUsesCreateContract() async throws {
+    func testDeployWithoutConstructorArgsUsesCreateContractV2WithEmptyVector() async throws {
         setupDeployFlowMock()
 
         let client = try await SorobanClient.deployFromExternalRef(
@@ -378,8 +392,8 @@ final class SorobanClientExternalRefDeployUnitTests: XCTestCase {
         XCTAssertEqual(client.contractId, mockContractId)
 
         guard let hostFunction = try submittedHostFunction(),
-              case .createContract(let createArgs) = hostFunction else {
-            XCTFail("expected a createContract host function")
+              case .createContractV2(let createArgs) = hostFunction else {
+            XCTFail("expected a createContractV2 host function")
             return
         }
         guard case .externalRef(let ref) = createArgs.executable else {
@@ -387,12 +401,34 @@ final class SorobanClientExternalRefDeployUnitTests: XCTestCase {
             return
         }
         XCTAssertEqual(ref.executableOwner.contractId, ownerContractIdHex)
-        XCTAssertEqual(ref.tag, executableTag)
+        XCTAssertEqual(ref.tag, Data(executableTag.utf8))
+        XCTAssertEqual(createArgs.constructorArgs.count, 0)
         guard case .fromAddress(let preimage) = createArgs.contractIDPreimage else {
             XCTFail("expected a fromAddress preimage")
             return
         }
         XCTAssertEqual(preimage.salt.wrapped.count, 32)
+    }
+
+    func testDeployWithEmptyConstructorArgsUsesCreateContractV2WithEmptyVector() async throws {
+        setupDeployFlowMock()
+
+        let client = try await SorobanClient.deployFromExternalRef(
+            deployRequest: deployRequest(constructorArgs: []))
+
+        XCTAssertEqual(client.contractId, mockContractId)
+
+        guard let hostFunction = try submittedHostFunction(),
+              case .createContractV2(let createArgs) = hostFunction else {
+            XCTFail("expected a createContractV2 host function")
+            return
+        }
+        guard case .externalRef(let ref) = createArgs.executable else {
+            XCTFail("expected an external ref executable")
+            return
+        }
+        XCTAssertEqual(ref.executableOwner.contractId, ownerContractIdHex)
+        XCTAssertEqual(createArgs.constructorArgs.count, 0)
     }
 
     func testDeployFailsNamingOwnerAndTagWhenTagEntryMissing() async throws {
@@ -405,10 +441,38 @@ final class SorobanClientExternalRefDeployUnitTests: XCTestCase {
             XCTAssertTrue(message.contains("does not resolve"), "unexpected message: \(message)")
             // A contract owner is spelled as its "C..." strkey.
             XCTAssertTrue(message.contains(ownerStrKey()), "unexpected message: \(message)")
-            XCTAssertTrue(message.contains(executableTag), "unexpected message: \(message)")
+            // A text tag renders in the message as its quoted escaped form.
+            XCTAssertTrue(message.contains(#""token-v1""#), "unexpected message: \(message)")
         }
         // The failure happened before anything was submitted.
         XCTAssertEqual(requestLog.entries, ["tag"])
+    }
+
+    func testDeployWithBinaryTagUsesTheSameBytesForResolutionAndEnvelope() async throws {
+        let binaryTag = Data([0xC0, 0x00, 0xFF, 0xFE])
+        setupDeployFlowMock(tag: binaryTag)
+
+        let client = try await SorobanClient.deployFromExternalRef(
+            deployRequest: deployRequest(salt: fixedSalt, tag: binaryTag))
+
+        XCTAssertEqual(client.contractId, mockContractId)
+        // The mock serves the resolution only for the exact base64 ledger key
+        // built from the binary tag; any other CONTRACT_DATA key is logged as
+        // "contractData" and answered empty, which would fail the deploy. The
+        // "tag" entry therefore pins that the resolution request carried the
+        // executable-tag key of the exact bytes.
+        XCTAssertTrue(requestLog.entries.contains("tag"), "resolution did not carry the binary-tag ledger key: \(requestLog.entries)")
+
+        guard let hostFunction = try submittedHostFunction(),
+              case .createContractV2(let createArgs) = hostFunction,
+              case .externalRef(let ref) = createArgs.executable else {
+            XCTFail("expected a createContractV2 host function with an external ref executable")
+            return
+        }
+        // The submitted envelope carries the same bytes the resolution used.
+        XCTAssertEqual(ref.tag, binaryTag)
+        XCTAssertEqual(tagKeyB64(tag: ref.tag), tagKeyB64(tag: binaryTag))
+        XCTAssertEqual(ref.executableOwner.contractId, ownerContractIdHex)
     }
 
     // MARK: - Builders
@@ -427,7 +491,7 @@ final class SorobanClientExternalRefDeployUnitTests: XCTestCase {
             return
         }
         XCTAssertEqual(ref.executableOwner.contractId, ownerContractIdHex)
-        XCTAssertEqual(ref.tag, executableTag)
+        XCTAssertEqual(ref.tag, Data(executableTag.utf8))
         guard case .fromAddress(let preimage) = createArgs.contractIDPreimage else {
             XCTFail("expected a fromAddress preimage")
             return
@@ -455,13 +519,118 @@ final class SorobanClientExternalRefDeployUnitTests: XCTestCase {
             return
         }
         XCTAssertEqual(ref.executableOwner.contractId, ownerContractIdHex)
-        XCTAssertEqual(ref.tag, executableTag)
+        XCTAssertEqual(ref.tag, Data(executableTag.utf8))
         XCTAssertEqual(createArgs.constructorArgs.count, 1)
         XCTAssertEqual(createArgs.constructorArgs.first?.u32, 7)
 
         let encoded = op.hostFunction.xdrEncoded!
         let decoded = try HostFunctionXDR(xdr: encoded)
         XCTAssertEqual(decoded.xdrEncoded!, encoded)
+    }
+
+    func testCreateContractFromExternalRefBuilderPassesBinaryTagThrough() throws {
+        let binaryTag = Data([0xC0, 0x00, 0xFF, 0xFE])
+        let deployer = try SCAddressXDR(accountId: keyPair.accountId)
+        let op = try InvokeHostFunctionOperation.forCreatingContractFromExternalRef(
+            executableOwner: ownerAddress(), tag: binaryTag, address: deployer, salt: fixedSalt)
+
+        guard case .createContract(let createArgs) = op.hostFunction,
+              case .externalRef(let ref) = createArgs.executable else {
+            XCTFail("expected a createContract host function with an external ref executable")
+            return
+        }
+        XCTAssertEqual(ref.tag, binaryTag)
+
+        let encoded = op.hostFunction.xdrEncoded!
+        let decoded = try HostFunctionXDR(xdr: encoded)
+        XCTAssertEqual(decoded.xdrEncoded!, encoded)
+        guard case .createContract(let decodedArgs) = decoded,
+              case .externalRef(let decodedRef) = decodedArgs.executable else {
+            XCTFail("expected the decoded host function to carry an external ref executable")
+            return
+        }
+        XCTAssertEqual(decodedRef.tag, binaryTag)
+    }
+
+    func testCreateContractFromExternalRefWithConstructorBuilderPassesBinaryTagThrough() throws {
+        let binaryTag = Data([0xC0, 0x00, 0xFF, 0xFE])
+        let deployer = try SCAddressXDR(accountId: keyPair.accountId)
+        let op = try InvokeHostFunctionOperation.forCreatingContractFromExternalRefWithConstructor(
+            executableOwner: ownerAddress(), tag: binaryTag, address: deployer,
+            constructorArguments: [SCValXDR.u32(7)], salt: fixedSalt)
+
+        guard case .createContractV2(let createArgs) = op.hostFunction,
+              case .externalRef(let ref) = createArgs.executable else {
+            XCTFail("expected a createContractV2 host function with an external ref executable")
+            return
+        }
+        XCTAssertEqual(ref.tag, binaryTag)
+
+        let encoded = op.hostFunction.xdrEncoded!
+        let decoded = try HostFunctionXDR(xdr: encoded)
+        XCTAssertEqual(decoded.xdrEncoded!, encoded)
+        guard case .createContractV2(let decodedArgs) = decoded,
+              case .externalRef(let decodedRef) = decodedArgs.executable else {
+            XCTFail("expected the decoded host function to carry an external ref executable")
+            return
+        }
+        XCTAssertEqual(decodedRef.tag, binaryTag)
+    }
+
+    func testBuilderStringOverloadsEncodeTheTagAsUtf8Once() throws {
+        // A non-ASCII tag exposes any second encoding pass: the UTF-8 bytes of
+        // the text are not themselves valid input for another round.
+        let textTag = "tøken-火"
+        let deployer = try SCAddressXDR(accountId: keyPair.accountId)
+
+        let op = try InvokeHostFunctionOperation.forCreatingContractFromExternalRef(
+            executableOwner: ownerAddress(), tag: textTag, address: deployer, salt: fixedSalt)
+        guard case .createContract(let createArgs) = op.hostFunction,
+              case .externalRef(let ref) = createArgs.executable else {
+            XCTFail("expected a createContract host function with an external ref executable")
+            return
+        }
+        XCTAssertEqual(ref.tag, Data(textTag.utf8))
+
+        let opV2 = try InvokeHostFunctionOperation.forCreatingContractFromExternalRefWithConstructor(
+            executableOwner: ownerAddress(), tag: textTag, address: deployer,
+            constructorArguments: [], salt: fixedSalt)
+        guard case .createContractV2(let createArgsV2) = opV2.hostFunction,
+              case .externalRef(let refV2) = createArgsV2.executable else {
+            XCTFail("expected a createContractV2 host function with an external ref executable")
+            return
+        }
+        XCTAssertEqual(refV2.tag, Data(textTag.utf8))
+    }
+
+    func testBuilderRejectsNonContractExecutableOwner() throws {
+        let deployer = try SCAddressXDR(accountId: keyPair.accountId)
+        let nonContractOwners: [SCAddressXDR] = [
+            try SCAddressXDR(accountId: keyPair.accountId),
+            SCAddressXDR.muxedAccount(MuxedAccountMed25519XDR(id: 1, sourceAccountEd25519: [UInt8](repeating: 0, count: 32))),
+            SCAddressXDR.claimableBalanceId(ClaimableBalanceIDXDR.claimableBalanceIDTypeV0(WrappedData32(Data(count: 32)))),
+            SCAddressXDR.liquidityPoolId(WrappedData32(Data(count: 32))),
+        ]
+
+        for owner in nonContractOwners {
+            XCTAssertThrowsError(try InvokeHostFunctionOperation.forCreatingContractFromExternalRef(
+                executableOwner: owner, tag: executableTag, address: deployer, salt: fixedSalt)) { error in
+                guard case StellarSDKError.invalidArgument(let message) = error else {
+                    return XCTFail("expected StellarSDKError.invalidArgument, got \(error)")
+                }
+                XCTAssertTrue(message.contains("only a contract can hold the executable tag entry"),
+                              "unexpected message: \(message)")
+            }
+            XCTAssertThrowsError(try InvokeHostFunctionOperation.forCreatingContractFromExternalRefWithConstructor(
+                executableOwner: owner, tag: executableTag, address: deployer,
+                constructorArguments: [SCValXDR.u32(7)], salt: fixedSalt)) { error in
+                guard case StellarSDKError.invalidArgument(let message) = error else {
+                    return XCTFail("expected StellarSDKError.invalidArgument, got \(error)")
+                }
+                XCTAssertTrue(message.contains("only a contract can hold the executable tag entry"),
+                              "unexpected message: \(message)")
+            }
+        }
     }
 
     func testBuilderGeneratesRandomSaltWhenOmitted() throws {

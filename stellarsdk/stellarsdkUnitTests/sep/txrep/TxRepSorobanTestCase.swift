@@ -321,6 +321,75 @@ class TxRepSorobanTestCase: XCTestCase {
         XCTAssertEqual(try transaction.encodedEnvelope(), reconstructed)
     }
 
+    func testCreateContractFromExternalRefTxRep() throws {
+        let source = try KeyPair(secretSeed: "SC4CGETADVYTCR5HEAVZRB3DZQY5Y4J7RFNJTRA6ESMHIPEZUSTE2QDK")
+        let account = Account(keyPair: source, sequenceNumber: 56100)
+
+        let ownerIdHex = String(repeating: "ab", count: 32)
+        let owner = try SCAddressXDR(contractId: ownerIdHex)
+        let address = try SCAddressXDR(accountId: source.accountId)
+
+        let createOperation = try InvokeHostFunctionOperation.forCreatingContractFromExternalRef(
+            executableOwner: owner,
+            tag: "token-v1",
+            address: address,
+            salt: WrappedData32(Data(repeating: 0x11, count: 32))
+        )
+
+        let transaction = try Transaction(
+            sourceAccount: account,
+            operations: [createOperation],
+            memo: Memo.none
+        )
+        try transaction.sign(keyPair: source, network: .testnet)
+
+        let txRep = try TxRep.toTxRep(transactionEnvelope: transaction.encodedEnvelope())
+
+        XCTAssertTrue(txRep.contains("tx.operations[0].body.invokeHostFunctionOp.hostFunction.type: HOST_FUNCTION_TYPE_CREATE_CONTRACT"))
+        XCTAssertTrue(txRep.contains("hostFunction.createContract.executable.type: CONTRACT_EXECUTABLE_EXTERNAL_REF"))
+        XCTAssertTrue(txRep.contains("hostFunction.createContract.executable.external_ref.executable_owner.contractId: \(ownerIdHex)"))
+        XCTAssertTrue(txRep.contains("hostFunction.createContract.executable.external_ref.tag: \"token-v1\""))
+
+        let reconstructed = try TxRep.fromTxRep(txRep: txRep)
+        XCTAssertEqual(try transaction.encodedEnvelope(), reconstructed)
+    }
+
+    func testCreateContractV2FromExternalRefBinaryTagTxRep() throws {
+        let source = try KeyPair(secretSeed: "SC4CGETADVYTCR5HEAVZRB3DZQY5Y4J7RFNJTRA6ESMHIPEZUSTE2QDK")
+        let account = Account(keyPair: source, sequenceNumber: 56200)
+
+        let ownerIdHex = String(repeating: "ab", count: 32)
+        let owner = try SCAddressXDR(contractId: ownerIdHex)
+        let address = try SCAddressXDR(accountId: source.accountId)
+        let binaryTag = Data([0xC0, 0x00, 0xFF, 0xFE])
+
+        let createOperation = try InvokeHostFunctionOperation.forCreatingContractFromExternalRefWithConstructor(
+            executableOwner: owner,
+            tag: binaryTag,
+            address: address,
+            constructorArguments: [SCValXDR.u32(7)],
+            salt: WrappedData32(Data(repeating: 0x11, count: 32))
+        )
+
+        let transaction = try Transaction(
+            sourceAccount: account,
+            operations: [createOperation],
+            memo: Memo.none
+        )
+        try transaction.sign(keyPair: source, network: .testnet)
+
+        let txRep = try TxRep.toTxRep(transactionEnvelope: transaction.encodedEnvelope())
+
+        XCTAssertTrue(txRep.contains("tx.operations[0].body.invokeHostFunctionOp.hostFunction.type: HOST_FUNCTION_TYPE_CREATE_CONTRACT_V2"))
+        XCTAssertTrue(txRep.contains("hostFunction.createContractV2.executable.type: CONTRACT_EXECUTABLE_EXTERNAL_REF"))
+        XCTAssertTrue(txRep.contains(#"hostFunction.createContractV2.executable.external_ref.tag: "\xc0\x00\xff\xfe""#))
+        XCTAssertTrue(txRep.contains("hostFunction.createContractV2.constructorArgs.len: 1"))
+        XCTAssertTrue(txRep.contains("hostFunction.createContractV2.constructorArgs[0].u32: 7"))
+
+        let reconstructed = try TxRep.fromTxRep(txRep: txRep)
+        XCTAssertEqual(try transaction.encodedEnvelope(), reconstructed)
+    }
+
     func testExtendFootprintTTLOperationTxRep() throws {
         let source = try KeyPair(secretSeed: "SC4CGETADVYTCR5HEAVZRB3DZQY5Y4J7RFNJTRA6ESMHIPEZUSTE2QDK")
         let account = Account(keyPair: source, sequenceNumber: 57000)

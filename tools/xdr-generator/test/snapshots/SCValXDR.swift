@@ -26,7 +26,7 @@ public indirect enum SCValXDR: XDRCodable, Sendable {
   case contractInstance(SCContractInstanceXDR)
   case ledgerKeyContractInstance
   case ledgerKeyNonce(SCNonceKeyXDR)
-  case executableTag(String)
+  case executableTag(Data)
 
   public init(from decoder: Decoder) throws {
     var container = try decoder.unkeyedContainer()
@@ -106,7 +106,7 @@ public indirect enum SCValXDR: XDRCodable, Sendable {
       let val = try container.decode(SCNonceKeyXDR.self)
       self = .ledgerKeyNonce(val)
     case SCValType.executableTag.rawValue:
-      let val = try container.decode(String.self)
+      let val = try container.decode(Data.self)
       self = .executableTag(val)
     default:
       throw StellarSDKError.xdrDecodingError(message: "Unknown SCValXDR discriminant: \(discriminant)")
@@ -207,6 +207,20 @@ public indirect enum SCValXDR: XDRCodable, Sendable {
 }
 
 extension SCValXDR {
+  /// Builds the executable_tag arm carrying the UTF-8 bytes of the given text.
+  public static func executableTag(_ string: String) -> SCValXDR {
+    return .executableTag(Data(string.utf8))
+  }
+
+  /// The text the executable_tag arm spells, read as UTF-8; nil when the
+  /// value is another arm or the bytes are not valid UTF-8.
+  public var executableTagString: String? {
+    guard case .executableTag(let bytes) = self else { return nil }
+    return String(data: bytes, encoding: .utf8)
+  }
+}
+
+extension SCValXDR {
   public func toTxRep(prefix: String, lines: inout [String]) throws {
     switch self {
     case .bool(let val):
@@ -291,7 +305,7 @@ extension SCValXDR {
       try val.toTxRep(prefix: "\(prefix).nonce_key", lines: &lines)
     case .executableTag(let val):
       lines.append("\(prefix).type: SCV_EXECUTABLE_TAG")
-      lines.append("\(prefix).executable_tag: \(TxRepHelper.escapeString(val))")
+      lines.append("\(prefix).executable_tag: \(TxRepHelper.escapeBytes(val))")
     }
   }
 
@@ -384,7 +398,7 @@ extension SCValXDR {
       let val = try SCNonceKeyXDR.fromTxRep(map, prefix: "\(prefix).nonce_key")
       return .ledgerKeyNonce(val)
     case "SCV_EXECUTABLE_TAG":
-      let val = try TxRepHelper.requireString(map, "\(prefix).executable_tag")
+      let val = try TxRepHelper.requireStringBytes(map, "\(prefix).executable_tag")
       return .executableTag(val)
     default:
       throw TxRepError.invalidValue(key: discKey)
@@ -438,7 +452,7 @@ extension SCValXDR: XdrJsonCodable {
     case .ledgerKeyNonce(let payload):
       return .object([XdrJsonMember(key: "ledger_key_nonce", value: try payload.toXdrJsonValue())])
     case .executableTag(let payload):
-      return .object([XdrJsonMember(key: "executable_tag", value: try SCStringXDRJsonCodec.toXdrJsonValue(payload, type: "SCValXDR", key: "executable_tag"))])
+      return .object([XdrJsonMember(key: "executable_tag", value: XdrJson.escapedString(payload))])
     }
   }
 
@@ -602,7 +616,7 @@ extension SCValXDR: XdrJsonCodable {
       let ledgerKeyNonce: SCNonceKeyXDR = try SCNonceKeyXDR.fromXdrJsonValue(member.value)
       return .ledgerKeyNonce(ledgerKeyNonce)
     case "executable_tag":
-      let executableTag: String = try SCStringXDRJsonCodec.fromXdrJsonValue(member.value, type: "SCValXDR", key: "executable_tag")
+      let executableTag: Data = try XdrJson.unescapeString(member.value, type: "SCValXDR", key: "executable_tag")
       return .executableTag(executableTag)
     default:
       throw XdrJsonError.unknownUnionArm(type: "SCValXDR", key: member.key)

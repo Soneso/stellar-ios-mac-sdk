@@ -69,7 +69,7 @@ internal func compareScValHostOrder(_ a: SCValXDR, _ b: SCValXDR) -> Int {
     case (.symbol(let symbolA), .symbol(let symbolB)):
         return compareBytesUnsigned([UInt8](symbolA.utf8), [UInt8](symbolB.utf8))
     case (.executableTag(let tagA), .executableTag(let tagB)):
-        return compareBytesUnsigned([UInt8](tagA.utf8), [UInt8](tagB.utf8))
+        return compareBytesUnsigned([UInt8](tagA), [UInt8](tagB))
     default:
         return compareBytesUnsigned(scValToXdrBytesForOrder(a), scValToXdrBytesForOrder(b))
     }

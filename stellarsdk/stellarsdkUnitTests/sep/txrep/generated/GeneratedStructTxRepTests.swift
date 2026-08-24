@@ -145,7 +145,7 @@ static func parseTxRepLines(_ lines: [String]) -> [String: String] {
     }
 
     func test_ContractExecutableExternalRefXDR_roundtrip() throws {
-        let original: ContractExecutableExternalRefXDR = ContractExecutableExternalRefXDR(executableOwner: .account(try PublicKey([UInt8](repeating: 0xAB, count: 32))), tag: "test_string")
+        let original: ContractExecutableExternalRefXDR = ContractExecutableExternalRefXDR(executableOwner: .account(try PublicKey([UInt8](repeating: 0xAB, count: 32))), tag: Data([0x74, 0x61, 0x67, 0x00, 0xff, 0x10]))
         var lines: [String] = []
         try original.toTxRep(prefix: "k", lines: &lines)
         let map = Self.parseTxRepLines(lines)
