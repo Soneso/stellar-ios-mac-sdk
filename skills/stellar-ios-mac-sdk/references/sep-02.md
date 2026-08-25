@@ -4,6 +4,8 @@
 **Prerequisites:** None (for forward lookup via `Federation.resolve(stellarAddress:)`); federation server URL (for reverse/txid/forward lookups).
 **SDK Class:** `Federation` (in `stellarsdk`)
 
+All examples assume `import stellarsdk`.
+
 ## Table of Contents
 
 - [How It Works](#how-it-works)
@@ -95,7 +97,7 @@ case .success(let federation):
     // federation.federationAddress holds the FEDERATION_SERVER URL
     print("Server: \(federation.federationAddress)")
     // Now use the instance to do lookups
-    let lookupResult = await federation.resolve(account_id: "GBVPKXWMAB3...")
+    let lookupResult = await federation.resolve(account_id: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ")
 case .failure(let error):
     print("No federation server: \(error)")
 }
@@ -229,6 +231,7 @@ This complete example resolves a Stellar address and builds a transaction with t
 
 ```swift
 import stellarsdk
+import Foundation
 
 func sendFederatedPayment(
     senderKeyPair: KeyPair,
@@ -405,12 +408,12 @@ if memoType == "hash", let rawData = Data(base64Encoded: memoValue) {
 
 ```swift
 // WRONG: static resolve(stellarAddress:) expects "user*domain.com" format
-let result = await Federation.resolve(stellarAddress: "GBVPKXWMAB3...")
+let wrongResult = await Federation.resolve(stellarAddress: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ")
 // Returns .failure(error: .invalidAddress) — G-addresses have no '*'
 
 // CORRECT: use an instance and resolve(account_id:) for reverse lookup
 let federation = Federation(federationAddress: "https://stellarid.io/federation")
-let result = await federation.resolve(account_id: "GBVPKXWMAB3...")
+let result = await federation.resolve(account_id: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ")
 ```
 
 **Constructing a Federation instance with the wrong URL:**
@@ -424,7 +427,7 @@ let result = await federation.resolve(account_id: "GBVPKXWMAB3...")
 let domainResult = await Federation.forDomain(domain: "soneso.com")
 if case .success(let federation) = domainResult {
     // federation.federationAddress is the FEDERATION_SERVER URL
-    let result = await federation.resolve(account_id: "GBVPKXWMAB3...")
+    let result = await federation.resolve(account_id: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ")
 }
 ```
 
@@ -449,10 +452,13 @@ if fedResponse.memoType == "id", let memoValue = fedResponse.memo {
 The account ID validation calls `PublicKey(accountId:)` internally. Keys with the wrong prefix (e.g., secret keys starting with `S`) immediately return `.invalidAccountId`.
 
 ```swift
+let federation = Federation(federationAddress: "https://stellarid.io/federation")
+
 // WRONG: passing a secret key (S-address) to account_id lookup
-let result = await federation.resolve(account_id: "SBVPKXWMAB3...")
+let secretSeed = try KeyPair.generateRandomKeyPair().secretSeed!
+let wrongResult = await federation.resolve(account_id: secretSeed)
 // Returns .failure(error: .invalidAccountId)
 
 // CORRECT: always pass a public key (G-address)
-let result = await federation.resolve(account_id: "GBVPKXWMAB3...")
+let result = await federation.resolve(account_id: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ")
 ```

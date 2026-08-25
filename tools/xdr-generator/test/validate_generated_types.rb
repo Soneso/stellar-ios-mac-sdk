@@ -16,6 +16,10 @@ require_relative '../generator/generator'
 
 AST = Xdrgen::AST unless defined?(AST)
 
+# Types the validator skips beyond the generator's own skip list. Empty today;
+# add a type here only with a reason it cannot be structurally validated.
+ADDITIONAL_SKIP_TYPES = [].freeze
+
 # =============================================================================
 # Validation Engine
 # =============================================================================

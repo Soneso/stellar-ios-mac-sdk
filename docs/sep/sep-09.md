@@ -90,7 +90,9 @@ Binary files (photos, documents) are passed as `Data` values within the same `fi
 
 ```swift
 import stellarsdk
+import Foundation
 
+// jwtToken: SEP-10 JWT obtained via web authentication (see sep-10.md)
 var request = PutCustomerInfoRequest(jwt: jwtToken)
 
 // Load raw file bytes — the SDK handles multipart encoding internally
@@ -156,7 +158,9 @@ Organization documents can also be uploaded as `Data` values within the `organiz
 
 ```swift
 import stellarsdk
+import Foundation
 
+// jwtToken: SEP-10 JWT obtained via web authentication (see sep-10.md)
 var request = PutCustomerInfoRequest(jwt: jwtToken)
 
 // Documents (raw bytes)
@@ -276,6 +280,7 @@ The field key string for any enum case is available via the `.parameter` propert
 
 ```swift
 import stellarsdk
+import Foundation
 
 // Natural person field keys — read via .parameter.0
 print(KYCNaturalPersonFieldsEnum.firstName("x").parameter.0)          // "first_name"

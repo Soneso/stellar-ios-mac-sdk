@@ -2,6 +2,8 @@
 
 **Purpose:** Convert Stellar transactions between base64-encoded XDR and human-readable key-value text (TxRep format), for debugging, auditing, and manual transaction construction.
 
+All examples assume `import stellarsdk`.
+
 **Prerequisites:** None — TxRep conversion works offline, no network or signing required.
 
 **SDK Class:** `TxRep` (static methods only, no instantiation needed)
@@ -27,14 +29,15 @@
 
 ```swift
 import stellarsdk
+import Foundation
 
 // Build and sign a transaction
-let sourceKeyPair = try KeyPair(secretSeed: "SABC...")
+let sourceKeyPair = try KeyPair.generateRandomKeyPair()
 let account = Account(keyPair: sourceKeyPair, sequenceNumber: 123456)
 
 let payment = try PaymentOperation(
     sourceAccountId: nil,
-    destinationAccountId: "GDEST...",
+    destinationAccountId: "GCZHXL5HXQX5ABDM26LHYRCQZ5OJFHLOPLZX47WEBP3V2PF5AVFK2A5D",
     asset: Asset(type: AssetType.ASSET_TYPE_NATIVE)!,
     amount: Decimal(100)
 )
@@ -201,7 +204,10 @@ All five Stellar memo types are supported:
 
 ```swift
 import stellarsdk
+import Foundation
 
+// account: the transaction's source Account
+// op: a built operation (e.g. a PaymentOperation)
 // MEMO_NONE
 let tx1 = try Transaction(sourceAccount: account, operations: [op], memo: Memo.none)
 // → tx.memo.type: MEMO_NONE
@@ -345,13 +351,14 @@ feeBump.signatures[0].signature: <hex>
 
 ```swift
 import stellarsdk
+import Foundation
 
 // Build inner transaction
-let innerKeyPair = try KeyPair(secretSeed: "SINNER...")
+let innerKeyPair = try KeyPair.generateRandomKeyPair()
 let innerAccount = Account(keyPair: innerKeyPair, sequenceNumber: 654321)
 let payment = try PaymentOperation(
     sourceAccountId: nil,
-    destinationAccountId: "GDEST...",
+    destinationAccountId: "GCZHXL5HXQX5ABDM26LHYRCQZ5OJFHLOPLZX47WEBP3V2PF5AVFK2A5D",
     asset: Asset(type: AssetType.ASSET_TYPE_NATIVE)!,
     amount: Decimal(50)
 )
@@ -406,6 +413,30 @@ tx.operations[0].body.invokeHostFunctionOp.hostFunction.invokeContract.functionN
 tx.operations[0].body.invokeHostFunctionOp.hostFunction.invokeContract.args.len: 1
 tx.operations[0].body.invokeHostFunctionOp.auth.len: 0
 ```
+
+A create-contract host function renders its ID preimage and executable:
+```
+tx.operations[0].body.invokeHostFunctionOp.hostFunction.type: HOST_FUNCTION_TYPE_CREATE_CONTRACT
+tx.operations[0].body.invokeHostFunctionOp.hostFunction.createContract.contractIDPreimage.type: CONTRACT_ID_PREIMAGE_FROM_ADDRESS
+tx.operations[0].body.invokeHostFunctionOp.hostFunction.createContract.contractIDPreimage.fromAddress.address.type: SC_ADDRESS_TYPE_ACCOUNT
+tx.operations[0].body.invokeHostFunctionOp.hostFunction.createContract.contractIDPreimage.fromAddress.address.accountId: G...
+tx.operations[0].body.invokeHostFunctionOp.hostFunction.createContract.contractIDPreimage.fromAddress.salt: <64 hex>
+tx.operations[0].body.invokeHostFunctionOp.hostFunction.createContract.executable.type: CONTRACT_EXECUTABLE_WASM
+tx.operations[0].body.invokeHostFunctionOp.hostFunction.createContract.executable.wasm_hash: <64 hex>
+```
+
+An external-ref executable (Protocol 28, CAP-85) replaces the two `executable.*` lines:
+```
+tx.operations[0].body.invokeHostFunctionOp.hostFunction.createContract.executable.type: CONTRACT_EXECUTABLE_EXTERNAL_REF
+tx.operations[0].body.invokeHostFunctionOp.hostFunction.createContract.executable.external_ref.executable_owner.type: SC_ADDRESS_TYPE_CONTRACT
+tx.operations[0].body.invokeHostFunctionOp.hostFunction.createContract.executable.external_ref.executable_owner.contractId: <64 hex>
+tx.operations[0].body.invokeHostFunctionOp.hostFunction.createContract.executable.external_ref.tag: "token-v1"
+```
+
+The same executable fields appear under `createContractV2` for
+`HOST_FUNCTION_TYPE_CREATE_CONTRACT_V2`, followed by its `constructorArgs` list. A tag
+whose bytes spell no text renders its non-printable bytes as `\xNN` escapes inside the
+quotes.
 
 ---
 
@@ -492,8 +523,9 @@ tx.memo.text: "Hello, World!"
 **`Account(keyPair:sequenceNumber:)` vs `Account(accountId:sequenceNumber:)` — both valid for TxRep roundtrips (no network needed):**
 ```swift
 // Both work for offline TxRep conversion:
+let keyPair = try KeyPair.generateRandomKeyPair()
 let account1 = Account(keyPair: keyPair, sequenceNumber: 123456)
-let account2 = try Account(accountId: "GABC...", sequenceNumber: 123456)
+let account2 = try Account(accountId: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ", sequenceNumber: 123456)
 ```
 
 **`seqNum` in TxRep is one higher than the Account's current sequence number:**

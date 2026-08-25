@@ -2,6 +2,16 @@
 
 Less common but important patterns for the Stellar iOS/Mac SDK.
 
+All examples assume `import stellarsdk`.
+
+- [Multi-Signature Accounts](#multi-signature-accounts)
+- [Sponsored Reserves](#sponsored-reserves)
+- [Claimable Balances](#claimable-balances)
+- [Liquidity Pools](#liquidity-pools)
+- [Muxed Accounts](#muxed-accounts)
+- [Fee-Bump Transactions](#fee-bump-transactions)
+- [Path Payments](#path-payments)
+
 ## Multi-Signature Accounts
 
 ```swift

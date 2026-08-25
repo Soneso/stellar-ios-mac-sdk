@@ -4,6 +4,8 @@
 **Prerequisites:** Requires SEP-10 for authentication (see sep-10.md)
 **SDK Class:** `RecoveryService`
 
+All examples assume `import stellarsdk`.
+
 ## Table of Contents
 
 - [Quick Start](#quick-start)
@@ -570,10 +572,14 @@ let responseEnum = await service.updateIdentitiesForAccount(address: address, re
 **Wrong: incorrect signingAddress in signTransaction**
 
 ```swift
+// address: the account address registered with the recovery server
+// jwt: SEP-10 JWT obtained via web authentication (see sep-10.md)
+// service: the RecoveryService for the recovery server
+// txXdr: base64 XDR of the transaction the recovery server should sign
 // WRONG: Using a key that does not match any signer returned at registration
-let signEnum = await service.signTransaction(
+let wrongSignEnum = await service.signTransaction(
     address: address,
-    signingAddress: "GINVALID_KEY...",  // not in account.signers
+    signingAddress: "GCZHXL5HXQX5ABDM26LHYRCQZ5OJFHLOPLZX47WEBP3V2PF5AVFK2A5D",  // not in account.signers
     transaction: txXdr,
     jwt: jwt
 )
@@ -582,7 +588,9 @@ let signEnum = await service.signTransaction(
 // CORRECT: Use the key from account.signers[0].key (most recently added)
 let accountEnum = await service.accountDetails(address: address, jwt: jwt)
 guard case .success(let account) = accountEnum,
-      let signerKey = account.signers.first?.key else { return }
+      let signerKey = account.signers.first?.key else {
+    throw StellarSDKError.invalidArgument(message: "Could not load a registered recovery signer")
+}
 
 let signEnum = await service.signTransaction(
     address: address,

@@ -5,6 +5,8 @@
 **SDK Class:** `KycService`
 **Standard KYC Fields:** See [sep-09.md](sep-09.md) for all KYC field enums (`KYCNaturalPersonFieldsEnum`, `KYCOrganizationFieldsEnum`, etc.)
 
+All examples assume `import stellarsdk`.
+
 ## Table of Contents
 
 - [Service initialization](#service-initialization)
@@ -35,6 +37,7 @@
 
 ```swift
 import stellarsdk
+import Foundation
 
 let result = await KycService.forDomain(domain: "https://testanchor.stellar.org")
 switch result {
@@ -84,12 +87,15 @@ Check the status of a customer's KYC process or fetch the fields the anchor requ
 ```swift
 import stellarsdk
 
+// kycService: KycService from KycService.forDomain(...) (see service initialization)
+// customerId: anchor-assigned customer id from a previous registration
+// jwtToken: SEP-10 JWT obtained via web authentication (see sep-10.md)
 // Build request — only jwt is required
 var request = GetCustomerInfoRequest(jwt: jwtToken)
 
 // Optional: identify an existing customer
 request.id = customerId          // anchor-assigned ID from a previous PUT
-request.account = "GABC..."     // Stellar account (inferred from JWT sub; legacy)
+request.account = "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ"     // Stellar account (inferred from JWT sub; legacy)
 request.memo = "12345"           // integer memo for shared/omnibus accounts
 request.memoType = "id"          // deprecated; memos are always type id
 
@@ -149,13 +155,15 @@ Submit or update customer data. Returns a `PutCustomerInfoResponse` with an `id:
 ```swift
 import stellarsdk
 
+// kycService: KycService from KycService.forDomain(...) (see service initialization)
+// jwtToken: SEP-10 JWT obtained via web authentication (see sep-10.md)
 var request = PutCustomerInfoRequest(jwt: jwtToken)
 
 // To update an existing customer, set their anchor-assigned ID
 // request.id = customerId
 
 // Optional routing fields
-request.account = "GABC..."      // Stellar account (inferred from JWT sub)
+request.account = "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ"      // Stellar account (inferred from JWT sub)
 request.memo = "12345"           // memo for shared/omnibus accounts
 request.type = "sep6-deposit"    // customer type
 
@@ -183,7 +191,10 @@ Use `KYCNaturalPersonFieldsEnum` cases. Assign an array to `request.fields`.
 
 ```swift
 import stellarsdk
+import Foundation
 
+// kycService: KycService from KycService.forDomain(...) (see service initialization)
+// jwtToken: SEP-10 JWT obtained via web authentication (see sep-10.md)
 var request = PutCustomerInfoRequest(jwt: jwtToken)
 
 request.fields = [
@@ -427,7 +438,12 @@ Binary fields (photos, documents) are passed as `Data` values inside `KYCNatural
 
 ```swift
 import stellarsdk
+import Foundation
 
+// idFrontData, idBackData, notaryData, utilityBillData, bankStatementData, selfieVideoData: raw file bytes loaded from disk (Data)
+// kycService: KycService from KycService.forDomain(...) (see service initialization)
+// customerId: anchor-assigned customer id from a previous registration
+// jwtToken: SEP-10 JWT obtained via web authentication (see sep-10.md)
 // Load image data from disk or camera
 let idFrontData = try Data(contentsOf: URL(fileURLWithPath: "/path/to/id_front.jpg"))
 let idBackData  = try Data(contentsOf: URL(fileURLWithPath: "/path/to/id_back.jpg"))
@@ -475,7 +491,11 @@ Upload a binary file first, then reference it by `fileId` in a subsequent `PUT /
 
 ```swift
 import stellarsdk
+import Foundation
 
+// kycService: KycService from KycService.forDomain(...) (see service initialization)
+// customerId: anchor-assigned customer id from a previous registration
+// jwtToken: SEP-10 JWT obtained via web authentication (see sep-10.md)
 // Step 1: Upload the file
 let imageData = try Data(contentsOf: URL(fileURLWithPath: "/path/to/passport.jpg"))
 
@@ -584,7 +604,11 @@ Register a URL to receive POST notifications when a customer's KYC status change
 
 ```swift
 import stellarsdk
+import Foundation
 
+// kycService: KycService from KycService.forDomain(...) (see service initialization)
+// customerId: anchor-assigned customer id from a previous registration
+// jwtToken: SEP-10 JWT obtained via web authentication (see sep-10.md)
 var request = PutCustomerCallbackRequest(
     url: "https://myapp.com/kyc-callback",
     jwt: jwtToken
@@ -592,7 +616,7 @@ var request = PutCustomerCallbackRequest(
 
 // Identify customer — use one of: id, account, or account+memo
 request.id = customerId      // preferred: anchor-assigned ID
-// request.account = "GABC..."  // or Stellar account
+// request.account = "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ"  // or Stellar account
 // request.memo = "12345"        // with memo for shared accounts
 // request.memoType = "id"       // deprecated
 
@@ -680,8 +704,10 @@ Delete all personal data stored by the anchor for a given Stellar account. Used 
 ```swift
 import stellarsdk
 
+// kycService: KycService from KycService.forDomain(...) (see service initialization)
+// jwtToken: SEP-10 JWT obtained via web authentication (see sep-10.md)
 // First parameter is the Stellar account ID (G... address), not the customer UUID
-let result = await kycService.deleteCustomerInfo(account: "GABC...", jwt: jwtToken)
+let result = await kycService.deleteCustomerInfo(account: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ", jwt: jwtToken)
 switch result {
 case .success:
     print("Customer data deleted")
@@ -712,7 +738,10 @@ All methods return result enums. The `KycServiceError` enum covers all error cas
 
 ```swift
 import stellarsdk
+import Foundation
 
+// kycService: KycService from KycService.forDomain(...) (see service initialization)
+// request: the request object built as shown above
 let result = await kycService.putCustomerInfo(request: request)
 switch result {
 case .success(let response):
@@ -832,11 +861,13 @@ Returned by `getCustomerFiles()`.
 **WRONG: passing a customer UUID to `deleteCustomerInfo(account:)` — it expects a Stellar account ID**
 
 ```swift
+// jwt: SEP-10 JWT obtained via web authentication (see sep-10.md)
+// kycService: KycService from KycService.forDomain(...) (see service initialization)
 // WRONG: passing the anchor-assigned customer ID (UUID)
 await kycService.deleteCustomerInfo(account: "391fb415-c223-4608-b2f5-dd1e91e3a986", jwt: jwt)  // 404
 
-// CORRECT: first argument is the Stellar account ID (G... address)
-await kycService.deleteCustomerInfo(account: "GABC...stellarAccountId", jwt: jwt)
+// CORRECT: first argument is the customer's Stellar account ID (G... address)
+await kycService.deleteCustomerInfo(account: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ", jwt: jwt)
 ```
 
 **WRONG: `putCustomerVerification()` returns `GetCustomerInfoResponseEnum`, not `PutCustomerInfoResponseEnum`**

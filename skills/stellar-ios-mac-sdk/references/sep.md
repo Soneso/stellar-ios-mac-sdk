@@ -2,6 +2,8 @@
 
 The iOS SDK implements 18 Stellar Ecosystem Proposals (SEPs) that cover authentication, asset transfers, identity verification, and other standardized protocols for integrating with anchors and other Stellar services.
 
+All examples assume `import stellarsdk`.
+
 ## SEP Reference Table
 
 | SEP | Name | Description | Details |

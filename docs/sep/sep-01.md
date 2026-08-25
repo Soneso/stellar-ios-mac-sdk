@@ -71,7 +71,7 @@ NETWORK_PASSPHRASE="Test SDF Network ; September 2015"
 FEDERATION_SERVER="https://example.com/federation"
 TRANSFER_SERVER_SEP0024="https://example.com/sep24"
 WEB_AUTH_ENDPOINT="https://example.com/auth"
-SIGNING_KEY="GCKX7PGTILCAM6NKST6PWNCBSMLHZJKFWXFHQLE4SUVKBQY3HOOYUNK"
+SIGNING_KEY="GBBHQ7H4V6RRORKYLHTCAWP6MOHNORRFJSDPXDFYDGJB2LPZUFPXUEW3"
 
 [DOCUMENTATION]
 ORG_NAME="Example Anchor"
@@ -97,7 +97,9 @@ The general information section contains service endpoints for SEP protocols and
 import stellarsdk
 
 let result = await StellarToml.from(domain: "testanchor.stellar.org")
-guard case .success(let stellarToml) = result else { return }
+guard case .success(let stellarToml) = result else {
+    throw StellarSDKError.invalidArgument(message: "Could not load stellar.toml")
+}
 
 let info = stellarToml.accountInformation
 
@@ -138,9 +140,12 @@ The documentation section contains contact and compliance information about the 
 
 ```swift
 import stellarsdk
+import Foundation
 
 let result = await StellarToml.from(domain: "testanchor.stellar.org")
-guard case .success(let stellarToml) = result else { return }
+guard case .success(let stellarToml) = result else {
+    throw StellarSDKError.invalidArgument(message: "Could not load stellar.toml")
+}
 
 let docs = stellarToml.issuerDocumentation
 

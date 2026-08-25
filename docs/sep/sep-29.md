@@ -17,11 +17,14 @@ The iOS/macOS SDK checks memo requirements automatically inside `submitTransacti
 import stellarsdk
 
 let sdk = StellarSDK.testNet()
-let senderKeyPair = try KeyPair(secretSeed: "SCZANGBA5YHTNYVVV3C7CAZMTQDBJHJG6C34CJDQ66EQ7DZTPBRJFN4A")
-let destinationId = "GDQP2KPQGKIHYJGXNUIYOMHARUARCA7DJT5FO2FFOOUJ3UBEZ3ENO5GT"
+// senderSecretSeed: String for your funded sender account, loaded from secure storage
+// destinationId: String for an existing account with config.memo_required set to "1"
+let senderKeyPair = try KeyPair(secretSeed: senderSecretSeed)
 
 let accountEnum = await sdk.accounts.getAccountDetails(accountId: senderKeyPair.accountId)
-guard case .success(let accountResponse) = accountEnum else { return }
+guard case .success(let accountResponse) = accountEnum else {
+    throw StellarSDKError.invalidArgument(message: "Could not load the sender account")
+}
 
 let sourceAccount = try Account(
     accountId: accountResponse.accountId,
@@ -106,10 +109,13 @@ Exchanges and custodial services should set the `config.memo_required` data entr
 import stellarsdk
 
 let sdk = StellarSDK.testNet()
-let exchangeKeyPair = try KeyPair(secretSeed: "SBMSVD4KKELKGZXHBUQTIROWUAPQASDX7KEJITARP4VMZ6KLUHOGPTYW")
+// exchangeSecretSeed: String for the exchange account, loaded from secure storage
+let exchangeKeyPair = try KeyPair(secretSeed: exchangeSecretSeed)
 
 let accountEnum = await sdk.accounts.getAccountDetails(accountId: exchangeKeyPair.accountId)
-guard case .success(let accountResponse) = accountEnum else { return }
+guard case .success(let accountResponse) = accountEnum else {
+    throw StellarSDKError.invalidArgument(message: "Could not load the exchange account")
+}
 
 let sourceAccount = try Account(
     accountId: accountResponse.accountId,
@@ -161,19 +167,21 @@ When a transaction contains multiple payment operations, the check examines each
 import stellarsdk
 
 let sdk = StellarSDK.testNet()
-let senderKeyPair = try KeyPair(secretSeed: "SCZANGBA5YHTNYVVV3C7CAZMTQDBJHJG6C34CJDQ66EQ7DZTPBRJFN4A")
+// senderSecretSeed: String for your funded sender account, loaded from secure storage
+let senderKeyPair = try KeyPair(secretSeed: senderSecretSeed)
 
 let accountEnum = await sdk.accounts.getAccountDetails(accountId: senderKeyPair.accountId)
-guard case .success(let accountResponse) = accountEnum else { return }
+guard case .success(let accountResponse) = accountEnum else {
+    throw StellarSDKError.invalidArgument(message: "Could not load the sender account")
+}
 
 let sourceAccount = try Account(
     accountId: accountResponse.accountId,
     sequenceNumber: accountResponse.sequenceNumber
 )
 
-// Batch payment to multiple recipients
-let dest1 = "GDQP2KPQGKIHYJGXNUIYOMHARUARCA7DJT5FO2FFOOUJ3UBEZ3ENO5GT"
-let dest2 = "GCKUD4BHIYSBER7DI6TPMYQ4KNDEUKVMN44VKSUQGEFXWLNTHIIQE7FB"
+// dest1 and dest2: String values for existing destination accounts;
+// set config.memo_required on at least one to drive .destinationRequiresMemo.
 
 let op1 = try PaymentOperation(
     sourceAccountId: nil,
@@ -215,11 +223,14 @@ The memo check also applies to `AccountMergeOperation`, since merging sends the 
 import stellarsdk
 
 let sdk = StellarSDK.testNet()
-let sourceKeyPair = try KeyPair(secretSeed: "SCZANGBA5YHTNYVVV3C7CAZMTQDBJHJG6C34CJDQ66EQ7DZTPBRJFN4A")
-let destinationId = "GDQP2KPQGKIHYJGXNUIYOMHARUARCA7DJT5FO2FFOOUJ3UBEZ3ENO5GT"
+// sourceSecretSeed: String for your funded source account, loaded from secure storage
+// destinationId: String for an existing account that will receive the merged balance
+let sourceKeyPair = try KeyPair(secretSeed: sourceSecretSeed)
 
 let accountEnum = await sdk.accounts.getAccountDetails(accountId: sourceKeyPair.accountId)
-guard case .success(let accountResponse) = accountEnum else { return }
+guard case .success(let accountResponse) = accountEnum else {
+    throw StellarSDKError.invalidArgument(message: "Could not load the source account")
+}
 
 let sourceAccount = try Account(
     accountId: accountResponse.accountId,
@@ -274,18 +285,21 @@ Per the SEP-29 specification, multiplexed accounts are excluded from memo requir
 import stellarsdk
 
 let sdk = StellarSDK.testNet()
-let senderKeyPair = try KeyPair(secretSeed: "SCZANGBA5YHTNYVVV3C7CAZMTQDBJHJG6C34CJDQ66EQ7DZTPBRJFN4A")
+// senderSecretSeed: String for your funded sender account, loaded from secure storage
+let senderKeyPair = try KeyPair(secretSeed: senderSecretSeed)
 
 let accountEnum = await sdk.accounts.getAccountDetails(accountId: senderKeyPair.accountId)
-guard case .success(let accountResponse) = accountEnum else { return }
+guard case .success(let accountResponse) = accountEnum else {
+    throw StellarSDKError.invalidArgument(message: "Could not load the sender account")
+}
 
 let sourceAccount = try Account(
     accountId: accountResponse.accountId,
     sequenceNumber: accountResponse.sequenceNumber
 )
 
+// baseAccountId: String for an existing destination account
 // Create a muxed destination with user ID embedded
-let baseAccountId = "GDQP2KPQGKIHYJGXNUIYOMHARUARCA7DJT5FO2FFOOUJ3UBEZ3ENO5GT"
 let muxedDestination = try MuxedAccount(accountId: baseAccountId, id: 12345)
 
 let paymentOp = try PaymentOperation(
@@ -398,11 +412,14 @@ The SDK's automatic check queries Horizon for each destination account's data. C
 import stellarsdk
 
 let sdk = StellarSDK.testNet()
-let senderKeyPair = try KeyPair(secretSeed: "SCZANGBA5YHTNYVVV3C7CAZMTQDBJHJG6C34CJDQ66EQ7DZTPBRJFN4A")
-let destinationId = "GDQP2KPQGKIHYJGXNUIYOMHARUARCA7DJT5FO2FFOOUJ3UBEZ3ENO5GT"
+// senderSecretSeed: String for your funded sender account, loaded from secure storage
+// destinationId: String for the destination whose failure behavior you want to test
+let senderKeyPair = try KeyPair(secretSeed: senderSecretSeed)
 
 let accountEnum = await sdk.accounts.getAccountDetails(accountId: senderKeyPair.accountId)
-guard case .success(let accountResponse) = accountEnum else { return }
+guard case .success(let accountResponse) = accountEnum else {
+    throw StellarSDKError.invalidArgument(message: "Could not load the sender account")
+}
 
 let sourceAccount = try Account(
     accountId: accountResponse.accountId,

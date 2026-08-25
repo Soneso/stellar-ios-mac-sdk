@@ -74,6 +74,7 @@ The recommended approach discovers the KYC service URL automatically from the an
 
 ```swift
 import stellarsdk
+import Foundation
 
 // Loads service URL from stellar.toml automatically
 let result = await KycService.forDomain(domain: "https://testanchor.stellar.org")
@@ -180,7 +181,9 @@ Submit basic personal information for individual customers. Use `KYCNaturalPerso
 
 ```swift
 import stellarsdk
+import Foundation
 
+// jwtToken: SEP-10 JWT obtained via web authentication (see sep-10.md)
 let kycService = KycService(kycServiceAddress: "https://api.anchor.com/kyc")
 
 var request = PutCustomerInfoRequest(jwt: jwtToken)
@@ -209,7 +212,9 @@ The SDK supports all SEP-9 standard fields for natural persons. Here is a comple
 
 ```swift
 import stellarsdk
+import Foundation
 
+// jwtToken: SEP-10 JWT obtained via web authentication (see sep-10.md)
 let kycService = KycService(kycServiceAddress: "https://api.anchor.com/kyc")
 
 var request = PutCustomerInfoRequest(jwt: jwtToken)
@@ -572,6 +577,8 @@ Register a callback URL to receive automatic notifications when customer status 
 ```swift
 import stellarsdk
 
+// customerId: anchor-assigned customer id from a previous registration
+// jwtToken: SEP-10 JWT obtained via web authentication (see sep-10.md)
 let kycService = KycService(kycServiceAddress: "https://api.anchor.com/kyc")
 
 var request = PutCustomerCallbackRequest(
@@ -581,7 +588,7 @@ var request = PutCustomerCallbackRequest(
 request.id = customerId
 
 // Optional: identify customer without ID
-// request.account = "GXXXXX..." // Stellar account
+// request.account = "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ" // Stellar account
 // request.memo = "12345"         // For shared accounts
 
 let result = await kycService.putCustomerCallback(request: request)
@@ -604,10 +611,11 @@ Request deletion of all stored customer data. This is useful for GDPR compliance
 ```swift
 import stellarsdk
 
+// jwtToken: SEP-10 JWT obtained via web authentication (see sep-10.md)
 let kycService = KycService(kycServiceAddress: "https://api.anchor.com/kyc")
 
 // First argument is the Stellar account ID (G... address), NOT the customer UUID
-let accountId = "GXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+let accountId = "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ"
 
 // Delete customer data
 let result = await kycService.deleteCustomerInfo(account: accountId, jwt: jwtToken)
@@ -633,11 +641,12 @@ When multiple customers share a single Stellar account (common for exchanges and
 ```swift
 import stellarsdk
 
+// jwtToken: SEP-10 JWT obtained via web authentication (see sep-10.md)
 let kycService = KycService(kycServiceAddress: "https://api.anchor.com/kyc")
 
 // Get customer info with memo
 var getRequest = GetCustomerInfoRequest(jwt: jwtToken)
-getRequest.account = "GXXXXXX..." // Optional: inferred from JWT
+getRequest.account = "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ" // Optional: inferred from JWT
 getRequest.memo = "12345"          // Unique identifier for this customer
 getRequest.memoType = "id"         // Deprecated: should always be "id"
 
@@ -662,10 +671,11 @@ For Soroban contract accounts (addresses starting with `C...`), authenticate usi
 ```swift
 import stellarsdk
 
+// sep45JwtToken: SEP-45 JWT obtained via contract web authentication (see sep-45.md)
 let kycService = KycService(kycServiceAddress: "https://api.anchor.com/kyc")
 
 // Contract account address (starts with C...)
-let contractAccount = "CXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+let contractAccount = "CB3FU6M3TOAGRBLN5WDLXL6A7VR5SSRGULMXQQOABNMPS25YRJ4CN5VV"
 
 // Get customer info for contract account
 // JWT obtained via SEP-45 authentication

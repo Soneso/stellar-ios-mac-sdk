@@ -2,6 +2,8 @@
 
 Passkey-authenticated smart accounts on Stellar using OpenZeppelin Soroban contracts. Core production API: kit setup, wallet creation, connection, transactions, signer types, credentials, the external-signer manager, events, and the indexer.
 
+All examples assume `import stellarsdk`.
+
 Standard import:
 
 ```swift
@@ -113,6 +115,8 @@ Public types live under two source areas: a protocol-agnostic `core` layer (sign
 | `externalWallet` | `OZExternalWalletAdapter?` | `nil` | `G…` wallet adapter (adapter custody) injected into `externalSigners` |
 | `externalEd25519Adapter` | `OZExternalEd25519SignerAdapter?` | `nil` | Ed25519 adapter (adapter custody) injected into `externalSigners` |
 | `maxContextRuleScanId` | `UInt32` | `50` | Highest context-rule ID to scan when listing |
+| `useUpgradedAuth` | `Bool` | `true` | Credential arm for the kit's internal simulations and the `fundWallet` source-account conversion (`true` = protocol-27 `ADDRESS_V2`). `false` is the legacy opt-out for relayers that parse auth XDR with pre-protocol-27 schemas. Does NOT affect delegated wallet entries |
+| `useUpgradedAuthForWalletSigners` | `Bool` | `true` | Credential arm for delegated external-wallet auth entries (`OZSelectedSigner.wallet`). `false` is the legacy opt-out for wallet software that cannot sign the address-bound preimage. Independent of `useUpgradedAuth` |
 
 > **The default `OZInMemoryStorageAdapter` is tests-only.** It holds credentials in process memory; they are lost when the process exits, and the on-chain smart account becomes unreachable. Production apps pass a persistent adapter (`OZKeychainStorageAdapter` on Apple platforms). See [smart_accounts_webauthn.md](./smart_accounts_webauthn.md).
 
@@ -121,6 +125,7 @@ Public types live under two source areas: a protocol-agnostic `core` layer (sign
 The direct throwing memberwise initializer is the idiomatic in-app path. It is the single place that surfaces every optional field — including `relayerUrl`, `indexerUrl`, `externalWallet`, `externalEd25519Adapter`, and `maxContextRuleScanId`. It `throws SmartAccountConfigurationException` on invalid input.
 
 ```swift
+// myWebAuthnProvider, myWalletAdapter, myEd25519Adapter, myHardwareAdapter: your adapter implementations
 let config = try OZSmartAccountConfig(
     rpcUrl: "https://soroban-testnet.stellar.org",
     networkPassphrase: Network.testnet.passphrase,
@@ -132,7 +137,9 @@ let config = try OZSmartAccountConfig(
     storage: OZKeychainStorageAdapter(),                // use persistent storage in production
     externalWallet: myWalletAdapter,                  // optional: G… adapter custody
     externalEd25519Adapter: myEd25519Adapter,         // optional: Ed25519 adapter custody
-    maxContextRuleScanId: 50                          // optional: highest context-rule ID to scan
+    maxContextRuleScanId: 50,                         // optional: highest context-rule ID to scan
+    useUpgradedAuth: true,                            // default: ADDRESS_V2 for simulations + fundWallet
+    useUpgradedAuthForWalletSigners: true             // default: ADDRESS_V2 for delegated wallet entries
 )
 ```
 
@@ -148,6 +155,11 @@ let config = try OZSmartAccountConfig.builder(
     webauthnVerifierAddress: "CB26VN37RCVNTHJZDEPK6IRO2MMTS3Z2IEO5JD5BINY2OOJ5KKJG7NKY"
 ).webauthnProvider(myWebAuthnProvider).storage(OZKeychainStorageAdapter()).build()
 ```
+
+Legacy compatibility setters (both default to `true`; set `false` only for pre-protocol-27 peers):
+
+- `.useUpgradedAuth(false)` — the relayer parses submitted auth XDR with pre-protocol-27 schemas. Affects the kit's internal simulations and the `fundWallet` source-account conversion only.
+- `.useUpgradedAuthForWalletSigners(false)` — the wallet software cannot sign the address-bound preimage type. Affects delegated external-wallet entries only.
 
 ### createDefaultDeployer
 
@@ -484,10 +496,11 @@ let fresh = try await kit.walletOperations.connectWallet(
 No WebAuthn ceremony, no session check — useful after a user picks a wallet from the indexer.
 
 ```swift
+// kit: an OZSmartAccountKit from OZSmartAccountKit.create(config:) (see setup)
 let direct = try await kit.walletOperations.connectWallet(
     options: OZConnectWalletOptions(
         credentialId: "abc123_...",   // Base64URL, from the indexer
-        contractId: "CABC..."
+        contractId: "CB3FU6M3TOAGRBLN5WDLXL6A7VR5SSRGULMXQQOABNMPS25YRJ4CN5VV"
     )
 )
 // Always returns .connected on success; throws SmartAccountWalletException.NotFound if the
@@ -512,7 +525,8 @@ When an explicit `contractId` is supplied (direct connect or session restore), t
 `connectToContract(contractId:)` binds the kit to an existing smart account by contract address alone — no WebAuthn ceremony, no credential, no persisted session. It verifies the contract exists on-chain, sets the connected state with `credentialId == nil` (`kit.isHeadless == true`), and emits `walletConnectedHeadless`.
 
 ```swift
-let result = try await kit.walletOperations.connectToContract(contractId: "C...")
+// kit: an OZSmartAccountKit from OZSmartAccountKit.create(config:) (see setup)
+let result = try await kit.walletOperations.connectToContract(contractId: "CB3FU6M3TOAGRBLN5WDLXL6A7VR5SSRGULMXQQOABNMPS25YRJ4CN5VV")
 ```
 
 A headless connection holds no passkey, so the single-passkey operations (`submit`, `transfer`, `contractCall`, `executeAndSubmit`, and any manager call left at the default empty `selectedSigners`) reject it. Operate through the multi-signer path with an explicit non-empty `selectedSigners`. Intended for an autonomous agent or backend service that signs through the external-signer path.
@@ -628,8 +642,9 @@ The factory validates the 65-byte size, the `0x04` prefix, and that `credentialI
 ### OZExternalSigner.ed25519 (factory)
 
 ```swift
+// ed25519PublicKey: the signer's raw 32-byte Ed25519 public key (Data)
 let signer = try OZExternalSigner.ed25519(
-    verifierAddress: "CDEF...",   // Ed25519 verifier contract
+    verifierAddress: "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM",   // Ed25519 verifier contract
     publicKey: ed25519PublicKey   // 32 bytes
 )
 ```
@@ -641,14 +656,19 @@ The factory validates `publicKey.count == 32`. No credential-ID suffix — `keyD
 `OZSmartAccountBuilders` offers the same factories with descriptive names plus inspection helpers:
 
 ```swift
-let delegated = try OZSmartAccountBuilders.createDelegatedSigner(publicKey: "GA7Q...")
+// credentialIdBytes: the passkey credential id (Data)
+// otherSigner: another OZExternalSigner built as shown above
+// publicKey32: the signer's raw 32-byte Ed25519 public key (Data)
+// publicKey65: the passkey's raw 65-byte secp256r1 public key (Data)
+// signerList: existing signers fetched from the wallet
+let delegated = try OZSmartAccountBuilders.createDelegatedSigner(publicKey: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ")
 let passkey   = try OZSmartAccountBuilders.createWebAuthnSigner(
-    webauthnVerifierAddress: "CB26VN37...",
+    webauthnVerifierAddress: "CB26VN37RCVNTHJZDEPK6IRO2MMTS3Z2IEO5JD5BINY2OOJ5KKJG7NKY",
     publicKey: publicKey65,
     credentialId: credentialIdBytes
 )
 let ed25519Signer = try OZSmartAccountBuilders.createEd25519Signer(
-    ed25519VerifierAddress: "CDEF...",
+    ed25519VerifierAddress: "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM",
     publicKey: publicKey32
 )
 
@@ -912,6 +932,8 @@ After deployment succeeds, the credential is removed from storage. Reconnection 
 ### Common operations
 
 ```swift
+// kit: an OZSmartAccountKit from OZSmartAccountKit.create(config:) (see setup)
+// publicKey65: the passkey's raw 65-byte secp256r1 public key (Data)
 let cm = kit.credentialManager
 
 // Save or upsert (overwrites existing by ID; no deployment metadata captured).
@@ -919,13 +941,13 @@ let cred = try await cm.saveCredential(
     credentialId: "abc123_...",
     publicKey: publicKey65,
     nickname: "MacBook Touch ID",
-    contractId: "CABC..."
+    contractId: "CB3FU6M3TOAGRBLN5WDLXL6A7VR5SSRGULMXQQOABNMPS25YRJ4CN5VV"
 )
 
 // Lookup
 let found: OZStoredCredential?       = try await cm.getCredential(credentialId: "abc123_...")
 let all: [OZStoredCredential]        = try await cm.getAllCredentials()
-let byContract: [OZStoredCredential] = try await cm.getCredentialsByContract(contractId: "CABC...")
+let byContract: [OZStoredCredential] = try await cm.getCredentialsByContract(contractId: "CB3FU6M3TOAGRBLN5WDLXL6A7VR5SSRGULMXQQOABNMPS25YRJ4CN5VV")
 let forCurrent: [OZStoredCredential] = try await cm.getForConnectedWallet()
 let pending: [OZStoredCredential]    = try await cm.getPendingCredentials()
 
@@ -1058,6 +1080,10 @@ await kit.externalSigners.removeEd25519(verifierAddress: ed25519Verifier, public
 The four registration paths:
 
 ```swift
+// myWebAuthnProvider, myWalletAdapter, myEd25519Adapter, myHardwareAdapter: your adapter implementations
+// rpcUrl, networkPassphrase, wasmHash, verifier: as in the standard configuration (see smart_accounts.md)
+// rawSeedBytes: the signer's raw 32-byte Ed25519 seed (Data)
+// wasmHash: the wasm hash returned by the install step
 let config = try OZSmartAccountConfig.builder(
     rpcUrl: rpcUrl,
     networkPassphrase: networkPassphrase,
@@ -1071,13 +1097,13 @@ let kit = OZSmartAccountKit.create(config: config)
 
 // Wallet in-memory custody: register a secret seed at runtime.
 let gAddress = try await kit.externalSigners.addFromSecret(
-    secretKey: "SCZANGBA5YHTNYVVV3C7CAZMTQDBJHJG6C34REYB6WBMG7CKKFJHYAEGQ"
+    secretKey: walletSecretSeed   // walletSecretSeed: the wallet account's secret seed ("S...")
 )
 
 // Ed25519 in-memory custody: register a raw 32-byte seed at runtime.
 let ed25519PublicKey = try await kit.externalSigners.addEd25519FromRawKey(
     secretKeyBytes: rawSeedBytes,   // exactly 32 bytes
-    verifierAddress: "CDEF..."      // Ed25519 verifier contract C-address
+    verifierAddress: "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM"      // Ed25519 verifier contract C-address
 )
 ```
 
@@ -1189,16 +1215,18 @@ public func removeEd25519(verifierAddress: String, publicKey: Data)
 ```
 
 ```swift
+// kit: an OZSmartAccountKit from OZSmartAccountKit.create(config:) (see setup)
+// rawSeedBytes: the signer's raw 32-byte Ed25519 seed (Data)
 // addEd25519FromRawKey is sync `throws`, but lives on the OZExternalSignerManager
 // actor, so call it with `try await`:
 let publicKey = try await kit.externalSigners.addEd25519FromRawKey(
     secretKeyBytes: rawSeedBytes,
-    verifierAddress: "CDEF..."
+    verifierAddress: "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM"
 )
 
 // canSignEd25519For is non-async but actor-isolated, so await it too:
 let canSign = await kit.externalSigners.canSignEd25519For(
-    verifierAddress: "CDEF...",
+    verifierAddress: "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM",
     publicKey: publicKey
 )
 ```
@@ -1387,8 +1415,11 @@ Finds contracts where an address is a delegated or native signer. Accepts both `
 
 ```swift
 public func lookupByAddress(address: String) async throws -> OZAddressLookupResponse
+```
 
-let contracts = try await indexer.lookupByAddress(address: "GA7Q...").contracts
+```swift
+// indexer: an OZIndexerClient (kit.indexerClient, or constructed directly)
+let contracts = try await indexer.lookupByAddress(address: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ").contracts
 ```
 
 ### getContract / getStats / isHealthy
@@ -1400,7 +1431,8 @@ public func isHealthy() async -> Bool   // never throws; false on any error
 ```
 
 ```swift
-let details = try await indexer.getContract(contractId: "CABC...")
+// indexer: an OZIndexerClient (kit.indexerClient, or constructed directly)
+let details = try await indexer.getContract(contractId: "CB3FU6M3TOAGRBLN5WDLXL6A7VR5SSRGULMXQQOABNMPS25YRJ4CN5VV")
 for rule in details.contextRules {
     print("Rule \(rule.contextRuleId): \(rule.signers.count) signers, \(rule.policies.count) policies")
 }

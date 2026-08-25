@@ -4,6 +4,8 @@
 **Prerequisites:** Requires SEP-01 to discover `WEB_AUTH_ENDPOINT` and `SIGNING_KEY` (see sep-01.md)
 **SDK Class:** `WebAuthenticator`
 
+All examples assume `import stellarsdk`.
+
 ## Table of Contents
 
 - [Quick Start](#quick-start)
@@ -28,15 +30,20 @@ import stellarsdk
 
 // 1. Initialize from anchor domain (reads stellar.toml automatically)
 let authResult = await WebAuthenticator.from(domain: "testanchor.stellar.org", network: Network.testnet)
-guard case .success(let webAuth) = authResult else { return }
+guard case .success(let webAuth) = authResult else {
+    throw StellarSDKError.invalidArgument(message: "Could not initialize SEP-10 authentication")
+}
 
 // 2. Get JWT token for user account
-let userKeyPair = try KeyPair(secretSeed: "S...")
+// userSecretSeed: String for the user account, loaded from secure storage
+let userKeyPair = try KeyPair(secretSeed: userSecretSeed)
 let jwtResult = await webAuth.jwtToken(
     forUserAccount: userKeyPair.accountId,
     signers: [userKeyPair]
 )
-guard case .success(let jwtToken) = jwtResult else { return }
+guard case .success(let jwtToken) = jwtResult else {
+    throw StellarSDKError.invalidArgument(message: "Could not obtain a SEP-10 token")
+}
 
 // 3. Use JWT for SEP-12, SEP-24, etc.
 print("Authenticated! Token: \(jwtToken)")
@@ -52,6 +59,7 @@ print("Authenticated! Token: \(jwtToken)")
 
 ```swift
 import stellarsdk
+import Foundation
 
 let result = await WebAuthenticator.from(domain: "testanchor.stellar.org", network: Network.testnet)
 switch result {
@@ -176,11 +184,12 @@ For accounts that require multiple signers. Provide all required keypairs in the
 
 ```swift
 import stellarsdk
+import Foundation
 
 let webAuth = WebAuthenticator(
     authEndpoint: "https://testanchor.stellar.org/auth",
     network: Network.testnet,
-    serverSigningKey: "GCUZ...",
+    serverSigningKey: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ",
     serverHomeDomain: "testanchor.stellar.org"
 )
 
@@ -209,11 +218,12 @@ For services that distinguish users sharing a single Stellar account via an inte
 
 ```swift
 import stellarsdk
+import Foundation
 
 let webAuth = WebAuthenticator(
     authEndpoint: "https://testanchor.stellar.org/auth",
     network: Network.testnet,
-    serverSigningKey: "GCUZ...",
+    serverSigningKey: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ",
     serverHomeDomain: "testanchor.stellar.org"
 )
 
@@ -244,11 +254,12 @@ Muxed accounts (M... addresses) embed a user ID into the account address. Pass t
 
 ```swift
 import stellarsdk
+import Foundation
 
 let webAuth = WebAuthenticator(
     authEndpoint: "https://testanchor.stellar.org/auth",
     network: Network.testnet,
-    serverSigningKey: "GCUZ...",
+    serverSigningKey: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ",
     serverHomeDomain: "testanchor.stellar.org"
 )
 
@@ -296,11 +307,12 @@ Provide `clientDomain` and `clientDomainAccountKeyPair` with a secret key. The S
 
 ```swift
 import stellarsdk
+import Foundation
 
 let webAuth = WebAuthenticator(
     authEndpoint: "https://testanchor.stellar.org/auth",
     network: Network.testnet,
-    serverSigningKey: "GCUZ...",
+    serverSigningKey: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ",
     serverHomeDomain: "testanchor.stellar.org"
 )
 
@@ -330,11 +342,12 @@ When the wallet's signing key lives on a server, provide a public-key-only `clie
 
 ```swift
 import stellarsdk
+import Foundation
 
 let webAuth = WebAuthenticator(
     authEndpoint: "https://testanchor.stellar.org/auth",
     network: Network.testnet,
-    serverSigningKey: "GCUZ...",
+    serverSigningKey: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ",
     serverHomeDomain: "testanchor.stellar.org"
 )
 
@@ -588,7 +601,9 @@ When you need to construct a challenge response that will pass validation:
 
 ```swift
 import stellarsdk
+import Foundation
 
+// randomBytes(_:): returns n cryptographically random bytes as [UInt8] (e.g. via SecRandomCopyBytes)
 // In test setup
 let serverKeyPair = try KeyPair.generateRandomKeyPair()
 let clientKeyPair = try KeyPair.generateRandomKeyPair()
@@ -704,9 +719,11 @@ case .failure(let error):
 **Wrong: memo with M... address**
 
 ```swift
+// webAuth: the WebAuthenticator from forDomain(...) (see above)
+// keyPair: the user's signing KeyPair
 // WRONG: memo cannot be used with a muxed (M...) account ID
 // Server rejects the challenge GET request before any validation happens
-let jwtResult = await webAuth.jwtToken(
+let wrongJwtResult = await webAuth.jwtToken(
     forUserAccount: "MC6PZZU7XEYLCV7XW5LZC3J72HKQ7CABZCLVGPXCPLLRPZ4SJHC2UAAAAAAACMICQPLEG",
     memo: 12345,  // ERROR: mutually exclusive with M... address
     signers: [keyPair]
@@ -714,12 +731,12 @@ let jwtResult = await webAuth.jwtToken(
 // → .failure(error: .requestError(...))
 
 // CORRECT: use muxed account without memo, OR G... address with memo
-let jwtResult = await webAuth.jwtToken(
-    forUserAccount: "M...",  // muxed account (no memo)
+let jwtResultForMuxed = await webAuth.jwtToken(
+    forUserAccount: "MA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVAAAAAAAAAAAAAJLK",  // muxed account (no memo)
     signers: [keyPair]
 )
-let jwtResult = await webAuth.jwtToken(
-    forUserAccount: "G...",  // G... address with memo
+let jwtResultWithMemo = await webAuth.jwtToken(
+    forUserAccount: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ",  // plain account address with memo
     memo: 12345,
     signers: [keyPair]
 )
@@ -731,10 +748,10 @@ let jwtResult = await webAuth.jwtToken(
 // WRONG: authenticator network must match the network the server signed with
 // The challenge XDR is valid but signature verification fails because
 // the transaction hash depends on the network passphrase
-let webAuth = WebAuthenticator(
+let wrongWebAuth = WebAuthenticator(
     authEndpoint: "https://anchor.example.com/auth",
     network: .public,       // ← WRONG if server is on testnet
-    serverSigningKey: "GCUZ...",
+    serverSigningKey: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ",
     serverHomeDomain: "anchor.example.com"
 )
 // → .failure(error: .validationErrorError(.invalidSignature))
@@ -743,7 +760,7 @@ let webAuth = WebAuthenticator(
 let webAuth = WebAuthenticator(
     authEndpoint: "https://anchor.example.com/auth",
     network: Network.testnet,      // ← matches the server
-    serverSigningKey: "GCUZ...",
+    serverSigningKey: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ",
     serverHomeDomain: "anchor.example.com"
 )
 ```
@@ -751,16 +768,17 @@ let webAuth = WebAuthenticator(
 **Wrong: using public-only KeyPair for signing**
 
 ```swift
+// webAuth: the WebAuthenticator from forDomain(...) (see above)
 // WRONG: KeyPair(accountId:) creates a public-only keypair — cannot sign
-let publicOnly = try KeyPair(accountId: "GABC...")
-let jwtResult = await webAuth.jwtToken(
-    forUserAccount: "GABC...",
+let publicOnly = try KeyPair(accountId: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ")
+let wrongJwtResult = await webAuth.jwtToken(
+    forUserAccount: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ",
     signers: [publicOnly]  // ERROR: no private key → signingError
 )
 // → .failure(error: .signingError)
 
 // CORRECT: load from secret seed for signing
-let signingKeyPair = try KeyPair(secretSeed: "SABC...")
+let signingKeyPair = try KeyPair.generateRandomKeyPair()
 let jwtResult = await webAuth.jwtToken(
     forUserAccount: signingKeyPair.accountId,
     signers: [signingKeyPair]
@@ -770,10 +788,14 @@ let jwtResult = await webAuth.jwtToken(
 **Wrong: `clientDomainAccountKeyPair` with public-key-only but no signing function**
 
 ```swift
+// signOnServer(_:): your server-side signing hook returning the signed challenge
+// userAccountId: the user's account id
+// userKeyPair: the user's signing KeyPair
+// webAuth: the WebAuthenticator from forDomain(...) (see above)
 // WRONG: public-key-only clientDomainAccountKeyPair without a signing function
 // The SDK has no way to sign the client domain operation
-let publicKeyPair = try KeyPair(accountId: "GCLIENTDOMAIN...")
-let jwtResult = await webAuth.jwtToken(
+let publicKeyPair = try KeyPair(accountId: "GCZHXL5HXQX5ABDM26LHYRCQZ5OJFHLOPLZX47WEBP3V2PF5AVFK2A5D")
+let wrongJwtResult = await webAuth.jwtToken(
     forUserAccount: userAccountId,
     signers: [userKeyPair],
     clientDomain: "mywallet.com",
@@ -819,10 +841,10 @@ default:
 ```swift
 // WRONG: serverHomeDomain should be the domain only (no https://)
 // The SDK validates: first op key == serverHomeDomain + " auth"
-let webAuth = WebAuthenticator(
+let wrongWebAuth = WebAuthenticator(
     authEndpoint: "https://testanchor.stellar.org/auth",
     network: Network.testnet,
-    serverSigningKey: "GCUZ...",
+    serverSigningKey: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ",
     serverHomeDomain: "https://testanchor.stellar.org"  // WRONG: includes scheme
 )
 // → .failure(error: .validationErrorError(.invalidHomeDomain))
@@ -831,7 +853,7 @@ let webAuth = WebAuthenticator(
 let webAuth = WebAuthenticator(
     authEndpoint: "https://testanchor.stellar.org/auth",
     network: Network.testnet,
-    serverSigningKey: "GCUZ...",
+    serverSigningKey: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ",
     serverHomeDomain: "testanchor.stellar.org"  // domain only
 )
 ```

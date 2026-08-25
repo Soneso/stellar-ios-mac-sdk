@@ -23,7 +23,9 @@ let serviceResult = await RegulatedAssetsService.forDomain(
     domain: "https://regulated-asset-issuer.com",
     network: Network.testnet
 )
-guard case .success(let service) = serviceResult else { return }
+guard case .success(let service) = serviceResult else {
+    throw StellarSDKError.invalidArgument(message: "Could not initialize the regulated-assets service")
+}
 
 // Get regulated assets defined in stellar.toml
 let regulatedAssets = service.regulatedAssets
@@ -197,24 +199,30 @@ Create and sign your transaction normally, then submit the base64-encoded XDR to
 
 ```swift
 import stellarsdk
+import Foundation
 
 let sdk = StellarSDK.testNet()
 let serviceResult = await RegulatedAssetsService.forDomain(
     domain: "https://regulated-asset-issuer.com",
     network: Network.testnet
 )
-guard case .success(let service) = serviceResult else { return }
+guard case .success(let service) = serviceResult else {
+    throw StellarSDKError.invalidArgument(message: "Could not initialize the regulated-assets service")
+}
 let regulatedAsset = service.regulatedAssets.first!
 
 // Sender's keypair
-let senderKeyPair = try! KeyPair(secretSeed: "SCZANGBA5YHTNYVVV3C7CAZMTQDBJHJG...")
+// senderSecretSeed: String for the regulated-asset sender, loaded from secure storage
+let senderKeyPair = try! KeyPair(secretSeed: senderSecretSeed)
 let accountResult = await sdk.accounts.getAccountDetails(accountId: senderKeyPair.accountId)
-guard case .success(let senderAccount) = accountResult else { return }
+guard case .success(let senderAccount) = accountResult else {
+    throw StellarSDKError.invalidArgument(message: "Could not load the sender account")
+}
 
 // Build the payment transaction using the regulated asset
 let paymentOp = try PaymentOperation(
     sourceAccountId: nil,
-    destinationAccountId: "GDEST...",
+    destinationAccountId: "GCZHXL5HXQX5ABDM26LHYRCQZ5OJFHLOPLZX47WEBP3V2PF5AVFK2A5D",
     asset: regulatedAsset,
     amount: Decimal(100)
 )
@@ -247,12 +255,18 @@ The approval server returns one of five response types. Use a `switch` statement
 
 ```swift
 import stellarsdk
+import Foundation
 
+// approvalServer: the asset's approval_server URL from its stellar.toml
+// txXdr: base64 XDR of the transaction to submit for approval
+let sdk = StellarSDK.testNet()
 let serviceResult = await RegulatedAssetsService.forDomain(
     domain: "https://regulated-asset-issuer.com",
     network: Network.testnet
 )
-guard case .success(let service) = serviceResult else { return }
+guard case .success(let service) = serviceResult else {
+    throw StellarSDKError.invalidArgument(message: "Could not initialize the regulated-assets service")
+}
 let response = await service.postTransaction(
     txB64Xdr: txXdr,
     apporvalServer: approvalServer
@@ -383,35 +397,39 @@ This example shows the full approval flow for a regulated asset transfer, includ
 
 ```swift
 import stellarsdk
+import Foundation
 
 // Setup
 let serviceResult = await RegulatedAssetsService.forDomain(
     domain: "https://regulated-asset-issuer.com",
     network: Network.testnet
 )
-guard case .success(let service) = serviceResult else { return }
+guard case .success(let service) = serviceResult else {
+    throw StellarSDKError.invalidArgument(message: "Could not initialize the regulated-assets service")
+}
 let sdk = service.sdk
 let regulatedAsset = service.regulatedAssets.first!
 
-let senderKeyPair = try! KeyPair(secretSeed: "SCZANGBA5YHTNYVVV3C7CAZMTQDBJHJG...")
-let recipientId = "GDESTINATION..."
+// senderSecretSeed: String for the regulated-asset sender, loaded from secure storage
+let senderKeyPair = try! KeyPair(secretSeed: senderSecretSeed)
+// recipientId: String for an existing account authorized to hold the regulated asset
 
 // Verify asset requires approval (issuer has proper flags)
 let authResult = await service.authorizationRequired(asset: regulatedAsset)
 switch authResult {
 case .success(let required):
     if !required {
-        print("Asset issuer not properly configured for regulation")
-        return
+        throw StellarSDKError.invalidArgument(message: "Asset issuer is not configured for regulation")
     }
 case .failure(let error):
-    print("Failed to check authorization: \(error)")
-    return
+    throw error
 }
 
 // Build transaction
 let accountResult = await sdk.accounts.getAccountDetails(accountId: senderKeyPair.accountId)
-guard case .success(let senderAccount) = accountResult else { return }
+guard case .success(let senderAccount) = accountResult else {
+    throw StellarSDKError.invalidArgument(message: "Could not load the sender account")
+}
 
 let paymentOp = try PaymentOperation(
     sourceAccountId: nil,
@@ -479,7 +497,10 @@ The SDK uses result enums for different error conditions:
 
 ```swift
 import stellarsdk
+import Foundation
 
+// approvalServer: the asset's approval_server URL from its stellar.toml
+// txXdr: base64 XDR of the transaction to submit for approval
 // Service initialization errors
 let serviceResult = await RegulatedAssetsService.forDomain(
     domain: "https://regulated-asset-issuer.com",
@@ -501,8 +522,8 @@ case .success(let service):
         case .parsingResponseFailed(let message):
             // Approval server returned an unrecognized status value
             print("Unknown server response: \(message)")
-        case .requestFailed(_, let message):
-            print("Network error: \(message ?? "unknown")")
+        case .requestFailed(let message, _):
+            print("Network error: \(message)")
         default:
             print("Error: \(error)")
         }

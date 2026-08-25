@@ -29,11 +29,11 @@ Or add it to your `Package.swift`:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/Soneso/stellar-ios-mac-sdk.git", from: "3.9.0")
+    .package(url: "https://github.com/Soneso/stellar-ios-mac-sdk.git", from: "3.10.0")
 ]
 ```
 
-**Requirements:** iOS 13+ / macOS 12+, Swift 5.7+.
+**Requirements:** iOS 15+ / macOS 12+, Xcode 16+ (Swift 6 toolchain). Your app can build in Swift 5 or Swift 6 language mode.
 
 ## Basic Concepts
 
@@ -94,6 +94,8 @@ Manage cryptographic keys for signing transactions and identifying accounts.
 
 Create a new wallet with a random keypair. The account ID is your public address; the secret seed is your private key for signing transactions.
 
+The examples in this guide use `try!` when the input is fixed and known good, like a hardcoded address: a failure there is a programming error, and crashing early is the point. When a value arrives at runtime, from the user or the network, use `do`/`catch` instead — the import sections below show the pattern.
+
 ```swift
 import stellarsdk
 
@@ -110,9 +112,20 @@ If you already have a secret seed (from a backup or another wallet), you can res
 ```swift
 import stellarsdk
 
+// userInput: String obtained from a secure input field or the Keychain
+
 // Restore keypair from seed (can sign transactions)
-let keyPair = try! KeyPair(secretSeed: "SDJHRQF4GCMIIKAAAQ6IHY42X73FQFLHUULAPSKKD4DFDM7UXWWCRHBE")
+do {
+    let keyPair = try KeyPair(secretSeed: userInput)
+    print("Restored \(keyPair.accountId)")
+} catch Ed25519Error.invalidSeed {
+    print("That is not a valid secret seed")
+} catch {
+    print("Could not restore the keypair: \(error)")
+}
 ```
+
+A mistyped seed throws `Ed25519Error.invalidSeed`. This constructor is the first place a seed typed by a user is checked, so catch that error rather than forcing the call with `try!`.
 
 ### Import from Account ID
 
@@ -121,9 +134,20 @@ You can create a keypair from just an account ID (public key). This is useful fo
 ```swift
 import stellarsdk
 
+let destination = "GCZHXL5HXQX5ABDM26LHYRCQZ5OJFHLOPLZX47WEBP3V2PF5AVFK2A5D"
+
 // Public key only (cannot sign)
-let keyPair = try! KeyPair(accountId: "GCZHXL5HXQX5ABDM26LHYRCQZ5OJFHLOPLZX47WEBP3V2PF5AVFK2A5D")
+do {
+    let keyPair = try KeyPair(accountId: destination)
+    print("Paying \(keyPair.accountId)")
+} catch Ed25519Error.invalidPublicKey {
+    print("That is not a valid account id")
+} catch {
+    print("Could not read the account id: \(error)")
+}
 ```
+
+Account IDs are checked the same way: a malformed account ID throws `Ed25519Error.invalidPublicKey`. Catch it here for the same reason. For live UI feedback, such as enabling the import button while the user types, check `isValidEd25519SecretSeed()` or `isValidEd25519PublicKey()` first; when you then create the keypair, still use `do`/`catch`. See [Error handling](error-handling.md) for the full picture.
 
 ### Mnemonic Phrases (SEP-5)
 
@@ -179,7 +203,8 @@ import stellarsdk
 
 let sdk = StellarSDK.publicNet()
 
-let sourceKeyPair = try! KeyPair(secretSeed: "SAPS66IJDXUSFDSDKIHR4LN6YPXIGCM5FBZ7GE66FDKFJRYJGFW7ZHYF")
+// sourceSecretSeed: String for an existing funded public-network account, loaded from secure storage
+let sourceKeyPair = try! KeyPair(secretSeed: sourceSecretSeed)
 let newKeyPair = try! KeyPair.generateRandomKeyPair()
 
 // Source account must already exist and have enough XLM for the new account's starting balance + fees
@@ -284,7 +309,7 @@ import stellarsdk
 // Build operations
 let paymentOp = try PaymentOperation(
     sourceAccountId: nil,
-    destinationAccountId: "GDESTINATION...",
+    destinationAccountId: "GCZHXL5HXQX5ABDM26LHYRCQZ5OJFHLOPLZX47WEBP3V2PF5AVFK2A5D", // destination account
     asset: Asset(type: AssetType.ASSET_TYPE_NATIVE)!,
     amount: 100.50
 )
@@ -292,7 +317,7 @@ let paymentOp = try PaymentOperation(
 let trustAsset = Asset(
     type: AssetType.ASSET_TYPE_CREDIT_ALPHANUM4,
     code: "USD",
-    issuer: try! KeyPair(accountId: "GISSUER...")
+    issuer: try! KeyPair(accountId: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ") // asset issuer
 )!
 let changeTrustAsset = ChangeTrustAsset(
     type: trustAsset.type,
@@ -306,6 +331,7 @@ let trustOp = ChangeTrustOperation(
 )
 
 // Add operations to transaction
+// sourceAccount: an AccountResponse loaded via getAccountDetails (see above)
 let transaction = try Transaction(
     sourceAccount: sourceAccount,
     operations: [trustOp, paymentOp],  // First: establish trustline, Then: send payment
@@ -349,8 +375,9 @@ import stellarsdk
 
 let sdk = StellarSDK.testNet()
 
-let senderKeyPair = try! KeyPair(secretSeed: "SA52PD5FN425CUONRMMX2CY5HB6I473A5OYNIVU67INROUZ6W4SPHXZB")
-let destination = "GCRFFUKMUWWBRIA6ABRDFL5NKO6CKDB2IOX7MOS2TRLXNXQD255Z2MYG"
+// senderSecretSeed: String for a funded testnet account, loaded from secure storage
+// destination: String for an existing testnet destination account
+let senderKeyPair = try! KeyPair(secretSeed: senderSecretSeed)
 
 let accDetailsResponse = await sdk.accounts.getAccountDetails(accountId: senderKeyPair.accountId)
 switch accDetailsResponse {

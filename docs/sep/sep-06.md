@@ -18,14 +18,21 @@ import stellarsdk
 
 // 1. Authenticate with the anchor via SEP-10
 let webAuthResult = await WebAuthenticator.from(domain: "testanchor.stellar.org", network: .testnet)
-guard case .success(let webAuth) = webAuthResult else { return }
-let userKeyPair = try! KeyPair(secretSeed: "SCZANGBA5YHTNYVVV3C7CAZMTQDBJHJG6C34CJDQ66EQ7DZTPBRJFN4A")
+guard case .success(let webAuth) = webAuthResult else {
+    throw StellarSDKError.invalidArgument(message: "Could not initialize SEP-10 authentication")
+}
+// userSecretSeed: String for the user's anchor account, loaded from secure storage
+let userKeyPair = try! KeyPair(secretSeed: userSecretSeed)
 let jwtResult = await webAuth.jwtToken(forUserAccount: userKeyPair.accountId, signers: [userKeyPair])
-guard case .success(let jwtToken) = jwtResult else { return }
+guard case .success(let jwtToken) = jwtResult else {
+    throw StellarSDKError.invalidArgument(message: "Could not obtain a SEP-10 token")
+}
 
 // 2. Create transfer service and request deposit
 let serviceResult = await TransferServerService.forDomain(domain: "https://testanchor.stellar.org")
-guard case .success(let transferService) = serviceResult else { return }
+guard case .success(let transferService) = serviceResult else {
+    throw StellarSDKError.invalidArgument(message: "Could not initialize the transfer service")
+}
 
 let request = DepositRequest(assetCode: "USD", account: userKeyPair.accountId, jwt: jwtToken)
 
@@ -158,12 +165,15 @@ Request deposit instructions from the anchor by specifying the asset code and de
 ```swift
 import stellarsdk
 
+// jwtToken: SEP-10 JWT obtained via web authentication (see sep-10.md)
 let result = await TransferServerService.forDomain(domain: "https://testanchor.stellar.org")
-guard case .success(let transferService) = result else { return }
+guard case .success(let transferService) = result else {
+    throw StellarSDKError.invalidArgument(message: "Could not initialize the transfer service")
+}
 
 var request = DepositRequest(
     assetCode: "USD",
-    account: "GCQTGZQTVZ...",  // Stellar account to receive tokens (G... or M... for muxed)
+    account: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ",  // Stellar account to receive tokens (G... or M... for muxed)
     jwt: jwtToken
 )
 request.type = "bank_account"      // Optional: deposit method (SEPA, SWIFT, etc.)
@@ -244,12 +254,15 @@ The `DepositRequest` struct supports optional parameters for different use cases
 ```swift
 import stellarsdk
 
+// jwtToken: SEP-10 JWT obtained via web authentication (see sep-10.md)
 let result = await TransferServerService.forDomain(domain: "https://testanchor.stellar.org")
-guard case .success(let transferService) = result else { return }
+guard case .success(let transferService) = result else {
+    throw StellarSDKError.invalidArgument(message: "Could not initialize the transfer service")
+}
 
 var request = DepositRequest(
     assetCode: "USD",
-    account: "GCQTGZQTVZ...",
+    account: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ",
     jwt: jwtToken
 )
 request.memoType = "id"                                       // Memo type for Stellar payment (text, id, hash)
@@ -281,15 +294,18 @@ Request withdrawal instructions by specifying the asset and withdrawal method.
 ```swift
 import stellarsdk
 
+// jwtToken: SEP-10 JWT obtained via web authentication (see sep-10.md)
 let result = await TransferServerService.forDomain(domain: "https://testanchor.stellar.org")
-guard case .success(let transferService) = result else { return }
+guard case .success(let transferService) = result else {
+    throw StellarSDKError.invalidArgument(message: "Could not initialize the transfer service")
+}
 
 var request = WithdrawRequest(
     type: "bank_account",      // Withdrawal method: bank_account, cash, crypto, mobile, etc.
     assetCode: "USDC",
     jwt: jwtToken
 )
-request.account = "GCQTGZQTVZ..."  // Optional: source Stellar account
+request.account = "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ"  // Optional: source Stellar account
 request.amount = "500.00"          // Optional: withdrawal amount
 
 let responseEnum = await transferService.withdraw(request: request)
@@ -353,15 +369,18 @@ The `WithdrawRequest` struct supports parameters for refund handling, memos, and
 ```swift
 import stellarsdk
 
+// jwtToken: SEP-10 JWT obtained via web authentication (see sep-10.md)
 let result = await TransferServerService.forDomain(domain: "https://testanchor.stellar.org")
-guard case .success(let transferService) = result else { return }
+guard case .success(let transferService) = result else {
+    throw StellarSDKError.invalidArgument(message: "Could not initialize the transfer service")
+}
 
 var request = WithdrawRequest(
     type: "bank_account",
     assetCode: "USDC",
     jwt: jwtToken
 )
-request.account = "GCQTGZQTVZ..."                             // Source Stellar account
+request.account = "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ"                             // Source Stellar account
 request.lang = "en"                                           // Response language
 request.onChangeCallback = "https://wallet.example.com/callback"
 request.amount = "1000.00"
@@ -386,15 +405,18 @@ Deposit one asset (e.g., off-chain BRL) and receive a different Stellar asset (e
 ```swift
 import stellarsdk
 
+// jwtToken: SEP-10 JWT obtained via web authentication (see sep-10.md)
 let result = await TransferServerService.forDomain(domain: "https://testanchor.stellar.org")
-guard case .success(let transferService) = result else { return }
+guard case .success(let transferService) = result else {
+    throw StellarSDKError.invalidArgument(message: "Could not initialize the transfer service")
+}
 
 // Deposit BRL, receive USDC on Stellar
 var depositExchange = DepositExchangeRequest(
     destinationAsset: "USDC",               // Stellar asset to receive
     sourceAsset: "iso4217:BRL",             // Off-chain asset being deposited (SEP-38 format)
     amount: "480.00",                       // Amount in source asset
-    account: "GCQTGZQTVZ...",              // Stellar account to receive tokens
+    account: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ",              // Stellar account to receive tokens
     jwt: jwtToken
 )
 depositExchange.quoteId = "282837"          // Optional: SEP-38 quote ID for locked exchange rate
@@ -423,8 +445,11 @@ Send one Stellar asset (e.g., USDC) and receive a different off-chain asset (e.g
 ```swift
 import stellarsdk
 
+// jwtToken: SEP-10 JWT obtained via web authentication (see sep-10.md)
 let result = await TransferServerService.forDomain(domain: "https://testanchor.stellar.org")
-guard case .success(let transferService) = result else { return }
+guard case .success(let transferService) = result else {
+    throw StellarSDKError.invalidArgument(message: "Could not initialize the transfer service")
+}
 
 // Withdraw USDC, receive NGN to bank
 var withdrawExchange = WithdrawExchangeRequest(
@@ -435,7 +460,7 @@ var withdrawExchange = WithdrawExchangeRequest(
     jwt: jwtToken
 )
 withdrawExchange.quoteId = "282838"         // Optional: SEP-38 quote ID for locked exchange rate
-withdrawExchange.account = "GCQTGZQTVZ..." // Source Stellar account
+withdrawExchange.account = "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ" // Source Stellar account
 
 let responseEnum = await transferService.withdrawExchange(request: withdrawExchange)
 switch responseEnum {
@@ -494,13 +519,17 @@ List all transactions for an account, with optional filtering by asset, type, an
 
 ```swift
 import stellarsdk
+import Foundation
 
+// jwtToken: SEP-10 JWT obtained via web authentication (see sep-10.md)
 let result = await TransferServerService.forDomain(domain: "https://testanchor.stellar.org")
-guard case .success(let transferService) = result else { return }
+guard case .success(let transferService) = result else {
+    throw StellarSDKError.invalidArgument(message: "Could not initialize the transfer service")
+}
 
 var request = AnchorTransactionsRequest(
     assetCode: "USD",
-    account: "GCQTGZQTVZ...",
+    account: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ",
     jwt: jwtToken
 )
 request.noOlderThan = Date(timeIntervalSinceNow: -30 * 24 * 3600)  // Optional: filter by date
@@ -611,14 +640,20 @@ When an anchor requests more info via `pending_transaction_info_update` status, 
 
 ```swift
 import stellarsdk
+import Foundation
 
+// jwtToken: SEP-10 JWT obtained via web authentication (see sep-10.md)
 let result = await TransferServerService.forDomain(domain: "https://testanchor.stellar.org")
-guard case .success(let transferService) = result else { return }
+guard case .success(let transferService) = result else {
+    throw StellarSDKError.invalidArgument(message: "Could not initialize the transfer service")
+}
 
 // First, check what fields are required
 let txRequest = AnchorTransactionRequest(id: "82fhs729f63dh0v4", jwt: jwtToken)
 let txEnum = await transferService.getTransaction(request: txRequest)
-guard case .success(let txResponse) = txEnum else { return }
+guard case .success(let txResponse) = txEnum else {
+    throw StellarSDKError.invalidArgument(message: "Could not load the anchor transaction")
+}
 
 if txResponse.transaction.status == .pendingTransactionInfoUpdate {
     // Check required fields
@@ -638,7 +673,9 @@ if txResponse.transaction.status == .pendingTransactionInfoUpdate {
         "dest": "12345678901234",        // Bank account
         "dest_extra": "021000021",       // Routing number
     ]
-    guard let body = try? JSONSerialization.data(withJSONObject: updateFields) else { return }
+    guard let body = try? JSONSerialization.data(withJSONObject: updateFields) else {
+        throw StellarSDKError.invalidArgument(message: "Could not encode the transaction update")
+    }
 
     let patchEnum = await transferService.patchTransaction(
         id: "82fhs729f63dh0v4",
@@ -662,12 +699,13 @@ The SDK returns specific error cases for different error conditions via the `Tra
 ```swift
 import stellarsdk
 
+// jwtToken: SEP-10 JWT obtained via web authentication (see sep-10.md)
 let serviceResult = await TransferServerService.forDomain(domain: "https://testanchor.stellar.org")
 switch serviceResult {
 case .success(let transferService):
     let request = DepositRequest(
         assetCode: "USD",
-        account: "GCQTGZQTVZ...",
+        account: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ",
         jwt: jwtToken
     )
 
@@ -774,24 +812,32 @@ This example shows a complete deposit flow: authentication, info discovery, depo
 import stellarsdk
 
 let anchorDomain = "testanchor.stellar.org"
-let userKeyPair = try! KeyPair(secretSeed: "SCZANGBA5YHTNYVVV3C7CAZMTQDBJHJG6C34CJDQ66EQ7DZTPBRJFN4A")
+// userSecretSeed: String for the user's anchor account, loaded from secure storage
+let userKeyPair = try! KeyPair(secretSeed: userSecretSeed)
 
 // 1. Authenticate via SEP-10
 let webAuthResult = await WebAuthenticator.from(domain: anchorDomain, network: .testnet)
-guard case .success(let webAuth) = webAuthResult else { return }
+guard case .success(let webAuth) = webAuthResult else {
+    throw StellarSDKError.invalidArgument(message: "Could not initialize SEP-10 authentication")
+}
 let jwtResult = await webAuth.jwtToken(forUserAccount: userKeyPair.accountId, signers: [userKeyPair])
-guard case .success(let jwtToken) = jwtResult else { return }
+guard case .success(let jwtToken) = jwtResult else {
+    throw StellarSDKError.invalidArgument(message: "Could not obtain a SEP-10 token")
+}
 
 // 2. Create transfer service and check info
 let serviceResult = await TransferServerService.forDomain(domain: "https://\(anchorDomain)")
-guard case .success(let transferService) = serviceResult else { return }
+guard case .success(let transferService) = serviceResult else {
+    throw StellarSDKError.invalidArgument(message: "Could not initialize the transfer service")
+}
 let infoEnum = await transferService.info()
-guard case .success(let info) = infoEnum else { return }
+guard case .success(let info) = infoEnum else {
+    throw StellarSDKError.invalidArgument(message: "Could not load the anchor's transfer information")
+}
 
 // Verify deposit is supported for USD
 guard let usdDeposit = info.deposit?["USD"], usdDeposit.enabled else {
-    print("USD deposits not supported")
-    return
+    throw StellarSDKError.invalidArgument(message: "USD deposits are not supported")
 }
 
 // 3. Initiate deposit
@@ -831,21 +877,22 @@ case .failure(let error):
         case .status(let info):
             print("KYC status: \(info.status)")
         }
-        return
+        throw error
     default:
-        print("Error: \(error)")
-        return
+        throw error
     }
 }
 
 // 4. Poll for transaction status
-guard let txId = transactionId else { return }
+guard let txId = transactionId else {
+    throw StellarSDKError.invalidArgument(message: "The anchor did not return a transaction ID")
+}
 let txRequest = AnchorTransactionRequest(id: txId, jwt: jwtToken)
 
 let maxAttempts = 60
 var attempt = 0
 
-while attempt < maxAttempts {
+polling: while attempt < maxAttempts {
     let txEnum = await transferService.getTransaction(request: txRequest)
     guard case .success(let txResponse) = txEnum else { break }
     let status = txResponse.transaction.status
@@ -856,7 +903,7 @@ while attempt < maxAttempts {
     case .completed:
         print("Deposit completed!")
         print("Amount received: \(txResponse.transaction.amountOut ?? "")")
-        return
+        break polling
 
     case .pendingUserTransferStart:
         print("Waiting for off-chain deposit...")
@@ -869,7 +916,7 @@ while attempt < maxAttempts {
 
     case .error, .expired:
         print("Transaction failed: \(txResponse.transaction.message ?? status.rawValue)")
-        return
+        break polling
 
     default:
         break

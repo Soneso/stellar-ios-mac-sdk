@@ -2,6 +2,8 @@
 
 Signers, context rules, policies, and multi-signer ceremonies for an existing OpenZeppelin smart account — the dynamic authorization layer on top of the core API in [smart_accounts.md](./smart_accounts.md). Platform WebAuthn setup (entitlements, associated domains) lives in [smart_accounts_webauthn.md](./smart_accounts_webauthn.md).
 
+All examples assume `import stellarsdk`.
+
 Every example assumes the kit is already created and connected:
 
 ```swift
@@ -379,6 +381,11 @@ callContract    ->  vec([Symbol("CallContract"), Address(contractAddress)])
 createContract  ->  vec([Symbol("CreateContract"), Bytes(wasmHash)])
 ```
 
+CreateContract rules identify a deployment by its 32-byte wasm hash only. A
+create-contract invocation whose executable is a CAP-85 external reference (or a
+Stellar Asset Contract) carries no wasm hash, so rule resolution rejects it with a
+validation error during signing.
+
 ```swift
 // WRONG: OZContextRuleType.callContract("CBCD...")
 //   — the case has a labeled associated value
@@ -392,8 +399,9 @@ createContract  ->  vec([Symbol("CreateContract"), Bytes(wasmHash)])
 The `OZBuilders` static helpers wrap construction with validation:
 
 ```swift
+// wasmHash32: the 32-byte wasm hash (Data)
 let defaultCtx = OZBuilders.createDefaultContextType()                                  // .defaultRule
-let callCtx    = try OZBuilders.createCallContractContextType(contractAddress: "CBCD...") // validates C-address
+let callCtx    = try OZBuilders.createCallContractContextType(contractAddress: "CB3FU6M3TOAGRBLN5WDLXL6A7VR5SSRGULMXQQOABNMPS25YRJ4CN5VV") // validates C-address
 let createCtx1 = try OZBuilders.createCreateContractContextType(wasmHashHex: "abc123...") // 64 hex chars, 0x prefix optional
 let createCtx2 = try OZBuilders.createCreateContractContextType(wasmHash: wasmHash32)      // Data, 32 bytes
 ```
@@ -417,8 +425,9 @@ The `policies` map key is the policy contract address (`C…`); the value is the
 Example — a rule scoped to a specific token contract, with two delegated signers and an inline spending-limit policy install map:
 
 ```swift
+// kit: an OZSmartAccountKit from OZSmartAccountKit.create(config:) (see setup)
 let signerA = try OZDelegatedSigner(address: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ")
-let signerB = try OZDelegatedSigner(address: "GC3C4MCEADMY26BVBPJIIUOKD5WZEZW5XI2LSU5F4QDZARBVAM4UTZEL")
+let signerB = try OZDelegatedSigner(address: "GC3C4MCEADMY26BVBPJIIUOKD5WZEZW5XI2LSU5F4QDZARBVAM4USYHL")
 
 // Build the SpendingLimit install-param SCVal (see the SpendingLimit shape under
 // "Which install path to use").
@@ -433,7 +442,7 @@ let result = try await kit.contextRuleManager.addContextRule(
     contextType: .callContract(contractAddress: "CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC"),
     name: "XlmDailyLimit",
     signers: [signerA, signerB],
-    policies: ["CSPENDINGLIMITGCYSCXLMDAILYRATELIMITAAAAAAAAAAAAAAAAAAA": spendingLimitParams]
+    policies: ["CCRGXYAIXQDRGEAEO6E4FYDNEPDU5SEFHNAIJWY6LEWFT6ID5TWU76EW": spendingLimitParams] // keyed by the spending-limit policy contract
 )
 if result.success { print("Rule added, tx \(result.hash ?? "n/a")") }
 ```
@@ -629,6 +638,7 @@ SpendingLimit       ->  map{ Symbol("period_ledgers"): U32,
 Build a SimpleThreshold install-param map and use it on either path:
 
 ```swift
+// kit: an OZSmartAccountKit from OZSmartAccountKit.create(config:) (see setup)
 // One SCVal, two uses.
 let simpleThresholdParams = SCValXDR.map([
     SCMapEntryXDR(key: .symbol("threshold"), val: .u32(2))   // 2-of-N
@@ -640,13 +650,13 @@ _ = try await kit.contextRuleManager.addContextRule(
     contextType: .callContract(contractAddress: "CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC"),
     name: "Governance2of3",
     signers: [signer],
-    policies: ["CSIMPLETHRESHOLDPOLICYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA": simpleThresholdParams]
+    policies: ["CDKR4A7VTCLGCBXK6T2B5HPYQKZXOWURVIL7GZGPY7PZJMYEFOCJPQXY": simpleThresholdParams]
 )
 
 // (b) or install on an existing rule via the generic method:
 _ = try await kit.policyManager.addPolicy(
     contextRuleId: 0,
-    policyAddress: "CSIMPLETHRESHOLDPOLICYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+    policyAddress: "CDKR4A7VTCLGCBXK6T2B5HPYQKZXOWURVIL7GZGPY7PZJMYEFOCJPQXY",
     installParams: simpleThresholdParams
 )
 ```
@@ -687,10 +697,11 @@ public func addSimpleThreshold(
 ```
 
 ```swift
+// kit: an OZSmartAccountKit from OZSmartAccountKit.create(config:) (see setup)
 // 2-of-3 multisig on the Default rule
 let result = try await kit.policyManager.addSimpleThreshold(
     contextRuleId: 0,
-    policyAddress: "CSIMPLETHRESHOLDPOLICYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+    policyAddress: "CDKR4A7VTCLGCBXK6T2B5HPYQKZXOWURVIL7GZGPY7PZJMYEFOCJPQXY",
     threshold: 2
 )
 ```
@@ -722,13 +733,14 @@ public struct OZSignerWeightEntry: Sendable {
 ```
 
 ```swift
-let admin = try OZDelegatedSigner(address: "GAADMINAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
-let lead  = try OZDelegatedSigner(address: "GALEADAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
-let dev   = try OZDelegatedSigner(address: "GADEVAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+// kit: an OZSmartAccountKit from OZSmartAccountKit.create(config:) (see setup)
+let admin = try OZDelegatedSigner(address: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ")
+let lead  = try OZDelegatedSigner(address: "GCZHXL5HXQX5ABDM26LHYRCQZ5OJFHLOPLZX47WEBP3V2PF5AVFK2A5D")
+let dev   = try OZDelegatedSigner(address: "GC6HZPFVMNRXL6Q5QJBU2RTHETMSG57VHOMANFO5JHJG2DHBEIC2KTOS")
 
 let result = try await kit.policyManager.addWeightedThreshold(
     contextRuleId: 1,
-    policyAddress: "CWEIGHTEDTHRESHOLDPOLICYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+    policyAddress: "CDAPUA3LFTKH5GMGM3FBGPBN7NYQKPDTO3SRSQVSM6URCWPOHIXYUCEN",
     signerWeights: [
         OZSignerWeightEntry(signer: admin, weight: 50),
         OZSignerWeightEntry(signer: lead,  weight: 30),
@@ -779,6 +791,7 @@ let weekLedgers = UInt32(7 * StellarProtocolConstants.ledgersPerDay)
 Example — limit the account to 1000 XLM per day when calling the native XLM SAC:
 
 ```swift
+// kit: an OZSmartAccountKit from OZSmartAccountKit.create(config:) (see setup)
 let nativeSac = "CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC"
 
 // 1. Create a callContract rule that scopes the policy to the native XLM SAC.
@@ -794,7 +807,7 @@ let rules  = try await kit.contextRuleManager.listContextRules()
 let ruleId = rules.last { $0.contextType == .callContract(contractAddress: nativeSac) }!.id
 _ = try await kit.policyManager.addSpendingLimit(
     contextRuleId: ruleId,
-    policyAddress: "CSPENDINGLIMITPOLICYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+    policyAddress: "CCRGXYAIXQDRGEAEO6E4FYDNEPDU5SEFHNAIJWY6LEWFT6ID5TWU76EW",
     spendingLimit: "1000",
     periodLedgers: UInt32(StellarProtocolConstants.ledgersPerDay)
 )
@@ -829,13 +842,14 @@ public func addPolicy(
 ```
 
 ```swift
+// kit: an OZSmartAccountKit from OZSmartAccountKit.create(config:) (see setup)
 // Custom "allowlist" policy that accepts a list of permitted contracts.
 let installParams = SCValXDR.map([
     SCMapEntryXDR(
         key: .symbol("allowed_contracts"),
         val: .vec([
-            .address(try SCAddressXDR(contractId: "CALLOWEDONECONTRACTAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")),
-            .address(try SCAddressXDR(contractId: "CALLOWEDTWOCONTRACTAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"))
+            .address(try SCAddressXDR(contractId: "CDJBIMELE5D5XODVNTGNIJIY3F6EMLAYP4FN63DNKTYPEVKJOOFMKRMZ")), // allowed contract one
+            .address(try SCAddressXDR(contractId: "CDPITWRAWVFXTGEHZGE4M7ZP3VXZUHPFQN23TVQVGWO6SRVGX2FW3PRI"))  // allowed contract two
         ])
     ),
     SCMapEntryXDR(key: .symbol("max_per_tx"), val: .u32(10))
@@ -843,7 +857,7 @@ let installParams = SCValXDR.map([
 
 _ = try await kit.policyManager.addPolicy(
     contextRuleId: 0,
-    policyAddress: "CCUSTOMALLOWLISTPOLICYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+    policyAddress: "CCATOZNDWIMSQAOWAGYP365ZANK6K5R542QR2UO6JVVAHAMKZLQHWYXF", // the custom allowlist policy contract
     installParams: installParams
 )
 ```
@@ -907,9 +921,10 @@ public func removePolicyByAddress(
 ```
 
 ```swift
+// kit: an OZSmartAccountKit from OZSmartAccountKit.create(config:) (see setup)
 _ = try await kit.policyManager.removePolicyByAddress(
     contextRuleId: 0,
-    policyAddress: "CSPENDINGLIMITPOLICYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    policyAddress: "CCRGXYAIXQDRGEAEO6E4FYDNEPDU5SEFHNAIJWY6LEWFT6ID5TWU76EW"
 )
 ```
 
@@ -924,7 +939,9 @@ Changing ONLY the threshold of an already-installed Simple or Weighted threshold
 **Critical: re-fetch the rule immediately before the call.** The contract validates `newThreshold <= context_rule.signers.len()` against the `ContextRule` you pass in. A stale snapshot (signers changed since you read it) is rejected with `InvalidThreshold` (3201 simple / 3211 weighted). Always read it via `getContextRule(id:)` right before submitting.
 
 ```swift
-let policyAddress = "CSIMPLETHRESHOLDPOLICYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+// kit: an OZSmartAccountKit from OZSmartAccountKit.create(config:) (see setup)
+// selectedSigners: the OZSelectedSigner list built as shown above
+let policyAddress = "CDKR4A7VTCLGCBXK6T2B5HPYQKZXOWURVIL7GZGPY7PZJMYEFOCJPQXY"
 let newThreshold: UInt32 = 3
 
 // Re-fetch the raw rule SCVal immediately before the call — getContextRule(id:)
@@ -1066,6 +1083,11 @@ The amount is converted to base units using `decimals` when supplied, otherwise 
 Example — a 2-of-2 transfer with the connected passkey plus an external wallet:
 
 ```swift
+import stellarsdk
+import Foundation
+
+// kit: an OZSmartAccountKit from OZSmartAccountKit.create(config:) (see setup)
+// passkeyKeyData: the passkey's raw public key bytes (Data)
 let passkey = OZSelectedSigner.passkey(
     credentialId: kit.credentialId!,
     credentialIdBytes: try Data(base64URLEncoded: kit.credentialId!), // raw bytes of the connected credential
@@ -1075,7 +1097,7 @@ let wallet = OZSelectedSigner.wallet(accountId: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4
 
 let result = try await kit.multiSignerManager.multiSignerTransfer(
     tokenContract: "CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC",
-    recipient: "GBRECIPIENTAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+    recipient: "GCZHXL5HXQX5ABDM26LHYRCQZ5OJFHLOPLZX47WEBP3V2PF5AVFK2A5D",
     amount: "100",
     selectedSigners: [passkey, wallet]
 )
@@ -1098,6 +1120,7 @@ public func multiSignerContractCall(
 ```
 
 ```swift
+// passkey, wallet: OZSelectedSigner values built as shown above
 // approve(from, spender, amount, expiration_ledger) on a SEP-41 token.
 // amount is in the token's base units: 100 XLM == 100 * stroopsPerXlm for a 7-decimal token.
 let amountBaseUnits = String(100 * StellarProtocolConstants.stroopsPerXlm)
@@ -1110,12 +1133,12 @@ guard case .success(let latest) = await server.getLatestLedger() else {
 let expirationLedger = latest.sequence + UInt32(StellarProtocolConstants.ledgersPerHour)
 let args: [SCValXDR] = [
     .address(try SCAddressXDR(contractId: kit.contractId!)),
-    .address(try SCAddressXDR(contractId: "CDEXCONTRACTAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")),
+    .address(try SCAddressXDR(contractId: "CDY34LORFCBUCTEQBNTJ7BFBETO7GJJBAQZ247EFGAONNRXAN66JGBIL")), // the DEX contract being approved
     try SCValXDR.i128(stringValue: amountBaseUnits),
     .u32(expirationLedger)
 ]
 _ = try await kit.multiSignerManager.multiSignerContractCall(
-    target: "CTOKENCONTRACTAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+    target: "CAQFZ2FHCOA3QLPDVU3XO44TM5TSTLRA7Q47FQADE53UUCJDODNTQIWP", // the token contract
     targetFn: "approve",
     targetArgs: args,
     selectedSigners: [passkey, wallet]
@@ -1138,14 +1161,16 @@ public func multiSignerExecuteAndSubmit(
 ```
 
 ```swift
+// kit: an OZSmartAccountKit from OZSmartAccountKit.create(config:) (see setup)
+// proposalId: the proposal id from the DAO contract
 // Governance vote authorized by two wallet signers
 let result = try await kit.multiSignerManager.multiSignerExecuteAndSubmit(
-    target: "CDAOCONTRACTAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+    target: "CDLKQ6P34BUTFKY3LZS2U5P3IL7DZTWO3HQXKTXMWI4DRDUOW6FQGMKH", // the DAO contract
     targetFn: "vote",
     targetArgs: [.u32(proposalId), .bool(true)],
     selectedSigners: [
-        .wallet(accountId: "GAVOTERONEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"),
-        .wallet(accountId: "GAVOTERTWOAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+        .wallet(accountId: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ"), // voter one
+        .wallet(accountId: "GCZHXL5HXQX5ABDM26LHYRCQZ5OJFHLOPLZX47WEBP3V2PF5AVFK2A5D")  // voter two
     ]
 )
 ```
@@ -1198,8 +1223,10 @@ When auto-resolution cannot find a unique rule it throws `SmartAccountValidation
 | Ed25519 | `try await kit.externalSigners.addEd25519FromRawKey(secretKeyBytes:verifierAddress:)` (synchronous on the actor, call with `await`; returns the 32-byte public key) | `config.externalEd25519Adapter: OZExternalEd25519SignerAdapter` |
 
 ```swift
+// kit: an OZSmartAccountKit from OZSmartAccountKit.create(config:) (see setup)
+// rawSeed32: the signer's raw 32-byte Ed25519 seed (Data)
 // Register an in-memory wallet keypair (resolution tries in-memory first, then adapter).
-let g = try await kit.externalSigners.addFromSecret(secretKey: "S...")   // async, returns G-address
+let g = try await kit.externalSigners.addFromSecret(secretKey: walletSecretSeed)   // walletSecretSeed: the wallet account's secret seed ("S..."); async, returns G-address
 
 // Register an Ed25519 signing key in memory; use the returned key in the selector.
 let ed25519Verifier = "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM"
@@ -1211,6 +1238,8 @@ let edSigner = OZSelectedSigner.ed25519(verifierAddress: ed25519Verifier, public
 ```
 
 A wallet adapter (`config.externalWallet`) receives the Base64-encoded `HashIDPreimage` XDR (envelope type follows the entry's credential arm: `SorobanAuthorization` for legacy `ADDRESS`, `SorobanAuthorizationWithAddress` for protocol-27 `ADDRESS_V2`), SHA-256-hashes it, Ed25519-signs it, and returns the 64-byte signature; the SDK assembles the signed auth entry.
+
+Which arm those delegated entries carry is governed by `config.useUpgradedAuthForWalletSigners` (default `true`, producing `ADDRESS_V2` entries whose signed preimage carries the wallet address). Set it to `false` when the wallet software behind the adapter cannot sign the address-bound `SorobanAuthorizationWithAddress` preimage type — the entries then carry the legacy `ADDRESS` arm with its non-address-bound preimage. This flag controls only the delegated external-wallet entries; the separate `config.useUpgradedAuth` governs the kit's internal simulations and the `fundWallet` source-account conversion, and changing one never changes the other path.
 
 If a passkey signer cancels its biometric prompt, the call fails fast (`WebAuthnException.Cancelled`); remaining signers are not prompted.
 
@@ -1227,6 +1256,9 @@ Three end-to-end flows. Each assumes `kit` exists and `kit.walletOperations.conn
 **Flow.** Register a fresh passkey on the new device, direct-connect to the known contract, add the new passkey on-chain authorized by the backup signer, then remove the old passkey.
 
 ```swift
+import stellarsdk
+import Foundation
+
 // Recoverable out-of-band:
 let knownContractId: String = /* verified contract id */ ""
 let oldCredentialIdBase64Url: String = /* old passkey credential id */ ""
@@ -1261,7 +1293,7 @@ guard case .connected? = connected else {   // connectWallet returns OZConnectWa
 }
 
 // 3. The backup signer (delegated G-address held by the user's external wallet).
-let backup = OZSelectedSigner.wallet(accountId: "GBACKUPAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+let backup = OZSelectedSigner.wallet(accountId: "GCZHXL5HXQX5ABDM26LHYRCQZ5OJFHLOPLZX47WEBP3V2PF5AVFK2A5D")
 
 // 4. Add the new passkey on-chain, authorized by the backup signer. The
 //    non-empty selectedSigners is load-bearing: with [] the kit would try to
@@ -1474,10 +1506,11 @@ When the smart-account contract rejects a call, the on-chain error code is surfa
 ### Handling pattern
 
 ```swift
+// kit: an OZSmartAccountKit from OZSmartAccountKit.create(config:) (see setup)
 do {
     let res = try await kit.policyManager.addSimpleThreshold(
         contextRuleId: 0,
-        policyAddress: "CSIMPLETHRESHOLDPOLICYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+        policyAddress: "CDKR4A7VTCLGCBXK6T2B5HPYQKZXOWURVIL7GZGPY7PZJMYEFOCJPQXY",
         threshold: 2
     )
     if !res.success { print("submit failed: \(res.error ?? "")") }

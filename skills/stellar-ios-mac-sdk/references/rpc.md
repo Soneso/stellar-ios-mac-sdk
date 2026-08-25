@@ -1,6 +1,8 @@
 # Soroban RPC API
 
-`SorobanServer` is the client for all 12 Soroban RPC methods. Every method is `async` and returns a result enum with `.success` and `.failure` cases.
+`SorobanServer` is the client for every Soroban RPC method. Every method is `async` and returns a result enum with `.success` and `.failure` cases.
+
+All examples assume `import stellarsdk`.
 
 ```swift
 import stellarsdk
@@ -8,6 +10,14 @@ import stellarsdk
 let server = SorobanServer(endpoint: "https://soroban-testnet.stellar.org")
 server.enableLogging = true // optional: logs request/response JSON
 ```
+
+- [Network Information Methods](#network-information-methods)
+- [Transaction Methods](#transaction-methods)
+- [Ledger Entry Methods](#ledger-entry-methods)
+- [Event Methods](#event-methods)
+- [Complete Workflow: Simulate, Submit, Poll](#complete-workflow-simulate-submit-poll)
+- [Error Handling](#error-handling)
+- [Response Enum Quick Reference](#response-enum-quick-reference)
 
 ## Network Information Methods
 
@@ -132,11 +142,12 @@ Simulate a Soroban transaction without submitting. Returns resource costs, retur
 ```swift
 import stellarsdk
 
+// sourceAccountId: the source account id; sequenceNumber: its current sequence from getAccount
 let server = SorobanServer(endpoint: "https://soroban-testnet.stellar.org")
 
 // Build the transaction with an InvokeHostFunction operation first
 let invokeOp = try InvokeHostFunctionOperation.forInvokingContract(
-    contractId: "CCONTRACTID...",
+    contractId: "CB3FU6M3TOAGRBLN5WDLXL6A7VR5SSRGULMXQQOABNMPS25YRJ4CN5VV",
     functionName: "hello",
     functionArguments: [SCValXDR.symbol("world")]
 )
@@ -147,11 +158,11 @@ let transaction = try Transaction(
     memo: Memo.none
 )
 
-// init(transaction:Transaction, resourceConfig:ResourceConfig? = nil, authMode:String? = nil, useUpgradedAuth:Bool = false)
+// init(transaction:Transaction, resourceConfig:ResourceConfig? = nil, authMode:String? = nil, useUpgradedAuth:Bool = true)
 // - resourceConfig: resource budget (instructionLeeway)
 // - authMode: "enforce" | "record" | "record_allow_nonroot" (protocol 23+)
-// - useUpgradedAuth: request protocol-27 V2 credential arms (ADDRESS_V2) in the returned
-//   auth entries; "useUpgradedAuth": true is sent only when true, the key is omitted when false.
+// - useUpgradedAuth: defaults to true (protocol-27 ADDRESS_V2 credential arms in the returned
+//   auth entries) and is always sent; false requests legacy ADDRESS entries.
 //   A supporting RPC records V2 arms; RPCs without support silently ignore it and return legacy
 //   ADDRESS entries -- detect support by inspecting the credential arm of the returned entries.
 let request = SimulateTransactionRequest(transaction: transaction)
@@ -167,10 +178,9 @@ case .success(let simulation):
     // simulation.footprint: Footprint? -- read/write ledger keys
 
     if let error = simulation.error {
-        print("Simulation failed: \(error)")
-        return
+        throw StellarSDKError.invalidArgument(message: "Simulation failed: \(error)")
     }
-    if let returnValue = simulation.results?.first?.returnValue {
+    if let returnValue = simulation.results?.first?.value {
         print("Return value: \(returnValue)")
     }
 case .failure(let error):
@@ -289,7 +299,7 @@ import stellarsdk
 let server = SorobanServer(endpoint: "https://soroban-testnet.stellar.org")
 
 // Build a ledger key for a contract data entry
-let contractId = "CCONTRACTID..."
+let contractId = "CB3FU6M3TOAGRBLN5WDLXL6A7VR5SSRGULMXQQOABNMPS25YRJ4CN5VV"
 let key = SCValXDR.symbol("counter")
 let ledgerKey = LedgerKeyXDR.contractData(
     LedgerKeyContractDataXDR(
@@ -330,7 +340,7 @@ import stellarsdk
 
 let server = SorobanServer(endpoint: "https://soroban-testnet.stellar.org")
 
-let contractId = "CCONTRACTID..."
+let contractId = "CB3FU6M3TOAGRBLN5WDLXL6A7VR5SSRGULMXQQOABNMPS25YRJ4CN5VV"
 let topicFilter = TopicFilter(segmentMatchers: [
     SCValXDR.symbol("transfer").xdrEncoded!,  // topic[0]: event name
     "*"                                        // topic[1]: wildcard
@@ -377,14 +387,14 @@ import stellarsdk
 let rpcUrl = "https://soroban-testnet.stellar.org"
 let server = SorobanServer(endpoint: rpcUrl)
 let network = Network.testnet
-let sourceKeyPair = try KeyPair(secretSeed: "SXXXX...")
-let contractId = "CCONTRACTID..."
+// sourceSecretSeed: String for your funded testnet account, loaded from secure storage
+let sourceKeyPair = try KeyPair(secretSeed: sourceSecretSeed)
+let contractId = "CB3FU6M3TOAGRBLN5WDLXL6A7VR5SSRGULMXQQOABNMPS25YRJ4CN5VV"
 
 // 1. Load account sequence number
 let accountResponse = await server.getAccount(accountId: sourceKeyPair.accountId)
 guard case .success(let account) = accountResponse else {
-    print("Failed to load account")
-    return
+    throw StellarSDKError.invalidArgument(message: "Failed to load the source account")
 }
 
 // 2. Build the invoke operation
@@ -405,12 +415,10 @@ let transaction = try Transaction(
 let simRequest = SimulateTransactionRequest(transaction: transaction)
 let simResponse = await server.simulateTransaction(simulateTxRequest: simRequest)
 guard case .success(let simulation) = simResponse else {
-    print("Simulation failed")
-    return
+    throw StellarSDKError.invalidArgument(message: "Transaction simulation failed")
 }
 if let simError = simulation.error {
-    print("Simulation error: \(simError)")
-    return
+    throw StellarSDKError.invalidArgument(message: "Transaction simulation failed: \(simError)")
 }
 
 // 5. Check if state restoration is needed
@@ -440,8 +448,7 @@ try transaction.sign(keyPair: sourceKeyPair, network: network)
 let sendResult = await server.sendTransaction(transaction: transaction)
 guard case .success(let sendInfo) = sendResult,
       sendInfo.status == SendTransactionResponse.STATUS_PENDING else {
-    print("Submit failed")
-    return
+    throw StellarSDKError.invalidArgument(message: "Transaction submission failed")
 }
 let txHash = sendInfo.transactionId
 

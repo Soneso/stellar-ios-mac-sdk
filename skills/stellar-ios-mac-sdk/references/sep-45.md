@@ -4,6 +4,8 @@
 **Prerequisites:** Requires SEP-01 to discover `WEB_AUTH_FOR_CONTRACTS_ENDPOINT`, `WEB_AUTH_CONTRACT_ID`, and `SIGNING_KEY` (see sep-01.md)
 **SDK Class:** `WebAuthForContracts`
 
+All examples assume `import stellarsdk`.
+
 SEP-45 extends SEP-10 to support Soroban contract accounts. Instead of signing a transaction, the client signs Soroban authorization entries that call the contract's `web_auth_verify` function.
 
 ## Table of Contents
@@ -26,20 +28,25 @@ SEP-45 extends SEP-10 to support Soroban contract accounts. Instead of signing a
 
 ```swift
 import stellarsdk
+import Foundation
 
 // 1. Initialize from anchor domain (reads stellar.toml automatically)
 let authResult = await WebAuthForContracts.from(domain: "testanchor.stellar.org", network: Network.testnet)
-guard case .success(let webAuth) = authResult else { return }
+guard case .success(let webAuth) = authResult else {
+    throw StellarSDKError.invalidArgument(message: "Could not initialize contract authentication")
+}
 
 // 2. Get JWT token for contract account
-let contractId = "CABC..."           // C... address
+let contractId = "CB3FU6M3TOAGRBLN5WDLXL6A7VR5SSRGULMXQQOABNMPS25YRJ4CN5VV"           // C... address
 let signerKeyPair = try KeyPair(secretSeed: ProcessInfo.processInfo.environment["SIGNER_SEED"]!)
 
 let jwtResult = await webAuth.jwtToken(
     forContractAccount: contractId,
     signers: [signerKeyPair]
 )
-guard case .success(let jwtToken) = jwtResult else { return }
+guard case .success(let jwtToken) = jwtResult else {
+    throw StellarSDKError.invalidArgument(message: "Could not obtain a SEP-10 token")
+}
 
 // 3. Use JWT for SEP-12, SEP-24, etc.
 print("Authenticated! Token: \(jwtToken)")
@@ -57,6 +64,7 @@ configured `WebAuthForContracts` instance.
 
 ```swift
 import stellarsdk
+import Foundation
 
 let result = await WebAuthForContracts.from(domain: "testanchor.stellar.org", network: Network.testnet)
 switch result {
@@ -99,8 +107,8 @@ import stellarsdk
 
 let webAuth = try WebAuthForContracts(
     authEndpoint: "https://testanchor.stellar.org/auth/contracts",
-    webAuthContractId: "CABC...",          // C... address
-    serverSigningKey: "GABCDEF...",        // G... address from stellar.toml SIGNING_KEY
+    webAuthContractId: "CB3FU6M3TOAGRBLN5WDLXL6A7VR5SSRGULMXQQOABNMPS25YRJ4CN5VV",          // C... address
+    serverSigningKey: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ",        // G... address from stellar.toml SIGNING_KEY
     serverHomeDomain: "testanchor.stellar.org",
     network: Network.testnet
 )
@@ -173,11 +181,14 @@ For a single-signer contract account:
 
 ```swift
 import stellarsdk
+import Foundation
 
 let authResult = await WebAuthForContracts.from(domain: "testanchor.stellar.org", network: Network.testnet)
-guard case .success(let webAuth) = authResult else { return }
+guard case .success(let webAuth) = authResult else {
+    throw StellarSDKError.invalidArgument(message: "Could not initialize contract authentication")
+}
 
-let contractId = "CABC..."
+let contractId = "CB3FU6M3TOAGRBLN5WDLXL6A7VR5SSRGULMXQQOABNMPS25YRJ4CN5VV"
 let signerKeyPair = try KeyPair(secretSeed: ProcessInfo.processInfo.environment["SIGNER_SEED"]!)
 
 let jwtResult = await webAuth.jwtToken(
@@ -211,11 +222,12 @@ For contracts that require multiple signers. Provide all required keypairs in th
 
 ```swift
 import stellarsdk
+import Foundation
 
 let webAuth = try WebAuthForContracts(
     authEndpoint: "https://testanchor.stellar.org/auth/contracts",
-    webAuthContractId: "CABC...",
-    serverSigningKey: "GSERVER...",
+    webAuthContractId: "CB3FU6M3TOAGRBLN5WDLXL6A7VR5SSRGULMXQQOABNMPS25YRJ4CN5VV",
+    serverSigningKey: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ",
     serverHomeDomain: "testanchor.stellar.org",
     network: Network.testnet
 )
@@ -224,7 +236,7 @@ let signer1 = try KeyPair(secretSeed: ProcessInfo.processInfo.environment["SEED_
 let signer2 = try KeyPair(secretSeed: ProcessInfo.processInfo.environment["SEED_2"]!)
 
 let jwtResult = await webAuth.jwtToken(
-    forContractAccount: "CABC...",
+    forContractAccount: "CB3FU6M3TOAGRBLN5WDLXL6A7VR5SSRGULMXQQOABNMPS25YRJ4CN5VV",
     signers: [signer1, signer2]
 )
 
@@ -289,9 +301,13 @@ When the wallet's signing key lives on a server, provide `clientDomainAccountKey
 
 ```swift
 import stellarsdk
+import Foundation
 
+// contractId: the web auth contract id from stellar.toml (WEB_AUTH_CONTRACT_ID)
+// signerKeyPair: the KeyPair authorized to sign for the account
+// webAuth: the WebAuthForContracts from forDomain(...) (see above)
 // Public-key-only — triggers use of signing callback
-let clientDomainAccountKeyPair = try KeyPair(accountId: "GCLIENTDOMAIN...")
+let clientDomainAccountKeyPair = try KeyPair(accountId: "GCZHXL5HXQX5ABDM26LHYRCQZ5OJFHLOPLZX47WEBP3V2PF5AVFK2A5D")
 
 let signingCallback: (SorobanAuthorizationEntryXDR) async throws -> SorobanAuthorizationEntryXDR = { entry in
     // Encode entry to base64 XDR, send to remote server, decode signed entry back
@@ -619,11 +635,14 @@ public enum ContractChallengeValidationError: Error, Sendable {
 
 ```swift
 import stellarsdk
+import Foundation
 
 let authResult = await WebAuthForContracts.from(domain: "testanchor.stellar.org", network: Network.testnet)
-guard case .success(let webAuth) = authResult else { return }
+guard case .success(let webAuth) = authResult else {
+    throw StellarSDKError.invalidArgument(message: "Could not initialize contract authentication")
+}
 
-let contractId = "CABC..."
+let contractId = "CB3FU6M3TOAGRBLN5WDLXL6A7VR5SSRGULMXQQOABNMPS25YRJ4CN5VV"
 let signerKeyPair = try KeyPair(secretSeed: ProcessInfo.processInfo.environment["SIGNER_SEED"]!)
 
 let jwtResult = await webAuth.jwtToken(
@@ -700,8 +719,10 @@ case .failure(let error):
 **Wrong: using a G... account ID instead of a C... contract address**
 
 ```swift
+// signerKeyPair: the KeyPair authorized to sign for the account
+// webAuth: the WebAuthForContracts from forDomain(...) (see above)
 // WRONG: clientAccountId must be a contract address starting with 'C'
-let jwtResult = await webAuth.jwtToken(
+let wrongJwtResult = await webAuth.jwtToken(
     forContractAccount: "GBWMCCC3NHSKLAOJDBKKYW7SSH2PFTTNVFKWSGLWGDLEBKLOVP5JLBBP",  // G... address
     signers: [signerKeyPair]
 )
@@ -709,7 +730,7 @@ let jwtResult = await webAuth.jwtToken(
 
 // CORRECT: pass the contract account ID (C... address)
 let jwtResult = await webAuth.jwtToken(
-    forContractAccount: "CABC...",   // C... address
+    forContractAccount: "CB3FU6M3TOAGRBLN5WDLXL6A7VR5SSRGULMXQQOABNMPS25YRJ4CN5VV",   // C... address
     signers: [signerKeyPair]
 )
 ```
@@ -717,29 +738,36 @@ let jwtResult = await webAuth.jwtToken(
 **Wrong: using WebAuthenticator (SEP-10) for contract accounts**
 
 ```swift
+// signerKeyPair: the KeyPair authorized to sign for the account
 // WRONG: WebAuthenticator is for G... and M... accounts (SEP-10), not for C... contract accounts
-let result = await WebAuthenticator.from(domain: "testanchor.stellar.org", network: Network.testnet)
-let jwtResult = await webAuth.jwtToken(
-    forUserAccount: "CABC...",   // C... address does not work with WebAuthenticator
-    signers: [signerKeyPair]
-)
+let wrongResult = await WebAuthenticator.from(domain: "testanchor.stellar.org", network: Network.testnet)
+if case .success(let sep10WebAuth) = wrongResult {
+    let wrongJwtResult = await sep10WebAuth.jwtToken(
+        forUserAccount: "CB3FU6M3TOAGRBLN5WDLXL6A7VR5SSRGULMXQQOABNMPS25YRJ4CN5VV",   // C... address does not work with WebAuthenticator
+        signers: [signerKeyPair]
+    )
+    print("SEP-10 flow fails for a contract account: \(wrongJwtResult)")
+}
 
 // CORRECT: use WebAuthForContracts for C... contract accounts (SEP-45)
 let result = await WebAuthForContracts.from(domain: "testanchor.stellar.org", network: Network.testnet)
-let jwtResult = await webAuth.jwtToken(
-    forContractAccount: "CABC...",
-    signers: [signerKeyPair]
-)
+if case .success(let webAuth) = result {
+    let jwtResult = await webAuth.jwtToken(
+        forContractAccount: "CB3FU6M3TOAGRBLN5WDLXL6A7VR5SSRGULMXQQOABNMPS25YRJ4CN5VV",
+        signers: [signerKeyPair]
+    )
+    print("JWT result: \(jwtResult)")
+}
 ```
 
 **Wrong: network mismatch causes invalid server signature**
 
 ```swift
 // WRONG: WebAuthForContracts network must match the server's deployment network
-let webAuth = try WebAuthForContracts(
+let wrongWebAuth = try WebAuthForContracts(
     authEndpoint: "https://testanchor.stellar.org/auth/contracts",
-    webAuthContractId: "CABC...",
-    serverSigningKey: "GSERVER...",
+    webAuthContractId: "CB3FU6M3TOAGRBLN5WDLXL6A7VR5SSRGULMXQQOABNMPS25YRJ4CN5VV",
+    serverSigningKey: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ",
     serverHomeDomain: "testanchor.stellar.org",
     network: .public   // WRONG if server is on testnet
 )
@@ -749,8 +777,8 @@ let webAuth = try WebAuthForContracts(
 // CORRECT: match the network to the anchor's actual deployment
 let webAuth = try WebAuthForContracts(
     authEndpoint: "https://testanchor.stellar.org/auth/contracts",
-    webAuthContractId: "CABC...",
-    serverSigningKey: "GSERVER...",
+    webAuthContractId: "CB3FU6M3TOAGRBLN5WDLXL6A7VR5SSRGULMXQQOABNMPS25YRJ4CN5VV",
+    serverSigningKey: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ",
     serverHomeDomain: "testanchor.stellar.org",
     network: Network.testnet  // matches the server
 )
@@ -760,20 +788,24 @@ let webAuth = try WebAuthForContracts(
 
 ```swift
 // WRONG: the init throws if webAuthContractId doesn't start with 'C'
-let webAuth = try WebAuthForContracts(
-    authEndpoint: "https://testanchor.stellar.org/auth/contracts",
-    webAuthContractId: "GABC...",   // G... address is not a contract ID
-    serverSigningKey: "GSERVER...",
-    serverHomeDomain: "testanchor.stellar.org",
-    network: Network.testnet
-)
-// throws WebAuthForContractsError.invalidWebAuthContractId(message: ...)
+do {
+    _ = try WebAuthForContracts(
+        authEndpoint: "https://testanchor.stellar.org/auth/contracts",
+        webAuthContractId: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ",   // G... address is not a contract ID
+        serverSigningKey: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ",
+        serverHomeDomain: "testanchor.stellar.org",
+        network: Network.testnet
+    )
+} catch {
+    // WebAuthForContractsError.invalidWebAuthContractId(message: ...)
+    print("Rejected: \(error)")
+}
 
 // CORRECT: use a C... contract address for webAuthContractId
 let webAuth = try WebAuthForContracts(
     authEndpoint: "https://testanchor.stellar.org/auth/contracts",
-    webAuthContractId: "CABC...",   // C... contract address
-    serverSigningKey: "GSERVER...",
+    webAuthContractId: "CB3FU6M3TOAGRBLN5WDLXL6A7VR5SSRGULMXQQOABNMPS25YRJ4CN5VV",   // C... contract address
+    serverSigningKey: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ",
     serverHomeDomain: "testanchor.stellar.org",
     network: Network.testnet
 )
@@ -785,10 +817,10 @@ let webAuth = try WebAuthForContracts(
 // WRONG: serverHomeDomain should be the bare domain (no https://)
 // The SDK extracts the web_auth_domain from the authEndpoint URL host.
 // If serverHomeDomain has a scheme prefix it will cause home_domain validation failure.
-let webAuth = try WebAuthForContracts(
+let wrongWebAuth = try WebAuthForContracts(
     authEndpoint: "https://testanchor.stellar.org/auth/contracts",
-    webAuthContractId: "CABC...",
-    serverSigningKey: "GSERVER...",
+    webAuthContractId: "CB3FU6M3TOAGRBLN5WDLXL6A7VR5SSRGULMXQQOABNMPS25YRJ4CN5VV",
+    serverSigningKey: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ",
     serverHomeDomain: "https://testanchor.stellar.org",   // WRONG: has scheme
     network: Network.testnet
 )
@@ -797,8 +829,8 @@ let webAuth = try WebAuthForContracts(
 // CORRECT: domain only, no scheme
 let webAuth = try WebAuthForContracts(
     authEndpoint: "https://testanchor.stellar.org/auth/contracts",
-    webAuthContractId: "CABC...",
-    serverSigningKey: "GSERVER...",
+    webAuthContractId: "CB3FU6M3TOAGRBLN5WDLXL6A7VR5SSRGULMXQQOABNMPS25YRJ4CN5VV",
+    serverSigningKey: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ",
     serverHomeDomain: "testanchor.stellar.org",   // bare domain
     network: Network.testnet
 )
@@ -807,18 +839,19 @@ let webAuth = try WebAuthForContracts(
 **Wrong: signers with public-key-only keypairs**
 
 ```swift
+// webAuth: the WebAuthForContracts from forDomain(...) (see above)
 // WRONG: signing requires a private key; KeyPair(accountId:) creates a public-only keypair
-let publicOnly = try KeyPair(accountId: "GABC...")
-let jwtResult = await webAuth.jwtToken(
-    forContractAccount: "CABC...",
+let publicOnly = try KeyPair(accountId: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ")
+let wrongJwtResult = await webAuth.jwtToken(
+    forContractAccount: "CB3FU6M3TOAGRBLN5WDLXL6A7VR5SSRGULMXQQOABNMPS25YRJ4CN5VV",
     signers: [publicOnly]   // no private key → signingError
 )
 // → .failure(error: .signingError(message: ...))
 
 // CORRECT: load from secret seed for signing
-let signerKeyPair = try KeyPair(secretSeed: "SABC...")
+let signerKeyPair = try KeyPair.generateRandomKeyPair()
 let jwtResult = await webAuth.jwtToken(
-    forContractAccount: "CABC...",
+    forContractAccount: "CB3FU6M3TOAGRBLN5WDLXL6A7VR5SSRGULMXQQOABNMPS25YRJ4CN5VV",
     signers: [signerKeyPair]
 )
 ```
@@ -826,12 +859,14 @@ let jwtResult = await webAuth.jwtToken(
 **Wrong: treating validateChallenge as async — it is synchronous**
 
 ```swift
-// WRONG: validateChallenge is NOT async — no await needed
-let result = await webAuth.validateChallenge(authEntries: entries, clientAccountId: "CABC...")
+// entries: the challenge authorization entries received from the server
+// webAuth: the WebAuthForContracts from forDomain(...) (see above)
+// WRONG: validateChallenge is NOT async and throws — this line does not compile:
+// let result = await webAuth.validateChallenge(authEntries: entries, clientAccountId: "CB3F...")
 
 // CORRECT: validateChallenge throws synchronously
 do {
-    try webAuth.validateChallenge(authEntries: entries, clientAccountId: "CABC...")
+    try webAuth.validateChallenge(authEntries: entries, clientAccountId: "CB3FU6M3TOAGRBLN5WDLXL6A7VR5SSRGULMXQQOABNMPS25YRJ4CN5VV")
 } catch let error as ContractChallengeValidationError {
     print("Validation error: \(error)")
 }

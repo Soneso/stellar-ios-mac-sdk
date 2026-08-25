@@ -39,7 +39,8 @@ import stellarsdk
 let sdk = StellarSDK.testNet()
 
 // Source account keypair (the account that will sign)
-let sourceKeyPair = try! KeyPair(secretSeed: "SBA2XQ5SRUW5H3FUQARMC6QYEPUYNSVCMM4PGESGVB2UIFHLM73TPXXF")
+// sourceSecretSeed: String for the transaction source, loaded from secure storage
+let sourceKeyPair = try! KeyPair(secretSeed: sourceSecretSeed)
 let accountId = sourceKeyPair.accountId
 
 let accountDetailsResponse = await sdk.accounts.getAccountDetails(accountId: accountId)
@@ -263,7 +264,8 @@ let uriScheme = URIScheme()
 let validator = URISchemeValidator()
 
 // Your signing keypair - the public key must match URI_REQUEST_SIGNING_KEY in your stellar.toml
-let signerKeyPair = try! KeyPair(secretSeed: "SBA2XQ5SRUW5H3FUQARMC6QYEPUYNSVCMM4PGESGVB2UIFHLM73TPXXF")
+// signerSecretSeed: String for the account authorized to sign the URI transaction, loaded from secure storage
+let signerKeyPair = try! KeyPair(secretSeed: signerSecretSeed)
 
 // First generate the URI with origin_domain (signature will be added by signURI)
 // let transaction: TransactionXDR = ... // Build your transaction
@@ -326,7 +328,7 @@ import stellarsdk
 let validator = URISchemeValidator()
 let uriScheme = URIScheme()
 let uri = "web+stellar:tx?xdr=...&origin_domain=example.com"
-let signingKeyPair = try! KeyPair(secretSeed: "SBA2XQ5SRUW5H3FUQARMC6QYEPUYNSVCMM4PGESGVB2UIFHLM73TPXXF")
+let signingKeyPair = try! KeyPair.generateRandomKeyPair()
 
 let signResult = validator.signURI(url: uri, signerKeyPair: signingKeyPair)
 switch signResult {
@@ -352,7 +354,8 @@ let uriScheme = URIScheme()
 let uri = "web+stellar:tx?xdr=AAAAAgAAAAD..."
 
 // User's signing keypair
-let signerKeyPair = try! KeyPair(secretSeed: "SBA2XQ5SRUW5H3FUQARMC6QYEPUYNSVCMM4PGESGVB2UIFHLM73TPXXF")
+// signerSecretSeed: String for the account authorized to sign the URI transaction, loaded from secure storage
+let signerKeyPair = try! KeyPair(secretSeed: signerSecretSeed)
 
 // Sign and submit the transaction
 let result = await uriScheme.signAndSubmitTransaction(
@@ -378,9 +381,10 @@ Use `getValue(forParam:fromURL:)` to extract named parameters from a SEP-07 URI.
 
 ```swift
 import stellarsdk
+import Foundation
 
 let uriScheme = URIScheme()
-let uri = "web+stellar:pay?destination=GDGUF4SC...&amount=100&msg=Payment%20for%20order"
+let uri = "web+stellar:pay?destination=GDGUF4SCNINRDCRUIVOMDYGIMXOWVP3ZLMTL2OGQIWMFDDSECZSFQMQV&amount=100&msg=Payment%20for%20order"
 
 // Extract parameters using SignTransactionParams enum cases
 let destination = uriScheme.getValue(forParam: .pubkey, fromURL: uri)  // Note: use .xdr, .callback, etc.
@@ -473,7 +477,8 @@ case .failure(let error):
 
 // 2. Handle transaction submission errors
 let txUri = "web+stellar:tx?xdr=AAAAAgAAAAD..."
-let keyPair = try! KeyPair(secretSeed: "SBA2XQ5SRUW5H3FUQARMC6QYEPUYNSVCMM4PGESGVB2UIFHLM73TPXXF")
+// signerSecretSeed: String for the account authorized to sign the URI transaction, loaded from secure storage
+let keyPair = try! KeyPair(secretSeed: signerSecretSeed)
 let submitResult = await uriScheme.signAndSubmitTransaction(
     forURL: txUri,
     signerKeyPair: keyPair,

@@ -58,7 +58,10 @@ On-chain representation: `Vec([Symbol("Delegated"), Address(address)])`
 
 SDK method:
 ```swift
-try await kit.signerManager.addDelegated(contextRuleId: 0, address: "GA7QYNF7...")
+import stellarsdk
+
+// kit: an OZSmartAccountKit from OZSmartAccountKit.create(config:) (see setup)
+try await kit.signerManager.addDelegated(contextRuleId: 0, address: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ")
 ```
 
 **Passkey (External)**: A WebAuthn public key verified by a verifier contract. The signer stores the verifier's contract address alongside a `keyData` blob containing the public key from the passkey registration concatenated with the credential ID.
@@ -84,9 +87,13 @@ On-chain representation: `Vec([Symbol("External"), Address(verifier), Bytes(publ
 
 SDK method:
 ```swift
+import stellarsdk
+
+// ed25519PublicKey: the signer's raw 32-byte Ed25519 public key (Data)
+// kit: an OZSmartAccountKit from OZSmartAccountKit.create(config:) (see setup)
 try await kit.signerManager.addEd25519(
     contextRuleId: 0,
-    verifierAddress: "CVERIFIER...",
+    verifierAddress: "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM",  // the Ed25519 verifier contract
     publicKey: ed25519PublicKey  // 32 bytes
 )
 ```
@@ -113,12 +120,17 @@ When a transaction requires authorization, the contract collects all non-expired
 
 SDK methods:
 ```swift
+import stellarsdk
+
+// delegatedSigner, passkeySigner: the signers added as shown above
+// kit is the OZSmartAccountKit built in the smart-accounts README Quick Start.
 // Add a rule for a specific contract.
 // Signer objects are created using OZDelegatedSigner(address: "GA7Q...") or
 // OZExternalSigner.webAuthn(...) — see the Signers section above and
 // the SDK guide for full construction details.
+let tokenContractId = "CAQFZ2FHCOA3QLPDVU3XO44TM5TSTLRA7Q47FQADE53UUCJDODNTQIWP"  // the token contract this rule applies to
 try await kit.contextRuleManager.addContextRule(
-    contextType: .callContract(contractAddress: "CBCD1234..."),
+    contextType: .callContract(contractAddress: tokenContractId),
     name: "TokenTransfers",
     signers: [delegatedSigner, passkeySigner]
 )
@@ -144,9 +156,12 @@ On-chain: stores `threshold: u32`
 
 SDK method:
 ```swift
+import stellarsdk
+
+// kit: an OZSmartAccountKit from OZSmartAccountKit.create(config:) (see setup)
 try await kit.policyManager.addSimpleThreshold(
     contextRuleId: 0,
-    policyAddress: "CPOLICY1234...",
+    policyAddress: "CDKR4A7VTCLGCBXK6T2B5HPYQKZXOWURVIL7GZGPY7PZJMYEFOCJPQXY",  // the simple-threshold policy contract
     threshold: 2
 )
 ```
@@ -157,9 +172,12 @@ On-chain: stores `spending_limit: i128, period_ledgers: u32`
 
 SDK method:
 ```swift
+import stellarsdk
+
+// kit: an OZSmartAccountKit from OZSmartAccountKit.create(config:) (see setup)
 try await kit.policyManager.addSpendingLimit(
     contextRuleId: 0,
-    policyAddress: "CPOLICY5678...",
+    policyAddress: "CCRGXYAIXQDRGEAEO6E4FYDNEPDU5SEFHNAIJWY6LEWFT6ID5TWU76EW",  // the spending-limit policy contract
     spendingLimit: "1000",
     periodLedgers: 17_280  // approximately one day
 )
@@ -171,9 +189,13 @@ On-chain: stores `signer_weights: Map<Signer, u32>, threshold: u32`
 
 SDK method:
 ```swift
+import stellarsdk
+
+// signerA, signerB, signerC: signers created as shown above
+// kit is the OZSmartAccountKit built in the smart-accounts README Quick Start
 try await kit.policyManager.addWeightedThreshold(
     contextRuleId: 0,
-    policyAddress: "CPOLICY9012...",
+    policyAddress: "CDAPUA3LFTKH5GMGM3FBGPBN7NYQKPDTO3SRSQVSM6URCWPOHIXYUCEN",  // the weighted-threshold policy contract
     signerWeights: [
         OZSignerWeightEntry(signer: signerA, weight: 50),
         OZSignerWeightEntry(signer: signerB, weight: 30),
@@ -186,6 +208,9 @@ try await kit.policyManager.addWeightedThreshold(
 The policy interface is generic: any Soroban contract that implements the required `can_enforce()` and `enforce()` functions can be used as a policy. Use `addPolicy` to install one:
 
 ```swift
+import stellarsdk
+
+// kit is the OZSmartAccountKit built in the smart-accounts README Quick Start
 let installParams = SCValXDR.map([
     SCMapEntryXDR(
         key: SCValXDR.symbol("my_param"),
@@ -195,7 +220,7 @@ let installParams = SCValXDR.map([
 
 try await kit.policyManager.addPolicy(
     contextRuleId: 0,
-    policyAddress: "CCUSTOMPOLICY...",
+    policyAddress: "CCATOZNDWIMSQAOWAGYP365ZANK6K5R542QR2UO6JVVAHAMKZLQHWYXF",  // your custom policy contract
     installParams: installParams
 )
 ```
@@ -264,9 +289,13 @@ External signers (both passkey and Ed25519 types) store a reference to their ver
 
 The WebAuthn verifier contract address is a required configuration parameter:
 ```swift
+import stellarsdk
+
 let config = try OZSmartAccountConfig(
-    // ...other fields...
-    webauthnVerifierAddress: "CVERIFIER..."
+    rpcUrl: "https://soroban-testnet.stellar.org",
+    networkPassphrase: Network.testnet.passphrase,
+    accountWasmHash: "86b49fe03f7df0ad1c2a28bd8361b923ab57096e09f397f92f0c00ae3bd06d28",
+    webauthnVerifierAddress: "CB26VN37RCVNTHJZDEPK6IRO2MMTS3Z2IEO5JD5BINY2OOJ5KKJG7NKY"  // the deployed WebAuthn verifier contract
 )
 ```
 

@@ -30,10 +30,11 @@ print(keyPair.accountId)    // G... public key
 print(keyPair.secretSeed!)  // S... secret seed
 
 // Create from existing secret seed
-let keyPair2 = try! KeyPair(secretSeed: "SCZANGBA5YHTNYVVV3C7CAZMTQDBJHJG6C34JFD6XVEAEPTBED53FETV")
+// secretSeed: String loaded from secure storage
+let keyPair2 = try! KeyPair(secretSeed: secretSeed)
 
 // Create public-key-only keypair (cannot sign)
-let publicOnly = try! KeyPair(accountId: "GABC123...")
+let publicOnly = try! KeyPair(accountId: "GCZHXL5HXQX5ABDM26LHYRCQZ5OJFHLOPLZX47WEBP3V2PF5AVFK2A5D")
 ```
 
 ### Loading an Account
@@ -46,7 +47,7 @@ import stellarsdk
 let sdk = StellarSDK.testNet()
 
 // Load account data from network
-let response = await sdk.accounts.getAccountDetails(accountId: "GABC123...")
+let response = await sdk.accounts.getAccountDetails(accountId: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ")
 switch response {
 case .success(let account):
     print("Sequence: \(account.sequenceNumber)")
@@ -65,7 +66,7 @@ case .failure(let error):
 }
 
 // Check if account exists
-let existsResponse = await sdk.accounts.getAccountDetails(accountId: "GABC123...")
+let existsResponse = await sdk.accounts.getAccountDetails(accountId: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ")
 switch existsResponse {
 case .success(_):
     print("Account exists")
@@ -135,14 +136,17 @@ Muxed accounts let multiple virtual users share one Stellar account. Useful for 
 import stellarsdk
 
 // Create muxed account from base account + ID
-let muxedAccount = try! MuxedAccount(accountId: "GABC...", id: 123456789)
+let muxedAccount = try! MuxedAccount(
+    accountId: "GCZHXL5HXQX5ABDM26LHYRCQZ5OJFHLOPLZX47WEBP3V2PF5AVFK2A5D",
+    id: 123456789
+)
 
 print(muxedAccount.accountId)          // M... address
 print(muxedAccount.id!)                // 123456789
-print(muxedAccount.ed25519AccountId)   // GABC... (base account)
+print(muxedAccount.ed25519AccountId)   // G... base account
 
 // Parse existing muxed address
-let muxed = try! MuxedAccount(accountId: "MABC...")
+let muxed = try! MuxedAccount(accountId: "MCZHXL5HXQX5ABDM26LHYRCQZ5OJFHLOPLZX47WEBP3V2PF5AVFK2AAAAAAAOW6NCVLYS")
 print(muxed.accountId)          // M... address
 print(muxed.ed25519AccountId)   // Underlying G... address
 print(muxed.id!)                // The 64-bit ID
@@ -194,7 +198,9 @@ import stellarsdk
 
 let sdk = StellarSDK.testNet()
 
-let senderKeyPair = try! KeyPair(secretSeed: "SCZANGBA5YHTNYVVV3C7CAZMTQDBJHJG6C34JFD6XVEAEPTBED53FETV")
+// senderSecretSeed: String for your funded testnet sender, loaded from secure storage
+// destinationAccountId: String for an existing testnet destination account
+let senderKeyPair = try! KeyPair(secretSeed: senderSecretSeed)
 
 let accResponse = await sdk.accounts.getAccountDetails(accountId: senderKeyPair.accountId)
 switch accResponse {
@@ -202,7 +208,7 @@ case .success(let sender):
     // Build payment
     let paymentOp = try! PaymentOperation(
         sourceAccountId: nil,
-        destinationAccountId: "GDEST...",
+        destinationAccountId: destinationAccountId,
         asset: Asset(type: AssetType.ASSET_TYPE_NATIVE)!,
         amount: 100.50
     )
@@ -239,14 +245,16 @@ import stellarsdk
 
 let sdk = StellarSDK.testNet()
 
-let funderKeyPair = try! KeyPair(secretSeed: "SFUNDER...")
+// funderSecretSeed: String for your funded testnet account, loaded from secure storage
+// issuerAccountId: String for the USD issuer; the funder must already hold enough USD
+let funderKeyPair = try! KeyPair(secretSeed: funderSecretSeed)
 let newAccountKeyPair = try! KeyPair.generateRandomKeyPair()
 let newAccountId = newAccountKeyPair.accountId
 
 let accResponse = await sdk.accounts.getAccountDetails(accountId: funderKeyPair.accountId)
 switch accResponse {
 case .success(let funder):
-    let issuerKeyPair = try! KeyPair(accountId: "GISSUER...")
+    let issuerKeyPair = try! KeyPair(accountId: issuerAccountId)
     let usdAsset = Asset(type: AssetType.ASSET_TYPE_CREDIT_ALPHANUM4, code: "USD", issuer: issuerKeyPair)!
 
     // 1. Create the new account
@@ -306,6 +314,10 @@ Memos attach data to transactions (payment references, user IDs). Time bounds li
 
 ```swift
 import stellarsdk
+import Foundation
+
+// account: an AccountResponse loaded via getAccountDetails;
+// operation: a built operation (e.g. a PaymentOperation)
 
 // Add memo
 let transaction = try! Transaction(
@@ -346,7 +358,8 @@ import stellarsdk
 let sdk = StellarSDK.testNet()
 
 // The user wants to send a payment but has no XLM for fees
-let userKeyPair = try! KeyPair(secretSeed: "SUSER...")
+// userSecretSeed: String for the funded testnet account, loaded from secure storage
+let userKeyPair = try! KeyPair(secretSeed: userSecretSeed)
 
 let accResponse = await sdk.accounts.getAccountDetails(accountId: userKeyPair.accountId)
 switch accResponse {
@@ -354,13 +367,13 @@ case .success(let userAccount):
     // Build and sign the inner transaction (user signs their own transaction)
     let payOp1 = try! PaymentOperation(
         sourceAccountId: nil,
-        destinationAccountId: "GDEST1...",
+        destinationAccountId: "GCZHXL5HXQX5ABDM26LHYRCQZ5OJFHLOPLZX47WEBP3V2PF5AVFK2A5D",
         asset: Asset(type: AssetType.ASSET_TYPE_NATIVE)!,
         amount: 10
     )
     let payOp2 = try! PaymentOperation(
         sourceAccountId: nil,
-        destinationAccountId: "GDEST2...",
+        destinationAccountId: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ",
         asset: Asset(type: AssetType.ASSET_TYPE_NATIVE)!,
         amount: 20
     )
@@ -374,7 +387,8 @@ case .success(let userAccount):
     try! innerTransaction.sign(keyPair: userKeyPair, network: Network.testnet)
 
     // A service (fee payer) wraps the transaction and pays the fee
-    let feePayerKeyPair = try! KeyPair(secretSeed: "SFEEPAYER...")
+    // feePayerSecretSeed: String for a funded fee-payer account, loaded from secure storage
+    let feePayerKeyPair = try! KeyPair(secretSeed: feePayerSecretSeed)
     let feePayerMuxed = try! MuxedAccount(
         accountId: feePayerKeyPair.accountId,
         sequenceNumber: 0
@@ -422,17 +436,17 @@ import stellarsdk
 // Native XLM payment
 let paymentOp = try! PaymentOperation(
     sourceAccountId: nil,
-    destinationAccountId: "GDEST...",
+    destinationAccountId: "GCZHXL5HXQX5ABDM26LHYRCQZ5OJFHLOPLZX47WEBP3V2PF5AVFK2A5D",
     asset: Asset(type: AssetType.ASSET_TYPE_NATIVE)!,
     amount: 100
 )
 
 // Custom asset payment
-let issuerKeyPair = try! KeyPair(accountId: "GISSUER...")
+let issuerKeyPair = try! KeyPair(accountId: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ")
 let usdAsset = Asset(type: AssetType.ASSET_TYPE_CREDIT_ALPHANUM4, code: "USD", issuer: issuerKeyPair)!
 let usdPaymentOp = try! PaymentOperation(
     sourceAccountId: nil,
-    destinationAccountId: "GDEST...",
+    destinationAccountId: "GCZHXL5HXQX5ABDM26LHYRCQZ5OJFHLOPLZX47WEBP3V2PF5AVFK2A5D",
     asset: usdAsset,
     amount: 50.25
 )
@@ -450,7 +464,7 @@ import stellarsdk
 let sdk = StellarSDK.testNet()
 
 let xlm = Asset(type: AssetType.ASSET_TYPE_NATIVE)!
-let issuerKeyPair = try! KeyPair(accountId: "GISSUER...")
+let issuerKeyPair = try! KeyPair(accountId: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ")
 let usdAsset = Asset(type: AssetType.ASSET_TYPE_CREDIT_ALPHANUM4, code: "USD", issuer: issuerKeyPair)!
 
 // Find paths: "If I send 100 XLM, how much USD will the recipient get?"
@@ -475,12 +489,23 @@ case .failure(let error):
 Then build the path payment operation:
 
 ```swift
+import stellarsdk
+import Foundation
+
+let xlm = Asset(type: AssetType.ASSET_TYPE_NATIVE)!
+let usdAsset = Asset(type: AssetType.ASSET_TYPE_CREDIT_ALPHANUM4, code: "USD",
+                     issuer: try! KeyPair(accountId: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ"))!  // asset issuer
+let destMin = "20"  // minimum destination amount, from the path query above
+
+import stellarsdk
+import Foundation
+
 // Strict send: send exactly 100 XLM, receive at least destMin USD
 let pathPaymentOp = try! PathPaymentStrictSendOperation(
     sourceAccountId: nil,
     sendAsset: xlm,
     sendMax: 100,       // send amount (exact for strict send)
-    destinationAccountId: "GDEST...",
+    destinationAccountId: "GCZHXL5HXQX5ABDM26LHYRCQZ5OJFHLOPLZX47WEBP3V2PF5AVFK2A5D",
     destAsset: usdAsset,
     destAmount: Decimal(string: destMin)!,  // minimum amount to receive
     path: []            // intermediate assets from path query
@@ -490,9 +515,17 @@ let pathPaymentOp = try! PathPaymentStrictSendOperation(
 For strict receive (recipient gets exact amount, you pay variable):
 
 ```swift
+import stellarsdk
+import Foundation
+
+let sdk = StellarSDK.testNet()
+let issuerKeyPair = try! KeyPair(accountId: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ")  // asset issuer
+let xlm = Asset(type: AssetType.ASSET_TYPE_NATIVE)!
+let usdAsset = Asset(type: AssetType.ASSET_TYPE_CREDIT_ALPHANUM4, code: "USD", issuer: issuerKeyPair)!
+
 // Find paths: "If recipient needs exactly 100 USD, how much XLM do I send?"
 let pathsResponse = await sdk.paymentPaths.strictReceive(
-    sourceAccount: "GSENDER...",
+    sourceAccount: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ",
     destinationAssetType: "credit_alphanum4",
     destinationAssetCode: "USD",
     destinationAssetIssuer: issuerKeyPair.accountId,
@@ -504,21 +537,22 @@ case .success(let paths):
     if let bestPath = paths.records.first {
         let sendMax = bestPath.sourceAmount  // max XLM needed
         print("Send at most \(sendMax) XLM to receive 100 USD")
+
+        // Strict receive: receive exactly 100 USD, send at most sendMax XLM
+        let pathPaymentOp = try! PathPaymentStrictReceiveOperation(
+            sourceAccountId: nil,
+            sendAsset: xlm,
+            sendMax: Decimal(string: sendMax)!,  // maximum amount to send
+            destinationAccountId: "GCZHXL5HXQX5ABDM26LHYRCQZ5OJFHLOPLZX47WEBP3V2PF5AVFK2A5D",
+            destAsset: usdAsset,
+            destAmount: 100,    // destination amount (exact)
+            path: []
+        )
+        print("Built path payment: \(pathPaymentOp)")
     }
 case .failure(let error):
     print("Error: \(error)")
 }
-
-// Strict receive: receive exactly 100 USD, send at most sendMax XLM
-let pathPaymentOp = try! PathPaymentStrictReceiveOperation(
-    sourceAccountId: nil,
-    sendAsset: xlm,
-    sendMax: Decimal(string: sendMax)!,  // maximum amount to send
-    destinationAccountId: "GDEST...",
-    destAsset: usdAsset,
-    destAmount: 100,    // destination amount (exact)
-    path: []
-)
 ```
 
 ### Account Operations
@@ -532,7 +566,7 @@ import stellarsdk
 
 let createOp = try! CreateAccountOperation(
     sourceAccountId: nil,
-    destinationAccountId: "GNEWACCOUNT...",
+    destinationAccountId: "GCZHXL5HXQX5ABDM26LHYRCQZ5OJFHLOPLZX47WEBP3V2PF5AVFK2A5D",
     startBalance: 10  // starting balance in XLM (minimum ~1 XLM for base reserve)
 )
 ```
@@ -550,14 +584,14 @@ import stellarsdk
 
 // Merge the transaction's source account into destination
 let mergeOp = try! AccountMergeOperation(
-    destinationAccountId: "GDEST...",  // destination receives all XLM and other assets
+    destinationAccountId: "GCZHXL5HXQX5ABDM26LHYRCQZ5OJFHLOPLZX47WEBP3V2PF5AVFK2A5D",  // destination receives all XLM and other assets
     sourceAccountId: nil
 )
 
 // Or merge a different account (must also sign the transaction)
 let mergeOp2 = try! AccountMergeOperation(
-    destinationAccountId: "GDEST...",
-    sourceAccountId: "GACCOUNT_TO_MERGE..."
+    destinationAccountId: "GCZHXL5HXQX5ABDM26LHYRCQZ5OJFHLOPLZX47WEBP3V2PF5AVFK2A5D",
+    sourceAccountId: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ"
 )
 ```
 
@@ -636,8 +670,8 @@ Add additional signers to create a multi-sig account. Each signer has a weight t
 import stellarsdk
 
 // Add a signer with weight 10
-let signerKeyPair = try! KeyPair(accountId: "GSIGNER...")
-let signerKey = SignerKeyXDR.ed25519(signerKeyPair.publicKey.bytes)
+let signerKeyPair = try! KeyPair(accountId: "GCZHXL5HXQX5ABDM26LHYRCQZ5OJFHLOPLZX47WEBP3V2PF5AVFK2A5D")
+let signerKey = SignerKeyXDR.ed25519(signerKeyPair.publicKey.wrappedData32())
 let addSignerOp = try! SetOptionsOperation(
     sourceAccountId: nil,
     signer: signerKey,
@@ -688,7 +722,7 @@ import stellarsdk
 let sdk = StellarSDK.testNet()
 
 // Get the current sequence number
-let accResponse = await sdk.accounts.getAccountDetails(accountId: "GABC...")
+let accResponse = await sdk.accounts.getAccountDetails(accountId: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ")
 switch accResponse {
 case .success(let account):
     let currentSequence = account.sequenceNumber
@@ -714,7 +748,7 @@ Create a trustline to allow your account to hold a custom asset. The limit speci
 ```swift
 import stellarsdk
 
-let issuerKeyPair = try! KeyPair(accountId: "GISSUER...")
+let issuerKeyPair = try! KeyPair(accountId: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ")
 let usdAsset = ChangeTrustAsset(type: AssetType.ASSET_TYPE_CREDIT_ALPHANUM4, code: "USD", issuer: issuerKeyPair)!
 
 // With a specific limit
@@ -738,7 +772,7 @@ Change the maximum amount of an asset your account can hold.
 ```swift
 import stellarsdk
 
-let issuerKeyPair = try! KeyPair(accountId: "GISSUER...")
+let issuerKeyPair = try! KeyPair(accountId: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ")
 let usdAsset = ChangeTrustAsset(type: AssetType.ASSET_TYPE_CREDIT_ALPHANUM4, code: "USD", issuer: issuerKeyPair)!
 
 // Increase or decrease the limit
@@ -756,7 +790,7 @@ Remove a trustline by setting the limit to zero. Your balance must be zero first
 ```swift
 import stellarsdk
 
-let issuerKeyPair = try! KeyPair(accountId: "GISSUER...")
+let issuerKeyPair = try! KeyPair(accountId: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ")
 let usdAsset = ChangeTrustAsset(type: AssetType.ASSET_TYPE_CREDIT_ALPHANUM4, code: "USD", issuer: issuerKeyPair)!
 
 // Balance must be zero before removing
@@ -774,14 +808,14 @@ If an asset has the AUTH_REQUIRED flag, the issuer must authorize trustlines bef
 ```swift
 import stellarsdk
 
-let issuerKeyPair = try! KeyPair(accountId: "GISSUER...")
+let issuerKeyPair = try! KeyPair(accountId: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ")
 let usdAsset = Asset(type: AssetType.ASSET_TYPE_CREDIT_ALPHANUM4, code: "USD", issuer: issuerKeyPair)!
 
 // Authorize a trustline (allow holder to receive the asset)
 let authorizeOp = SetTrustlineFlagsOperation(
     sourceAccountId: nil,
     asset: usdAsset,
-    trustorAccountId: "GTRUSTOR...",
+    trustorAccountId: "GCZHXL5HXQX5ABDM26LHYRCQZ5OJFHLOPLZX47WEBP3V2PF5AVFK2A5D",
     setFlags: 1,    // AUTHORIZED_FLAG
     clearFlags: 0
 )
@@ -790,7 +824,7 @@ let authorizeOp = SetTrustlineFlagsOperation(
 let revokeOp = SetTrustlineFlagsOperation(
     sourceAccountId: nil,
     asset: usdAsset,
-    trustorAccountId: "GTRUSTOR...",
+    trustorAccountId: "GCZHXL5HXQX5ABDM26LHYRCQZ5OJFHLOPLZX47WEBP3V2PF5AVFK2A5D",
     setFlags: 0,
     clearFlags: 1   // AUTHORIZED_FLAG
 )
@@ -807,7 +841,7 @@ Sell a specific amount of an asset at a given price. You specify how much you wa
 ```swift
 import stellarsdk
 
-let issuerKeyPair = try! KeyPair(accountId: "GISSUER...")
+let issuerKeyPair = try! KeyPair(accountId: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ")
 let usdAsset = Asset(type: AssetType.ASSET_TYPE_CREDIT_ALPHANUM4, code: "USD", issuer: issuerKeyPair)!
 
 // Sell 100 XLM at 0.20 USD per XLM (receive 20 USD total)
@@ -828,7 +862,7 @@ Buy a specific amount of an asset at a given price. You specify how much you wan
 ```swift
 import stellarsdk
 
-let issuerKeyPair = try! KeyPair(accountId: "GISSUER...")
+let issuerKeyPair = try! KeyPair(accountId: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ")
 let usdAsset = Asset(type: AssetType.ASSET_TYPE_CREDIT_ALPHANUM4, code: "USD", issuer: issuerKeyPair)!
 
 // Buy 50 USD at 0.20 USD per XLM (spend 250 XLM total)
@@ -849,7 +883,7 @@ Modify an existing offer by providing its offer ID. You can change the amount or
 ```swift
 import stellarsdk
 
-let issuerKeyPair = try! KeyPair(accountId: "GISSUER...")
+let issuerKeyPair = try! KeyPair(accountId: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ")
 let usdAsset = Asset(type: AssetType.ASSET_TYPE_CREDIT_ALPHANUM4, code: "USD", issuer: issuerKeyPair)!
 
 // Update offer 12345: change amount to 150 XLM at new price 0.22 USD
@@ -873,7 +907,7 @@ import stellarsdk
 let sdk = StellarSDK.testNet()
 
 // Get all offers for an account
-let offersResponse = await sdk.offers.getOffers(forAccount: "GABC...")
+let offersResponse = await sdk.offers.getOffers(forAccount: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ")
 switch offersResponse {
 case .success(let page):
     for offer in page.records {
@@ -893,7 +927,7 @@ Cancel an existing offer by setting the amount to zero.
 ```swift
 import stellarsdk
 
-let issuerKeyPair = try! KeyPair(accountId: "GISSUER...")
+let issuerKeyPair = try! KeyPair(accountId: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ")
 let usdAsset = Asset(type: AssetType.ASSET_TYPE_CREDIT_ALPHANUM4, code: "USD", issuer: issuerKeyPair)!
 
 // Cancel offer 12345
@@ -914,7 +948,7 @@ A passive offer doesn't immediately match existing offers at the same price. Use
 ```swift
 import stellarsdk
 
-let issuerKeyPair = try! KeyPair(accountId: "GISSUER...")
+let issuerKeyPair = try! KeyPair(accountId: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ")
 let usdAsset = Asset(type: AssetType.ASSET_TYPE_CREDIT_ALPHANUM4, code: "USD", issuer: issuerKeyPair)!
 
 // Passive offer: sell 100 XLM at 0.20 USD per XLM
@@ -938,16 +972,17 @@ Lock funds that one or more claimants can claim. Each claimant has a predicate t
 
 ```swift
 import stellarsdk
+import Foundation
 
 // Create claimants (who can claim and under what conditions)
 let claimant1 = Claimant(
-    destination: "GCLAIMER1...",
+    destination: "GCZHXL5HXQX5ABDM26LHYRCQZ5OJFHLOPLZX47WEBP3V2PF5AVFK2A5D",
     predicate: Claimant.predicateUnconditional()  // can claim anytime
 )
 
 let thirtyDaysFromNow = Int64(Date().addingTimeInterval(30 * 24 * 60 * 60).timeIntervalSince1970)
 let claimant2 = Claimant(
-    destination: "GCLAIMER2...",
+    destination: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ",
     predicate: Claimant.predicateBeforeAbsoluteTime(unixEpoch: thirtyDaysFromNow)  // must claim within 30 days
 )
 
@@ -965,6 +1000,7 @@ Predicates control when a claimant can claim. You can combine them for complex c
 
 ```swift
 import stellarsdk
+import Foundation
 
 // Unconditional: can claim anytime
 let anytime = Claimant.predicateUnconditional()
@@ -996,19 +1032,43 @@ let eitherCondition = Claimant.predicateOr(left: anytime, right: before)
 
 To claim a balance, you need its balance ID. Get it from the transaction response when created, or query claimable balances for your account.
 
+When you submitted the creating transaction yourself, read the id straight off the response:
+
+```swift
+import stellarsdk
+
+let sdk = StellarSDK.testNet()
+
+// transaction is the signed transaction holding the CreateClaimableBalance
+// operation, built as shown above
+let submitEnum = await sdk.transactions.submitTransaction(transaction: transaction)
+if case .success(let response) = submitEnum {
+    // The created balance id as a "B..." strkey. operationIndex (default 0) is the
+    // position of the CreateClaimableBalance operation within the transaction; for
+    // a fee bump transaction the inner transaction's operation results are read.
+    // Returns nil when the transaction did not succeed, when no operation sits at
+    // the index, or when the operation there is not a CreateClaimableBalance.
+    if let balanceId = response.getCreatedClaimableBalanceId() {
+        print("Created balance id: \(balanceId)")
+    }
+}
+```
+
+Or query the balances claimable by an account:
+
 ```swift
 import stellarsdk
 
 let sdk = StellarSDK.testNet()
 
 // Find claimable balances you can claim
-let balancesResponse = await sdk.claimableBalances.getClaimableBalances(claimantAccountId: "GCLAIMER1...")
+let balancesResponse = await sdk.claimableBalances.getClaimableBalances(claimantAccountId: "GCZHXL5HXQX5ABDM26LHYRCQZ5OJFHLOPLZX47WEBP3V2PF5AVFK2A5D")
 switch balancesResponse {
 case .success(let page):
     for balance in page.records {
         print("Balance ID: \(balance.balanceId)")  // hex string
         print("Amount: \(balance.amount)")
-        print("Asset: \(balance.assetType)")
+        print("Asset: \(balance.asset.toCanonicalForm())")
     }
 case .failure(let error):
     print("Error: \(error)")
@@ -1036,7 +1096,7 @@ Before depositing to a liquidity pool, you need a trustline for the pool shares.
 ```swift
 import stellarsdk
 
-let issuerKeyPair = try! KeyPair(accountId: "GISSUER...")
+let issuerKeyPair = try! KeyPair(accountId: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ")
 let usdAsset = Asset(type: AssetType.ASSET_TYPE_CREDIT_ALPHANUM4, code: "USD", issuer: issuerKeyPair)!
 
 // Create pool share asset (assets must be in lexicographic order)
@@ -1058,7 +1118,7 @@ import stellarsdk
 
 let sdk = StellarSDK.testNet()
 
-let issuerKeyPair = try! KeyPair(accountId: "GISSUER...")
+let issuerKeyPair = try! KeyPair(accountId: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ")
 let usdAsset = Asset(type: AssetType.ASSET_TYPE_CREDIT_ALPHANUM4, code: "USD", issuer: issuerKeyPair)!
 
 // Find pool by reserve assets
@@ -1129,7 +1189,8 @@ import stellarsdk
 let sdk = StellarSDK.testNet()
 
 // Sponsor: existing funded account that will pay reserves
-let sponsorKeyPair = try! KeyPair(secretSeed: "SSPONSOR...")
+// sponsorSecretSeed: String for the funded sponsor account, loaded from secure storage
+let sponsorKeyPair = try! KeyPair(secretSeed: sponsorSecretSeed)
 
 let accResponse = await sdk.accounts.getAccountDetails(accountId: sponsorKeyPair.accountId)
 switch accResponse {
@@ -1180,11 +1241,14 @@ import stellarsdk
 
 let sdk = StellarSDK.testNet()
 
-let sponsorKeyPair = try! KeyPair(secretSeed: "SSPONSOR...")
-let userKeyPair = try! KeyPair(secretSeed: "SUSER...")
+// sponsorSecretSeed: String for your funded testnet sponsor, loaded from secure storage
+let sponsorKeyPair = try! KeyPair(secretSeed: sponsorSecretSeed)
+// userSecretSeed: String for the account to be sponsored, loaded from secure storage
+// issuerAccountId: String for the asset issuer
+let userKeyPair = try! KeyPair(secretSeed: userSecretSeed)
 let userId = userKeyPair.accountId
 
-let issuerKeyPair = try! KeyPair(accountId: "GISSUER...")
+let issuerKeyPair = try! KeyPair(accountId: issuerAccountId)
 let usdAsset = ChangeTrustAsset(type: AssetType.ASSET_TYPE_CREDIT_ALPHANUM4, code: "USD", issuer: issuerKeyPair)!
 
 let accResponse = await sdk.accounts.getAccountDetails(accountId: sponsorKeyPair.accountId)
@@ -1227,22 +1291,22 @@ import stellarsdk
 
 // Revoke account sponsorship
 let revokeAccountKey = try! RevokeSponsorshipOperation.revokeAccountSponsorshipLedgerKey(
-    accountId: "GSPONSORED..."
+    accountId: "GCZHXL5HXQX5ABDM26LHYRCQZ5OJFHLOPLZX47WEBP3V2PF5AVFK2A5D"
 )
 let revokeAccountOp = RevokeSponsorshipOperation(ledgerKey: revokeAccountKey)
 
 // Revoke trustline sponsorship
-let issuerKeyPair = try! KeyPair(accountId: "GISSUER...")
+let issuerKeyPair = try! KeyPair(accountId: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ")
 let usdAsset = Asset(type: AssetType.ASSET_TYPE_CREDIT_ALPHANUM4, code: "USD", issuer: issuerKeyPair)!
 let revokeTrustlineKey = try! RevokeSponsorshipOperation.revokeTrustlineSponsorshipLedgerKey(
-    accountId: "GSPONSORED...",
+    accountId: "GCZHXL5HXQX5ABDM26LHYRCQZ5OJFHLOPLZX47WEBP3V2PF5AVFK2A5D",
     asset: usdAsset
 )
 let revokeTrustlineOp = RevokeSponsorshipOperation(ledgerKey: revokeTrustlineKey)
 
 // Revoke data entry sponsorship
 let revokeDataKey = try! RevokeSponsorshipOperation.revokeDataSponsorshipLedgerKey(
-    accountId: "GSPONSORED...",
+    accountId: "GCZHXL5HXQX5ABDM26LHYRCQZ5OJFHLOPLZX47WEBP3V2PF5AVFK2A5D",
     dataName: "data_key"
 )
 let revokeDataOp = RevokeSponsorshipOperation(ledgerKey: revokeDataKey)
@@ -1267,7 +1331,7 @@ import stellarsdk
 
 let sdk = StellarSDK.testNet()
 
-let response = await sdk.accounts.getAccountDetails(accountId: "GABC...")
+let response = await sdk.accounts.getAccountDetails(accountId: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ")
 switch response {
 case .success(let account):
     print("Sequence: \(account.sequenceNumber)")
@@ -1286,7 +1350,7 @@ import stellarsdk
 
 let sdk = StellarSDK.testNet()
 
-let response = await sdk.accounts.getAccountDetails(accountId: "GABC...")
+let response = await sdk.accounts.getAccountDetails(accountId: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ")
 switch response {
 case .success(_):
     print("Account exists - use PaymentOperation")
@@ -1309,7 +1373,7 @@ import stellarsdk
 let sdk = StellarSDK.testNet()
 
 let response = await sdk.accounts.getAccounts(
-    signer: "GSIGNER...",
+    signer: "GCZHXL5HXQX5ABDM26LHYRCQZ5OJFHLOPLZX47WEBP3V2PF5AVFK2A5D",
     order: .descending,
     limit: 50
 )
@@ -1333,7 +1397,7 @@ import stellarsdk
 let sdk = StellarSDK.testNet()
 
 let response = await sdk.accounts.getAccounts(
-    asset: "USD:GISSUER..."
+    asset: "USD:GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ"  // CODE:ISSUER canonical form
 )
 switch response {
 case .success(let page):
@@ -1355,7 +1419,7 @@ import stellarsdk
 let sdk = StellarSDK.testNet()
 
 let response = await sdk.accounts.getAccounts(
-    sponsor: "GSPONSOR..."
+    sponsor: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ"
 )
 switch response {
 case .success(let page):
@@ -1376,7 +1440,7 @@ import stellarsdk
 
 let sdk = StellarSDK.testNet()
 
-let response = await sdk.accounts.getDataForAccount(accountId: "GABC...", key: "config")
+let response = await sdk.accounts.getDataForAccount(accountId: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ", key: "config")
 switch response {
 case .success(let data):
     print("Value: \(data.value)")
@@ -1419,7 +1483,7 @@ import stellarsdk
 let sdk = StellarSDK.testNet()
 
 let response = await sdk.transactions.getTransactions(
-    forAccount: "GABC...",
+    forAccount: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ",
     order: .descending,
     limit: 20
 )
@@ -1484,7 +1548,7 @@ import stellarsdk
 let sdk = StellarSDK.testNet()
 
 let response = await sdk.operations.getOperations(
-    forAccount: "GABC...",
+    forAccount: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ",
     order: .descending,
     limit: 50
 )
@@ -1527,7 +1591,7 @@ import stellarsdk
 
 let sdk = StellarSDK.testNet()
 
-let response = await sdk.operations.getOperations(forAccount: "GABC...")
+let response = await sdk.operations.getOperations(forAccount: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ")
 switch response {
 case .success(let page):
     for op in page.records {
@@ -1560,7 +1624,7 @@ let sdk = StellarSDK.testNet()
 
 // Effects for an account
 let accountEffects = await sdk.effects.getEffects(
-    forAccount: "GABC...",
+    forAccount: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ",
     limit: 50
 )
 
@@ -1592,7 +1656,7 @@ let ledgersResponse = await sdk.ledgers.getLedgers(order: .descending, limit: 10
 
 // Payments (Payment, PathPayment, CreateAccount, AccountMerge)
 let paymentsResponse = await sdk.payments.getPayments(
-    forAccount: "GABC..."
+    forAccount: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ"
 )
 switch paymentsResponse {
 case .success(let page):
@@ -1640,7 +1704,7 @@ import stellarsdk
 let sdk = StellarSDK.testNet()
 
 let response = await sdk.offers.getOffers(
-    forAccount: "GABC...",
+    forAccount: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ",
     limit: 50
 )
 switch response {
@@ -1668,7 +1732,7 @@ let offersResponse = await sdk.offers.getOffers(
     sellingAssetType: "native",
     buyingAssetType: "credit_alphanum4",
     buyingAssetCode: "USD",
-    buyingAssetIssuer: "GISSUER..."
+    buyingAssetIssuer: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ"
 )
 switch offersResponse {
 case .success(let page):
@@ -1693,7 +1757,7 @@ let response = await sdk.offers.getOffers(
     seller: nil,
     sellingAssetType: "native",
     buyingAssetType: "native",
-    sponsor: "GSPONSOR..."
+    sponsor: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ"
 )
 switch response {
 case .success(let page):
@@ -1719,7 +1783,7 @@ import stellarsdk
 let sdk = StellarSDK.testNet()
 
 let response = await sdk.trades.getTrades(
-    forAccount: "GABC...",
+    forAccount: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ",
     order: .descending,
     limit: 50
 )
@@ -1747,7 +1811,7 @@ let response = await sdk.trades.getTrades(
     baseAssetType: "native",
     counterAssetType: "credit_alphanum4",
     counterAssetCode: "USD",
-    counterAssetIssuer: "GISSUER...",
+    counterAssetIssuer: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ",
     order: .descending,
     limit: 50
 )
@@ -1787,6 +1851,7 @@ Get OHLCV (Open, High, Low, Close, Volume) candles for charting. Useful for buil
 
 ```swift
 import stellarsdk
+import Foundation
 
 let sdk = StellarSDK.testNet()
 
@@ -1801,16 +1866,16 @@ let response = await sdk.tradeAggregations.getTradeAggregations(
     baseAssetType: "native",
     counterAssetType: "credit_alphanum4",
     counterAssetCode: "USD",
-    counterAssetIssuer: "GISSUER...",
+    counterAssetIssuer: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ",
     limit: 24
 )
 switch response {
 case .success(let page):
     for candle in page.records {
-        print("Open: \(candle.open)")
-        print("High: \(candle.high)")
-        print("Low: \(candle.low)")
-        print("Close: \(candle.close)")
+        print("Open: \(candle.openPrice)")
+        print("High: \(candle.highPrice)")
+        print("Low: \(candle.lowPrice)")
+        print("Close: \(candle.closePrice)")
         print("Volume: \(candle.baseVolume)")
     }
 case .failure(let error):
@@ -1862,7 +1927,7 @@ import stellarsdk
 
 let sdk = StellarSDK.testNet()
 
-let response = await sdk.assets.getAssets(for: nil, assetIssuer: "GISSUER...")
+let response = await sdk.assets.getAssets(for: nil, assetIssuer: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ")
 switch response {
 case .success(let page):
     for asset in page.records {
@@ -1888,7 +1953,7 @@ let response = await sdk.orderbooks.getOrderbook(
     sellingAssetType: "native",
     buyingAssetType: "credit_alphanum4",
     buyingAssetCode: "USD",
-    buyingAssetIssuer: "GISSUER..."
+    buyingAssetIssuer: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ"
 )
 switch response {
 case .success(let orderBook):
@@ -1923,7 +1988,7 @@ let sdk = StellarSDK.testNet()
 let response = await sdk.paymentPaths.strictSend(
     sourceAmount: "100",
     sourceAssetType: "native",
-    destinationAssets: "USD:GISSUER..."
+    destinationAssets: "USD:GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ"  // CODE:ISSUER canonical form
 )
 switch response {
 case .success(let paths):
@@ -1946,10 +2011,10 @@ let sdk = StellarSDK.testNet()
 
 // "If recipient needs 100 USD, how much XLM do I send?"
 let response = await sdk.paymentPaths.strictReceive(
-    sourceAccount: "GSENDER...",
+    sourceAccount: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ",
     destinationAssetType: "credit_alphanum4",
     destinationAssetCode: "USD",
-    destinationAssetIssuer: "GISSUER...",
+    destinationAssetIssuer: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ",
     destinationAmount: "100"
 )
 switch response {
@@ -1984,7 +2049,7 @@ let response = await sdk.claimableBalances.getClaimableBalance(
 switch response {
 case .success(let balance):
     print("Amount: \(balance.amount)")
-    print("Asset: \(balance.assetType)")
+    print("Asset: \(balance.asset.toCanonicalForm())")
 case .failure(let error):
     print("Error: \(error)")
 }
@@ -2000,7 +2065,7 @@ import stellarsdk
 let sdk = StellarSDK.testNet()
 
 let response = await sdk.claimableBalances.getClaimableBalances(
-    claimantAccountId: "GCLAIMER..."
+    claimantAccountId: "GCZHXL5HXQX5ABDM26LHYRCQZ5OJFHLOPLZX47WEBP3V2PF5AVFK2A5D"
 )
 switch response {
 case .success(let page):
@@ -2022,7 +2087,7 @@ import stellarsdk
 let sdk = StellarSDK.testNet()
 
 let response = await sdk.claimableBalances.getClaimableBalances(
-    sponsorAccountId: "GSPONSOR..."
+    sponsorAccountId: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ"
 )
 switch response {
 case .success(let page):
@@ -2043,14 +2108,14 @@ import stellarsdk
 
 let sdk = StellarSDK.testNet()
 
-let issuerKeyPair = try! KeyPair(accountId: "GISSUER...")
+let issuerKeyPair = try! KeyPair(accountId: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ")
 let usdAsset = Asset(type: AssetType.ASSET_TYPE_CREDIT_ALPHANUM4, code: "USD", issuer: issuerKeyPair)!
 
 let response = await sdk.claimableBalances.getClaimableBalances(asset: usdAsset)
 switch response {
 case .success(let page):
     for balance in page.records {
-        print("\(balance.amount) \(balance.assetType)")
+        print("\(balance.amount) \(balance.asset.toCanonicalForm())")
     }
 case .failure(let error):
     print("Error: \(error)")
@@ -2089,7 +2154,7 @@ import stellarsdk
 
 let sdk = StellarSDK.testNet()
 
-let issuerKeyPair = try! KeyPair(accountId: "GISSUER...")
+let issuerKeyPair = try! KeyPair(accountId: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ")
 let usdAsset = Asset(type: AssetType.ASSET_TYPE_CREDIT_ALPHANUM4, code: "USD", issuer: issuerKeyPair)!
 
 let response = await sdk.liquidityPools.getLiquidityPools(
@@ -2118,7 +2183,7 @@ let sdk = StellarSDK.testNet()
 
 // First page
 let response = await sdk.transactions.getTransactions(
-    forAccount: "GABC...",
+    forAccount: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ",
     order: .descending,
     limit: 20
 )
@@ -2132,7 +2197,7 @@ case .success(let page):
     // Get next page using cursor from last record
     if let lastRecord = page.records.last {
         let nextPageResponse = await sdk.transactions.getTransactions(
-            forAccount: "GABC...",
+            forAccount: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ",
             from: lastRecord.pagingToken,
             order: .descending,
             limit: 20
@@ -2161,7 +2226,7 @@ import stellarsdk
 
 let sdk = StellarSDK.testNet()
 
-let streamItem = sdk.payments.stream(for: .paymentsForAccount(account: "GABC...", cursor: "now"))
+let streamItem = sdk.payments.stream(for: .paymentsForAccount(account: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ", cursor: "now"))
 streamItem.onReceive { response in
     switch response {
     case .open:
@@ -2191,7 +2256,7 @@ import stellarsdk
 let sdk = StellarSDK.testNet()
 
 // Stream transactions for a specific account
-let streamItem = sdk.transactions.stream(for: .transactionsForAccount(account: "GABC...", cursor: "now"))
+let streamItem = sdk.transactions.stream(for: .transactionsForAccount(account: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ", cursor: "now"))
 streamItem.onReceive { response in
     switch response {
     case .open:
@@ -2250,7 +2315,7 @@ import stellarsdk
 
 let sdk = StellarSDK.testNet()
 
-let streamItem = sdk.operations.stream(for: .operationsForAccount(account: "GABC...", cursor: "now"))
+let streamItem = sdk.operations.stream(for: .operationsForAccount(account: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ", cursor: "now"))
 streamItem.onReceive { response in
     switch response {
     case .open:
@@ -2272,7 +2337,7 @@ import stellarsdk
 
 let sdk = StellarSDK.testNet()
 
-let streamItem = sdk.effects.stream(for: .effectsForAccount(account: "GABC...", cursor: "now"))
+let streamItem = sdk.effects.stream(for: .effectsForAccount(account: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ", cursor: "now"))
 streamItem.onReceive { response in
     switch response {
     case .open:
@@ -2295,7 +2360,7 @@ import stellarsdk
 let sdk = StellarSDK.testNet()
 
 // Stream trades for an account
-let streamItem = sdk.trades.stream(for: .tradesForAccount(account: "GABC...", cursor: "now"))
+let streamItem = sdk.trades.stream(for: .tradesForAccount(account: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ", cursor: "now"))
 streamItem.onReceive { response in
     switch response {
     case .open:
@@ -2323,7 +2388,7 @@ let streamItem = sdk.orderbooks.stream(for: .orderbook(
     sellingAssetIssuer: nil,
     buyingAssetType: "credit_alphanum4",
     buyingAssetCode: "USD",
-    buyingAssetIssuer: "GISSUER...",
+    buyingAssetIssuer: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ",
     limit: nil,
     cursor: "now"
 ))
@@ -2349,7 +2414,7 @@ import stellarsdk
 
 let sdk = StellarSDK.testNet()
 
-let streamItem = sdk.offers.stream(for: .offersForAccount(account: "GABC...", cursor: "now"))
+let streamItem = sdk.offers.stream(for: .offersForAccount(account: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ", cursor: "now"))
 streamItem.onReceive { response in
     switch response {
     case .open:
@@ -2495,7 +2560,7 @@ Create a cryptographic signature for any text using your secret key.
 import Foundation
 import stellarsdk
 
-let keyPair = try! KeyPair(secretSeed: "SCZANGBA5YHTNYVVV3C7CAZMTQDBJHJG6C34JFD6XVEAEPTBED53FETV")
+let keyPair = try! KeyPair.generateRandomKeyPair()
 
 // Sign a message
 let message = "Please sign this message to verify your identity"
@@ -2515,7 +2580,7 @@ import Foundation
 import stellarsdk
 
 // Verify with the signing keypair
-let keyPair = try! KeyPair(secretSeed: "SCZANGBA5YHTNYVVV3C7CAZMTQDBJHJG6C34JFD6XVEAEPTBED53FETV")
+let keyPair = try! KeyPair.generateRandomKeyPair()
 
 let message = "Please sign this message to verify your identity"
 let signature = try! keyPair.signMessage(message)
@@ -2535,10 +2600,9 @@ import Foundation
 import stellarsdk
 
 // Only have the public key (account ID)
-let publicKey = try! KeyPair(accountId: "GABC...")
+let publicKey = try! KeyPair(accountId: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ")
 
-// Signature received from client (base64 encoded)
-let signatureBase64 = "..."
+// signatureBase64: the client's signature, received base64-encoded
 let signatureData = Data(base64Encoded: signatureBase64)!
 let signature = [UInt8](signatureData)
 
@@ -2573,7 +2637,7 @@ Custom assets issued by Stellar accounts. Use `AssetType.ASSET_TYPE_CREDIT_ALPHA
 ```swift
 import stellarsdk
 
-let issuerKeyPair = try! KeyPair(accountId: "GISSUER...")
+let issuerKeyPair = try! KeyPair(accountId: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ")
 
 // 1-4 character code
 let usd = Asset(type: AssetType.ASSET_TYPE_CREDIT_ALPHANUM4, code: "USD", issuer: issuerKeyPair)!
@@ -2591,9 +2655,9 @@ Use the canonical form initializer to automatically choose the correct type base
 import stellarsdk
 
 // Automatically creates the correct asset type based on code length
-let usd = Asset(canonicalForm: "USD:GISSUER...")!
+let usd = Asset(canonicalForm: "USD:GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ")!          // 4 chars → ALPHANUM4
 
-let myToken = Asset(canonicalForm: "MYTOKEN:GISSUER...")!
+let myToken = Asset(canonicalForm: "MYTOKEN:GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ")!  // 5-12 chars → ALPHANUM12
 ```
 
 ### Canonical Form
@@ -2603,14 +2667,14 @@ Convert assets to/from canonical string format (`CODE:ISSUER`). Useful for stora
 ```swift
 import stellarsdk
 
-let issuerKeyPair = try! KeyPair(accountId: "GISSUER...")
+let issuerKeyPair = try! KeyPair(accountId: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ")
 let usd = Asset(type: AssetType.ASSET_TYPE_CREDIT_ALPHANUM4, code: "USD", issuer: issuerKeyPair)!
 
 // Convert to canonical string
-let canonical = usd.toCanonicalForm()  // "USD:GISSUER..."
+let canonical = usd.toCanonicalForm()  // "USD:GA7QYNF7SOWQ..."
 
-// Parse from canonical string
-let asset = Asset(canonicalForm: "USD:GISSUER...")
+// Parse from canonical string — failable, returns nil for a malformed string
+let asset = Asset(canonicalForm: "USD:GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ")
 
 // Native asset canonical form
 let xlmCanonical = Asset(type: AssetType.ASSET_TYPE_NATIVE)!.toCanonicalForm()  // "native"
@@ -2623,7 +2687,7 @@ Liquidity pool share assets represent ownership in an AMM pool. Created from the
 ```swift
 import stellarsdk
 
-let issuerKeyPair = try! KeyPair(accountId: "GISSUER...")
+let issuerKeyPair = try! KeyPair(accountId: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ")
 let usdAsset = Asset(type: AssetType.ASSET_TYPE_CREDIT_ALPHANUM4, code: "USD", issuer: issuerKeyPair)!
 
 // Create pool share asset (assets must be in lexicographic order)
@@ -2652,11 +2716,12 @@ Deploy a contract and call a method with minimal setup.
 import Foundation
 import stellarsdk
 
-let keyPair = try! KeyPair(secretSeed: "SXXX...")
+// sourceSecretSeed: String for your funded testnet account, loaded from secure storage
+let keyPair = try! KeyPair(secretSeed: sourceSecretSeed)
 let rpcUrl = "https://soroban-testnet.stellar.org:443"
 
 // Install WASM and deploy contract
-let wasmBytes: Data = ... // load your contract WASM bytes
+let wasmBytes = try Data(contentsOf: URL(fileURLWithPath: "path/to/your_contract.wasm"))
 let wasmHash = try await SorobanClient.install(
     installRequest: InstallRequest(
         rpcUrl: rpcUrl,
@@ -2680,9 +2745,9 @@ let client = try await SorobanClient.deploy(
 // Invoke contract method
 let result = try await client.invokeMethod(
     name: "hello",
-    args: [SCValXDR.forSymbol("World")]
+    args: [SCValXDR.symbol("World")]
 )
-print("\(result.vec![0].sym!), \(result.vec![1].sym!)") // Hello, World
+print("\(result.vec![0].symbol!), \(result.vec![1].symbol!)") // Hello, World
 ```
 
 ### Soroban RPC Server
