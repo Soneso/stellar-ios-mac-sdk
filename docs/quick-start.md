@@ -21,7 +21,7 @@ Or add it to your `Package.swift`:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/Soneso/stellar-ios-mac-sdk.git", from: "3.9.0")
+    .package(url: "https://github.com/Soneso/stellar-ios-mac-sdk.git", from: "3.10.0")
 ]
 ```
 

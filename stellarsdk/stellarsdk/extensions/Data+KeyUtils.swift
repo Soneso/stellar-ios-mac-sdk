@@ -189,15 +189,21 @@ extension Data {
     /// an "M..." strkey; every other key type value is read as the narrower shape and gives
     /// the "G..." strkey of the ed25519 key.
     ///
-    /// - Throws: XDRDecoder.Error.prematureEndOfData if the data is narrower than the shape
-    /// its key type names: 44 bytes for KEY_TYPE_MUXED_ED25519, 36 bytes for any other value.
-    /// Bytes past that width are ignored
+    /// - Throws: StellarSDKError.invalidArgument unless the data is exactly the width its
+    /// key type names: 44 bytes for KEY_TYPE_MUXED_ED25519, 36 bytes for any other value.
     public func encodeMuxedAccount() throws -> String {
-        let muxed = try XDRDecoder.decode(MuxedAccountXDR.self, data:self)
+        let muxed: MuxedAccountXDR
+        do {
+            muxed = try XDRDecoder.decode(MuxedAccountXDR.self, data:self)
+        } catch {
+            throw StellarSDKError.invalidArgument(message: "invalid muxed account length \(count), must be 36 bytes (44 for KEY_TYPE_MUXED_ED25519)")
+        }
         switch muxed {
         case .ed25519(_):
+            try requireSize(36, "ed25519 muxed account")
             return muxed.ed25519AccountId
         case .med25519(let mux):
+            try requireSize(44, "med25519 muxed account")
             let muxInverted = mux.toMuxedAccountMed25519XDRInverted()
             let data = try Data(XDREncoder.encode(muxInverted))
             return try data.encodeMEd25519AccountId()

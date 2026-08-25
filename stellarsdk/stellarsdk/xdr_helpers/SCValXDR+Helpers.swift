@@ -297,6 +297,7 @@ extension SCValXDR {
         return type() == SCValType.executableTag.rawValue
     }
 
+    @available(*, deprecated, renamed: "executableTagString")
     public var executableTag: String? {
         switch self {
         case .executableTag(let val):
