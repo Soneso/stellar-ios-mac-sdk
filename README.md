@@ -6,16 +6,10 @@ Build and sign Stellar transactions, query [Horizon](https://developers.stellar.
 
 ## Installation
 
-### Swift Package Manager
+Add the SDK with Swift Package Manager:
 
 ```swift
 .package(name: "stellarsdk", url: "git@github.com:Soneso/stellar-ios-mac-sdk.git", from: "3.10.0"),
-```
-
-### CocoaPods
-
-```ruby
-pod 'stellar-ios-mac-sdk', '~> 3.10.0'
 ```
 
 Requires iOS 15+, macOS 12+, Xcode 16+ (Swift 6 toolchain). Your app can build in Swift 5 or Swift 6 language mode.
