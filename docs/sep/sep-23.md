@@ -12,6 +12,7 @@ This example demonstrates the most common strkey operations: generating a keypai
 
 ```swift
 import stellarsdk
+import Foundation
 
 // Generate a keypair
 let keyPair = try KeyPair.generateRandomKeyPair()
@@ -33,9 +34,10 @@ Account IDs (G...) are public keys that identify accounts on the network. Secret
 
 ```swift
 import stellarsdk
+import Foundation
 
-// Use a keypair with a known seed
-let keyPair = try KeyPair(secretSeed: "SAKEEHNTJXQTHU64TYNKP3ET56RSCB4ZHXYZRPEULNHUBDN4L2TWAECA")
+// Generate a disposable keypair for this local round-trip example.
+let keyPair = try KeyPair.generateRandomKeyPair()
 let accountId = keyPair.accountId
 let secretSeed = keyPair.secretSeed!
 
@@ -165,6 +167,7 @@ For direct manipulation of muxed account binary data, use the String and Data ex
 
 ```swift
 import stellarsdk
+import Foundation
 
 let muxedAccountId =
     "MA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVAAAAAAAAAAAAAJLK"
@@ -213,6 +216,7 @@ Soroban smart contracts are identified by C-addresses. These encode the 32-byte 
 
 ```swift
 import stellarsdk
+import Foundation
 
 // Encode a 32-byte hash as a contract ID
 let contractHash = Data(try KeyPair.generateRandomKeyPair().publicKey.bytes) // any 32 bytes
@@ -236,6 +240,7 @@ Signed payloads (defined in [CAP-40](https://github.com/stellar/stellar-protocol
 
 ```swift
 import stellarsdk
+import Foundation
 
 let keyPair = try KeyPair.generateRandomKeyPair()
 let payload = Data([0x01, 0x02, 0x03, 0x04]) // 1-64 bytes of application data
@@ -255,6 +260,7 @@ Pool IDs (L...) identify AMM liquidity pools. Claimable balance IDs (B...) refer
 
 ```swift
 import stellarsdk
+import Foundation
 
 // Liquidity pool ID (L...)
 let poolHex =
@@ -277,6 +283,13 @@ let decodedBalance: Data = try balanceId.decodeClaimableBalanceId()
 let balanceBodyHex: String = try balanceId.decodeClaimableBalanceIdToHex()
 let sameBalanceId: String = try balanceBodyHex.encodeClaimableBalanceIdHex()
 print(sameBalanceId == balanceId) // true
+
+// ClaimableBalanceIDXDR accepts the same spellings (plus the B-address) and renders
+// two of them: claimableBalanceIdString is the 33-byte body hex, paddedBalanceIdHex
+// the 36-byte XDR-encoding hex Horizon serves, both lower case.
+let cbXdr = try ClaimableBalanceIDXDR(claimableBalanceId: balanceId)
+print(cbXdr.paddedBalanceIdHex)
+// "00000000929b20b72e5890ab51c24f1cc46fa01c4f318d8d33367d24dd614cfd00000000"
 ```
 
 ## Version bytes reference
@@ -303,6 +316,7 @@ Every `decode*` method throws `KeyUtilsError` when its input is malformed, and e
 
 ```swift
 import stellarsdk
+import Foundation
 
 // One mistyped character breaks the checksum, so the address is rejected
 do {
@@ -380,6 +394,7 @@ The encoders enforce the same rules on the bytes you hand them, so anything they
 
 ```swift
 import stellarsdk
+import Foundation
 
 // A 31-byte key is not an ed25519 public key, so there is no G-address for it
 do {

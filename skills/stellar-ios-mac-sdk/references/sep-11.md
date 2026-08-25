@@ -2,6 +2,8 @@
 
 **Purpose:** Convert Stellar transactions between base64-encoded XDR and human-readable key-value text (TxRep format), for debugging, auditing, and manual transaction construction.
 
+All examples assume `import stellarsdk`.
+
 **Prerequisites:** None — TxRep conversion works offline, no network or signing required.
 
 **SDK Class:** `TxRep` (static methods only, no instantiation needed)
@@ -27,14 +29,15 @@
 
 ```swift
 import stellarsdk
+import Foundation
 
 // Build and sign a transaction
-let sourceKeyPair = try KeyPair(secretSeed: "SABC...")
+let sourceKeyPair = try KeyPair.generateRandomKeyPair()
 let account = Account(keyPair: sourceKeyPair, sequenceNumber: 123456)
 
 let payment = try PaymentOperation(
     sourceAccountId: nil,
-    destinationAccountId: "GDEST...",
+    destinationAccountId: "GCZHXL5HXQX5ABDM26LHYRCQZ5OJFHLOPLZX47WEBP3V2PF5AVFK2A5D",
     asset: Asset(type: AssetType.ASSET_TYPE_NATIVE)!,
     amount: Decimal(100)
 )
@@ -201,7 +204,10 @@ All five Stellar memo types are supported:
 
 ```swift
 import stellarsdk
+import Foundation
 
+// account: the transaction's source Account
+// op: a built operation (e.g. a PaymentOperation)
 // MEMO_NONE
 let tx1 = try Transaction(sourceAccount: account, operations: [op], memo: Memo.none)
 // → tx.memo.type: MEMO_NONE
@@ -345,13 +351,14 @@ feeBump.signatures[0].signature: <hex>
 
 ```swift
 import stellarsdk
+import Foundation
 
 // Build inner transaction
-let innerKeyPair = try KeyPair(secretSeed: "SINNER...")
+let innerKeyPair = try KeyPair.generateRandomKeyPair()
 let innerAccount = Account(keyPair: innerKeyPair, sequenceNumber: 654321)
 let payment = try PaymentOperation(
     sourceAccountId: nil,
-    destinationAccountId: "GDEST...",
+    destinationAccountId: "GCZHXL5HXQX5ABDM26LHYRCQZ5OJFHLOPLZX47WEBP3V2PF5AVFK2A5D",
     asset: Asset(type: AssetType.ASSET_TYPE_NATIVE)!,
     amount: Decimal(50)
 )
@@ -516,8 +523,9 @@ tx.memo.text: "Hello, World!"
 **`Account(keyPair:sequenceNumber:)` vs `Account(accountId:sequenceNumber:)` — both valid for TxRep roundtrips (no network needed):**
 ```swift
 // Both work for offline TxRep conversion:
+let keyPair = try KeyPair.generateRandomKeyPair()
 let account1 = Account(keyPair: keyPair, sequenceNumber: 123456)
-let account2 = try Account(accountId: "GABC...", sequenceNumber: 123456)
+let account2 = try Account(accountId: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ", sequenceNumber: 123456)
 ```
 
 **`seqNum` in TxRep is one higher than the Account's current sequence number:**

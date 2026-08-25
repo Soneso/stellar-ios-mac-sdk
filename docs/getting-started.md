@@ -22,18 +22,18 @@ This guide covers the fundamentals of the Stellar iOS/macOS SDK.
 Add the SDK to your project using Swift Package Manager. In Xcode, go to **File > Add Package Dependencies** and enter the repository URL:
 
 ```
-https://github.com/nicklama/stellar-ios-mac-sdk
+https://github.com/Soneso/stellar-ios-mac-sdk
 ```
 
 Or add it to your `Package.swift`:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/nicklama/stellar-ios-mac-sdk.git", from: "2.0.0")
+    .package(url: "https://github.com/Soneso/stellar-ios-mac-sdk.git", from: "3.9.0")
 ]
 ```
 
-**Requirements:** iOS 13+ / macOS 12+, Swift 5.7+.
+**Requirements:** iOS 15+ / macOS 12+, Xcode 16+ (Swift 6 toolchain). Your app can build in Swift 5 or Swift 6 language mode.
 
 ## Basic Concepts
 
@@ -112,7 +112,7 @@ If you already have a secret seed (from a backup or another wallet), you can res
 ```swift
 import stellarsdk
 
-let userInput = "SDJHRQF4GCMIIKAAAQ6IHY42X73FQFLHUULAPSKKD4DFDM7UXWWCRHBE"
+// userInput: String obtained from a secure input field or the Keychain
 
 // Restore keypair from seed (can sign transactions)
 do {
@@ -203,7 +203,8 @@ import stellarsdk
 
 let sdk = StellarSDK.publicNet()
 
-let sourceKeyPair = try! KeyPair(secretSeed: "SAPS66IJDXUSFDSDKIHR4LN6YPXIGCM5FBZ7GE66FDKFJRYJGFW7ZHYF")
+// sourceSecretSeed: String for an existing funded public-network account, loaded from secure storage
+let sourceKeyPair = try! KeyPair(secretSeed: sourceSecretSeed)
 let newKeyPair = try! KeyPair.generateRandomKeyPair()
 
 // Source account must already exist and have enough XLM for the new account's starting balance + fees
@@ -308,7 +309,7 @@ import stellarsdk
 // Build operations
 let paymentOp = try PaymentOperation(
     sourceAccountId: nil,
-    destinationAccountId: "GDESTINATION...",
+    destinationAccountId: "GCZHXL5HXQX5ABDM26LHYRCQZ5OJFHLOPLZX47WEBP3V2PF5AVFK2A5D", // destination account
     asset: Asset(type: AssetType.ASSET_TYPE_NATIVE)!,
     amount: 100.50
 )
@@ -316,7 +317,7 @@ let paymentOp = try PaymentOperation(
 let trustAsset = Asset(
     type: AssetType.ASSET_TYPE_CREDIT_ALPHANUM4,
     code: "USD",
-    issuer: try! KeyPair(accountId: "GISSUER...")
+    issuer: try! KeyPair(accountId: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ") // asset issuer
 )!
 let changeTrustAsset = ChangeTrustAsset(
     type: trustAsset.type,
@@ -330,6 +331,7 @@ let trustOp = ChangeTrustOperation(
 )
 
 // Add operations to transaction
+// sourceAccount: an AccountResponse loaded via getAccountDetails (see above)
 let transaction = try Transaction(
     sourceAccount: sourceAccount,
     operations: [trustOp, paymentOp],  // First: establish trustline, Then: send payment
@@ -373,8 +375,9 @@ import stellarsdk
 
 let sdk = StellarSDK.testNet()
 
-let senderKeyPair = try! KeyPair(secretSeed: "SA52PD5FN425CUONRMMX2CY5HB6I473A5OYNIVU67INROUZ6W4SPHXZB")
-let destination = "GCRFFUKMUWWBRIA6ABRDFL5NKO6CKDB2IOX7MOS2TRLXNXQD255Z2MYG"
+// senderSecretSeed: String for a funded testnet account, loaded from secure storage
+// destination: String for an existing testnet destination account
+let senderKeyPair = try! KeyPair(secretSeed: senderSecretSeed)
 
 let accDetailsResponse = await sdk.accounts.getAccountDetails(accountId: senderKeyPair.accountId)
 switch accDetailsResponse {

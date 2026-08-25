@@ -71,12 +71,14 @@ Before your account can be recovered, you must register it with one or more reco
 ```swift
 import stellarsdk
 
+// accountId: the user's Stellar account id ("G...")
+// jwtToken: SEP-10 JWT obtained via web authentication (see sep-10.md)
 let service = RecoveryService(serviceAddress: "https://recovery.example.com")
 
 // Define how the user can prove their identity during recovery.
 // Multiple authentication methods provide fallback options.
 let authMethods = [
-    Sep30AuthMethod(type: "stellar_address", value: "GXXXX..."), // SEP-10 auth (highest security)
+    Sep30AuthMethod(type: "stellar_address", value: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ"), // SEP-10 auth (highest security)
     Sep30AuthMethod(type: "email", value: "user@example.com"),
     Sep30AuthMethod(type: "phone_number", value: "+14155551234"), // E.164 format required
 ]
@@ -118,10 +120,13 @@ import stellarsdk
 
 let sdk = StellarSDK.testNet()
 
-let accountKeyPair = try KeyPair(secretSeed: "SXXXXXX...")
+// protectedAccountSecretSeed: String loaded from secure storage
+let accountKeyPair = try KeyPair(secretSeed: protectedAccountSecretSeed)
 let accountId = accountKeyPair.accountId
 let accountEnum = await sdk.accounts.getAccountDetails(accountId: accountId)
-guard case .success(let accountDetails) = accountEnum else { return }
+guard case .success(let accountDetails) = accountEnum else {
+    throw StellarSDKError.invalidArgument(message: "Could not load the protected account")
+}
 
 // Add recovery server as a signer with weight 1.
 // The signer key comes from the registration response.
@@ -144,9 +149,9 @@ let addSignerOp = try SetOptionsOperation(
 // together can meet threshold, but recovery server alone cannot.
 let setThresholdsOp = try SetOptionsOperation(
     sourceAccountId: nil,
-    highThreshold: 2,
+    lowThreshold: 2,
     mediumThreshold: 2,
-    lowThreshold: 2
+    highThreshold: 2
 )
 
 let transaction = try Transaction(
@@ -176,6 +181,9 @@ For better security, register with multiple recovery servers so no single server
 ```swift
 import stellarsdk
 
+// accountId: the user's Stellar account id ("G...")
+// jwtToken1: SEP-10 JWT for the first authentication factor
+// jwtToken2: SEP-10 JWT for the second authentication factor
 // Create identity (reused for both servers)
 let authMethods = [Sep30AuthMethod(type: "email", value: "user@example.com")]
 let identity = Sep30RequestIdentity(role: "owner", authMethods: authMethods)
@@ -188,7 +196,9 @@ let responseEnum1 = await service1.registerAccount(
     request: request,
     jwt: jwtToken1
 )
-guard case .success(let response1) = responseEnum1 else { return }
+guard case .success(let response1) = responseEnum1 else {
+    throw StellarSDKError.invalidArgument(message: "Registration with the first recovery server failed")
+}
 let signerKey1 = response1.signers[0].key
 
 // Register with second recovery server
@@ -198,14 +208,19 @@ let responseEnum2 = await service2.registerAccount(
     request: request,
     jwt: jwtToken2
 )
-guard case .success(let response2) = responseEnum2 else { return }
+guard case .success(let response2) = responseEnum2 else {
+    throw StellarSDKError.invalidArgument(message: "Registration with the second recovery server failed")
+}
 let signerKey2 = response2.signers[0].key
 
 // Add both signers to your account with combined weight
 let sdk = StellarSDK.testNet()
-let accountKeyPair = try KeyPair(secretSeed: "SXXXXXX...")
+// protectedAccountSecretSeed: String loaded from secure storage
+let accountKeyPair = try KeyPair(secretSeed: protectedAccountSecretSeed)
 let accountEnum = await sdk.accounts.getAccountDetails(accountId: accountKeyPair.accountId)
-guard case .success(let accountDetails) = accountEnum else { return }
+guard case .success(let accountDetails) = accountEnum else {
+    throw StellarSDKError.invalidArgument(message: "Could not load the protected account")
+}
 
 let sourceAccount = try Account(
     accountId: accountDetails.accountId,
@@ -227,9 +242,9 @@ let addSigner2Op = try SetOptionsOperation(
 // Set threshold to 2, requiring both recovery servers to sign
 let setThresholdsOp = try SetOptionsOperation(
     sourceAccountId: nil,
-    highThreshold: 2,
+    lowThreshold: 2,
     mediumThreshold: 2,
-    lowThreshold: 2
+    highThreshold: 2
 )
 
 let transaction = try Transaction(
@@ -258,7 +273,10 @@ When you lose your private key, authenticate with the recovery server using one 
 
 ```swift
 import stellarsdk
+import Foundation
 
+// accountId: the user's Stellar account id ("G...")
+// recoveryJwt: SEP-10 JWT authenticated with the recovery signer
 let service = RecoveryService(serviceAddress: "https://recovery.example.com")
 
 // Get account details to find the signing address.
@@ -267,7 +285,9 @@ let accountDetailsEnum = await service.accountDetails(
     address: accountId,
     jwt: recoveryJwt
 )
-guard case .success(let accountDetails) = accountDetailsEnum else { return }
+guard case .success(let accountDetails) = accountDetailsEnum else {
+    throw StellarSDKError.invalidArgument(message: "Could not load recovery account details")
+}
 let signingAddress = accountDetails.signers[0].key
 
 // Generate a new keypair for the recovered account
@@ -276,7 +296,9 @@ let newKeyPair = try KeyPair.generateRandomKeyPair()
 // Build a transaction to add the new key with high weight
 let sdk = StellarSDK.testNet()
 let stellarAccountEnum = await sdk.accounts.getAccountDetails(accountId: accountId)
-guard case .success(let stellarAccount) = stellarAccountEnum else { return }
+guard case .success(let stellarAccount) = stellarAccountEnum else {
+    throw StellarSDKError.invalidArgument(message: "Could not load the Stellar account")
+}
 
 let sourceAccount = try Account(
     accountId: stellarAccount.accountId,
@@ -344,6 +366,8 @@ Update authentication methods for a registered account. This completely replaces
 ```swift
 import stellarsdk
 
+// accountId: the user's Stellar account id ("G...")
+// jwtToken: SEP-10 JWT obtained via web authentication (see sep-10.md)
 let service = RecoveryService(serviceAddress: "https://recovery.example.com")
 
 // New auth methods completely replace existing ones.
@@ -351,7 +375,7 @@ let service = RecoveryService(serviceAddress: "https://recovery.example.com")
 let newAuthMethods = [
     Sep30AuthMethod(type: "email", value: "newemail@example.com"),
     Sep30AuthMethod(type: "phone_number", value: "+14155559999"),
-    Sep30AuthMethod(type: "stellar_address", value: "GNEWADDRESS..."),
+    Sep30AuthMethod(type: "stellar_address", value: "GCZHXL5HXQX5ABDM26LHYRCQZ5OJFHLOPLZX47WEBP3V2PF5AVFK2A5D"),
 ]
 let identity = Sep30RequestIdentity(role: "owner", authMethods: newAuthMethods)
 
@@ -502,6 +526,8 @@ Remove your account from the recovery server. This operation is **irrecoverable*
 ```swift
 import stellarsdk
 
+// accountId: the user's Stellar account id ("G...")
+// jwtToken: SEP-10 JWT obtained via web authentication (see sep-10.md)
 let service = RecoveryService(serviceAddress: "https://recovery.example.com")
 
 // Get the signer key before deletion so we can remove it from the account
@@ -509,7 +535,9 @@ let detailsEnum = await service.accountDetails(
     address: accountId,
     jwt: jwtToken
 )
-guard case .success(let details) = detailsEnum else { return }
+guard case .success(let details) = detailsEnum else {
+    throw StellarSDKError.invalidArgument(message: "Could not load recovery account details")
+}
 let signerToRemove = details.signers[0].key
 
 // Delete registration from recovery server
@@ -527,9 +555,12 @@ case .failure(let error):
 
 // Important: also remove the server's signer from your Stellar account
 let sdk = StellarSDK.testNet()
-let accountKeyPair = try KeyPair(secretSeed: "SXXXXXX...")
+// protectedAccountSecretSeed: String loaded from secure storage
+let accountKeyPair = try KeyPair(secretSeed: protectedAccountSecretSeed)
 let accountEnum = await sdk.accounts.getAccountDetails(accountId: accountKeyPair.accountId)
-guard case .success(let accountDetails) = accountEnum else { return }
+guard case .success(let accountDetails) = accountEnum else {
+    throw StellarSDKError.invalidArgument(message: "Could not load the protected account")
+}
 
 let sourceAccount = try Account(
     accountId: accountDetails.accountId,

@@ -4,6 +4,8 @@
 **Prerequisites:** None (field definitions only; used with `KycService` from SEP-12)
 **SDK Types:** `KYCNaturalPersonFieldsEnum`, `KYCOrganizationFieldsEnum`, `KYCFinancialAccountFieldsEnum`, `KYCCardFieldsEnum`
 
+All examples assume `import stellarsdk`.
+
 ## Table of Contents
 
 - [Overview](#overview)
@@ -43,7 +45,10 @@ SEP-09 fields are used by [SEP-12](sep-12.md) (`PutCustomerInfoRequest.fields`, 
 
 ```swift
 import stellarsdk
+import Foundation
 
+// idFrontData, idBackData, notaryData, utilityBillData, bankStatementData, selfieVideoData: raw file bytes loaded from disk (Data)
+// jwtToken: SEP-10 JWT obtained via web authentication (see sep-10.md)
 var request = PutCustomerInfoRequest(jwt: jwtToken)
 
 request.fields = [

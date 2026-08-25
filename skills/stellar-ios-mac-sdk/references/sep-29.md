@@ -5,7 +5,22 @@
 **SDK Integration:** Automatic check built into `submitTransaction()` and `postTransaction()`
 **Spec:** [SEP-0029](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0029.md)
 
+All examples assume `import stellarsdk`.
+
 Exchanges and custodial services use SEP-29 to identify which customer a deposit belongs to. Without a memo, incoming payments cannot be credited to the right user. The iOS SDK performs the SEP-29 check automatically inside `submitTransaction()` and returns a dedicated enum case when a destination requires a memo.
+
+- [How the Check Works](#how-the-check-works)
+- [Quick Start — Automatic Check via submitTransaction()](#quick-start--automatic-check-via-submittransaction)
+- [Response Enums](#response-enums)
+- [Method Signatures](#method-signatures)
+- [Setting the Memo-Required Flag on Your Account](#setting-the-memo-required-flag-on-your-account)
+- [Transactions with Multiple Destinations](#transactions-with-multiple-destinations)
+- [AccountMergeOperation](#accountmergeoperation)
+- [Muxed Account Destinations](#muxed-account-destinations)
+- [Skipping the Check Explicitly](#skipping-the-check-explicitly)
+- [CheckMemoRequiredResponseEnum](#checkmemorequiredresponseenum)
+- [Common Pitfalls](#common-pitfalls)
+- [Related SEPs](#related-seps)
 
 ## How the Check Works
 
@@ -31,12 +46,15 @@ The check is integrated into `submitTransaction()` and `postTransaction()`. You 
 import stellarsdk
 
 let sdk = StellarSDK.testNet()
-let senderKeyPair = try KeyPair(secretSeed: "SABC...")
-let destAccountId = "GDEST..."
+// senderSecretSeed: String for your funded sender account, loaded from secure storage
+// destAccountId: String for an existing testnet destination account
+let senderKeyPair = try KeyPair(secretSeed: senderSecretSeed)
 
 // Load sender account
 let accountEnum = await sdk.accounts.getAccountDetails(accountId: senderKeyPair.accountId)
-guard case .success(let accountResponse) = accountEnum else { return }
+guard case .success(let accountResponse) = accountEnum else {
+    throw StellarSDKError.invalidArgument(message: "Could not load the sender account")
+}
 
 let sourceAccount = try Account(
     accountId: accountResponse.accountId,
@@ -159,10 +177,13 @@ Exchanges and custodial services use `ManageDataOperation` to set the `config.me
 import stellarsdk
 
 let sdk = StellarSDK.testNet()
-let exchangeKeyPair = try KeyPair(secretSeed: "SEXCHANGE...")
+// exchangeSecretSeed: String for the exchange account, loaded from secure storage
+let exchangeKeyPair = try KeyPair(secretSeed: exchangeSecretSeed)
 
 let accountEnum = await sdk.accounts.getAccountDetails(accountId: exchangeKeyPair.accountId)
-guard case .success(let accountResponse) = accountEnum else { return }
+guard case .success(let accountResponse) = accountEnum else {
+    throw StellarSDKError.invalidArgument(message: "Could not load the exchange account")
+}
 
 let sourceAccount = try Account(
     accountId: accountResponse.accountId,
@@ -211,18 +232,20 @@ When a transaction has multiple payment operations, the check examines each dest
 import stellarsdk
 
 let sdk = StellarSDK.testNet()
-let senderKeyPair = try KeyPair(secretSeed: "SABC...")
+// senderSecretSeed: String for your funded sender account, loaded from secure storage
+let senderKeyPair = try KeyPair(secretSeed: senderSecretSeed)
 
 let accountEnum = await sdk.accounts.getAccountDetails(accountId: senderKeyPair.accountId)
-guard case .success(let accountResponse) = accountEnum else { return }
+guard case .success(let accountResponse) = accountEnum else {
+    throw StellarSDKError.invalidArgument(message: "Could not load the sender account")
+}
 
 let sourceAccount = try Account(
     accountId: accountResponse.accountId,
     sequenceNumber: accountResponse.sequenceNumber
 )
 
-let dest1 = "GDEST1..."
-let dest2 = "GDEST2..."
+// dest1 and dest2: String values for existing testnet destination accounts
 
 let op1 = try PaymentOperation(
     sourceAccountId: nil,
@@ -253,7 +276,9 @@ case .destinationRequiresMemo(let accountId):
     print("Account \(accountId) requires a memo — rebuild with memo")
     // Rebuild with memo (reload account to reset sequence)
     let reloadEnum = await sdk.accounts.getAccountDetails(accountId: senderKeyPair.accountId)
-    guard case .success(let reloaded) = reloadEnum else { return }
+    guard case .success(let reloaded) = reloadEnum else {
+        throw StellarSDKError.invalidArgument(message: "Could not reload the sender account")
+    }
     let sourceAccount2 = try Account(
         accountId: reloaded.accountId,
         sequenceNumber: reloaded.sequenceNumber
@@ -282,11 +307,14 @@ case .failure(let error):
 import stellarsdk
 
 let sdk = StellarSDK.testNet()
-let sourceKeyPair = try KeyPair(secretSeed: "SABC...")
-let destAccountId = "GDEST..."
+// sourceSecretSeed: String for your funded source account, loaded from secure storage
+// destAccountId: String for an existing testnet destination account
+let sourceKeyPair = try KeyPair(secretSeed: sourceSecretSeed)
 
 let accountEnum = await sdk.accounts.getAccountDetails(accountId: sourceKeyPair.accountId)
-guard case .success(let accountResponse) = accountEnum else { return }
+guard case .success(let accountResponse) = accountEnum else {
+    throw StellarSDKError.invalidArgument(message: "Could not load the source account")
+}
 
 let sourceAccount = try Account(
     accountId: accountResponse.accountId,
@@ -340,10 +368,13 @@ Muxed accounts (M-addresses) are automatically skipped by the check. The numeric
 import stellarsdk
 
 let sdk = StellarSDK.testNet()
-let senderKeyPair = try KeyPair(secretSeed: "SABC...")
+// senderSecretSeed: String for your funded sender account, loaded from secure storage
+let senderKeyPair = try KeyPair(secretSeed: senderSecretSeed)
 
 let accountEnum = await sdk.accounts.getAccountDetails(accountId: senderKeyPair.accountId)
-guard case .success(let accountResponse) = accountEnum else { return }
+guard case .success(let accountResponse) = accountEnum else {
+    throw StellarSDKError.invalidArgument(message: "Could not load the sender account")
+}
 
 let sourceAccount = try Account(
     accountId: accountResponse.accountId,

@@ -1,6 +1,27 @@
 # Horizon API Reference
 
-Complete Horizon API coverage via `StellarSDK` service objects. All methods are `async` and return result enums for pattern matching. The SDK provides 100% Horizon endpoint coverage (50/50 endpoints).
+Complete Horizon API coverage via `StellarSDK` service objects. All methods are `async` and return result enums for pattern matching. The SDK covers every Horizon endpoint.
+
+All examples assume `import stellarsdk`.
+
+- [SDK Initialization](#sdk-initialization)
+- [Service Objects](#service-objects)
+- [Common Query Pattern](#common-query-pattern)
+- [Accounts](#accounts)
+- [Transactions](#transactions)
+- [Operations](#operations)
+- [Payments](#payments)
+- [Ledgers](#ledgers)
+- [Effects](#effects)
+- [Offers & Orderbook](#offers--orderbook)
+- [Trades & Aggregations](#trades--aggregations)
+- [Assets](#assets)
+- [Claimable Balances](#claimable-balances)
+- [Liquidity Pools](#liquidity-pools)
+- [Path Finding](#path-finding)
+- [Fee Statistics](#fee-statistics)
+- [Pagination](#pagination)
+- [Error Handling](#error-handling)
 
 ## SDK Initialization
 
@@ -47,7 +68,9 @@ Access Horizon endpoints through typed service properties on `StellarSDK`:
 All Horizon queries return result enums following this pattern:
 
 ```swift
-let response = await sdk.accounts.getAccountDetails(accountId: "GABC...")
+let sdk = StellarSDK.testNet()
+
+let response = await sdk.accounts.getAccountDetails(accountId: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ")
 switch response {
 case .success(let accountDetails):
     print("Balances: \(accountDetails.balances)")
@@ -62,19 +85,21 @@ For method signatures on response objects, see [API Reference](./api_reference.m
 ## Accounts
 
 ```swift
+let sdk = StellarSDK.testNet()
+
 // Get account details
-let response = await sdk.accounts.getAccountDetails(accountId: "GABC...")
+let response = await sdk.accounts.getAccountDetails(accountId: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ")
 
 // Get account data field
 let dataResponse = await sdk.accounts.getDataForAccount(
-    accountId: "GABC...",
+    accountId: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ",
     key: "my_data_key"
 )
 
 // Query accounts with filters
 let filtered = await sdk.accounts.getAccounts(
     signer: nil,
-    asset: "USD:GISSUER...",   // canonical asset format
+    asset: "USD:GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ",   // CODE:ISSUER canonical form
     sponsor: nil,
     liquidityPoolId: nil,
     cursor: nil,
@@ -83,7 +108,8 @@ let filtered = await sdk.accounts.getAccounts(
 )
 
 // Create testnet account (Friendbot)
-let fundResult = await sdk.accounts.createTestAccount(accountId: "GNEW...")
+let testKeyPair = try KeyPair.generateRandomKeyPair()
+let fundResult = await sdk.accounts.createTestAccount(accountId: testKeyPair.accountId)
 ```
 
 ## Transactions
@@ -91,6 +117,8 @@ let fundResult = await sdk.accounts.createTestAccount(accountId: "GNEW...")
 ### Querying
 
 ```swift
+let sdk = StellarSDK.testNet()
+
 // All transactions
 let txResponse = await sdk.transactions.getTransactions(
     cursor: nil,
@@ -100,7 +128,7 @@ let txResponse = await sdk.transactions.getTransactions(
 
 // Transactions for an account
 let accountTxs = await sdk.transactions.getTransactions(
-    forAccount: "GABC...",
+    forAccount: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ",
     from: nil,      // cursor
     order: nil,
     limit: 10
@@ -219,9 +247,12 @@ let xdrResult = await sdk.transactions.postTransaction(
 ## Operations
 
 ```swift
+// page: a records page from a previous query
+let sdk = StellarSDK.testNet()
+
 // All operations
 let opsResponse = await sdk.operations.getOperations(
-    cursor: nil,
+    from: nil,
     order: nil,
     limit: 20,
     includeFailed: true,   // Bool? - include failed operations
@@ -230,7 +261,7 @@ let opsResponse = await sdk.operations.getOperations(
 
 // Operations for an account
 let accountOps = await sdk.operations.getOperations(
-    forAccount: "GABC...",
+    forAccount: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ",
     from: nil,
     order: nil,
     limit: nil,
@@ -267,16 +298,18 @@ for op in page.records {
 ## Payments
 
 ```swift
+let sdk = StellarSDK.testNet()
+
 // All payments
 let payments = await sdk.payments.getPayments(
-    cursor: nil,
+    from: nil,
     order: nil,
     limit: 20
 )
 
 // Payments for an account
 let accountPayments = await sdk.payments.getPayments(
-    forAccount: "GABC...",
+    forAccount: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ",
     from: nil,
     order: .descending,
     limit: 10
@@ -321,12 +354,14 @@ let ledger = await sdk.ledgers.getLedger(sequenceNumber: "12345")
 ## Effects
 
 ```swift
+let sdk = StellarSDK.testNet()
+
 // All effects
-let effects = await sdk.effects.getEffects(cursor: nil, order: nil, limit: 20)
+let effects = await sdk.effects.getEffects(from: nil, order: nil, limit: 20)
 
 // Effects for account, ledger, operation, transaction, or liquidity pool
 let accountEffects = await sdk.effects.getEffects(
-    forAccount: "GABC...",
+    forAccount: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ",
     from: nil,
     order: nil,
     limit: nil
@@ -342,9 +377,11 @@ let opEffects = await sdk.effects.getEffects(
 ## Offers & Orderbook
 
 ```swift
+let sdk = StellarSDK.testNet()
+
 // Offers for an account
 let offers = await sdk.offers.getOffers(
-    forAccount: "GABC...",
+    forAccount: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ",
     cursor: nil,
     order: nil,
     limit: nil
@@ -365,7 +402,7 @@ let offerTrades = await sdk.offers.getTrades(
 let orderbook = await sdk.orderbooks.getOrderbook(
     sellingAssetType: "credit_alphanum4",
     sellingAssetCode: "USD",
-    sellingAssetIssuer: "GISSUER...",
+    sellingAssetIssuer: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ",
     buyingAssetType: "native",
     buyingAssetCode: nil,
     buyingAssetIssuer: nil,
@@ -388,6 +425,8 @@ Query parameters define the market from the **offer creator's perspective**:
 Example: To see offers selling USD for XLM, specify `selling = USD`, `buying = XLM`.
 
 ```swift
+let sdk = StellarSDK.testNet()
+
 // WRONG: Swapped parameters - shows opposite side of market
 let wrongBook = await sdk.orderbooks.getOrderbook(
     sellingAssetType: "native",          // Offers selling XLM (not what you want)
@@ -395,7 +434,7 @@ let wrongBook = await sdk.orderbooks.getOrderbook(
     sellingAssetIssuer: nil,
     buyingAssetType: "credit_alphanum4", // Offers buying USD
     buyingAssetCode: "USD",
-    buyingAssetIssuer: "GISSUER...",
+    buyingAssetIssuer: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ",
     limit: 20
 )
 
@@ -403,7 +442,7 @@ let wrongBook = await sdk.orderbooks.getOrderbook(
 let correctBook = await sdk.orderbooks.getOrderbook(
     sellingAssetType: "credit_alphanum4", // Offers selling USD
     sellingAssetCode: "USD",
-    sellingAssetIssuer: "GISSUER...",
+    sellingAssetIssuer: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ",
     buyingAssetType: "native",           // Offers buying XLM
     buyingAssetCode: nil,
     buyingAssetIssuer: nil,
@@ -414,6 +453,8 @@ let correctBook = await sdk.orderbooks.getOrderbook(
 ## Trades & Aggregations
 
 ```swift
+let sdk = StellarSDK.testNet()
+
 // Query trades
 let trades = await sdk.trades.getTrades(
     baseAssetType: "native",
@@ -421,7 +462,7 @@ let trades = await sdk.trades.getTrades(
     baseAssetIssuer: nil,
     counterAssetType: "credit_alphanum4",
     counterAssetCode: "USD",
-    counterAssetIssuer: "GISSUER...",
+    counterAssetIssuer: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ",
     offerId: nil,
     cursor: nil,
     order: nil,
@@ -430,16 +471,16 @@ let trades = await sdk.trades.getTrades(
 
 // Trade aggregations (OHLCV candles)
 let aggregations = await sdk.tradeAggregations.getTradeAggregations(
+    startTime: nil,
+    endTime: nil,
+    resolution: 3600000,   // Int64 - milliseconds (1 hour)
     baseAssetType: "native",
     baseAssetCode: nil,
     baseAssetIssuer: nil,
     counterAssetType: "credit_alphanum4",
     counterAssetCode: "USD",
-    counterAssetIssuer: "GISSUER...",
-    resolution: 3600000,   // Int64 - milliseconds (1 hour)
-    startTime: nil,
-    endTime: nil,
-    offset: nil,
+    counterAssetIssuer: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ",
+    cursor: nil,
     order: nil,
     limit: nil
 )
@@ -460,9 +501,11 @@ let assets = await sdk.assets.getAssets(
 ## Claimable Balances
 
 ```swift
+let sdk = StellarSDK.testNet()
+
 // Query by claimant account (separate methods per filter - pick ONE)
 let balances = await sdk.claimableBalances.getClaimableBalances(
-    claimantAccountId: "GCLAIMER...",
+    claimantAccountId: "GCZHXL5HXQX5ABDM26LHYRCQZ5OJFHLOPLZX47WEBP3V2PF5AVFK2A5D",
     cursor: nil, order: nil, limit: nil
 )
 
@@ -474,7 +517,7 @@ let byAsset = await sdk.claimableBalances.getClaimableBalances(
 
 // Query by sponsor
 let byFunder = await sdk.claimableBalances.getClaimableBalances(
-    sponsorAccountId: "GSPONSOR...",
+    sponsorAccountId: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ",
     cursor: nil, order: nil, limit: nil
 )
 
@@ -508,11 +551,13 @@ let pool = await sdk.liquidityPools.getLiquidityPool(poolId: "abcdef...")
 ## Path Finding
 
 ```swift
+let sdk = StellarSDK.testNet()
+
 // Strict receive - find paths to deliver exact destination amount
 let paths = await sdk.paymentPaths.strictReceive(
-    sourceAccount: "GSOURCE...",
+    sourceAccount: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ",
     sourceAssets: nil,
-    destinationAccount: "GDEST...",
+    destinationAccount: "GCZHXL5HXQX5ABDM26LHYRCQZ5OJFHLOPLZX47WEBP3V2PF5AVFK2A5D",
     destinationAssetType: "native",
     destinationAssetCode: nil,
     destinationAssetIssuer: nil,
@@ -524,8 +569,8 @@ let sendPaths = await sdk.paymentPaths.strictSend(
     sourceAmount: "50.0",
     sourceAssetType: "credit_alphanum4",
     sourceAssetCode: "USD",
-    sourceAssetIssuer: "GISSUER...",
-    destinationAccount: "GDEST...",
+    sourceAssetIssuer: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ",
+    destinationAccount: "GCZHXL5HXQX5ABDM26LHYRCQZ5OJFHLOPLZX47WEBP3V2PF5AVFK2A5D",
     destinationAssets: nil
 )
 ```
@@ -589,7 +634,9 @@ case .failure(let error):
 All Horizon service methods return errors as `HorizonRequestError`:
 
 ```swift
-let response = await sdk.accounts.getAccountDetails(accountId: "GINVALID...")
+let sdk = StellarSDK.testNet()
+
+let response = await sdk.accounts.getAccountDetails(accountId: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ")
 switch response {
 case .success(let details):
     print(details.accountId)

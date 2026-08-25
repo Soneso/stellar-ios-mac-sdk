@@ -4,6 +4,8 @@
 **Prerequisites:** None
 **SDK Class:** `RegulatedAssetsService`
 
+All examples assume `import stellarsdk`.
+
 ## Table of Contents
 
 - [Quick Start](#quick-start)
@@ -72,6 +74,7 @@ case .failure(let error):
 
 ```swift
 import stellarsdk
+import Foundation
 
 let result = await RegulatedAssetsService.forDomain(
     domain: "https://issuer.example.com",
@@ -195,11 +198,17 @@ Build a normal Stellar transaction, encode it as XDR, and POST it to the approva
 
 ```swift
 import stellarsdk
+import Foundation
 
+// asset: the regulated Asset being transferred
+// senderKeyPair: the sender's signing KeyPair
+// service: RegulatedAssetsService for the asset (see initialization)
 // 1. Build the transaction (normal Stellar transaction)
 let sdk = StellarSDK.testNet()
 let accountEnum = await sdk.accounts.getAccountDetails(accountId: senderKeyPair.accountId)
-guard case .success(let accountResponse) = accountEnum else { return }
+guard case .success(let accountResponse) = accountEnum else {
+    throw StellarSDKError.invalidArgument(message: "Could not load the sender account")
+}
 
 let sourceAccount = try Account(
     accountId: accountResponse.accountId,
@@ -215,7 +224,8 @@ let regulatedAsset = Asset(
 
 let paymentOp = try PaymentOperation(
     sourceAccountId: nil,
-    destinationAccountId: "GDEST...",
+    // destinationAccountId: an existing account authorized to hold the regulated asset
+    destinationAccountId: destinationAccountId,
     asset: regulatedAsset,
     amount: Decimal(100)
 )
@@ -342,6 +352,7 @@ Complete end-to-end example handling all possible server responses with retry lo
 
 ```swift
 import stellarsdk
+import Foundation
 
 func sendRegulatedPayment(
     service: RegulatedAssetsService,
@@ -587,14 +598,17 @@ public enum RegulatedAssetsServiceError: Error {
 When `.failure(error: HorizonRequestError)` is returned by `postTransaction` or `postAction`:
 
 ```swift
+// service: RegulatedAssetsService for the asset (see initialization)
+// asset: the RegulatedAsset being transferred
+// txXdr: base64 XDR of the transaction to submit for approval
 let result = await service.postTransaction(txB64Xdr: txXdr, apporvalServer: asset.approvalServer)
 if case .failure(let error) = result {
     switch error {
     case .parsingResponseFailed(let message):
         // Approval server returned an unrecognized status value
         print("Unknown server response: \(message)")
-    case .requestFailed(_, let message):
-        print("Network error: \(message ?? "unknown")")
+    case .requestFailed(let message, _):
+        print("Network error: \(message)")
     default:
         print("Error: \(error)")
     }

@@ -1,8 +1,8 @@
 ---
 name: stellar-ios-mac-sdk
-description: Build Stellar blockchain applications in Swift using stellar-ios-mac-sdk. Use when generating Swift code for transaction building, signing, Horizon API queries, Soroban RPC, smart contract deployment and invocation, smart accounts (OpenZeppelin) with passkey / WebAuthn authentication, XDR encoding/decoding, and SEP protocol integration. Covers 26+ operations, 50 Horizon endpoints, 12 RPC methods, and 18 SEP implementations with Swift async/await and callback-based streaming patterns. Reach for it when the developer mentions Stellar, blockchain, passkey, smart wallet, or biometric signing on iOS or macOS. Full Swift 6 strict concurrency support (all types Sendable).
+description: Guides Stellar blockchain development in Swift using stellar-ios-mac-sdk. Use when generating Swift code for transaction building, signing, Horizon API queries, Soroban RPC, smart contract deployment and invocation, smart accounts (OpenZeppelin) with passkey / WebAuthn authentication, XDR encoding/decoding, and SEP protocol integration. Network APIs use Swift async/await; Horizon streaming is callback-based. Triggers when the developer mentions Stellar, blockchain, passkey, smart wallet, or biometric signing on iOS or macOS. Full Swift 6 strict concurrency support (all types Sendable).
 license: Apache 2.0
-compatibility: Requires Swift 6.0+, iOS 15+, macOS 12+. Zero external dependencies.
+compatibility: Requires Xcode 16+ (Swift 6 toolchain), iOS 15+, macOS 12+. Zero external dependencies.
 metadata:
   version: "1.4.1"
   sdk_version: "3.9.0"
@@ -13,7 +13,7 @@ metadata:
 
 ## Overview
 
-The Stellar iOS/Mac SDK (`stellarsdk`) is a native Swift library for building Stellar applications on iOS 15+ and macOS 12+. It provides 100% Horizon API coverage (50/50 endpoints), 100% Soroban RPC coverage (12/12 methods), and 18 SEP implementations. All public APIs use Swift async/await with Swift 6 strict concurrency. The SDK has zero external dependencies.
+The Stellar iOS/Mac SDK (`stellarsdk`) is a native Swift library for building Stellar applications on iOS 15+ and macOS 12+. It covers the Horizon API, the Soroban RPC API, and the SEP protocol suite. Network APIs use Swift async/await; the Horizon streaming endpoints are callback-based (`onReceive` closures on retained stream items); builders, encoders, and other utilities are synchronous. The SDK compiles with Swift 6 strict concurrency and has zero external dependencies.
 
 **Module name:** `stellarsdk` (always lowercase in import statements)
 
@@ -49,10 +49,12 @@ guard let secretSeed = keyPair.secretSeed else {
     throw StellarSDKError.invalidArgument(message: "Failed to get secret seed")
 }
 // WARNING: Store secretSeed securely (iOS Keychain). Never log or hardcode it.
+```
 
-// From existing seed
+```swift
+// From existing seed (seed: the "S..." secret seed string, loaded from secure storage)
 let keyPair = try KeyPair(secretSeed: seed)
-let publicOnly = try KeyPair(accountId: "GABC...")  // public-only, cannot sign
+let publicOnly = try KeyPair(accountId: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ")  // public-only, cannot sign
 ```
 
 ### Accounts
@@ -91,13 +93,15 @@ case .failure(let error):
 let xlm = Asset(type: AssetType.ASSET_TYPE_NATIVE)!
 
 // Issued asset (4-char code)
-let issuerKeyPair = try KeyPair(accountId: "GISSUER...")
+let issuerKeyPair = try KeyPair(accountId: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ")  // asset issuer
 let usdc = Asset(type: AssetType.ASSET_TYPE_CREDIT_ALPHANUM4,
                  code: "USDC",
                  issuer: issuerKeyPair)!
 
-// From canonical form
-let asset = Asset(canonicalForm: "USDC:GISSUER...")!
+// From canonical form "CODE:ISSUER" — failable, returns nil for a malformed string
+if let asset = Asset(canonicalForm: "USDC:GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ") {
+    print(asset.toCanonicalForm())
+}
 ```
 
 ### Networks
@@ -121,11 +125,11 @@ Query patterns for retrieving blockchain data. All queries return result enums (
 let sdk = StellarSDK.testNet()
 
 // Account details
-let accountEnum = await sdk.accounts.getAccountDetails(accountId: "GABC...")
+let accountEnum = await sdk.accounts.getAccountDetails(accountId: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ")
 
 // Transactions for account
 let txEnum = await sdk.transactions.getTransactions(
-    forAccount: "GABC...",
+    forAccount: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ",
     from: nil,
     order: .descending,
     limit: 10
@@ -136,7 +140,7 @@ switch txEnum {
 case .success(let page):
     if let lastRecord = page.records.last {
         let nextPage = await sdk.transactions.getTransactions(
-            forAccount: "GABC...",
+            forAccount: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ",
             from: lastRecord.pagingToken,
             order: .descending,
             limit: 10
@@ -147,7 +151,7 @@ case .failure(let error):
 }
 ```
 
-For all Horizon endpoints (50/50), advanced queries, and memo inspection:
+For the full Horizon endpoint coverage, advanced queries, and memo inspection:
 [Horizon API Reference](./references/horizon_api.md)
 
 ## 3. Horizon API - Streaming
@@ -194,15 +198,19 @@ Complete transaction lifecycle: Build -> Sign -> Submit.
 
 ```swift
 let sdk = StellarSDK.testNet()
+// senderKeyPair: the sender's signing KeyPair, built from its secret seed
+// destinationAccountId: an existing account on the selected network
 
 // 1. Load sender account (AccountResponse conforms to TransactionAccount)
 let accountEnum = await sdk.accounts.getAccountDetails(accountId: senderKeyPair.accountId)
-guard case .success(let accountResponse) = accountEnum else { return }
+guard case .success(let accountResponse) = accountEnum else {
+    throw StellarSDKError.invalidArgument(message: "Could not load the sender account")
+}
 
 // 2. Create payment operation
 let paymentOp = try PaymentOperation(
     sourceAccountId: nil,
-    destinationAccountId: "GDEST...",
+    destinationAccountId: destinationAccountId,
     asset: Asset(type: AssetType.ASSET_TYPE_NATIVE)!,
     amount: 100.0  // Decimal type
 )
@@ -230,7 +238,7 @@ case .failure(let error):
 }
 ```
 
-For all 26+ operations (ChangeTrust, ManageSellOffer, CreateAccount, etc.):
+For all operations (ChangeTrust, ManageSellOffer, CreateAccount, etc.):
 [Operations Reference](./references/operations.md)
 
 ## 5. Soroban RPC API
@@ -247,7 +255,7 @@ let healthEnum = await server.getHealth()
 let networkEnum = await server.getNetwork()
 ```
 
-For all 12 RPC methods (getAccount, simulateTransaction, getEvents, etc.):
+For all RPC methods (getAccount, simulateTransaction, getEvents, etc.):
 [RPC Reference](./references/rpc.md)
 
 ## 6. Smart Contracts
@@ -288,11 +296,12 @@ print("Contract ID: \(client.contractId)")
 ### Invoke Contract Function
 
 ```swift
+// keyPair, rpcUrl: as in the deploy example above
 // Create client for existing contract
 let client = try await SorobanClient.forClientOptions(
     options: ClientOptions(
         sourceAccountKeyPair: keyPair,
-        contractId: "CABC...",
+        contractId: "CB3FU6M3TOAGRBLN5WDLXL6A7VR5SSRGULMXQQOABNMPS25YRJ4CN5VV",  // deployed contract
         network: Network.testnet,
         rpcUrl: rpcUrl
     )
@@ -321,17 +330,19 @@ Passkey-authenticated Soroban smart accounts: biometric (Face ID / Touch ID) aut
 XDR is Stellar's binary serialization format.
 
 ```swift
-// Encode transaction to XDR
+// transaction: a built Transaction (see section 4)
 let xdrBase64 = try transaction.encodedEnvelope()
 
-// Decode XDR to transaction
-let transaction = try Transaction(envelopeXdr: xdrBase64)
+// Decode XDR back into a transaction
+let decoded = try Transaction(envelopeXdr: xdrBase64)
+```
 
+```swift
 // Soroban contract values
 let boolVal = SCValXDR.bool(true)
 let u32Val = SCValXDR.u32(42)
 let symbolVal = SCValXDR.symbol("transfer")
-let addressVal = SCValXDR.address(try SCAddressXDR(accountId: "GABC...")) // SCAddressXDR throws, .address() does not
+let addressVal = SCValXDR.address(try SCAddressXDR(accountId: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ")) // SCAddressXDR throws, .address() does not
 ```
 
 For all XdrSCVal types and encoding/decoding utilities:
@@ -342,7 +353,10 @@ For all XdrSCVal types and encoding/decoding utilities:
 ### Horizon Errors
 
 ```swift
-let responseEnum = await sdk.accounts.getAccountDetails(accountId: "GINVALID...")
+let sdk = StellarSDK.testNet()
+
+// Checksum-valid account id, not funded on any network — Horizon answers 404
+let responseEnum = await sdk.accounts.getAccountDetails(accountId: "GB6HKIDW4WVQPPFPTXTVKZMAJIL33DUZGWBVLQV35TTYUNIUL7AL2UTG")
 switch responseEnum {
 case .success(let account):
     print("Found: \(account.accountId)")
@@ -377,7 +391,7 @@ case .destinationRequiresMemo:
 }
 ```
 
-For comprehensive error catalog and solutions:
+For the full error catalog and solutions:
 [Troubleshooting Guide](./references/troubleshooting.md)
 
 ## 10. Security Best Practices
@@ -388,7 +402,7 @@ Never hardcode secret seeds. Use iOS Keychain for storage. Always verify transac
 
 ## 11. SEP Implementations
 
-The SDK implements 18 Stellar Ecosystem Proposals (SEPs): SEP-01 (TOML), SEP-02 (Federation), SEP-05 (Key Derivation), SEP-10 (Web Auth), SEP-24 (Interactive deposit/withdrawal), and more.
+The SDK implements the Stellar Ecosystem Proposals for discovery, authentication, KYC, deposits and withdrawals, quotes, and messaging: SEP-01 (TOML), SEP-02 (Federation), SEP-05 (Key Derivation), SEP-10 (Web Auth), SEP-24 (Interactive deposit/withdrawal), and more.
 
 [SEP Implementations Reference](./references/sep.md)
 
@@ -400,10 +414,10 @@ Multi-signature accounts, sponsored reserves, claimable balances, liquidity pool
 
 ## Reference Documentation
 
-- [Operations Reference](./references/operations.md) - All 26+ Stellar operations with Swift examples
-- [Horizon API Reference](./references/horizon_api.md) - Complete Horizon endpoint coverage (50/50)
+- [Operations Reference](./references/operations.md) - All Stellar operations with Swift examples
+- [Horizon API Reference](./references/horizon_api.md) - Complete Horizon endpoint coverage
 - [Horizon Streaming Guide](./references/horizon_streaming.md) - SSE patterns and reconnection
-- [RPC Reference](./references/rpc.md) - All 12 Soroban RPC methods
+- [RPC Reference](./references/rpc.md) - All Soroban RPC methods
 - [Smart Contracts Guide](./references/soroban_contracts.md) - Contract deployment, invocation, auth
 - [Smart Accounts Guide](./references/smart_accounts.md) - OZ kit core: config, wallet create/connect, signer types, transactions, credentials, external signers, events, indexer
 - [Smart Accounts - Policies](./references/smart_accounts_policies.md) - Signer management, context rules, policies, multi-signer operations
@@ -411,8 +425,9 @@ Multi-signature accounts, sponsored reserves, claimable balances, liquidity pool
 - [XDR Guide](./references/xdr.md) - XDR encoding/decoding and debugging
 - [Troubleshooting Guide](./references/troubleshooting.md) - Error codes and solutions
 - [Security Best Practices](./references/security.md) - Keychain storage, transaction verification
-- [SEP Implementations](./references/sep.md) - All 18 SEP protocol implementations
+- [SEP Implementations](./references/sep.md) - The SEP protocol implementations
 - [Advanced Features](./references/advanced.md) - Multi-sig, sponsorship, claimable balances, liquidity pools
+- [Common Pitfalls Reference](./references/common_pitfalls.md) - Frequent mistakes with WRONG/CORRECT examples
 - [API Reference (Signatures)](./references/api_reference.md) - All public class/method signatures
 
 **External Resources:**
@@ -422,132 +437,9 @@ Multi-signature accounts, sponsored reserves, claimable balances, liquidity pool
 
 ## Common Pitfalls
 
-**Module name is lowercase:**
-```swift
-// WRONG: import StellarSDK
-// CORRECT:
-import stellarsdk
-```
+The mistakes that most often break builds or transactions, each with WRONG/CORRECT Swift examples: lowercase `import stellarsdk`; stream items must be retained; operation amounts are `Decimal` while Horizon returns `String` balances; sequence numbers are already `Int64` and `Transaction(sourceAccount:)` increments them internally; the signing network must match the SDK instance; a `KeyPair` built from an accountId cannot sign; missing signatures for the transaction's source account surface as `tx_bad_auth` in the transaction code, while an operation whose own source account fails its thresholds surfaces as `op_bad_auth` in the operation codes; fees are per operation; Soroban transactions need simulation before signing.
 
-**Stream items must be retained:**
-```swift
-// WRONG: stream closes immediately
-func bad() {
-    let _ = sdk.payments.stream(for: .paymentsForAccount(account: "G...", cursor: nil))
-}
-
-// CORRECT: store as instance property
-class Monitor {
-    var streamItem: OperationsStreamItem?  // Strong reference
-    func start() {
-        streamItem = sdk.payments.stream(for: .paymentsForAccount(account: "G...", cursor: nil))
-    }
-}
-```
-
-**Amounts are Decimal, not String:**
-```swift
-// Operations use Decimal
-let payment = try PaymentOperation(
-    sourceAccountId: nil,
-    destinationAccountId: "GDEST...",
-    asset: Asset(type: AssetType.ASSET_TYPE_NATIVE)!,
-    amount: 100.0  // Decimal type
-)
-
-// Horizon responses return String balances with 7 decimal places
-// e.g., "100.0000000" for 100 XLM — always 7 decimals, never "100"
-let balance = accountResponse.balances[0]
-guard let amountDecimal = Decimal(string: balance.balance) else { throw ... }
-let payment = try PaymentOperation(..., amount: amountDecimal)
-```
-
-**Sequence number is already Int64:**
-```swift
-// WRONG: Int64(accountResponse.sequenceNumber)! -- compile error
-// CORRECT: use directly
-let account = try Account(
-    accountId: accountResponse.accountId,
-    sequenceNumber: accountResponse.sequenceNumber  // Already Int64
-)
-```
-
-**Sequence number mutation:** `Transaction(sourceAccount:)` increments the source account's sequence number internally. Reload the account before building a new transaction. Don't increment manually.
-```swift
-// CORRECT: reload account, Transaction increments sequence internally
-let accountResponse = await sdk.accounts.getAccountDetails(accountId: accountId)
-guard case .success(let account) = accountResponse else { return }
-let tx = try Transaction(sourceAccount: account, operations: [op], memo: Memo.none)
-// account.sequenceNumber is now N+1
-
-// WRONG: manually incrementing — Transaction already does this
-// account.incrementSequenceNumber()  // now N+1
-// let tx = try Transaction(sourceAccount: account, ...)  // uses N+2 — tx_bad_seq!
-```
-
-**Network passphrase must match SDK:**
-```swift
-// WRONG: Mismatched network
-let sdk = StellarSDK.publicNet()
-try transaction.sign(keyPair: keyPair, network: Network.testnet)  // ERROR!
-
-// CORRECT: Match SDK and signing network
-let sdk = StellarSDK.publicNet()
-try transaction.sign(keyPair: keyPair, network: .public)
-```
-
-**KeyPair from accountId is public-only (cannot sign):**
-```swift
-// WRONG: Trying to sign with public-only KeyPair
-let publicKeyPair = try KeyPair(accountId: "GABC...")
-try transaction.sign(keyPair: publicKeyPair, network: Network.testnet)  // ERROR!
-
-// CORRECT: Load from secretSeed for signing
-let signingKeyPair = try KeyPair(secretSeed: "SABC...")
-try transaction.sign(keyPair: signingKeyPair, network: Network.testnet)
-```
-
-**Insufficient signatures return `op_bad_auth`, not `tx_bad_auth`:**
-```swift
-// Multi-sig auth failures appear in operation codes, not transaction code
-let submitEnum = await sdk.transactions.submitTransaction(transaction: transaction)
-switch submitEnum {
-case .failure(let error):
-    if case .badRequest(_, let errorResponse) = error {
-        if let resultCodes = errorResponse?.extras?.resultCodes {
-            // WRONG: checking transaction code for auth failure
-            if resultCodes.transaction == "tx_bad_auth" { /* never matches */ }
-            
-            // CORRECT: check operation codes for op_bad_auth
-            if let opCodes = resultCodes.operations, opCodes.contains("op_bad_auth") {
-                print("Insufficient signatures!")
-            }
-        }
-    }
-default:
-    break
-}
-```
-
-**Fee calculation:**
-The fee is per operation. For a transaction with N operations at `maxOperationFee: 200`, the total fee is N × 200 stroops. The minimum base fee is 100 stroops per operation.
-
-**Soroban transactions require simulation first:**
-```swift
-// Build transaction, then simulate to get footprint/fees
-let simRequest = SimulateTransactionRequest(transaction: tx)
-let simEnum = await server.simulateTransaction(simulateTxRequest: simRequest)
-guard case .success(let simResponse) = simEnum else { return }
-
-// Apply simulation results before signing
-if let transactionData = simResponse.transactionData {
-    tx.setSorobanTransactionData(data: transactionData)
-}
-if let minResourceFee = simResponse.minResourceFee {
-    tx.addResourceFee(resourceFee: minResourceFee)
-}
-tx.setSorobanAuth(auth: simResponse.sorobanAuth)
-```
+[Common Pitfalls Reference](./references/common_pitfalls.md)
 
 For error handling patterns and troubleshooting:
 [Troubleshooting Guide](./references/troubleshooting.md)

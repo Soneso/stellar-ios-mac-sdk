@@ -163,6 +163,10 @@ try await kit.disconnect()
 On app relaunch, use a two-phase connect pattern. Phase 1 silently restores the session without prompting the user. If no session exists, show a connect button and let the user trigger Phase 2.
 
 ```swift
+import stellarsdk
+
+// kit is the OZSmartAccountKit configured in the Quick Start above
+
 // Phase 1: Silent restore at app launch (no biometric prompt)
 if let connection = try await kit.walletOperations.connectWallet() {
     switch connection {
@@ -197,6 +201,9 @@ if let connection = try await kit.walletOperations.connectWallet(
 Force fresh authentication when needed (e.g., before sensitive operations):
 
 ```swift
+import stellarsdk
+
+// kit is the OZSmartAccountKit configured in the Quick Start above
 let connection = try await kit.walletOperations.connectWallet(
     options: OZConnectWalletOptions(fresh: true)
 )
@@ -205,6 +212,9 @@ let connection = try await kit.walletOperations.connectWallet(
 Connect directly with known credentials (skips WebAuthn and session check; the cascade is bypassed so the result is always `.connected` on success):
 
 ```swift
+import stellarsdk
+
+// kit is the OZSmartAccountKit configured in the Quick Start above
 let connection = try await kit.walletOperations.connectWallet(
     options: OZConnectWalletOptions(
         credentialId: "<base64url credential id>",
@@ -284,6 +294,9 @@ let limitResult = try await kit.policyManager.addSpendingLimit(
 For custom policy contracts beyond the built-in types, use `addPolicy` with policy-specific install parameters:
 
 ```swift
+import stellarsdk
+
+// kit is the OZSmartAccountKit configured in the Quick Start above
 let result = try await kit.policyManager.addPolicy(
     contextRuleId: 0,
     policyAddress: "<C-address of the custom policy>",
@@ -309,6 +322,9 @@ See the [API Reference](api-reference.md#multi-signer-operations) for `OZSelecte
 All operations throw typed exceptions from the `SmartAccountException` hierarchy:
 
 ```swift
+import stellarsdk
+
+// kit is the OZSmartAccountKit configured in the Quick Start above
 do {
     let wallet = try await kit.walletOperations.createWallet(userName: "Alice", autoSubmit: true)
 } catch is WebAuthnException.Cancelled {
@@ -354,12 +370,20 @@ do {
 | `externalWallet` | `OZExternalWalletAdapter?` | `nil` | Wallet adapter (e.g., Freighter, Lobstr) backing the adapter custody model for `OZSelectedSigner.wallet` signers. The kit injects it into `kit.externalSigners`. |
 | `externalEd25519Adapter` | `OZExternalEd25519SignerAdapter?` | `nil` | Ed25519 adapter (hardware wallet, HSM, remote signing service) backing the adapter custody model for `OZSelectedSigner.ed25519` signers. The kit injects it into `kit.externalSigners`. |
 | `maxContextRuleScanId` | `UInt32` | `50` | Upper bound on the context-rule IDs scanned when listing rules without an explicit scan limit. |
+| `useUpgradedAuth` | `Bool` | `true` | Credential arm for the kit's internal simulations and the `fundWallet` source-account conversion. `true` uses Protocol 27 `ADDRESS_V2` credentials; set `false` only when a relayer service parses submitted auth XDR with pre-protocol-27 schemas and rejects the V2 credential discriminant. Does not affect delegated external-wallet entries — see `useUpgradedAuthForWalletSigners`. |
+| `useUpgradedAuthForWalletSigners` | `Bool` | `true` | Credential arm for delegated external-wallet auth entries (`OZSelectedSigner.wallet` signers). `true` builds `ADDRESS_V2` credentials whose signed preimage carries the wallet address; set `false` only when the wallet software cannot sign the address-bound preimage type. Independent of `useUpgradedAuth`. |
 
 ### Builder Pattern
 
 For configuration with many optional fields, use the builder:
 
 ```swift
+import stellarsdk
+
+// myExternalWallet is your OZExternalWalletAdapter, backing the delegated wallet
+// custody model; drop the .externalWallet(...) line if you do not use one.
+// The two useUpgradedAuth* lines are legacy opt-outs (both default to true);
+// drop them unless a relayer or wallet cannot handle Protocol 27 credentials.
 let config = try OZSmartAccountConfig.builder(
     rpcUrl: "https://soroban-testnet.stellar.org",
     networkPassphrase: Network.testnet.passphrase,
@@ -372,6 +396,8 @@ let config = try OZSmartAccountConfig.builder(
     .signatureExpirationLedgers(1_440)  // ~2 hours
     .storage(OZKeychainStorageAdapter())
     .externalWallet(myExternalWallet)
+    .useUpgradedAuth(false)  // relayer parses auth XDR with pre-protocol-27 schemas
+    .useUpgradedAuthForWalletSigners(false)  // wallet cannot sign the address-bound preimage
     .build()
 ```
 
@@ -424,6 +450,8 @@ Contract address derivation is deterministic: given the same deployer keypair, c
 The SDK provides a default deployer derived from `SHA-256("openzeppelin-smart-account-kit")`. This default is suitable for testing and simple deployments. Other OpenZeppelin Smart Account SDK implementations use the same derivation, so all SDKs produce identical results from the same inputs.
 
 ```swift
+import stellarsdk
+
 let deployer = try await OZSmartAccountConfig.createDefaultDeployer()
 ```
 

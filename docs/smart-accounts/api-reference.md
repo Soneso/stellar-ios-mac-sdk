@@ -258,6 +258,8 @@ Immutable configuration value type passed to `OZSmartAccountKit.create(config:)`
 - `externalEd25519Adapter`: Optional Ed25519 adapter injected into `kit.externalSigners` at construction. Provides out-of-process Ed25519 signing (hardware wallets, remote signing services) as an alternative to in-memory keypairs registered via `kit.externalSigners.addEd25519FromRawKey(...)`.
 - `maxContextRuleScanId`: Maximum context-rule identifier to scan during `getAllContextRules()` / `listContextRules()`. Defaults to `50`. Increase when the account has had many add / remove cycles.
 - `defaultPolicies`: Policies installed on a new wallet's default context rule at deploy time, keyed by policy contract address (`C…` strkey) with the policy's install parameters as the value (see `OZPolicyInstallParams.toScVal()`). Applied through the contract constructor by `createWallet` and `deployPendingCredential`; a per-call `policies` argument overrides it. Defaults to no policies. Maximum `OZConstants.maxPolicies` (5). See the `createWallet` `policies` parameter for the built-in policies' install constraints at deploy time.
+- `useUpgradedAuth`: Governs the credential arm of the kit's internal simulations and of the `fundWallet` source-account conversion. Defaults to `true`: the kit requests `ADDRESS_V2` entries from simulation, and the `fundWallet` conversion replaces source-account credentials with the `ADDRESS_V2` arm, signing the address-bound `ENVELOPE_TYPE_SOROBAN_AUTHORIZATION_WITH_ADDRESS` preimage. When `false`, simulation is asked for legacy entries and the conversion emits the legacy `ADDRESS` arm over the `ENVELOPE_TYPE_SOROBAN_AUTHORIZATION` preimage — the opt-out for relayer services that parse submitted auth XDR with pre-protocol-27 schemas and reject the V2 credential discriminant. Separate from `useUpgradedAuthForWalletSigners`, which governs only the delegated external-wallet entries the kit hands to wallet software to sign.
+- `useUpgradedAuthForWalletSigners`: Governs the credential arm of delegated external-wallet auth entries. Defaults to `true`: delegated entries built for `OZSelectedSigner.wallet(accountId:)` signers carry upgraded `ADDRESS_V2` credentials, whose signed preimage (`ENVELOPE_TYPE_SOROBAN_AUTHORIZATION_WITH_ADDRESS`: `networkID`, `nonce`, `signatureExpirationLedger`, `address`, `invocation`) carries the wallet address. When `false`, they carry the legacy `ADDRESS` arm with its non-address-bound preimage — the opt-out for wallet software that cannot sign the address-bound preimage type.
 
 ### Platform-specific provider integration
 
@@ -282,7 +284,9 @@ public init(
     externalWallet: OZExternalWalletAdapter? = nil,
     externalEd25519Adapter: OZExternalEd25519SignerAdapter? = nil,
     maxContextRuleScanId: UInt32 = 50,
-    defaultPolicies: [String: SCValXDR] = [:]
+    defaultPolicies: [String: SCValXDR] = [:],
+    useUpgradedAuth: Bool = true,
+    useUpgradedAuthForWalletSigners: Bool = true
 ) throws
 ```
 
@@ -370,6 +374,8 @@ One setter per optional field, each `@discardableResult` and returning `Builder`
 - `externalEd25519Adapter(_:)` — `OZExternalEd25519SignerAdapter?`
 - `maxContextRuleScanId(_:)` — `UInt32`
 - `defaultPolicies(_:)` — `[String: SCValXDR]`
+- `useUpgradedAuth(_:)` — `Bool`
+- `useUpgradedAuthForWalletSigners(_:)` — `Bool`
 
 #### build()
 
@@ -1539,7 +1545,7 @@ let result = try await kit.multiSignerManager.multiSignerTransfer(
 )
 ```
 
-See [Onboarding — Signing](onboarding.md#signing) for registering each signing source and the full multi-signer walkthrough.
+See [Onboarding — Signers](onboarding.md#signers) for registering each signing source and the full multi-signer walkthrough.
 
 ---
 
@@ -1665,6 +1671,8 @@ If a keypair is already registered for the same tuple, it is silently overwritte
 **Throws**: `SmartAccountValidationException.InvalidInput` when `secretKeyBytes` is not exactly 32 bytes; `SmartAccountSignerException.Invalid` when keypair construction fails from the supplied seed.
 
 ```swift
+import stellarsdk
+
 // Create the kit first.
 let config = try OZSmartAccountConfig(
     rpcUrl: "https://soroban-testnet.stellar.org",
@@ -1677,7 +1685,8 @@ let kit = OZSmartAccountKit.create(config: config)
 // Register the Ed25519 signing key in memory at runtime.
 let ed25519VerifierAddress = "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM"
 // rawSecretKeyBytes is the raw 32-byte Ed25519 seed (not a Stellar S-strkey).
-let ed25519PublicKey = try kit.externalSigners.addEd25519FromRawKey(
+// addEd25519FromRawKey is sync throws, but OZExternalSignerManager is an actor — call with try await
+let ed25519PublicKey = try await kit.externalSigners.addEd25519FromRawKey(
     secretKeyBytes: rawSecretKeyBytes,
     verifierAddress: ed25519VerifierAddress
 )
@@ -1782,7 +1791,7 @@ final class MyHardwareWalletAdapter: OZExternalEd25519SignerAdapter {
 // Supply via config.externalEd25519Adapter; kit.externalSigners then routes signing through it.
 ```
 
-See [Onboarding — Signing](onboarding.md#signing) for the adapter custody model and a worked configuration example.
+See [Onboarding — Signers](onboarding.md#signers) for the adapter custody model and a worked configuration example.
 
 > **Quirk — adapter-first precedence**: the adapter always signs when `canSignFor` returns `true`, even when an in-memory keypair is registered for the same `(verifierAddress, publicKey)` pair. To force the in-memory path, construct the kit without `externalEd25519Adapter`.
 
@@ -2495,16 +2504,20 @@ The SDK includes an indexer client for reverse lookups from signer credentials t
 `kit.indexerClient` is `nil` when no indexer URL is configured (no explicit URL and no built-in default for the network). Prefer this accessor over constructing a client directly; the kit constructs, configures, and closes it for you.
 
 ```swift
-let kit = try await OZSmartAccountKit.create(config: config)
+import stellarsdk
+
+// config is an OZSmartAccountConfig carrying an indexerUrl; credentialId is the
+// base64url credential id of a passkey the indexer has seen
+let kit = OZSmartAccountKit.create(config: config)
 
 // Discover contracts by credential ID
 let contracts = try await kit.indexerClient?.lookupByCredentialId(credentialId: credentialId)
 
 // Discover contracts by signer address
-let byAddress = try await kit.indexerClient?.lookupByAddress(address: "GABC...")
+let byAddress = try await kit.indexerClient?.lookupByAddress(address: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ")
 
 // Get full contract details (rules, signers, policies)
-let details = try await kit.indexerClient?.getContract(contractId: "CABC...")
+let details = try await kit.indexerClient?.getContract(contractId: "CB3FU6M3TOAGRBLN5WDLXL6A7VR5SSRGULMXQQOABNMPS25YRJ4CN5VV")
 
 // Health and stats
 let healthy = await kit.indexerClient?.isHealthy()
@@ -2514,11 +2527,13 @@ let stats = try await kit.indexerClient?.getStats()
 ### Using OZIndexerClient Directly
 
 ```swift
+import stellarsdk
+
 // Create a client for a specific network (uses the default indexer URL)
 let indexer = OZIndexerClient.forNetwork(networkPassphrase: Network.testnet.passphrase)
 
 // Or with a custom URL
-let indexer = try OZIndexerClient(
+let customIndexer = try OZIndexerClient(
     indexerUrl: "https://testnet.mercurydata.app/rest/smart-account-indexer",
     timeoutMs: 10000
 )
@@ -2805,16 +2820,31 @@ The SDK includes a relayer client for fee-sponsored transaction submission. When
 When the relayer is configured, all transaction submissions use it automatically. `kit.relayerClient` is `nil` when no relayer URL is configured.
 
 ```swift
-let config = OZSmartAccountConfig(
-    // ... other config
+import stellarsdk
+
+let config = try OZSmartAccountConfig(
+    rpcUrl: "https://soroban-testnet.stellar.org",
+    networkPassphrase: Network.testnet.passphrase,
+    accountWasmHash: "86b49fe03f7df0ad1c2a28bd8361b923ab57096e09f397f92f0c00ae3bd06d28",
+    webauthnVerifierAddress: "CB26VN37RCVNTHJZDEPK6IRO2MMTS3Z2IEO5JD5BINY2OOJ5KKJG7NKY",
     relayerUrl: "https://my-relayer-proxy.example.com"
 )
-let kit = try await OZSmartAccountKit.create(config: config)
+let kit = OZSmartAccountKit.create(config: config)
 
-// Transactions automatically use the relayer
-try await kit.transactionOperations.transfer(tokenContract: tokenContract, to: recipient, amount: "10")
+let tokenContract = "CAQFZ2FHCOA3QLPDVU3XO44TM5TSTLRA7Q47FQADE53UUCJDODNTQIWP"  // token contract
+let recipient = "GCZHXL5HXQX5ABDM26LHYRCQZ5OJFHLOPLZX47WEBP3V2PF5AVFK2A5D"      // transfer destination
 
-// Access the relayer client directly
+// Transactions automatically use the relayer (requires a connected wallet)
+let result = try await kit.transactionOperations.transfer(tokenContract: tokenContract, recipient: recipient, amount: "10")
+```
+
+To reach the relayer client directly:
+
+```swift
+import stellarsdk
+
+// kit: an OZSmartAccountKit with a configured relayer;
+// envelope: a TransactionEnvelopeXDR ready for submission
 let response = await kit.relayerClient?.sendXdr(transactionEnvelope: envelope)
 ```
 
@@ -2965,9 +2995,11 @@ public enum OZSmartAccountAuth {
 
     public static func buildSourceAccountAuthPayloadHash(
         entry: SorobanAuthorizationEntryXDR,
+        address: SCAddressXDR,
         nonce: Int64,
         expirationLedger: UInt32,
-        networkPassphrase: String
+        networkPassphrase: String,
+        useUpgradedAuth: Bool = true
     ) async throws -> Data
 
     public static func signAuthEntry(
@@ -2989,7 +3021,7 @@ public enum OZSmartAccountAuth {
 
 - `buildAuthDigest(signaturePayload:contextRuleIds:)` — computes `SHA-256(signaturePayload || contextRuleIds.toXDR())`.
 - `buildAuthPayloadHash(entry:expirationLedger:networkPassphrase:)` — computes the auth-payload hash that must be signed to authorize an entry with address credentials. The preimage envelope type follows the entry's credential arm: `HashIDPreimage::SorobanAuthorization` for the legacy `ADDRESS` arm; `HashIDPreimage::SorobanAuthorizationWithAddress` (protocol 27) for the `ADDRESS_V2` and `ADDRESS_WITH_DELEGATES` arms.
-- `buildSourceAccountAuthPayloadHash(entry:nonce:expirationLedger:networkPassphrase:)` — variant for source-account credentials, typically used when converting them to address credentials for relayer fee sponsoring.
+- `buildSourceAccountAuthPayloadHash(entry:address:nonce:expirationLedger:networkPassphrase:useUpgradedAuth:)` — variant for source-account credentials, typically used when converting them to address credentials for relayer fee sponsoring. `address:` is required and must be the address carried by the credentials the resulting signature is attached to; the host reconstructs the preimage from the submitted credentials. `useUpgradedAuth:` selects the credential arm of the replacement credentials and with it the preimage envelope type: `true` (the default) builds `ADDRESS_V2` credentials and hashes the `HashIDPreimage::SorobanAuthorizationWithAddress` preimage; `false` builds the legacy `ADDRESS` arm and hashes the `HashIDPreimage::SorobanAuthorization` preimage, which carries no address.
 - `signAuthEntry(entry:signer:signature:expirationLedger:contextRuleIds:)` — attaches a pre-computed signature to an authorization entry. Does NOT perform cryptographic signing. Returns a fresh entry; when `contextRuleIds` is non-empty it overrides any existing identifiers in the payload.
 - `addRawSignatureMapEntry(entry:signerKey:signatureValue:contextRuleIds:)` — adds a raw key/value entry to the auth entry's signature map. Used for delegated-signer placeholders where the value is `Bytes` rather than a signature.
 

@@ -2,6 +2,8 @@
 
 **Purpose:** Encode and decode Stellar addresses (public keys, seeds, contract IDs, muxed accounts, etc.) using the strkey format — versioned base32 with CRC-16 checksum.
 
+All examples assume `import stellarsdk`.
+
 **Prerequisites:** None — these are pure utility methods on `String` and `Data`.
 
 **Specification:** [SEP-0023](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0023.md)
@@ -48,6 +50,7 @@ All standard address types (G, S, T, X, C, L) encode to **56 characters**. Muxed
 
 ```swift
 import stellarsdk
+import Foundation
 
 // G-address → 32-byte raw public key
 let pubKeyData: Data = try "GBPXXOA5N4JYPESHAADMQKBPWZWQDQ64ZV6ZL2S3LAGW4SY7NTCMWIVL".decodeEd25519PublicKey()
@@ -56,10 +59,10 @@ let pubKeyData: Data = try "GBPXXOA5N4JYPESHAADMQKBPWZWQDQ64ZV6ZL2S3LAGW4SY7NTCM
 let seedData: Data = try "SBGWKM3CD4IL47QN6X54N6Y33T3JDNVI6AIJ6CD5IM47HG3IG4O36XCU".decodeEd25519SecretSeed()
 
 // T-address → 32-byte raw pre-auth TX hash
-let preAuthData: Data = try someStrKey.decodePreAuthTx()
+let preAuthData: Data = try "TA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGZAM".decodePreAuthTx()
 
 // X-address → 32-byte raw SHA-256 hash
-let hashData: Data = try someStrKey.decodeSha256Hash()
+let hashData: Data = try "XA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQH5FV".decodeSha256Hash()
 
 // C-address → 32-byte raw contract ID
 let contractData: Data = try "CA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE".decodeContractId()
@@ -102,8 +105,12 @@ let payloadBytes: Data = signedPayload.payload              // the raw payload
 ```swift
 import stellarsdk
 
+// pubKeyData, seedData, preAuthData, hashData, contractData, lpData, cbData and
+// muxedData are the values the decode calls above bind; xdrEncodedMuxedData is the
+// XDR encoding of a MuxedAccountXDR
+
 // 32-byte raw data → G-address
-let gAddress: String = try publicKeyData.encodeEd25519PublicKey()
+let gAddress: String = try pubKeyData.encodeEd25519PublicKey()
 
 // 32-byte raw data → S-address
 let sAddress: String = try seedData.encodeEd25519SecretSeed()
@@ -131,7 +138,7 @@ let bAddress: String = try cbData.encodeClaimableBalanceId()
 let muxedAddress: String = try xdrEncodedMuxedData.encodeMuxedAccount()
 
 // XDR-encoded MuxedAccountXDR → M-address only (med25519 raw data)
-let mAddress: String = try rawMuxedData.encodeMEd25519AccountId()
+let mAddress: String = try muxedData.encodeMEd25519AccountId()
 ```
 
 ### Encode from hex strings
@@ -155,6 +162,9 @@ let bAddress: String = try "3f0c34bf93ad0d9971d04ccc90f705511c838aad9734a4a2fb0d
 ### Encode signed payload (P-address)
 
 ```swift
+import stellarsdk
+import Foundation
+
 // Build from public key + payload bytes
 let pk = try PublicKey(accountId: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ")
 let payload = Data([0x01, 0x02, 0x03, 0x04])  // 1–64 bytes
@@ -244,6 +254,7 @@ Muxed accounts (M-addresses) embed a 64-bit ID inside a standard G-address to al
 
 ```swift
 import stellarsdk
+import Foundation
 
 // Decode M-address → MuxedAccountXDR
 let address = "MA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVAAAAAAAAAAAAAJLK"
@@ -281,6 +292,7 @@ Signed payloads (P-addresses, CAP-40) combine an Ed25519 public key with an arbi
 
 ```swift
 import stellarsdk
+import Foundation
 
 // Build a signed payload signer using Signer utility
 let accountId = "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ"
@@ -296,6 +308,7 @@ let pAddress: String = try signedPayload.encodeSignedPayload()
 // → "PA7QYNF7SOWQ3..."
 
 // Validate and decode
+enum MyError: Error { case invalidSignedPayload }   // your app's error type
 guard pAddress.isValidSignedPayload() else { throw MyError.invalidSignedPayload }
 let decoded: Ed25519SignedPayload = try pAddress.decodeSignedPayload()
 let signerPublicKey: PublicKey = try decoded.publicKey()
@@ -304,11 +317,19 @@ let payloadData: Data = decoded.payload
 // Payload size constraints
 // WRONG: payload larger than 64 bytes throws StellarSDKError.invalidArgument
 let tooLarge = Data(repeating: 0, count: 65)
-_ = try Signer.signedPayload(accountId: accountId, payload: tooLarge)  // throws
+do {
+    _ = try Signer.signedPayload(accountId: accountId, payload: tooLarge)
+} catch {
+    print("Rejected: \(error)")  // invalid payload length 65, must be 1 to 64 bytes
+}
 
 // WRONG: an empty payload has no P-address, so encoding throws StellarSDKError.invalidArgument
 let emptyPayload = Ed25519SignedPayload(ed25519: pk.wrappedData32(), payload: Data())
-_ = try emptyPayload.encodeSignedPayload()  // throws
+do {
+    _ = try emptyPayload.encodeSignedPayload()
+} catch {
+    print("Rejected: \(error)")
+}
 ```
 
 ---
@@ -317,6 +338,7 @@ _ = try emptyPayload.encodeSignedPayload()  // throws
 
 ```swift
 import stellarsdk
+import Foundation
 
 let contractStrKey = "CA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE"
 
@@ -346,6 +368,7 @@ let address = try SCAddressXDR(contractId: contractStrKey)   // accepts C-addres
 
 ```swift
 import stellarsdk
+import Foundation
 
 let lpStrKey = "LA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUPJN"
 
@@ -374,6 +397,7 @@ Claimable balance B-addresses include a 1-byte type discriminant (always `0x00` 
 
 ```swift
 import stellarsdk
+import Foundation
 
 let cbStrKey = "BAAD6DBUX6J22DMZOHIEZTEQ64CVCHEDRKWZONFEUL5Q26QD7R76RGR4TU"
 
@@ -403,6 +427,13 @@ let bFromFullHex: String = try "003f0c34bf93ad0d9971d04ccc90f705511c838aad9734a4
 // Use with ClaimableBalanceIDXDR (accepts B-address or hex)
 let cbXdr = try ClaimableBalanceIDXDR(claimableBalanceId: cbStrKey)   // from B-address
 let cbXdrHex = try ClaimableBalanceIDXDR(claimableBalanceId: cbHex)   // from hex with discriminant
+
+// Render hex from the wrapper: claimableBalanceIdString is the 33-byte body,
+// paddedBalanceIdHex the 36-byte XDR encoding Horizon serves (both lower case)
+let bodyHex: String = cbXdr.claimableBalanceIdString
+// → "003f0c34bf93ad0d9971d04ccc90f705511c838aad9734a4a2fb0d7a03fc7fe89a"
+let horizonHex: String = cbXdr.paddedBalanceIdHex
+// → "000000003f0c34bf93ad0d9971d04ccc90f705511c838aad9734a4a2fb0d7a03fc7fe89a"
 
 // Use with SCAddressXDR
 let address = try SCAddressXDR(claimableBalanceId: cbStrKey)
@@ -468,6 +499,7 @@ The encoders reject the payloads that would produce a strkey no decoder reads ba
 
 ```swift
 import stellarsdk
+import Foundation
 
 // Wrong width — there is no G-address for a 31-byte key
 do {
@@ -524,6 +556,7 @@ let data = try sAddress.decodeEd25519SecretSeed()
 
 **Claimable balance hex carries the discriminant, encoding accepts it with or without:**
 ```swift
+// cbStrKey is the B-address bound in "Claimable Balance IDs" above
 // decodeClaimableBalanceIdToHex() returns 33-byte hex (WITH 00 prefix)
 let cbHex = try cbStrKey.decodeClaimableBalanceIdToHex()
 // → "003f0c34bf93ad0d9971d04ccc90f705511c838aad9734a4a2fb0d7a03fc7fe89a"
@@ -592,5 +625,6 @@ checksumedWrong.isValidEd25519PublicKey()  // false — checksum mismatch
 if address.hasPrefix("G") && address.count == 56 { /* accept */ }
 
 // CORRECT: let the SDK apply every rule
+enum MyError: Error { case invalidAddress(String) }   // your app's error type
 guard address.isValidEd25519PublicKey() else { throw MyError.invalidAddress(address) }
 ```

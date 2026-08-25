@@ -1,6 +1,18 @@
 # Troubleshooting Guide
 
-Comprehensive error handling and troubleshooting for the Stellar iOS/Mac SDK (`stellarsdk`).
+Error handling and troubleshooting for the Stellar iOS/Mac SDK (`stellarsdk`).
+
+All examples assume `import stellarsdk`.
+
+- [Error Type Hierarchy](#error-type-hierarchy)
+- [Horizon Errors](#horizon-errors)
+- [Transaction Submission Errors](#transaction-submission-errors)
+- [Soroban RPC Errors](#soroban-rpc-errors)
+- [Soroban Client Errors](#soroban-client-errors)
+- [SDK Validation Errors](#sdk-validation-errors)
+- [Debugging Techniques](#debugging-techniques)
+- [Common Patterns](#common-patterns)
+- [Getting Help](#getting-help)
 
 ## Error Type Hierarchy
 
@@ -23,7 +35,7 @@ The SDK uses six distinct error enums. All Horizon and Soroban RPC calls return 
 import stellarsdk
 
 let sdk = StellarSDK(withHorizonUrl: "https://horizon-testnet.stellar.org")
-let accountId = "GABC..."
+let accountId = "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ"
 
 let response = await sdk.accounts.getAccountDetails(accountId: accountId)
 switch response {
@@ -149,8 +161,9 @@ The most common error in production. Occurs when another transaction has been su
 import stellarsdk
 
 let sdk = StellarSDK(withHorizonUrl: "https://horizon-testnet.stellar.org")
-let sourceKeyPair = try KeyPair(secretSeed: "S...")
-let destinationId = "GDEST..."
+// sourceSecretSeed: String for your funded testnet account, loaded from secure storage
+// destinationId: String for an existing testnet destination account
+let sourceKeyPair = try KeyPair(secretSeed: sourceSecretSeed)
 
 // Always reload account before building a new transaction
 let accountResponse = await sdk.accounts.getAccountDetails(accountId: sourceKeyPair.accountId)
@@ -357,6 +370,7 @@ Thrown during local validation before any network call. The strkey encoders on `
 
 ```swift
 import stellarsdk
+import Foundation
 
 do {
     // 31 bytes is not an ed25519 public key, so there is no G-address for it
@@ -435,6 +449,9 @@ do {
 ```swift
 import stellarsdk
 
+// The seed exactly as the user typed it; this one carries a transcription error
+let userEnteredSeed = "SBGWKM3CD4IL47QN6X54N6Y33T3JDNVI6AIJ6CD5IM47HG3IG4O36XCV"
+
 do {
     let keyPair = try KeyPair(secretSeed: userEnteredSeed)
     print("Imported \(keyPair.accountId)")
@@ -465,7 +482,7 @@ sorobanServer.enableLogging = true
 import stellarsdk
 
 // transaction assumed built earlier
-let sourceKeyPair = try KeyPair(secretSeed: "S...")
+let sourceKeyPair = try KeyPair.generateRandomKeyPair()
 print("Source: \(transaction.sourceAccount.keyPair.accountId)")
 print("Fee: \(transaction.fee) stroops")
 print("Operations: \(transaction.operations.count)")

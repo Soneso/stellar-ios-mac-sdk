@@ -86,18 +86,19 @@ This is the most common production error. It happens when the sequence number us
 import stellarsdk
 
 let sdk = StellarSDK.testNet()
-let sourceKeyPair = try KeyPair(secretSeed: "S...")
+// sourceSecretSeed: String for your funded testnet account, loaded from secure storage
+// destinationAccountId: String for an existing testnet destination account
+let sourceKeyPair = try KeyPair(secretSeed: sourceSecretSeed)
 
 // Reload account right before building to get the current sequence number
 let accountResponse = await sdk.accounts.getAccountDetails(accountId: sourceKeyPair.accountId)
 guard case .success(let account) = accountResponse else {
-    print("Failed to load account")
-    return
+    throw StellarSDKError.invalidArgument(message: "Failed to load the source account")
 }
 
 let payment = try PaymentOperation(
     sourceAccountId: nil,
-    destinationAccountId: "GABC...",
+    destinationAccountId: destinationAccountId,
     asset: Asset(type: AssetType.ASSET_TYPE_NATIVE)!,
     amount: 10.0
 )
@@ -186,7 +187,7 @@ import stellarsdk
 
 let sdk = StellarSDK.testNet()
 
-let response = await sdk.accounts.getAccountDetails(accountId: "GABC...")
+let response = await sdk.accounts.getAccountDetails(accountId: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ")
 switch response {
 case .success(let account):
     print("Balance: \(account.balances)")

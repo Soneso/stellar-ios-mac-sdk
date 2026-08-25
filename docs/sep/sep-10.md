@@ -19,12 +19,16 @@ import stellarsdk
 // Create WebAuthenticator from the anchor's domain - this automatically loads
 // the stellar.toml and extracts the WEB_AUTH_ENDPOINT and SIGNING_KEY
 let authResult = await WebAuthenticator.from(domain: "testanchor.stellar.org", network: Network.testnet)
-guard case .success(let webAuth) = authResult else { return }
+guard case .success(let webAuth) = authResult else {
+    throw StellarSDKError.invalidArgument(message: "Could not initialize SEP-10 authentication")
+}
 
 // Get JWT token - handles challenge request, signing, and submission
-let userKeyPair = try KeyPair(secretSeed: "SBAYNYLQFXVLVAHW4BXDQYNJLMDQMZ5NQDDOHVJD3PTBAUIJRNRK5LGX")
+let userKeyPair = try KeyPair.generateRandomKeyPair()
 let jwtResult = await webAuth.jwtToken(forUserAccount: userKeyPair.accountId, signers: [userKeyPair])
-guard case .success(let jwtToken) = jwtResult else { return }
+guard case .success(let jwtToken) = jwtResult else {
+    throw StellarSDKError.invalidArgument(message: "Could not obtain a SEP-10 token")
+}
 
 // Use the token for authenticated requests to SEP-6, SEP-12, SEP-24, etc.
 print("Authenticated! Token: \(jwtToken.prefix(50))...")
@@ -43,7 +47,9 @@ import stellarsdk
 
 // Loads stellar.toml and extracts WEB_AUTH_ENDPOINT and SIGNING_KEY
 let authResult = await WebAuthenticator.from(domain: "testanchor.stellar.org", network: Network.testnet)
-guard case .success(let webAuth) = authResult else { return }
+guard case .success(let webAuth) = authResult else {
+    throw StellarSDKError.invalidArgument(message: "Could not initialize SEP-10 authentication")
+}
 ```
 
 #### Manual construction
@@ -71,8 +77,10 @@ For most use cases, `jwtToken()` handles the entire SEP-10 flow: requesting a ch
 import stellarsdk
 
 let authResult = await WebAuthenticator.from(domain: "testanchor.stellar.org", network: Network.testnet)
-guard case .success(let webAuth) = authResult else { return }
-let userKeyPair = try KeyPair(secretSeed: "SBAYNYLQFXVLVAHW4BXDQYNJLMDQMZ5NQDDOHVJD3PTBAUIJRNRK5LGX")
+guard case .success(let webAuth) = authResult else {
+    throw StellarSDKError.invalidArgument(message: "Could not initialize SEP-10 authentication")
+}
+let userKeyPair = try KeyPair.generateRandomKeyPair()
 
 let jwtResult = await webAuth.jwtToken(
     forUserAccount: userKeyPair.accountId,
@@ -95,11 +103,14 @@ For accounts requiring multiple signatures to meet the authentication threshold,
 import stellarsdk
 
 let authResult = await WebAuthenticator.from(domain: "testanchor.stellar.org", network: Network.testnet)
-guard case .success(let webAuth) = authResult else { return }
+guard case .success(let webAuth) = authResult else {
+    throw StellarSDKError.invalidArgument(message: "Could not initialize SEP-10 authentication")
+}
 
 // Provide all signers needed to meet the account's threshold
-let signer1 = try KeyPair(secretSeed: "SBAYNYLQFXVLVAHW4BXDQYNJLMDQMZ5NQDDOHVJD3PTBAUIJRNRK5LGX")
-let signer2 = try KeyPair(secretSeed: "SBGWSG6BTNCKCOB3DIFBGCVMUPQFYPA2HIF74DBGCZ6V5CSBRROPHSMI")
+// signer1SecretSeed and signer2SecretSeed: String values loaded from secure storage
+let signer1 = try KeyPair(secretSeed: signer1SecretSeed)
+let signer2 = try KeyPair(secretSeed: signer2SecretSeed)
 
 let jwtResult = await webAuth.jwtToken(
     forUserAccount: signer1.accountId,
@@ -115,8 +126,10 @@ Muxed accounts (M... addresses) bundle a user ID with a G... account. This lets 
 import stellarsdk
 
 let authResult = await WebAuthenticator.from(domain: "testanchor.stellar.org", network: Network.testnet)
-guard case .success(let webAuth) = authResult else { return }
-let userKeyPair = try KeyPair(secretSeed: "SBAYNYLQFXVLVAHW4BXDQYNJLMDQMZ5NQDDOHVJD3PTBAUIJRNRK5LGX")
+guard case .success(let webAuth) = authResult else {
+    throw StellarSDKError.invalidArgument(message: "Could not initialize SEP-10 authentication")
+}
+let userKeyPair = try KeyPair.generateRandomKeyPair()
 
 // Create muxed account with user ID embedded in the address
 let muxedAccount = try MuxedAccount(accountId: userKeyPair.accountId, id: 1234567890)
@@ -135,8 +148,10 @@ For services that use memos instead of muxed accounts to identify users sharing 
 import stellarsdk
 
 let authResult = await WebAuthenticator.from(domain: "testanchor.stellar.org", network: Network.testnet)
-guard case .success(let webAuth) = authResult else { return }
-let userKeyPair = try KeyPair(secretSeed: "SBAYNYLQFXVLVAHW4BXDQYNJLMDQMZ5NQDDOHVJD3PTBAUIJRNRK5LGX")
+guard case .success(let webAuth) = authResult else {
+    throw StellarSDKError.invalidArgument(message: "Could not initialize SEP-10 authentication")
+}
+let userKeyPair = try KeyPair.generateRandomKeyPair()
 
 let jwtResult = await webAuth.jwtToken(
     forUserAccount: userKeyPair.accountId,
@@ -159,10 +174,13 @@ When the wallet has direct access to its signing key, provide the keypair direct
 import stellarsdk
 
 let authResult = await WebAuthenticator.from(domain: "testanchor.stellar.org", network: Network.testnet)
-guard case .success(let webAuth) = authResult else { return }
+guard case .success(let webAuth) = authResult else {
+    throw StellarSDKError.invalidArgument(message: "Could not initialize SEP-10 authentication")
+}
 
-let userKeyPair = try KeyPair(secretSeed: "SBAYNYLQFXVLVAHW4BXDQYNJLMDQMZ5NQDDOHVJD3PTBAUIJRNRK5LGX")
-let clientDomainKeyPair = try KeyPair(secretSeed: "SBE64KCQLJXJPMYLF22YCUSTH7WXJ7VZSCTPHXY3VDSIF3QUHJDBE6R6")
+let userKeyPair = try KeyPair.generateRandomKeyPair()
+// clientDomainSecretSeed: String matching SIGNING_KEY in mywallet.com's stellar.toml
+let clientDomainKeyPair = try KeyPair(secretSeed: clientDomainSecretSeed)
 
 let jwtResult = await webAuth.jwtToken(
     forUserAccount: userKeyPair.accountId,
@@ -178,10 +196,13 @@ When the client domain signing key is stored on a separate server (recommended f
 
 ```swift
 import stellarsdk
+import Foundation
 
 let authResult = await WebAuthenticator.from(domain: "testanchor.stellar.org", network: Network.testnet)
-guard case .success(let webAuth) = authResult else { return }
-let userKeyPair = try KeyPair(secretSeed: "SBAYNYLQFXVLVAHW4BXDQYNJLMDQMZ5NQDDOHVJD3PTBAUIJRNRK5LGX")
+guard case .success(let webAuth) = authResult else {
+    throw StellarSDKError.invalidArgument(message: "Could not initialize SEP-10 authentication")
+}
+let userKeyPair = try KeyPair.generateRandomKeyPair()
 
 // Public-key-only keypair — no private key, triggers use of signing function
 let clientDomainAccountKeyPair = try KeyPair(accountId: "GBWW7NMWWIKPDEWZZKTTCSUGV2ZMVN23IZ5JFOZ4FWZBNVQNHMU47HOR")
@@ -226,8 +247,10 @@ When an anchor serves multiple domains from the same authentication server, spec
 import stellarsdk
 
 let authResult = await WebAuthenticator.from(domain: "testanchor.stellar.org", network: Network.testnet)
-guard case .success(let webAuth) = authResult else { return }
-let userKeyPair = try KeyPair(secretSeed: "SBAYNYLQFXVLVAHW4BXDQYNJLMDQMZ5NQDDOHVJD3PTBAUIJRNRK5LGX")
+guard case .success(let webAuth) = authResult else {
+    throw StellarSDKError.invalidArgument(message: "Could not initialize SEP-10 authentication")
+}
+let userKeyPair = try KeyPair.generateRandomKeyPair()
 
 let jwtResult = await webAuth.jwtToken(
     forUserAccount: userKeyPair.accountId,
@@ -242,6 +265,7 @@ The SDK provides specific error types for different failure scenarios. This lets
 
 ```swift
 import stellarsdk
+import Foundation
 
 let authResult = await WebAuthenticator.from(domain: "testanchor.stellar.org", network: Network.testnet)
 
@@ -255,9 +279,9 @@ case .failure(let error):
     case .noAuthEndpoint:
         print("stellar.toml missing WEB_AUTH_ENDPOINT or SIGNING_KEY")
     }
-    return
+    throw error
 case .success(let webAuth):
-    let userKeyPair = try KeyPair(secretSeed: "SBAYNYLQFXVLVAHW4BXDQYNJLMDQMZ5NQDDOHVJD3PTBAUIJRNRK5LGX")
+    let userKeyPair = try KeyPair.generateRandomKeyPair()
 
     let jwtResult = await webAuth.jwtToken(forUserAccount: userKeyPair.accountId, signers: [userKeyPair])
 
@@ -398,8 +422,10 @@ func authenticateWithRetry(
 
 // Usage
 let authResult = await WebAuthenticator.from(domain: "testanchor.stellar.org", network: Network.testnet)
-guard case .success(let webAuth) = authResult else { return }
-let userKeyPair = try KeyPair(secretSeed: "SBAYNYLQFXVLVAHW4BXDQYNJLMDQMZ5NQDDOHVJD3PTBAUIJRNRK5LGX")
+guard case .success(let webAuth) = authResult else {
+    throw StellarSDKError.invalidArgument(message: "Could not initialize SEP-10 authentication")
+}
+let userKeyPair = try KeyPair.generateRandomKeyPair()
 
 let jwtResult = await authenticateWithRetry(webAuth: webAuth, accountId: userKeyPair.accountId, signers: [userKeyPair])
 ```
@@ -420,6 +446,7 @@ Use the `WebAuthenticator` manual constructor with mock HTTP responses via `URLP
 ```swift
 import XCTest
 import stellarsdk
+import Foundation
 
 class Sep10MockTest: XCTestCase {
     // Server configuration - must match what WebAuthenticator is initialized with

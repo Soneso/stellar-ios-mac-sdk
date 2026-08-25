@@ -2,6 +2,17 @@
 
 Security patterns for Stellar iOS/Mac SDK (`stellarsdk`) applications in production.
 
+All examples assume `import stellarsdk`.
+
+- [Secret Key Management](#secret-key-management)
+- [Transaction Verification Before Signing](#transaction-verification-before-signing)
+- [Network Selection and Validation](#network-selection-and-validation)
+- [Multi-Signature Security](#multi-signature-security)
+- [SEP-10 Authentication Security](#sep-10-authentication-security)
+- [Input Validation](#input-validation)
+- [HTTPS and Endpoint Security](#https-and-endpoint-security)
+- [Production Deployment Checklist](#production-deployment-checklist)
+
 ## Secret Key Management
 
 ### Never Hardcode Secrets
@@ -9,8 +20,9 @@ Security patterns for Stellar iOS/Mac SDK (`stellarsdk`) applications in product
 ```swift
 import stellarsdk
 
-// WRONG - secret key in source code
-let keyPair = try KeyPair(secretSeed: "SDJHRQF4GCMIQ...")
+// loadSecretFromKeychain(account:): your Keychain accessor returning the stored secret seed
+// WRONG - disposable test fixture embedded in source; never fund this key
+let hardcodedKeyPair = try KeyPair(secretSeed: "SDYM7MJ5GMJVBAXRADIIDWQ2Y3YYBBBQFXOUTOJN4PAS7RP62WDQKHHN")
 
 // CORRECT - load from secure storage
 let secretSeed = try loadSecretFromKeychain(account: "stellar-signing-key")
@@ -138,6 +150,7 @@ Always inspect a transaction before signing, especially if it was constructed by
 
 ```swift
 import stellarsdk
+import Foundation
 
 func verifyAndSign(
     envelopeXdr: String,
@@ -239,7 +252,7 @@ Before relying on multi-sig, confirm the account's signer configuration:
 import stellarsdk
 
 let sdk = StellarSDK(withHorizonUrl: "https://horizon-testnet.stellar.org")
-let accountId = "GABC..."
+let accountId = "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ"
 
 let response = await sdk.accounts.getAccountDetails(accountId: accountId)
 switch response {
@@ -283,10 +296,11 @@ The `WebAuthenticator` class handles SEP-10. Always use the SDK's built-in valid
 ```swift
 import stellarsdk
 
+// secretSeed: your funded account's secret seed ("S...")
 let webAuth = WebAuthenticator(
     authEndpoint: "https://anchor.example.com/auth",
     network: Network.testnet,
-    serverSigningKey: "GSERVER...",
+    serverSigningKey: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ",  // anchor's SIGNING_KEY from stellar.toml
     serverHomeDomain: "anchor.example.com"
 )
 
@@ -333,10 +347,9 @@ func isValidStellarAddress(_ address: String) -> Bool {
 }
 
 // Validate before using in any operation
-let destinationId = "GABC..."
+let destinationId = "GCZHXL5HXQX5ABDM26LHYRCQZ5OJFHLOPLZX47WEBP3V2PF5AVFK2A5D"
 guard isValidStellarAddress(destinationId) else {
-    print("Invalid Stellar address")
-    return
+    throw StellarSDKError.invalidArgument(message: "Invalid Stellar address")
 }
 ```
 

@@ -4,6 +4,8 @@
 **Prerequisites:** None
 **SDK Class:** `StellarToml`
 
+All examples assume `import stellarsdk`.
+
 ## Table of Contents
 
 1. [Loading stellar.toml](#loading-stellartoml)

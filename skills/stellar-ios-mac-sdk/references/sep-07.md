@@ -4,6 +4,8 @@
 **Prerequisites:** None
 **SDK Classes:** `URIScheme`, `URISchemeValidator`
 
+All examples assume `import stellarsdk`.
+
 ## Table of Contents
 
 1. [Overview](#overview)
@@ -43,21 +45,22 @@ MessageMaximumLength = 300             // message param must be < 300 chars
 
 ```swift
 import stellarsdk
+import Foundation
 
 let uriScheme = URIScheme()
 
 // Minimal: destination only (XLM payment)
 let uri = uriScheme.getPayOperationURI(
-    destination: "GDEST..."
+    destination: "GCZHXL5HXQX5ABDM26LHYRCQZ5OJFHLOPLZX47WEBP3V2PF5AVFK2A5D"
 )
-// → "web+stellar:pay?destination=GDEST..."
+// → "web+stellar:pay?destination=GCZHXL5HXQX5ABDM26LHYRCQZ5OJFHLOPLZX47WEBP3V2PF5AVFK2A5D"
 
 // Full example: USDC payment with memo and callback
-let uri = uriScheme.getPayOperationURI(
-    destination: "GDEST...",
+let fullUri = uriScheme.getPayOperationURI(
+    destination: "GCZHXL5HXQX5ABDM26LHYRCQZ5OJFHLOPLZX47WEBP3V2PF5AVFK2A5D",
     amount: Decimal(100.50),
     assetCode: "USDC",
-    assetIssuer: "GISSUER...",
+    assetIssuer: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ",
     memo: "Invoice #1234",
     memoType: MemoTypeAsString.TEXT,
     callBack: "url:https://example.com/callback",
@@ -66,7 +69,7 @@ let uri = uriScheme.getPayOperationURI(
     originDomain: "example.com",
     signature: nil
 )
-print(uri)
+print(fullUri)
 ```
 
 **Method signature:**
@@ -98,8 +101,12 @@ The generated URI uses the SEP-07 memo_type prefix format: `MEMO_TEXT`, `MEMO_ID
 
 **Native XLM payment (omit assetCode and assetIssuer):**
 ```swift
+import stellarsdk
+import Foundation
+
+let uriScheme = URIScheme()
 let uri = uriScheme.getPayOperationURI(
-    destination: "GDEST...",
+    destination: "GCZHXL5HXQX5ABDM26LHYRCQZ5OJFHLOPLZX47WEBP3V2PF5AVFK2A5D",
     amount: Decimal(50)
 )
 // No asset_code or asset_issuer in URI — wallet defaults to XLM
@@ -113,16 +120,17 @@ let uri = uriScheme.getPayOperationURI(
 
 ```swift
 import stellarsdk
+import Foundation
 
 let uriScheme = URIScheme()
 
 // Build the transaction
-let keyPair = try KeyPair(secretSeed: "SABC...")
+let keyPair = try KeyPair.generateRandomKeyPair()
 let account = Account(keyPair: keyPair, sequenceNumber: 123456)
 
 let payment = try PaymentOperation(
     sourceAccountId: nil,
-    destinationAccountId: "GDEST...",
+    destinationAccountId: "GCZHXL5HXQX5ABDM26LHYRCQZ5OJFHLOPLZX47WEBP3V2PF5AVFK2A5D",
     asset: Asset(type: AssetType.ASSET_TYPE_NATIVE)!,
     amount: Decimal(100)
 )
@@ -140,7 +148,7 @@ let uri = uriScheme.getSignTransactionURI(
 // → "web+stellar:tx?xdr=AAAA..."
 
 // Full example with optional parameters
-let uri = uriScheme.getSignTransactionURI(
+let fullUri = uriScheme.getSignTransactionURI(
     transactionXDR: transaction.transactionXDR,
     replace: "sourceAccount:TX_SOURCE_ACCOUNT",
     callBack: "url:https://example.com/signed",
@@ -189,7 +197,8 @@ public func getSignTransactionURI(
 import stellarsdk
 
 let uriScheme = URIScheme()
-let signerKeyPair = try KeyPair(secretSeed: "SABC...")
+// signerSecretSeed: String for your signing account, loaded from secure storage
+let signerKeyPair = try KeyPair(secretSeed: signerSecretSeed)
 
 // Without confirmation callback — sign and submit immediately
 let result = await uriScheme.signAndSubmitTransaction(
@@ -208,8 +217,8 @@ case .failure(let error):
 }
 
 // With confirmation callback — user can reject
-let result = await uriScheme.signAndSubmitTransaction(
-    forURL: uri,
+let confirmedResult = await uriScheme.signAndSubmitTransaction(
+    forURL: "web+stellar:tx?xdr=AAAA...",
     signerKeyPair: signerKeyPair,
     network: Network.testnet,
     transactionConfirmation: { transactionXDR in
@@ -246,7 +255,7 @@ import stellarsdk
 
 let uriScheme = URIScheme()
 
-let uri = "web+stellar:tx?xdr=AAAA...&pubkey=GABC...&origin_domain=example.com&signature=abc123"
+let uri = "web+stellar:tx?xdr=AAAA...&pubkey=GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ&origin_domain=example.com&signature=abc123"
 
 // Extract parameters using SignTransactionParams enum cases
 let xdr           = uriScheme.getValue(forParam: .xdr,               fromURL: uri)
@@ -475,15 +484,19 @@ let uri = uriScheme.getSignTransactionURI(
 **`memo_type` is only added when `memo` is also provided:**
 
 ```swift
+import stellarsdk
+
+let uriScheme = URIScheme()
+
 // WRONG: passing memoType without memo — memo_type is NOT added to URI
-let uri = uriScheme.getPayOperationURI(
-    destination: "GDEST...",
+let uriWithoutMemo = uriScheme.getPayOperationURI(
+    destination: "GCZHXL5HXQX5ABDM26LHYRCQZ5OJFHLOPLZX47WEBP3V2PF5AVFK2A5D",
     memoType: MemoTypeAsString.TEXT  // ignored — no memo provided
 )
 
 // CORRECT: provide both memo and memoType
-let uri = uriScheme.getPayOperationURI(
-    destination: "GDEST...",
+let uriWithMemo = uriScheme.getPayOperationURI(
+    destination: "GCZHXL5HXQX5ABDM26LHYRCQZ5OJFHLOPLZX47WEBP3V2PF5AVFK2A5D",
     memo: "Invoice #42",
     memoType: MemoTypeAsString.TEXT  // added as MEMO_TEXT
 )
@@ -544,11 +557,14 @@ let uri = uriScheme.getSignTransactionURI(
 When building a transaction for a URI without fetching the live account, you can use either constructor:
 
 ```swift
+import stellarsdk
+
 // From a KeyPair (no network call)
+let keyPair = try KeyPair.generateRandomKeyPair()
 let account = Account(keyPair: keyPair, sequenceNumber: 0)
 
 // From an account ID string (throws)
-let account = try Account(accountId: "GABC...", sequenceNumber: 0)
+let accountFromId = try Account(accountId: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ", sequenceNumber: 0)
 ```
 
 **`getValue(forParam:fromURL:)` returns URL-encoded values:**

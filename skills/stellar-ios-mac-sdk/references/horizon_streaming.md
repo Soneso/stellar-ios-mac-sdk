@@ -2,6 +2,19 @@
 
 The SDK provides real-time Server-Sent Events streaming for all major Horizon resources. Streams use closure-based callbacks and must be retained with a strong reference.
 
+All examples assume `import stellarsdk`.
+
+- [Architecture](#architecture)
+- [StreamResponseEnum](#streamresponseenum)
+- [Stream Payments for an Account](#stream-payments-for-an-account)
+- [Stream Transactions](#stream-transactions)
+- [Stream Ledger Closes](#stream-ledger-closes)
+- [Stream Effects](#stream-effects)
+- [Change Enum Filter Options](#change-enum-filter-options)
+- [Lifecycle and Reconnection](#lifecycle-and-reconnection)
+- [Error Handling](#error-handling)
+- [Swift 6 Concurrency Patterns](#swift-6-concurrency-patterns)
+
 ## Architecture
 
 Every stream method returns a typed stream item object. Call `onReceive` to start receiving events, and `closeStream()` to stop.
@@ -36,7 +49,7 @@ public enum StreamResponseEnum<Data: Decodable> {
 import stellarsdk
 
 let sdk = StellarSDK(withHorizonUrl: "https://horizon-testnet.stellar.org")
-let accountId = "GXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+let accountId = "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ"
 
 // CRITICAL: Hold a strong reference to prevent deallocation
 var paymentStream: OperationsStreamItem? = sdk.payments.stream(
@@ -71,7 +84,7 @@ paymentStream = nil
 import stellarsdk
 
 let sdk = StellarSDK(withHorizonUrl: "https://horizon-testnet.stellar.org")
-let accountId = "GXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+let accountId = "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ"
 
 var txStream: TransactionsStreamItem? = sdk.transactions.stream(
     for: .transactionsForAccount(account: accountId, cursor: "now")
@@ -121,7 +134,7 @@ ledgerStream?.onReceive { response in
 import stellarsdk
 
 let sdk = StellarSDK(withHorizonUrl: "https://horizon-testnet.stellar.org")
-let accountId = "GXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+let accountId = "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ"
 
 var effectStream: EffectsStreamItem? = sdk.effects.stream(
     for: .effectsForAccount(account: accountId, cursor: "now")

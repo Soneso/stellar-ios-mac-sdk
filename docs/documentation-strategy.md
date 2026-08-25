@@ -74,7 +74,7 @@ All code must:
 
 ### 6. Swift Version Compatibility
 
-Examples must work with Swift 5.9+ and Xcode 15+:
+Examples must work with Swift 6.0+ and Xcode 16+:
 - Use modern Swift syntax (async/await, structured concurrency)
 - Note any Swift/Xcode version requirements clearly
 - Use type annotations consistently
@@ -126,7 +126,7 @@ let keyPair = try! KeyPair.generateRandomKeyPair()
 - KeyPair generation, import, signing
 - Mnemonic generation and key derivation (SEP-5)
 - Transaction building and submission
-- All 26 Stellar operations with real use cases
+- All Stellar operations with real use cases
 - Horizon queries (accounts, transactions, effects, etc.)
 - Asset operations and trustlines
 - DEX operations (offers, order book)
@@ -331,7 +331,15 @@ let response = await sdk.transactions.submitTransaction(transaction: transaction
 import stellarsdk
 
 let sdk = StellarSDK.testNet()
-let sourceKeyPair = try! KeyPair(secretSeed: "S...")
+// sourceSecretSeed: String for your funded testnet account, loaded from secure storage
+// destinationAccountId: String for an existing testnet destination account
+let sourceKeyPair = try! KeyPair(secretSeed: sourceSecretSeed)
+let operation = try! PaymentOperation(
+    sourceAccountId: nil,
+    destinationAccountId: destinationAccountId,
+    asset: Asset(type: AssetType.ASSET_TYPE_NATIVE)!,
+    amount: 10.0
+)
 let response = await sdk.accounts.getAccountDetails(accountId: sourceKeyPair.accountId)
 switch response {
 case .success(let account):
@@ -351,7 +359,7 @@ case .failure(let error):
 ## Documentation Structure
 
 ```
-documentation/
+docs/
 ├── README.md                    # Documentation hub with learning paths
 ├── quick-start.md              # 15-minute fast path to first transaction
 ├── getting-started.md          # Fundamentals: installation, keys, accounts
@@ -376,7 +384,9 @@ documentation/
 │   ├── sep-10.md              # Web authentication
 │   ├── sep-11.md              # Transaction representation
 │   ├── sep-12.md              # KYC API
+│   ├── sep-23.md              # Strkey encoding
 │   ├── sep-24.md              # Interactive deposit/withdrawal
+│   ├── sep-29.md              # Account memo requirements
 │   ├── sep-30.md              # Account recovery
 │   ├── sep-38.md              # Anchor quotes
 │   ├── sep-45.md              # Contract account authentication
@@ -387,7 +397,7 @@ documentation/
 
 **Root-level files (README.md, CONTRIBUTING.md):**
 - README.md remains in project root as the primary entry point
-- Links to documentation/ for detailed documentation
+- Links to docs/ for detailed documentation
 - Contains quick start, installation, and feature overview
 
 ## Review Process
@@ -445,6 +455,6 @@ Good documentation achieves:
 
 ---
 
-**Last Updated**: 2026-03-04
+**Last Updated**: 2026-08-25
 
-**Next Review**: 2026-06-04 (Quarterly maintenance)
+**Next Review**: 2026-11-25 (Quarterly maintenance)

@@ -43,7 +43,7 @@ Sign a message and encode the signature for transmission. The raw signature is 6
 import stellarsdk
 import Foundation
 
-let keyPair = try! KeyPair(secretSeed: "SAKICEVQLYWGSOJS4WW7HZJWAHZVEEBS527LHK5V4MLJALYKICQCJXMW")
+let keyPair = try! KeyPair.generateRandomKeyPair()
 
 let message = "User consent granted at 2025-01-15T12:00:00Z"
 let signature = try keyPair.signMessage(message)
@@ -66,10 +66,10 @@ import stellarsdk
 import Foundation
 
 // Create keypair from public key only (no private key needed for verification)
-let publicKey = try! KeyPair(accountId: "GABC...")
+let publicKey = try! KeyPair(accountId: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ")
 
 let message = "User consent granted at 2025-01-15T12:00:00Z"
-let base64Signature = "..." // Received from client
+// base64Signature: the client's signature, received base64-encoded
 
 let signature = [UInt8](Data(base64Encoded: base64Signature)!)
 let isValid = try publicKey.verifyMessage(message, signature: signature)
@@ -89,10 +89,10 @@ If the signature was transmitted as a hex string, decode it with `Data(base16Enc
 import stellarsdk
 import Foundation
 
-let publicKey = try! KeyPair(accountId: "GABC...")
+let publicKey = try! KeyPair(accountId: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ")
 
 let message = "Cross-platform message"
-let hexSignature = "a1b2c3d4..." // Received as hex
+// hexSignature: the signature received hex-encoded from the other platform
 let signature = [UInt8](try Data(base16Encoded: hexSignature))
 
 let isValid = try publicKey.verifyMessage(message, signature: signature)
@@ -106,7 +106,7 @@ The message doesn't have to be text. You can sign any binary data such as file c
 import stellarsdk
 import Foundation
 
-let keyPair = try! KeyPair(secretSeed: "SAKICEVQLYWGSOJS4WW7HZJWAHZVEEBS527LHK5V4MLJALYKICQCJXMW")
+let keyPair = try! KeyPair.generateRandomKeyPair()
 
 // Sign file contents
 let fileContents = [UInt8](try Data(contentsOf: URL(fileURLWithPath: "document.pdf")))
@@ -130,7 +130,7 @@ _ = SecRandomCopyBytes(kSecRandomDefault, 16, &randomBytes)
 let challenge = "authenticate:\(Data(randomBytes).base16EncodedString()):\(Int(Date().timeIntervalSince1970))"
 
 // === CLIENT: Sign the challenge ===
-let clientKeyPair = try! KeyPair(secretSeed: "SAKICEVQLYWGSOJS4WW7HZJWAHZVEEBS527LHK5V4MLJALYKICQCJXMW")
+let clientKeyPair = try! KeyPair.generateRandomKeyPair()
 let signature = try clientKeyPair.signMessage(challenge)
 
 let response: [String: String] = [
@@ -160,7 +160,7 @@ Attempting to sign with a public-key-only keypair throws `Ed25519Error.missingPr
 import stellarsdk
 
 // This keypair has no private key
-let publicKeyOnly = try! KeyPair(accountId: "GABC...")
+let publicKeyOnly = try! KeyPair(accountId: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ")
 
 do {
     // Throws Ed25519Error.missingPrivateKey - no private key available
@@ -178,7 +178,7 @@ Check `privateKey != nil` to determine whether a keypair has a private key befor
 import stellarsdk
 import Foundation
 
-let keyPair = try! KeyPair(secretSeed: "SAKICEVQLYWGSOJS4WW7HZJWAHZVEEBS527LHK5V4MLJALYKICQCJXMW")
+let keyPair = try! KeyPair.generateRandomKeyPair()
 
 if keyPair.privateKey != nil {
     let signature = try keyPair.signMessage("Important message")
@@ -196,7 +196,8 @@ When verification fails, several causes are possible:
 import stellarsdk
 import Foundation
 
-let publicKey = try! KeyPair(accountId: "GABC...")
+// receivedSignature: the base64 signature received from the other party
+let publicKey = try! KeyPair(accountId: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ")
 let signature = [UInt8](Data(base64Encoded: receivedSignature)!)
 
 if try !publicKey.verifyMessage(message, signature: signature) {
@@ -330,21 +331,18 @@ SEP-53 doesn't specify an encoding format. Common choices:
 
 Pick one and document it. The raw signature is always 64 bytes.
 
-## Cross-SDK compatibility
+## Cross-platform compatibility
 
-SEP-53 signatures work across all Stellar SDKs. A signature created in Java, Python, or PHP can be verified in Swift, and vice versa.
-
-**Compatible SDKs:** Java, Python, PHP, JavaScript, Kotlin (KMP), and this iOS/macOS SDK.
+SEP-53 signatures are interoperable across implementations of the spec on any platform. A signature produced by one implementation can be verified by any other.
 
 ```swift
 import stellarsdk
 import Foundation
 
-// Signature from Java/Python/PHP SDK
-let base64Signature = "..."
+// base64Signature: signature produced by a SEP-53 implementation on another platform, received base64-encoded
 let message = "Cross-platform message"
 
-let publicKey = try! KeyPair(accountId: "GABC...")
+let publicKey = try! KeyPair(accountId: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ")
 let signature = [UInt8](Data(base64Encoded: base64Signature)!)
 
 if try publicKey.verifyMessage(message, signature: signature) {

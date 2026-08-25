@@ -97,7 +97,9 @@ The general information section contains service endpoints for SEP protocols and
 import stellarsdk
 
 let result = await StellarToml.from(domain: "testanchor.stellar.org")
-guard case .success(let stellarToml) = result else { return }
+guard case .success(let stellarToml) = result else {
+    throw StellarSDKError.invalidArgument(message: "Could not load stellar.toml")
+}
 
 let info = stellarToml.accountInformation
 
@@ -138,9 +140,12 @@ The documentation section contains contact and compliance information about the 
 
 ```swift
 import stellarsdk
+import Foundation
 
 let result = await StellarToml.from(domain: "testanchor.stellar.org")
-guard case .success(let stellarToml) = result else { return }
+guard case .success(let stellarToml) = result else {
+    throw StellarSDKError.invalidArgument(message: "Could not load stellar.toml")
+}
 
 let docs = stellarToml.issuerDocumentation
 

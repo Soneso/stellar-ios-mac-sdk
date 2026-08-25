@@ -46,6 +46,7 @@ The `InteractiveService` class provides all SEP-24 operations. Create it from an
 
 ```swift
 import stellarsdk
+import Foundation
 
 // Loads the TRANSFER_SERVER_SEP0024 URL from stellar.toml
 let serviceResult = await InteractiveService.forDomain(domain: "https://testanchor.stellar.org")
@@ -161,12 +162,13 @@ You can specify an amount, destination account (if different from the authentica
 ```swift
 import stellarsdk
 
+// jwtToken: SEP-10 JWT obtained via web authentication (see sep-10.md)
 let service = InteractiveService(serviceAddress: "https://api.anchor.com/sep24")
 
 var request = Sep24DepositRequest(jwt: jwtToken, assetCode: "USD")
 request.amount = "100.0"
 // Receive tokens on a different account than the one used for authentication
-request.account = "GXXXXXXX..."
+request.account = "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ"
 request.memo = "12345"
 request.memoType = "id" // "text", "id", or "hash"
 // Language for the interactive UI (RFC 4646 format)
@@ -347,12 +349,13 @@ Specify additional options like amount, source account, and language:
 ```swift
 import stellarsdk
 
+// jwtToken: SEP-10 JWT obtained via web authentication (see sep-10.md)
 let service = InteractiveService(serviceAddress: "https://api.anchor.com/sep24")
 
 var request = Sep24WithdrawRequest(jwt: jwtToken, assetCode: "USD")
 request.amount = "500.0"
 // Specify which Stellar account will send the withdrawal payment
-request.account = "GXXXXXXX..."
+request.account = "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ"
 // Language for the interactive UI
 request.lang = "de" // German
 
@@ -430,7 +433,10 @@ After the user completes the interactive flow, poll the transaction endpoint to 
 
 ```swift
 import stellarsdk
+import Foundation
 
+// jwtToken: SEP-10 JWT obtained via web authentication (see sep-10.md)
+// transactionId: anchor transaction id from a previous request
 let service = InteractiveService(serviceAddress: "https://api.anchor.com/sep24")
 
 // Poll for transaction status
@@ -438,7 +444,9 @@ var txRequest = Sep24TransactionRequest(jwt: jwtToken)
 txRequest.id = transactionId
 
 let txResult = await service.getTransaction(request: txRequest)
-guard case .success(let txResponse) = txResult else { return }
+guard case .success(let txResponse) = txResult else {
+    throw StellarSDKError.invalidArgument(message: "Could not load the anchor transaction")
+}
 let tx = txResponse.transaction
 
 if tx.status == "pending_user_transfer_start",
@@ -448,13 +456,19 @@ if tx.status == "pending_user_transfer_start",
 
     // Build and submit the payment transaction
     let sdk = StellarSDK.testNet()
-    let sourceKeyPair = try KeyPair(secretSeed: "SXXXXX...")
+    // sourceSecretSeed: String for your funded source account, loaded from secure storage
+    // issuerAccountId: String for the withdrawal asset issuer configured by the anchor
+    let sourceKeyPair = try KeyPair(secretSeed: sourceSecretSeed)
     let accountResult = await sdk.accounts.getAccountDetails(accountId: sourceKeyPair.accountId)
-    guard case .success(let accountResponse) = accountResult else { return }
+    guard case .success(let accountResponse) = accountResult else {
+        throw StellarSDKError.invalidArgument(message: "Could not load the source account")
+    }
 
-    let issuerKeyPair = try KeyPair(accountId: "ISSUER_ACCOUNT_ID")
+    let issuerKeyPair = try KeyPair(accountId: issuerAccountId)
     let asset = Asset(type: AssetType.ASSET_TYPE_CREDIT_ALPHANUM4, code: "USD", issuer: issuerKeyPair)!
-    guard let amount = Decimal(string: amountIn) else { return }
+    guard let amount = Decimal(string: amountIn) else {
+        throw StellarSDKError.invalidArgument(message: "The anchor returned an invalid amount")
+    }
 
     let paymentOp = try PaymentOperation(
         sourceAccountId: nil,
@@ -570,7 +584,9 @@ Query multiple transactions with filtering and pagination:
 
 ```swift
 import stellarsdk
+import Foundation
 
+// jwtToken: SEP-10 JWT obtained via web authentication (see sep-10.md)
 let service = InteractiveService(serviceAddress: "https://api.anchor.com/sep24")
 
 var request = Sep24TransactionsRequest(jwt: jwtToken, assetCode: "USD")
@@ -774,7 +790,9 @@ The SDK returns result enums with `.failure(error: InteractiveServiceError)` for
 
 ```swift
 import stellarsdk
+import Foundation
 
+// jwtToken: SEP-10 JWT obtained via web authentication (see sep-10.md)
 let service = InteractiveService(serviceAddress: "https://api.anchor.com/sep24")
 
 var depositRequest = Sep24DepositRequest(jwt: jwtToken, assetCode: "USD")
@@ -933,7 +951,7 @@ func pollTransaction(
 
 ## Further reading
 
-- [SDK test cases](https://github.com/nicorescu/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdkUnitTests/sep/interactive) - examples covering deposits, withdrawals, transaction queries, and error handling
+- [SDK test cases](https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdkUnitTests/sep/interactive) - examples covering deposits, withdrawals, transaction queries, and error handling
 
 ---
 

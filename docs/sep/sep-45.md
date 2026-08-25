@@ -38,14 +38,19 @@ import stellarsdk
 let contractId = "CDZJIDQW5WTPAZ64PGIJGVEIDNK72LL3LKUZWG3G6GWXYQKI2JNIVFNV"
 
 // Signer registered in your contract's __check_auth implementation
-let signer = try KeyPair(secretSeed: "SXXXXX...")
+// signerSecretSeed: String for a signer registered in the contract's __check_auth, loaded from secure storage
+let signer = try KeyPair(secretSeed: signerSecretSeed)
 
 // Create instance from domain and authenticate in one step
 let authResult = await WebAuthForContracts.from(domain: "anchor.example.com", network: Network.testnet)
-guard case .success(let webAuth) = authResult else { return }
+guard case .success(let webAuth) = authResult else {
+    throw StellarSDKError.invalidArgument(message: "Could not initialize contract authentication")
+}
 
 let jwtResult = await webAuth.jwtToken(forContractAccount: contractId, signers: [signer])
-guard case .success(let jwtToken) = jwtResult else { return }
+guard case .success(let jwtToken) = jwtResult else {
+    throw StellarSDKError.invalidArgument(message: "Could not obtain a SEP-10 token")
+}
 
 print("Authenticated! Token: \(jwtToken.prefix(50))...")
 ```
@@ -76,7 +81,9 @@ The `from(domain:network:)` factory method loads configuration from the anchor's
 import stellarsdk
 
 let authResult = await WebAuthForContracts.from(domain: "anchor.example.com", network: Network.testnet)
-guard case .success(let webAuth) = authResult else { return }
+guard case .success(let webAuth) = authResult else {
+    throw StellarSDKError.invalidArgument(message: "Could not initialize contract authentication")
+}
 ```
 
 ### Manual configuration
@@ -120,10 +127,13 @@ The `jwtToken()` method executes the complete SEP-45 flow: requesting the challe
 import stellarsdk
 
 let contractId = "CDZJIDQW5WTPAZ64PGIJGVEIDNK72LL3LKUZWG3G6GWXYQKI2JNIVFNV"
-let signer = try KeyPair(secretSeed: "SXXXXX...")
+// signerSecretSeed: String for a signer registered in the contract's __check_auth, loaded from secure storage
+let signer = try KeyPair(secretSeed: signerSecretSeed)
 
 let authResult = await WebAuthForContracts.from(domain: "anchor.example.com", network: Network.testnet)
-guard case .success(let webAuth) = authResult else { return }
+guard case .success(let webAuth) = authResult else {
+    throw StellarSDKError.invalidArgument(message: "Could not initialize contract authentication")
+}
 
 let jwtResult = await webAuth.jwtToken(forContractAccount: contractId, signers: [signer])
 ```
@@ -140,7 +150,9 @@ When you don't specify an expiration ledger, the SDK automatically fetches the c
 import stellarsdk
 
 let authResult = await WebAuthForContracts.from(domain: "anchor.example.com", network: Network.testnet)
-guard case .success(let webAuth) = authResult else { return }
+guard case .success(let webAuth) = authResult else {
+    throw StellarSDKError.invalidArgument(message: "Could not initialize contract authentication")
+}
 
 // Expiration is auto-filled (current ledger + 10)
 let jwtResult = await webAuth.jwtToken(forContractAccount: contractId, signers: [signer])
@@ -191,13 +203,17 @@ When you have direct access to the client domain's signing key, you can sign loc
 import stellarsdk
 
 let contractId = "CDZJIDQW5WTPAZ64PGIJGVEIDNK72LL3LKUZWG3G6GWXYQKI2JNIVFNV"
-let signer = try KeyPair(secretSeed: "SXXXXX...")
+// signerSecretSeed: String for a signer registered in the contract's __check_auth, loaded from secure storage
+let signer = try KeyPair(secretSeed: signerSecretSeed)
 
 // Your wallet's SIGNING_KEY from stellar.toml
-let clientDomainKeyPair = try KeyPair(secretSeed: "SYYYYY...")
+// clientDomainSecretSeed: String for the client-domain account, loaded from secure storage
+let clientDomainKeyPair = try KeyPair(secretSeed: clientDomainSecretSeed)
 
 let authResult = await WebAuthForContracts.from(domain: "anchor.example.com", network: Network.testnet)
-guard case .success(let webAuth) = authResult else { return }
+guard case .success(let webAuth) = authResult else {
+    throw StellarSDKError.invalidArgument(message: "Could not initialize contract authentication")
+}
 
 let jwtResult = await webAuth.jwtToken(
     forContractAccount: contractId,
@@ -214,9 +230,11 @@ If the client domain signing key is on a remote server, use a callback function.
 
 ```swift
 import stellarsdk
+import Foundation
 
 let contractId = "CDZJIDQW5WTPAZ64PGIJGVEIDNK72LL3LKUZWG3G6GWXYQKI2JNIVFNV"
-let signer = try KeyPair(secretSeed: "SXXXXX...")
+// signerSecretSeed: String for a signer registered in the contract's __check_auth, loaded from secure storage
+let signer = try KeyPair(secretSeed: signerSecretSeed)
 
 let signingCallback: (SorobanAuthorizationEntryXDR) async throws -> SorobanAuthorizationEntryXDR = { entry in
     // Send the entry to your remote signing service
@@ -247,7 +265,9 @@ let signingCallback: (SorobanAuthorizationEntryXDR) async throws -> SorobanAutho
 }
 
 let authResult = await WebAuthForContracts.from(domain: "anchor.example.com", network: Network.testnet)
-guard case .success(let webAuth) = authResult else { return }
+guard case .success(let webAuth) = authResult else {
+    throw StellarSDKError.invalidArgument(message: "Could not initialize contract authentication")
+}
 
 let jwtResult = await webAuth.jwtToken(
     forContractAccount: contractId,
@@ -265,16 +285,21 @@ For more control, you can execute each step individually. Helpful for debugging 
 import stellarsdk
 
 let contractAccountId = "CDZJIDQW5WTPAZ64PGIJGVEIDNK72LL3LKUZWG3G6GWXYQKI2JNIVFNV"
-let signerKeyPair = try KeyPair(secretSeed: "SXXXXX...")
+// signerSecretSeed: String for a signer registered in the contract's __check_auth, loaded from secure storage
+let signerKeyPair = try KeyPair(secretSeed: signerSecretSeed)
 let homeDomain = "anchor.example.com"
 
 let authResult = await WebAuthForContracts.from(domain: homeDomain, network: Network.testnet)
-guard case .success(let webAuth) = authResult else { return }
+guard case .success(let webAuth) = authResult else {
+    throw StellarSDKError.invalidArgument(message: "Could not initialize contract authentication")
+}
 
 do {
     // Step 1: Get challenge from server
     let challengeResponse = await webAuth.getChallenge(forContractAccount: contractAccountId, homeDomain: homeDomain)
-    guard case .success(let response) = challengeResponse else { return }
+    guard case .success(let response) = challengeResponse else {
+        throw StellarSDKError.invalidArgument(message: "Could not obtain a contract challenge")
+    }
 
     // Step 2: Decode authorization entries from base64 XDR
     let authEntries = try webAuth.decodeAuthorizationEntries(base64Xdr: response.authorizationEntries)
@@ -285,7 +310,9 @@ do {
     // Step 4: Get current ledger for signature expiration
     let sorobanServer = SorobanServer(endpoint: "https://soroban-testnet.stellar.org")
     let latestLedgerResponse = await sorobanServer.getLatestLedger()
-    guard case .success(let latestLedger) = latestLedgerResponse else { return }
+    guard case .success(let latestLedger) = latestLedgerResponse else {
+        throw StellarSDKError.invalidArgument(message: "Could not load the latest ledger")
+    }
     let expirationLedger = latestLedger.sequence + 10
 
     // Step 5: Sign authorization entries

@@ -186,11 +186,12 @@ When you have a pre-computed 64-byte BIP-39 seed (e.g. from a hardware wallet ex
 
 ```swift
 import stellarsdk
+import Foundation
 
 // Convert hex seed to Data
 let hexSeed = "e4a5a632e70943ae7f07659df1332160937fad82587216a4c64315a0fb39497e"
     + "e4a01f76ddab4cba68147977f3a147b6ad584c41808e8238a07f6cc4b582f186"
-let seedData = Data(hex: hexSeed)
+let seedData = try Data(base16Encoded: hexSeed)
 
 // Derive using Ed25519Derivation manually
 let masterKey = Ed25519Derivation(seed: seedData)
@@ -198,13 +199,13 @@ let purpose = masterKey.derived(at: 44)
 let coinType = purpose.derived(at: 148)
 
 let account0 = coinType.derived(at: 0)
-let stellarSeed0 = try Seed(bytes: account0.raw.bytes)
+let stellarSeed0 = try Seed(bytes: [UInt8](account0.raw))
 let kp0 = KeyPair(seed: stellarSeed0)
 print("Account: \(kp0.accountId)")
 // GDRXE2BQUC3AZNPVFSCEZ76NJ3WWL25FYFK6RGZGIEKWE4SOOHSUJUJ6
 
 let account1 = coinType.derived(at: 1)
-let stellarSeed1 = try Seed(bytes: account1.raw.bytes)
+let stellarSeed1 = try Seed(bytes: [UInt8](account1.raw))
 let kp1 = KeyPair(seed: stellarSeed1)
 print("Account: \(kp1.accountId)")
 // GBAW5XGWORWVFE2XTJYDTLDHXTY2Q2MO73HYCGB3XMFMQ562Q2W2GJQX
@@ -214,13 +215,14 @@ print("Account: \(kp1.accountId)")
 
 ```swift
 import stellarsdk
+import Foundation
 
-let seedData: Data = ... // your 64-byte seed
+let seedData = Data(repeating: 0xA1, count: 64)  // stands in for your wallet's 64-byte BIP-39 seed
 let masterKey = Ed25519Derivation(seed: seedData)
 let purpose = masterKey.derived(at: 44)
 let coinType = purpose.derived(at: 148)
 let account = coinType.derived(at: 0)
-let stellarSeed = try Seed(bytes: account.raw.bytes)
+let stellarSeed = try Seed(bytes: [UInt8](account.raw))
 let kp = KeyPair(seed: stellarSeed)
 ```
 
