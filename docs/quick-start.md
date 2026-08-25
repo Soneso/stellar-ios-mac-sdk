@@ -25,7 +25,7 @@ dependencies: [
 ]
 ```
 
-**Requirements:** iOS 13+, macOS 10.15+, Swift 5.7+. See [Getting Started](getting-started.md) for full requirements.
+**Requirements:** iOS 15+, macOS 12+, Xcode 16+ (Swift 6 toolchain). See [Getting Started](getting-started.md) for full requirements.
 
 ## Your First KeyPair
 
@@ -41,8 +41,8 @@ print("Account ID: \(keyPair.accountId)")
 print("Secret Seed: \(keyPair.secretSeed!)")
 
 // Example output:
-// Account ID: GCFXHS4GXL6BVUCXBWXGTITROWLVYXQKQLF4YH5O5JT3YZXCYPAFBJZB
-// Secret Seed: SAV76USXIJOBMEQXPANUOQM6F5LIOTLPDIDVRJBFFE2MDJXG24TAPUU7
+// Account ID: GCFX…BJZB
+// Secret Seed: SAV7…PUU7
 ```
 
 **Keep the secret seed safe** — it controls your account!
@@ -81,9 +81,18 @@ import stellarsdk
 // Connect to testnet
 let sdk = StellarSDK.testNet()
 
-// Your funded account (replace with your secret seed)
-let senderKeyPair = try! KeyPair(secretSeed: "SXXX...")
-let destinationId = "GYYY..." // Recipient address
+// Create and fund fresh sender and recipient accounts so this example is standalone.
+let senderKeyPair = try KeyPair.generateRandomKeyPair()
+let destinationKeyPair = try KeyPair.generateRandomKeyPair()
+
+for keyPair in [senderKeyPair, destinationKeyPair] {
+    let fundingResult = await sdk.accounts.createTestAccount(accountId: keyPair.accountId)
+    guard case .success = fundingResult else {
+        throw StellarSDKError.invalidArgument(message: "FriendBot could not fund \(keyPair.accountId)")
+    }
+}
+
+let destinationId = destinationKeyPair.accountId
 
 // Load current account state from network
 let accountResponse = await sdk.accounts.getAccountDetails(accountId: senderKeyPair.accountId)

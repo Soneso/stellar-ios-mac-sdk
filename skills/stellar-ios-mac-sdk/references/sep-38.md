@@ -4,6 +4,8 @@
 **Prerequisites:** JWT from SEP-10 required for `postQuote()`; optional for `info()`, `prices()`, `price()`, and `getQuote()`
 **SDK Class:** `QuoteService`
 
+All examples assume `import stellarsdk`.
+
 ## Table of Contents
 
 - [Quick Start](#quick-start)
@@ -500,7 +502,9 @@ Retrieves a previously-created firm quote by its ID.
 
 ```swift
 import stellarsdk
+import Foundation
 
+// jwtToken: SEP-10 JWT obtained via web authentication (see sep-10.md)
 let quoteService = QuoteService(serviceAddress: "https://anchor.example.com/sep38")
 
 let quoteId = "de762cda-a193-4961-861e-57b31fed6eb3"  // from postQuote() response
@@ -557,7 +561,9 @@ case .failure(let error: QuoteServiceError): ...
 
 ## Response Objects Reference
 
-### `Sep38Fee`
+### Fee Objects
+
+#### `Sep38Fee`
 
 Fee structure present in both `Sep38PriceResponse` and `Sep38QuoteResponse`.
 
@@ -567,7 +573,7 @@ Fee structure present in both `Sep38PriceResponse` and `Sep38QuoteResponse`.
 | `asset` | `String` | Asset in which the fee is denominated (SEP-38 format) |
 | `details` | `[Sep38FeeDetails]?` | Itemized fee breakdown; `nil` when not provided by anchor |
 
-### `Sep38FeeDetails`
+#### `Sep38FeeDetails`
 
 One line item in a fee breakdown.
 

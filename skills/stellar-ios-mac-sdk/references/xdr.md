@@ -1,5 +1,19 @@
 # XDR Encoding and Decoding
 
+- [Overview](#overview)
+- [Transaction Envelope Encoding](#transaction-envelope-encoding)
+- [Transaction Envelope Decoding](#transaction-envelope-decoding)
+- [Transaction Inspection Before Signing](#transaction-inspection-before-signing)
+- [SCValXDR: Smart Contract Values](#scvalxdr-smart-contract-values)
+- [XDR Base64 Serialization](#xdr-base64-serialization)
+- [XDR-JSON Serialization](#xdr-json-serialization)
+- [Soroban Authorization Credentials](#soroban-authorization-credentials)
+- [Ledger Key Construction](#ledger-key-construction)
+- [Multi-Signature XDR Sharing](#multi-signature-xdr-sharing)
+- [Transaction Hash](#transaction-hash)
+
+All examples assume `import stellarsdk`.
+
 ## Overview
 
 XDR (External Data Representation) is the binary format Stellar uses for all on-wire data. The SDK provides 456 XDR types in `stellarsdk/responses/xdr/`. All XDR types conform to the `XDRCodable` protocol and support encoding to base64 via the `xdrEncoded` property and decoding from base64 via `init(fromBase64:)` initializers.
@@ -11,7 +25,8 @@ Encode a transaction to a base64 XDR string for storage, sharing, or submission.
 ```swift
 import stellarsdk
 
-let sourceKeyPair = try KeyPair(secretSeed: "S_SECRET_KEY_HERE")
+// sourceSecretSeed: String for your funded source account, loaded from secure storage
+let sourceKeyPair = try KeyPair(secretSeed: sourceSecretSeed)
 let sdk = StellarSDK(withHorizonUrl: "https://horizon-testnet.stellar.org")
 
 // Load account
@@ -23,7 +38,7 @@ guard case .success(let accountDetails) = accountEnum else {
 // Build and sign transaction
 let paymentOp = try PaymentOperation(
     sourceAccountId: nil,
-    destinationAccountId: "GDEST...",
+    destinationAccountId: "GCZHXL5HXQX5ABDM26LHYRCQZ5OJFHLOPLZX47WEBP3V2PF5AVFK2A5D",
     asset: Asset(type: AssetType.ASSET_TYPE_NATIVE)!,
     amount: 100.0
 )
@@ -86,12 +101,13 @@ Always inspect transaction contents before signing. This is critical for securit
 ```swift
 import stellarsdk
 
-let unsignedXdr = "AAAAAgAAAAD..."  // received from external source
+// An unsigned payment envelope, as received from an external source
+let unsignedXdr = "AAAAAgAAAAA/DDS/k60NmXHQTMyQ9wVRHIOKrZc0pKL7DXoD/H/omgAAAGQAAAAAAAAAAgAAAAAAAAAAAAAAAQAAAAAAAAABAAAAALJ7r6e8L9AEbNeWfERQz1ySnW56835+xAv3XTy9BUqtAAAAAAAAAAAF9eEAAAAAAAAAAAA="
 
 let transaction = try Transaction(envelopeXdr: unsignedXdr)
 
 // Verify source account
-let expectedSource = "GSOURCE..."
+let expectedSource = "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ"
 guard transaction.sourceAccount.keyPair.accountId == expectedSource else {
     throw StellarSDKError.invalidArgument(message: "Unexpected source account")
 }
@@ -111,19 +127,17 @@ for (index, op) in transaction.operations.enumerated() {
 print("Memo: \(transaction.memo)")
 
 // Check for Soroban transaction data
-if let sorobanData = transaction.transactionXDR.ext {
-    switch sorobanData {
-    case .sorobanTransactionData(let data):
-        print("Soroban resource fee: \(data.resourceFee)")
-        print("Read-only keys: \(data.resources.footprint.readOnly.count)")
-        print("Read-write keys: \(data.resources.footprint.readWrite.count)")
-    case .void:
-        break
-    }
+switch transaction.transactionXDR.ext {
+case .sorobanTransactionData(let data):
+    print("Soroban resource fee: \(data.resourceFee)")
+    print("Read-only keys: \(data.resources.footprint.readOnly.count)")
+    print("Read-write keys: \(data.resources.footprint.readWrite.count)")
+case .void:
+    break
 }
 
 // Sign only after verification
-let signerKeyPair = try KeyPair(secretSeed: "S_SECRET_KEY_HERE")
+let signerKeyPair = try KeyPair.generateRandomKeyPair()
 try transaction.sign(keyPair: signerKeyPair, network: Network.testnet)
 ```
 
@@ -135,6 +149,7 @@ try transaction.sign(keyPair: signerKeyPair, network: Network.testnet)
 
 ```swift
 import stellarsdk
+import Foundation
 
 // Booleans
 let boolVal = SCValXDR.bool(true)
@@ -169,11 +184,18 @@ let duration = SCValXDR.duration(3600)
 
 ```swift
 import stellarsdk
+import Foundation
 
 let symbolVal = SCValXDR.symbol("transfer")
 let stringVal = SCValXDR.string("hello world")
 let bytesVal = SCValXDR.bytes(Data([0x01, 0x02, 0x03]))
+let keyPair = try KeyPair.generateRandomKeyPair()
 let pubKeyBytes = SCValXDR.bytes(Data(keyPair.publicKey.bytes))  // 32-byte raw Ed25519 public key
+
+// CAP-85 executable tag (protocol 28) — the arm carries raw bytes
+let tagVal = SCValXDR.executableTag(Data([0x74, 0x61, 0x67]))
+let tagFromText = SCValXDR.executableTag("token-v1")  // String factory encodes UTF-8 exactly once
+let tagText = tagFromText.executableTagString  // UTF-8 view; nil for another arm or non-UTF-8 bytes
 ```
 
 ### Address Types
@@ -184,9 +206,9 @@ import stellarsdk
 // SCAddressXDR() throws (validates the address) but SCValXDR.address() does NOT throw
 // WRONG: try SCValXDR.address(...) — try on the enum case, causes unnecessary-try warning
 // CORRECT: SCValXDR.address(try SCAddressXDR(...)) — try on the constructor only
-let accountAddr = SCValXDR.address(try SCAddressXDR(accountId: "GABC..."))
+let accountAddr = SCValXDR.address(try SCAddressXDR(accountId: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ"))
 
-let contractAddr = SCValXDR.address(try SCAddressXDR(contractId: "CDEF..."))
+let contractAddr = SCValXDR.address(try SCAddressXDR(contractId: "CB3FU6M3TOAGRBLN5WDLXL6A7VR5SSRGULMXQQOABNMPS25YRJ4CN5VV"))
 ```
 
 ### Collections
@@ -330,7 +352,7 @@ func withAddressCredentials(_ c: SorobanAddressCredentialsXDR) throws -> Soroban
 
 The signing preimage is selected by arm: `.address` uses `HashIDPreimageXDR.sorobanAuthorization` (`EnvelopeType.sorobanAuthorization`); `.addressV2` and `.addressWithDelegates` use `HashIDPreimageXDR.sorobanAuthorizationWithAddress` (`EnvelopeType.sorobanAuthorizationWithAddress` = 10, protocol 27), which additionally binds the top-level credential address. Build preimages via `SorobanAuthorizationEntryXDR.buildPreimage(network:)` -- see [soroban_contracts.md](./soroban_contracts.md) for signing and delegated authorization.
 
-The V2 and WITH_DELEGATES arms are opt-in; emitting them on a pre-protocol-27 network invalidates the transaction.
+Simulation requests the V2 arm by default (`useUpgradedAuth`); emitting the V2 or WITH_DELEGATES arms on a pre-protocol-27 network invalidates the transaction, so opt out with `useUpgradedAuth: false` there.
 
 ## Ledger Key Construction
 
@@ -343,21 +365,21 @@ let server = SorobanServer(endpoint: "https://soroban-testnet.stellar.org")
 
 // Account ledger key
 let accountKey = LedgerKeyXDR.account(
-    LedgerKeyAccountXDR(accountID: try PublicKey(accountId: "GABC..."))
+    LedgerKeyAccountXDR(accountID: try PublicKey(accountId: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ"))
 )
 
 // Contract data ledger key
 let contractDataKey = LedgerKeyXDR.contractData(
     LedgerKeyContractDataXDR(
-        contract: try SCAddressXDR(contractId: "CDEF..."),
+        contract: try SCAddressXDR(contractId: "CB3FU6M3TOAGRBLN5WDLXL6A7VR5SSRGULMXQQOABNMPS25YRJ4CN5VV"),
         key: SCValXDR.ledgerKeyContractInstance,
         durability: .persistent
     )
 )
 
-// Contract code ledger key (by WASM hash)
+// Contract code ledger key (by WASM hash; example hash -- pass your wasm's 64-char hex hash)
 let contractCodeKey = LedgerKeyXDR.contractCode(
-    LedgerKeyContractCodeXDR(wasmId: "abc123...")
+    try LedgerKeyContractCodeXDR(wasmId: "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
 )
 
 // Query ledger entries
@@ -365,7 +387,7 @@ let keys = [accountKey.xdrEncoded!, contractDataKey.xdrEncoded!]
 let entriesEnum = await server.getLedgerEntries(base64EncodedKeys: keys)
 switch entriesEnum {
 case .success(let response):
-    for entry in response.ledgerEntries {
+    for entry in response.entries {
         print("Key: \(entry.key), Live until: \(entry.liveUntilLedgerSeq ?? 0)")
     }
 case .failure(let error):
@@ -381,7 +403,9 @@ Share unsigned transactions between co-signers using base64 XDR encoding.
 import stellarsdk
 
 // Signer 1: Build and partially sign
-let signerOneKeyPair = try KeyPair(secretSeed: "S_SIGNER_ONE_SECRET")
+// signerOneSecretSeed: String for the first signer, loaded from secure storage
+// destinationAccountId: String for an existing testnet destination account
+let signerOneKeyPair = try KeyPair(secretSeed: signerOneSecretSeed)
 let sdk = StellarSDK(withHorizonUrl: "https://horizon-testnet.stellar.org")
 
 let accountEnum = await sdk.accounts.getAccountDetails(accountId: signerOneKeyPair.accountId)
@@ -391,7 +415,7 @@ guard case .success(let accountDetails) = accountEnum else {
 
 let paymentOp = try PaymentOperation(
     sourceAccountId: nil,
-    destinationAccountId: "GDEST...",
+    destinationAccountId: destinationAccountId,
     asset: Asset(type: AssetType.ASSET_TYPE_NATIVE)!,
     amount: 500.0
 )
@@ -409,7 +433,8 @@ let partiallySignedXdr = try transaction.encodedEnvelope()
 // --- Transfer XDR string to signer 2 ---
 
 // Signer 2: Decode, add signature, submit
-let signerTwoKeyPair = try KeyPair(secretSeed: "S_SIGNER_TWO_SECRET")
+// signerTwoSecretSeed: String for the second signer, loaded from secure storage
+let signerTwoKeyPair = try KeyPair(secretSeed: signerTwoSecretSeed)
 let receivedTransaction = try Transaction(envelopeXdr: partiallySignedXdr)
 try receivedTransaction.sign(keyPair: signerTwoKeyPair, network: Network.testnet)
 

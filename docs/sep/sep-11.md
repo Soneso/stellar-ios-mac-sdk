@@ -50,11 +50,13 @@ Build a transaction programmatically and convert it to Txrep for inspection:
 
 ```swift
 import stellarsdk
+import Foundation
 
 let sdk = StellarSDK.testNet()
 
 // Build a transaction
-let sourceKeyPair = try KeyPair(secretSeed: "SCZANGBA5YHTNYVVV3C7CAZMTQDBJHJG6C34CPMLIHJPFV5RXN5M6CSS")
+// sourceSecretSeed: String for the transaction source, loaded from secure storage
+let sourceKeyPair = try KeyPair(secretSeed: sourceSecretSeed)
 let accountResponse = await sdk.accounts.getAccountDetails(accountId: sourceKeyPair.accountId)
 switch accountResponse {
 case .success(let sourceAccount):

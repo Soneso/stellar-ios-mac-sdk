@@ -1,8 +1,22 @@
 # Stellar Operations Reference
 
-All 25 Stellar operations with verified Swift constructors. Every operation extends the base `Operation` class. Amounts use `Decimal` type. The optional `sourceAccountId: String?` parameter defaults to the transaction's source account when `nil`.
+All Stellar operations with verified Swift constructors. Every operation extends the base `Operation` class. Amounts use `Decimal` type. The optional `sourceAccountId: String?` parameter defaults to the transaction's source account when `nil`.
+
+All examples assume `import stellarsdk`.
 
 For method signatures on response objects, see [API Reference](./api_reference.md).
+
+- [Account & Balance Operations](#account--balance-operations)
+- [Payment Operations](#payment-operations)
+- [DEX / Offer Operations](#dex--offer-operations)
+- [Trust & Asset Control Operations](#trust--asset-control-operations)
+- [Data Operations](#data-operations)
+- [Claimable Balance Operations](#claimable-balance-operations)
+- [Sponsorship Operations](#sponsorship-operations)
+- [Clawback Operations](#clawback-operations)
+- [Liquidity Pool Operations](#liquidity-pool-operations)
+- [Soroban Operations](#soroban-operations)
+- [Building a Transaction with Operations](#building-a-transaction-with-operations)
 
 ## Account & Balance Operations
 
@@ -24,7 +38,7 @@ let createOp = CreateAccountOperation(
 // Using account ID string
 let createOp2 = try CreateAccountOperation(
     sourceAccountId: nil,
-    destinationAccountId: "GABC...",
+    destinationAccountId: "GCZHXL5HXQX5ABDM26LHYRCQZ5OJFHLOPLZX47WEBP3V2PF5AVFK2A5D",
     startBalance: 100.0
 )
 ```
@@ -37,7 +51,7 @@ Transfers all native XLM balance to destination and removes source account.
 
 ```swift
 let mergeOp = try AccountMergeOperation(
-    destinationAccountId: "GDEST...",
+    destinationAccountId: "GCZHXL5HXQX5ABDM26LHYRCQZ5OJFHLOPLZX47WEBP3V2PF5AVFK2A5D",
     sourceAccountId: nil
 )
 ```
@@ -68,7 +82,7 @@ Sends an asset from source to destination account.
 let xlmAsset = Asset(type: AssetType.ASSET_TYPE_NATIVE)!
 let payOp = try PaymentOperation(
     sourceAccountId: nil,
-    destinationAccountId: "GDEST...",
+    destinationAccountId: "GCZHXL5HXQX5ABDM26LHYRCQZ5OJFHLOPLZX47WEBP3V2PF5AVFK2A5D",
     asset: xlmAsset,
     amount: 100.0  // Decimal
 )
@@ -77,11 +91,11 @@ let payOp = try PaymentOperation(
 let usdAsset = Asset(
     type: AssetType.ASSET_TYPE_CREDIT_ALPHANUM4,  // "USD" is 3 chars → ALPHANUM4
     code: "USD",
-    issuer: try KeyPair(accountId: "GISSUER...")
+    issuer: try KeyPair(accountId: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ")
 )!
 let usdPayment = try PaymentOperation(
     sourceAccountId: nil,
-    destinationAccountId: "GDEST...",
+    destinationAccountId: "GCZHXL5HXQX5ABDM26LHYRCQZ5OJFHLOPLZX47WEBP3V2PF5AVFK2A5D",
     asset: usdAsset,
     amount: 50.0
 )
@@ -98,14 +112,14 @@ let xlm = Asset(type: AssetType.ASSET_TYPE_NATIVE)!
 let usd = Asset(
     type: AssetType.ASSET_TYPE_CREDIT_ALPHANUM4,
     code: "USD",
-    issuer: try KeyPair(accountId: "GISSUER...")
+    issuer: try KeyPair(accountId: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ")
 )!
 
 let pathPayOp = try PathPaymentStrictReceiveOperation(
     sourceAccountId: nil,
     sendAsset: xlm,
     sendMax: 200.0,              // Decimal - max source willing to send
-    destinationAccountId: "GDEST...",
+    destinationAccountId: "GCZHXL5HXQX5ABDM26LHYRCQZ5OJFHLOPLZX47WEBP3V2PF5AVFK2A5D",
     destAsset: usd,
     destAmount: 50.0,            // Decimal - exact amount destination receives
     path: []                     // [Asset] - intermediate assets, max 5
@@ -119,11 +133,15 @@ let pathPayOp = try PathPaymentStrictReceiveOperation(
 Sends a payment through a path of DEX offers, guaranteeing the exact source amount sent. Sender specifies a minimum destination amount.
 
 ```swift
+let xlm = Asset(type: AssetType.ASSET_TYPE_NATIVE)!
+let usd = Asset(type: AssetType.ASSET_TYPE_CREDIT_ALPHANUM4, code: "USD",
+                issuer: try KeyPair(accountId: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ"))!  // asset issuer
+
 let strictSendOp = try PathPaymentStrictSendOperation(
     sourceAccountId: nil,
     sendAsset: xlm,
     sendMax: 100.0,              // Decimal - exact amount source sends (named sendMax in parent)
-    destinationAccountId: "GDEST...",
+    destinationAccountId: "GCZHXL5HXQX5ABDM26LHYRCQZ5OJFHLOPLZX47WEBP3V2PF5AVFK2A5D",
     destAsset: usd,
     destAmount: 20.0,            // Decimal - minimum destination receives (named destAmount in parent)
     path: []
@@ -221,7 +239,7 @@ Creates, updates, or removes a trustline for an asset.
 let usdAsset = Asset(
     type: AssetType.ASSET_TYPE_CREDIT_ALPHANUM4,
     code: "USD",
-    issuer: try KeyPair(accountId: "GISSUER...")
+    issuer: try KeyPair(accountId: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ")
 )!
 let changeTrustAsset = ChangeTrustAsset(
     type: usdAsset.type,
@@ -235,6 +253,7 @@ let trustOp = ChangeTrustOperation(
 )
 
 // Liquidity pool trustline
+let xlm = Asset(type: AssetType.ASSET_TYPE_NATIVE)!
 let poolAsset = try ChangeTrustAsset(assetA: xlm, assetB: usdAsset)!
 let poolTrustOp = ChangeTrustOperation(
     sourceAccountId: nil,
@@ -252,10 +271,13 @@ let poolTrustOp = ChangeTrustOperation(
 Allows asset issuers to modify trustline authorization flags.
 
 ```swift
+let usdAsset = Asset(type: AssetType.ASSET_TYPE_CREDIT_ALPHANUM4, code: "USD",
+                     issuer: try KeyPair(accountId: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ"))!  // asset issuer
+
 let setFlagsOp = SetTrustlineFlagsOperation(
     sourceAccountId: nil,
     asset: usdAsset,
-    trustorAccountId: "GTRUSTOR...",
+    trustorAccountId: "GCZHXL5HXQX5ABDM26LHYRCQZ5OJFHLOPLZX47WEBP3V2PF5AVFK2A5D",
     setFlags: 1,     // UInt32 - TrustLineFlags to set (e.g., AUTHORIZED_FLAG = 1)
     clearFlags: 0    // UInt32 - TrustLineFlags to clear
 )
@@ -283,7 +305,7 @@ let setOptionsOp = try SetOptionsOperation(
 )
 
 // Add a signer
-let signerKey = Signer.ed25519PublicKey(keyPair: try KeyPair(accountId: "GSIGNER..."))
+let signerKey = Signer.ed25519PublicKey(keyPair: try KeyPair(accountId: "GCZHXL5HXQX5ABDM26LHYRCQZ5OJFHLOPLZX47WEBP3V2PF5AVFK2A5D"))
 let addSignerOp = try SetOptionsOperation(
     sourceAccountId: nil,
     signer: signerKey,
@@ -326,12 +348,14 @@ let deleteDataOp = ManageDataOperation(
 Creates a claimable balance that specified claimants can claim under defined conditions.
 
 ```swift
+let xlm = Asset(type: AssetType.ASSET_TYPE_NATIVE)!
+
 let claimant1 = Claimant(
-    destination: "GCLAIMER1...",
+    destination: "GCZHXL5HXQX5ABDM26LHYRCQZ5OJFHLOPLZX47WEBP3V2PF5AVFK2A5D",
     predicate: Claimant.predicateUnconditional()
 )
 let claimant2 = Claimant(
-    destination: "GCLAIMER2...",
+    destination: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ",
     predicate: Claimant.predicateBeforeAbsoluteTime(unixEpoch: 1735689600)
 )
 
@@ -368,7 +392,7 @@ Establishes a sponsorship relationship where the source account sponsors reserve
 
 ```swift
 let beginSponsorOp = BeginSponsoringFutureReservesOperation(
-    sponsoredAccountId: "GSPONSORED...",
+    sponsoredAccountId: "GCZHXL5HXQX5ABDM26LHYRCQZ5OJFHLOPLZX47WEBP3V2PF5AVFK2A5D",
     sponsoringAccountId: nil  // source account = sponsor
 )
 ```
@@ -392,9 +416,12 @@ let endSponsorOp = EndSponsoringFutureReservesOperation(
 Revokes sponsorship of a ledger entry or signer. Provides static factory methods for creating ledger keys.
 
 ```swift
+let usdAsset = Asset(type: AssetType.ASSET_TYPE_CREDIT_ALPHANUM4, code: "USD",
+                     issuer: try KeyPair(accountId: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ"))!  // asset issuer
+
 // Revoke account sponsorship
 let ledgerKey = try RevokeSponsorshipOperation.revokeAccountSponsorshipLedgerKey(
-    accountId: "GACCOUNT..."
+    accountId: "GCZHXL5HXQX5ABDM26LHYRCQZ5OJFHLOPLZX47WEBP3V2PF5AVFK2A5D"
 )
 let revokeOp = RevokeSponsorshipOperation(
     ledgerKey: ledgerKey,
@@ -403,15 +430,15 @@ let revokeOp = RevokeSponsorshipOperation(
 
 // Revoke trustline sponsorship
 let tlKey = try RevokeSponsorshipOperation.revokeTrustlineSponsorshipLedgerKey(
-    accountId: "GACCOUNT...",
+    accountId: "GCZHXL5HXQX5ABDM26LHYRCQZ5OJFHLOPLZX47WEBP3V2PF5AVFK2A5D",
     asset: usdAsset
 )
 let revokeTrustOp = RevokeSponsorshipOperation(ledgerKey: tlKey)
 
 // Revoke signer sponsorship
-let signerKey = Signer.ed25519PublicKey(keyPair: try KeyPair(accountId: "GSIGNER..."))
+let signerKey = Signer.ed25519PublicKey(keyPair: try KeyPair(accountId: "GCZHXL5HXQX5ABDM26LHYRCQZ5OJFHLOPLZX47WEBP3V2PF5AVFK2A5D"))
 let revokeSignerOp = RevokeSponsorshipOperation(
-    signerAccountId: "GACCOUNT...",
+    signerAccountId: "GCZHXL5HXQX5ABDM26LHYRCQZ5OJFHLOPLZX47WEBP3V2PF5AVFK2A5D",
     signerKey: signerKey,
     sourceAccountId: nil
 )
@@ -426,10 +453,13 @@ let revokeSignerOp = RevokeSponsorshipOperation(
 Allows asset issuer to claw back (burn) assets from an account. Requires the clawback flag on the asset.
 
 ```swift
+let usdAsset = Asset(type: AssetType.ASSET_TYPE_CREDIT_ALPHANUM4, code: "USD",
+                     issuer: try KeyPair(accountId: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ"))!  // asset issuer
+
 let clawbackOp = ClawbackOperation(
     sourceAccountId: nil,       // must be the asset issuer
     asset: usdAsset,
-    fromAccountId: "GACCOUNT...",
+    fromAccountId: "GCZHXL5HXQX5ABDM26LHYRCQZ5OJFHLOPLZX47WEBP3V2PF5AVFK2A5D",
     amount: 50.0
 )
 ```
@@ -493,11 +523,11 @@ Invokes Soroban smart contract functions. Use factory methods rather than the ra
 ```swift
 // Invoke a contract function
 let invokeOp = try InvokeHostFunctionOperation.forInvokingContract(
-    contractId: "CABC...",
+    contractId: "CB3FU6M3TOAGRBLN5WDLXL6A7VR5SSRGULMXQQOABNMPS25YRJ4CN5VV",
     functionName: "transfer",
     functionArguments: [
-        SCValXDR.address(try SCAddressXDR(accountId: "GSOURCE...")),
-        SCValXDR.address(try SCAddressXDR(accountId: "GDEST...")),
+        SCValXDR.address(try SCAddressXDR(accountId: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ")),
+        SCValXDR.address(try SCAddressXDR(accountId: "GCZHXL5HXQX5ABDM26LHYRCQZ5OJFHLOPLZX47WEBP3V2PF5AVFK2A5D")),
         SCValXDR.i128(Int128PartsXDR(hi: 0, lo: 1000))
     ],
     sourceAccountId: nil
@@ -505,26 +535,28 @@ let invokeOp = try InvokeHostFunctionOperation.forInvokingContract(
 
 // Upload WASM bytecode
 let uploadOp = try InvokeHostFunctionOperation.forUploadingContractWasm(
-    contractCode: wasmBytes,  // Data
+    contractCode: wasmBytes,  // wasmBytes: your compiled contract wasm (Data)
     sourceAccountId: nil
 )
 
 // Create contract from WASM hash
 let createContractOp = try InvokeHostFunctionOperation.forCreatingContract(
-    wasmId: "abc123...",  // hex WASM hash
-    address: try SCAddressXDR(accountId: "GSOURCE..."),
+    wasmId: "86b49fe03f7df0ad1c2a28bd8361b923ab57096e09f397f92f0c00ae3bd06d28",  // hex WASM hash
+    address: try SCAddressXDR(accountId: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ"),
     sourceAccountId: nil
 )
 
 // Create contract with constructor args (protocol 22+)
 let createV2Op = try InvokeHostFunctionOperation.forCreatingContractWithConstructor(
-    wasmId: "abc123...",
-    address: try SCAddressXDR(accountId: "GSOURCE..."),
+    wasmId: "86b49fe03f7df0ad1c2a28bd8361b923ab57096e09f397f92f0c00ae3bd06d28",
+    address: try SCAddressXDR(accountId: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ"),
     constructorArguments: [SCValXDR.symbol("init_val")],
     sourceAccountId: nil
 )
 
 // Deploy Stellar Asset Contract
+let usdAsset = Asset(type: AssetType.ASSET_TYPE_CREDIT_ALPHANUM4, code: "USD",
+                     issuer: try KeyPair(accountId: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ"))!  // asset issuer
 let sacOp = try InvokeHostFunctionOperation.forDeploySACWithAsset(
     asset: usdAsset,
     sourceAccountId: nil
@@ -560,16 +592,20 @@ let restoreOp = RestoreFootprintOperation(sourceAccountId: nil)
 import stellarsdk
 
 let sdk = StellarSDK(withHorizonUrl: "https://horizon-testnet.stellar.org")
-let sourceKeyPair = try KeyPair(secretSeed: "SCZANGBA...")
+// sourceSecretSeed: String for your funded testnet account, loaded from secure storage
+// destinationAccountId: String for an existing testnet destination account
+let sourceKeyPair = try KeyPair(secretSeed: sourceSecretSeed)
 
 // Load account for sequence number
 let accountResponse = await sdk.accounts.getAccountDetails(accountId: sourceKeyPair.accountId)
-guard case .success(let accountDetails) = accountResponse else { return }
+guard case .success(let accountDetails) = accountResponse else {
+    throw StellarSDKError.invalidArgument(message: "Could not load the source account")
+}
 
 // Build transaction with operations
 let paymentOp = try PaymentOperation(
     sourceAccountId: nil,
-    destinationAccountId: "GDEST...",
+    destinationAccountId: destinationAccountId,
     asset: Asset(type: AssetType.ASSET_TYPE_NATIVE)!,
     amount: 10.0
 )

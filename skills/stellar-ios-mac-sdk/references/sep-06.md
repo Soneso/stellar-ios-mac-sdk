@@ -5,6 +5,8 @@
 **SDK Class:** `TransferServerService`
 **Spec:** SEP-0006 v4.3.0
 
+All examples assume `import stellarsdk`.
+
 ## Table of Contents
 
 - [Service Initialization](#service-initialization)
@@ -31,6 +33,7 @@ Reads `TRANSFER_SERVER` from the anchor's `stellar.toml` via SEP-01 automaticall
 
 ```swift
 import stellarsdk
+import Foundation
 
 // NOTE: forDomain requires a full URL with scheme (unlike WebAuthenticator.from which takes a plain domain)
 let result = await TransferServerService.forDomain(domain: "https://testanchor.stellar.org")
@@ -846,11 +849,16 @@ When a transaction reaches `pending_transaction_info_update` status, use PATCH t
 
 ```swift
 import stellarsdk
+import Foundation
 
+// service: TransferServerService from TransferServerService.forDomain(...)
+// jwtToken: SEP-10 JWT obtained via web authentication (see sep-10.md)
 // 1. Check what fields are needed
 let txRequest = AnchorTransactionRequest(id: "82fhs729f63dh0v4", jwt: jwtToken)
 let txEnum = await service.getTransaction(request: txRequest)
-guard case .success(let txResponse) = txEnum else { return }
+guard case .success(let txResponse) = txEnum else {
+    throw StellarSDKError.invalidArgument(message: "Could not load the anchor transaction")
+}
 let tx = txResponse.transaction
 
 if tx.status == .pendingTransactionInfoUpdate {
@@ -868,7 +876,9 @@ if tx.status == .pendingTransactionInfoUpdate {
         "dest": "12345678901234",    // bank account number
         "dest_extra": "021000021",   // routing number
     ]
-    guard let body = try? JSONSerialization.data(withJSONObject: updateFields) else { return }
+    guard let body = try? JSONSerialization.data(withJSONObject: updateFields) else {
+        throw StellarSDKError.invalidArgument(message: "Could not encode the transaction update")
+    }
 
     // 3. Submit the PATCH
     let patchEnum = await service.patchTransaction(

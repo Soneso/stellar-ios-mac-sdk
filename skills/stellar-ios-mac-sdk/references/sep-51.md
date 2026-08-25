@@ -4,7 +4,19 @@
 **Prerequisites:** None
 **SDK Protocol:** `XdrJsonCodable`, implemented by every generated XDR type
 
+All examples assume `import stellarsdk`.
+
 SEP-51 defines a canonical JSON mapping for Stellar's XDR structures. Use it for logs, diffs, test fixtures and interchange with tooling written against other SDKs. Do not use it as a wire format: Horizon and the RPC server take base64 XDR.
+
+- [API](#api)
+- [Usage](#usage)
+- [Mapping rules](#mapping-rules)
+- [Types with no members](#types-with-no-members)
+- [Errors](#errors)
+- [Input rules](#input-rules)
+- [Limitations](#limitations)
+- [Divergences from the reference implementation](#divergences-from-the-reference-implementation)
+- [Cross-platform compatibility](#cross-platform-compatibility)
 
 ## API
 
@@ -151,6 +163,6 @@ The SDK follows the specification text where the `stellar-xdr` reference build d
 2. Fixed-length opaque data declared inline in the XDR file is hex, not an array of byte numbers. Affects `Curve25519SecretXDR.key`, `Curve25519PublicXDR.key`, `HmacSha256KeyXDR.key`, `HmacSha256MacXDR.mac`, `ShortHashSeedXDR.seed`, `SerializedBinaryFuseFilterXDR` and the `PeerAddressXDRIpXDR` arms.
 3. `$schema` is accepted on input.
 
-## Cross-SDK compatibility
+## Cross-platform compatibility
 
 XDR-JSON produced by this SDK is byte-identical to the reference implementation for every type they share, except in the three divergences above, where the SDK follows the specification text and the reference does not. Those three are also the cases where the pinned reference build refuses to read a document this SDK emits: it rejects a standalone 64-bit integer written as a string (`invalid type: string "-9223372036854775808", expected i64`) and inline fixed-length opaque data written as hex (`expected an array of length 32`). Documents interchange with any other SDK implementing SEP-51 v2.0.1.

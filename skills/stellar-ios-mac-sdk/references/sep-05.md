@@ -5,6 +5,8 @@
 **SDK Class:** `WalletUtils` (in `stellarsdk`)
 **Derivation path:** `m/44'/148'/index'` — all levels are hardened
 
+All examples assume `import stellarsdk`.
+
 ## Table of Contents
 
 1. [Quick Start](#quick-start)
@@ -247,10 +249,13 @@ print(keyPair.secretSeed ?? "")    // S-address (present because derived from se
 // but use guard or ?? to handle it safely
 guard let secret = keyPair.secretSeed else { fatalError("No seed") }
 
-// Use keypair for signing transactions
+// Fund keyPair on testnet before using it as a transaction source.
+// destinationAccountId: String for an existing testnet destination account
 let sdk = StellarSDK.testNet()
 let accountEnum = await sdk.accounts.getAccountDetails(accountId: keyPair.accountId)
-guard case .success(let accountResponse) = accountEnum else { return }
+guard case .success(let accountResponse) = accountEnum else {
+    throw StellarSDKError.invalidArgument(message: "Could not load the source account")
+}
 
 let sourceAccount = try Account(
     accountId: accountResponse.accountId,
@@ -258,7 +263,7 @@ let sourceAccount = try Account(
 )
 let paymentOp = try PaymentOperation(
     sourceAccountId: nil,
-    destinationAccountId: "GDEST...",
+    destinationAccountId: destinationAccountId,
     asset: Asset(type: AssetType.ASSET_TYPE_NATIVE)!,
     amount: 10.0
 )
@@ -373,7 +378,7 @@ let purpose    = masterKey.derived(at: 44)   // m/44'
 let coinType   = purpose.derived(at: 148)    // m/44'/148'
 let account    = coinType.derived(at: 0)     // m/44'/148'/0'
 
-let stellarSeed = try Seed(bytes: account.raw.bytes)
+let stellarSeed = try Seed(bytes: [UInt8](account.raw))
 let keyPair     = KeyPair(seed: stellarSeed)
 print(keyPair.accountId)   // GDRXE2BQUC3AZNPVFSCEZ76NJ3WWL25FYFK6RGZGIEKWE4SOOHSUJUJ6
 ```
@@ -466,11 +471,13 @@ let keyPair = try WalletUtils.createKeyPair(mnemonic: badMnemonic, passphrase: n
 **`Seed(bytes:)` requires exactly 32 bytes — `Ed25519Derivation.raw` provides this:**
 
 ```swift
+// account: the transaction's source Account
+// bip39Seed: your wallet's BIP-39 seed (Data)
 // Ed25519Derivation.raw is always 32 bytes — safe to use directly
-let stellarSeed = try Seed(bytes: account.raw.bytes)  // correct
+let stellarSeed = try Seed(bytes: [UInt8](account.raw))  // correct
 
 // WRONG: using the full 64-byte BIP-39 seed as a Seed
-let stellarSeed = try Seed(bytes: [UInt8](bip39Seed))  // throws Ed25519Error.invalidSeedLength (64 bytes)
+let wrongSeed = try Seed(bytes: [UInt8](bip39Seed))  // throws Ed25519Error.invalidSeedLength (64 bytes)
 ```
 
 ---

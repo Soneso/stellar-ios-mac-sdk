@@ -164,11 +164,13 @@ This complete example shows how to send a payment using a Stellar address. It re
 
 ```swift
 import stellarsdk
+import Foundation
 
 let sdk = StellarSDK.testNet()
 
 // Sender's keypair
-let senderKeyPair = try! KeyPair(secretSeed: "SCZANGBA5YHTNYVVV3C7CAZMTQDBJHJG6C34CPMLIHJPFV5RXN5M6CSS")
+// senderSecretSeed: String for your funded sender account, loaded from secure storage
+let senderKeyPair = try! KeyPair(secretSeed: senderSecretSeed)
 let senderAccountId = senderKeyPair.accountId
 
 // Resolve recipient's Stellar address
@@ -176,19 +178,16 @@ let recipient = "alice*testanchor.stellar.org"
 let fedResult = await Federation.resolve(stellarAddress: recipient)
 
 guard case .success(let fedResponse) = fedResult else {
-    print("Federation resolution failed")
-    return
+    throw StellarSDKError.invalidArgument(message: "Federation resolution failed")
 }
 guard let destinationId = fedResponse.accountId else {
-    print("No account ID in federation response")
-    return
+    throw StellarSDKError.invalidArgument(message: "No account ID in federation response")
 }
 
 // Load sender account
 let accResult = await sdk.accounts.getAccountDetails(accountId: senderAccountId)
 guard case .success(let accountResponse) = accResult else {
-    print("Failed to load sender account")
-    return
+    throw StellarSDKError.invalidArgument(message: "Failed to load sender account")
 }
 
 // Build payment operation

@@ -1,5 +1,15 @@
 # Soroban Smart Contracts
 
+- [Contract Lifecycle](#contract-lifecycle)
+- [High-Level API: SorobanClient](#high-level-api-sorobanclient)
+- [Contract Introspection](#contract-introspection)
+- [Low-Level API: InvokeHostFunctionOperation](#low-level-api-invokehostfunctionoperation)
+- [AssembledTransaction for Mid-Level Control](#assembledtransaction-for-mid-level-control)
+- [Multi-Party Authorization](#multi-party-authorization)
+- [Error Handling](#error-handling)
+
+All examples assume `import stellarsdk`.
+
 ## Contract Lifecycle
 
 Four operations manage Soroban contracts: install WASM, introspect spec, deploy instance, invoke methods. The SDK provides both a low-level `InvokeHostFunctionOperation` API and a high-level `SorobanClient` API.
@@ -16,8 +26,9 @@ Upload compiled WASM bytecode. Returns a hex-encoded hash identifying the code o
 
 ```swift
 import stellarsdk
+import Foundation
 
-let sourceKeyPair = try KeyPair(secretSeed: "S_SECRET_KEY_HERE")
+let sourceKeyPair = try KeyPair(secretSeed: secretSeed) // secretSeed: your funded account's secret seed ("S...")
 let rpcUrl = "https://soroban-testnet.stellar.org"
 let wasmData = try Data(contentsOf: URL(fileURLWithPath: "/path/to/contract.wasm"))
 
@@ -45,7 +56,9 @@ Parse a contract's spec to discover its functions, types, and events programmati
 
 ```swift
 import stellarsdk
+import Foundation
 
+// wasmHash: the wasm hash returned by the install step
 // From local WASM bytecode (offline)
 let wasmData = try Data(contentsOf: URL(fileURLWithPath: "/path/to/contract.wasm"))
 let contractInfo = try SorobanContractParser.parseContractByteCode(byteCode: wasmData)
@@ -54,12 +67,27 @@ let contractInfo = try SorobanContractParser.parseContractByteCode(byteCode: was
 let server = SorobanServer(endpoint: "https://soroban-testnet.stellar.org")
 let infoEnum = await server.getContractInfoForWasmId(wasmId: wasmHash)
 // GetContractInfoEnum cases: .success(response:), .parsingFailure(error:), .rpcFailure(error:)
-guard case .success(let info) = infoEnum else { /* handle error */ return }
+guard case .success(let info) = infoEnum else {
+    throw StellarSDKError.invalidArgument(message: "Could not load contract information for the WASM hash")
+}
 
 // From network (by deployed contract ID)
-let infoEnum2 = await server.getContractInfoForContractId(contractId: "CCONTRACTID...")
-guard case .success(let info2) = infoEnum2 else { /* handle error */ return }
+let infoEnum2 = await server.getContractInfoForContractId(contractId: "CB3FU6M3TOAGRBLN5WDLXL6A7VR5SSRGULMXQQOABNMPS25YRJ4CN5VV")
+guard case .success(let info2) = infoEnum2 else {
+    throw StellarSDKError.invalidArgument(message: "Could not load contract information for the contract ID")
+}
 ```
+
+The `...ForContractId` loaders resolve a CAP-85 external reference executable (Protocol 28)
+automatically: the instance names an owner contract and a tag, and the owner's persistent tag
+entry holds the wasm hash. `getExternalRefWasmHash(ref: ContractExecutableExternalRefXDR) async
+-> GetExternalRefWasmHashResponseEnum` resolves a reference directly: `.success(response: Data)`
+carries the 32-byte hash, `.failure` names the condition that fired (non-contract owner, missing
+tag entry, entry not contract data, value not a 32-byte hash). A Stellar Asset Contract has no
+wasm, so the code loader fails with a message saying so. An executable tag is an XDR string
+carrying arbitrary bytes: `ContractExecutableExternalRefXDR.tag` is `Data` (a `tagString` view
+reads it as UTF-8 when it spells text), the ledger key is built from the exact bytes, and a
+failure message renders a binary tag as `\xNN` escapes inside quotes.
 
 ### SorobanContractInfo Properties
 
@@ -208,12 +236,13 @@ for event in contractInfo.events {
 `ContractSpec` auto-converts native Swift values to `SCValXDR` using spec type info:
 
 ```swift
+// contractInfo: loaded via getContractInfoForContractId (see above)
 let spec = ContractSpec(entries: contractInfo.specEntries)
 
 // Convert full function call args (ordered by parameter declaration)
 let args = try spec.funcArgsToXdrSCValues(name: "transfer", args: [
-    "from": "GABC...",  // address → SCValXDR.address (automatic)
-    "to": "GXYZ...",    // address → SCValXDR.address (automatic)
+    "from": "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ",  // address → SCValXDR.address (automatic)
+    "to": "GCZHXL5HXQX5ABDM26LHYRCQZ5OJFHLOPLZX47WEBP3V2PF5AVFK2A5D",    // address → SCValXDR.address (automatic)
     "amount": 1000,     // i128 → SCValXDR.i128 (automatic)
 ])
 
@@ -259,7 +288,7 @@ Create a contract instance from an installed WASM hash. Constructor arguments ar
 ```swift
 import stellarsdk
 
-let sourceKeyPair = try KeyPair(secretSeed: "S_SECRET_KEY_HERE")
+let sourceKeyPair = try KeyPair(secretSeed: secretSeed) // secretSeed: your funded account's secret seed ("S...")
 let rpcUrl = "https://soroban-testnet.stellar.org"
 let wasmHash = "abc123..."  // from install step
 
@@ -291,7 +320,7 @@ print("Available methods: \(client.methodNames)")
 ```swift
 import stellarsdk
 
-let sourceKeyPair = try KeyPair(secretSeed: "S_SECRET_KEY_HERE")
+let sourceKeyPair = try KeyPair(secretSeed: secretSeed) // secretSeed: your funded account's secret seed ("S...")
 let rpcUrl = "https://soroban-testnet.stellar.org"
 let wasmHash = "abc123..."  // from install step
 
@@ -333,13 +362,67 @@ print("Contract deployed at: \(client.contractId)")
 After deployment, you can also get the spec from the client:
 
 ```swift
+// client: a SorobanClient for the deployed contract (see above)
+// sourceKeyPair: your funded account's KeyPair
 let spec = client.getContractSpec()
 let args = try spec.funcArgsToXdrSCValues(name: "transfer", args: [
     "from": sourceKeyPair.accountId,
-    "to": "GDEST...",
+    "to": "GCZHXL5HXQX5ABDM26LHYRCQZ5OJFHLOPLZX47WEBP3V2PF5AVFK2A5D",
     "amount": 1000,
 ])
 ```
+
+### Deploy from an External Reference (Protocol 28)
+
+A CAP-85 external reference names an owner contract and a tag; the owner's persistent
+entry under that tag holds the wasm hash the new instance runs. There is no install
+step. `SorobanClient.deployFromExternalRef` resolves the reference before the
+transaction is built (an unresolvable reference throws `SorobanClientError.deployFailed`
+naming the owner and the tag), loads the spec from the resolved wasm, and returns a
+ready client:
+
+```swift
+import stellarsdk
+
+let sourceKeyPair = try KeyPair(secretSeed: secretSeed) // secretSeed: your funded account's secret seed ("S...")
+
+let client = try await SorobanClient.deployFromExternalRef(
+    deployRequest: DeployFromExternalRefRequest(
+        rpcUrl: "https://soroban-testnet.stellar.org",
+        network: Network.testnet,
+        sourceAccountKeyPair: sourceKeyPair,
+        executableOwner: "CB3FU6M3TOAGRBLN5WDLXL6A7VR5SSRGULMXQQOABNMPS25YRJ4CN5VV", // "C..." strkey or the 64 character hex of the id
+        tag: "token-v1", // matched byte for byte
+        enableServerLogging: false
+    )
+)
+// constructorArgs and salt work as in DeployRequest
+```
+
+`deployFromExternalRef` builds the `CREATE_CONTRACT_V2` host function form (empty
+constructor-argument vector when no args are given), as `deploy` does.
+`DeployFromExternalRefRequest.tag` is `Data` (an executable tag carries arbitrary
+bytes); the `String` initializer encodes a text tag as UTF-8 exactly once, and the same
+bytes resolve the owner's entry and build the create operation.
+
+The returned client's spec is a snapshot of the wasm the tag named at deployment time.
+Re-pointing the tag later changes the code the instance runs, not this client's spec;
+build a fresh client with `SorobanClient.forClientOptions` to pick up the new spec.
+
+The underlying create operations can be built directly with
+`InvokeHostFunctionOperation.forCreatingContractFromExternalRef(executableOwner:
+SCAddressXDR, tag: Data, address: SCAddressXDR, salt: WrappedData32? = nil,
+sourceAccountId: String? = nil)` and
+`forCreatingContractFromExternalRefWithConstructor(... constructorArguments: [SCValXDR]
+...)`, next to their wasm siblings; each has a `tag: String` overload encoding the text
+as UTF-8 once. Both builders throw
+`StellarSDKError.invalidArgument` for an `executableOwner` that is not a contract
+address.
+
+`ContractIdUtils.deriveContractId(deployer: SCAddressXDR, salt: Data, network: Network)
+throws -> String` returns the contract id ("C...") a deployment creates. The id derives
+from deployer, salt and network only (the executable does not enter it), so the address
+is known before deploying. The salt is 32 raw bytes, not hex.
 
 ### Invoke Contract Methods
 
@@ -348,9 +431,9 @@ let args = try spec.funcArgsToXdrSCValues(name: "transfer", args: [
 ```swift
 import stellarsdk
 
-let sourceKeyPair = try KeyPair(secretSeed: "S_SECRET_KEY_HERE")
+let sourceKeyPair = try KeyPair(secretSeed: secretSeed) // secretSeed: your funded account's secret seed ("S...")
 let rpcUrl = "https://soroban-testnet.stellar.org"
-let contractId = "CCONTRACTID..."
+let contractId = "CB3FU6M3TOAGRBLN5WDLXL6A7VR5SSRGULMXQQOABNMPS25YRJ4CN5VV" // example contract id — use your deployed contract's id
 
 let clientOptions = ClientOptions(
     sourceAccountKeyPair: sourceKeyPair,
@@ -370,7 +453,7 @@ if let balanceValue = balance.i128String {
 }
 
 // Write call (auto-signed and submitted)
-let toAddress = try SCAddressXDR(accountId: "GDEST...")
+let toAddress = try SCAddressXDR(accountId: "GCZHXL5HXQX5ABDM26LHYRCQZ5OJFHLOPLZX47WEBP3V2PF5AVFK2A5D") // the recipient's account id
 let amount = SCValXDR.i128(Int128PartsXDR(hi: 0, lo: 5_000_000_0))
 let transferResult = try await client.invokeMethod(
     name: "transfer",
@@ -388,12 +471,14 @@ print("Transfer result: \(transferResult)")
 ```swift
 import stellarsdk
 
+// client: a SorobanClient for the deployed contract (see above)
+// transferArgs: the SCValXDR argument list built as shown above
 let methodOptions = MethodOptions(
     fee: 10000,             // 10000 stroops
     timeoutInSeconds: 60,   // 1 minute validity
     simulate: true,         // auto-simulate (default)
     restore: true,          // auto-restore archived entries
-    useUpgradedAuth: false  // opt-in: request protocol-27 V2 credential arms (default false)
+    useUpgradedAuth: false  // legacy opt-out: request legacy ADDRESS credential arms (default true)
 )
 
 let result = try await client.invokeMethod(
@@ -403,7 +488,7 @@ let result = try await client.invokeMethod(
 )
 ```
 
-`useUpgradedAuth: true` adds `"useUpgradedAuth": true` to the simulation request so a protocol-27 RPC returns `ADDRESS_V2` credential arms; the key is omitted when `false`. Legacy `ADDRESS` remains the default and fully valid; emitting V2 arms on a pre-protocol-27 network invalidates the transaction. A supporting RPC records V2 arms; RPC servers without support silently ignore the flag and return legacy `ADDRESS` entries -- detect support by inspecting the credential arm of the returned entries, never by expecting an error.
+Simulation requests `ADDRESS_V2` credential arms by default (`useUpgradedAuth` is `true` and the key is always sent in the request); pass `false` for legacy `ADDRESS` entries. Legacy `ADDRESS` stays fully valid; emitting V2 arms on a pre-protocol-27 network invalidates the transaction, so opt out there. A supporting RPC records V2 arms; RPC servers without support silently ignore the flag and return legacy `ADDRESS` entries -- detect support by inspecting the credential arm of the returned entries, never by expecting an error.
 
 ## Low-Level API: InvokeHostFunctionOperation
 
@@ -413,8 +498,9 @@ For full control over transaction construction, use `InvokeHostFunctionOperation
 
 ```swift
 import stellarsdk
+import Foundation
 
-let sourceKeyPair = try KeyPair(secretSeed: "S_SECRET_KEY_HERE")
+let sourceKeyPair = try KeyPair(secretSeed: secretSeed) // secretSeed: your funded account's secret seed ("S...")
 let wasmData = try Data(contentsOf: URL(fileURLWithPath: "/path/to/contract.wasm"))
 let rpcUrl = "https://soroban-testnet.stellar.org"
 let server = SorobanServer(endpoint: rpcUrl)
@@ -492,11 +578,11 @@ let createOpV2 = try InvokeHostFunctionOperation.forCreatingContractWithConstruc
 import stellarsdk
 
 let invokeOp = try InvokeHostFunctionOperation.forInvokingContract(
-    contractId: "CCONTRACTID...",
+    contractId: "CB3FU6M3TOAGRBLN5WDLXL6A7VR5SSRGULMXQQOABNMPS25YRJ4CN5VV", // example contract id — use your deployed contract's id
     functionName: "transfer",
     functionArguments: [
-        SCValXDR.address(try SCAddressXDR(accountId: "GSOURCE...")),
-        SCValXDR.address(try SCAddressXDR(accountId: "GDEST...")),
+        SCValXDR.address(try SCAddressXDR(accountId: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ")), // source
+        SCValXDR.address(try SCAddressXDR(accountId: "GCZHXL5HXQX5ABDM26LHYRCQZ5OJFHLOPLZX47WEBP3V2PF5AVFK2A5D")), // destination
         SCValXDR.i128(Int128PartsXDR(hi: 0, lo: 1_000_000_0))
     ]
 )
@@ -507,7 +593,7 @@ let invokeOp = try InvokeHostFunctionOperation.forInvokingContract(
 ```swift
 import stellarsdk
 
-let usdcIssuer = try KeyPair(accountId: "GISSUER...")
+let usdcIssuer = try KeyPair(accountId: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ") // the asset issuer's account id
 let usdcAsset = Asset(type: AssetType.ASSET_TYPE_CREDIT_ALPHANUM4, code: "USDC", issuer: usdcIssuer)!
 let sacOp = try InvokeHostFunctionOperation.forDeploySACWithAsset(asset: usdcAsset)
 ```
@@ -552,12 +638,13 @@ Soroban supports multiple signers on a single transaction. Use `needsNonInvokerS
 ```swift
 import stellarsdk
 
-let aliceKeyPair = try KeyPair(secretSeed: "S_ALICE_SECRET")
-let bobKeyPair = try KeyPair(secretSeed: "S_BOB_SECRET")
+// swapClient: a SorobanClient for the deployed swap contract
+let aliceKeyPair = try KeyPair(secretSeed: aliceSecretSeed) // aliceSecretSeed: Alice's secret seed ("S...")
+let bobKeyPair = try KeyPair(secretSeed: bobSecretSeed) // bobSecretSeed: Bob's secret seed ("S...")
 let aliceId = aliceKeyPair.accountId
 let bobId = bobKeyPair.accountId
-let tokenAContractId = "CTOKENA..."
-let tokenBContractId = "CTOKENB..."
+let tokenAContractId = "CAQFZ2FHCOA3QLPDVU3XO44TM5TSTLRA7Q47FQADE53UUCJDODNTQIWP" // token A contract
+let tokenBContractId = "CBUXFDH3BH5VJKHZMBAR7LEILDY37SKZ7OCAQ7OIWBQANQUBQNPZ6PKG" // token B contract
 
 // Build swap arguments
 let args: [SCValXDR] = [
@@ -615,7 +702,7 @@ try await tx.signAuthEntries(
 
 ### Protocol 27 Credential Arms and Delegated Authorization (CAP-71)
 
-`SorobanCredentialsXDR` has four arms: `.sourceAccount`, `.address` (legacy, default), `.addressV2`, and `.addressWithDelegates` (both protocol 27). The new arms are opt-in; emitting them on a pre-protocol-27 network invalidates the transaction.
+`SorobanCredentialsXDR` has four arms: `.sourceAccount`, `.address` (legacy, valid on all protocols), `.addressV2` (the arm simulation requests by default), and `.addressWithDelegates` (both protocol 27). Emitting the newer arms on a pre-protocol-27 network invalidates the transaction; construction is arm-explicit through the enum cases.
 
 Key signatures:
 

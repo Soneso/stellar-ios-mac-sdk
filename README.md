@@ -2,7 +2,7 @@
 
 [![GitHub release](https://img.shields.io/github/v/release/Soneso/stellar-ios-mac-sdk)](https://github.com/Soneso/stellar-ios-mac-sdk/releases) [![Tests](https://github.com/Soneso/stellar-ios-mac-sdk/actions/workflows/tests.yml/badge.svg)](https://github.com/Soneso/stellar-ios-mac-sdk/actions/workflows/tests.yml) [![codecov](https://codecov.io/gh/Soneso/stellar-ios-mac-sdk/branch/master/graph/badge.svg)](https://codecov.io/gh/Soneso/stellar-ios-mac-sdk) [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/Soneso/stellar-ios-mac-sdk)
 
-Build and sign Stellar transactions, query [Horizon](https://developers.stellar.org/docs/data/apis/horizon), and interact with [Soroban](https://developers.stellar.org/docs/build/smart-contracts/overview) smart contracts via RPC. Communicate with anchors and external services using built-in support for 18 SEPs.
+Build and sign Stellar transactions, query [Horizon](https://developers.stellar.org/docs/data/apis/horizon), and interact with [Soroban](https://developers.stellar.org/docs/build/smart-contracts/overview) smart contracts via RPC. Communicate with anchors and external services using the built-in SEP protocol support.
 
 ## Installation
 
@@ -18,7 +18,7 @@ Build and sign Stellar transactions, query [Horizon](https://developers.stellar.
 pod 'stellar-ios-mac-sdk', '~> 3.9.0'
 ```
 
-Requires iOS 13+, macOS 10.15+, Swift 5.7+.
+Requires iOS 15+, macOS 12+, Xcode 16+ (Swift 6 toolchain). Your app can build in Swift 5 or Swift 6 language mode.
 
 ## Quick examples
 
@@ -59,10 +59,13 @@ let response = await sdk.transactions.submitTransaction(transaction: transaction
 Invoke a Soroban contract method:
 
 ```swift
+import stellarsdk
+
+// keyPair: your funded account's KeyPair (see "Create an account" above)
 let client = try await SorobanClient.forClientOptions(
     options: ClientOptions(
         sourceAccountKeyPair: keyPair,
-        contractId: "CABC...",
+        contractId: "CB3FU6M3TOAGRBLN5WDLXL6A7VR5SSRGULMXQQOABNMPS25YRJ4CN5VV", // your deployed contract's id
         network: .testnet,
         rpcUrl: "https://soroban-testnet.stellar.org",
         enableServerLogging: false

@@ -320,7 +320,9 @@ You can request a minimum expiration time using the `expireAfter` property. The 
 
 ```swift
 import stellarsdk
+import Foundation
 
+// jwtToken: SEP-10 JWT obtained via web authentication (see sep-10.md)
 let quoteService = QuoteService(serviceAddress: "https://anchor.example.com/sep38")
 
 // Request quote valid for at least 1 hour
@@ -366,7 +368,9 @@ Use `getQuote()` to retrieve a previously-created firm quote by its ID. This is 
 
 ```swift
 import stellarsdk
+import Foundation
 
+// jwtToken: SEP-10 JWT obtained via web authentication (see sep-10.md)
 let quoteService = QuoteService(serviceAddress: "https://anchor.example.com/sep38")
 
 // Use the ID from postQuote() response

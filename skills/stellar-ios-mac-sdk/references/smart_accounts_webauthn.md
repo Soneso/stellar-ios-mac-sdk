@@ -2,6 +2,8 @@
 
 Platform-injected `WebAuthnProvider` and `OZStorageAdapter` for `OZSmartAccountConfig`. Core kit operations live in [smart_accounts.md](./smart_accounts.md); signer, context-rule, policy, and multi-signer flows live in [smart_accounts_policies.md](./smart_accounts_policies.md).
 
+All examples assume `import stellarsdk`.
+
 Everything in this file is exposed by a single module import:
 
 ```swift
@@ -739,6 +741,7 @@ Most apps use `AppleWebAuthnProvider`. Reasons to implement your own: a determin
 
 ```swift
 import stellarsdk
+import Foundation
 
 final class MyCustomWebAuthnProvider: WebAuthnProvider, @unchecked Sendable {
     let rpId: String

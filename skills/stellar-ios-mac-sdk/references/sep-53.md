@@ -4,7 +4,16 @@
 **Prerequisites:** None
 **SDK Class:** `KeyPair`
 
+All examples assume `import stellarsdk`.
+
 SEP-53 defines a standard method for signing and verifying arbitrary messages. The protocol prepends `"Stellar Signed Message:\n"` to the message, hashes with SHA-256, and signs the hash with Ed25519. This prefix prevents signed messages from being confused with Stellar transaction signatures.
+
+- [API](#api)
+- [Usage](#usage)
+- [WRONG/CORRECT pitfalls](#wrongcorrect-pitfalls)
+- [Protocol internals](#protocol-internals)
+- [Test vectors](#test-vectors)
+- [Cross-platform compatibility](#cross-platform-compatibility)
 
 ## API
 
@@ -43,7 +52,7 @@ Throws `Ed25519Error.invalidSignatureLength` if `signature.count != 64`.
 ```swift
 import stellarsdk
 
-let keyPair = try KeyPair(secretSeed: "SABC...")
+let keyPair = try KeyPair.generateRandomKeyPair()
 
 // Sign
 let signature = try keyPair.signMessage("I agree to the terms of service")
@@ -59,11 +68,13 @@ Verification requires only the public key. This is the typical server-side flow.
 
 ```swift
 import stellarsdk
+import Foundation
 
 // Server: create keypair from account ID only — no private key needed
-let verifier = try KeyPair(accountId: "GABC...")
+let verifier = try KeyPair(accountId: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ")
 
 // Receive signature as base64 from client
+// receivedBase64: the client's signature, received base64-encoded
 let signature = [UInt8](Data(base64Encoded: receivedBase64)!)
 
 let isValid = try verifier.verifyMessage("I agree to the terms of service", signature: signature)
@@ -80,8 +91,9 @@ The message can be any binary content, not just text.
 
 ```swift
 import stellarsdk
+import Foundation
 
-let keyPair = try KeyPair(secretSeed: "SABC...")
+let keyPair = try KeyPair.generateRandomKeyPair()
 
 let fileBytes = [UInt8](try Data(contentsOf: URL(fileURLWithPath: "document.pdf")))
 let signature = try keyPair.signMessage(fileBytes)
@@ -94,8 +106,9 @@ let base64Signature = Data(signature).base64EncodedString()
 
 ```swift
 import stellarsdk
+import Foundation
 
-let keyPair = try KeyPair(secretSeed: "SABC...")
+let keyPair = try KeyPair.generateRandomKeyPair()
 let signature = try keyPair.signMessage("Hello")
 
 // WRONG: hexEncodedString() is deprecated
@@ -115,7 +128,7 @@ let isValid = try keyPair.verifyMessage("Hello", signature: sigBytes)
 import stellarsdk
 
 // Signing with a public-key-only keypair
-let publicOnly = try KeyPair(accountId: "GABC...")
+let publicOnly = try KeyPair(accountId: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ")
 do {
     let _ = try publicOnly.signMessage("test")
 } catch Ed25519Error.missingPrivateKey {
@@ -123,7 +136,7 @@ do {
 }
 
 // Verification with a malformed (wrong-length) signature
-let keyPair = try KeyPair(secretSeed: "SABC...")
+let keyPair = try KeyPair.generateRandomKeyPair()
 let shortSig = [UInt8](repeating: 0, count: 63)  // must be exactly 64 bytes
 do {
     let _ = try keyPair.verifyMessage("test", signature: shortSig)
@@ -183,6 +196,7 @@ These vectors come from the SDK's unit tests. All use the same keypair.
 
 ```swift
 import stellarsdk
+import Foundation
 
 let seed = "SAKICEVQLYWGSOJS4WW7HZJWAHZVEEBS527LHK5V4MLJALYKICQCJXMW"
 let keyPair = try KeyPair(secretSeed: seed)
@@ -208,22 +222,25 @@ assert(Data(sig3).base16EncodedString() ==
     "f8bd0c31bb2c0359b07c9651cb2ae104e4504657b5d17d43c69c7e50e23811b0d")
 
 // All vectors pass round-trip verification
-assert(try keyPair.verifyMessage("Hello, World!", signature: sig1))
-assert(try keyPair.verifyMessage("こんにちは、世界！", signature: sig2))
-assert(try keyPair.verifyMessage(binaryMsg, signature: sig3))
+let ok1 = try keyPair.verifyMessage("Hello, World!", signature: sig1)
+let ok2 = try keyPair.verifyMessage("こんにちは、世界！", signature: sig2)
+let ok3 = try keyPair.verifyMessage(binaryMsg, signature: sig3)
+assert(ok1 && ok2 && ok3)
 ```
 
 Signatures are deterministic: signing the same message twice with the same keypair produces identical bytes.
 
-## Cross-SDK compatibility
+## Cross-platform compatibility
 
-SEP-53 signatures are interoperable across all Stellar SDKs that implement the spec (Java, Python, Flutter, PHP, iOS). A signature produced by one SDK can be verified by any other.
+SEP-53 signatures are interoperable across implementations of the spec on any platform. A signature produced by one implementation can be verified by any other.
 
 ```swift
 import stellarsdk
+import Foundation
 
-// Verify a signature received from a Flutter/PHP/Python client
-let verifier = try KeyPair(accountId: "GABC...")
+// Verify a signature received from a SEP-53 implementation on another platform
+// signatureFromOtherSDK: that implementation's signature, received base64-encoded
+let verifier = try KeyPair(accountId: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ")
 let sig = [UInt8](Data(base64Encoded: signatureFromOtherSDK)!)
 let isValid = try verifier.verifyMessage("shared message", signature: sig)
 ```

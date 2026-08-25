@@ -4,6 +4,8 @@
 **Prerequisites:** Requires JWT from SEP-10 authentication; anchor must publish `TRANSFER_SERVER_SEP0024` in `stellar.toml`
 **SDK Class:** `InteractiveService`
 
+All examples assume `import stellarsdk`.
+
 ## Table of Contents
 
 - [Service Initialization](#service-initialization)
@@ -29,6 +31,7 @@
 
 ```swift
 import stellarsdk
+import Foundation
 
 let result = await InteractiveService.forDomain(domain: "https://testanchor.stellar.org")
 switch result {
@@ -237,10 +240,12 @@ case .failure(let error):
 ```swift
 import stellarsdk
 
+// service: InteractiveService from InteractiveService.forDomain(...)
+// jwtToken: SEP-10 JWT obtained via web authentication (see sep-10.md)
 var request = Sep24DepositRequest(jwt: jwtToken, assetCode: "USD")
 request.amount = "100.00"
 // Receive on a different account than the authenticated one
-request.account = "GXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+request.account = "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ"
 request.memo = "12345"
 request.memoType = "id"   // "text", "id", or "hash"
 request.lang = "en"
@@ -410,13 +415,21 @@ After the user completes the interactive flow, poll for `pending_user_transfer_s
 
 ```swift
 import stellarsdk
+import Foundation
 
+// service: InteractiveService from InteractiveService.forDomain(...)
+// jwtToken: SEP-10 JWT obtained via web authentication (see sep-10.md)
+// secretSeed: your funded account's secret seed ("S...")
+// issuerAccountId: the withdrawal asset issuer configured by the anchor
+// transactionId: anchor transaction id from a previous request
 // 1. Get transaction details
 var txRequest = Sep24TransactionRequest(jwt: jwtToken)
 txRequest.id = transactionId
 
 let txResult = await service.getTransaction(request: txRequest)
-guard case .success(let txResponse) = txResult else { return }
+guard case .success(let txResponse) = txResult else {
+    throw StellarSDKError.invalidArgument(message: "Could not load the anchor transaction")
+}
 let tx = txResponse.transaction
 
 // 2. Check if payment is needed
@@ -429,15 +442,19 @@ if tx.status == "pending_user_transfer_start",
     let sdk = StellarSDK.testNet()
     let senderKeyPair = try KeyPair(secretSeed: secretSeed)
     let accountEnum = await sdk.accounts.getAccountDetails(accountId: senderKeyPair.accountId)
-    guard case .success(let accountResponse) = accountEnum else { return }
+    guard case .success(let accountResponse) = accountEnum else {
+        throw StellarSDKError.invalidArgument(message: "Could not load the source account")
+    }
     let sourceAccount = try Account(
         accountId: accountResponse.accountId,
         sequenceNumber: accountResponse.sequenceNumber
     )
 
-    let issuerKeyPair = try KeyPair(accountId: "GISSUER...")
-    let asset = Asset(type: .ASSET_TYPE_CREDIT_ALPHANUM4, code: "USD", issuer: issuerKeyPair)!
-    guard let amount = Decimal(string: amountIn) else { return }
+    let issuerKeyPair = try KeyPair(accountId: issuerAccountId)
+    let asset = Asset(type: AssetType.ASSET_TYPE_CREDIT_ALPHANUM4, code: "USD", issuer: issuerKeyPair)!
+    guard let amount = Decimal(string: amountIn) else {
+        throw StellarSDKError.invalidArgument(message: "The anchor returned an invalid amount")
+    }
 
     let paymentOp = try PaymentOperation(
         sourceAccountId: nil,
@@ -595,7 +612,10 @@ Sep24TransactionsRequest(jwt: String, assetCode: String)
 
 ```swift
 import stellarsdk
+import Foundation
 
+// service: InteractiveService from InteractiveService.forDomain(...)
+// jwtToken: SEP-10 JWT obtained via web authentication (see sep-10.md)
 var request = Sep24TransactionsRequest(jwt: jwtToken, assetCode: "USD")
 request.limit = 10
 request.kind = "deposit"                              // omit for all kinds
@@ -906,9 +926,10 @@ case .failure(let error):
 **Wrong: setting `assetIssuer` for native XLM**
 
 ```swift
+// jwtToken: SEP-10 JWT obtained via web authentication (see sep-10.md)
 // WRONG: native assets have no issuer
-var request = Sep24DepositRequest(jwt: jwtToken, assetCode: "native")
-request.assetIssuer = "GABC..."  // anchor will reject
+var wrongRequest = Sep24DepositRequest(jwt: jwtToken, assetCode: "native")
+wrongRequest.assetIssuer = "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ"  // anchor will reject
 
 // CORRECT: omit assetIssuer for native
 var request = Sep24DepositRequest(jwt: jwtToken, assetCode: "native")
