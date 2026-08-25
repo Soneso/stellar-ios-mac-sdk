@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          stellarsdk 3.9.0 Docs
+          stellarsdk 3.10.0 Docs
         </a>
          (94% documented)
       </p>
@@ -293,6 +293,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes/DataUpdatedEffectResponse.html">DataUpdatedEffectResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/DeployFromExternalRefRequest.html">DeployFromExternalRefRequest</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes/DeployRequest.html">DeployRequest</a>
@@ -1004,6 +1007,9 @@
                 <a class="nav-group-task-link" href="../Enums/ContractChallengeValidationError.html">ContractChallengeValidationError</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/ContractIdUtils.html">ContractIdUtils</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Enums/ContractSpecError.html">ContractSpecError</a>
               </li>
               <li class="nav-group-task">
@@ -1071,6 +1077,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Enums/GetEventsResponseEnum.html">GetEventsResponseEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/GetExternalRefWasmHashResponseEnum.html">GetExternalRefWasmHashResponseEnum</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Enums/GetFeeStatsResponseEnum.html">GetFeeStatsResponseEnum</a>
@@ -2937,9 +2946,9 @@
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:SS10stellarsdkE20wrappedData32FromHexAA07WrappedC0VyF"></a>
-                    <a name="//apple_ref/swift/Method/wrappedData32FromHex()" class="dashAnchor"></a>
-                    <a class="token" href="#/s:SS10stellarsdkE20wrappedData32FromHexAA07WrappedC0VyF">wrappedData32FromHex()</a>
+                    <a name="/s:SS10stellarsdkE20wrappedData32FromHex6idKindAA07WrappedC0VSS_tKF"></a>
+                    <a name="//apple_ref/swift/Method/wrappedData32FromHex(idKind:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:SS10stellarsdkE20wrappedData32FromHex6idKindAA07WrappedC0VSS_tKF">wrappedData32FromHex(idKind:<wbr>)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -2947,26 +2956,53 @@
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Converts a hexadecimal string to WrappedData32.</p>
+                        <p>Reads the hexadecimal spelling of a 32 byte id.</p>
 
-<p>Removes leading zeros and converts the hex string to 32-byte wrapped data.
-Used for Soroban contract data encoding.</p>
+<p>The string must hold exactly the 64 hexadecimal characters those 32 bytes are wide,
+with no &ldquo;0x&rdquo; prefix. A string of any other width spells an id of another size, and a
+character outside the hexadecimal alphabet spells no byte at all; both are refused,
+because a 32 byte id derived from them would name a ledger entry the caller never wrote.</p>
+<div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    StellarSDKError.invalidArgument if the string is not exactly 64 hexadecimal
+characters
+
+</div>
 
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">wrappedData32FromHex</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Structs/WrappedData32.html">WrappedData32</a></span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">wrappedData32FromHex</span><span class="p">(</span><span class="nv">idKind</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Structs/WrappedData32.html">WrappedData32</a></span></code></pre>
 
                         </div>
                       </div>
                       <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>idKind</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>the name the id goes by in the error message, e.g. &ldquo;contract id&rdquo;</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
                         <h4>Return Value</h4>
-                        <p>WrappedData32 representation of the hex string</p>
+                        <p>the 32 bytes the string spells</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/extensions/String+Encoding.swift#L109-L135">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/extensions/String+Encoding.swift#L114-L126">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3647,7 +3683,8 @@ Used for Soroban contract data encoding.</p>
                         <p>Encodes a contract id from its hex representation into its strkey representation (&ldquo;C&hellip;&rdquo;).</p>
 <div class="aside aside-throws">
     <p class="aside-title">Throws</p>
-    StellarSDKError if the string is not valid hexadecimal
+    StellarSDKError.invalidArgument if the string is not valid hexadecimal, or
+if it does not hold the 32 bytes a contract id is wide
 
 </div>
 
@@ -3665,7 +3702,7 @@ Used for Soroban contract data encoding.</p>
                         <p>StrKey encoded contract id</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/extensions/String+KeyUtils.swift#L172-L177">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/extensions/String+KeyUtils.swift#L173-L178">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3686,7 +3723,10 @@ Used for Soroban contract data encoding.</p>
                         <p>Encodes a claimable balance id from its hex representation into its strkey representation (&ldquo;B&hellip;&rdquo;).</p>
 <div class="aside aside-throws">
     <p class="aside-title">Throws</p>
-    StellarSDKError if the string is not valid hexadecimal
+    StellarSDKError.invalidArgument if the string is not valid hexadecimal, or
+if it holds neither the 32 bytes an id is wide, nor the 33 bytes of a body opening
+with the claimable balance type discriminant, nor the 36 bytes of the XDR encoding
+opening with the four byte union discriminant, the shape Horizon reports
 
 </div>
 
@@ -3704,7 +3744,7 @@ Used for Soroban contract data encoding.</p>
                         <p>StrKey encoded claimable balance id</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/extensions/String+KeyUtils.swift#L183-L188">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/extensions/String+KeyUtils.swift#L187-L192">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3725,7 +3765,8 @@ Used for Soroban contract data encoding.</p>
                         <p>Encodes a liquidity pool id from its hex representation into its strkey representation (&ldquo;L&hellip;&rdquo;).</p>
 <div class="aside aside-throws">
     <p class="aside-title">Throws</p>
-    StellarSDKError if the string is not valid hexadecimal
+    StellarSDKError.invalidArgument if the string is not valid hexadecimal, or
+if it does not hold the 32 bytes a liquidity pool id is wide
 
 </div>
 
@@ -3743,7 +3784,7 @@ Used for Soroban contract data encoding.</p>
                         <p>StrKey encoded liquidity pool id</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/extensions/String+KeyUtils.swift#L194-L199">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/extensions/String+KeyUtils.swift#L199-L204">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3777,7 +3818,7 @@ Used for Soroban contract data encoding.</p>
                         <p>True if the string is valid hexadecimal, false otherwise</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/extensions/String+KeyUtils.swift#L204-L209">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/extensions/String+KeyUtils.swift#L209-L214">Show on GitHub</a>
                       </div>
                     </section>
                   </div>

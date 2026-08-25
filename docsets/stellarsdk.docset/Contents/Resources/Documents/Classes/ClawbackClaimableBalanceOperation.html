@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          stellarsdk 3.9.0 Docs
+          stellarsdk 3.10.0 Docs
         </a>
          (94% documented)
       </p>
@@ -293,6 +293,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes/DataUpdatedEffectResponse.html">DataUpdatedEffectResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/DeployFromExternalRefRequest.html">DeployFromExternalRefRequest</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes/DeployRequest.html">DeployRequest</a>
@@ -1004,6 +1007,9 @@
                 <a class="nav-group-task-link" href="../Enums/ContractChallengeValidationError.html">ContractChallengeValidationError</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/ContractIdUtils.html">ContractIdUtils</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Enums/ContractSpecError.html">ContractSpecError</a>
               </li>
               <li class="nav-group-task">
@@ -1071,6 +1077,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Enums/GetEventsResponseEnum.html">GetEventsResponseEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/GetExternalRefWasmHashResponseEnum.html">GetExternalRefWasmHashResponseEnum</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Enums/GetFeeStatsResponseEnum.html">GetFeeStatsResponseEnum</a>
@@ -2310,7 +2319,7 @@
             <p>Represents a Stellar clawback claimable balance operation allowing issuers to reclaim unclaimedbalances.</p>
 
               <div class="slightly-smaller">
-                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/ClawbackClaimableBalanceOperation.swift#L12-L43">Show on GitHub</a>
+                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/ClawbackClaimableBalanceOperation.swift#L12-L44">Show on GitHub</a>
               </div>
           </div>
         </section>
@@ -2334,6 +2343,10 @@
                       <div class="abstract">
                         <p>The claimable balance id to be clawed back.</p>
 
+<p>An operation read from XDR reports the 72-character form Horizon serves: the four-byte
+big-endian union discriminant ahead of the 32-byte hash. An operation built from a
+string reports that string as given.</p>
+
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
@@ -2344,7 +2357,7 @@
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/ClawbackClaimableBalanceOperation.swift#L15">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/ClawbackClaimableBalanceOperation.swift#L19">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2385,7 +2398,7 @@
                               </td>
                               <td>
                                 <div>
-                                  <p>The claimable balance id to be claimed.</p>
+                                  <p>The claimable balance id to be clawed back.</p>
                                 </div>
                               </td>
                             </tr>
@@ -2405,7 +2418,7 @@
                         </table>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/ClawbackClaimableBalanceOperation.swift#L21-L24">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/ClawbackClaimableBalanceOperation.swift#L25-L28">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2466,7 +2479,7 @@
                         </table>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/ClawbackClaimableBalanceOperation.swift#L30-L36">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/ClawbackClaimableBalanceOperation.swift#L34-L37">Show on GitHub</a>
                       </div>
                     </section>
                   </div>

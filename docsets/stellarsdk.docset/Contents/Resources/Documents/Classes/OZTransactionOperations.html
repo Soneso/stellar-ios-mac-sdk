@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          stellarsdk 3.9.0 Docs
+          stellarsdk 3.10.0 Docs
         </a>
          (94% documented)
       </p>
@@ -293,6 +293,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes/DataUpdatedEffectResponse.html">DataUpdatedEffectResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/DeployFromExternalRefRequest.html">DeployFromExternalRefRequest</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes/DeployRequest.html">DeployRequest</a>
@@ -1004,6 +1007,9 @@
                 <a class="nav-group-task-link" href="../Enums/ContractChallengeValidationError.html">ContractChallengeValidationError</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/ContractIdUtils.html">ContractIdUtils</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Enums/ContractSpecError.html">ContractSpecError</a>
               </li>
               <li class="nav-group-task">
@@ -1071,6 +1077,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Enums/GetEventsResponseEnum.html">GetEventsResponseEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/GetExternalRefWasmHashResponseEnum.html">GetExternalRefWasmHashResponseEnum</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Enums/GetFeeStatsResponseEnum.html">GetFeeStatsResponseEnum</a>
@@ -2327,7 +2336,7 @@ reflect the real WebAuthn signature payload size.</p>
 <code>kit.transactionOperations</code>.</p>
 
               <div class="slightly-smaller">
-                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZTransactionOperations.swift#L94-L1819">Show on GitHub</a>
+                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZTransactionOperations.swift#L94-L1836">Show on GitHub</a>
               </div>
           </div>
         </section>
@@ -2920,8 +2929,10 @@ placeholders the initial simulation used.</p>
 XLM balance via the native token contract, and transfers the surplus
 (balance minus the protocol minimum-balance reserve) to the smart account
 contract. Source-account authorization entries from the transfer
-simulation are converted to classical Ed25519 <code>Address</code> credentials so
-the relayer can substitute its own channel accounts for fee sponsoring.</p>
+simulation are converted to address credentials carrying the temporary
+account address, so the relayer can substitute its own channel accounts
+for fee sponsoring. <code><a href="../Structs/OZSmartAccountConfig.html#/s:10stellarsdk20OZSmartAccountConfigV15useUpgradedAuthSbvp">useUpgradedAuth</a></code> selects the
+<code>ADDRESS_V2</code> or the legacy <code>ADDRESS</code> arm for the replacement credentials.</p>
 
 <p>The conversion uses the classical Stellar Ed25519 signature shape
 (<code>Vec([Map({public_key, signature})])</code>), NOT the OpenZeppelin AuthPayload
@@ -2983,7 +2994,7 @@ classical Stellar account, not a smart account.</p>
 <code>&quot;12.34567&quot;</code>). Trailing zeroes in the fractional component are trimmed.</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZTransactionOperations.swift#L696-L851">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZTransactionOperations.swift#L698-L853">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3075,7 +3086,7 @@ A value of <code>0</code> accepts only integer amounts and rejects any fractiona
 with no leading zeros (except the single digit <code>&quot;0&quot;</code>).</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZTransactionOperations.swift#L1534-L1610">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZTransactionOperations.swift#L1551-L1627">Show on GitHub</a>
                       </div>
                     </section>
                   </div>

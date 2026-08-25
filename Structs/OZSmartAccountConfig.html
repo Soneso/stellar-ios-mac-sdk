@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          stellarsdk 3.9.0 Docs
+          stellarsdk 3.10.0 Docs
         </a>
          (94% documented)
       </p>
@@ -293,6 +293,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes/DataUpdatedEffectResponse.html">DataUpdatedEffectResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/DeployFromExternalRefRequest.html">DeployFromExternalRefRequest</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes/DeployRequest.html">DeployRequest</a>
@@ -1004,6 +1007,9 @@
                 <a class="nav-group-task-link" href="../Enums/ContractChallengeValidationError.html">ContractChallengeValidationError</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/ContractIdUtils.html">ContractIdUtils</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Enums/ContractSpecError.html">ContractSpecError</a>
               </li>
               <li class="nav-group-task">
@@ -1071,6 +1077,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Enums/GetEventsResponseEnum.html">GetEventsResponseEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/GetExternalRefWasmHashResponseEnum.html">GetExternalRefWasmHashResponseEnum</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Enums/GetFeeStatsResponseEnum.html">GetFeeStatsResponseEnum</a>
@@ -2340,7 +2349,7 @@ example, <code>accountWasmHash</code> is not a 64-character hex string, or
 <code>webauthnVerifierAddress</code> is not a valid C-address).</p>
 
               <div class="slightly-smaller">
-                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountConfig.swift#L44-L552">Show on GitHub</a>
+                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountConfig.swift#L44-L613">Show on GitHub</a>
               </div>
           </div>
         </section>
@@ -2910,6 +2919,86 @@ default. Defaults to no policies.</p>
                     </section>
                   </div>
                 </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10stellarsdk20OZSmartAccountConfigV15useUpgradedAuthSbvp"></a>
+                    <a name="//apple_ref/swift/Property/useUpgradedAuth" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk20OZSmartAccountConfigV15useUpgradedAuthSbvp">useUpgradedAuth</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Governs the credential arm of the kit&rsquo;s internal simulations and of the
+<code>fundWallet</code> source-account conversion.</p>
+
+<p>When <code>true</code> (the default), the kit requests <code>ADDRESS_V2</code> entries from
+simulation and the <code>fundWallet</code> conversion replaces source-account
+credentials with the <code>ADDRESS_V2</code> arm, signing the address-bound
+<code>ENVELOPE_TYPE_SOROBAN_AUTHORIZATION_WITH_ADDRESS</code> preimage. When <code>false</code>,
+simulation is asked for legacy entries and the conversion emits the legacy
+<code>ADDRESS</code> arm over the <code>ENVELOPE_TYPE_SOROBAN_AUTHORIZATION</code> preimage, for
+relayer services that parse submitted auth XDR with pre-protocol-27 schemas
+and reject the V2 credential discriminant.</p>
+
+<p>Separate from <code><a href="../Structs/OZSmartAccountConfig.html#/s:10stellarsdk20OZSmartAccountConfigV31useUpgradedAuthForWalletSignersSbvp">useUpgradedAuthForWalletSigners</a></code>, which governs only the
+delegated external-wallet entries the kit hands to wallet software to sign.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">let</span> <span class="nv">useUpgradedAuth</span><span class="p">:</span> <span class="kt">Bool</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountConfig.swift#L168">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10stellarsdk20OZSmartAccountConfigV31useUpgradedAuthForWalletSignersSbvp"></a>
+                    <a name="//apple_ref/swift/Property/useUpgradedAuthForWalletSigners" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk20OZSmartAccountConfigV31useUpgradedAuthForWalletSignersSbvp">useUpgradedAuthForWalletSigners</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Governs the credential arm of delegated external-wallet auth entries.</p>
+
+<p>When <code>true</code>, delegated entries built for <code><a href="../Enums/OZSelectedSigner.html#/s:10stellarsdk16OZSelectedSignerO6walletyACSS_tcACmF">wallet(accountId:)</a></code>
+signers carry upgraded <code>ADDRESS_V2</code> credentials, whose signed preimage
+(<code>ENVELOPE_TYPE_SOROBAN_AUTHORIZATION_WITH_ADDRESS</code>: <code>networkID</code>, <code>nonce</code>,
+<code>signatureExpirationLedger</code>, <code>address</code>, <code>invocation</code>) carries the wallet address.
+When <code>false</code>, they carry the legacy <code>ADDRESS</code> arm with its non-address-bound
+preimage, for wallet software that cannot sign the address-bound preimage type.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">let</span> <span class="nv">useUpgradedAuthForWalletSigners</span><span class="p">:</span> <span class="kt">Bool</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountConfig.swift#L178">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
               </ul>
             </div>
             <div class="task-group">
@@ -2926,9 +3015,9 @@ default. Defaults to no policies.</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10stellarsdk20OZSmartAccountConfigV6rpcUrl17networkPassphrase15accountWasmHash23webauthnVerifierAddress15deployerKeypair15sessionExpiryMs26signatureExpirationLedgers16timeoutInSeconds07relayerF007indexerF00L8Provider7storage14externalWallet22externalEd25519Adapter20maxContextRuleScanId15defaultPoliciesACSS_S3SAA7KeyPairCSgs5Int64VS2iSSSgAyA16WebAuthnProvider_pSgAA16OZStorageAdapter_pAA23OZExternalWalletAdapter_pSgAA30OZExternalEd25519SignerAdapter_pSgs6UInt32VSDySSAA8SCValXDROGtKcfc"></a>
-                    <a name="//apple_ref/swift/Method/init(rpcUrl:networkPassphrase:accountWasmHash:webauthnVerifierAddress:deployerKeypair:sessionExpiryMs:signatureExpirationLedgers:timeoutInSeconds:relayerUrl:indexerUrl:webauthnProvider:storage:externalWallet:externalEd25519Adapter:maxContextRuleScanId:defaultPolicies:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10stellarsdk20OZSmartAccountConfigV6rpcUrl17networkPassphrase15accountWasmHash23webauthnVerifierAddress15deployerKeypair15sessionExpiryMs26signatureExpirationLedgers16timeoutInSeconds07relayerF007indexerF00L8Provider7storage14externalWallet22externalEd25519Adapter20maxContextRuleScanId15defaultPoliciesACSS_S3SAA7KeyPairCSgs5Int64VS2iSSSgAyA16WebAuthnProvider_pSgAA16OZStorageAdapter_pAA23OZExternalWalletAdapter_pSgAA30OZExternalEd25519SignerAdapter_pSgs6UInt32VSDySSAA8SCValXDROGtKcfc">init(rpcUrl:<wbr>networkPassphrase:<wbr>accountWasmHash:<wbr>webauthnVerifierAddress:<wbr>deployerKeypair:<wbr>sessionExpiryMs:<wbr>signatureExpirationLedgers:<wbr>timeoutInSeconds:<wbr>relayerUrl:<wbr>indexerUrl:<wbr>webauthnProvider:<wbr>storage:<wbr>externalWallet:<wbr>externalEd25519Adapter:<wbr>maxContextRuleScanId:<wbr>defaultPolicies:<wbr>)</a>
+                    <a name="/s:10stellarsdk20OZSmartAccountConfigV6rpcUrl17networkPassphrase15accountWasmHash23webauthnVerifierAddress15deployerKeypair15sessionExpiryMs26signatureExpirationLedgers16timeoutInSeconds07relayerF007indexerF00L8Provider7storage14externalWallet22externalEd25519Adapter20maxContextRuleScanId15defaultPolicies15useUpgradedAuth31useUpgradedAuthForWalletSignersACSS_S3SAA7KeyPairCSgs5Int64VS2iSSSgA_AA16WebAuthnProvider_pSgAA16OZStorageAdapter_pAA23OZExternalWalletAdapter_pSgAA30OZExternalEd25519SignerAdapter_pSgs6UInt32VSDySSAA8SCValXDROGS2btKcfc"></a>
+                    <a name="//apple_ref/swift/Method/init(rpcUrl:networkPassphrase:accountWasmHash:webauthnVerifierAddress:deployerKeypair:sessionExpiryMs:signatureExpirationLedgers:timeoutInSeconds:relayerUrl:indexerUrl:webauthnProvider:storage:externalWallet:externalEd25519Adapter:maxContextRuleScanId:defaultPolicies:useUpgradedAuth:useUpgradedAuthForWalletSigners:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk20OZSmartAccountConfigV6rpcUrl17networkPassphrase15accountWasmHash23webauthnVerifierAddress15deployerKeypair15sessionExpiryMs26signatureExpirationLedgers16timeoutInSeconds07relayerF007indexerF00L8Provider7storage14externalWallet22externalEd25519Adapter20maxContextRuleScanId15defaultPolicies15useUpgradedAuth31useUpgradedAuthForWalletSignersACSS_S3SAA7KeyPairCSgs5Int64VS2iSSSgA_AA16WebAuthnProvider_pSgAA16OZStorageAdapter_pAA23OZExternalWalletAdapter_pSgAA30OZExternalEd25519SignerAdapter_pSgs6UInt32VSDySSAA8SCValXDROGS2btKcfc">init(rpcUrl:<wbr>networkPassphrase:<wbr>accountWasmHash:<wbr>webauthnVerifierAddress:<wbr>deployerKeypair:<wbr>sessionExpiryMs:<wbr>signatureExpirationLedgers:<wbr>timeoutInSeconds:<wbr>relayerUrl:<wbr>indexerUrl:<wbr>webauthnProvider:<wbr>storage:<wbr>externalWallet:<wbr>externalEd25519Adapter:<wbr>maxContextRuleScanId:<wbr>defaultPolicies:<wbr>useUpgradedAuth:<wbr>useUpgradedAuthForWalletSigners:<wbr>)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -2966,13 +3055,15 @@ default. Defaults to no policies.</p>
     <span class="nv">externalWallet</span><span class="p">:</span> <span class="kt"><a href="../Protocols/OZExternalWalletAdapter.html">OZExternalWalletAdapter</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
     <span class="nv">externalEd25519Adapter</span><span class="p">:</span> <span class="kt"><a href="../Protocols/OZExternalEd25519SignerAdapter.html">OZExternalEd25519SignerAdapter</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
     <span class="nv">maxContextRuleScanId</span><span class="p">:</span> <span class="kt">UInt32</span> <span class="o">=</span> <span class="mi">50</span><span class="p">,</span>
-    <span class="n"><a href="../Structs/OZSmartAccountConfig.html#/s:10stellarsdk20OZSmartAccountConfigV15defaultPoliciesSDySSAA8SCValXDROGvp">defaultPolicies</a></span><span class="p">:</span> <span class="p">[</span><span class="kt">String</span><span class="p">:</span> <span class="kt">SCValXDR</span><span class="p">]</span> <span class="o">=</span> <span class="p">[:]</span>
+    <span class="n"><a href="../Structs/OZSmartAccountConfig.html#/s:10stellarsdk20OZSmartAccountConfigV15defaultPoliciesSDySSAA8SCValXDROGvp">defaultPolicies</a></span><span class="p">:</span> <span class="p">[</span><span class="kt">String</span><span class="p">:</span> <span class="kt">SCValXDR</span><span class="p">]</span> <span class="o">=</span> <span class="p">[:],</span>
+    <span class="nv">useUpgradedAuth</span><span class="p">:</span> <span class="kt">Bool</span> <span class="o">=</span> <span class="kc">true</span><span class="p">,</span>
+    <span class="nv">useUpgradedAuthForWalletSigners</span><span class="p">:</span> <span class="kt">Bool</span> <span class="o">=</span> <span class="kc">true</span>
 <span class="p">)</span> <span class="k">throws</span></code></pre>
 
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountConfig.swift#L161-L237">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountConfig.swift#L187-L267">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3032,7 +3123,7 @@ Production apps typically supply a custom deployer for attribution and traceabil
                         <p>A deterministic <code><a href="../Classes/KeyPair.html">KeyPair</a></code> for contract deployment.</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountConfig.swift#L250-L265">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountConfig.swift#L280-L295">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3127,7 +3218,7 @@ Production apps typically supply a custom deployer for attribution and traceabil
        applied to every optional field.</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountConfig.swift#L276-L288">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountConfig.swift#L306-L318">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3186,7 +3277,7 @@ Production apps typically supply a custom deployer for attribution and traceabil
                         <p>The configured deployer or the default deterministic deployer.</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountConfig.swift#L300-L305">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountConfig.swift#L330-L335">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3225,7 +3316,7 @@ no URL is configured and no default exists for the network.</p>
                         <p>The resolved indexer URL, or <code>nil</code>.</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountConfig.swift#L315-L320">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountConfig.swift#L345-L350">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3283,7 +3374,7 @@ no URL is configured and no default exists for the network.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountConfig.swift#L359-L551">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountConfig.swift#L389-L612">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3333,7 +3424,7 @@ canonical XDR encoding.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountConfig.swift#L566-L599">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountConfig.swift#L627-L662">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3362,7 +3453,7 @@ canonical XDR encoding.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountConfig.swift#L601-L635">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountConfig.swift#L664-L700">Show on GitHub</a>
                       </div>
                     </section>
                   </div>

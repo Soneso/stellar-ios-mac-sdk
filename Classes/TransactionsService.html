@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          stellarsdk 3.9.0 Docs
+          stellarsdk 3.10.0 Docs
         </a>
          (94% documented)
       </p>
@@ -293,6 +293,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes/DataUpdatedEffectResponse.html">DataUpdatedEffectResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/DeployFromExternalRefRequest.html">DeployFromExternalRefRequest</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes/DeployRequest.html">DeployRequest</a>
@@ -1004,6 +1007,9 @@
                 <a class="nav-group-task-link" href="../Enums/ContractChallengeValidationError.html">ContractChallengeValidationError</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/ContractIdUtils.html">ContractIdUtils</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Enums/ContractSpecError.html">ContractSpecError</a>
               </li>
               <li class="nav-group-task">
@@ -1071,6 +1077,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Enums/GetEventsResponseEnum.html">GetEventsResponseEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/GetExternalRefWasmHashResponseEnum.html">GetExternalRefWasmHashResponseEnum</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Enums/GetFeeStatsResponseEnum.html">GetFeeStatsResponseEnum</a>
@@ -2343,7 +2352,7 @@ and asynchronous transaction submission modes.</p>
 </ul>
 
               <div class="slightly-smaller">
-                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TransactionsService.swift#L98-L541">Show on GitHub</a>
+                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TransactionsService.swift#L98-L545">Show on GitHub</a>
               </div>
           </div>
         </section>
@@ -2563,7 +2572,8 @@ and asynchronous transaction submission modes.</p>
                               </td>
                               <td>
                                 <div>
-                                  <p>The claimable balance ID (hex or B-prefixed format, auto-decoded)</p>
+                                  <p>The claimable balance ID, as a &ldquo;B&hellip;&rdquo; strkey or as hex
+in any of its widths</p>
                                 </div>
                               </td>
                             </tr>
@@ -2608,10 +2618,11 @@ and asynchronous transaction submission modes.</p>
                       </div>
                       <div>
                         <h4>Return Value</h4>
-                        <p>PageResponse containing transaction records or error</p>
+                        <p>PageResponse containing transaction records, or a badRequest error naming
+the reason when the id holds none of those spellings</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TransactionsService.swift#L141-L149">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TransactionsService.swift#L143-L152">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2703,7 +2714,7 @@ and asynchronous transaction submission modes.</p>
                         <p>PageResponse containing transaction records or error</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TransactionsService.swift#L158-L165">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TransactionsService.swift#L161-L168">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2795,7 +2806,7 @@ and asynchronous transaction submission modes.</p>
                         <p>PageResponse containing transaction records or error</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TransactionsService.swift#L174-L177">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TransactionsService.swift#L177-L180">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2851,7 +2862,7 @@ and asynchronous transaction submission modes.</p>
                         <p>TransactionDetailsResponseEnum with transaction details or error</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TransactionsService.swift#L183-L199">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TransactionsService.swift#L186-L202">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2919,7 +2930,7 @@ and asynchronous transaction submission modes.</p>
                         <p>TransactionPostResponseEnum with submission result, memo requirement notice, or error</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TransactionsService.swift#L206-L214">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TransactionsService.swift#L209-L217">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2989,7 +3000,7 @@ and asynchronous transaction submission modes.</p>
                         <p>TransactionPostAsyncResponseEnum with async submission result, memo requirement notice, or error</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TransactionsService.swift#L223-L231">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TransactionsService.swift#L226-L234">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3045,7 +3056,7 @@ and asynchronous transaction submission modes.</p>
                         <p>TransactionPostResponseEnum with submission result or error</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TransactionsService.swift#L237-L245">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TransactionsService.swift#L240-L248">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3101,7 +3112,7 @@ and asynchronous transaction submission modes.</p>
                         <p>TransactionPostAsyncResponseEnum with async submission result or error</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TransactionsService.swift#L251-L259">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TransactionsService.swift#L254-L262">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3169,7 +3180,7 @@ and asynchronous transaction submission modes.</p>
                         <p>TransactionPostResponseEnum with submission result, memo requirement notice, or error</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TransactionsService.swift#L266-L280">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TransactionsService.swift#L269-L283">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3237,7 +3248,7 @@ and asynchronous transaction submission modes.</p>
                         <p>TransactionPostAsyncResponseEnum with async submission result, memo requirement notice, or error</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TransactionsService.swift#L287-L302">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TransactionsService.swift#L290-L305">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3290,7 +3301,7 @@ and asynchronous transaction submission modes.</p>
                         <p>TransactionsStreamItem for receiving streaming transaction updates</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TransactionsService.swift#L463-L495">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TransactionsService.swift#L466-L499">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3348,7 +3359,7 @@ and asynchronous transaction submission modes.</p>
                         <p>PageResponse containing transaction records or error</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TransactionsService.swift#L526-L540">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TransactionsService.swift#L530-L544">Show on GitHub</a>
                       </div>
                     </section>
                   </div>

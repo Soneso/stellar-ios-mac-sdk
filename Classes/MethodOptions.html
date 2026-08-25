@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          stellarsdk 3.9.0 Docs
+          stellarsdk 3.10.0 Docs
         </a>
          (94% documented)
       </p>
@@ -293,6 +293,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes/DataUpdatedEffectResponse.html">DataUpdatedEffectResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/DeployFromExternalRefRequest.html">DeployFromExternalRefRequest</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes/DeployRequest.html">DeployRequest</a>
@@ -1004,6 +1007,9 @@
                 <a class="nav-group-task-link" href="../Enums/ContractChallengeValidationError.html">ContractChallengeValidationError</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/ContractIdUtils.html">ContractIdUtils</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Enums/ContractSpecError.html">ContractSpecError</a>
               </li>
               <li class="nav-group-task">
@@ -1071,6 +1077,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Enums/GetEventsResponseEnum.html">GetEventsResponseEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/GetExternalRefWasmHashResponseEnum.html">GetExternalRefWasmHashResponseEnum</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Enums/GetFeeStatsResponseEnum.html">GetFeeStatsResponseEnum</a>
@@ -2319,7 +2328,7 @@ contract methods through SorobanClient or AssembledTransaction.</p>
 <li>Timeout: Transaction validity window (default: 300 seconds)</li>
 <li>Simulate: Auto-simulate before submission (default: true)</li>
 <li>Restore: Auto-restore archived entries if needed (default: false)</li>
-<li>UseUpgradedAuth: Request protocol-27 V2 credential arms in the simulation response (default: false)</li>
+<li>UseUpgradedAuth: Request protocol-27 V2 credential arms in the simulation response (default: true)</li>
 </ul>
 
 <p>Example:</p>
@@ -2489,13 +2498,13 @@ contract methods through SorobanClient or AssembledTransaction.</p>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Request protocol-27 V2 credential arms in the simulation response. Default false.</p>
+                        <p>Selects the credential arm the simulation records. Default true.</p>
 
-<p>When <code>true</code>, the simulation request includes <code>&quot;useUpgradedAuth&quot;: true</code>, which instructs a
-protocol-27 RPC to return <code>ADDRESS_V2</code> credential arms.
-The key is omitted entirely when <code>false</code>. Emitting V2 on a pre-27 network invalidates
-the transaction. RPC servers without protocol-27 support silently ignore this flag and
-return legacy <code>ADDRESS</code> entries.</p>
+<p>When <code>true</code> (the default), the simulation requests <code>ADDRESS_V2</code> credential arms; when
+<code>false</code>, legacy <code>ADDRESS</code> arms. The flag is forwarded to the simulation request and
+always sent in the JSON-RPC params. Set to <code>false</code> on a network below protocol 27,
+where V2 arms invalidate the transaction. RPC servers without protocol-27 support
+silently ignore this flag and return legacy <code>ADDRESS</code> entries.</p>
 
                       </div>
                       <div class="declaration">
@@ -2532,7 +2541,7 @@ return legacy <code>ADDRESS</code> entries.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="nf">init</span><span class="p">(</span><span class="nv">fee</span><span class="p">:</span> <span class="kt">UInt32</span> <span class="o">=</span> <span class="kt"><a href="../Classes/Transaction.html">Transaction</a></span><span class="o">.</span><span class="n">minBaseFee</span><span class="p">,</span> <span class="nv">timeoutInSeconds</span><span class="p">:</span> <span class="kt">UInt64</span> <span class="o">=</span> <span class="kt"><a href="../Structs/NetworkConstants.html">NetworkConstants</a></span><span class="o">.</span><span class="kt">DEFAULT_TIMEOUT_SECONDS</span><span class="p">,</span> <span class="nv">simulate</span><span class="p">:</span> <span class="kt">Bool</span> <span class="o">=</span> <span class="kc">true</span><span class="p">,</span> <span class="nv">restore</span><span class="p">:</span> <span class="kt">Bool</span> <span class="o">=</span> <span class="kc">false</span><span class="p">,</span> <span class="nv">useUpgradedAuth</span><span class="p">:</span> <span class="kt">Bool</span> <span class="o">=</span> <span class="kc">false</span><span class="p">)</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="nf">init</span><span class="p">(</span><span class="nv">fee</span><span class="p">:</span> <span class="kt">UInt32</span> <span class="o">=</span> <span class="kt"><a href="../Classes/Transaction.html">Transaction</a></span><span class="o">.</span><span class="n">minBaseFee</span><span class="p">,</span> <span class="nv">timeoutInSeconds</span><span class="p">:</span> <span class="kt">UInt64</span> <span class="o">=</span> <span class="kt"><a href="../Structs/NetworkConstants.html">NetworkConstants</a></span><span class="o">.</span><span class="kt">DEFAULT_TIMEOUT_SECONDS</span><span class="p">,</span> <span class="nv">simulate</span><span class="p">:</span> <span class="kt">Bool</span> <span class="o">=</span> <span class="kc">true</span><span class="p">,</span> <span class="nv">restore</span><span class="p">:</span> <span class="kt">Bool</span> <span class="o">=</span> <span class="kc">false</span><span class="p">,</span> <span class="nv">useUpgradedAuth</span><span class="p">:</span> <span class="kt">Bool</span> <span class="o">=</span> <span class="kc">true</span><span class="p">)</span></code></pre>
 
                         </div>
                       </div>
@@ -2596,7 +2605,7 @@ return legacy <code>ADDRESS</code> entries.</p>
                               </td>
                               <td>
                                 <div>
-                                  <p>Request protocol-27 V2 credential arms in the simulation response. Default false.</p>
+                                  <p>Request protocol-27 V2 credential arms in the simulation response; false requests legacy ADDRESS arms. Default true.</p>
                                 </div>
                               </td>
                             </tr>

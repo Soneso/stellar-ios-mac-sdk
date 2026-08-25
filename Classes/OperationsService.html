@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          stellarsdk 3.9.0 Docs
+          stellarsdk 3.10.0 Docs
         </a>
          (94% documented)
       </p>
@@ -293,6 +293,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes/DataUpdatedEffectResponse.html">DataUpdatedEffectResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/DeployFromExternalRefRequest.html">DeployFromExternalRefRequest</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes/DeployRequest.html">DeployRequest</a>
@@ -1004,6 +1007,9 @@
                 <a class="nav-group-task-link" href="../Enums/ContractChallengeValidationError.html">ContractChallengeValidationError</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/ContractIdUtils.html">ContractIdUtils</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Enums/ContractSpecError.html">ContractSpecError</a>
               </li>
               <li class="nav-group-task">
@@ -1071,6 +1077,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Enums/GetEventsResponseEnum.html">GetEventsResponseEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/GetExternalRefWasmHashResponseEnum.html">GetExternalRefWasmHashResponseEnum</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Enums/GetFeeStatsResponseEnum.html">GetFeeStatsResponseEnum</a>
@@ -2340,7 +2349,7 @@ and streaming of real-time operation updates.</p>
 </ul>
 
               <div class="slightly-smaller">
-                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/OperationsService.swift#L65-L312">Show on GitHub</a>
+                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/OperationsService.swift#L65-L314">Show on GitHub</a>
               </div>
           </div>
         </section>
@@ -2587,8 +2596,6 @@ and streaming of real-time operation updates.</p>
                       <div class="abstract">
                         <p>Retrieves operations for a specific claimable balance with pagination support.</p>
 
-<p>Supports both encoded (B-prefixed) and hex claimable balance IDs.</p>
-
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
@@ -2610,7 +2617,8 @@ and streaming of real-time operation updates.</p>
                               </td>
                               <td>
                                 <div>
-                                  <p>The claimable balance ID (B-address or hex format)</p>
+                                  <p>The claimable balance ID, as a &ldquo;B&hellip;&rdquo; strkey or as hex
+in any of its widths</p>
                                 </div>
                               </td>
                             </tr>
@@ -2679,10 +2687,11 @@ and streaming of real-time operation updates.</p>
                       </div>
                       <div>
                         <h4>Return Value</h4>
-                        <p>PageResponse containing operations for the claimable balance or error</p>
+                        <p>PageResponse containing operations for the claimable balance, or a badRequest
+error naming the reason when the id holds none of those spellings</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/OperationsService.swift#L115-L123">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/OperationsService.swift#L115-L124">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2798,7 +2807,7 @@ and streaming of real-time operation updates.</p>
                         <p>PageResponse containing operations for the ledger or error</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/OperationsService.swift#L134-L137">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/OperationsService.swift#L135-L138">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2914,7 +2923,7 @@ and streaming of real-time operation updates.</p>
                         <p>PageResponse containing operations for the transaction or error</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/OperationsService.swift#L148-L151">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/OperationsService.swift#L149-L152">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3032,7 +3041,7 @@ and streaming of real-time operation updates.</p>
                         <p>PageResponse containing operations for the liquidity pool or error</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/OperationsService.swift#L164-L171">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/OperationsService.swift#L165-L172">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3114,7 +3123,7 @@ and streaming of real-time operation updates.</p>
                         <p>OperationDetailsResponseEnum with operation details or error</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/OperationsService.swift#L181-L207">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/OperationsService.swift#L182-L208">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3167,7 +3176,7 @@ and streaming of real-time operation updates.</p>
                         <p>OperationsStreamItem for receiving streaming operation updates</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/OperationsService.swift#L213-L259">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/OperationsService.swift#L214-L261">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3225,7 +3234,7 @@ and streaming of real-time operation updates.</p>
                         <p>PageResponse containing operations or error</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/OperationsService.swift#L296-L311">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/OperationsService.swift#L298-L313">Show on GitHub</a>
                       </div>
                     </section>
                   </div>

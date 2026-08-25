@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          stellarsdk 3.9.0 Docs
+          stellarsdk 3.10.0 Docs
         </a>
          (94% documented)
       </p>
@@ -293,6 +293,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes/DataUpdatedEffectResponse.html">DataUpdatedEffectResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/DeployFromExternalRefRequest.html">DeployFromExternalRefRequest</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes/DeployRequest.html">DeployRequest</a>
@@ -1004,6 +1007,9 @@
                 <a class="nav-group-task-link" href="../Enums/ContractChallengeValidationError.html">ContractChallengeValidationError</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/ContractIdUtils.html">ContractIdUtils</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Enums/ContractSpecError.html">ContractSpecError</a>
               </li>
               <li class="nav-group-task">
@@ -1071,6 +1077,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Enums/GetEventsResponseEnum.html">GetEventsResponseEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/GetExternalRefWasmHashResponseEnum.html">GetExternalRefWasmHashResponseEnum</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Enums/GetFeeStatsResponseEnum.html">GetFeeStatsResponseEnum</a>
@@ -2313,7 +2322,7 @@
 related to Ed25519 keypairs used in Stellar.</p>
 
               <div class="slightly-smaller">
-                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/crypto/Ed25519Error.swift#L13-L78">Show on GitHub</a>
+                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/crypto/Ed25519Error.swift#L13-L82">Show on GitHub</a>
               </div>
           </div>
         </section>
@@ -2371,12 +2380,14 @@ should be rare in normal circumstances.</p>
                       <div class="abstract">
                         <p>The provided seed string (S-address) is invalid or malformed.</p>
 
-<p>This occurs when:</p>
+<p>Thrown when a secret seed string is decoded into a seed and it is not a well formed
+strkey encoded ed25519 secret seed. This occurs when:</p>
 
 <ul>
-<li>The seed string doesn&rsquo;t start with &lsquo;S&rsquo;</li>
-<li>The base32 decoding fails</li>
-<li>The checksum validation fails</li>
+<li>The string is not 56 characters long, the length a 32 byte seed is encoded in</li>
+<li>The string is not canonical base32</li>
+<li>The string carries a version byte other than the ed25519 secret seed one</li>
+<li>The CRC-16 checksum does not match the body it covers</li>
 </ul>
 
                       </div>
@@ -2389,7 +2400,7 @@ should be rare in normal circumstances.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/crypto/Ed25519Error.swift#L28">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/crypto/Ed25519Error.swift#L30">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2422,7 +2433,7 @@ to create a Seed from a byte array of any other length.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/crypto/Ed25519Error.swift#L34">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/crypto/Ed25519Error.swift#L36">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2454,7 +2465,7 @@ to create a Seed from a byte array of any other length.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/crypto/Ed25519Error.swift#L39">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/crypto/Ed25519Error.swift#L41">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2474,12 +2485,14 @@ to create a Seed from a byte array of any other length.</p>
                       <div class="abstract">
                         <p>The provided public key string (G-address) is invalid or malformed.</p>
 
-<p>This occurs when:</p>
+<p>Thrown when an account id is decoded into a public key and it is not a well formed
+strkey encoded ed25519 public key. This occurs when:</p>
 
 <ul>
-<li>The account ID doesn&rsquo;t start with &lsquo;G&rsquo;</li>
-<li>The base32 decoding fails</li>
-<li>The checksum validation fails</li>
+<li>The string is not 56 characters long, the length a 32 byte key is encoded in</li>
+<li>The string is not canonical base32</li>
+<li>The string carries a version byte other than the ed25519 public key one</li>
+<li>The CRC-16 checksum does not match the body it covers</li>
 </ul>
 
                       </div>
@@ -2492,7 +2505,7 @@ to create a Seed from a byte array of any other length.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/crypto/Ed25519Error.swift#L47">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/crypto/Ed25519Error.swift#L51">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2525,7 +2538,7 @@ to create a PublicKey from a byte array of any other length.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/crypto/Ed25519Error.swift#L53">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/crypto/Ed25519Error.swift#L57">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2557,7 +2570,7 @@ to create a PublicKey from a byte array of any other length.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/crypto/Ed25519Error.swift#L58">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/crypto/Ed25519Error.swift#L62">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2591,7 +2604,7 @@ of any other length.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/crypto/Ed25519Error.swift#L65">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/crypto/Ed25519Error.swift#L69">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2624,7 +2637,7 @@ attempting to verify a signature that doesn&rsquo;t match the expected length.</
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/crypto/Ed25519Error.swift#L71">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/crypto/Ed25519Error.swift#L75">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2657,7 +2670,7 @@ Create the keypair from a secret seed or generate a new keypair to sign.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/crypto/Ed25519Error.swift#L77">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/crypto/Ed25519Error.swift#L81">Show on GitHub</a>
                       </div>
                     </section>
                   </div>

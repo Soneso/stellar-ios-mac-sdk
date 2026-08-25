@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          stellarsdk 3.9.0 Docs
+          stellarsdk 3.10.0 Docs
         </a>
          (94% documented)
       </p>
@@ -293,6 +293,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes/DataUpdatedEffectResponse.html">DataUpdatedEffectResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/DeployFromExternalRefRequest.html">DeployFromExternalRefRequest</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes/DeployRequest.html">DeployRequest</a>
@@ -1004,6 +1007,9 @@
                 <a class="nav-group-task-link" href="../Enums/ContractChallengeValidationError.html">ContractChallengeValidationError</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/ContractIdUtils.html">ContractIdUtils</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Enums/ContractSpecError.html">ContractSpecError</a>
               </li>
               <li class="nav-group-task">
@@ -1071,6 +1077,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Enums/GetEventsResponseEnum.html">GetEventsResponseEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/GetExternalRefWasmHashResponseEnum.html">GetExternalRefWasmHashResponseEnum</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Enums/GetFeeStatsResponseEnum.html">GetFeeStatsResponseEnum</a>
@@ -2329,7 +2338,7 @@ The seed is the private component from which both the private and public keys ar
 </ul>
 
               <div class="slightly-smaller">
-                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/crypto/Seed.swift#L26-L130">Show on GitHub</a>
+                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/crypto/Seed.swift#L26-L124">Show on GitHub</a>
               </div>
           </div>
         </section>
@@ -2450,22 +2459,21 @@ The seed is generated using the ed25519C library&rsquo;s secure random function.
                       <div class="abstract">
                         <p>Creates a seed from a Stellar secret seed string (S-address).</p>
 
-<p>Decodes a base32-encoded secret seed string (starting with &lsquo;S&rsquo;) into its binary form.
-The secret seed is the strkey-encoded representation of a seed, including version byte
-and checksum for error detection.</p>
+<p>The secret must be a strkey encoded ed25519 secret seed (&ldquo;S&hellip;&rdquo;): canonical base32
+carrying the ed25519 secret seed version byte and a matching CRC-16 checksum. The
+checksum is verified, so a corrupted secret is rejected.</p>
 <div class="aside aside-throws">
     <p class="aside-title">Throws</p>
     <p>Throws:</p>
 
 <ul>
-<li>Ed25519Error.invalidSeed if the secret format is invalid</li>
-<li>Ed25519Error.invalidSeedLength if decoded bytes are not 32 bytes</li>
+<li>Ed25519Error.invalidSeed if the secret is not a well formed strkey encoded ed25519 secret seed</li>
 </ul>
 
 </div>
 
 <p>Example:</p>
-<pre class="highlight swift"><code><span class="k">let</span> <span class="nv">seed</span> <span class="o">=</span> <span class="k">try</span> <span class="kt">Seed</span><span class="p">(</span><span class="nv">secret</span><span class="p">:</span> <span class="s">"SAVZ4FJLGPUXPN4EPLWJBLZW3FZSHH2GQJA6KPB47BQZBZJ7XHVI3T6N"</span><span class="p">)</span>
+<pre class="highlight swift"><code><span class="k">let</span> <span class="nv">seed</span> <span class="o">=</span> <span class="k">try</span> <span class="kt">Seed</span><span class="p">(</span><span class="nv">secret</span><span class="p">:</span> <span class="s">"SAVZ4FJLGPUXPN4EPLWJBLZW3FZSHH2GQJA6KPB47BQZBZJ7XHVI32D7"</span><span class="p">)</span>
 </code></pre>
 
                       </div>
@@ -2497,7 +2505,7 @@ and checksum for error detection.</p>
                         </table>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/crypto/Seed.swift#L91-L105">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/crypto/Seed.swift#L90-L99">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2527,7 +2535,7 @@ and checksum for error detection.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/crypto/Seed.swift#L108-L110">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/crypto/Seed.swift#L102-L104">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2563,7 +2571,7 @@ Store it securely and never expose it publicly.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/crypto/Seed.swift#L119-L129">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/crypto/Seed.swift#L113-L123">Show on GitHub</a>
                       </div>
                     </section>
                   </div>

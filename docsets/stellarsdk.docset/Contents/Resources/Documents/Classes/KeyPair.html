@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          stellarsdk 3.9.0 Docs
+          stellarsdk 3.10.0 Docs
         </a>
          (94% documented)
       </p>
@@ -293,6 +293,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes/DataUpdatedEffectResponse.html">DataUpdatedEffectResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/DeployFromExternalRefRequest.html">DeployFromExternalRefRequest</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes/DeployRequest.html">DeployRequest</a>
@@ -1004,6 +1007,9 @@
                 <a class="nav-group-task-link" href="../Enums/ContractChallengeValidationError.html">ContractChallengeValidationError</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/ContractIdUtils.html">ContractIdUtils</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Enums/ContractSpecError.html">ContractSpecError</a>
               </li>
               <li class="nav-group-task">
@@ -1071,6 +1077,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Enums/GetEventsResponseEnum.html">GetEventsResponseEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/GetExternalRefWasmHashResponseEnum.html">GetExternalRefWasmHashResponseEnum</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Enums/GetFeeStatsResponseEnum.html">GetFeeStatsResponseEnum</a>
@@ -2317,7 +2326,7 @@ on the Stellar network. A keypair can be created with or without a private key:<
 <li>Without private key: Used for verification only (public key only)</li>
 </ul>
 
-<p>The public key is encoded as a Stellar account ID starting with &lsquo;G&rsquo; (or &lsquo;M&rsquo; for muxed accounts).
+<p>The public key is encoded as a Stellar account ID starting with &lsquo;G&rsquo;.
 The private key (seed) is encoded as a secret seed starting with &lsquo;S&rsquo;.</p>
 
 <p>Security considerations:</p>
@@ -2356,7 +2365,7 @@ The private key (seed) is encoded as a secret seed starting with &lsquo;S&rsquo;
 </ul>
 
               <div class="slightly-smaller">
-                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/crypto/KeyPair.swift#L51-L349">Show on GitHub</a>
+                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/crypto/KeyPair.swift#L51-L350">Show on GitHub</a>
               </div>
           </div>
         </section>
@@ -2649,10 +2658,11 @@ creating new Stellar accounts. The keypair includes both public and private keys
                         <p>Creates a new Stellar KeyPair from a Stellar account ID.</p>
 
 <p>Creates a public-only keypair that can be used for signature verification but
-cannot sign transactions. The account ID must be a valid G-address or M-address.</p>
+cannot sign transactions. The account ID must be a valid G-address. Muxed account
+addresses (M-addresses) are not accepted.</p>
 <div class="aside aside-throws">
     <p class="aside-title">Throws</p>
-    An error if the account ID is invalid
+    Ed25519Error.invalidPublicKey if the account ID is not a valid G-address
 
 </div>
 
@@ -2677,7 +2687,7 @@ cannot sign transactions. The account ID must be a valid G-address or M-address.
                               </td>
                               <td>
                                 <div>
-                                  <p>The Stellar account ID (G-address or M-address)</p>
+                                  <p>The Stellar account ID (G-address)</p>
                                 </div>
                               </td>
                             </tr>
@@ -2685,7 +2695,7 @@ cannot sign transactions. The account ID must be a valid G-address or M-address.
                         </table>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/crypto/KeyPair.swift#L121-L124">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/crypto/KeyPair.swift#L122-L125">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2709,7 +2719,7 @@ cannot sign transactions. The account ID must be a valid G-address or M-address.
 secret seed (S-address). This keypair can sign transactions.</p>
 <div class="aside aside-throws">
     <p class="aside-title">Throws</p>
-    An error if the secret seed is invalid
+    Ed25519Error.invalidSeed if the secret seed is not a valid S-address
 
 </div>
 
@@ -2744,7 +2754,7 @@ secret seed (S-address). This keypair can sign transactions.</p>
                         </table>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/crypto/KeyPair.swift#L135-L138">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/crypto/KeyPair.swift#L136-L139">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2793,7 +2803,7 @@ secret seed (S-address). This keypair can sign transactions.</p>
                         </table>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/crypto/KeyPair.swift#L144-L147">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/crypto/KeyPair.swift#L145-L148">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2842,7 +2852,7 @@ secret seed (S-address). This keypair can sign transactions.</p>
                         </table>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/crypto/KeyPair.swift#L153-L172">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/crypto/KeyPair.swift#L154-L173">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2912,7 +2922,7 @@ secret seed (S-address). This keypair can sign transactions.</p>
                         </table>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/crypto/KeyPair.swift#L182-L186">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/crypto/KeyPair.swift#L183-L187">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2970,7 +2980,7 @@ does not have a private key, returns an empty signature (all zeros).</p>
                         <p>The 64-byte Ed25519 signature, or 64 zero bytes if no private key</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/crypto/KeyPair.swift#L197-L218">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/crypto/KeyPair.swift#L198-L219">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3019,7 +3029,7 @@ does not have a private key, returns an empty signature (all zeros).</p>
                         </table>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/crypto/KeyPair.swift#L226-L234">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/crypto/KeyPair.swift#L227-L235">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3069,7 +3079,7 @@ Per the <a href="https://github.com/stellar/stellar-protocol/blob/master/core/ca
                         </table>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/crypto/KeyPair.swift#L243-L258">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/crypto/KeyPair.swift#L244-L259">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3126,7 +3136,7 @@ revealing the full public key or payload.</p>
                         <p>A DecoratedSignatureXDR with XOR-ed hint and Ed25519 signature</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/crypto/KeyPair.swift#L268-L270">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/crypto/KeyPair.swift#L269-L271">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3196,7 +3206,7 @@ revealing the full public key or payload.</p>
                         <p>True if they match, false otherwise.</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/crypto/KeyPair.swift#L281-L283">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/crypto/KeyPair.swift#L282-L284">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3271,7 +3281,7 @@ and the digest is signed with this keypair&rsquo;s Ed25519 private key.</p>
                         <p>A 64-byte Ed25519 signature.</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/crypto/KeyPair.swift#L307-L313">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/crypto/KeyPair.swift#L308-L314">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3330,7 +3340,7 @@ and the digest is signed with this keypair&rsquo;s Ed25519 private key.</p>
                         <p>A 64-byte Ed25519 signature.</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/crypto/KeyPair.swift#L321-L323">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/crypto/KeyPair.swift#L322-L324">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3401,7 +3411,7 @@ and the digest is signed with this keypair&rsquo;s Ed25519 private key.</p>
                         <p><code>true</code> if the signature is valid, <code>false</code> otherwise.</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/crypto/KeyPair.swift#L333-L336">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/crypto/KeyPair.swift#L334-L337">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3472,7 +3482,7 @@ and the digest is signed with this keypair&rsquo;s Ed25519 private key.</p>
                         <p><code>true</code> if the signature is valid, <code>false</code> otherwise.</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/crypto/KeyPair.swift#L346-L348">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/crypto/KeyPair.swift#L347-L349">Show on GitHub</a>
                       </div>
                     </section>
                   </div>

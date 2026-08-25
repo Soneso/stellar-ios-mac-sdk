@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="index.html">
-          stellarsdk 3.9.0 Docs
+          stellarsdk 3.10.0 Docs
         </a>
          (94% documented)
       </p>
@@ -291,6 +291,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Classes/DataUpdatedEffectResponse.html">DataUpdatedEffectResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Classes/DeployFromExternalRefRequest.html">DeployFromExternalRefRequest</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Classes/DeployRequest.html">DeployRequest</a>
@@ -1002,6 +1005,9 @@
                 <a class="nav-group-task-link" href="Enums/ContractChallengeValidationError.html">ContractChallengeValidationError</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/ContractIdUtils.html">ContractIdUtils</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Enums/ContractSpecError.html">ContractSpecError</a>
               </li>
               <li class="nav-group-task">
@@ -1069,6 +1075,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Enums/GetEventsResponseEnum.html">GetEventsResponseEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/GetExternalRefWasmHashResponseEnum.html">GetExternalRefWasmHashResponseEnum</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Enums/GetFeeStatsResponseEnum.html">GetFeeStatsResponseEnum</a>
@@ -2407,7 +2416,7 @@ on the Stellar network. A keypair can be created with or without a private key:<
 <li>Without private key: Used for verification only (public key only)</li>
 </ul>
 
-<p>The public key is encoded as a Stellar account ID starting with &lsquo;G&rsquo; (or &lsquo;M&rsquo; for muxed accounts).
+<p>The public key is encoded as a Stellar account ID starting with &lsquo;G&rsquo;.
 The private key (seed) is encoded as a secret seed starting with &lsquo;S&rsquo;.</p>
 
 <p>Security considerations:</p>
@@ -2456,7 +2465,7 @@ The private key (seed) is encoded as a secret seed starting with &lsquo;S&rsquo;
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/crypto/KeyPair.swift#L51-L349">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/crypto/KeyPair.swift#L51-L350">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2561,7 +2570,7 @@ transmission errors.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/crypto/PublicKey.swift#L31-L155">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/crypto/PublicKey.swift#L31-L156">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2611,7 +2620,7 @@ The seed is the private component from which both the private and public keys ar
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/crypto/Seed.swift#L26-L130">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/crypto/Seed.swift#L26-L124">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -6872,7 +6881,7 @@ See <a href="https://developers.stellar.org">Stellar developer docs</a></p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/responses/operations_responses/InvokeHostFunctionOperationResponse.swift#L88-L143">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/responses/operations_responses/InvokeHostFunctionOperationResponse.swift#L88-L144">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -7646,7 +7655,7 @@ See <a href="https://developers.stellar.org">Stellar developer docs</a>.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/ClaimClaimableBalanceOperation.swift#L13-L44">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/ClaimClaimableBalanceOperation.swift#L13-L45">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -7708,7 +7717,7 @@ See <a href="https://developers.stellar.org">Stellar developer docs</a>.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/ClawbackClaimableBalanceOperation.swift#L12-L43">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/ClawbackClaimableBalanceOperation.swift#L12-L44">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -8030,7 +8039,7 @@ See <a href="https://github.com/stellar/stellar-protocol/blob/master/core/cap-00
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/InvokeHostFunctionOperation.swift#L12-L115">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/InvokeHostFunctionOperation.swift#L12-L209">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -8718,7 +8727,7 @@ Supports ED25519 public keys, SHA256 hashes, pre-authorized transactions, and si
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Signer.swift#L13-L60">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Signer.swift#L13-L61">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -8996,7 +9005,7 @@ conditional transfers.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/ClaimableBalancesService.swift#L48-L178">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/ClaimableBalancesService.swift#L48-L181">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -9399,7 +9408,7 @@ and streaming of real-time operation updates.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/OperationsService.swift#L65-L312">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/OperationsService.swift#L65-L314">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -9912,7 +9921,7 @@ traded assets, amounts, prices, and participating accounts or liquidity pools.</
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/Streaming/OperationsStreamItem.swift#L12-L56">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/Streaming/OperationsStreamItem.swift#L12-L78">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -10082,7 +10091,7 @@ protected by an internal lock.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/Streaming/TransactionsStreamItem.swift#L25-L70">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/Streaming/TransactionsStreamItem.swift#L25-L92">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -10267,7 +10276,7 @@ and asynchronous transaction submission modes.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TransactionsService.swift#L98-L541">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TransactionsService.swift#L98-L545">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -10911,11 +10920,12 @@ one external-wallet signing request. The connected passkey is NOT added
 implicitly — include it explicitly when it should sign.</p>
 
 <p>Each delegated wallet signer produces its own signed auth entry (root
-invocation <code>__check_auth(authDigest)</code>) plus an empty-bytes placeholder in
-the smart account&rsquo;s signature map. Direct wallet entries are signed via the
-external wallet adapter and written into the classical
-<code>Vec([Map({public_key, signature})])</code> shape; the smart account signature
-map is not modified for those entries.</p>
+invocation <code>__check_auth(authDigest)</code>, <code>ADDRESS_V2</code> credentials by default —
+see <code><a href="Structs/OZSmartAccountConfig.html#/s:10stellarsdk20OZSmartAccountConfigV31useUpgradedAuthForWalletSignersSbvp">useUpgradedAuthForWalletSigners</a></code>) plus an
+empty-bytes placeholder in the smart account&rsquo;s signature map. Direct wallet
+entries are signed via the external wallet adapter and written into the
+classical <code>Vec([Map({public_key, signature})])</code> shape; the smart account
+signature map is not modified for those entries.</p>
 
 <p>Example:</p>
 <pre class="highlight swift"><code><span class="k">let</span> <span class="nv">result</span> <span class="o">=</span> <span class="k">try</span> <span class="k">await</span> <span class="n">kit</span><span class="o">.</span><span class="n">multiSignerManager</span><span class="o">.</span><span class="nf">multiSignerTransfer</span><span class="p">(</span>
@@ -10937,7 +10947,7 @@ map is not modified for those entries.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZMultiSignerManager.swift#L40-L1306">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZMultiSignerManager.swift#L41-L1328">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -11352,7 +11362,7 @@ reflect the real WebAuthn signature payload size.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZTransactionOperations.swift#L94-L1819">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZTransactionOperations.swift#L94-L1836">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -11788,7 +11798,7 @@ by the Soroban RPC server.</p>
 <li>transaction: The transaction to simulate (must contain InvokeHostFunction operation)</li>
 <li>resourceConfig: Optional resource budget configuration (default: 3000000 instruction leeway)</li>
 <li>authMode: Authorization simulation mode (protocol 23+)</li>
-<li>useUpgradedAuth: Request protocol-27 V2 credential arms in the simulation response (default false)</li>
+<li>useUpgradedAuth: Request protocol-27 V2 credential arms in the simulation response (default true)</li>
 </ul>
 
 <p>Authorization modes (protocol 23+):</p>
@@ -11801,10 +11811,11 @@ by the Soroban RPC server.</p>
 
 <p><strong><code>useUpgradedAuth</code> flag</strong></p>
 
-<p>When <code>useUpgradedAuth</code> is <code>true</code>, the key <code>&quot;useUpgradedAuth&quot;: true</code> is included as a sibling of
-<code>&quot;transaction&quot;</code> in the JSON-RPC params. The key is omitted entirely when <code>false</code>
-(never sent as <code>&quot;useUpgradedAuth&quot;: false</code>). Emitting V2 credential arms on a network below
-protocol 27 invalidates the transaction, so this flag defaults to <code>false</code>.</p>
+<p>The key <code>&quot;useUpgradedAuth&quot;</code> is always included as a sibling of <code>&quot;transaction&quot;</code> in the
+JSON-RPC params, carrying the current flag value. When <code>true</code> (the default), the RPC
+records <code>ADDRESS_V2</code> credential arms; when <code>false</code>, legacy <code>ADDRESS</code> arms. Set the flag
+to <code>false</code> on a network below protocol 27, where V2 credential arms invalidate the
+transaction.</p>
 
 <p>RPC servers that do not support <code>useUpgradedAuth</code> silently ignore the key and return legacy
 <code>ADDRESS</code> credential arms. The caller must detect V2 support by inspecting the
@@ -11838,7 +11849,7 @@ credential arm of the returned entries, not by expecting an error.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/SimulateTransactionRequest.swift#L52-L95">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/SimulateTransactionRequest.swift#L53-L95">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -11979,7 +11990,7 @@ or run your own RPC server. For production, always use a reliable RPC provider.<
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/SorobanServer.swift#L233-L1226">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/SorobanServer.swift#L243-L1300">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -12398,6 +12409,51 @@ needed to interact with a deployed smart contract.</p>
                 <li class="item">
                   <div>
                     <code>
+                    <a name="/s:10stellarsdk28DeployFromExternalRefRequestC"></a>
+                    <a name="//apple_ref/swift/Class/DeployFromExternalRefRequest" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk28DeployFromExternalRefRequestC">DeployFromExternalRefRequest</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Request parameters for deploying a Soroban smart contract instance from a
+CAP-85 external reference (protocol &gt;= 28).</p>
+
+<p>The executable is not a wasm hash: it names an owner contract and a tag, and
+the owner holds a persistent contract data entry under that tag whose value
+is the 32-byte hash of an already uploaded wasm. The created instance runs
+that code. Nothing is installed as part of the deployment; the owner
+contract already holds the tag entry.</p>
+
+<p>See also:</p>
+
+<ul>
+<li>[SorobanClient.deployFromExternalRef] for the deployment method that uses this request</li>
+<li>[DeployRequest] for deploying from an installed wasm hash</li>
+</ul>
+
+                        <a href="Classes/DeployFromExternalRefRequest.html" class="slightly-smaller">See more</a>
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">final</span> <span class="kd">class</span> <span class="kt">DeployFromExternalRefRequest</span> <span class="p">:</span> <span class="kt">Sendable</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/DeployFromExternalRefRequest.swift#L23-L106">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
                     <a name="/s:10stellarsdk13DeployRequestC"></a>
                     <a name="//apple_ref/swift/Class/DeployRequest" class="dashAnchor"></a>
                     <a class="token" href="#/s:10stellarsdk13DeployRequestC">DeployRequest</a>
@@ -12573,7 +12629,7 @@ contract methods through SorobanClient or AssembledTransaction.</p>
 <li>Timeout: Transaction validity window (default: 300 seconds)</li>
 <li>Simulate: Auto-simulate before submission (default: true)</li>
 <li>Restore: Auto-restore archived entries if needed (default: false)</li>
-<li>UseUpgradedAuth: Request protocol-27 V2 credential arms in the simulation response (default: false)</li>
+<li>UseUpgradedAuth: Request protocol-27 V2 credential arms in the simulation response (default: true)</li>
 </ul>
 
 <p>Example:</p>
@@ -12758,7 +12814,7 @@ For more control over transaction construction, use AssembledTransaction directl
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/SorobanClient.swift#L57-L332">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/SorobanClient.swift#L57-L424">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -13267,7 +13323,7 @@ parsing, formatting, and Stellar type conversion.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/txrep/TxRepHelper.swift#L17-L1013">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/txrep/TxRepHelper.swift#L17-L1081">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -13855,7 +13911,7 @@ authentication logic in their __check_auth function.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/web_authentication_contracts/WebAuthForContracts.swift#L99-L946">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/web_authentication_contracts/WebAuthForContracts.swift#L99-L941">Show on GitHub</a>
                       </div>
                     </section>
                   </div>

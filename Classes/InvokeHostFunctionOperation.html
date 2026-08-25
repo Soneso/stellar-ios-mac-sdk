@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          stellarsdk 3.9.0 Docs
+          stellarsdk 3.10.0 Docs
         </a>
          (94% documented)
       </p>
@@ -293,6 +293,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes/DataUpdatedEffectResponse.html">DataUpdatedEffectResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/DeployFromExternalRefRequest.html">DeployFromExternalRefRequest</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes/DeployRequest.html">DeployRequest</a>
@@ -1004,6 +1007,9 @@
                 <a class="nav-group-task-link" href="../Enums/ContractChallengeValidationError.html">ContractChallengeValidationError</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/ContractIdUtils.html">ContractIdUtils</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Enums/ContractSpecError.html">ContractSpecError</a>
               </li>
               <li class="nav-group-task">
@@ -1071,6 +1077,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Enums/GetEventsResponseEnum.html">GetEventsResponseEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/GetExternalRefWasmHashResponseEnum.html">GetExternalRefWasmHashResponseEnum</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Enums/GetFeeStatsResponseEnum.html">GetFeeStatsResponseEnum</a>
@@ -2310,7 +2319,7 @@
             <p>Invokes Soroban host functions for smart contract deployment, creation, and invocation operations.</p>
 
               <div class="slightly-smaller">
-                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/InvokeHostFunctionOperation.swift#L12-L115">Show on GitHub</a>
+                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/InvokeHostFunctionOperation.swift#L12-L209">Show on GitHub</a>
               </div>
           </div>
         </section>
@@ -2483,6 +2492,11 @@
                       <div class="pointer"></div>
                       <div class="abstract">
                         <p>Creates an operation to instantiate a contract from uploaded Wasm using contract ID preimage.</p>
+<div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    StellarSDKError.invalidArgument if the wasm id is not exactly 64 hexadecimal characters
+
+</div>
 
                       </div>
                       <div class="declaration">
@@ -2493,8 +2507,27 @@
 
                         </div>
                       </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>wasmId</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>the 64 character hex of the 32 byte wasm hash</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/InvokeHostFunctionOperation.swift#L54-L62">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/InvokeHostFunctionOperation.swift#L57-L65">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2513,6 +2546,11 @@
                       <div class="pointer"></div>
                       <div class="abstract">
                         <p>Creates an operation to instantiate a contract with constructor arguments (protocol &gt;= 22).</p>
+<div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    StellarSDKError.invalidArgument if the wasm id is not exactly 64 hexadecimal characters
+
+</div>
 
                       </div>
                       <div class="declaration">
@@ -2523,8 +2561,424 @@
 
                         </div>
                       </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>wasmId</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>the 64 character hex of the 32 byte wasm hash</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/InvokeHostFunctionOperation.swift#L65-L73">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/InvokeHostFunctionOperation.swift#L71-L79">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10stellarsdk27InvokeHostFunctionOperationC34forCreatingContractFromExternalRef15executableOwner3tag7address4salt15sourceAccountIdAcA12SCAddressXDRO_10Foundation4DataVAkA13WrappedData32VSgSSSgtKFZ"></a>
+                    <a name="//apple_ref/swift/Method/forCreatingContractFromExternalRef(executableOwner:tag:address:salt:sourceAccountId:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk27InvokeHostFunctionOperationC34forCreatingContractFromExternalRef15executableOwner3tag7address4salt15sourceAccountIdAcA12SCAddressXDRO_10Foundation4DataVAkA13WrappedData32VSgSSSgtKFZ">forCreatingContractFromExternalRef(executableOwner:<wbr>tag:<wbr>address:<wbr>salt:<wbr>sourceAccountId:<wbr>)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Creates an operation to instantiate a contract from a CAP-85 external reference (protocol &gt;= 28).</p>
+
+<p>The executable names an owner contract and a tag; the owner holds a persistent
+contract data entry under that tag whose value is the 32-byte hash of an already
+uploaded wasm, and the created instance runs that code. An executable tag is an
+XDR string and may carry arbitrary bytes; the operation carries the given bytes
+unchanged.</p>
+<div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    <code>StellarSDKError.invalidArgument</code> if the executable owner is not a contract address
+
+</div>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">static</span> <span class="kd">func</span> <span class="nf">forCreatingContractFromExternalRef</span><span class="p">(</span><span class="nv">executableOwner</span><span class="p">:</span> <span class="kt">SCAddressXDR</span><span class="p">,</span> <span class="nv">tag</span><span class="p">:</span> <span class="kt">Data</span><span class="p">,</span> <span class="nv">address</span><span class="p">:</span> <span class="kt">SCAddressXDR</span><span class="p">,</span> <span class="nv">salt</span><span class="p">:</span> <span class="kt"><a href="../Structs/WrappedData32.html">WrappedData32</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">sourceAccountId</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt">InvokeHostFunctionOperation</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>executableOwner</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>the contract holding the executable tag entry; must be a contract address</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>tag</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>the tag of the executable entry on the owner; matched byte for byte</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>address</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>the deployer address (account or contract)</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>salt</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>optional 32 byte salt for contract id generation; random if not provided</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/InvokeHostFunctionOperation.swift#L94-L103">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10stellarsdk27InvokeHostFunctionOperationC34forCreatingContractFromExternalRef15executableOwner3tag7address4salt15sourceAccountIdAcA12SCAddressXDRO_SSAkA13WrappedData32VSgSSSgtKFZ"></a>
+                    <a name="//apple_ref/swift/Method/forCreatingContractFromExternalRef(executableOwner:tag:address:salt:sourceAccountId:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk27InvokeHostFunctionOperationC34forCreatingContractFromExternalRef15executableOwner3tag7address4salt15sourceAccountIdAcA12SCAddressXDRO_SSAkA13WrappedData32VSgSSSgtKFZ">forCreatingContractFromExternalRef(executableOwner:<wbr>tag:<wbr>address:<wbr>salt:<wbr>sourceAccountId:<wbr>)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Creates an operation to instantiate a contract from a CAP-85 external reference
+(protocol &gt;= 28) with a text tag. The operation carries the tag as the UTF-8
+bytes of the given text; the entry is matched byte for byte against those bytes.</p>
+<div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    <code>StellarSDKError.invalidArgument</code> if the executable owner is not a contract address
+
+</div>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">static</span> <span class="kd">func</span> <span class="nf">forCreatingContractFromExternalRef</span><span class="p">(</span><span class="nv">executableOwner</span><span class="p">:</span> <span class="kt">SCAddressXDR</span><span class="p">,</span> <span class="nv">tag</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">address</span><span class="p">:</span> <span class="kt">SCAddressXDR</span><span class="p">,</span> <span class="nv">salt</span><span class="p">:</span> <span class="kt"><a href="../Structs/WrappedData32.html">WrappedData32</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">sourceAccountId</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt">InvokeHostFunctionOperation</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>executableOwner</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>the contract holding the executable tag entry; must be a contract address</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>tag</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>the tag of the executable entry on the owner, carried as its UTF-8 bytes</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>address</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>the deployer address (account or contract)</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>salt</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>optional 32 byte salt for contract id generation; random if not provided</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/InvokeHostFunctionOperation.swift#L114-L120">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10stellarsdk27InvokeHostFunctionOperationC49forCreatingContractFromExternalRefWithConstructor15executableOwner3tag7address20constructorArguments4salt15sourceAccountIdAcA12SCAddressXDRO_10Foundation4DataVALSayAA05SCValY0OGAA13WrappedData32VSgSSSgtKFZ"></a>
+                    <a name="//apple_ref/swift/Method/forCreatingContractFromExternalRefWithConstructor(executableOwner:tag:address:constructorArguments:salt:sourceAccountId:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk27InvokeHostFunctionOperationC49forCreatingContractFromExternalRefWithConstructor15executableOwner3tag7address20constructorArguments4salt15sourceAccountIdAcA12SCAddressXDRO_10Foundation4DataVALSayAA05SCValY0OGAA13WrappedData32VSgSSSgtKFZ">forCreatingContractFromExternalRefWithConstructor(executableOwner:<wbr>tag:<wbr>address:<wbr>constructorArguments:<wbr>salt:<wbr>sourceAccountId:<wbr>)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Creates an operation to instantiate a contract from a CAP-85 external reference
+with constructor arguments (protocol &gt;= 28). An executable tag is an XDR string
+and may carry arbitrary bytes; the operation carries the given bytes unchanged.</p>
+<div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    <code>StellarSDKError.invalidArgument</code> if the executable owner is not a contract address
+
+</div>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">static</span> <span class="kd">func</span> <span class="nf">forCreatingContractFromExternalRefWithConstructor</span><span class="p">(</span><span class="nv">executableOwner</span><span class="p">:</span> <span class="kt">SCAddressXDR</span><span class="p">,</span> <span class="nv">tag</span><span class="p">:</span> <span class="kt">Data</span><span class="p">,</span> <span class="nv">address</span><span class="p">:</span> <span class="kt">SCAddressXDR</span><span class="p">,</span> <span class="nv">constructorArguments</span><span class="p">:</span> <span class="p">[</span><span class="kt">SCValXDR</span><span class="p">]</span> <span class="o">=</span> <span class="p">[],</span> <span class="nv">salt</span><span class="p">:</span> <span class="kt"><a href="../Structs/WrappedData32.html">WrappedData32</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">sourceAccountId</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt">InvokeHostFunctionOperation</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>executableOwner</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>the contract holding the executable tag entry; must be a contract address</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>tag</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>the tag of the executable entry on the owner; matched byte for byte</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>address</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>the deployer address (account or contract)</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>constructorArguments</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>arguments passed to the contract constructor</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>salt</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>optional 32 byte salt for contract id generation; random if not provided</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/InvokeHostFunctionOperation.swift#L132-L141">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10stellarsdk27InvokeHostFunctionOperationC49forCreatingContractFromExternalRefWithConstructor15executableOwner3tag7address20constructorArguments4salt15sourceAccountIdAcA12SCAddressXDRO_SSALSayAA05SCValY0OGAA13WrappedData32VSgSSSgtKFZ"></a>
+                    <a name="//apple_ref/swift/Method/forCreatingContractFromExternalRefWithConstructor(executableOwner:tag:address:constructorArguments:salt:sourceAccountId:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk27InvokeHostFunctionOperationC49forCreatingContractFromExternalRefWithConstructor15executableOwner3tag7address20constructorArguments4salt15sourceAccountIdAcA12SCAddressXDRO_SSALSayAA05SCValY0OGAA13WrappedData32VSgSSSgtKFZ">forCreatingContractFromExternalRefWithConstructor(executableOwner:<wbr>tag:<wbr>address:<wbr>constructorArguments:<wbr>salt:<wbr>sourceAccountId:<wbr>)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Creates an operation to instantiate a contract from a CAP-85 external reference
+with constructor arguments (protocol &gt;= 28) and a text tag. The operation carries
+the tag as the UTF-8 bytes of the given text; the entry is matched byte for byte
+against those bytes.</p>
+<div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    <code>StellarSDKError.invalidArgument</code> if the executable owner is not a contract address
+
+</div>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">static</span> <span class="kd">func</span> <span class="nf">forCreatingContractFromExternalRefWithConstructor</span><span class="p">(</span><span class="nv">executableOwner</span><span class="p">:</span> <span class="kt">SCAddressXDR</span><span class="p">,</span> <span class="nv">tag</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">address</span><span class="p">:</span> <span class="kt">SCAddressXDR</span><span class="p">,</span> <span class="nv">constructorArguments</span><span class="p">:</span> <span class="p">[</span><span class="kt">SCValXDR</span><span class="p">]</span> <span class="o">=</span> <span class="p">[],</span> <span class="nv">salt</span><span class="p">:</span> <span class="kt"><a href="../Structs/WrappedData32.html">WrappedData32</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">sourceAccountId</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt">InvokeHostFunctionOperation</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>executableOwner</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>the contract holding the executable tag entry; must be a contract address</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>tag</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>the tag of the executable entry on the owner, carried as its UTF-8 bytes</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>address</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>the deployer address (account or contract)</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>constructorArguments</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>arguments passed to the contract constructor</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>salt</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>optional 32 byte salt for contract id generation; random if not provided</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/InvokeHostFunctionOperation.swift#L154-L161">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2554,7 +3008,7 @@
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/InvokeHostFunctionOperation.swift#L76-L82">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/InvokeHostFunctionOperation.swift#L164-L170">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2615,7 +3069,7 @@
                         </table>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/InvokeHostFunctionOperation.swift#L102-L106">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/InvokeHostFunctionOperation.swift#L196-L200">Show on GitHub</a>
                       </div>
                     </section>
                   </div>

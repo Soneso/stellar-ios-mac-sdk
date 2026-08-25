@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          stellarsdk 3.9.0 Docs
+          stellarsdk 3.10.0 Docs
         </a>
          (94% documented)
       </p>
@@ -293,6 +293,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes/DataUpdatedEffectResponse.html">DataUpdatedEffectResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/DeployFromExternalRefRequest.html">DeployFromExternalRefRequest</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes/DeployRequest.html">DeployRequest</a>
@@ -1004,6 +1007,9 @@
                 <a class="nav-group-task-link" href="../Enums/ContractChallengeValidationError.html">ContractChallengeValidationError</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/ContractIdUtils.html">ContractIdUtils</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Enums/ContractSpecError.html">ContractSpecError</a>
               </li>
               <li class="nav-group-task">
@@ -1071,6 +1077,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Enums/GetEventsResponseEnum.html">GetEventsResponseEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/GetExternalRefWasmHashResponseEnum.html">GetExternalRefWasmHashResponseEnum</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Enums/GetFeeStatsResponseEnum.html">GetFeeStatsResponseEnum</a>
@@ -2340,7 +2349,7 @@ conditional transfers.</p>
 </ul>
 
               <div class="slightly-smaller">
-                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/ClaimableBalancesService.swift#L48-L178">Show on GitHub</a>
+                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/ClaimableBalancesService.swift#L48-L181">Show on GitHub</a>
               </div>
           </div>
         </section>
@@ -2388,7 +2397,8 @@ conditional transfers.</p>
                               </td>
                               <td>
                                 <div>
-                                  <p>The claimable balance ID (hex or B-encoded format)</p>
+                                  <p>The claimable balance ID, as a &ldquo;B&hellip;&rdquo; strkey or as hex in any
+of its widths</p>
                                 </div>
                               </td>
                             </tr>
@@ -2397,10 +2407,11 @@ conditional transfers.</p>
                       </div>
                       <div>
                         <h4>Return Value</h4>
-                        <p>ClaimableBalanceDetailsResponseEnum with balance details or error</p>
+                        <p>ClaimableBalanceDetailsResponseEnum with balance details, or a badRequest
+error naming the reason when the id holds none of those spellings</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/ClaimableBalancesService.swift#L65-L85">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/ClaimableBalancesService.swift#L67-L88">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2492,7 +2503,7 @@ conditional transfers.</p>
                         <p>PageResponse containing matching claimable balances or error</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/ClaimableBalancesService.swift#L94-L109">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/ClaimableBalancesService.swift#L97-L112">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2584,7 +2595,7 @@ conditional transfers.</p>
                         <p>PageResponse containing claimable balances for the specified claimant or error</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/ClaimableBalancesService.swift#L118-L133">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/ClaimableBalancesService.swift#L121-L136">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2676,7 +2687,7 @@ conditional transfers.</p>
                         <p>PageResponse containing sponsored claimable balances or error</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/ClaimableBalancesService.swift#L142-L157">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/ClaimableBalancesService.swift#L145-L160">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2732,7 +2743,7 @@ conditional transfers.</p>
                         <p>PageResponse containing claimable balances or error</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/ClaimableBalancesService.swift#L162-L177">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/ClaimableBalancesService.swift#L165-L180">Show on GitHub</a>
                       </div>
                     </section>
                   </div>

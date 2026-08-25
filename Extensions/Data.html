@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          stellarsdk 3.9.0 Docs
+          stellarsdk 3.10.0 Docs
         </a>
          (94% documented)
       </p>
@@ -293,6 +293,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes/DataUpdatedEffectResponse.html">DataUpdatedEffectResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/DeployFromExternalRefRequest.html">DeployFromExternalRefRequest</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes/DeployRequest.html">DeployRequest</a>
@@ -1004,6 +1007,9 @@
                 <a class="nav-group-task-link" href="../Enums/ContractChallengeValidationError.html">ContractChallengeValidationError</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/ContractIdUtils.html">ContractIdUtils</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Enums/ContractSpecError.html">ContractSpecError</a>
               </li>
               <li class="nav-group-task">
@@ -1071,6 +1077,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Enums/GetEventsResponseEnum.html">GetEventsResponseEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/GetExternalRefWasmHashResponseEnum.html">GetExternalRefWasmHashResponseEnum</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Enums/GetFeeStatsResponseEnum.html">GetFeeStatsResponseEnum</a>
@@ -2978,6 +2987,12 @@ produce a zero-difference accumulator through integer overflow truncation.</p>
                       <div class="pointer"></div>
                       <div class="abstract">
                         <p>Encodes data to strkey ed25519 public key (&ldquo;G&hellip;&rdquo;).</p>
+<div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    StellarSDKError.invalidArgument if the data is not the 32 bytes an ed25519
+public key is wide
+
+</div>
 
                       </div>
                       <div class="declaration">
@@ -2989,7 +3004,7 @@ produce a zero-difference accumulator through integer overflow truncation.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/extensions/Data+KeyUtils.swift#L79-L81">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/extensions/Data+KeyUtils.swift#L82-L85">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3008,6 +3023,12 @@ produce a zero-difference accumulator through integer overflow truncation.</p>
                       <div class="pointer"></div>
                       <div class="abstract">
                         <p>Encodes data to strkey ed25519 seed (&ldquo;S&hellip;&rdquo;).</p>
+<div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    StellarSDKError.invalidArgument if the data is not the 32 bytes an ed25519
+seed is wide
+
+</div>
 
                       </div>
                       <div class="declaration">
@@ -3019,7 +3040,7 @@ produce a zero-difference accumulator through integer overflow truncation.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/extensions/Data+KeyUtils.swift#L84-L86">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/extensions/Data+KeyUtils.swift#L91-L94">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3039,6 +3060,14 @@ produce a zero-difference accumulator through integer overflow truncation.</p>
                       <div class="abstract">
                         <p>Encodes data to strkey med25519 public key. (&ldquo;M&hellip;&rdquo;)</p>
 
+<p>The data is the ed25519 key followed by the muxed account id.</p>
+<div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    StellarSDKError.invalidArgument if the data is not the 40 bytes the 32 byte
+ed25519 key and the 8 byte muxed account id occupy
+
+</div>
+
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
@@ -3049,7 +3078,7 @@ produce a zero-difference accumulator through integer overflow truncation.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/extensions/Data+KeyUtils.swift#L89-L91">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/extensions/Data+KeyUtils.swift#L102-L105">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3068,6 +3097,12 @@ produce a zero-difference accumulator through integer overflow truncation.</p>
                       <div class="pointer"></div>
                       <div class="abstract">
                         <p>Encodes data to strkey preAuthTx. (&ldquo;T&hellip;&rdquo;)</p>
+<div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    StellarSDKError.invalidArgument if the data is not the 32 bytes a pre
+authorized transaction hash is wide
+
+</div>
 
                       </div>
                       <div class="declaration">
@@ -3079,7 +3114,7 @@ produce a zero-difference accumulator through integer overflow truncation.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/extensions/Data+KeyUtils.swift#L94-L96">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/extensions/Data+KeyUtils.swift#L111-L114">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3098,6 +3133,12 @@ produce a zero-difference accumulator through integer overflow truncation.</p>
                       <div class="pointer"></div>
                       <div class="abstract">
                         <p>Encodes data to strkey sha256 hash. (&ldquo;X&hellip;&rdquo;)</p>
+<div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    StellarSDKError.invalidArgument if the data is not the 32 bytes a sha256
+hash is wide
+
+</div>
 
                       </div>
                       <div class="declaration">
@@ -3109,7 +3150,7 @@ produce a zero-difference accumulator through integer overflow truncation.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/extensions/Data+KeyUtils.swift#L99-L101">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/extensions/Data+KeyUtils.swift#L120-L123">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3129,6 +3170,17 @@ produce a zero-difference accumulator through integer overflow truncation.</p>
                       <div class="abstract">
                         <p>Encodes raw data to strkey signed payload (&ldquo;P&hellip;&rdquo;).</p>
 
+<p>The data is the signed payload signer body: the signer key, the length of the signed
+data, the signed data itself and zero padding to a multiple of four bytes.</p>
+<div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    StellarSDKError.invalidArgument if the data does not carry that framing:
+if it is too narrow to hold the 32 byte signer key and the 4 byte length field, if
+the length field does not name a length of 1 to 64 bytes, if the data is not as wide
+as that length padded to a multiple of four bytes, or if the padding is not zero bytes
+
+</div>
+
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
@@ -3139,7 +3191,7 @@ produce a zero-difference accumulator through integer overflow truncation.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/extensions/Data+KeyUtils.swift#L104-L106">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/extensions/Data+KeyUtils.swift#L134-L140">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3158,6 +3210,12 @@ produce a zero-difference accumulator through integer overflow truncation.</p>
                       <div class="pointer"></div>
                       <div class="abstract">
                         <p>Encodes raw data to strkey contract id (&ldquo;C&hellip;&rdquo;).</p>
+<div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    StellarSDKError.invalidArgument if the data is not the 32 bytes a contract
+id is wide
+
+</div>
 
                       </div>
                       <div class="declaration">
@@ -3169,7 +3227,7 @@ produce a zero-difference accumulator through integer overflow truncation.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/extensions/Data+KeyUtils.swift#L109-L111">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/extensions/Data+KeyUtils.swift#L146-L149">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3189,6 +3247,19 @@ produce a zero-difference accumulator through integer overflow truncation.</p>
                       <div class="abstract">
                         <p>Encodes raw data to strkey claimable balance (&ldquo;B&hellip;&rdquo;).</p>
 
+<p>The data is the id on its own, in which case the type discriminant
+CLAIMABLE_BALANCE_ID_TYPE_V0 is put in front of it, the body that already carries
+that discriminant, or the XDR encoding opening with the four byte union discriminant,
+the shape Horizon reports. CLAIMABLE_BALANCE_ID_TYPE_V0 is the only type the XDR
+union defines.</p>
+<div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    StellarSDKError.invalidArgument if the data is none of these: neither the
+32 bytes an id is wide, nor the 33 bytes of a body, nor the 36 bytes of the XDR
+encoding, or if a body does not open with that discriminant
+
+</div>
+
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
@@ -3199,7 +3270,7 @@ produce a zero-difference accumulator through integer overflow truncation.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/extensions/Data+KeyUtils.swift#L114-L123">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/extensions/Data+KeyUtils.swift#L162-L174">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3218,6 +3289,12 @@ produce a zero-difference accumulator through integer overflow truncation.</p>
                       <div class="pointer"></div>
                       <div class="abstract">
                         <p>Encodes raw data to strkey liquidity pool id (&ldquo;L&hellip;&rdquo;).</p>
+<div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    StellarSDKError.invalidArgument if the data is not the 32 bytes a liquidity
+pool id is wide
+
+</div>
 
                       </div>
                       <div class="declaration">
@@ -3229,7 +3306,7 @@ produce a zero-difference accumulator through integer overflow truncation.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/extensions/Data+KeyUtils.swift#L126-L128">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/extensions/Data+KeyUtils.swift#L180-L183">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3249,6 +3326,17 @@ produce a zero-difference accumulator through integer overflow truncation.</p>
                       <div class="abstract">
                         <p>Encodes raw data representing a MuxedAccountXDR to strkey muxed account id (&ldquo;M&hellip;&rdquo;).</p>
 
+<p>The data is the 4 byte key type followed by the 32 byte ed25519 key, or by the 8 byte
+muxed account id and that key. KEY_TYPE_MUXED_ED25519 names the wider shape and gives
+an &ldquo;M&hellip;&rdquo; strkey; every other key type value is read as the narrower shape and gives
+the &ldquo;G&hellip;&rdquo; strkey of the ed25519 key.</p>
+<div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    StellarSDKError.invalidArgument unless the data is exactly the width its
+key type names: 44 bytes for KEY_TYPE_MUXED_ED25519, 36 bytes for any other value.
+
+</div>
+
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
@@ -3259,7 +3347,7 @@ produce a zero-difference accumulator through integer overflow truncation.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/extensions/Data+KeyUtils.swift#L131-L141">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/extensions/Data+KeyUtils.swift#L194-L211">Show on GitHub</a>
                       </div>
                     </section>
                   </div>

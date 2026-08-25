@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="index.html">
-          stellarsdk 3.9.0 Docs
+          stellarsdk 3.10.0 Docs
         </a>
          (94% documented)
       </p>
@@ -291,6 +291,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Classes/DataUpdatedEffectResponse.html">DataUpdatedEffectResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Classes/DeployFromExternalRefRequest.html">DeployFromExternalRefRequest</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Classes/DeployRequest.html">DeployRequest</a>
@@ -1002,6 +1005,9 @@
                 <a class="nav-group-task-link" href="Enums/ContractChallengeValidationError.html">ContractChallengeValidationError</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/ContractIdUtils.html">ContractIdUtils</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Enums/ContractSpecError.html">ContractSpecError</a>
               </li>
               <li class="nav-group-task">
@@ -1069,6 +1075,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Enums/GetEventsResponseEnum.html">GetEventsResponseEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/GetExternalRefWasmHashResponseEnum.html">GetExternalRefWasmHashResponseEnum</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Enums/GetFeeStatsResponseEnum.html">GetFeeStatsResponseEnum</a>
@@ -2336,7 +2345,7 @@ related to Ed25519 keypairs used in Stellar.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/crypto/Ed25519Error.swift#L13-L78">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/crypto/Ed25519Error.swift#L13-L82">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -5433,7 +5442,7 @@ existing signatures and ordering map entries deterministically.</li>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountAuth.swift#L35-L390">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountAuth.swift#L35-L403">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -6225,6 +6234,39 @@ Note that submission does not wait for completion.</p>
                 <li class="item">
                   <div>
                     <code>
+                    <a name="/s:10stellarsdk34GetExternalRefWasmHashResponseEnumO"></a>
+                    <a name="//apple_ref/swift/Enum/GetExternalRefWasmHashResponseEnum" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk34GetExternalRefWasmHashResponseEnumO">GetExternalRefWasmHashResponseEnum</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Response enum for external reference resolution requests.</p>
+
+<p>Returns the 32-byte wasm hash a CAP-85 external reference names.</p>
+
+                        <a href="Enums/GetExternalRefWasmHashResponseEnum.html" class="slightly-smaller">See more</a>
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">GetExternalRefWasmHashResponseEnum</span> <span class="p">:</span> <span class="kt">Sendable</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/SorobanServer.swift#L156-L161">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
                     <a name="/s:10stellarsdk19GetContractInfoEnumO"></a>
                     <a name="//apple_ref/swift/Enum/GetContractInfoEnum" class="dashAnchor"></a>
                     <a class="token" href="#/s:10stellarsdk19GetContractInfoEnumO">GetContractInfoEnum</a>
@@ -6250,7 +6292,7 @@ Note that submission does not wait for completion.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/SorobanServer.swift#L156-L163">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/SorobanServer.swift#L166-L173">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -6283,7 +6325,7 @@ Note that submission does not wait for completion.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/SorobanServer.swift#L168-L173">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/SorobanServer.swift#L178-L183">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -6316,7 +6358,7 @@ Note that submission does not wait for completion.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/SorobanServer.swift#L178-L183">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/SorobanServer.swift#L188-L193">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -6348,6 +6390,37 @@ Note that submission does not wait for completion.</p>
                       </div>
                       <div class="slightly-smaller">
                         <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/AssembledTransactionError.swift#L12-L37">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10stellarsdk15ContractIdUtilsO"></a>
+                    <a name="//apple_ref/swift/Enum/ContractIdUtils" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk15ContractIdUtilsO">ContractIdUtils</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Contract id derivation.</p>
+
+                        <a href="Enums/ContractIdUtils.html" class="slightly-smaller">See more</a>
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">ContractIdUtils</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/ContractIdUtils.swift#L12-L41">Show on GitHub</a>
                       </div>
                     </section>
                   </div>

@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          stellarsdk 3.9.0 Docs
+          stellarsdk 3.10.0 Docs
         </a>
          (94% documented)
       </p>
@@ -293,6 +293,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes/DataUpdatedEffectResponse.html">DataUpdatedEffectResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/DeployFromExternalRefRequest.html">DeployFromExternalRefRequest</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes/DeployRequest.html">DeployRequest</a>
@@ -1004,6 +1007,9 @@
                 <a class="nav-group-task-link" href="../Enums/ContractChallengeValidationError.html">ContractChallengeValidationError</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/ContractIdUtils.html">ContractIdUtils</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Enums/ContractSpecError.html">ContractSpecError</a>
               </li>
               <li class="nav-group-task">
@@ -1071,6 +1077,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Enums/GetEventsResponseEnum.html">GetEventsResponseEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/GetExternalRefWasmHashResponseEnum.html">GetExternalRefWasmHashResponseEnum</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Enums/GetFeeStatsResponseEnum.html">GetFeeStatsResponseEnum</a>
@@ -2319,11 +2328,12 @@ one external-wallet signing request. The connected passkey is NOT added
 implicitly — include it explicitly when it should sign.</p>
 
 <p>Each delegated wallet signer produces its own signed auth entry (root
-invocation <code>__check_auth(authDigest)</code>) plus an empty-bytes placeholder in
-the smart account&rsquo;s signature map. Direct wallet entries are signed via the
-external wallet adapter and written into the classical
-<code>Vec([Map({public_key, signature})])</code> shape; the smart account signature
-map is not modified for those entries.</p>
+invocation <code>__check_auth(authDigest)</code>, <code>ADDRESS_V2</code> credentials by default —
+see <code><a href="../Structs/OZSmartAccountConfig.html#/s:10stellarsdk20OZSmartAccountConfigV31useUpgradedAuthForWalletSignersSbvp">useUpgradedAuthForWalletSigners</a></code>) plus an
+empty-bytes placeholder in the smart account&rsquo;s signature map. Direct wallet
+entries are signed via the external wallet adapter and written into the
+classical <code>Vec([Map({public_key, signature})])</code> shape; the smart account
+signature map is not modified for those entries.</p>
 
 <p>Example:</p>
 <pre class="highlight swift"><code><span class="k">let</span> <span class="nv">result</span> <span class="o">=</span> <span class="k">try</span> <span class="k">await</span> <span class="n">kit</span><span class="o">.</span><span class="n">multiSignerManager</span><span class="o">.</span><span class="nf">multiSignerTransfer</span><span class="p">(</span>
@@ -2335,7 +2345,7 @@ map is not modified for those entries.</p>
 </code></pre>
 
               <div class="slightly-smaller">
-                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZMultiSignerManager.swift#L40-L1306">Show on GitHub</a>
+                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZMultiSignerManager.swift#L41-L1328">Show on GitHub</a>
               </div>
           </div>
         </section>
@@ -2526,7 +2536,7 @@ active context rules.</p>
                         <p>An <code><a href="../Structs/OZTransactionResult.html">OZTransactionResult</a></code> describing the on-chain outcome.</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZMultiSignerManager.swift#L103-L159">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZMultiSignerManager.swift#L104-L160">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2679,7 +2689,7 @@ Must be non-empty.</p>
                         <p>An <code><a href="../Structs/OZTransactionResult.html">OZTransactionResult</a></code> describing the on-chain outcome.</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZMultiSignerManager.swift#L186-L214">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZMultiSignerManager.swift#L187-L215">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2833,7 +2843,7 @@ Must be non-empty.</p>
                         <p>An <code><a href="../Structs/OZTransactionResult.html">OZTransactionResult</a></code> describing the on-chain outcome.</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZMultiSignerManager.swift#L242-L277">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZMultiSignerManager.swift#L243-L278">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2979,7 +2989,7 @@ Must be non-empty; an empty list is a routing bug at the call site.</p>
                         <p>An <code><a href="../Structs/OZTransactionResult.html">OZTransactionResult</a></code> describing the on-chain outcome.</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZMultiSignerManager.swift#L354-L534">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZMultiSignerManager.swift#L355-L535">Show on GitHub</a>
                       </div>
                     </section>
                   </div>

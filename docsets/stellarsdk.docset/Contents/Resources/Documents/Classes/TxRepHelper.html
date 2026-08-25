@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          stellarsdk 3.9.0 Docs
+          stellarsdk 3.10.0 Docs
         </a>
          (94% documented)
       </p>
@@ -293,6 +293,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes/DataUpdatedEffectResponse.html">DataUpdatedEffectResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/DeployFromExternalRefRequest.html">DeployFromExternalRefRequest</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes/DeployRequest.html">DeployRequest</a>
@@ -1004,6 +1007,9 @@
                 <a class="nav-group-task-link" href="../Enums/ContractChallengeValidationError.html">ContractChallengeValidationError</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/ContractIdUtils.html">ContractIdUtils</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Enums/ContractSpecError.html">ContractSpecError</a>
               </li>
               <li class="nav-group-task">
@@ -1071,6 +1077,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Enums/GetEventsResponseEnum.html">GetEventsResponseEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/GetExternalRefWasmHashResponseEnum.html">GetExternalRefWasmHashResponseEnum</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Enums/GetFeeStatsResponseEnum.html">GetFeeStatsResponseEnum</a>
@@ -2315,7 +2324,7 @@ parsing, formatting, and Stellar type conversion.</p>
 <p>All methods are static; this class is never instantiated.</p>
 
               <div class="slightly-smaller">
-                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/txrep/TxRepHelper.swift#L17-L1013">Show on GitHub</a>
+                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/txrep/TxRepHelper.swift#L17-L1081">Show on GitHub</a>
               </div>
           </div>
         </section>
@@ -2716,7 +2725,74 @@ as <code>\xNN</code> where NN is two lowercase hex digits per UTF-8 byte.</li>
                         <p>Escaped, double-quoted string.</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/txrep/TxRepHelper.swift#L161-L194">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/txrep/TxRepHelper.swift#L161-L163">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10stellarsdk11TxRepHelperC11escapeBytesySS10Foundation4DataVFZ"></a>
+                    <a name="//apple_ref/swift/Method/escapeBytes(_:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk11TxRepHelperC11escapeBytesySS10Foundation4DataVFZ">escapeBytes(_:<wbr>)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Escape raw bytes for the TxRep double-quoted format.</p>
+
+<p>Applies the ladder of <code><a href="../Classes/TxRepHelper.html#/s:10stellarsdk11TxRepHelperC12escapeStringyS2SFZ">escapeString(_:)</a></code> one byte at a time, so bytes that
+spell valid UTF-8 render exactly as <code><a href="../Classes/TxRepHelper.html#/s:10stellarsdk11TxRepHelperC12escapeStringyS2SFZ">escapeString(_:)</a></code> renders that text.
+Inside the surrounding double quotes:</p>
+
+<ul>
+<li><code>\</code> is encoded as <code>\\</code></li>
+<li><code>&quot;</code> is encoded as <code>\&quot;</code></li>
+<li><code>\n</code> (LF) is encoded as <code>\n</code></li>
+<li><code>\r</code> (CR) is encoded as <code>\r</code></li>
+<li><code>\t</code> (HT) is encoded as <code>\t</code></li>
+<li><p>Every other byte outside printable ASCII 0x20–0x7E is encoded as <code>\xNN</code>
+where NN is two lowercase hex digits.</p></li>
+</ul>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">static</span> <span class="kd">func</span> <span class="nf">escapeBytes</span><span class="p">(</span><span class="n">_</span> <span class="nv">data</span><span class="p">:</span> <span class="kt">Data</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">String</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>data</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The bytes to escape.</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>Escaped, double-quoted string.</p>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/txrep/TxRepHelper.swift#L180-L203">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2779,7 +2855,70 @@ If the input is not quoted it is returned as-is (no unescaping is attempted).</p
                         <p>Unescaped string.</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/txrep/TxRepHelper.swift#L206-L286">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/txrep/TxRepHelper.swift#L215-L225">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10stellarsdk11TxRepHelperC13unescapeBytesy10Foundation4DataVSSKFZ"></a>
+                    <a name="//apple_ref/swift/Method/unescapeBytes(_:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk11TxRepHelperC13unescapeBytesy10Foundation4DataVSSKFZ">unescapeBytes(_:<wbr>)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Unescape a TxRep string value to the bytes it spells.</p>
+
+<p>Reads the escape sequences <code><a href="../Classes/TxRepHelper.html#/s:10stellarsdk11TxRepHelperC14unescapeStringyS2SKFZ">unescapeString(_:)</a></code> reads and returns the bytes
+behind them, so a value whose bytes are not valid UTF-8 survives the round
+trip. An unquoted input contributes its UTF-8 bytes unchanged.</p>
+<div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    <code><a href="../Enums/TxRepError.html#/s:10stellarsdk10TxRepErrorO12invalidValueyACSS_tcACmF">TxRepError.invalidValue(key:)</a></code> if the string is quoted but unterminated,
+      or if a <code>\xNN</code> sequence contains invalid hex digits.
+
+</div>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">static</span> <span class="kd">func</span> <span class="nf">unescapeBytes</span><span class="p">(</span><span class="n">_</span> <span class="nv">s</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt">Data</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>s</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The possibly-quoted string to unescape.</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>The decoded bytes.</p>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/txrep/TxRepHelper.swift#L237-L243">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2853,7 +2992,7 @@ If the input is not quoted it is returned as-is (no unescaping is attempted).</p
                         <p>Parsed <code>Int32</code> value.</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/txrep/TxRepHelper.swift#L298-L320">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/txrep/TxRepHelper.swift#L331-L353">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2913,7 +3052,7 @@ If the input is not quoted it is returned as-is (no unescaping is attempted).</p
                         <p>Parsed <code>Int64</code> value.</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/txrep/TxRepHelper.swift#L329-L362">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/txrep/TxRepHelper.swift#L362-L395">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2974,7 +3113,7 @@ exceeds <code>UInt64.max</code>.</p>
                         <p>Parsed <code>UInt64</code> value.</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/txrep/TxRepHelper.swift#L372-L387">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/txrep/TxRepHelper.swift#L405-L420">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3040,7 +3179,7 @@ exceeds <code>UInt64.max</code>.</p>
                         <p>G-address (e.g., <code>GBZX...</code>).</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/txrep/TxRepHelper.swift#L395-L397">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/txrep/TxRepHelper.swift#L428-L430">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3098,7 +3237,7 @@ exceeds <code>UInt64.max</code>.</p>
                         <p><code><a href="../Classes/PublicKey.html">PublicKey</a></code> value.</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/txrep/TxRepHelper.swift#L404-L410">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/txrep/TxRepHelper.swift#L437-L443">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3158,7 +3297,7 @@ exceeds <code>UInt64.max</code>.</p>
                         <p>G- or M-address string.</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/txrep/TxRepHelper.swift#L419-L425">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/txrep/TxRepHelper.swift#L452-L458">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3216,7 +3355,7 @@ exceeds <code>UInt64.max</code>.</p>
                         <p><code>MuxedAccountXDR</code> value.</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/txrep/TxRepHelper.swift#L432-L438">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/txrep/TxRepHelper.swift#L465-L471">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3271,7 +3410,7 @@ exceeds <code>UInt64.max</code>.</p>
                         <p>TxRep asset string.</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/txrep/TxRepHelper.swift#L446-L459">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/txrep/TxRepHelper.swift#L479-L492">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3332,7 +3471,7 @@ Asset codes of 1–4 characters produce <code>alphanum4</code>; 5–12 produce <
                         <p><code>AssetXDR</code> value.</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/txrep/TxRepHelper.swift#L469-L488">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/txrep/TxRepHelper.swift#L502-L521">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3394,7 +3533,7 @@ by the caller) and cause a throw.</p>
                         <p>TxRep asset string.</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/txrep/TxRepHelper.swift#L499-L514">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/txrep/TxRepHelper.swift#L532-L547">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3455,7 +3594,7 @@ constructed separately from their constituent fields.</p>
                         <p><code>ChangeTrustAssetXDR</code> value.</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/txrep/TxRepHelper.swift#L524-L543">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/txrep/TxRepHelper.swift#L557-L576">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3516,7 +3655,7 @@ lowercase hex string for pool-share assets (the 32-byte liquidity pool ID).</p>
                         <p>TxRep asset string.</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/txrep/TxRepHelper.swift#L553-L569">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/txrep/TxRepHelper.swift#L586-L602">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3577,7 +3716,7 @@ lowercase hex string for pool-share assets (the 32-byte liquidity pool ID).</p>
                         <p><code>TrustlineAssetXDR</code> value.</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/txrep/TxRepHelper.swift#L579-L605">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/txrep/TxRepHelper.swift#L612-L638">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3641,7 +3780,7 @@ lowercase hex string for pool-share assets (the 32-byte liquidity pool ID).</p>
                         <p>StrKey-encoded signer key.</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/txrep/TxRepHelper.swift#L617-L644">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/txrep/TxRepHelper.swift#L650-L677">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3707,7 +3846,7 @@ lowercase hex string for pool-share assets (the 32-byte liquidity pool ID).</p>
                         <p><code>SignerKeyXDR</code> value.</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/txrep/TxRepHelper.swift#L657-L689">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/txrep/TxRepHelper.swift#L690-L722">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3767,7 +3906,7 @@ lowercase hex string for pool-share assets (the 32-byte liquidity pool ID).</p>
                         <p>Asset code string (e.g., <code>&quot;USDC&quot;</code>).</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/txrep/TxRepHelper.swift#L698-L705">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/txrep/TxRepHelper.swift#L731-L738">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3827,7 +3966,7 @@ lowercase hex string for pool-share assets (the 32-byte liquidity pool ID).</p>
                         <p><code>AllowTrustOpAssetXDR</code> value.</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/txrep/TxRepHelper.swift#L714-L724">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/txrep/TxRepHelper.swift#L747-L757">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3903,7 +4042,7 @@ TxRep data continues to parse.</p>
                         <p>Quoted SEP-0011-escaped string, e.g. <code>&quot;Hello&quot;</code> or <code>&quot;caf\xc3\xa9&quot;</code>.</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/txrep/TxRepHelper.swift#L742-L744">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/txrep/TxRepHelper.swift#L775-L777">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3966,7 +4105,7 @@ output and other SDKs that write JSON string literals). Falls back to
                         <p>The decoded memo text.</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/txrep/TxRepHelper.swift#L756-L771">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/txrep/TxRepHelper.swift#L789-L804">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -4053,7 +4192,7 @@ string, so that error messages contain the TxRep field name.</p>
                         <p>Decoded binary <code>Data</code>.</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/txrep/TxRepHelper.swift#L817-L826">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/txrep/TxRepHelper.swift#L850-L859">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -4071,7 +4210,7 @@ string, so that error messages contain the TxRep field name.</p>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Require a hex-encoded field and wrap the result in a <code><a href="../Structs/WrappedData4.html">WrappedData4</a></code>.</p>
+                        <p>Require a hex-encoded field of exactly 4 bytes and wrap it in a <code><a href="../Structs/WrappedData4.html">WrappedData4</a></code>.</p>
 
                       </div>
                       <div class="declaration">
@@ -4083,7 +4222,7 @@ string, so that error messages contain the TxRep field name.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/txrep/TxRepHelper.swift#L829-L831">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/txrep/TxRepHelper.swift#L862-L864">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -4101,7 +4240,7 @@ string, so that error messages contain the TxRep field name.</p>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Require a hex-encoded field and wrap the result in a <code><a href="../Structs/WrappedData12.html">WrappedData12</a></code>.</p>
+                        <p>Require a hex-encoded field of exactly 12 bytes and wrap it in a <code><a href="../Structs/WrappedData12.html">WrappedData12</a></code>.</p>
 
                       </div>
                       <div class="declaration">
@@ -4113,7 +4252,7 @@ string, so that error messages contain the TxRep field name.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/txrep/TxRepHelper.swift#L834-L836">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/txrep/TxRepHelper.swift#L867-L869">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -4131,7 +4270,7 @@ string, so that error messages contain the TxRep field name.</p>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Require a hex-encoded field and wrap the result in a <code><a href="../Structs/WrappedData32.html">WrappedData32</a></code>.</p>
+                        <p>Require a hex-encoded field of exactly 32 bytes and wrap it in a <code><a href="../Structs/WrappedData32.html">WrappedData32</a></code>.</p>
 
                       </div>
                       <div class="declaration">
@@ -4143,7 +4282,7 @@ string, so that error messages contain the TxRep field name.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/txrep/TxRepHelper.swift#L839-L841">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/txrep/TxRepHelper.swift#L872-L874">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -4176,7 +4315,40 @@ the string cannot be unescaped.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/txrep/TxRepHelper.swift#L847-L856">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/txrep/TxRepHelper.swift#L900-L909">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10stellarsdk11TxRepHelperC18requireStringBytesy10Foundation4DataVSDyS2SG_SStKFZ"></a>
+                    <a name="//apple_ref/swift/Method/requireStringBytes(_:_:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk11TxRepHelperC18requireStringBytesy10Foundation4DataVSDyS2SG_SStKFZ">requireStringBytes(_:<wbr>_:<wbr>)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Require a quoted/escaped string field from the map, as the bytes it spells.</p>
+
+<p>Throws <code>missingValue</code> when absent, <code>invalidValue</code> (with the field key) when
+the string cannot be unescaped.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">static</span> <span class="kd">func</span> <span class="nf">requireStringBytes</span><span class="p">(</span><span class="n">_</span> <span class="nv">map</span><span class="p">:</span> <span class="p">[</span><span class="kt">String</span> <span class="p">:</span> <span class="kt">String</span><span class="p">],</span> <span class="n">_</span> <span class="nv">key</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt">Data</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/txrep/TxRepHelper.swift#L915-L924">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -4206,7 +4378,7 @@ the string cannot be unescaped.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/txrep/TxRepHelper.swift#L859-L868">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/txrep/TxRepHelper.swift#L927-L936">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -4236,7 +4408,7 @@ the string cannot be unescaped.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/txrep/TxRepHelper.swift#L871-L880">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/txrep/TxRepHelper.swift#L939-L948">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -4268,7 +4440,7 @@ the string cannot be unescaped.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/txrep/TxRepHelper.swift#L885-L894">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/txrep/TxRepHelper.swift#L953-L962">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -4298,7 +4470,7 @@ the string cannot be unescaped.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/txrep/TxRepHelper.swift#L897-L906">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/txrep/TxRepHelper.swift#L965-L974">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -4328,7 +4500,7 @@ the string cannot be unescaped.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/txrep/TxRepHelper.swift#L909-L918">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/txrep/TxRepHelper.swift#L977-L986">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -4358,7 +4530,7 @@ the string cannot be unescaped.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/txrep/TxRepHelper.swift#L921-L930">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/txrep/TxRepHelper.swift#L989-L998">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -4388,7 +4560,7 @@ the string cannot be unescaped.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/txrep/TxRepHelper.swift#L933-L942">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/txrep/TxRepHelper.swift#L1001-L1010">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -4461,7 +4633,7 @@ original hand-written TxRep serialiser).</p>
                         <p>The liquidity pool ID as a <code><a href="../Structs/WrappedData32.html">WrappedData32</a></code>.</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/txrep/TxRepHelper.swift#L954-L963">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/txrep/TxRepHelper.swift#L1022-L1031">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -4520,7 +4692,7 @@ hex string or an L-address StrKey.</p>
                         <p>Decoded <code><a href="../Structs/WrappedData32.html">WrappedData32</a></code>.</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/txrep/TxRepHelper.swift#L971-L990">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/txrep/TxRepHelper.swift#L1039-L1058">Show on GitHub</a>
                       </div>
                     </section>
                   </div>

@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          stellarsdk 3.9.0 Docs
+          stellarsdk 3.10.0 Docs
         </a>
          (94% documented)
       </p>
@@ -293,6 +293,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes/DataUpdatedEffectResponse.html">DataUpdatedEffectResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/DeployFromExternalRefRequest.html">DeployFromExternalRefRequest</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes/DeployRequest.html">DeployRequest</a>
@@ -1004,6 +1007,9 @@
                 <a class="nav-group-task-link" href="../Enums/ContractChallengeValidationError.html">ContractChallengeValidationError</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/ContractIdUtils.html">ContractIdUtils</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Enums/ContractSpecError.html">ContractSpecError</a>
               </li>
               <li class="nav-group-task">
@@ -1071,6 +1077,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Enums/GetEventsResponseEnum.html">GetEventsResponseEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/GetExternalRefWasmHashResponseEnum.html">GetExternalRefWasmHashResponseEnum</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Enums/GetFeeStatsResponseEnum.html">GetFeeStatsResponseEnum</a>
@@ -2363,7 +2372,7 @@ For more control over transaction construction, use AssembledTransaction directl
 </ul>
 
               <div class="slightly-smaller">
-                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/SorobanClient.swift#L57-L332">Show on GitHub</a>
+                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/SorobanClient.swift#L57-L424">Show on GitHub</a>
               </div>
           </div>
         </section>
@@ -2588,6 +2597,86 @@ upload the contract code and obtain a wasm hash, then use that hash in the deplo
                 <li class="item">
                   <div>
                     <code>
+                    <a name="/s:10stellarsdk13SorobanClientC21deployFromExternalRef0D7RequestAcA06DeployefgH0C_tYaKFZ"></a>
+                    <a name="//apple_ref/swift/Method/deployFromExternalRef(deployRequest:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk13SorobanClientC21deployFromExternalRef0D7RequestAcA06DeployefgH0C_tYaKFZ">deployFromExternalRef(deployRequest:<wbr>)</a>
+                    </code>
+                      <span class="declaration-note">
+                        Asynchronous
+                      </span>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Deploys a new contract instance from a CAP-85 external reference (protocol &gt;= 28)
+and creates a SorobanClient for it.</p>
+
+<p>The executable of the new instance names an owner contract and a tag; the owner&rsquo;s
+persistent entry under that tag holds the hash of the wasm the instance runs.
+The tag is matched byte for byte as the request carries it.
+Nothing is installed as part of the deployment.</p>
+
+<p>The create operation uses the CREATE_CONTRACT_V2 host function form with the given
+constructor arguments (an empty vector when none are given), as <code>deploy</code> does. For
+the plain CREATE_CONTRACT form, build the operation directly with
+<code>InvokeHostFunctionOperation.forCreatingContractFromExternalRef</code>.</p>
+
+<p>The reference is resolved before the transaction is built, so an unresolvable
+reference fails here with a <code>SorobanClientError.deployFailed</code> naming the owner
+and the tag and carrying the resolver&rsquo;s message.</p>
+
+<p>The returned client&rsquo;s spec comes from the wasm the tag names at deployment
+time. Re-pointing the tag later changes the code the instance runs, not the
+spec this client loaded.</p>
+<div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    SorobanClientError if the reference does not resolve or deployment fails
+
+</div>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">static</span> <span class="kd">func</span> <span class="nf">deployFromExternalRef</span><span class="p">(</span><span class="nv">deployRequest</span><span class="p">:</span> <span class="kt"><a href="../Classes/DeployFromExternalRefRequest.html">DeployFromExternalRefRequest</a></span><span class="p">)</span> <span class="k">async</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt">SorobanClient</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>deployRequest</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Deployment parameters including the executable owner, the tag, constructor args, and salt</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>The client for the newly deployed contract</p>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/SorobanClient.swift#L218-L284">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
                     <a name="/s:10stellarsdk13SorobanClientC7install0D7Request5forceSSAA07InstallE0C_SbtYaKFZ"></a>
                     <a name="//apple_ref/swift/Method/install(installRequest:force:)" class="dashAnchor"></a>
                     <a class="token" href="#/s:10stellarsdk13SorobanClientC7install0D7Request5forceSSAA07InstallE0C_SbtYaKFZ">install(installRequest:<wbr>force:<wbr>)</a>
@@ -2691,7 +2780,7 @@ and can return the existing hash without submitting a transaction (unless force 
                         <p>Hex-encoded hash of the installed WASM code</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/SorobanClient.swift#L234-L262">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/SorobanClient.swift#L326-L354">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2721,7 +2810,7 @@ and can return the existing hash without submitting a transaction (unless force 
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/SorobanClient.swift#L265-L267">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/SorobanClient.swift#L357-L359">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2811,7 +2900,7 @@ If you want to force signing and submission even if it is a read only call set <
                         </table>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/SorobanClient.swift#L279-L297">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/SorobanClient.swift#L371-L389">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2888,7 +2977,7 @@ This is usefully if you need to manipulate the transaction before signing and se
                         </table>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/SorobanClient.swift#L307-L318">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/SorobanClient.swift#L399-L410">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2922,7 +3011,7 @@ This is usefully if you need to manipulate the transaction before signing and se
                         <p>Array of SCSpecEntryXDR objects</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/SorobanClient.swift#L322-L324">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/SorobanClient.swift#L414-L416">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2956,7 +3045,7 @@ This is usefully if you need to manipulate the transaction before signing and se
                         <p>ContractSpec instance that can be used for type conversions</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/SorobanClient.swift#L328-L330">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/SorobanClient.swift#L420-L422">Show on GitHub</a>
                       </div>
                     </section>
                   </div>

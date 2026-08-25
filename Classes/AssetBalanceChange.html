@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          stellarsdk 3.9.0 Docs
+          stellarsdk 3.10.0 Docs
         </a>
          (94% documented)
       </p>
@@ -293,6 +293,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes/DataUpdatedEffectResponse.html">DataUpdatedEffectResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/DeployFromExternalRefRequest.html">DeployFromExternalRefRequest</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes/DeployRequest.html">DeployRequest</a>
@@ -1004,6 +1007,9 @@
                 <a class="nav-group-task-link" href="../Enums/ContractChallengeValidationError.html">ContractChallengeValidationError</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/ContractIdUtils.html">ContractIdUtils</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Enums/ContractSpecError.html">ContractSpecError</a>
               </li>
               <li class="nav-group-task">
@@ -1071,6 +1077,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Enums/GetEventsResponseEnum.html">GetEventsResponseEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/GetExternalRefWasmHashResponseEnum.html">GetExternalRefWasmHashResponseEnum</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Enums/GetFeeStatsResponseEnum.html">GetFeeStatsResponseEnum</a>
@@ -2310,7 +2319,7 @@
             <p>Represents an asset balance change resulting from a Soroban contract invocation.</p>
 
               <div class="slightly-smaller">
-                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/responses/operations_responses/InvokeHostFunctionOperationResponse.swift#L88-L143">Show on GitHub</a>
+                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/responses/operations_responses/InvokeHostFunctionOperationResponse.swift#L88-L144">Show on GitHub</a>
               </div>
           </div>
         </section>
@@ -2472,9 +2481,9 @@
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10stellarsdk18AssetBalanceChangeC2toSSvp"></a>
+                    <a name="/s:10stellarsdk18AssetBalanceChangeC2toSSSgvp"></a>
                     <a name="//apple_ref/swift/Property/to" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10stellarsdk18AssetBalanceChangeC2toSSvp">to</a>
+                    <a class="token" href="#/s:10stellarsdk18AssetBalanceChangeC2toSSSgvp">to</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -2482,19 +2491,20 @@
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Destination account of the transfer.</p>
+                        <p>Destination account of the transfer (if applicable). Horizon omits it
+on burn and clawback balance changes.</p>
 
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">let</span> <span class="nv">to</span><span class="p">:</span> <span class="kt">String</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">let</span> <span class="nv">to</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span></code></pre>
 
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/responses/operations_responses/InvokeHostFunctionOperationResponse.swift#L106">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/responses/operations_responses/InvokeHostFunctionOperationResponse.swift#L107">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2524,7 +2534,7 @@
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/responses/operations_responses/InvokeHostFunctionOperationResponse.swift#L109">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/responses/operations_responses/InvokeHostFunctionOperationResponse.swift#L110">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2554,7 +2564,7 @@
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/responses/operations_responses/InvokeHostFunctionOperationResponse.swift#L112">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/responses/operations_responses/InvokeHostFunctionOperationResponse.swift#L113">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2603,7 +2613,7 @@
                         </table>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/responses/operations_responses/InvokeHostFunctionOperationResponse.swift#L131-L142">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/responses/operations_responses/InvokeHostFunctionOperationResponse.swift#L132-L143">Show on GitHub</a>
                       </div>
                     </section>
                   </div>

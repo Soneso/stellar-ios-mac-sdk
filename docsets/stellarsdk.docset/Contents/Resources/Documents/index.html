@@ -20,7 +20,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="index.html">
-          stellarsdk 3.9.0 Docs
+          stellarsdk 3.10.0 Docs
         </a>
          (94% documented)
       </p>
@@ -288,6 +288,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Classes/DataUpdatedEffectResponse.html">DataUpdatedEffectResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Classes/DeployFromExternalRefRequest.html">DeployFromExternalRefRequest</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Classes/DeployRequest.html">DeployRequest</a>
@@ -999,6 +1002,9 @@
                 <a class="nav-group-task-link" href="Enums/ContractChallengeValidationError.html">ContractChallengeValidationError</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/ContractIdUtils.html">ContractIdUtils</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Enums/ContractSpecError.html">ContractSpecError</a>
               </li>
               <li class="nav-group-task">
@@ -1066,6 +1072,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Enums/GetEventsResponseEnum.html">GetEventsResponseEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/GetExternalRefWasmHashResponseEnum.html">GetExternalRefWasmHashResponseEnum</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Enums/GetFeeStatsResponseEnum.html">GetFeeStatsResponseEnum</a>
@@ -2299,16 +2308,16 @@
 
 <p><a href="https://github.com/Soneso/stellar-ios-mac-sdk/releases"><img src="https://img.shields.io/github/v/release/Soneso/stellar-ios-mac-sdk" alt="GitHub release"></a> <a href="https://github.com/Soneso/stellar-ios-mac-sdk/actions/workflows/tests.yml"><img src="https://github.com/Soneso/stellar-ios-mac-sdk/actions/workflows/tests.yml/badge.svg" alt="Tests"></a> <a href="https://codecov.io/gh/Soneso/stellar-ios-mac-sdk"><img src="https://codecov.io/gh/Soneso/stellar-ios-mac-sdk/branch/master/graph/badge.svg" alt="codecov"></a> <a href="https://deepwiki.com/Soneso/stellar-ios-mac-sdk"><img src="https://deepwiki.com/badge.svg" alt="Ask DeepWiki"></a></p>
 
-<p>Build and sign Stellar transactions, query <a href="https://developers.stellar.org/docs/data/apis/horizon">Horizon</a>, and interact with <a href="https://developers.stellar.org/docs/build/smart-contracts/overview">Soroban</a> smart contracts via RPC. Communicate with anchors and external services using built-in support for 18 SEPs.</p>
+<p>Build and sign Stellar transactions, query <a href="https://developers.stellar.org/docs/data/apis/horizon">Horizon</a>, and interact with <a href="https://developers.stellar.org/docs/build/smart-contracts/overview">Soroban</a> smart contracts via RPC. Communicate with anchors and external services using the built-in SEP protocol support.</p>
 <h2 id='installation' class='heading'>Installation</h2>
 <h3 id='swift-package-manager' class='heading'>Swift Package Manager</h3>
-<pre class="highlight swift"><code><span class="o">.</span><span class="nf">package</span><span class="p">(</span><span class="nv">name</span><span class="p">:</span> <span class="s">"stellarsdk"</span><span class="p">,</span> <span class="nv">url</span><span class="p">:</span> <span class="s">"git@github.com:Soneso/stellar-ios-mac-sdk.git"</span><span class="p">,</span> <span class="nv">from</span><span class="p">:</span> <span class="s">"3.9.0"</span><span class="p">),</span>
+<pre class="highlight swift"><code><span class="o">.</span><span class="nf">package</span><span class="p">(</span><span class="nv">name</span><span class="p">:</span> <span class="s">"stellarsdk"</span><span class="p">,</span> <span class="nv">url</span><span class="p">:</span> <span class="s">"git@github.com:Soneso/stellar-ios-mac-sdk.git"</span><span class="p">,</span> <span class="nv">from</span><span class="p">:</span> <span class="s">"3.10.0"</span><span class="p">),</span>
 </code></pre>
 <h3 id='cocoapods' class='heading'>CocoaPods</h3>
-<pre class="highlight ruby"><code><span class="n">pod</span> <span class="s1">'stellar-ios-mac-sdk'</span><span class="p">,</span> <span class="s1">'~&gt; 3.9.0'</span>
+<pre class="highlight ruby"><code><span class="n">pod</span> <span class="s1">'stellar-ios-mac-sdk'</span><span class="p">,</span> <span class="s1">'~&gt; 3.10.0'</span>
 </code></pre>
 
-<p>Requires iOS 13+, macOS 10.15+, Swift 5.7+.</p>
+<p>Requires iOS 15+, macOS 12+, Xcode 16+ (Swift 6 toolchain). Your app can build in Swift 5 or Swift 6 language mode.</p>
 <h2 id='quick-examples' class='heading'>Quick examples</h2>
 <h3 id='send-a-payment' class='heading'>Send a payment</h3>
 
@@ -2339,10 +2348,13 @@
 <h3 id='call-a-smart-contract' class='heading'>Call a smart contract</h3>
 
 <p>Invoke a Soroban contract method:</p>
-<pre class="highlight swift"><code><span class="k">let</span> <span class="nv">client</span> <span class="o">=</span> <span class="k">try</span> <span class="k">await</span> <span class="kt">SorobanClient</span><span class="o">.</span><span class="nf">forClientOptions</span><span class="p">(</span>
+<pre class="highlight swift"><code><span class="kd">import</span> <span class="n">stellarsdk</span>
+
+<span class="c1">// keyPair: your funded account's KeyPair (see "Create an account" above)</span>
+<span class="k">let</span> <span class="nv">client</span> <span class="o">=</span> <span class="k">try</span> <span class="k">await</span> <span class="kt">SorobanClient</span><span class="o">.</span><span class="nf">forClientOptions</span><span class="p">(</span>
     <span class="nv">options</span><span class="p">:</span> <span class="kt">ClientOptions</span><span class="p">(</span>
         <span class="nv">sourceAccountKeyPair</span><span class="p">:</span> <span class="n">keyPair</span><span class="p">,</span>
-        <span class="nv">contractId</span><span class="p">:</span> <span class="s">"CABC..."</span><span class="p">,</span>
+        <span class="nv">contractId</span><span class="p">:</span> <span class="s">"CB3FU6M3TOAGRBLN5WDLXL6A7VR5SSRGULMXQQOABNMPS25YRJ4CN5VV"</span><span class="p">,</span> <span class="c1">// your deployed contract's id</span>
         <span class="nv">network</span><span class="p">:</span> <span class="o">.</span><span class="n">testnet</span><span class="p">,</span>
         <span class="nv">rpcUrl</span><span class="p">:</span> <span class="s">"https://soroban-testnet.stellar.org"</span><span class="p">,</span>
         <span class="nv">enableServerLogging</span><span class="p">:</span> <span class="kc">false</span>

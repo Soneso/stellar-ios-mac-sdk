@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          stellarsdk 3.9.0 Docs
+          stellarsdk 3.10.0 Docs
         </a>
          (94% documented)
       </p>
@@ -293,6 +293,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes/DataUpdatedEffectResponse.html">DataUpdatedEffectResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/DeployFromExternalRefRequest.html">DeployFromExternalRefRequest</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes/DeployRequest.html">DeployRequest</a>
@@ -1004,6 +1007,9 @@
                 <a class="nav-group-task-link" href="../Enums/ContractChallengeValidationError.html">ContractChallengeValidationError</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/ContractIdUtils.html">ContractIdUtils</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Enums/ContractSpecError.html">ContractSpecError</a>
               </li>
               <li class="nav-group-task">
@@ -1071,6 +1077,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Enums/GetEventsResponseEnum.html">GetEventsResponseEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/GetExternalRefWasmHashResponseEnum.html">GetExternalRefWasmHashResponseEnum</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Enums/GetFeeStatsResponseEnum.html">GetFeeStatsResponseEnum</a>
@@ -2735,13 +2744,11 @@ This is the minimum because signed payloads encode:</p>
 <ul>
 <li>32 bytes for the signer public key</li>
 <li>4 bytes for the payload length field</li>
-<li>4 bytes minimum payload
-Total: (1 version + 40 data + 2 checksum) bytes × 8 bits ÷ 5 bits/char = 69 chars</li>
+<li>4 bytes for the signed data field at its smallest width, the signed data being zero
+padded up to a multiple of four bytes
+Total: (1 version + 40 data + 2 checksum) bytes × 8 bits ÷ 5 bits/char = 69 chars
+Reference: CAP-40 <a href="https://github.com/stellar/stellar-protocol/blob/master/core/cap-0040.md">https://github.com/stellar/stellar-protocol/blob/master/core/cap-0040.md</a></li>
 </ul>
-
-<p>Note: This fixes an issue found in the Flutter SDK where it was incorrectly set to 56.
-Reference: CAP-40 <a href="https://github.com/stellar/stellar-protocol/blob/master/core/cap-0040.md">https://github.com/stellar/stellar-protocol/blob/master/core/cap-0040.md</a>
-See also: <a href="https://github.com/Soneso/stellar_flutter_sdk/pull/116">https://github.com/Soneso/stellar_flutter_sdk/pull/116</a></p>
 
                       </div>
                       <div class="declaration">
@@ -2753,7 +2760,7 @@ See also: <a href="https://github.com/Soneso/stellar_flutter_sdk/pull/116">https
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L84">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L82">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2786,7 +2793,7 @@ Reference: CAP-40 <a href="https://github.com/stellar/stellar-protocol/blob/mast
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L90">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L88">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2831,7 +2838,7 @@ Reference: <a href="https://developers.stellar.org">Stellar developer docs</a></
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L97">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L95">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2862,7 +2869,7 @@ Reference: <a href="https://developers.stellar.org">Stellar developer docs</a></
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L101">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L99">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2893,7 +2900,7 @@ Reference: <a href="https://developers.stellar.org">Stellar developer docs</a></
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L105">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L103">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2924,7 +2931,7 @@ Reference: CAP-40 <a href="https://github.com/stellar/stellar-protocol/blob/mast
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L109">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L107">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2955,7 +2962,7 @@ Reference: CAP-40 <a href="https://github.com/stellar/stellar-protocol/blob/mast
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L113">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L111">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2973,7 +2980,9 @@ Reference: CAP-40 <a href="https://github.com/stellar/stellar-protocol/blob/mast
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Minimum payload size in a signed payload (4 bytes)
+                        <p>Smallest width the signed data field of a signed payload occupies (4 bytes)
+The signed data is zero padded up to a multiple of four bytes, so signed data of
+one to four bytes occupies a field four bytes wide.
 Reference: CAP-40 <a href="https://github.com/stellar/stellar-protocol/blob/master/core/cap-0040.md">https://github.com/stellar/stellar-protocol/blob/master/core/cap-0040.md</a></p>
 
                       </div>
