@@ -1049,6 +1049,70 @@ if let map = result.map {
 }
 ```
 
+#### Converting to Native Swift Values
+
+`toNative()` walks a returned value and hands back native Swift values. It is opt-in: `SorobanClient`, simulation results and transaction responses keep giving you `SCValXDR`, and you call `toNative()` where native values read better than per-arm unwrapping. The method never throws, so every value produces a result.
+
+| SCValXDR arm | Native result |
+|---|---|
+| `bool` | `Bool` |
+| `void` | `nil` |
+| `u32`, `i32`, `u64`, `i64` | `UInt32`, `Int32`, `UInt64`, `Int64` |
+| `timepoint`, `duration` | `UInt64` |
+| `u128`, `i128`, `u256`, `i256` | decimal `String` |
+| `bytes` | `Data` |
+| `string`, `symbol` | `String` |
+| `address` | strkey `String` (`G`, `M`, `C`, `B` or `L`) via `SCAddressXDR.toStrKey()` |
+| `vec` | `[Any?]`, element order preserved |
+| `map` | `[AnyHashable: Any?]` |
+| `error`, `contractInstance`, `ledgerKeyContractInstance`, `ledgerKeyNonce`, `executableTag` | the `SCValXDR` itself |
+
+Integers keep their exact width, so a `u64` above `Int.max` survives the conversion. The 128 and 256 bit arms come as decimal strings; cast them to `String`, not to a number. Addresses come as the strkey that Soroban tooling speaks, and the raw `SCAddressXDR` stays reachable through the `address` accessor.
+
+Where no native representation exists, the conversion hands the value back unchanged, and `is SCValXDR` tells you that happened. Beyond the five arms at the bottom of the table, that covers an address whose bytes have no strkey encoding, and a map that no Swift dictionary holds.
+
+**Map keys.** A map converts as a whole or not at all. Keys take the same conversion as values wherever Swift's `Hashable` allows it: symbols and strings become `String`, the fixed width integers keep their width, 128 and 256 bit keys become decimal strings, byte keys stay `Data`, and address keys become their strkey. A `void`, `vec` or `map` key has no dictionary counterpart, and neither has a key of one of the five fallback arms. Such a key leaves the whole map as the `SCValXDR` itself.
+
+The second thing that leaves a map unconverted is a pair of keys that turn out equal. Dictionary keys compare as `AnyHashable`, which reads the fixed width integers as one number: a `u32` key `5` and a `u64` key `5` are the same key, so a map carrying both falls back. The same holds for a 128 or 256 bit key and a `symbol` of the same digits, since the wide integer key is its decimal string. `Bool` takes no part in the numeric reading, so a `bool` key `true` and a `u32` key `1` are two keys and the map converts.
+
+A fallback stays local: an enclosing vec or map still converts, with the problematic map sitting inside it as an `SCValXDR`.
+
+Swift dictionaries carry no order, so the entry order of a `map` is not preserved. Read the entries of the `SCValXDR` itself when the order matters.
+
+```swift
+import stellarsdk
+
+// A u64 above Int.max keeps its value: the result is a UInt64.
+let balance = SCValXDR.u64(18446744073709551615)
+if let nativeBalance = balance.toNative() as? UInt64 {
+    print(nativeBalance)  // 18446744073709551615
+}
+
+// A map with symbol keys becomes a dictionary. Look an entry up by its key and
+// cast it to the type the conversion gives.
+let record = SCValXDR.map([
+    SCMapEntryXDR(key: SCValXDR.symbol("name"), val: SCValXDR.string("Alice")),
+    SCMapEntryXDR(key: SCValXDR.symbol("age"), val: SCValXDR.u32(30)),
+    SCMapEntryXDR(key: SCValXDR.symbol("amount"),
+                  val: try! SCValXDR.i128(stringValue: "170141183460469231731687303715884105727")),
+])
+if let fields = record.toNative() as? [AnyHashable: Any?] {
+    print(fields.count)                       // 3
+    print(fields["name"] as? String ?? "")    // Alice
+    print(fields["age"] as? UInt32 ?? 0)      // 30
+    // A 128 or 256 bit value comes as its decimal string.
+    print(fields["amount"] as? String ?? "")  // 170141183460469231731687303715884105727
+}
+
+// A key with no Swift dictionary counterpart, here a vec, leaves the whole map
+// unconverted: the result is the SCValXDR itself.
+let byVecKey = SCValXDR.map([
+    SCMapEntryXDR(key: SCValXDR.vec([SCValXDR.u32(1)]), val: SCValXDR.u32(2)),
+])
+let converted = byVecKey.toNative()
+print(converted is SCValXDR)  // true
+```
+
 ## Events
 
 Query contract events emitted during execution. Useful for tracking transfers, state changes, and other contract activity.
