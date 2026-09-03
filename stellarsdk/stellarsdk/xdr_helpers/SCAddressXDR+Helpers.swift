@@ -107,3 +107,35 @@ extension SCAddressXDR {
         }
     }
 }
+
+extension SCAddressXDR {
+
+    /// The strkey this address spells.
+    ///
+    /// Every address kind has one: an account gives its "G..." key, a muxed account its
+    /// "M...", a contract its "C...", a claimable balance its "B..." and a liquidity pool
+    /// its "L...". The `contractId`, `claimableBalanceId` and `liquidityPoolId` accessors
+    /// read the same ids as hex.
+    ///
+    /// - Returns: the strkey of the address
+    /// - Throws: XdrJsonError.invalidValue if the payload bytes have no strkey encoding.
+    /// A decoded address always has one.
+    public func toStrKey() throws -> String {
+        let encoded: XdrJsonValue
+        // Each arm names its own encoder, so an address kind added later has to be given
+        // its strkey here before this file compiles again.
+        switch self {
+        case .account(let account):
+            encoded = try account.toXdrJsonValue()
+        case .contract(let contract):
+            encoded = try ContractIDXDRJsonCodec.toXdrJsonValue(contract, type: "SCAddressXDR", key: "contract")
+        case .muxedAccount(let muxedAccount):
+            encoded = try muxedAccount.toXdrJsonValue()
+        case .claimableBalanceId(let balance):
+            encoded = try balance.toXdrJsonValue()
+        case .liquidityPoolId(let pool):
+            encoded = try PoolIDXDRJsonCodec.toXdrJsonValue(pool, type: "SCAddressXDR", key: "liquidity_pool")
+        }
+        return try XdrJson.string(encoded, type: "SCAddressXDR")
+    }
+}

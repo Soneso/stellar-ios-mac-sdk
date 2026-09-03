@@ -443,3 +443,155 @@ extension SCValXDR {
         XdrWideInteger.decimalString(from: data, signed: signed)
     }
 }
+
+// MARK: - Native Swift Value Conversion
+
+extension SCValXDR {
+
+    /// Converts this contract value to native Swift values, as far as one exists for it.
+    ///
+    /// The conversion walks the whole value tree and never throws:
+    /// - `bool`, `u32`, `i32`, `u64`, `i64`, `timepoint` and `duration` become their
+    ///   exact width Swift counterpart, `void` becomes nil
+    /// - `u128`, `i128`, `u256` and `i256` become their decimal `String`
+    /// - `address` becomes its strkey `String`
+    /// - `bytes` becomes `Data`, `string` and `symbol` become `String`
+    /// - `vec` becomes `[Any?]` in element order, `map` becomes `[AnyHashable: Any?]`
+    ///
+    /// A value with no native counterpart comes back as the `SCValXDR` itself, which a
+    /// caller tells apart with `is SCValXDR`: the `error`, `contractInstance`,
+    /// `ledgerKeyContractInstance`, `ledgerKeyNonce` and `executableTag` arms, an address
+    /// whose bytes have no strkey encoding, and a map that no Swift dictionary holds.
+    ///
+    /// A map converts as a whole or not at all. It falls back when a key has no `Hashable`
+    /// counterpart (a `void`, `vec` or `map` key, a key of one of the arms listed above,
+    /// or an address key with no strkey), and when two of its keys turn out equal. Keys
+    /// compare as `AnyHashable`, which reads the fixed width integers as one number, so a
+    /// `u32` key and a `u64` key of the same value are equal and collide. A 128 or 256 bit
+    /// key and the `symbol` of the same digits collide too, since the wide key is its
+    /// decimal `String`. A dictionary carries no ordering, so the entry order of the map
+    /// is not preserved.
+    ///
+    /// - Returns: the native value, nil for `void`, or the `SCValXDR` itself where no
+    /// native representation exists
+    public func toNative() -> Any? {
+        switch self {
+        case .bool(let value):
+            return value
+        case .void:
+            return nil
+        case .error:
+            return self
+        case .u32(let value):
+            return value
+        case .i32(let value):
+            return value
+        case .u64(let value):
+            return value
+        case .i64(let value):
+            return value
+        case .timepoint(let value):
+            return value
+        case .duration(let value):
+            return value
+        case .u128:
+            return u128String
+        case .i128:
+            return i128String
+        case .u256:
+            return u256String
+        case .i256:
+            return i256String
+        case .bytes(let value):
+            return value
+        case .string(let value):
+            return value
+        case .symbol(let value):
+            return value
+        case .vec(let values):
+            return (values ?? []).map { $0.toNative() }
+        case .map(let entries):
+            guard let converted = Self.mapToNative(entries ?? []) else { return self }
+            return converted
+        case .address(let address):
+            do {
+                return try address.toStrKey()
+            } catch {
+                return self
+            }
+        case .contractInstance:
+            return self
+        case .ledgerKeyContractInstance:
+            return self
+        case .ledgerKeyNonce:
+            return self
+        case .executableTag:
+            return self
+        }
+    }
+
+    /// The dictionary the given map entries make, nil when no dictionary holds them.
+    ///
+    /// Entries are taken in order and stored with `updateValue(_:forKey:)`, which keeps an
+    /// entry whose value converts to nil. A key with no dictionary form leaves the map
+    /// unconverted, and so does a pair of keys that turn out equal, which the count of the
+    /// dictionary reports: the later entry takes the place of the earlier one.
+    private static func mapToNative(_ entries: [SCMapEntryXDR]) -> [AnyHashable: Any?]? {
+        var converted: [AnyHashable: Any?] = [:]
+        converted.reserveCapacity(entries.count)
+        for entry in entries {
+            guard let key = mapKeyToNative(entry.key) else { return nil }
+            converted.updateValue(entry.val.toNative(), forKey: key)
+        }
+        guard converted.count == entries.count else { return nil }
+        return converted
+    }
+
+    /// The dictionary key the given map key spells, nil when no `Hashable` value spells it.
+    ///
+    /// Keys take the conversion of the values wherever `Hashable` allows it, so addresses
+    /// read as their strkey and byte keys stay `Data`. The arms that carry no key are
+    /// named one by one, so an arm added later has to be placed here before this file
+    /// compiles again.
+    private static func mapKeyToNative(_ key: SCValXDR) -> AnyHashable? {
+        switch key {
+        case .bool(let value):
+            return value
+        case .u32(let value):
+            return value
+        case .i32(let value):
+            return value
+        case .u64(let value):
+            return value
+        case .i64(let value):
+            return value
+        case .timepoint(let value):
+            return value
+        case .duration(let value):
+            return value
+        case .u128:
+            return key.u128String
+        case .i128:
+            return key.i128String
+        case .u256:
+            return key.u256String
+        case .i256:
+            return key.i256String
+        case .bytes(let value):
+            return value
+        case .string(let value):
+            return value
+        case .symbol(let value):
+            return value
+        case .address(let address):
+            do {
+                return try address.toStrKey()
+            } catch {
+                return nil
+            }
+        case .void, .error, .vec, .map, .contractInstance, .ledgerKeyContractInstance,
+             .ledgerKeyNonce, .executableTag:
+            return nil
+        }
+    }
+}
