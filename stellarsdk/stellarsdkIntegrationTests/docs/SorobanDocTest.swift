@@ -1052,3 +1052,41 @@ final class SorobanDocTest: XCTestCase {
         let _ = try await tx.signAndSend()
     }
 }
+
+final class SorobanDocOfflineTest: XCTestCase {
+
+    // MARK: - Converting to Native Swift Values
+
+    func testToNativeConversionOffline() {
+        // A u64 above Int.max keeps its value: the result is a UInt64.
+        let balance = SCValXDR.u64(18446744073709551615)
+        let nativeBalance = balance.toNative()
+        XCTAssertEqual(nativeBalance as? UInt64, 18446744073709551615)
+
+        // A map with symbol keys becomes a dictionary. Look an entry up by its key and
+        // cast it to the type the conversion gives.
+        let record = SCValXDR.map([
+            SCMapEntryXDR(key: SCValXDR.symbol("name"), val: SCValXDR.string("Alice")),
+            SCMapEntryXDR(key: SCValXDR.symbol("age"), val: SCValXDR.u32(30)),
+            SCMapEntryXDR(key: SCValXDR.symbol("amount"),
+                          val: try! SCValXDR.i128(stringValue: "170141183460469231731687303715884105727")),
+        ])
+        guard let fields = record.toNative() as? [AnyHashable: Any?] else {
+            XCTFail("expected a dictionary")
+            return
+        }
+        XCTAssertEqual(fields.count, 3)
+        XCTAssertEqual(fields["name"] as? String, "Alice")
+        XCTAssertEqual(fields["age"] as? UInt32, 30)
+        // A 128 or 256 bit value comes as its decimal string.
+        XCTAssertEqual(fields["amount"] as? String, "170141183460469231731687303715884105727")
+
+        // A key with no Swift dictionary counterpart, here a vec, leaves the whole map
+        // unconverted: the result is the SCValXDR itself.
+        let byVecKey = SCValXDR.map([
+            SCMapEntryXDR(key: SCValXDR.vec([SCValXDR.u32(1)]), val: SCValXDR.u32(2)),
+        ])
+        let converted = byVecKey.toNative()
+        XCTAssertTrue(converted is SCValXDR)
+    }
+}
