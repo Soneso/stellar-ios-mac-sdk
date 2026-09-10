@@ -4,7 +4,7 @@
     "version": "28.0.0",
     "xdr_commit": "9c9c145953e80990d6ff1ae3a6a973a0ce6d0694"
   },
-  "sdk_xdr_commit": "911c9356277468cb588481bd90b5d4b6eda395a7",
+  "sdk_xdr_commit": "c40231c76bf2ebce76b24aa11c72508ac3eaa329",
   "description": "SEP-0051 XDR-JSON names derived from the .x sources. Regenerate with ruby tools/sep-51-oracle/name_map.rb --diff after any XDR pin bump.",
   "verification": {
     "enum_members_total": 593,

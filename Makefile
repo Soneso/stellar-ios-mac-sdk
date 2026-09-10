@@ -16,7 +16,7 @@ XDRS = xdr/Stellar-SCP.x \
        xdr/Stellar-contract-config-setting.x \
        xdr/Stellar-exporter.x
 
-XDR_COMMIT = 911c9356277468cb588481bd90b5d4b6eda395a7
+XDR_COMMIT = c40231c76bf2ebce76b24aa11c72508ac3eaa329
 
 xdr/%.x:
 	curl -Lsf -o $@ https://raw.githubusercontent.com/stellar/stellar-xdr/$(XDR_COMMIT)/$(@F)

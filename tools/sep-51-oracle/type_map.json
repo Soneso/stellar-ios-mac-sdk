@@ -4,7 +4,7 @@
     "version": "28.0.0",
     "xdr_commit": "9c9c145953e80990d6ff1ae3a6a973a0ce6d0694"
   },
-  "sdk_xdr_commit": "911c9356277468cb588481bd90b5d4b6eda395a7",
+  "sdk_xdr_commit": "c40231c76bf2ebce76b24aa11c72508ac3eaa329",
   "description": "Maps this SDK's generated XDR type names to the reference CLI's spelling. The two differ in acronym casing, in the reserved-name escape and in this SDK's XDR suffix, so a tool that guesses one from the other reports resolvable types as unresolvable. unknown_to_oracle lists every type the reference build does not resolve, whatever the cause; the expected cause is a type added after the XDR commit that build vendors.",
   "type_map": {
     "AccountEntryExtV1XDR": "AccountEntryExtensionV1Ext",
