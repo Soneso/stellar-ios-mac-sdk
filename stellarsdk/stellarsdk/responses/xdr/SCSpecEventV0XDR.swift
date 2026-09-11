@@ -53,7 +53,7 @@ extension SCSpecEventV0XDR: XdrJsonCodable {
     var members: [XdrJsonMember] = []
     members.append(XdrJsonMember(key: "doc", value: XdrJson.escapedString(self.doc)))
     members.append(XdrJsonMember(key: "lib", value: XdrJson.escapedString(self.lib)))
-    members.append(XdrJsonMember(key: "name", value: try SCSymbolXDRJsonCodec.toXdrJsonValue(self.name, type: "SCSpecEventV0XDR", key: "name")))
+    members.append(XdrJsonMember(key: "name", value: XdrJson.escapedString(self.name)))
     members.append(XdrJsonMember(key: "prefix_topics", value: try XdrJson.array(self.prefixTopics.map { element in try SCSymbolXDRJsonCodec.toXdrJsonValue(element, type: "SCSpecEventV0XDR", key: "prefix_topics") })))
     members.append(XdrJsonMember(key: "params", value: try XdrJson.array(self.params.map { element in try element.toXdrJsonValue() })))
     members.append(XdrJsonMember(key: "data_format", value: try self.dataFormat.toXdrJsonValue()))
@@ -64,7 +64,7 @@ extension SCSpecEventV0XDR: XdrJsonCodable {
     let members = try XdrJson.object(value, type: "SCSpecEventV0XDR", keys: ["doc", "lib", "name", "prefix_topics", "params", "data_format"])
     let doc: String = try XdrJson.unescapedText(try XdrJson.field(members, key: "doc", type: "SCSpecEventV0XDR"), type: "SCSpecEventV0XDR", key: "doc")
     let lib: String = try XdrJson.unescapedText(try XdrJson.field(members, key: "lib", type: "SCSpecEventV0XDR"), type: "SCSpecEventV0XDR", key: "lib")
-    let name: String = try SCSymbolXDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "name", type: "SCSpecEventV0XDR"), type: "SCSpecEventV0XDR", key: "name")
+    let name: String = try XdrJson.unescapedText(try XdrJson.field(members, key: "name", type: "SCSpecEventV0XDR"), type: "SCSpecEventV0XDR", key: "name")
     let prefixTopicsElements = try XdrJson.array(try XdrJson.field(members, key: "prefix_topics", type: "SCSpecEventV0XDR"), type: "SCSpecEventV0XDR", key: "prefix_topics")
     let prefixTopics: [String] = try prefixTopicsElements.map { element in try SCSymbolXDRJsonCodec.fromXdrJsonValue(element, type: "SCSpecEventV0XDR", key: "prefix_topics") }
     let paramsElements = try XdrJson.array(try XdrJson.field(members, key: "params", type: "SCSpecEventV0XDR"), type: "SCSpecEventV0XDR", key: "params")

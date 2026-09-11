@@ -18,5 +18,6 @@ public let MAX_OPS_PER_TX: Int32 = 100
 public let MAX_SIGNERS: Int32 = 20
 public let SCSYMBOL_LIMIT: Int32 = 32
 public let SC_SPEC_DOC_LIMIT: Int32 = 1024
+public let SC_SPEC_TYPE_NAME_LIMIT: Int32 = 1024
 public let TX_ADVERT_VECTOR_MAX_SIZE: Int32 = 1000
 public let TX_DEMAND_VECTOR_MAX_SIZE: Int32 = 1000
