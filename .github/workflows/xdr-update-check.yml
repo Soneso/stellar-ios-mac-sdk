@@ -179,11 +179,12 @@ jobs:
           printf '%s\n' \
             '1. Update `XDR_COMMIT` in the repo-root `Makefile` to the upstream commit shown above' \
             '2. Run `make xdr-update` to re-download `.x` files and regenerate the Swift XDR types' \
-            '3. Build the SDK and fix any compile errors in the SDK layer (operation builders, TxRep, SEP implementations, etc.)' \
-            '4. Run `swift test --filter stellarsdkUnitTests` and fix any test failures' \
-            '5. If the XDR changes introduce new types or extend existing ones (e.g. new operations, transaction fields, or protocol features), evaluate whether the SDK needs new or updated high-level APIs to support them (e.g. operation builders, TxRep, service classes)' \
-            '6. Refresh the SEP-0051 (XDR-JSON) artefacts; see below' \
-            '7. Update the changelog and release notes with any breaking changes or new features' >> /tmp/issue_body.md
+            '3. Run `make xdr-generator-test`; if the snapshot diffs show only the intended upstream change, run `make xdr-generator-update-snapshots` and re-run the test' \
+            '4. Build the SDK and fix any compile errors in the SDK layer (operation builders, TxRep, SEP implementations, etc.)' \
+            '5. Run `swift test --filter stellarsdkUnitTests` and fix any test failures' \
+            '6. If the XDR changes introduce new types or extend existing ones (e.g. new operations, transaction fields, or protocol features), evaluate whether the SDK needs new or updated high-level APIs to support them (e.g. operation builders, TxRep, service classes)' \
+            '7. Refresh the SEP-0051 (XDR-JSON) artefacts; see below' \
+            '8. Update the changelog and release notes with any breaking changes or new features' >> /tmp/issue_body.md
           printf '\n## SEP-0051 artefacts\n\n' >> /tmp/issue_body.md
           printf '%s\n' \
             'XDR-JSON derives its wire names from the same `.x` files, so a pin bump can change them. New enum members and new union arms change the wire surface; `make xdr-update` regenerates the conversions but not the artefacts that check them, and those need the pinned reference CLI:' \
