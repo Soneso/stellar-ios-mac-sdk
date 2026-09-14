@@ -51,7 +51,13 @@ public final class ClientOptions: Sendable {
     
     /// Enable soroban server logging (helpful for debugging). Default: false.
     public let enableServerLogging:Bool
-    
+
+    /// Optional URL session handed to every ``SorobanServer`` created from these
+    /// options. Defaults to ``URLSession/shared`` when nil; see
+    /// ``SorobanServer/init(endpoint:urlSession:)``. The SDK does not
+    /// invalidate an injected session.
+    public let urlSession:URLSession?
+
     /// Constructor
     ///
     /// - Parameters:
@@ -60,13 +66,15 @@ public final class ClientOptions: Sendable {
     ///   - network: The Stellar network this contract is deployed
     ///   - rpcUrl: The URL of the RPC instance that will be used to interact with this contract.
     ///   - enableServerLogging: Enable soroban server logging (helpful for debugging). Default: false.
+    ///   - urlSession: Optional URL session used for every RPC request. Defaults to ``URLSession/shared`` when nil; see ``SorobanServer/init(endpoint:urlSession:)``.
     ///
-    public init(sourceAccountKeyPair: KeyPair, contractId: String, network: Network, rpcUrl: String, enableServerLogging: Bool = false) {
+    public init(sourceAccountKeyPair: KeyPair, contractId: String, network: Network, rpcUrl: String, enableServerLogging: Bool = false, urlSession: URLSession? = nil) {
         self.sourceAccountKeyPair = sourceAccountKeyPair
         self.contractId = contractId
         self.network = network
         self.rpcUrl = rpcUrl
         self.enableServerLogging = enableServerLogging
+        self.urlSession = urlSession
     }
     
 }

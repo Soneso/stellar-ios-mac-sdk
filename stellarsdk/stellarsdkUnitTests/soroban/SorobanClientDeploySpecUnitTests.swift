@@ -17,7 +17,11 @@ import XCTest
 /// the RPC yet. Loading by contract id remains the fallback when the code
 /// entry cannot be read or parsed up front.
 ///
-/// All RPC calls are served by ServerMock; no network access.
+/// All RPC calls are served by ServerMock through an injected URLSession whose
+/// configuration pins `protocolClasses` to it, so interception is structural
+/// rather than depending on global `URLProtocol` registration. The RPC host is
+/// not a real one: a request that escaped the mock would fail loudly as a DNS
+/// error instead of reaching a live server and impersonating an SDK error.
 final class SorobanClientDeploySpecUnitTests: XCTestCase {
 
     var mockRpcUrl: String!
@@ -25,6 +29,7 @@ final class SorobanClientDeploySpecUnitTests: XCTestCase {
     var keyPair: KeyPair!
     var wasmHashBytes: Data!
     var tokenWasm: Data!
+    var mockSession: URLSession!
 
     /// Records every served request as 'code', 'contractData', 'account',
     /// 'simulate', 'send' or 'getTx'.
@@ -37,9 +42,11 @@ final class SorobanClientDeploySpecUnitTests: XCTestCase {
     override func setUp() {
         super.setUp()
 
-        URLProtocol.registerClass(ServerMock.self)
+        let configuration = URLSessionConfiguration.ephemeral
+        configuration.protocolClasses = [ServerMock.self]
+        mockSession = URLSession(configuration: configuration)
 
-        mockRpcUrl = "https://soroban-testnet.stellar.org"
+        mockRpcUrl = "https://deploy-spec-unit-tests.mock"
         mockContractId = "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM"
         keyPair = try! KeyPair.generateRandomKeyPair()
         wasmHashBytes = Data(repeating: 0, count: 32)
@@ -55,7 +62,7 @@ final class SorobanClientDeploySpecUnitTests: XCTestCase {
 
     override func tearDown() {
         ServerMock.removeAll()
-        URLProtocol.unregisterClass(ServerMock.self)
+        mockSession.invalidateAndCancel()
         super.tearDown()
     }
 
@@ -68,7 +75,7 @@ final class SorobanClientDeploySpecUnitTests: XCTestCase {
     private func setupDeployFlowMock(codeEntryAnswers: [Data?]) {
         let log = requestLog
         let mock = RequestMock(
-            host: "soroban-testnet.stellar.org",
+            host: "deploy-spec-unit-tests.mock",
             path: "*",
             httpMethod: "POST"
         ) { mock, request in
@@ -265,7 +272,8 @@ final class SorobanClientDeploySpecUnitTests: XCTestCase {
             network: Network.testnet,
             sourceAccountKeyPair: keyPair,
             wasmHash: wasmHashBytes.base16EncodedString(),
-            enableServerLogging: false
+            enableServerLogging: false,
+            urlSession: mockSession
         )
     }
 

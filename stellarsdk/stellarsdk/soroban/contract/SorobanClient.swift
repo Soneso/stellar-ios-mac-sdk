@@ -92,7 +92,7 @@ public final class SorobanClient: Sendable {
     ///   - options: Client options.
     ///
     public static func forClientOptions(options:ClientOptions) async throws -> SorobanClient {
-        let server = SorobanServer(endpoint: options.rpcUrl)
+        let server = SorobanServer(endpoint: options.rpcUrl, urlSession: options.urlSession)
         server.enableLogging = options.enableServerLogging
         let infoEnum = await server.getContractInfoForContractId(contractId:options.contractId)
         switch infoEnum {
@@ -152,7 +152,7 @@ public final class SorobanClient: Sendable {
         // ledger-entry ingestion, so a successful deployment could surface
         // as a load failure. Loading by contract id below remains the
         // fallback when the code entry cannot be read or parsed up front.
-        let server = SorobanServer(endpoint: deployRequest.rpcUrl)
+        let server = SorobanServer(endpoint: deployRequest.rpcUrl, urlSession: deployRequest.urlSession)
         server.enableLogging = deployRequest.enableServerLogging
         var contractInfo:SorobanContractInfo? = nil
         let infoEnum = await server.getContractInfoForWasmId(wasmId: deployRequest.wasmHash)
@@ -169,7 +169,8 @@ public final class SorobanClient: Sendable {
                                           contractId: "ignored",
                                           network: deployRequest.network,
                                           rpcUrl: deployRequest.rpcUrl,
-                                          enableServerLogging: deployRequest.enableServerLogging)
+                                          enableServerLogging: deployRequest.enableServerLogging,
+                                          urlSession: deployRequest.urlSession)
         let options = AssembledTransactionOptions(clientOptions: clientOptions,
                                                   methodOptions: deployRequest.methodOptions,
                                                   method: self.constructorFunc,
@@ -183,12 +184,13 @@ public final class SorobanClient: Sendable {
                                           contractId: try contractId.encodeContractIdHex(),
                                           network: deployRequest.network,
                                           rpcUrl: deployRequest.rpcUrl,
-                                          enableServerLogging: deployRequest.enableServerLogging)
+                                          enableServerLogging: deployRequest.enableServerLogging,
+                                          urlSession: deployRequest.urlSession)
         if let contractInfo = contractInfo {
             return SorobanClient(specEntries: contractInfo.specEntries, clientOptions: finalOptions)
         }
         return try await SorobanClient.forClientOptions(options: finalOptions)
-        
+
     }
     
     /// Deploys a new contract instance from a CAP-85 external reference (protocol >= 28)
@@ -216,7 +218,7 @@ public final class SorobanClient: Sendable {
     /// - Returns: The client for the newly deployed contract
     /// - Throws: SorobanClientError if the reference does not resolve or deployment fails
     public static func deployFromExternalRef(deployRequest:DeployFromExternalRefRequest) async throws -> SorobanClient {
-        let server = SorobanServer(endpoint: deployRequest.rpcUrl)
+        let server = SorobanServer(endpoint: deployRequest.rpcUrl, urlSession: deployRequest.urlSession)
         server.enableLogging = deployRequest.enableServerLogging
 
         let ownerAddress = try SCAddressXDR(contractId: deployRequest.executableOwner)
@@ -262,7 +264,8 @@ public final class SorobanClient: Sendable {
                                           contractId: "ignored",
                                           network: deployRequest.network,
                                           rpcUrl: deployRequest.rpcUrl,
-                                          enableServerLogging: deployRequest.enableServerLogging)
+                                          enableServerLogging: deployRequest.enableServerLogging,
+                                          urlSession: deployRequest.urlSession)
         let options = AssembledTransactionOptions(clientOptions: clientOptions,
                                                   methodOptions: deployRequest.methodOptions,
                                                   method: self.constructorFunc,
@@ -276,7 +279,8 @@ public final class SorobanClient: Sendable {
                                           contractId: try contractId.encodeContractIdHex(),
                                           network: deployRequest.network,
                                           rpcUrl: deployRequest.rpcUrl,
-                                          enableServerLogging: deployRequest.enableServerLogging)
+                                          enableServerLogging: deployRequest.enableServerLogging,
+                                          urlSession: deployRequest.urlSession)
         if let contractInfo = contractInfo {
             return SorobanClient(specEntries: contractInfo.specEntries, clientOptions: finalOptions)
         }
@@ -329,7 +333,8 @@ public final class SorobanClient: Sendable {
                                           contractId: "ignored",
                                           network: installRequest.network,
                                           rpcUrl: installRequest.rpcUrl,
-                                          enableServerLogging: installRequest.enableServerLogging)
+                                          enableServerLogging: installRequest.enableServerLogging,
+                                          urlSession: installRequest.urlSession)
         let options = AssembledTransactionOptions(clientOptions: clientOptions,
                                                   methodOptions: MethodOptions(),
                                                   method: "ignored",
