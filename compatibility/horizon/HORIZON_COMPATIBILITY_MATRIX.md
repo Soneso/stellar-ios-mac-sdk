@@ -1,9 +1,9 @@
 # Horizon API vs iOS/macOS SDK Compatibility Matrix
 
-**Horizon Version:** v28.0.0 (released 2026-08-20)  
-**Horizon Source:** [v28.0.0](https://github.com/stellar/stellar-horizon/releases/tag/v28.0.0)  
-**SDK Version:** 3.10.0  
-**Generated:** 2026-08-25 17:23:20
+**Horizon Version:** v28.0.1 (released 2026-08-27)  
+**Horizon Source:** [v28.0.1](https://github.com/stellar/stellar-horizon/releases/tag/v28.0.1)  
+**SDK Version:** 3.11.0  
+**Generated:** 2026-09-15 17:27:03
 
 **Horizon Endpoints Discovered:** 52  
 **Public API Endpoints (in matrix):** 50

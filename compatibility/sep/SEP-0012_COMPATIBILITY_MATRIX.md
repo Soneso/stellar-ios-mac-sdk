@@ -1,8 +1,8 @@
 # SEP-0012 (KYC API) Compatibility Matrix
 
-**Generated:** 2026-08-25
+**Generated:** 2026-09-15
 
-**SDK Version:** 3.10.0
+**SDK Version:** 3.11.0
 
 **SEP Version:** 1.15.0
 
