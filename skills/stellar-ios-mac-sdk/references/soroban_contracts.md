@@ -279,6 +279,181 @@ let unionType = SCSpecTypeDefXDR.udt(SCSpecTypeUDTXDR(name: "MyUnion"))
 let xdr = try spec.nativeToXdrSCVal(val: someVal, ty: unionType)
 ```
 
+### Converting Results to Native Swift Values
+
+Two methods turn a returned contract value into native Swift values:
+
+```swift
+public func toNative() -> Any?          // SCValXDR: the whole value tree, never throws
+public func toStrKey() throws -> String // SCAddressXDR: the "G"/"M"/"C"/"B"/"L" strkey
+```
+
+`toNative()` is opt-in -- `SorobanClient`, `AssembledTransaction` and the response types keep returning `SCValXDR`. It never throws: a value with no native counterpart comes back as the `SCValXDR` itself, which `is SCValXDR` detects.
+
+| SCValXDR arm | Native result |
+|---|---|
+| `.bool` | `Bool` |
+| `.void` | `nil` |
+| `.u32` / `.i32` / `.u64` / `.i64` | `UInt32` / `Int32` / `UInt64` / `Int64` |
+| `.timepoint` / `.duration` | `UInt64` |
+| `.u128` / `.i128` / `.u256` / `.i256` | decimal `String` |
+| `.bytes` | `Data` |
+| `.string` / `.symbol` | `String` |
+| `.address` | strkey `String` via `SCAddressXDR.toStrKey()` |
+| `.vec` | `[Any?]`, element order preserved; a nil array gives `[]` |
+| `.map` | `[AnyHashable: Any?]`, or the `SCValXDR` itself; a nil array gives `[:]` |
+| `.error`, `.contractInstance`, `.ledgerKeyContractInstance`, `.ledgerKeyNonce`, `.executableTag` | the `SCValXDR` itself |
+
+An address whose bytes have no strkey encoding also comes back as the `SCValXDR` itself.
+
+**Map key rules.** A map converts as a whole or not at all, and falls back to the `SCValXDR` itself when either
+
+1. a key has no `Hashable` counterpart -- a `.void`, `.vec` or `.map` key, a key of one of the five arms above, or an address key with no strkey; or
+2. two keys turn out equal as `AnyHashable`.
+
+Keys otherwise take the value conversion: `.symbol`/`.string` become `String`, the fixed width integers keep their width, `.u128`/`.i128`/`.u256`/`.i256` become decimal `String`, `.bytes` stays `Data`, `.address` becomes its strkey.
+
+`AnyHashable` reads the fixed width integers as one number, which decides what collides:
+
+| Two keys | Outcome |
+|---|---|
+| `.u32(5)` and `.u64(5)` | equal -- collision, whole map falls back |
+| 128 or 256 bit key `5` and `.symbol("5")` | equal (the wide key is the string `"5"`) -- collision |
+| `.symbol("5")` and `.u32(5)` | distinct -- both entries survive |
+| `.bytes(Data([0x35]))` and `.symbol("5")` | distinct -- both entries survive |
+| `.bool(true)` and `.u32(1)` | distinct (`Bool` is outside the numeric reading) |
+
+A dictionary carries no order, so the entry order of a `.map` is not preserved. A lookup by `Int` finds a `.u32` key of the same value, for the same `AnyHashable` reason.
+
+```swift
+import stellarsdk
+
+// Scalars keep their exact width, and the wide integers come as decimal strings.
+let nonce = SCValXDR.u64(18446744073709551615).toNative()
+print(nonce as? UInt64 ?? 0)  // 18446744073709551615
+
+let supply = try SCValXDR.u128(stringValue: "340282366920938463463374607431768211455").toNative()
+print(supply as? String ?? "")  // 340282366920938463463374607431768211455
+
+// An address comes as its strkey.
+let owner = SCValXDR.address(try SCAddressXDR(accountId: "GBBM6BKZPEHWYO3E3YKREDPQXMS4VK35YLNU7NFBRI26RAN7GI5POFBB")).toNative()
+print(owner as? String ?? "")  // GBBM6BKZPEHWYO3E3YKREDPQXMS4VK35YLNU7NFBRI26RAN7GI5POFBB
+
+let contract = try SCAddressXDR(contractId: "CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC").toStrKey()
+print(contract)  // CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC
+```
+
+```swift
+import stellarsdk
+
+// A symbol-keyed map becomes a dictionary; look entries up by their key.
+let record = SCValXDR.map([
+    SCMapEntryXDR(key: SCValXDR.symbol("name"), val: SCValXDR.string("Alice")),
+    SCMapEntryXDR(key: SCValXDR.symbol("age"), val: SCValXDR.u32(30)),
+])
+if let fields = record.toNative() as? [AnyHashable: Any?] {
+    print(fields.count)                     // 2
+    print(fields["name"] as? String ?? "")  // Alice
+    print(fields["age"] as? UInt32 ?? 0)    // 30
+}
+
+// A vec keeps its element order, and a nested vec converts with it.
+let items = SCValXDR.vec([.u32(1), .symbol("a"), .vec([.bool(true)])]).toNative()
+if let elements = items as? [Any?] {
+    print(elements[0] as? UInt32 ?? 0)               // 1
+    print(elements[1] as? String ?? "")              // a
+    print((elements[2] as? [Any?])?[0] as? Bool ?? false)  // true
+}
+```
+
+**Detecting a map fallback** -- a nil cast tells you nothing about why:
+
+```swift
+// WRONG: an unconverted map reads as a nil cast, and the entries are lost
+// let fields = value.toNative() as? [AnyHashable: Any?]  // nil, with no way to go on
+```
+
+```swift
+import stellarsdk
+
+// CORRECT: check for the SCValXDR itself and read the entries per arm
+let value = SCValXDR.map([
+    SCMapEntryXDR(key: SCValXDR.vec([SCValXDR.u32(1)]), val: SCValXDR.u32(2)),
+])
+let native = value.toNative()
+if let fields = native as? [AnyHashable: Any?] {
+    print(fields.count)
+} else if let unconverted = native as? SCValXDR {
+    for entry in unconverted.map ?? [] {
+        print(entry.val.u32 ?? 0)  // 2
+    }
+}
+```
+
+**A u32 key and a u64 key of the same value do not coexist:**
+
+```swift
+// WRONG: expecting two entries -- the keys are equal as AnyHashable, so the map falls back
+// let fields = mixed.toNative() as? [AnyHashable: Any?]
+// print(fields?.count ?? 0)  // 0, not 2: the cast is nil
+```
+
+```swift
+import stellarsdk
+
+// CORRECT: a map keyed on one integer width converts; a lookup by Int finds the key too
+let mixed = SCValXDR.map([
+    SCMapEntryXDR(key: SCValXDR.u32(5), val: SCValXDR.symbol("u32")),
+    SCMapEntryXDR(key: SCValXDR.u64(5), val: SCValXDR.symbol("u64")),
+])
+print(mixed.toNative() is SCValXDR)  // true: the two keys collided
+
+let single = SCValXDR.map([
+    SCMapEntryXDR(key: SCValXDR.u32(5), val: SCValXDR.symbol("u32")),
+])
+if let fields = single.toNative() as? [AnyHashable: Any?] {
+    print(fields[UInt32(5)] as? String ?? "")  // u32
+    print(fields[Int(5)] as? String ?? "")     // u32
+}
+```
+
+**A 128-bit value is a decimal String, not a number:**
+
+```swift
+// WRONG: the conversion produces no integer for a 128 or 256 bit value
+// let amount = balance.toNative() as? Int   // nil
+// let parts = balance.toNative() as? Int128PartsXDR  // nil
+```
+
+```swift
+import stellarsdk
+
+// CORRECT: cast to String, and parse it yourself if you need arithmetic
+let balance = try SCValXDR.i128(stringValue: "-170141183460469231731687303715884105728")
+print(balance.toNative() as? String ?? "")  // -170141183460469231731687303715884105728
+```
+
+**Dictionary iteration order is not the map's entry order:**
+
+```swift
+// WRONG: assuming the dictionary hands entries back in the order the map carried them
+// for (key, value) in fields { ... }  // arbitrary order
+```
+
+```swift
+import stellarsdk
+
+// CORRECT: take the order from the SCValXDR entries, or look keys up by name
+let ordered = SCValXDR.map([
+    SCMapEntryXDR(key: SCValXDR.symbol("first"), val: SCValXDR.u32(1)),
+    SCMapEntryXDR(key: SCValXDR.symbol("second"), val: SCValXDR.u32(2)),
+    SCMapEntryXDR(key: SCValXDR.symbol("third"), val: SCValXDR.u32(3)),
+])
+for entry in ordered.map ?? [] {
+    print(entry.key.symbol ?? "")  // first, second, third
+}
+```
+
 ---
 
 ### Deploy Contract Instance
