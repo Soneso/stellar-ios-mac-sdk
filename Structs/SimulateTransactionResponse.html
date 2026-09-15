@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          stellarsdk 3.10.0 Docs
+          stellarsdk 3.11.0 Docs
         </a>
          (94% documented)
       </p>
@@ -2364,7 +2364,7 @@
     <span class="p">}</span>
 
     <span class="c1">// Get return value for read calls</span>
-    <span class="k">if</span> <span class="k">let</span> <span class="nv">result</span> <span class="o">=</span> <span class="n">simulation</span><span class="o">.</span><span class="n">results</span><span class="p">?</span><span class="o">.</span><span class="n">first</span><span class="p">?</span><span class="o">.</span><span class="n">returnValue</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="k">let</span> <span class="nv">result</span> <span class="o">=</span> <span class="n">simulation</span><span class="o">.</span><span class="n">results</span><span class="p">?</span><span class="o">.</span><span class="n">first</span><span class="p">?</span><span class="o">.</span><span class="n">value</span> <span class="p">{</span>
         <span class="nf">print</span><span class="p">(</span><span class="s">"Contract returned: </span><span class="se">\(</span><span class="n">result</span><span class="se">)</span><span class="s">"</span><span class="p">)</span>
     <span class="p">}</span>
 
