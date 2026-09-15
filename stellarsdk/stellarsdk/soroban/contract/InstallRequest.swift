@@ -55,8 +55,14 @@ public final class InstallRequest: Sendable {
     
     /// Enable soroban server logging (helpful for debugging). Default: false.
     public let enableServerLogging:Bool
-    
-    
+
+    /// Optional URL session used for every RPC request of the installation.
+    /// Defaults to ``URLSession/shared`` when nil; see
+    /// ``SorobanServer/init(endpoint:urlSession:)``. The SDK does not
+    /// invalidate an injected session.
+    public let urlSession:URLSession?
+
+
     /// Constructor
     ///
     /// - Parameters:
@@ -65,13 +71,15 @@ public final class InstallRequest: Sendable {
     ///   - sourceAccountKeyPair: Keypair of the Stellar account that will send this transaction. The keypair must contain the private key for signing.
     ///   - wasmBytes: The contract code wasm bytes to install.
     ///   - enableServerLogging: Enable soroban server logging (helpful for debugging). Default: false.
+    ///   - urlSession: Optional URL session used for every RPC request. Defaults to ``URLSession/shared`` when nil; see ``SorobanServer/init(endpoint:urlSession:)``.
     ///
-    public init(rpcUrl: String, network: Network, sourceAccountKeyPair: KeyPair, wasmBytes: Data, enableServerLogging: Bool) {
+    public init(rpcUrl: String, network: Network, sourceAccountKeyPair: KeyPair, wasmBytes: Data, enableServerLogging: Bool, urlSession: URLSession? = nil) {
         self.rpcUrl = rpcUrl
         self.network = network
         self.sourceAccountKeyPair = sourceAccountKeyPair
         self.wasmBytes = wasmBytes
         self.enableServerLogging = enableServerLogging
+        self.urlSession = urlSession
     }
     
 }

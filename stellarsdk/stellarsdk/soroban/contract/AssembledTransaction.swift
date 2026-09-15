@@ -198,7 +198,7 @@ public final class AssembledTransaction: @unchecked Sendable {
     /// Creates a new assembled transaction with specified configuration options.
     public init(options: AssembledTransactionOptions) {
         self.options = options
-        self.server = SorobanServer(endpoint: options.clientOptions.rpcUrl)
+        self.server = SorobanServer(endpoint: options.clientOptions.rpcUrl, urlSession: options.clientOptions.urlSession)
         self.server.enableLogging = options.enableServerLogging
     }
 

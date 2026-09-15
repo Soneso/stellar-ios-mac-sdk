@@ -48,7 +48,7 @@ import Foundation
 ///     }
 ///
 ///     // Get return value for read calls
-///     if let result = simulation.results?.first?.returnValue {
+///     if let result = simulation.results?.first?.value {
 ///         print("Contract returned: \(result)")
 ///     }
 ///

@@ -79,8 +79,14 @@ public final class DeployRequest: Sendable {
     
     /// Enable soroban server logging (helpful for debugging). Default: false.
     public let enableServerLogging:Bool
-    
-    
+
+    /// Optional URL session used for every RPC request of the deployment.
+    /// Defaults to ``URLSession/shared`` when nil; see
+    /// ``SorobanServer/init(endpoint:urlSession:)``. The SDK does not
+    /// invalidate an injected session.
+    public let urlSession:URLSession?
+
+
     /// Constructor
     ///
     /// - Parameters:
@@ -92,8 +98,9 @@ public final class DeployRequest: Sendable {
     ///   - salt: Salt used to generate the contract's ID. Default: random.
     ///   - methodOptions: Method options used to fine tune the transaction.
     ///   - enableServerLogging: Enable soroban server logging (helpful for debugging). Default: false.
+    ///   - urlSession: Optional URL session used for every RPC request. Defaults to ``URLSession/shared`` when nil; see ``SorobanServer/init(endpoint:urlSession:)``.
     ///
-    public init(rpcUrl: String, network: Network, sourceAccountKeyPair: KeyPair, wasmHash: String, constructorArgs: [SCValXDR]? = nil, salt: WrappedData32? = nil, methodOptions: MethodOptions = MethodOptions(), enableServerLogging: Bool) {
+    public init(rpcUrl: String, network: Network, sourceAccountKeyPair: KeyPair, wasmHash: String, constructorArgs: [SCValXDR]? = nil, salt: WrappedData32? = nil, methodOptions: MethodOptions = MethodOptions(), enableServerLogging: Bool, urlSession: URLSession? = nil) {
         self.rpcUrl = rpcUrl
         self.network = network
         self.sourceAccountKeyPair = sourceAccountKeyPair
@@ -102,5 +109,6 @@ public final class DeployRequest: Sendable {
         self.salt = salt
         self.methodOptions = methodOptions
         self.enableServerLogging = enableServerLogging
+        self.urlSession = urlSession
     }
 }
