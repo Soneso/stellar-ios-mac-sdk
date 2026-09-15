@@ -1,9 +1,9 @@
 # Soroban RPC vs iOS/macOS SDK Compatibility Matrix
 
-**RPC Version:** v28.0.0 (released 2026-08-17)  
-**RPC Source:** [v28.0.0](https://github.com/stellar/stellar-rpc/releases/tag/v28.0.0)  
-**SDK Version:** 3.10.0  
-**Generated:** 2026-08-25 17:23:29
+**RPC Version:** v28.0.1 (released 2026-08-27)  
+**RPC Source:** [v28.0.1](https://github.com/stellar/stellar-rpc/releases/tag/v28.0.1)  
+**SDK Version:** 3.11.0  
+**Generated:** 2026-09-15 17:27:11
 
 ## Overall Coverage
 

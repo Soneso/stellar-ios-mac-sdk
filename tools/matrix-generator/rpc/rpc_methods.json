@@ -2,8 +2,8 @@
   "metadata": {
     "source": "stellar-rpc",
     "repository": "https://github.com/stellar/stellar-rpc",
-    "version": "v28.0.0",
-    "extracted_date": "2026-08-25",
+    "version": "v28.0.1",
+    "extracted_date": "2026-09-15",
     "total_methods": 12,
     "protocol": "JSON-RPC 2.0",
     "protocol_definitions": "https://github.com/stellar/go-stellar-sdk/tree/v0.7.3/protocols/rpc"
@@ -620,11 +620,6 @@
                 "name": "txHash",
                 "type": "string",
                 "description": "Field: txHash"
-              },
-              {
-                "name": "inSuccessfulContractCall",
-                "type": "boolean",
-                "description": "Field: inSuccessfulContractCall"
               },
               {
                 "name": "topic",
