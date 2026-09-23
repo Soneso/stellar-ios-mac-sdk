@@ -2865,8 +2865,8 @@ func getTransactions(forLedger ledger:String, from cursor:String? = nil, order:O
 func getTransactionDetails(transactionHash:String) async -> TransactionDetailsResponseEnum
 func submitTransaction(transaction:Transaction, skipMemoRequiredCheck:Bool = false) async -> TransactionPostResponseEnum
 func submitAsyncTransaction(transaction:Transaction, skipMemoRequiredCheck:Bool = false) async -> TransactionPostAsyncResponseEnum
-func submitFeeBumpTransaction(transaction:FeeBumpTransaction) async -> TransactionPostResponseEnum
-func submitFeeBumpAsyncTransaction(transaction:FeeBumpTransaction) async -> TransactionPostAsyncResponseEnum
+func submitFeeBumpTransaction(transaction:FeeBumpTransaction, skipMemoRequiredCheck:Bool = false) async -> TransactionPostResponseEnum
+func submitFeeBumpAsyncTransaction(transaction:FeeBumpTransaction, skipMemoRequiredCheck:Bool = false) async -> TransactionPostAsyncResponseEnum
 func postTransaction(transactionEnvelope:String, skipMemoRequiredCheck:Bool = false) async -> TransactionPostResponseEnum
 func postTransactionAsync(transactionEnvelope:String, skipMemoRequiredCheck:Bool = false) async -> TransactionPostAsyncResponseEnum
 func stream(for transactionsType:TransactionsChange) -> TransactionsStreamItem
