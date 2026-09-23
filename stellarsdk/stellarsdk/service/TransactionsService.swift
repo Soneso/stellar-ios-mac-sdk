@@ -233,35 +233,48 @@ public class TransactionsService: @unchecked Sendable {
         return await postTransactionAsync(transactionEnvelope: envelope, skipMemoRequiredCheck: skipMemoRequiredCheck)
     }
     
-    /// Submits a fee-bump transaction to replace an existing transaction with higher fees.
+    /// Submits a fee bump transaction, which wraps a signed inner transaction and pays its fee from the fee source account.
+    ///
+    /// The SEP-29 memo requirement check runs against the inner transaction of the encoded
+    /// envelope, which is the payload that is posted, because the fee bump wrapper carries neither
+    /// a memo nor operations.
     ///
     /// - Parameter transaction: The signed fee-bump transaction to submit
-    /// - Returns: TransactionPostResponseEnum with submission result or error
-    open func submitFeeBumpTransaction(transaction:FeeBumpTransaction) async -> TransactionPostResponseEnum {
+    /// - Parameter skipMemoRequiredCheck: Set to true to bypass SEP-29 memo requirement validation (default: false)
+    /// - Returns: TransactionPostResponseEnum with submission result, memo requirement notice, or error
+    open func submitFeeBumpTransaction(transaction:FeeBumpTransaction, skipMemoRequiredCheck:Bool = false) async -> TransactionPostResponseEnum {
         let envelope: String
         do {
             envelope = try transaction.encodedEnvelope()
         } catch {
             return .failure(error: .requestFailed(message: "could not encode fee bump transaction", horizonErrorResponse: nil))
         }
-        return await postTransactionCore(transactionEnvelope: envelope)
+        return await postTransaction(transactionEnvelope: envelope, skipMemoRequiredCheck: skipMemoRequiredCheck)
     }
     
-    /// Submits a fee-bump transaction asynchronously, returning immediately after validation.
+    /// Submits a fee bump transaction asynchronously, returning immediately after validation.
+    ///
+    /// The SEP-29 memo requirement check runs against the inner transaction of the encoded
+    /// envelope, which is the payload that is posted, because the fee bump wrapper carries neither
+    /// a memo nor operations.
     ///
     /// - Parameter transaction: The signed fee-bump transaction to submit
-    /// - Returns: TransactionPostAsyncResponseEnum with async submission result or error
-    open func submitFeeBumpAsyncTransaction(transaction:FeeBumpTransaction) async -> TransactionPostAsyncResponseEnum {
-        var envelope:String? = nil
+    /// - Parameter skipMemoRequiredCheck: Set to true to bypass SEP-29 memo requirement validation (default: false)
+    /// - Returns: TransactionPostAsyncResponseEnum with async submission result, memo requirement notice, or error
+    open func submitFeeBumpAsyncTransaction(transaction:FeeBumpTransaction, skipMemoRequiredCheck:Bool = false) async -> TransactionPostAsyncResponseEnum {
+        let envelope: String
         do {
             envelope = try transaction.encodedEnvelope()
         } catch {
-            return .failure(error: .requestFailed(message: "could not encode transaction", horizonErrorResponse: nil))
+            return .failure(error: .requestFailed(message: "could not encode fee bump transaction", horizonErrorResponse: nil))
         }
-        return await postTransactionAsyncCore(transactionEnvelope: envelope!)
+        return await postTransactionAsync(transactionEnvelope: envelope, skipMemoRequiredCheck: skipMemoRequiredCheck)
     }
     
     /// Posts a transaction envelope directly to Horizon with optional SEP-29 memo validation.
+    ///
+    /// A fee bump envelope is checked against its inner transaction. An envelope that cannot be
+    /// parsed is submitted without the check and left to Horizon's validation.
     ///
     /// - Parameter transactionEnvelope: The base64-encoded transaction envelope XDR
     /// - Parameter skipMemoRequiredCheck: Set to true to bypass SEP-29 memo requirement validation (default: false)
@@ -283,6 +296,9 @@ public class TransactionsService: @unchecked Sendable {
     }
     
     /// Posts a transaction envelope asynchronously, returning immediately after validation.
+    ///
+    /// A fee bump envelope is checked against its inner transaction. An envelope that cannot be
+    /// parsed is submitted without the check and left to Horizon's validation.
     ///
     /// - Parameter transactionEnvelope: The base64-encoded transaction envelope XDR
     /// - Parameter skipMemoRequiredCheck: Set to true to bypass SEP-29 memo requirement validation (default: false)
