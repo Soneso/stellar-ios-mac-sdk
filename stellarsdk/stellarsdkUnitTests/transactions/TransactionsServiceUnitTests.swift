@@ -1340,6 +1340,36 @@ final class TransactionsServiceUnitTests: XCTestCase {
         ServerMock.remove(mock: postMock)
     }
 
+    func testSubmitFeeBumpTransactionEncodingFailure() async {
+        let destKeyPair = try! KeyPair.generateRandomKeyPair()
+        let feeBump = try! unencodableFeeBumpPayment(destinationAccountId: destKeyPair.accountId)
+
+        var lookupCount = 0
+        let accountMock = registerAccountMock(accountId: destKeyPair.accountId, memoRequired: false) { lookupCount += 1 }
+        var postedBodies = [String]()
+        let postMock = registerPostMock(path: "/transactions", response: submitTransactionResponseJson()) { postedBodies.append($0) }
+
+        let response = await sdk.transactions.submitFeeBumpTransaction(transaction: feeBump)
+
+        switch response {
+        case .success(_):
+            XCTFail("Expected failure but got success")
+        case .destinationRequiresMemo(let accountId):
+            XCTFail("Unexpected destinationRequiresMemo: \(accountId)")
+        case .failure(let error):
+            guard case .requestFailed(let message, let horizonErrorResponse) = error else {
+                return XCTFail("Expected requestFailed but got \(error)")
+            }
+            XCTAssertEqual(message, "could not encode fee bump transaction")
+            XCTAssertNil(horizonErrorResponse)
+        }
+        XCTAssertEqual(lookupCount, 0, "a fee bump that cannot be encoded fails before any network request")
+        XCTAssertTrue(postedBodies.isEmpty, "a fee bump that cannot be encoded is not submitted")
+
+        ServerMock.remove(mock: accountMock)
+        ServerMock.remove(mock: postMock)
+    }
+
     // MARK: - submitFeeBumpAsyncTransaction Tests
 
     func testSubmitFeeBumpAsyncTransactionSuccess() async {
@@ -1365,6 +1395,36 @@ final class TransactionsServiceUnitTests: XCTestCase {
         }
         XCTAssertEqual(lookupCount, 1, "a destination that does not exist yet is looked up once and then skipped")
         XCTAssertEqual(postedBodies, [postBody(envelope: envelope)], "the encoded fee bump envelope is posted unchanged")
+
+        ServerMock.remove(mock: accountMock)
+        ServerMock.remove(mock: postMock)
+    }
+
+    func testSubmitFeeBumpAsyncTransactionEncodingFailure() async {
+        let destKeyPair = try! KeyPair.generateRandomKeyPair()
+        let feeBump = try! unencodableFeeBumpPayment(destinationAccountId: destKeyPair.accountId)
+
+        var lookupCount = 0
+        let accountMock = registerAccountMock(accountId: destKeyPair.accountId, memoRequired: false) { lookupCount += 1 }
+        var postedBodies = [String]()
+        let postMock = registerPostMock(path: "/transactions_async", response: submitTransactionAsyncResponseJson()) { postedBodies.append($0) }
+
+        let response = await sdk.transactions.submitFeeBumpAsyncTransaction(transaction: feeBump)
+
+        switch response {
+        case .success(_):
+            XCTFail("Expected failure but got success")
+        case .destinationRequiresMemo(let accountId):
+            XCTFail("Unexpected destinationRequiresMemo: \(accountId)")
+        case .failure(let error):
+            guard case .requestFailed(let message, let horizonErrorResponse) = error else {
+                return XCTFail("Expected requestFailed but got \(error)")
+            }
+            XCTAssertEqual(message, "could not encode fee bump transaction")
+            XCTAssertNil(horizonErrorResponse)
+        }
+        XCTAssertEqual(lookupCount, 0, "a fee bump that cannot be encoded fails before any network request")
+        XCTAssertTrue(postedBodies.isEmpty, "a fee bump that cannot be encoded is not submitted")
 
         ServerMock.remove(mock: accountMock)
         ServerMock.remove(mock: postMock)
@@ -2276,17 +2336,29 @@ final class TransactionsServiceUnitTests: XCTestCase {
 
     /// Builds a signed fee bump around a signed single-payment inner transaction.
     private func feeBumpPayment(destinationAccountId: String, memo: Memo) throws -> FeeBumpTransaction {
-        let sourceKeyPair = try KeyPair.generateRandomKeyPair()
         let feeSourceKeyPair = try KeyPair.generateRandomKeyPair()
+        let feeSourceMuxed = try MuxedAccount(accountId: feeSourceKeyPair.accountId, id: 0)
+        let innerTransaction = try signedPayment(destinationAccountId: destinationAccountId, memo: memo)
+        let feeBump = try FeeBumpTransaction(sourceAccount: feeSourceMuxed, fee: 2000, innerTransaction: innerTransaction)
+        try feeBump.sign(keyPair: feeSourceKeyPair, network: .testnet)
+        return feeBump
+    }
+
+    /// Builds an unsigned fee bump whose envelope encoding always throws, around a signed memo-less payment.
+    private func unencodableFeeBumpPayment(destinationAccountId: String) throws -> FeeBumpTransaction {
+        let feeSourceMuxed = try MuxedAccount(accountId: KeyPair.generateRandomKeyPair().accountId, id: 0)
+        let innerTransaction = try signedPayment(destinationAccountId: destinationAccountId, memo: Memo.none)
+        return try UnencodableFeeBumpTransaction(sourceAccount: feeSourceMuxed, fee: 2000, innerTransaction: innerTransaction)
+    }
+
+    /// Builds a signed single-payment transaction from a random source account.
+    private func signedPayment(destinationAccountId: String, memo: Memo) throws -> Transaction {
+        let sourceKeyPair = try KeyPair.generateRandomKeyPair()
         let sourceAccount = try Account(accountId: sourceKeyPair.accountId, sequenceNumber: 12345)
         let paymentOp = try PaymentOperation(sourceAccountId: nil, destinationAccountId: destinationAccountId, asset: Asset(type: AssetType.ASSET_TYPE_NATIVE)!, amount: 100.0)
         let transaction = try Transaction(sourceAccount: sourceAccount, operations: [paymentOp], memo: memo)
         try transaction.sign(keyPair: sourceKeyPair, network: .testnet)
-
-        let feeSourceMuxed = try MuxedAccount(accountId: feeSourceKeyPair.accountId, id: 0)
-        let feeBump = try FeeBumpTransaction(sourceAccount: feeSourceMuxed, fee: 2000, innerTransaction: transaction)
-        try feeBump.sign(keyPair: feeSourceKeyPair, network: .testnet)
-        return feeBump
+        return transaction
     }
 
     /// Form body that the SDK posts to Horizon for the given envelope.
@@ -2425,5 +2497,12 @@ final class TransactionsServiceUnitTests: XCTestCase {
             "error_result_xdr": null
         }
         """
+    }
+}
+
+/// Fee bump whose envelope encoding fails, for the encoding-failure path of the submit methods.
+private final class UnencodableFeeBumpTransaction: FeeBumpTransaction, @unchecked Sendable {
+    override func encodedEnvelope() throws -> String {
+        throw StellarSDKError.encodingError(message: "envelope encoding failed")
     }
 }
