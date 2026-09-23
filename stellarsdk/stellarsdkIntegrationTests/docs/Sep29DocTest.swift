@@ -267,4 +267,68 @@ class Sep29DocTest: XCTestCase {
         XCTAssertFalse(envelope2.isEmpty)
         XCTAssertNotEqual(envelope1, envelope2)
     }
+
+    // MARK: - Fee bump: the memo lives on the inner transaction
+
+    func testRebuildFeeBumpWithMemoOnInnerTransaction() throws {
+        // Demonstrates the correct pattern after .destinationRequiresMemo from a fee bump:
+        // rebuild the inner transaction with a memo and wrap it again
+        let senderKeyPair = try KeyPair.generateRandomKeyPair()
+        let feeSourceKeyPair = try KeyPair.generateRandomKeyPair()
+        let destKeyPair = try KeyPair.generateRandomKeyPair()
+        let originalSequenceNumber: Int64 = 100
+
+        let paymentOp = try PaymentOperation(
+            sourceAccountId: nil,
+            destinationAccountId: destKeyPair.accountId,
+            asset: Asset(type: AssetType.ASSET_TYPE_NATIVE)!,
+            amount: 100.0
+        )
+
+        // First attempt (inner transaction without memo)
+        let innerAccount1 = try Account(
+            accountId: senderKeyPair.accountId,
+            sequenceNumber: originalSequenceNumber
+        )
+        let innerTx = try Transaction(
+            sourceAccount: innerAccount1,
+            operations: [paymentOp],
+            memo: Memo.none,
+            maxOperationFee: 100
+        )
+        try innerTx.sign(keyPair: senderKeyPair, network: Network.testnet)
+        let feeSource1 = try MuxedAccount(accountId: feeSourceKeyPair.accountId, sequenceNumber: 0)
+        let feeBumpTx = try FeeBumpTransaction(sourceAccount: feeSource1, fee: 300, innerTransaction: innerTx)
+        try feeBumpTx.sign(keyPair: feeSourceKeyPair, network: Network.testnet)
+        XCTAssertEqual(feeBumpTx.innerTransaction.memo, Memo.none)
+
+        // Rebuild the inner transaction with a memo using a fresh Account, then wrap it again
+        let innerAccount2 = try Account(
+            accountId: senderKeyPair.accountId,
+            sequenceNumber: originalSequenceNumber
+        )
+        let innerWithMemo = try Transaction(
+            sourceAccount: innerAccount2,
+            operations: [paymentOp],
+            memo: Memo.text("customer 42"),
+            maxOperationFee: 100
+        )
+        try innerWithMemo.sign(keyPair: senderKeyPair, network: Network.testnet)
+        let feeSource2 = try MuxedAccount(accountId: feeSourceKeyPair.accountId, sequenceNumber: 0)
+        let feeBumpWithMemo = try FeeBumpTransaction(sourceAccount: feeSource2, fee: 300, innerTransaction: innerWithMemo)
+        try feeBumpWithMemo.sign(keyPair: feeSourceKeyPair, network: Network.testnet)
+
+        XCTAssertEqual(feeBumpWithMemo.innerTransaction.memo, Memo.text("customer 42"))
+        XCTAssertEqual(feeBumpWithMemo.innerTransaction.transactionXDR.seqNum, feeBumpTx.innerTransaction.transactionXDR.seqNum)
+
+        // The submitted envelope is a fee bump envelope whose inner transaction carries the memo
+        let envelope = try TransactionEnvelopeXDR(fromBase64: try feeBumpWithMemo.encodedEnvelope())
+        guard case .feeBump = envelope else {
+            return XCTFail("expected a fee bump envelope")
+        }
+        guard case .text(let memoText) = envelope.txMemo else {
+            return XCTFail("expected a text memo on the inner transaction")
+        }
+        XCTAssertEqual(memoText, "customer 42")
+    }
 }
