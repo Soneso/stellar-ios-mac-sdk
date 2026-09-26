@@ -19,7 +19,7 @@ public struct LedgerEntryExtensionV1: XDRCodable, Sendable {
     } else {
       signerSponsoringID = nil
     }
-    _ = try container.decode(Int32.self)
+    _ = try container.decodeExtensionPoint("LedgerEntryExtensionV1")
   }
 
   public func encode(to encoder: Encoder) throws {

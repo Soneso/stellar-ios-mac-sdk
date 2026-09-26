@@ -14,7 +14,7 @@ public struct TrustlineEntryExtensionV2: XDRCodable, Sendable {
   public init(from decoder: Decoder) throws {
     var container = try decoder.unkeyedContainer()
     liquidityPoolUseCount = try container.decode(Int32.self)
-    _ = try container.decode(Int32.self)
+    _ = try container.decodeExtensionPoint("TrustlineEntryExtensionV2")
   }
 
   public func encode(to encoder: Encoder) throws {

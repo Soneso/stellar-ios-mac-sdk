@@ -13,7 +13,7 @@ public struct ClaimableBalanceEntryExtensionV1: XDRCodable, Sendable {
 
   public init(from decoder: Decoder) throws {
     var container = try decoder.unkeyedContainer()
-    _ = try container.decode(Int32.self)
+    _ = try container.decodeExtensionPoint("ClaimableBalanceEntryExtensionV1")
     flags = try container.decode(UInt32.self)
   }
 

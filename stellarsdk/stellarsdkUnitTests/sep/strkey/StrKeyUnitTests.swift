@@ -601,6 +601,37 @@ final class StrKeyUnitTests: XCTestCase {
             }
         }
     }
+
+    func testEncodeMuxedAccountRejectsUnknownKeyType() throws {
+        let gAddress = "GBJRYVWMCM4IYZDEB7AUB7Q4IY64HLLWD5A3ZLONHDEDZ66YSU4IXS5N"
+        let mAddress = "MAQAA5L65LSYH7CQ3VTJ7F3HHLGCL3DSLAR2Y47263D56MNNGHSQSAAAAAAAAAAE2LP26"
+        var ed25519Data = try Data(XDREncoder.encode(try gAddress.decodeMuxedAccount()))
+        var muxedData = try Data(XDREncoder.encode(try mAddress.decodeMuxedAccount()))
+        XCTAssertEqual(Data([0x00, 0x00, 0x00, 0x00]), ed25519Data.prefix(4))
+        XCTAssertEqual(Data([0x00, 0x00, 0x01, 0x00]), muxedData.prefix(4))
+        // KEY_TYPE_PRE_AUTH_TX is a valid key type without an arm in the muxed account union.
+        let preAuthTx = Data([0x00, 0x00, 0x00, 0x01])
+        ed25519Data.replaceSubrange(0..<4, with: preAuthTx)
+        muxedData.replaceSubrange(0..<4, with: preAuthTx)
+
+        // Both valid widths report the key type.
+        for data in [ed25519Data, muxedData] {
+            XCTAssertThrowsError(try data.encodeMuxedAccount()) { error in
+                guard case StellarSDKError.invalidArgument(let message) = error else {
+                    return XCTFail("expected invalidArgument, got \(error)")
+                }
+                XCTAssertEqual("invalid muxed account key type 1, must be KEY_TYPE_ED25519 or KEY_TYPE_MUXED_ED25519", message)
+            }
+        }
+
+        // Any other width reports the length.
+        XCTAssertThrowsError(try (ed25519Data + Data([0x00])).encodeMuxedAccount()) { error in
+            guard case StellarSDKError.invalidArgument(let message) = error else {
+                return XCTFail("expected invalidArgument, got \(error)")
+            }
+            XCTAssertEqual("invalid muxed account length 37, must be 36 bytes (44 for KEY_TYPE_MUXED_ED25519)", message)
+        }
+    }
     
     // MARK: - Signed Payload Tests
 

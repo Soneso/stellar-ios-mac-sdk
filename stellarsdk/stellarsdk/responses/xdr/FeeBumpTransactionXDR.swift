@@ -31,7 +31,7 @@ public struct FeeBumpTransactionXDR: XDRCodable, Sendable {
         sourceAccount = try container.decode(MuxedAccountXDR.self)
         fee = try container.decode(UInt64.self)
         innerTx = try container.decode(FeeBumpTransactionXDRInnerTxXDR.self)
-        reserved = try container.decode(Int32.self)
+        reserved = try container.decodeExtensionPoint("FeeBumpTransactionXDR")
     }
     
     public func encode(to encoder: Encoder) throws {

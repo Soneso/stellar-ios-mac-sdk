@@ -43,7 +43,7 @@ public struct TransactionV0XDR: XDRCodable, Sendable {
         timeBounds = try decodeArray(type: TimeBoundsXDR.self, dec: decoder).first
         memo = try container.decode(MemoXDR.self)
         operations = try decodeArray(type: OperationXDR.self, dec: decoder)
-        reserved = try container.decode(Int32.self)
+        reserved = try container.decodeExtensionPoint("TransactionV0XDR")
     }
     
     public func encode(to encoder: Encoder) throws {

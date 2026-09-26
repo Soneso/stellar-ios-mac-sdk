@@ -18,15 +18,17 @@ public enum MuxedAccountXDR: XDRCodable, Sendable {
         let type = try container.decode(Int32.self)
         
         switch type {
-        case CryptoKeyType.KEY_TYPE_MUXED_ED25519:
-            let mm = try container.decode(MuxedAccountMed25519XDR.self)
-            self = .med25519(mm)
-        default:
+        case CryptoKeyType.KEY_TYPE_ED25519:
             let wrappedData = try container.decode(WrappedData32.self)
             let sourceAccountEd25519 = wrappedData.wrapped.withUnsafeBytes { (rawBufferPointer: UnsafeRawBufferPointer) in
                 [UInt8](UnsafeBufferPointer(start: rawBufferPointer.baseAddress!.assumingMemoryBound(to: UInt8.self), count: wrappedData.wrapped.count))
             }
             self = .ed25519(sourceAccountEd25519)
+        case CryptoKeyType.KEY_TYPE_MUXED_ED25519:
+            let mm = try container.decode(MuxedAccountMed25519XDR.self)
+            self = .med25519(mm)
+        default:
+            throw StellarSDKError.xdrDecodingError(message: "Unknown MuxedAccountXDR discriminant: \(type)")
         }
     }
     

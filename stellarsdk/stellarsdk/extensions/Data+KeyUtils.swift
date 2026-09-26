@@ -184,17 +184,20 @@ extension Data {
     
     /// Encodes raw data representing a MuxedAccountXDR to strkey muxed account id ("M...").
     ///
-    /// The data is the 4 byte key type followed by the 32 byte ed25519 key, or by the 8 byte
-    /// muxed account id and that key. KEY_TYPE_MUXED_ED25519 names the wider shape and gives
-    /// an "M..." strkey; every other key type value is read as the narrower shape and gives
-    /// the "G..." strkey of the ed25519 key.
+    /// The data is the 4 byte key type followed by the key material. KEY_TYPE_ED25519 with
+    /// the 32 byte ed25519 key gives the "G..." strkey of that key; KEY_TYPE_MUXED_ED25519
+    /// with the 8 byte muxed account id and the 32 byte ed25519 key gives an "M..." strkey.
     ///
     /// - Throws: StellarSDKError.invalidArgument unless the data is exactly the width its
-    /// key type names: 44 bytes for KEY_TYPE_MUXED_ED25519, 36 bytes for any other value.
+    /// key type names (36 bytes for KEY_TYPE_ED25519, 44 bytes for KEY_TYPE_MUXED_ED25519),
+    /// or if the key type is neither of these.
     public func encodeMuxedAccount() throws -> String {
         let muxed: MuxedAccountXDR
         do {
             muxed = try XDRDecoder.decode(MuxedAccountXDR.self, data:self)
+        } catch StellarSDKError.xdrDecodingError where count == 36 || count == 44 {
+            let keyType = try XDRDecoder.decode(Int32.self, data: self)
+            throw StellarSDKError.invalidArgument(message: "invalid muxed account key type \(keyType), must be KEY_TYPE_ED25519 or KEY_TYPE_MUXED_ED25519")
         } catch {
             throw StellarSDKError.invalidArgument(message: "invalid muxed account length \(count), must be 36 bytes (44 for KEY_TYPE_MUXED_ED25519)")
         }

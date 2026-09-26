@@ -311,6 +311,21 @@ final class PublicKeyTestCase: XCTestCase {
         XCTAssertEqual(publicKey1.bytes, publicKey2.bytes)
     }
 
+    func testDecodeRejectsUnknownKeyType() throws {
+        var encoded = try XDREncoder.encode(try PublicKey(accountId: testAccountId))
+        XCTAssertEqual(36, encoded.count)
+        XCTAssertEqual([0, 0, 0, 0], Array(encoded[0..<4]))
+        XCTAssertEqual(testAccountId, try XDRDecoder.decode(PublicKey.self, data: encoded).accountId)
+        encoded.replaceSubrange(0..<4, with: [0, 0, 0, 1])
+
+        XCTAssertThrowsError(try XDRDecoder.decode(PublicKey.self, data: encoded)) { error in
+            guard case StellarSDKError.xdrDecodingError(let message) = error else {
+                return XCTFail("expected xdrDecodingError, got \(error)")
+            }
+            XCTAssertEqual("Unknown PublicKey discriminant: 1", message)
+        }
+    }
+
     func testVerifyEmptyMessage() throws {
         // Test signature verification with empty message
         let keyPair = try KeyPair(secretSeed: testSecretSeed)
