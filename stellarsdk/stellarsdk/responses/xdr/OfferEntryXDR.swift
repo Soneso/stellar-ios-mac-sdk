@@ -40,7 +40,7 @@ public struct OfferEntryXDR: XDRCodable, Sendable {
     amount = try container.decode(Int64.self)
     price = try container.decode(PriceXDR.self)
     flags = try container.decode(UInt32.self)
-    _ = try container.decode(Int32.self)
+    _ = try container.decodeExtensionPoint("OfferEntryXDR")
   }
 
   public func encode(to encoder: Encoder) throws {

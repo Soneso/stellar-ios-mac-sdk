@@ -24,7 +24,7 @@ public struct DataEntryXDR: XDRCodable, Sendable {
     accountID = try container.decode(PublicKey.self)
     dataName = try container.decode(String.self)
     dataValue = try container.decode(DataValueXDR.self)
-    _ = try container.decode(Int32.self)
+    _ = try container.decodeExtensionPoint("DataEntryXDR")
   }
 
   public func encode(to encoder: Encoder) throws {

@@ -214,6 +214,21 @@ class MuxedAccountXDRUnitTests: XCTestCase {
         XCTAssertEqual(med25519Muxed.type(), Int32(0x100))
     }
 
+    func testMuxedAccountXDRRejectsUnknownDiscriminant() throws {
+        var encoded = try XDREncoder.encode(MuxedAccountXDR.ed25519(try createTestEd25519Bytes()))
+        XCTAssertEqual(36, encoded.count)
+        XCTAssertEqual([0, 0, 0, 0], Array(encoded[0..<4]))
+        // KEY_TYPE_PRE_AUTH_TX is a valid key type without an arm in the muxed account union.
+        encoded.replaceSubrange(0..<4, with: [0, 0, 0, 1])
+
+        XCTAssertThrowsError(try XDRDecoder.decode(MuxedAccountXDR.self, data: encoded)) { error in
+            guard case StellarSDKError.xdrDecodingError(let message) = error else {
+                return XCTFail("expected xdrDecodingError, got \(error)")
+            }
+            XCTAssertEqual("Unknown MuxedAccountXDR discriminant: 1", message)
+        }
+    }
+
     // MARK: - MuxedAccountMed25519XDR Tests
 
     func testMuxedAccountMed25519XDRFields() throws {
