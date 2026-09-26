@@ -51,7 +51,7 @@ FIELD_TYPE_OVERRIDES = {
 # When a field is in this map:
 #   - Property: `public let reserved: Int32 = 0` (field name from FIELD_OVERRIDES)
 #   - Init: field is omitted from init parameters
-#   - Decode: `_ = try container.decode(Int32.self)` (value discarded)
+#   - Decode: `_ = try container.decodeExtensionPoint("StructName")` (throws unless 0)
 #   - Encode: `try container.encode(reserved)` (always encodes 0)
 EXTENSION_POINT_FIELDS = {
   "ClaimableBalanceEntryExtensionV1" => ["reserved"],

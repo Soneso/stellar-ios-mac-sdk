@@ -86,12 +86,16 @@ public final class PublicKey: XDRCodable, Sendable {
     ///
     /// - Parameter decoder: The decoder
     ///
-    /// - Throws errors if the key could not be created from the given decoder
+    /// - Throws StellarSDKError.xdrDecodingError if the key type is not PUBLIC_KEY_TYPE_ED25519,
+    ///   or other errors if the key could not be created from the given decoder
     ///
     public required init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
         
-        _ = try container.decode(Int32.self)
+        let type = try container.decode(Int32.self)
+        guard type == PublicKeyTypeXDR.publicKeyTypeEd25519.rawValue else {
+            throw StellarSDKError.xdrDecodingError(message: "Unknown PublicKey discriminant: \(type)")
+        }
         
         let wrappedData = try container.decode(WrappedData32.self)
         self.buffer = wrappedData.wrapped.withUnsafeBytes { (rawBufferPointer: UnsafeRawBufferPointer) in

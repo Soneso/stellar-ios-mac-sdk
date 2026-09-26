@@ -10,14 +10,42 @@
 
 import Foundation
 
+/// Minimum number of bytes a schema-level XDR array element occupies.
+///
+/// Scalars, enum and union discriminants, optional flags and length prefixes are 4 bytes,
+/// and fixed opaque data is padded to a multiple of 4.
+private let minXdrElementWidth = 4
+
+/// Validates the element count of a variable-length XDR array against the bytes left to read.
+///
+/// Each element occupies at least `minElementWidth` bytes, so a count above
+/// `remainingBytes / minElementWidth` cannot be satisfied by the input. Checking it before
+/// the caller reserves storage keeps a hostile count from sizing an allocation.
+///
+/// - Parameter count: Element count read from the array's length prefix
+/// - Parameter minElementWidth: Minimum encoded width of one element in bytes
+/// - Parameter decoder: Decoder positioned right after the length prefix
+/// - Throws: StellarSDKError.xdrDecodingError if the count exceeds what the remaining bytes can hold
+private func requireArrayCount(_ count: UInt32, minElementWidth: Int, decoder: XDRDecoder) throws {
+    let remainingBytes = decoder.remainingBytes
+    let maxCount = remainingBytes / minElementWidth
+    guard UInt64(count) <= UInt64(maxCount) else {
+        throw StellarSDKError.xdrDecodingError(message: "XDR array count \(count) exceeds the maximum of \(maxCount) for the \(remainingBytes) remaining bytes")
+    }
+}
+
 /// Decodes an array of XDR-encodable objects from a decoder.
 ///
-/// XDR arrays are prefixed with a 32-bit count followed by the elements.
+/// XDR arrays are prefixed with a 32-bit count followed by the elements. The count is
+/// validated against `maxCount` and against the remaining bytes, at 4 bytes per element,
+/// before storage is reserved for it.
 ///
 /// - Parameter type: Type of elements to decode
 /// - Parameter dec: Decoder to read from
+/// - Parameter maxCount: Maximum number of elements the schema allows
 /// - Returns: Decoded array of elements
-/// - Throws: XDRDecoder.Error if decoding fails
+/// - Throws: StellarSDKError.xdrDecodingError if the count exceeds `maxCount` or the remaining
+///   bytes, XDRDecoder.Error if decoding an element fails
 func decodeArray<T: Codable>(type:T.Type, dec:Decoder, maxCount: UInt32 = UInt32.max) throws -> [T] {
     guard let decoder = dec as? XDRDecoder else {
         throw XDRDecoder.Error.typeNotConformingToDecodable(Decoder.Type.self)
@@ -27,11 +55,9 @@ func decodeArray<T: Codable>(type:T.Type, dec:Decoder, maxCount: UInt32 = UInt32
     guard count <= maxCount else {
         throw StellarSDKError.xdrDecodingError(message: "Array count \(count) exceeds maximum \(maxCount)")
     }
-    guard count <= decoder.remainingBytes else {
-        throw XDRDecoder.Error.prematureEndOfData
-    }
+    try requireArrayCount(count, minElementWidth: minXdrElementWidth, decoder: decoder)
     var array = [T]()
-    array.reserveCapacity(min(Int(count), decoder.remainingBytes))
+    array.reserveCapacity(Int(count))
     for _ in 0 ..< count {
         let decoded = try decoder.decode(type)
         array.append(decoded)
@@ -44,12 +70,16 @@ func decodeArray<T: Codable>(type:T.Type, dec:Decoder, maxCount: UInt32 = UInt32
 ///
 /// Used for arrays of optional typedef types like `SponsorshipDescriptor`
 /// (`typedef AccountID* SponsorshipDescriptor`), where each array element
-/// is preceded by a 32-bit present/absent flag (RFC 4506 boolean).
+/// is preceded by a 32-bit present/absent flag (RFC 4506 boolean). The flag alone
+/// takes 4 bytes, so the count is validated against the remaining bytes at 4 bytes
+/// per element before storage is reserved for it.
 ///
 /// - Parameter type: The wrapped (non-optional) element type to decode
 /// - Parameter dec: Decoder to read from
+/// - Parameter maxCount: Maximum number of elements the schema allows
 /// - Returns: Array of optional elements
-/// - Throws: XDRDecoder.Error if decoding fails
+/// - Throws: StellarSDKError.xdrDecodingError if the count exceeds `maxCount` or the remaining
+///   bytes, XDRDecoder.Error if decoding an element fails
 func decodeArrayOfOptional<T: Codable>(type: T.Type, dec: Decoder, maxCount: UInt32 = UInt32.max) throws -> [T?] {
     guard let decoder = dec as? XDRDecoder else {
         throw XDRDecoder.Error.typeNotConformingToDecodable(Decoder.Type.self)
@@ -59,11 +89,9 @@ func decodeArrayOfOptional<T: Codable>(type: T.Type, dec: Decoder, maxCount: UIn
     guard count <= maxCount else {
         throw StellarSDKError.xdrDecodingError(message: "Array count \(count) exceeds maximum \(maxCount)")
     }
-    guard count <= decoder.remainingBytes else {
-        throw XDRDecoder.Error.prematureEndOfData
-    }
+    try requireArrayCount(count, minElementWidth: minXdrElementWidth, decoder: decoder)
     var array = [T?]()
-    array.reserveCapacity(min(Int(count), decoder.remainingBytes))
+    array.reserveCapacity(Int(count))
     for _ in 0..<count {
         let present = try decoder.decode(Int32.self)
         if present != 0 {
@@ -96,6 +124,24 @@ func encodeArrayOfOptional<T: Encodable>(_ array: [T?], enc: Encoder) throws {
         } else {
             try encoder.encode(Int32(0))
         }
+    }
+}
+
+extension UnkeyedDecodingContainer {
+    /// Decodes a void-only extension point that the SDK stores as a plain `Int32` field.
+    ///
+    /// The XDR union behind such a field has a single arm, `case 0: void`, so any other
+    /// discriminant is not decodable.
+    ///
+    /// - Parameter typeName: Name of the type that holds the extension point, used in the error message
+    /// - Returns: The discriminant, which is always 0
+    /// - Throws: StellarSDKError.xdrDecodingError if the discriminant is not 0
+    mutating func decodeExtensionPoint(_ typeName: String) throws -> Int32 {
+        let value = try decode(Int32.self)
+        guard value == 0 else {
+            throw StellarSDKError.xdrDecodingError(message: "\(typeName) extension point must be 0, got \(value)")
+        }
+        return value
     }
 }
 
@@ -145,14 +191,22 @@ extension Array: XDRCodable where Element: XDRCodable {
         }
     }
     
+    /// Decodes an array from XDR format.
+    ///
+    /// Reads the element count as UInt32 followed by the elements. This is also the byte
+    /// reader behind `String` and `Data`, whose elements are single `UInt8` values; every
+    /// other element type occupies at least 4 bytes. The count is validated against the
+    /// remaining bytes at that minimum width before storage is reserved for it.
+    ///
+    /// - Throws: StellarSDKError.xdrDecodingError if the count exceeds what the remaining bytes
+    ///   can hold, XDRDecoder.Error if decoding an element fails
     public init(fromBinary decoder: XDRDecoder) throws {
         let binaryElement = Element.self
         let count = try decoder.decode(UInt32.self)
-        guard count <= decoder.remainingBytes else {
-            throw XDRDecoder.Error.prematureEndOfData
-        }
+        let minElementWidth = Element.self == UInt8.self ? 1 : minXdrElementWidth
+        try requireArrayCount(count, minElementWidth: minElementWidth, decoder: decoder)
         self.init()
-        self.reserveCapacity(Swift.min(Int(count), decoder.remainingBytes))
+        self.reserveCapacity(Int(count))
         for _ in 0 ..< count {
             let decoded = try decoder.decode(binaryElement)
             self.append(decoded)

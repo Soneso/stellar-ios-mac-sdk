@@ -312,7 +312,7 @@ class Generator < Xdrgen::Generators::Base
       struct.members.each do |m|
         field = resolve_field_name(struct_name, m.name)
         if is_extension_point_field?(struct_name, field)
-          out.puts "_ = try container.decode(Int32.self)"
+          out.puts "_ = try container.decodeExtensionPoint(\"#{struct_name}\")"
         else
           render_decode_field(out, field, m, struct_name)
         end
