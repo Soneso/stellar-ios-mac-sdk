@@ -913,6 +913,40 @@ final class SmartAccountUtilsTests: XCTestCase {
         }
     }
 
+    func testDeriveContractAddress_matchesContractIdUtilsAndKnownAnswers() throws {
+        let deployer = "GBJRYVWMCM4IYZDEB7AUB7Q4IY64HLLWD5A3ZLONHDEDZ66YSU4IXS5N"
+        let credentialIds = [Data([0x01]), Data([0x01, 0x02, 0x03, 0x04]), Data((0..<64).map { UInt8($0) })]
+        // Contract ids computed independently from the HashIDPreimage::ContractID XDR layout.
+        let expected: [String: [String]] = [
+            testNetwork: [
+                "CB72FV5EFZD3H5VR2UGMSCK5P3YIJ2X4UYLJJCZIH4NMZBOGHFVJNGSO",
+                "CDCTXN3VFCO5XWC7XPXJOZFGA4L7DKFHN5V2A4LTLMQ4KHNJCOYSTRTW",
+                "CAGEDQD63LS6LEMNIQYM7BQPS5EH4TP6QU7UP3YYASPDVDUMX2477DTK",
+            ],
+            publicNetwork: [
+                "CDZCSKTTHFNLRQTMAFW4YNXOLJXYF3A5HQRHEURPNN7HIPVYJCA65X3D",
+                "CDZ7QFMNJZEF6E3XBLXJGBQYIH6J5VG3QKURGRBFU3QBN7PWMGZJMGNX",
+                "CBRR63WDWU3RIEC77AXQFNXW44L4FWKPYKQINCO7QA42KHFY5GMLIJHU",
+            ],
+        ]
+        for (passphrase, network) in [(testNetwork, Network.testnet), (publicNetwork, Network.public)] {
+            for (index, credentialId) in credentialIds.enumerated() {
+                let derived = try SmartAccountUtils.deriveContractAddress(
+                    credentialId: credentialId,
+                    deployerPublicKey: deployer,
+                    networkPassphrase: passphrase
+                )
+                let viaContractIdUtils = try ContractIdUtils.deriveContractId(
+                    deployer: try SCAddressXDR(accountId: deployer),
+                    salt: SmartAccountUtils.getContractSalt(credentialId: credentialId),
+                    network: network
+                )
+                XCTAssertEqual(viaContractIdUtils, derived, "\(passphrase), credential id \(index)")
+                XCTAssertEqual(expected[passphrase]?[index], derived, "\(passphrase), credential id \(index)")
+            }
+        }
+    }
+
     // MARK: - findSubarray
 
     func testFindSubarray_findsAtBeginning() {

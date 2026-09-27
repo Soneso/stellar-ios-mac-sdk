@@ -1551,6 +1551,7 @@ static func createExternalSigner(verifierAddress: String, keyData: Data) throws 
 static func createWebAuthnSigner(webauthnVerifierAddress: String, publicKey: Data, credentialId: Data) throws -> OZExternalSigner
 static func createEd25519Signer(ed25519VerifierAddress: String, publicKey: Data) throws -> OZExternalSigner
 static func getCredentialIdFromSigner(signer: any OZSmartAccountSigner) -> Data?
+static func getPublicKeyFromSigner(signer: any OZSmartAccountSigner) -> Data?
 static func getCredentialIdStringFromSigner(signer: any OZSmartAccountSigner) -> String?
 static func isDelegatedSigner(signer: any OZSmartAccountSigner) -> Bool
 static func isExternalSigner(signer: any OZSmartAccountSigner) -> Bool

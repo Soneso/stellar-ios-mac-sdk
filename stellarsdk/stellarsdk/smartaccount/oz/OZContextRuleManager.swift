@@ -285,7 +285,10 @@ public final class OZContextRuleManager: OZContextRuleManagerProtocol, OZManager
 
         let effectiveScanId = maxScanId ?? kit.config.maxContextRuleScanId
         var result: [SCValXDR] = []
-        result.reserveCapacity(Int(activeCount))
+        // why: the count comes from the RPC simulation, while the scan below
+        // visits at most `effectiveScanId` identifiers and so collects at most
+        // that many rules; the smaller of the two bounds the reservation.
+        result.reserveCapacity(Int(min(activeCount, effectiveScanId)))
 
         var id: UInt32 = 0
         while id < effectiveScanId {

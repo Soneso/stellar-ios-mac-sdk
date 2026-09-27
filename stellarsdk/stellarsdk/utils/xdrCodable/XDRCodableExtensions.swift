@@ -16,20 +16,21 @@ import Foundation
 /// and fixed opaque data is padded to a multiple of 4.
 private let minXdrElementWidth = 4
 
-/// Validates the element count of a variable-length XDR array against the bytes left to read.
+/// Validates the element count of an XDR array against the bytes left to read.
 ///
 /// Each element occupies at least `minElementWidth` bytes, so a count above
 /// `remainingBytes / minElementWidth` cannot be satisfied by the input. Checking it before
 /// the caller reserves storage keeps a hostile count from sizing an allocation.
 ///
-/// - Parameter count: Element count read from the array's length prefix
+/// - Parameter count: Element count, read from a variable-length array's length prefix or
+///   given for a fixed-length array; must not be negative
 /// - Parameter minElementWidth: Minimum encoded width of one element in bytes
-/// - Parameter decoder: Decoder positioned right after the length prefix
+/// - Parameter decoder: Decoder positioned at the first element
 /// - Throws: StellarSDKError.xdrDecodingError if the count exceeds what the remaining bytes can hold
-private func requireArrayCount(_ count: UInt32, minElementWidth: Int, decoder: XDRDecoder) throws {
+private func requireArrayCount<Count: BinaryInteger>(_ count: Count, minElementWidth: Int, decoder: XDRDecoder) throws {
     let remainingBytes = decoder.remainingBytes
     let maxCount = remainingBytes / minElementWidth
-    guard UInt64(count) <= UInt64(maxCount) else {
+    guard count <= maxCount else {
         throw StellarSDKError.xdrDecodingError(message: "XDR array count \(count) exceeds the maximum of \(maxCount) for the \(remainingBytes) remaining bytes")
     }
 }
@@ -53,7 +54,7 @@ func decodeArray<T: Codable>(type:T.Type, dec:Decoder, maxCount: UInt32 = UInt32
 
     let count = try decoder.decode(UInt32.self)
     guard count <= maxCount else {
-        throw StellarSDKError.xdrDecodingError(message: "Array count \(count) exceeds maximum \(maxCount)")
+        throw StellarSDKError.xdrDecodingError(message: "XDR array count \(count) exceeds the maximum of \(maxCount)")
     }
     try requireArrayCount(count, minElementWidth: minXdrElementWidth, decoder: decoder)
     var array = [T]()
@@ -87,7 +88,7 @@ func decodeArrayOfOptional<T: Codable>(type: T.Type, dec: Decoder, maxCount: UIn
 
     let count = try decoder.decode(UInt32.self)
     guard count <= maxCount else {
-        throw StellarSDKError.xdrDecodingError(message: "Array count \(count) exceeds maximum \(maxCount)")
+        throw StellarSDKError.xdrDecodingError(message: "XDR array count \(count) exceeds the maximum of \(maxCount)")
     }
     try requireArrayCount(count, minElementWidth: minXdrElementWidth, decoder: decoder)
     var array = [T?]()
@@ -191,7 +192,7 @@ extension Array: XDRCodable where Element: XDRCodable {
         }
     }
     
-    /// Decodes an array from XDR format.
+    /// Decodes a variable-length array from XDR format.
     ///
     /// Reads the element count as UInt32 followed by the elements. This is also the byte
     /// reader behind `String` and `Data`, whose elements are single `UInt8` values; every
@@ -201,15 +202,39 @@ extension Array: XDRCodable where Element: XDRCodable {
     /// - Throws: StellarSDKError.xdrDecodingError if the count exceeds what the remaining bytes
     ///   can hold, XDRDecoder.Error if decoding an element fails
     public init(fromBinary decoder: XDRDecoder) throws {
-        let binaryElement = Element.self
         let count = try decoder.decode(UInt32.self)
+        try self.init(xdrElementCount: count, decoder: decoder)
+    }
+
+    /// Decodes a fixed-length array from XDR format.
+    ///
+    /// Reads exactly `count` elements with no count prefix, the layout of an XDR fixed-length
+    /// array. The count is validated against the remaining bytes at the minimum element width
+    /// (1 byte for `UInt8`, 4 bytes otherwise) before storage is reserved for it.
+    ///
+    /// - Parameter decoder: Decoder to read from
+    /// - Parameter count: Number of elements to read
+    /// - Throws: StellarSDKError.xdrDecodingError if the count is negative or exceeds what the
+    ///   remaining bytes can hold, XDRDecoder.Error if decoding an element fails
+    public init(fromBinary decoder: XDRDecoder, count: Int) throws {
+        guard count >= 0 else {
+            throw StellarSDKError.xdrDecodingError(message: "XDR array count \(count) is negative")
+        }
+        try self.init(xdrElementCount: count, decoder: decoder)
+    }
+
+    /// Reads `count` elements after validating the count against the remaining bytes.
+    ///
+    /// - Parameter count: Number of elements to read, not negative
+    /// - Parameter decoder: Decoder positioned at the first element
+    private init<Count: BinaryInteger>(xdrElementCount count: Count, decoder: XDRDecoder) throws {
         let minElementWidth = Element.self == UInt8.self ? 1 : minXdrElementWidth
         try requireArrayCount(count, minElementWidth: minElementWidth, decoder: decoder)
+        let elementCount = Int(count)
         self.init()
-        self.reserveCapacity(Int(count))
-        for _ in 0 ..< count {
-            let decoded = try decoder.decode(binaryElement)
-            self.append(decoded)
+        self.reserveCapacity(elementCount)
+        for _ in 0 ..< elementCount {
+            self.append(try decoder.decode(Element.self))
         }
     }
 }
@@ -300,10 +325,13 @@ extension Data: XDRCodable {
     
     /// Decodes fixed-size data from XDR format.
     ///
-    /// Reads exactly the specified number of bytes without a length prefix.
+    /// Reads exactly `count` raw bytes with no length prefix and no padding, the layout
+    /// `xdrEncodeFixed(to:)` writes.
     ///
     /// - Parameter xdrDecoder: Decoder to read from
     /// - Parameter count: Number of bytes to read
+    /// - Throws: StellarSDKError.xdrDecodingError if the count is negative or exceeds the
+    ///   remaining bytes
     public init(fromBinary xdrDecoder: XDRDecoder, count: Int) throws {
         let bytes: [UInt8] = try Array(fromBinary: xdrDecoder, count: count)
         self.init(bytes)

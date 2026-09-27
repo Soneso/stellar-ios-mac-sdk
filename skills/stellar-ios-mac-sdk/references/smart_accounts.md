@@ -675,6 +675,7 @@ let ed25519Signer = try OZSmartAccountBuilders.createEd25519Signer(
 // Inspection
 let isPasskey: Bool   = OZSmartAccountBuilders.isExternalSigner(signer: passkey)
 let credId: Data?     = OZSmartAccountBuilders.getCredentialIdFromSigner(signer: passkey)
+let pubKey: Data?     = OZSmartAccountBuilders.getPublicKeyFromSigner(signer: passkey)   // 65-byte secp256r1 key
 let credIdStr: String? = OZSmartAccountBuilders.getCredentialIdStringFromSigner(signer: passkey) // Base64URL
 
 // Matching and dedup

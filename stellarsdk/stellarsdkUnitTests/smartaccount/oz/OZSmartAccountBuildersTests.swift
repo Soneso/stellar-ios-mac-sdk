@@ -411,6 +411,61 @@ final class OZSmartAccountBuildersTests: XCTestCase {
         )
     }
 
+    // MARK: - getPublicKeyFromSigner
+
+    func testGetPublicKeyFromSigner_webAuthnSigner_returnsPublicKeyPrefix() throws {
+        var pubkey = Data(repeating: 0x42, count: SmartAccountConstants.secp256r1PublicKeySize)
+        pubkey[0] = 0x04
+        pubkey[64] = 0x99
+        let signer = try OZExternalSigner.webAuthn(
+            verifierAddress: validContractC,
+            publicKey: pubkey,
+            credentialId: Data([0xAA, 0xBB])
+        )
+        let extracted = OZSmartAccountBuilders.getPublicKeyFromSigner(signer: signer)
+        XCTAssertEqual(extracted, pubkey)
+        XCTAssertEqual(extracted?.count, 65)
+        XCTAssertEqual(extracted?.startIndex, 0)
+    }
+
+    func testGetPublicKeyFromSigner_ed25519Signer_returnsNil() throws {
+        let signer = try OZExternalSigner.ed25519(
+            verifierAddress: validContractC,
+            publicKey: Data(repeating: 0x42, count: SmartAccountConstants.ed25519PublicKeySize)
+        )
+        XCTAssertNil(OZSmartAccountBuilders.getPublicKeyFromSigner(signer: signer))
+    }
+
+    func testGetPublicKeyFromSigner_delegatedSigner_returnsNil() throws {
+        let signer = try OZDelegatedSigner(address: validAccountG)
+        XCTAssertNil(OZSmartAccountBuilders.getPublicKeyFromSigner(signer: signer))
+    }
+
+    /// Key data of exactly the public key width carries no credential id, so
+    /// neither accessor treats the signer as a WebAuthn signer.
+    func testSignerInspection_keyDataOfExactlyPublicKeySize_returnsNil() throws {
+        var keyData = Data(repeating: 0x42, count: SmartAccountConstants.secp256r1PublicKeySize)
+        keyData[0] = 0x04
+        let signer = try OZExternalSigner(verifierAddress: validContractC, keyData: keyData)
+        XCTAssertEqual(signer.keyData.count, 65)
+        XCTAssertNil(OZSmartAccountBuilders.getPublicKeyFromSigner(signer: signer))
+        XCTAssertNil(OZSmartAccountBuilders.getCredentialIdFromSigner(signer: signer))
+    }
+
+    func testGetPublicKeyFromSigner_prefixPlusCredentialIdEqualsKeyData() throws {
+        var pubkey = Data((0..<SmartAccountConstants.secp256r1PublicKeySize).map { UInt8($0) })
+        pubkey[0] = 0x04
+        let credId = Data([0xCC, 0xDD, 0xEE])
+        let signer = try OZExternalSigner.webAuthn(
+            verifierAddress: validContractC,
+            publicKey: pubkey,
+            credentialId: credId
+        )
+        let publicKey = try XCTUnwrap(OZSmartAccountBuilders.getPublicKeyFromSigner(signer: signer))
+        let credentialId = try XCTUnwrap(OZSmartAccountBuilders.getCredentialIdFromSigner(signer: signer))
+        XCTAssertEqual(publicKey + credentialId, signer.keyData)
+    }
+
     // MARK: - Builder validation (signer builders)
 
     func testCreateExternalSigner_invalidCAddress_throwsInvalidAddress() {

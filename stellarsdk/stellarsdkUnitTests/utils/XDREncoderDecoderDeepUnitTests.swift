@@ -438,6 +438,72 @@ class XDREncoderDecoderDeepUnitTests: XCTestCase {
         XCTAssertEqual(decoded, testValue)
     }
 
+    func testDataFromBinaryWithCountRoundTripsFixedEncoding() throws {
+        for length in [0, 1, 5, 32] {
+            let value = Data((0..<length).map { UInt8(truncatingIfNeeded: 0xA0 + $0) })
+            let encoder = XDREncoder()
+            try value.xdrEncodeFixed(to: encoder)
+            XCTAssertEqual(length, encoder.data.count, "fixed encoding carries no prefix and no padding")
+
+            // A trailing marker proves the decoder consumed exactly `length` bytes.
+            let decoder = XDRDecoder(data: encoder.data + [0xDE, 0xAD, 0xBE, 0xEF])
+            let decoded = try Data(fromBinary: decoder, count: length)
+            XCTAssertEqual(value, decoded, "length \(length)")
+            XCTAssertEqual(0xDEADBEEF, try UInt32(fromBinary: decoder), "length \(length)")
+            XCTAssertEqual(0, decoder.remainingBytes, "length \(length)")
+        }
+    }
+
+    func testDataFromBinaryWithCountBeyondRemainingBytesThrows() {
+        let decoder = XDRDecoder(data: [0x01, 0x02, 0x03])
+        XCTAssertThrowsError(try Data(fromBinary: decoder, count: 4)) { error in
+            guard case StellarSDKError.xdrDecodingError(let message) = error else {
+                return XCTFail("Expected xdrDecodingError, got \(error)")
+            }
+            XCTAssertEqual("XDR array count 4 exceeds the maximum of 3 for the 3 remaining bytes", message)
+        }
+    }
+
+    func testDataFromBinaryWithNegativeCountThrows() {
+        let decoder = XDRDecoder(data: [0x01, 0x02, 0x03, 0x04])
+        XCTAssertThrowsError(try Data(fromBinary: decoder, count: -1)) { error in
+            guard case StellarSDKError.xdrDecodingError(let message) = error else {
+                return XCTFail("Expected xdrDecodingError, got \(error)")
+            }
+            XCTAssertEqual("XDR array count -1 is negative", message)
+        }
+    }
+
+    func testDataFromBinaryWithoutCountReadsLengthPrefixedForm() throws {
+        let value = Data([0x01, 0x02, 0x03, 0x04, 0x05])
+        let encoded = try XDREncoder.encode(value)
+        // 4 byte length prefix, 5 bytes, 3 bytes of padding.
+        XCTAssertEqual([0x00, 0x00, 0x00, 0x05, 0x01, 0x02, 0x03, 0x04, 0x05, 0x00, 0x00, 0x00], encoded)
+
+        let decoder = XDRDecoder(data: encoded)
+        XCTAssertEqual(value, try Data(fromBinary: decoder))
+        XCTAssertEqual(0, decoder.remainingBytes)
+    }
+
+    func testArrayFromBinaryWithCountReadsFixedLengthArray() throws {
+        let value: [UInt32] = [7, 8, 9]
+        let encoder = XDREncoder()
+        for element in value {
+            try encoder.encode(element)
+        }
+        let decoder = XDRDecoder(data: encoder.data + [0x00, 0x00, 0x00, 0x2A])
+        XCTAssertEqual(value, try [UInt32](fromBinary: decoder, count: 3))
+        XCTAssertEqual(42, try UInt32(fromBinary: decoder))
+
+        // Four remaining bytes hold at most one 4 byte element.
+        XCTAssertThrowsError(try [UInt32](fromBinary: XDRDecoder(data: [0x00, 0x00, 0x00, 0x01]), count: 2)) { error in
+            guard case StellarSDKError.xdrDecodingError(let message) = error else {
+                return XCTFail("Expected xdrDecodingError, got \(error)")
+            }
+            XCTAssertEqual("XDR array count 2 exceeds the maximum of 1 for the 4 remaining bytes", message)
+        }
+    }
+
     // MARK: - Array Encoding/Decoding Tests
 
     func testEncodeDecodeUInt32Array() throws {
@@ -908,8 +974,7 @@ class XDREncoderDecoderDeepUnitTests: XCTestCase {
                 XCTFail("Expected xdrDecodingError, got \(error)")
                 return
             }
-            XCTAssertTrue(message.contains("5"), "Error should mention actual count")
-            XCTAssertTrue(message.contains("3"), "Error should mention maximum")
+            XCTAssertEqual("XDR array count 5 exceeds the maximum of 3", message)
         }
     }
 
@@ -946,8 +1011,7 @@ class XDREncoderDecoderDeepUnitTests: XCTestCase {
                 XCTFail("Expected StellarSDKError.xdrDecodingError, got \(error)")
                 return
             }
-            XCTAssertTrue(message.contains("100"), "Error message should mention the actual count (100), got: \(message)")
-            XCTAssertTrue(message.contains("50"),  "Error message should mention the maximum (50), got: \(message)")
+            XCTAssertEqual("XDR array count 100 exceeds the maximum of 50", message)
         }
     }
 
@@ -974,8 +1038,7 @@ class XDREncoderDecoderDeepUnitTests: XCTestCase {
                 XCTFail("Expected xdrDecodingError, got \(error)")
                 return
             }
-            XCTAssertTrue(message.contains("10"), "Error should mention actual count")
-            XCTAssertTrue(message.contains("5"), "Error should mention maximum")
+            XCTAssertEqual("XDR array count 10 exceeds the maximum of 5", message)
         }
     }
 
