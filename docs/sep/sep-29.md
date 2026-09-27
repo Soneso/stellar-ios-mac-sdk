@@ -11,7 +11,7 @@ SEP-29 prevents lost funds by allowing accounts to require incoming payments inc
 
 ## Quick Example
 
-The iOS/macOS SDK checks memo requirements automatically inside `submitTransaction()`. When a destination requires a memo and the transaction lacks one, the SDK returns `.destinationRequiresMemo` instead of submitting. You can then rebuild the transaction with a memo attached:
+The iOS/macOS SDK checks memo requirements automatically inside every submit method of `sdk.transactions`. When a destination requires a memo and the transaction lacks one, the SDK returns `.destinationRequiresMemo` instead of submitting. You can then rebuild the transaction with a memo attached:
 
 ```swift
 import stellarsdk
@@ -67,10 +67,8 @@ case .destinationRequiresMemo(let accountId):
     )
     try transaction.sign(keyPair: senderKeyPair, network: Network.testnet)
 
-    let retryEnum = await sdk.transactions.submitTransaction(
-        transaction: transaction,
-        skipMemoRequiredCheck: true // memo already added, skip recheck
-    )
+    // The memo short-circuits the check, so the retry needs no account lookup.
+    let retryEnum = await sdk.transactions.submitTransaction(transaction: transaction)
     if case .success(let response) = retryEnum {
         print("Success with memo: \(response.transactionHash)")
     }
@@ -83,9 +81,9 @@ case .failure(let error):
 
 Accounts signal memo requirement by setting a data entry with key `config.memo_required` and value `1` (following the [SEP-18](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0018.md) namespace convention).
 
-The iOS/macOS SDK has a built-in check integrated into `submitTransaction()` and `postTransaction()`. You do not call a separate method -- the SDK does it automatically.
+The iOS/macOS SDK has a built-in check integrated into every submit method of `sdk.transactions`: `submitTransaction()`, `submitAsyncTransaction()`, `submitFeeBumpTransaction()`, `submitFeeBumpAsyncTransaction()`, `postTransaction()` and `postTransactionAsync()`. You do not call a separate method -- the SDK does it automatically. For a fee bump transaction the check runs against the inner transaction of the envelope that is submitted, which carries the memo and the operations.
 
-**When `submitTransaction()` is called without `skipMemoRequiredCheck: true`:**
+**When a submit method is called without `skipMemoRequiredCheck: true`:**
 
 1. If the transaction already has a memo (any type except `.none`) -- skip the check, submit directly.
 2. Collect all destination account IDs from `PaymentOperation`, `PathPaymentOperation`, and `AccountMergeOperation`. Skip any destination whose address starts with "M" (muxed accounts).
@@ -256,6 +254,7 @@ switch submitEnum {
 case .success(let response):
     print("Merged: \(response.transactionHash)")
 case .destinationRequiresMemo(let accountId):
+    print("Destination \(accountId) requires a memo before the merge")
     // Rebuild with memo before merging
     let sourceAccount2 = try Account(
         accountId: accountResponse.accountId,
@@ -268,10 +267,7 @@ case .destinationRequiresMemo(let accountId):
         maxOperationFee: 100
     )
     try transaction.sign(keyPair: sourceKeyPair, network: Network.testnet)
-    let _ = await sdk.transactions.submitTransaction(
-        transaction: transaction,
-        skipMemoRequiredCheck: true
-    )
+    let _ = await sdk.transactions.submitTransaction(transaction: transaction)
 case .failure(let error):
     print("Error: \(error)")
 }
@@ -325,7 +321,7 @@ let submitEnum = await sdk.transactions.submitTransaction(transaction: transacti
 
 ## Integration with Payment Flows
 
-Use memo requirement checking as part of your payment validation flow. The SDK's automatic check via `submitTransaction()` handles validation transparently:
+Use memo requirement checking as part of your payment validation flow. The automatic check in every submit method handles validation transparently:
 
 ```swift
 import stellarsdk
@@ -454,7 +450,7 @@ case .failure(let error):
 ```
 
 **Important notes:**
-- Fee bump transactions submitted via `submitFeeBumpTransaction` do NOT run the SEP-29 check. Check the inner transaction first before wrapping it.
+- Fee bump transactions are checked against their inner transaction. When `submitFeeBumpTransaction` or `submitFeeBumpAsyncTransaction` returns `.destinationRequiresMemo`, rebuild the inner transaction with a memo, sign it, wrap it in a new fee bump, and sign the fee bump.
 - The check only validates memo *presence*, not memo *type* (SEP-29 intentionally omits type validation).
 - Pass `skipMemoRequiredCheck: true` to bypass the check when you have already verified memo requirements yourself.
 
