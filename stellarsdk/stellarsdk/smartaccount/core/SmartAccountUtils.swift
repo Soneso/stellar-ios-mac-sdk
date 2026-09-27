@@ -398,9 +398,10 @@ public enum SmartAccountUtils {
     ///
     /// Computes the deterministic contract address that will be created when deploying a
     /// smart-account contract with the given credential ID from the specified deployer
-    /// account on the specified network.
-    ///
-    /// Algorithm:
+    /// account on the specified network. The salt is `SHA-256(credentialId)` (see
+    /// ``getContractSalt(credentialId:)``) and the derivation is
+    /// ``ContractIdUtils/deriveContractId(deployer:salt:network:)`` with the deployer
+    /// account address and the network built from the passphrase:
     /// ```
     /// salt = SHA-256(credentialId)
     /// deployerAddress = SCAddress::Account(deployerPublicKey)
@@ -421,15 +422,13 @@ public enum SmartAccountUtils {
     ///   - networkPassphrase: Network passphrase.
     /// - Returns: Contract address as a `C…` strkey.
     /// - Throws: `SmartAccountValidationException.InvalidAddress` when the deployer key is invalid,
-    ///           `SmartAccountValidationException.InvalidInput` when contract-ID encoding fails, or
-    ///           `SmartAccountTransactionException.SigningFailed` when XDR encoding fails.
+    ///           or `SmartAccountValidationException.InvalidInput` when the contract ID derivation
+    ///           fails.
     public static func deriveContractAddress(
         credentialId: Data,
         deployerPublicKey: String,
         networkPassphrase: String
     ) throws -> String {
-        let contractSalt = getContractSalt(credentialId: credentialId)
-
         let deployerAddress: SCAddressXDR
         do {
             deployerAddress = try SCAddressXDR(accountId: deployerPublicKey)
@@ -440,37 +439,16 @@ public enum SmartAccountUtils {
             )
         }
 
-        let networkIdBytes = networkPassphrase.sha256Hash
-
-        let fromAddress = ContractIDPreimageFromAddressXDR(
-            address: deployerAddress,
-            salt: Uint256XDR(contractSalt)
-        )
-        let contractIdPreimage = ContractIDPreimageXDR.fromAddress(fromAddress)
-        let hashIdPreimageContractId = HashIDPreimageContractIDXDR(
-            networkID: HashXDR(networkIdBytes),
-            contractIDPreimage: contractIdPreimage
-        )
-        let preimage = HashIDPreimageXDR.contractID(hashIdPreimageContractId)
-
-        let encodedPreimage: Data
         do {
-            encodedPreimage = Data(try XDREncoder.encode(preimage))
-        } catch {
-            throw SmartAccountTransactionException.signingFailed(
-                reason: "Failed to XDR encode contract ID preimage",
-                cause: error
+            return try ContractIdUtils.deriveContractId(
+                deployer: deployerAddress,
+                salt: getContractSalt(credentialId: credentialId),
+                network: .custom(passphrase: networkPassphrase)
             )
-        }
-
-        let contractIdBytes = encodedPreimage.sha256Hash
-
-        do {
-            return try contractIdBytes.encodeContractId()
         } catch {
             throw SmartAccountValidationException.invalidInput(
                 field: "contractId",
-                reason: "Failed to encode contract ID: \(error.localizedDescription)",
+                reason: "Failed to derive contract ID: \(error.localizedDescription)",
                 cause: error
             )
         }

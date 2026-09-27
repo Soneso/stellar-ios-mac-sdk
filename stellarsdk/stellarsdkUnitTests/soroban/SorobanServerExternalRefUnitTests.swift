@@ -274,7 +274,7 @@ final class SorobanServerExternalRefUnitTests: XCTestCase {
             XCTFail("Expected requestFailed, got \(direct)")
             return
         }
-        XCTAssertTrue(directMessage.contains("no executable tag entry found on owner contract"),
+        XCTAssertTrue(directMessage.contains("no executable tag entry found on owner contract \(try ownerContractIdHex.encodeContractIdHex()) "),
                       "unexpected message: \(directMessage)")
         // A text tag renders in the message as its quoted escaped form.
         XCTAssertTrue(directMessage.contains(#""token-v1""#), "unexpected message: \(directMessage)")

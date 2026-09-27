@@ -3113,6 +3113,7 @@ public enum OZSmartAccountBuilders {
 
     // Signer inspection
     public static func getCredentialIdFromSigner(signer: any OZSmartAccountSigner) -> Data?
+    public static func getPublicKeyFromSigner(signer: any OZSmartAccountSigner) -> Data?
     public static func getCredentialIdStringFromSigner(signer: any OZSmartAccountSigner) -> String?
     public static func isDelegatedSigner(signer: any OZSmartAccountSigner) -> Bool
     public static func isExternalSigner(signer: any OZSmartAccountSigner) -> Bool

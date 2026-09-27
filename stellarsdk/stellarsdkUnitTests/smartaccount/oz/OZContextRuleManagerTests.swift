@@ -1453,6 +1453,53 @@ final class OZContextRuleManagerTests: XCTestCase {
         }
     }
 
+    /// The active rule count comes from the RPC simulation. A count of
+    /// `UInt32.max` with a scan bound of 3 must visit ids 0 to 2 only and
+    /// collect the rules found there: the scan bound caps both the loop and
+    /// the storage reserved for the result, which the returned array's
+    /// capacity shows.
+    func test_getAllContextRules_hugeActiveCount_isBoundedByScanId() async throws {
+        let script = MockSorobanServerScript()
+        MockSorobanServer.activate(script: script)
+        defer {
+            MockSorobanServer.deactivate()
+            MockURLProtocol.reset()
+        }
+
+        let (kit, manager) = try connectedKitWithScriptedServer()
+        let deployer = try await kit.getDeployer()
+
+        // count query: the largest U32 the contract could report.
+        script.setGetAccountResponse(accountId: deployer.accountId, sequence: 1)
+        script.enqueueSimulate(resultXdr: SCValXDR.u32(UInt32.max).xdrEncoded ?? "")
+
+        // getContextRule(id: 0): a rule payload.
+        script.setGetAccountResponse(accountId: deployer.accountId, sequence: 2)
+        script.enqueueSimulate(resultXdr: SCValXDR.u32(0xA0).xdrEncoded ?? "")
+
+        // getContextRule(id: 1): a removed-rule gap.
+        script.setGetAccountResponse(accountId: deployer.accountId, sequence: 3)
+        script.enqueueSimulateError("rule 1 has been removed")
+
+        // getContextRule(id: 2): a rule payload.
+        script.setGetAccountResponse(accountId: deployer.accountId, sequence: 4)
+        script.enqueueSimulate(resultXdr: SCValXDR.u32(0xA2).xdrEncoded ?? "")
+
+        let result = try await manager.getAllContextRules(maxScanId: 3)
+
+        XCTAssertEqual(result.count, 2, "Only ids 0 and 2 hold rules below the scan bound")
+        guard result.count == 2,
+              case .u32(let first) = result[0],
+              case .u32(let second) = result[1] else {
+            return XCTFail("Expected two u32 rule payloads, got: \(result)")
+        }
+        XCTAssertEqual(first, 0xA0)
+        XCTAssertEqual(second, 0xA2)
+        // The returned array keeps the storage reserved during the scan; the reservation
+        // is bounded by the scan bound, not by the RPC count.
+        XCTAssertLessThanOrEqual(result.capacity, 64, "Reserved \(result.capacity) slots for a scan bound of 3")
+    }
+
     // ========================================================================
     // resolveContextRuleIdsForEntry — two-arg overload (lines 367-374)
     // ========================================================================

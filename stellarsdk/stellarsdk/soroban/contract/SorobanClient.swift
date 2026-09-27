@@ -223,7 +223,7 @@ public final class SorobanClient: Sendable {
 
         let ownerAddress = try SCAddressXDR(contractId: deployRequest.executableOwner)
         // Spell the owner as its "C..." strkey in the failure message.
-        let owner = (try? ownerAddress.contractId?.encodeContractIdHex()) ?? deployRequest.executableOwner
+        let owner = (try? ownerAddress.toStrKey()) ?? deployRequest.executableOwner
         let ref = ContractExecutableExternalRefXDR(executableOwner: ownerAddress, tag: deployRequest.tag)
         let hashResponse = await server.getExternalRefWasmHash(ref: ref)
         let wasmHash: Data
