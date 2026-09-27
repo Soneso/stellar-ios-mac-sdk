@@ -76,6 +76,8 @@ api-docs-publishing.md
 # Coverage
 coverage/
 *.xcresult
+*.profraw
+*.profdata
 
 # Claude Code
 .claude/

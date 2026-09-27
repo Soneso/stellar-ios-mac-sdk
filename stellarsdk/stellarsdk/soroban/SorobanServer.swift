@@ -659,7 +659,7 @@ public class SorobanServer: @unchecked Sendable {
             let described = ref.executableOwner.accountId ?? ref.executableOwner.liquidityPoolId ?? ref.executableOwner.claimableBalanceId ?? "of an unsupported address type"
             return .failure(error: .requestFailed(message: "external reference owner \(described) is not a contract address; only a contract can hold the executable tag entry"))
         }
-        let owner = (try? ownerHex.encodeContractIdHex()) ?? ownerHex
+        let owner = (try? ref.executableOwner.toStrKey()) ?? ownerHex
         let contractDataKey = LedgerKeyContractDataXDR(contract: ref.executableOwner,
                                                        key: SCValXDR.executableTag(ref.tag),
                                                        durability: ContractDataDurability.persistent)

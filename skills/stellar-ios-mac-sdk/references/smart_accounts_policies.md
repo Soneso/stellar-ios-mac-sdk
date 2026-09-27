@@ -312,6 +312,7 @@ public struct OZExternalSigner: OZSmartAccountSigner, Equatable, Hashable {
 
 ```swift
 OZSmartAccountBuilders.getCredentialIdFromSigner(signer: s)     // Data?  (raw credential id, WebAuthn only)
+OZSmartAccountBuilders.getPublicKeyFromSigner(signer: s)        // Data?  (65-byte secp256r1 public key, WebAuthn only)
 OZSmartAccountBuilders.getCredentialIdStringFromSigner(signer: s) // String? (Base64URL credential id)
 OZSmartAccountBuilders.signersEqual(a, b)                       // Bool
 OZSmartAccountBuilders.getSignerKey(signer: s)                  // String (== signer.uniqueKey)

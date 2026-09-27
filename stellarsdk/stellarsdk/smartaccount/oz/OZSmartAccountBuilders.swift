@@ -118,6 +118,23 @@ public enum OZSmartAccountBuilders {
         return Data(suffix)
     }
 
+    /// Extracts the secp256r1 public key from a WebAuthn signer's key data.
+    ///
+    /// WebAuthn signers store key data as: 65-byte uncompressed public key followed by the
+    /// credential ID. Returns `nil` for non-WebAuthn signers (delegated signers, or
+    /// external signers whose key data is not longer than 65 bytes).
+    ///
+    /// - Parameter signer: Signer to inspect.
+    /// - Returns: The 65-byte uncompressed secp256r1 public key, or `nil` for non-WebAuthn
+    ///   signers.
+    public static func getPublicKeyFromSigner(signer: any OZSmartAccountSigner) -> Data? {
+        guard let external = signer as? OZExternalSigner else { return nil }
+        if external.keyData.count <= SmartAccountConstants.secp256r1PublicKeySize {
+            return nil
+        }
+        return Data(external.keyData.prefix(SmartAccountConstants.secp256r1PublicKeySize))
+    }
+
     /// Returns the WebAuthn credential ID as a Base64URL-encoded string, or `nil` for
     /// non-WebAuthn signers.
     ///

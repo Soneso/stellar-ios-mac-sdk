@@ -562,7 +562,7 @@ final class StrKeyUnitTests: XCTestCase {
         XCTAssertEqual(gAddress, try ed25519Data.encodeMuxedAccount())
         XCTAssertEqual(mAddress, try muxedData.encodeMuxedAccount())
 
-        // Over-wide ed25519 data was previously accepted with the extra bytes silently ignored.
+        // Over-wide ed25519 data.
         XCTAssertThrowsError(try (ed25519Data + Data([0x00])).encodeMuxedAccount()) { error in
             guard case StellarSDKError.invalidArgument(let message) = error else {
                 return XCTFail("expected invalidArgument, got \(error)")
@@ -583,22 +583,24 @@ final class StrKeyUnitTests: XCTestCase {
             XCTAssertEqual("invalid med25519 muxed account length 45, must be 44 bytes", message)
         }
 
-        // Under-wide data previously surfaced a decoder error; it is invalidArgument now.
+        // Under-wide data reports the width its key type names.
         XCTAssertThrowsError(try ed25519Data.prefix(35).encodeMuxedAccount()) { error in
             guard case StellarSDKError.invalidArgument(let message) = error else {
                 return XCTFail("expected invalidArgument, got \(error)")
             }
-            XCTAssertEqual("invalid muxed account length 35, must be 36 bytes (44 for KEY_TYPE_MUXED_ED25519)", message)
+            XCTAssertEqual("invalid ed25519 muxed account length 35, must be 36 bytes", message)
         }
         XCTAssertThrowsError(try muxedData.prefix(43).encodeMuxedAccount()) { error in
-            guard case StellarSDKError.invalidArgument = error else {
+            guard case StellarSDKError.invalidArgument(let message) = error else {
                 return XCTFail("expected invalidArgument, got \(error)")
             }
+            XCTAssertEqual("invalid med25519 muxed account length 43, must be 44 bytes", message)
         }
         XCTAssertThrowsError(try Data().encodeMuxedAccount()) { error in
-            guard case StellarSDKError.invalidArgument = error else {
+            guard case StellarSDKError.invalidArgument(let message) = error else {
                 return XCTFail("expected invalidArgument, got \(error)")
             }
+            XCTAssertEqual("invalid muxed account length 0, must be 36 bytes (44 for KEY_TYPE_MUXED_ED25519)", message)
         }
     }
 
@@ -624,13 +626,63 @@ final class StrKeyUnitTests: XCTestCase {
             }
         }
 
-        // Any other width reports the length.
+        // The key type is checked before the width, so any width of at least 4 bytes
+        // reports the key type.
         XCTAssertThrowsError(try (ed25519Data + Data([0x00])).encodeMuxedAccount()) { error in
             guard case StellarSDKError.invalidArgument(let message) = error else {
                 return XCTFail("expected invalidArgument, got \(error)")
             }
-            XCTAssertEqual("invalid muxed account length 37, must be 36 bytes (44 for KEY_TYPE_MUXED_ED25519)", message)
+            XCTAssertEqual("invalid muxed account key type 1, must be KEY_TYPE_ED25519 or KEY_TYPE_MUXED_ED25519", message)
         }
+    }
+
+    func testEncodeMuxedAccountDecidesWidthByKeyType() throws {
+        let gAddress = "GBJRYVWMCM4IYZDEB7AUB7Q4IY64HLLWD5A3ZLONHDEDZ66YSU4IXS5N"
+        let mAddress = "MAQAA5L65LSYH7CQ3VTJ7F3HHLGCL3DSLAR2Y47263D56MNNGHSQSAAAAAAAAAAE2LP26"
+        let ed25519Data = try Data(XDREncoder.encode(try gAddress.decodeMuxedAccount()))
+        let muxedData = try Data(XDREncoder.encode(try mAddress.decodeMuxedAccount()))
+        let ed25519Tag = Data([0x00, 0x00, 0x00, 0x00])
+        let muxedTag = Data([0x00, 0x00, 0x01, 0x00])
+        XCTAssertEqual(ed25519Tag, ed25519Data.prefix(4))
+        XCTAssertEqual(muxedTag, muxedData.prefix(4))
+
+        func assertInvalidArgument(_ data: Data, _ expected: String, line: UInt = #line) {
+            XCTAssertThrowsError(try data.encodeMuxedAccount(), line: line) { error in
+                guard case StellarSDKError.invalidArgument(let message) = error else {
+                    return XCTFail("expected invalidArgument, got \(error)", line: line)
+                }
+                XCTAssertEqual(expected, message, line: line)
+            }
+        }
+
+        // 36 bytes carrying the muxed tag: the muxed key type requires 44 bytes.
+        var muxedTagAt36 = ed25519Data
+        muxedTagAt36.replaceSubrange(0..<4, with: muxedTag)
+        XCTAssertEqual(36, muxedTagAt36.count)
+        assertInvalidArgument(muxedTagAt36, "invalid med25519 muxed account length 36, must be 44 bytes")
+
+        // 44 bytes carrying the ed25519 tag: the ed25519 key type requires 36 bytes.
+        var ed25519TagAt44 = muxedData
+        ed25519TagAt44.replaceSubrange(0..<4, with: ed25519Tag)
+        XCTAssertEqual(44, ed25519TagAt44.count)
+        assertInvalidArgument(ed25519TagAt44, "invalid ed25519 muxed account length 44, must be 36 bytes")
+
+        // Key type 7 at both valid widths reports the key type.
+        let unknownTag = Data([0x00, 0x00, 0x00, 0x07])
+        for base in [ed25519Data, muxedData] {
+            var data = base
+            data.replaceSubrange(0..<4, with: unknownTag)
+            assertInvalidArgument(data, "invalid muxed account key type 7, must be KEY_TYPE_ED25519 or KEY_TYPE_MUXED_ED25519")
+        }
+
+        // Shorter than the key type reports the length.
+        assertInvalidArgument(Data([0x00, 0x00, 0x01]), "invalid muxed account length 3, must be 36 bytes (44 for KEY_TYPE_MUXED_ED25519)")
+
+        // The two valid widths round-trip unchanged.
+        XCTAssertEqual(gAddress, try ed25519Data.encodeMuxedAccount())
+        XCTAssertEqual(mAddress, try muxedData.encodeMuxedAccount())
+        XCTAssertEqual(ed25519Data, try Data(XDREncoder.encode(try ed25519Data.encodeMuxedAccount().decodeMuxedAccount())))
+        XCTAssertEqual(muxedData, try Data(XDREncoder.encode(try muxedData.encodeMuxedAccount().decodeMuxedAccount())))
     }
     
     // MARK: - Signed Payload Tests
@@ -1085,6 +1137,22 @@ final class StrKeyUnitTests: XCTestCase {
         XCTAssertThrowsError(try "xyz123".encodeClaimableBalanceIdHex()) { error in
             guard case StellarSDKError.invalidArgument = error else {
                 return XCTFail("Unexpected error type: \(error)")
+            }
+        }
+    }
+
+    func testHexEncodersNameTheIdKindForNonHexInput() {
+        let cases: [(String, (String) throws -> String)] = [
+            ("contract id", { try $0.encodeContractIdHex() }),
+            ("claimable balance id", { try $0.encodeClaimableBalanceIdHex() }),
+            ("liquidity pool id", { try $0.encodeLiquidityPoolIdHex() }),
+        ]
+        for (idKind, encode) in cases {
+            XCTAssertThrowsError(try encode("ZZZZ")) { error in
+                guard case StellarSDKError.invalidArgument(let message) = error else {
+                    return XCTFail("Unexpected error type for \(idKind): \(error)")
+                }
+                XCTAssertEqual("invalid \(idKind), not a hex string ZZZZ", message)
             }
         }
     }

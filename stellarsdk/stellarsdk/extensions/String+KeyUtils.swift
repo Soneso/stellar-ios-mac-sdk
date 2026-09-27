@@ -174,7 +174,7 @@ extension String {
         if let data = data(using: .hexadecimal) {
             return try data.encodeContractId()
         }
-        throw StellarSDKError.invalidArgument(message: "Not a hex string \(self)")
+        throw StellarSDKError.invalidArgument(message: "invalid contract id, not a hex string \(self)")
     }
     
     /// Encodes a claimable balance id from its hex representation into its strkey representation ("B...").
@@ -188,7 +188,7 @@ extension String {
         if let data = data(using: .hexadecimal) {
             return try data.encodeClaimableBalanceId()
         }
-        throw StellarSDKError.invalidArgument(message: "Not a hex string \(self)")
+        throw StellarSDKError.invalidArgument(message: "invalid claimable balance id, not a hex string \(self)")
     }
     
     /// Encodes a liquidity pool id from its hex representation into its strkey representation ("L...").
@@ -200,7 +200,7 @@ extension String {
         if let data = data(using: .hexadecimal) {
             return try data.encodeLiquidityPoolId()
         }
-        throw StellarSDKError.invalidArgument(message: "Not a hex string \(self)")
+        throw StellarSDKError.invalidArgument(message: "invalid liquidity pool id, not a hex string \(self)")
     }
     
     /// Checks if the string is a valid hexadecimal representation of data.

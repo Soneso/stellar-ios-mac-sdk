@@ -188,25 +188,30 @@ extension Data {
     /// the 32 byte ed25519 key gives the "G..." strkey of that key; KEY_TYPE_MUXED_ED25519
     /// with the 8 byte muxed account id and the 32 byte ed25519 key gives an "M..." strkey.
     ///
-    /// - Throws: StellarSDKError.invalidArgument unless the data is exactly the width its
-    /// key type names (36 bytes for KEY_TYPE_ED25519, 44 bytes for KEY_TYPE_MUXED_ED25519),
-    /// or if the key type is neither of these.
+    /// The key type is read first and decides the width: the data must then be exactly
+    /// 36 bytes for KEY_TYPE_ED25519 and 44 bytes for KEY_TYPE_MUXED_ED25519.
+    ///
+    /// - Throws: StellarSDKError.invalidArgument if the data is shorter than the 4 byte key
+    /// type, if the key type is neither KEY_TYPE_ED25519 nor KEY_TYPE_MUXED_ED25519, or if
+    /// the data is not exactly the width its key type names.
     public func encodeMuxedAccount() throws -> String {
-        let muxed: MuxedAccountXDR
-        do {
-            muxed = try XDRDecoder.decode(MuxedAccountXDR.self, data:self)
-        } catch StellarSDKError.xdrDecodingError where count == 36 || count == 44 {
-            let keyType = try XDRDecoder.decode(Int32.self, data: self)
-            throw StellarSDKError.invalidArgument(message: "invalid muxed account key type \(keyType), must be KEY_TYPE_ED25519 or KEY_TYPE_MUXED_ED25519")
-        } catch {
+        guard count >= 4 else {
             throw StellarSDKError.invalidArgument(message: "invalid muxed account length \(count), must be 36 bytes (44 for KEY_TYPE_MUXED_ED25519)")
         }
+        let keyType = try XDRDecoder.decode(Int32.self, data: self)
+        switch keyType {
+        case CryptoKeyType.KEY_TYPE_ED25519:
+            try requireSize(36, "ed25519 muxed account")
+        case CryptoKeyType.KEY_TYPE_MUXED_ED25519:
+            try requireSize(44, "med25519 muxed account")
+        default:
+            throw StellarSDKError.invalidArgument(message: "invalid muxed account key type \(keyType), must be KEY_TYPE_ED25519 or KEY_TYPE_MUXED_ED25519")
+        }
+        let muxed = try XDRDecoder.decode(MuxedAccountXDR.self, data: self)
         switch muxed {
         case .ed25519(_):
-            try requireSize(36, "ed25519 muxed account")
             return muxed.ed25519AccountId
         case .med25519(let mux):
-            try requireSize(44, "med25519 muxed account")
             let muxInverted = mux.toMuxedAccountMed25519XDRInverted()
             let data = try Data(XDREncoder.encode(muxInverted))
             return try data.encodeMEd25519AccountId()
