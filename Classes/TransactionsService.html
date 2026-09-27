@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          stellarsdk 3.11.0 Docs
+          stellarsdk 3.12.0 Docs
         </a>
          (94% documented)
       </p>
@@ -2352,7 +2352,7 @@ and asynchronous transaction submission modes.</p>
 </ul>
 
               <div class="slightly-smaller">
-                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TransactionsService.swift#L98-L545">Show on GitHub</a>
+                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TransactionsService.swift#L98-L561">Show on GitHub</a>
               </div>
           </div>
         </section>
@@ -3008,9 +3008,9 @@ the reason when the id holds none of those spellings</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10stellarsdk19TransactionsServiceC24submitFeeBumpTransaction11transactionAA0G16PostResponseEnumOAA0efG0C_tYaF"></a>
-                    <a name="//apple_ref/swift/Method/submitFeeBumpTransaction(transaction:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10stellarsdk19TransactionsServiceC24submitFeeBumpTransaction11transactionAA0G16PostResponseEnumOAA0efG0C_tYaF">submitFeeBumpTransaction(transaction:<wbr>)</a>
+                    <a name="/s:10stellarsdk19TransactionsServiceC24submitFeeBumpTransaction11transaction21skipMemoRequiredCheckAA0G16PostResponseEnumOAA0efG0C_SbtYaF"></a>
+                    <a name="//apple_ref/swift/Method/submitFeeBumpTransaction(transaction:skipMemoRequiredCheck:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk19TransactionsServiceC24submitFeeBumpTransaction11transaction21skipMemoRequiredCheckAA0G16PostResponseEnumOAA0efG0C_SbtYaF">submitFeeBumpTransaction(transaction:<wbr>skipMemoRequiredCheck:<wbr>)</a>
                     </code>
                       <span class="declaration-note">
                         Asynchronous
@@ -3021,14 +3021,18 @@ the reason when the id holds none of those spellings</p>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Submits a fee-bump transaction to replace an existing transaction with higher fees.</p>
+                        <p>Submits a fee bump transaction, which wraps a signed inner transaction and pays its fee from the fee source account.</p>
+
+<p>The SEP-29 memo requirement check runs against the inner transaction of the encoded
+envelope, which is the payload that is posted, because the fee bump wrapper carries neither
+a memo nor operations.</p>
 
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">open</span> <span class="kd">func</span> <span class="nf">submitFeeBumpTransaction</span><span class="p">(</span><span class="nv">transaction</span><span class="p">:</span> <span class="kt"><a href="../Classes/FeeBumpTransaction.html">FeeBumpTransaction</a></span><span class="p">)</span> <span class="k">async</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Enums/TransactionPostResponseEnum.html">TransactionPostResponseEnum</a></span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">open</span> <span class="kd">func</span> <span class="nf">submitFeeBumpTransaction</span><span class="p">(</span><span class="nv">transaction</span><span class="p">:</span> <span class="kt"><a href="../Classes/FeeBumpTransaction.html">FeeBumpTransaction</a></span><span class="p">,</span> <span class="nv">skipMemoRequiredCheck</span><span class="p">:</span> <span class="kt">Bool</span> <span class="o">=</span> <span class="kc">false</span><span class="p">)</span> <span class="k">async</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Enums/TransactionPostResponseEnum.html">TransactionPostResponseEnum</a></span></code></pre>
 
                         </div>
                       </div>
@@ -3048,15 +3052,27 @@ the reason when the id holds none of those spellings</p>
                                 </div>
                               </td>
                             </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>skipMemoRequiredCheck</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Set to true to bypass SEP-29 memo requirement validation (default: false)</p>
+                                </div>
+                              </td>
+                            </tr>
                           </tbody>
                         </table>
                       </div>
                       <div>
                         <h4>Return Value</h4>
-                        <p>TransactionPostResponseEnum with submission result or error</p>
+                        <p>TransactionPostResponseEnum with submission result, memo requirement notice, or error</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TransactionsService.swift#L240-L248">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TransactionsService.swift#L245-L253">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3064,9 +3080,9 @@ the reason when the id holds none of those spellings</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10stellarsdk19TransactionsServiceC29submitFeeBumpAsyncTransaction11transactionAA0h4PostG12ResponseEnumOAA0efH0C_tYaF"></a>
-                    <a name="//apple_ref/swift/Method/submitFeeBumpAsyncTransaction(transaction:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10stellarsdk19TransactionsServiceC29submitFeeBumpAsyncTransaction11transactionAA0h4PostG12ResponseEnumOAA0efH0C_tYaF">submitFeeBumpAsyncTransaction(transaction:<wbr>)</a>
+                    <a name="/s:10stellarsdk19TransactionsServiceC29submitFeeBumpAsyncTransaction11transaction21skipMemoRequiredCheckAA0h4PostG12ResponseEnumOAA0efH0C_SbtYaF"></a>
+                    <a name="//apple_ref/swift/Method/submitFeeBumpAsyncTransaction(transaction:skipMemoRequiredCheck:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk19TransactionsServiceC29submitFeeBumpAsyncTransaction11transaction21skipMemoRequiredCheckAA0h4PostG12ResponseEnumOAA0efH0C_SbtYaF">submitFeeBumpAsyncTransaction(transaction:<wbr>skipMemoRequiredCheck:<wbr>)</a>
                     </code>
                       <span class="declaration-note">
                         Asynchronous
@@ -3077,14 +3093,18 @@ the reason when the id holds none of those spellings</p>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Submits a fee-bump transaction asynchronously, returning immediately after validation.</p>
+                        <p>Submits a fee bump transaction asynchronously, returning immediately after validation.</p>
+
+<p>The SEP-29 memo requirement check runs against the inner transaction of the encoded
+envelope, which is the payload that is posted, because the fee bump wrapper carries neither
+a memo nor operations.</p>
 
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">open</span> <span class="kd">func</span> <span class="nf">submitFeeBumpAsyncTransaction</span><span class="p">(</span><span class="nv">transaction</span><span class="p">:</span> <span class="kt"><a href="../Classes/FeeBumpTransaction.html">FeeBumpTransaction</a></span><span class="p">)</span> <span class="k">async</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Enums/TransactionPostAsyncResponseEnum.html">TransactionPostAsyncResponseEnum</a></span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">open</span> <span class="kd">func</span> <span class="nf">submitFeeBumpAsyncTransaction</span><span class="p">(</span><span class="nv">transaction</span><span class="p">:</span> <span class="kt"><a href="../Classes/FeeBumpTransaction.html">FeeBumpTransaction</a></span><span class="p">,</span> <span class="nv">skipMemoRequiredCheck</span><span class="p">:</span> <span class="kt">Bool</span> <span class="o">=</span> <span class="kc">false</span><span class="p">)</span> <span class="k">async</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Enums/TransactionPostAsyncResponseEnum.html">TransactionPostAsyncResponseEnum</a></span></code></pre>
 
                         </div>
                       </div>
@@ -3104,15 +3124,27 @@ the reason when the id holds none of those spellings</p>
                                 </div>
                               </td>
                             </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>skipMemoRequiredCheck</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Set to true to bypass SEP-29 memo requirement validation (default: false)</p>
+                                </div>
+                              </td>
+                            </tr>
                           </tbody>
                         </table>
                       </div>
                       <div>
                         <h4>Return Value</h4>
-                        <p>TransactionPostAsyncResponseEnum with async submission result or error</p>
+                        <p>TransactionPostAsyncResponseEnum with async submission result, memo requirement notice, or error</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TransactionsService.swift#L254-L262">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TransactionsService.swift#L264-L272">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3134,6 +3166,9 @@ the reason when the id holds none of those spellings</p>
                       <div class="pointer"></div>
                       <div class="abstract">
                         <p>Posts a transaction envelope directly to Horizon with optional SEP-29 memo validation.</p>
+
+<p>A fee bump envelope is checked against its inner transaction. An envelope that cannot be
+parsed is submitted without the check and left to Horizon&rsquo;s validation.</p>
 
                       </div>
                       <div class="declaration">
@@ -3180,7 +3215,7 @@ the reason when the id holds none of those spellings</p>
                         <p>TransactionPostResponseEnum with submission result, memo requirement notice, or error</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TransactionsService.swift#L269-L283">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TransactionsService.swift#L282-L296">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3202,6 +3237,9 @@ the reason when the id holds none of those spellings</p>
                       <div class="pointer"></div>
                       <div class="abstract">
                         <p>Posts a transaction envelope asynchronously, returning immediately after validation.</p>
+
+<p>A fee bump envelope is checked against its inner transaction. An envelope that cannot be
+parsed is submitted without the check and left to Horizon&rsquo;s validation.</p>
 
                       </div>
                       <div class="declaration">
@@ -3248,7 +3286,7 @@ the reason when the id holds none of those spellings</p>
                         <p>TransactionPostAsyncResponseEnum with async submission result, memo requirement notice, or error</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TransactionsService.swift#L290-L305">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TransactionsService.swift#L306-L321">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3301,7 +3339,7 @@ the reason when the id holds none of those spellings</p>
                         <p>TransactionsStreamItem for receiving streaming transaction updates</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TransactionsService.swift#L466-L499">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TransactionsService.swift#L482-L515">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3359,7 +3397,7 @@ the reason when the id holds none of those spellings</p>
                         <p>PageResponse containing transaction records or error</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TransactionsService.swift#L530-L544">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TransactionsService.swift#L546-L560">Show on GitHub</a>
                       </div>
                     </section>
                   </div>

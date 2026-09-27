@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          stellarsdk 3.11.0 Docs
+          stellarsdk 3.12.0 Docs
         </a>
          (94% documented)
       </p>
@@ -3326,14 +3326,17 @@ pool id is wide
                       <div class="abstract">
                         <p>Encodes raw data representing a MuxedAccountXDR to strkey muxed account id (&ldquo;M&hellip;&rdquo;).</p>
 
-<p>The data is the 4 byte key type followed by the 32 byte ed25519 key, or by the 8 byte
-muxed account id and that key. KEY_TYPE_MUXED_ED25519 names the wider shape and gives
-an &ldquo;M&hellip;&rdquo; strkey; every other key type value is read as the narrower shape and gives
-the &ldquo;G&hellip;&rdquo; strkey of the ed25519 key.</p>
+<p>The data is the 4 byte key type followed by the key material. KEY_TYPE_ED25519 with
+the 32 byte ed25519 key gives the &ldquo;G&hellip;&rdquo; strkey of that key; KEY_TYPE_MUXED_ED25519
+with the 8 byte muxed account id and the 32 byte ed25519 key gives an &ldquo;M&hellip;&rdquo; strkey.</p>
+
+<p>The key type is read first and decides the width: the data must then be exactly
+36 bytes for KEY_TYPE_ED25519 and 44 bytes for KEY_TYPE_MUXED_ED25519.</p>
 <div class="aside aside-throws">
     <p class="aside-title">Throws</p>
-    StellarSDKError.invalidArgument unless the data is exactly the width its
-key type names: 44 bytes for KEY_TYPE_MUXED_ED25519, 36 bytes for any other value.
+    StellarSDKError.invalidArgument if the data is shorter than the 4 byte key
+type, if the key type is neither KEY_TYPE_ED25519 nor KEY_TYPE_MUXED_ED25519, or if
+the data is not exactly the width its key type names.
 
 </div>
 
@@ -3347,7 +3350,7 @@ key type names: 44 bytes for KEY_TYPE_MUXED_ED25519, 36 bytes for any other valu
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/extensions/Data+KeyUtils.swift#L194-L211">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/extensions/Data+KeyUtils.swift#L197-L219">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3379,7 +3382,7 @@ key type names: 44 bytes for KEY_TYPE_MUXED_ED25519, 36 bytes for any other valu
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/utils/xdrCodable/XDRCodableExtensions.swift#L219-L226">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/utils/xdrCodable/XDRCodableExtensions.swift#L298-L305">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3411,7 +3414,7 @@ key type names: 44 bytes for KEY_TYPE_MUXED_ED25519, 36 bytes for any other valu
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/utils/xdrCodable/XDRCodableExtensions.swift#L231-L233">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/utils/xdrCodable/XDRCodableExtensions.swift#L310-L312">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3443,7 +3446,7 @@ key type names: 44 bytes for KEY_TYPE_MUXED_ED25519, 36 bytes for any other valu
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/utils/xdrCodable/XDRCodableExtensions.swift#L238-L245">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/utils/xdrCodable/XDRCodableExtensions.swift#L317-L324">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3463,7 +3466,14 @@ key type names: 44 bytes for KEY_TYPE_MUXED_ED25519, 36 bytes for any other valu
                       <div class="abstract">
                         <p>Decodes fixed-size data from XDR format.</p>
 
-<p>Reads exactly the specified number of bytes without a length prefix.</p>
+<p>Reads exactly <code>count</code> raw bytes with no length prefix and no padding, the layout
+<code><a href="../Extensions/Data.html#/s:10Foundation4DataV10stellarsdkE14xdrEncodeFixed2toyAD10XDREncoderC_tKF">xdrEncodeFixed(to:)</a></code> writes.</p>
+<div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    StellarSDKError.xdrDecodingError if the count is negative or exceeds the
+remaining bytes
+
+</div>
 
                       </div>
                       <div class="declaration">
@@ -3506,7 +3516,7 @@ key type names: 44 bytes for KEY_TYPE_MUXED_ED25519, 36 bytes for any other valu
                         </table>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/utils/xdrCodable/XDRCodableExtensions.swift#L253-L256">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/utils/xdrCodable/XDRCodableExtensions.swift#L335-L338">Show on GitHub</a>
                       </div>
                     </section>
                   </div>

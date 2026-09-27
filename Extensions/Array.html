@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          stellarsdk 3.11.0 Docs
+          stellarsdk 3.12.0 Docs
         </a>
          (94% documented)
       </p>
@@ -2363,7 +2363,7 @@
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/utils/xdrCodable/XDRCodableExtensions.swift#L141-L146">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/utils/xdrCodable/XDRCodableExtensions.swift#L188-L193">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2381,7 +2381,18 @@
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Undocumented</p>
+                        <p>Decodes a variable-length array from XDR format.</p>
+
+<p>Reads the element count as UInt32 followed by the elements. This is also the byte
+reader behind <code>String</code> and <code>Data</code>, whose elements are single <code>UInt8</code> values; every
+other element type occupies at least 4 bytes. The count is validated against the
+remaining bytes at that minimum width before storage is reserved for it.</p>
+<div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    StellarSDKError.xdrDecodingError if the count exceeds what the remaining bytes
+can hold, XDRDecoder.Error if decoding an element fails
+
+</div>
 
                       </div>
                       <div class="declaration">
@@ -2393,7 +2404,78 @@
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/utils/xdrCodable/XDRCodableExtensions.swift#L148-L160">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/utils/xdrCodable/XDRCodableExtensions.swift#L204-L207">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:Sa10stellarsdkAA12XDRDecodableRzAA12XDREncodableRzlE10fromBinary5countSayxGAA10XDRDecoderC_SitKcfc"></a>
+                    <a name="//apple_ref/swift/Method/init(fromBinary:count:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:Sa10stellarsdkAA12XDRDecodableRzAA12XDREncodableRzlE10fromBinary5countSayxGAA10XDRDecoderC_SitKcfc">init(fromBinary:<wbr>count:<wbr>)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Decodes a fixed-length array from XDR format.</p>
+
+<p>Reads exactly <code>count</code> elements with no count prefix, the layout of an XDR fixed-length
+array. The count is validated against the remaining bytes at the minimum element width
+(1 byte for <code>UInt8</code>, 4 bytes otherwise) before storage is reserved for it.</p>
+<div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    StellarSDKError.xdrDecodingError if the count is negative or exceeds what the
+remaining bytes can hold, XDRDecoder.Error if decoding an element fails
+
+</div>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="nf">init</span><span class="p">(</span><span class="n">fromBinary</span> <span class="nv">decoder</span><span class="p">:</span> <span class="kt"><a href="../Classes/XDRDecoder.html">XDRDecoder</a></span><span class="p">,</span> <span class="nv">count</span><span class="p">:</span> <span class="kt">Int</span><span class="p">)</span> <span class="k">throws</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>decoder</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Decoder to read from</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>count</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Number of elements to read</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/utils/xdrCodable/XDRCodableExtensions.swift#L219-L224">Show on GitHub</a>
                       </div>
                     </section>
                   </div>

@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          stellarsdk 3.11.0 Docs
+          stellarsdk 3.12.0 Docs
         </a>
          (94% documented)
       </p>
@@ -2344,7 +2344,7 @@ transmission errors.</p>
 </ul>
 
               <div class="slightly-smaller">
-                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/crypto/PublicKey.swift#L31-L156">Show on GitHub</a>
+                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/crypto/PublicKey.swift#L31-L160">Show on GitHub</a>
               </div>
           </div>
         </section>
@@ -2510,7 +2510,8 @@ carrying the ed25519 public key version byte and a matching CRC-16 checksum.</p>
                         <p>Creates a new Stellar public key the given XDR Decoder</p>
 <div class="aside aside-throws">
     <p class="aside-title">Throws</p>
-    <p>Throws errors if the key could not be created from the given decoder</p>
+    <p>Throws StellarSDKError.xdrDecodingError if the key type is not PUBLIC_KEY_TYPE_ED25519,
+or other errors if the key could not be created from the given decoder</p>
 
 </div>
 
@@ -2543,7 +2544,7 @@ carrying the ed25519 public key version byte and a matching CRC-16 checksum.</p>
                         </table>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/crypto/PublicKey.swift#L91-L101">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/crypto/PublicKey.swift#L92-L105">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2573,7 +2574,7 @@ carrying the ed25519 public key version byte and a matching CRC-16 checksum.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/crypto/PublicKey.swift#L104-L106">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/crypto/PublicKey.swift#L108-L110">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2610,7 +2611,7 @@ for network protocol operations.</p>
                         <p>A WrappedData32 containing the 32-byte public key</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/crypto/PublicKey.swift#L114-L117">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/crypto/PublicKey.swift#L118-L121">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2659,7 +2660,7 @@ for network protocol operations.</p>
                         </table>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/crypto/PublicKey.swift#L122-L129">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/crypto/PublicKey.swift#L126-L133">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2729,7 +2730,7 @@ for network protocol operations.</p>
                         <p>True if they match, false otherwise.</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/crypto/PublicKey.swift#L140-L155">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/crypto/PublicKey.swift#L144-L159">Show on GitHub</a>
                       </div>
                     </section>
                   </div>

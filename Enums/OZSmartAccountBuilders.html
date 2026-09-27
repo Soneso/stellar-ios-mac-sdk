@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          stellarsdk 3.11.0 Docs
+          stellarsdk 3.12.0 Docs
         </a>
          (94% documented)
       </p>
@@ -2329,7 +2329,7 @@ higher-level smart-account managers. Includes:</p>
 </ul>
 
               <div class="slightly-smaller">
-                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountBuilders.swift#L18-L239">Show on GitHub</a>
+                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountBuilders.swift#L18-L256">Show on GitHub</a>
               </div>
           </div>
         </section>
@@ -2702,6 +2702,64 @@ external signers whose key data is not longer than 65 bytes).</p>
                 <li class="item">
                   <div>
                     <code>
+                    <a name="/s:10stellarsdk22OZSmartAccountBuildersO22getPublicKeyFromSigner6signer10Foundation4DataVSgAA0bcI0_p_tFZ"></a>
+                    <a name="//apple_ref/swift/Method/getPublicKeyFromSigner(signer:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk22OZSmartAccountBuildersO22getPublicKeyFromSigner6signer10Foundation4DataVSgAA0bcI0_p_tFZ">getPublicKeyFromSigner(signer:<wbr>)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Extracts the secp256r1 public key from a WebAuthn signer&rsquo;s key data.</p>
+
+<p>WebAuthn signers store key data as: 65-byte uncompressed public key followed by the
+credential ID. Returns <code>nil</code> for non-WebAuthn signers (delegated signers, or
+external signers whose key data is not longer than 65 bytes).</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">static</span> <span class="kd">func</span> <span class="nf">getPublicKeyFromSigner</span><span class="p">(</span><span class="nv">signer</span><span class="p">:</span> <span class="kd">any</span> <span class="kt"><a href="../Protocols/OZSmartAccountSigner.html">OZSmartAccountSigner</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Data</span><span class="p">?</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>signer</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Signer to inspect.</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>The 65-byte uncompressed secp256r1 public key, or <code>nil</code> for non-WebAuthn
+signers.</p>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountBuilders.swift#L130-L136">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
                     <a name="/s:10stellarsdk22OZSmartAccountBuildersO31getCredentialIdStringFromSigner6signerSSSgAA0bcJ0_p_tFZ"></a>
                     <a name="//apple_ref/swift/Method/getCredentialIdStringFromSigner(signer:)" class="dashAnchor"></a>
                     <a class="token" href="#/s:10stellarsdk22OZSmartAccountBuildersO31getCredentialIdStringFromSigner6signerSSSgAA0bcJ0_p_tFZ">getCredentialIdStringFromSigner(signer:<wbr>)</a>
@@ -2748,7 +2806,7 @@ non-WebAuthn signers.</p>
                         <p>Base64URL-encoded credential ID string, or <code>nil</code>.</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountBuilders.swift#L126-L129">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountBuilders.swift#L143-L146">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2778,7 +2836,7 @@ non-WebAuthn signers.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountBuilders.swift#L131-L133">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountBuilders.swift#L148-L150">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2808,7 +2866,7 @@ non-WebAuthn signers.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountBuilders.swift#L135-L137">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountBuilders.swift#L152-L154">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2842,7 +2900,7 @@ given raw <code>credentialId</code> bytes.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountBuilders.swift#L145-L151">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountBuilders.swift#L162-L168">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2880,7 +2938,7 @@ match. The signer-derived id is already unpadded.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountBuilders.swift#L159-L167">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountBuilders.swift#L176-L184">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2913,7 +2971,7 @@ match. The signer-derived id is already unpadded.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountBuilders.swift#L185-L191">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountBuilders.swift#L202-L208">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2949,7 +3007,7 @@ verifier address and the byte content of the key data.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountBuilders.swift#L201-L213">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountBuilders.swift#L218-L230">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2979,7 +3037,7 @@ verifier address and the byte content of the key data.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountBuilders.swift#L216-L218">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountBuilders.swift#L233-L235">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3036,7 +3094,7 @@ verifier address and the byte content of the key data.</p>
                         <p>List of unique signers in insertion order.</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountBuilders.swift#L226-L238">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountBuilders.swift#L243-L255">Show on GitHub</a>
                       </div>
                     </section>
                   </div>

@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          stellarsdk 3.11.0 Docs
+          stellarsdk 3.12.0 Docs
         </a>
          (94% documented)
       </p>
@@ -2323,7 +2323,7 @@ contract-address derivation. All members operate on raw byte material and do not
 depend on any platform-specific WebAuthn API.</p>
 
               <div class="slightly-smaller">
-                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/core/SmartAccountUtils.swift#L16-L790">Show on GitHub</a>
+                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/core/SmartAccountUtils.swift#L16-L768">Show on GitHub</a>
               </div>
           </div>
         </section>
@@ -2569,9 +2569,10 @@ credential ID.</p>
 
 <p>Computes the deterministic contract address that will be created when deploying a
 smart-account contract with the given credential ID from the specified deployer
-account on the specified network.</p>
-
-<p>Algorithm:</p>
+account on the specified network. The salt is <code>SHA-256(credentialId)</code> (see
+<code><a href="../Enums/SmartAccountUtils.html#/s:10stellarsdk17SmartAccountUtilsO15getContractSalt12credentialId10Foundation4DataVAH_tFZ">getContractSalt(credentialId:)</a></code>) and the derivation is
+<code><a href="../Enums/ContractIdUtils.html#/s:10stellarsdk15ContractIdUtilsO06derivebC08deployer4salt7networkSSAA12SCAddressXDRO_10Foundation4DataVAA7NetworkOtKFZ">deriveContractId(deployer:salt:network:)</a></code> with the deployer
+account address and the network built from the passphrase:</p>
 <pre class="highlight swift"><code><span class="n">salt</span> <span class="o">=</span> <span class="kt">SHA</span><span class="o">-</span><span class="mi">256</span><span class="p">(</span><span class="n">credentialId</span><span class="p">)</span>
 <span class="n">deployerAddress</span> <span class="o">=</span> <span class="kt">SCAddress</span><span class="p">::</span><span class="kt">Account</span><span class="p">(</span><span class="n">deployerPublicKey</span><span class="p">)</span>
 <span class="n">networkId</span> <span class="o">=</span> <span class="kt">SHA</span><span class="o">-</span><span class="mi">256</span><span class="p">(</span><span class="n">networkPassphrase</span> <span class="k">as</span> <span class="kt">UTF</span><span class="o">-</span><span class="mi">8</span><span class="p">)</span>
@@ -2587,8 +2588,8 @@ account on the specified network.</p>
 <div class="aside aside-throws">
     <p class="aside-title">Throws</p>
     <code><a href="../Classes/SmartAccountValidationException/InvalidAddress.html">SmartAccountValidationException.InvalidAddress</a></code> when the deployer key is invalid,
-      <code><a href="../Classes/SmartAccountValidationException/InvalidInput.html">SmartAccountValidationException.InvalidInput</a></code> when contract-ID encoding fails, or
-      <code><a href="../Classes/SmartAccountTransactionException/SigningFailed.html">SmartAccountTransactionException.SigningFailed</a></code> when XDR encoding fails.
+      or <code><a href="../Classes/SmartAccountValidationException/InvalidInput.html">SmartAccountValidationException.InvalidInput</a></code> when the contract ID derivation
+      fails.
 
 </div>
 
@@ -2653,7 +2654,7 @@ account on the specified network.</p>
                         <p>Contract address as a <code>C…</code> strkey.</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/core/SmartAccountUtils.swift#L426-L477">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/core/SmartAccountUtils.swift#L427-L455">Show on GitHub</a>
                       </div>
                     </section>
                   </div>

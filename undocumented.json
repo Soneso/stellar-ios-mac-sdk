@@ -1402,14 +1402,14 @@
     },
     {
       "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountBuilders.swift",
-      "line": 131,
+      "line": 148,
       "symbol": "OZSmartAccountBuilders.isDelegatedSigner(signer:)",
       "symbol_kind": "source.lang.swift.decl.function.method.static",
       "warning": "undocumented"
     },
     {
       "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountBuilders.swift",
-      "line": 135,
+      "line": 152,
       "symbol": "OZSmartAccountBuilders.isExternalSigner(signer:)",
       "symbol_kind": "source.lang.swift.decl.function.method.static",
       "warning": "undocumented"
@@ -1689,14 +1689,7 @@
     },
     {
       "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/utils/xdrCodable/XDRCodableExtensions.swift",
-      "line": 148,
-      "symbol": "Array.init(fromBinary:)",
-      "symbol_kind": "source.lang.swift.decl.function.method.instance",
-      "warning": "undocumented"
-    },
-    {
-      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/utils/xdrCodable/XDRCodableExtensions.swift",
-      "line": 178,
+      "line": 257,
       "symbol": "String.init(fromBinary:)",
       "symbol_kind": "source.lang.swift.decl.function.method.instance",
       "warning": "undocumented"
