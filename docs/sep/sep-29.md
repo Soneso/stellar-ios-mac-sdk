@@ -11,7 +11,7 @@ SEP-29 prevents lost funds by allowing accounts to require incoming payments inc
 
 ## Quick Example
 
-The iOS/macOS SDK checks memo requirements automatically inside `submitTransaction()`. When a destination requires a memo and the transaction lacks one, the SDK returns `.destinationRequiresMemo` instead of submitting. You can then rebuild the transaction with a memo attached:
+The iOS/macOS SDK checks memo requirements automatically inside every submit method of `sdk.transactions`. When a destination requires a memo and the transaction lacks one, the SDK returns `.destinationRequiresMemo` instead of submitting. You can then rebuild the transaction with a memo attached:
 
 ```swift
 import stellarsdk
@@ -254,6 +254,7 @@ switch submitEnum {
 case .success(let response):
     print("Merged: \(response.transactionHash)")
 case .destinationRequiresMemo(let accountId):
+    print("Destination \(accountId) requires a memo before the merge")
     // Rebuild with memo before merging
     let sourceAccount2 = try Account(
         accountId: accountResponse.accountId,
@@ -320,7 +321,7 @@ let submitEnum = await sdk.transactions.submitTransaction(transaction: transacti
 
 ## Integration with Payment Flows
 
-Use memo requirement checking as part of your payment validation flow. The SDK's automatic check via `submitTransaction()` handles validation transparently:
+Use memo requirement checking as part of your payment validation flow. The automatic check in every submit method handles validation transparently:
 
 ```swift
 import stellarsdk

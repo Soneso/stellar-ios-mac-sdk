@@ -10,7 +10,7 @@ All examples assume `import stellarsdk`.
 Exchanges and custodial services use SEP-29 to identify which customer a deposit belongs to. Without a memo, incoming payments cannot be credited to the right user. The iOS SDK performs the SEP-29 check automatically inside every submit method of `sdk.transactions` and returns a dedicated enum case when a destination requires a memo.
 
 - [How the Check Works](#how-the-check-works)
-- [Quick Start — Automatic Check via submitTransaction()](#quick-start--automatic-check-via-submittransaction)
+- [Quick Start: Automatic Check via submitTransaction()](#quick-start-automatic-check-via-submittransaction)
 - [Response Enums](#response-enums)
 - [Method Signatures](#method-signatures)
 - [Setting the Memo-Required Flag on Your Account](#setting-the-memo-required-flag-on-your-account)
@@ -24,23 +24,23 @@ Exchanges and custodial services use SEP-29 to identify which customer a deposit
 
 ## How the Check Works
 
-The check is integrated into `submitTransaction()`, `submitAsyncTransaction()`, `submitFeeBumpTransaction()`, `submitFeeBumpAsyncTransaction()`, `postTransaction()` and `postTransactionAsync()`. You do not call `checkMemoRequired()` directly — the SDK does it for you. For a fee bump transaction the check runs against the inner transaction of the envelope that is submitted, which carries the memo and the operations.
+The check is integrated into `submitTransaction()`, `submitAsyncTransaction()`, `submitFeeBumpTransaction()`, `submitFeeBumpAsyncTransaction()`, `postTransaction()` and `postTransactionAsync()`. You do not call `checkMemoRequired()` directly. The SDK does it for you. For a fee bump transaction the check runs against the inner transaction of the envelope that is submitted, which carries the memo and the operations.
 
 **When a submit method is called without `skipMemoRequiredCheck: true`:**
 
-1. If the transaction already has a memo (any type except `.none`) — skip the check, submit directly.
+1. If the transaction already has a memo (any type except `.none`): skip the check, submit directly.
 2. Collect all destination account IDs from `PaymentOperation`, `PathPaymentOperation`, and `AccountMergeOperation`. Skip any destination whose address starts with "M" (muxed accounts).
-3. If no qualifying destinations — submit directly.
+3. If no qualifying destinations: submit directly.
 4. For each destination, call Horizon `GET /accounts/{destination}` and check `data["config.memo_required"] == "MQ=="` (base64 of "1").
-   - If the account is not found (404), it is skipped — no memo required for non-existent accounts.
-   - If the account has the flag set — return `.destinationRequiresMemo(destinationAccountId:)` immediately, without submitting.
-5. If no destination has the flag set — submit the transaction.
+   - If the account is not found (404), it is skipped: no memo is required for an account that does not exist.
+   - If the account has the flag set: return `.destinationRequiresMemo(destinationAccountId:)` immediately, without submitting.
+5. If no destination has the flag set: submit the transaction.
 
 **Operation types checked:** `PaymentOperation`, `PathPaymentOperation`, `AccountMergeOperation`
 
 **Skipped automatically:** Muxed account destinations (M-addresses), transactions with any memo, non-existent destination accounts (404)
 
-## Quick Start — Automatic Check via submitTransaction()
+## Quick Start: Automatic Check via submitTransaction()
 
 ```swift
 import stellarsdk
@@ -82,10 +82,10 @@ switch submitEnum {
 case .success(let response):
     print("Success! Hash: \(response.transactionHash)")
 case .destinationRequiresMemo(let accountId):
-    // Destination requires a memo — rebuild the transaction with one.
+    // Destination requires a memo: rebuild the transaction with one.
     // Transaction init incremented the first Account's sequenceNumber, so build
     // the retry from a fresh Account with accountResponse.sequenceNumber.
-    print("SEP-29: \(accountId) requires a memo — rebuilding with memo")
+    print("SEP-29: \(accountId) requires a memo, rebuilding with memo")
 
     let sourceAccount2 = try Account(
         accountId: accountResponse.accountId,
@@ -177,7 +177,7 @@ open func submitFeeBumpAsyncTransaction(
 ) async -> TransactionPostAsyncResponseEnum
 ```
 
-The `skipMemoRequiredCheck` parameter defaults to `false` — the check runs automatically. A raw envelope passed to `postTransaction()` or `postTransactionAsync()` may be a fee bump envelope; it is checked against its inner transaction as well.
+The `skipMemoRequiredCheck` parameter defaults to `false`, so the check runs automatically. A raw envelope passed to `postTransaction()` or `postTransactionAsync()` may be a fee bump envelope; it is checked against its inner transaction as well.
 
 ## Setting the Memo-Required Flag on Your Account
 
@@ -224,7 +224,7 @@ if case .success(let response) = submitEnum {
 }
 ```
 
-To remove the requirement, pass `nil` as the `data` parameter — this deletes the data entry:
+To remove the requirement, pass `nil` as the `data` parameter, which deletes the data entry:
 
 ```swift
 let removeFlagOp = ManageDataOperation(
@@ -283,7 +283,7 @@ switch submitEnum {
 case .success(let response):
     print("Success: \(response.transactionHash)")
 case .destinationRequiresMemo(let accountId):
-    print("Account \(accountId) requires a memo — rebuild with memo")
+    print("Account \(accountId) requires a memo, rebuild with memo")
     // Rebuild with memo (reload account to reset sequence)
     let reloadEnum = await sdk.accounts.getAccountDetails(accountId: senderKeyPair.accountId)
     guard case .success(let reloaded) = reloadEnum else {
@@ -385,11 +385,9 @@ let sourceAccount = try Account(
     sequenceNumber: accountResponse.sequenceNumber
 )
 
-// M-address destinations are skipped — no Horizon lookup, no memo required
-let muxedDest = try MuxedAccount(
-    accountId: "MA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVAAAAAAAAAAAAAJLK",
-    id: 1234  // user ID encoded in the M-address
-)
+// M-address destinations are skipped: no Horizon lookup, no memo required
+// baseAccountId: String for an existing destination G-address
+let muxedDest = try MuxedAccount(accountId: baseAccountId, id: 1234)  // user ID encoded in the M-address
 
 let paymentOp = try PaymentOperation(
     sourceAccountId: nil,
@@ -418,7 +416,7 @@ Pass `skipMemoRequiredCheck: true` to bypass the check entirely. Use this when:
 - The transaction has no payment-type operations
 
 ```swift
-// Skip the check — submit immediately without Horizon account lookups
+// Skip the check: submit immediately without Horizon account lookups
 let submitEnum = await sdk.transactions.submitTransaction(
     transaction: transaction,
     skipMemoRequiredCheck: true
@@ -487,7 +485,7 @@ let transaction = try Transaction(
 **Wrong: using the wrong value when setting the memo-required flag:**
 
 ```swift
-// WRONG: these will NOT trigger the check — value stored is not "MQ==" when base64-encoded
+// WRONG: these will NOT trigger the check; the stored value is not "MQ==" when base64-encoded
 ManageDataOperation(sourceAccountId: nil, name: "config.memo_required", data: "true".data(using: .utf8))
 ManageDataOperation(sourceAccountId: nil, name: "config.memo_required", data: "1 ".data(using: .utf8))  // trailing space
 
@@ -499,6 +497,7 @@ ManageDataOperation(sourceAccountId: nil, name: "config.memo_required", data: "1
 **Wrong: handling `.destinationRequiresMemo` from a fee bump by rebuilding only the fee bump:**
 
 ```swift
+// feeBumpTx wraps innerTx (built from accountResponse with paymentOp, signed by innerKeyPair); fee source feeSource, signed by feeSourceKeyPair
 // WRONG: the memo lives on the inner transaction; a FeeBumpTransaction has no memo field.
 let feeBumpEnum = await sdk.transactions.submitFeeBumpTransaction(transaction: feeBumpTx)
 if case .destinationRequiresMemo = feeBumpEnum {
@@ -515,10 +514,13 @@ if case .destinationRequiresMemo = feeBumpEnum {
     let feeBumpWithMemo = try FeeBumpTransaction(sourceAccount: feeSource, fee: 300, innerTransaction: innerWithMemo)
     try feeBumpWithMemo.sign(keyPair: feeSourceKeyPair, network: Network.testnet)
     let retryEnum = await sdk.transactions.submitFeeBumpTransaction(transaction: feeBumpWithMemo)
+    if case .success(let response) = retryEnum {
+        print("Fee bump with memo: \(response.transactionHash)")
+    }
 }
 ```
 
 ## Related SEPs
 
-- **[SEP-10](sep.md)** — Web Authentication (often required by exchanges that use memos for user identification)
-- **[SEP-24](sep.md)** — Interactive deposit/withdrawal (anchors assign per-user deposit memos)
+- **[SEP-10](sep.md)**: Web Authentication (often required by exchanges that use memos for user identification)
+- **[SEP-24](sep.md)**: Interactive deposit/withdrawal (anchors assign per-user deposit memos)
