@@ -4,9 +4,9 @@ description: Guides Stellar blockchain development in Swift using stellar-ios-ma
 license: Apache 2.0
 compatibility: Requires Xcode 16+ (Swift 6 toolchain), iOS 15+, macOS 12+. Zero external dependencies.
 metadata:
-  version: "1.7.0"
+  version: "1.8.0"
   sdk_version: "3.12.0"
-  last_updated: "2026-09-27"
+  last_updated: "2026-09-28"
 ---
 
 # Stellar SDK for iOS & Mac

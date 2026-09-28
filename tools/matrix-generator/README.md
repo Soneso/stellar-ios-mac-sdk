@@ -10,7 +10,7 @@ There are three independent generators, one per domain:
 |-----------|-----------------|--------|
 | **Horizon** | SDK service classes vs. Horizon REST API endpoints | `compatibility/horizon/HORIZON_COMPATIBILITY_MATRIX.md` |
 | **RPC** | SDK Soroban classes vs. Stellar RPC JSON-RPC methods | `compatibility/rpc/RPC_COMPATIBILITY_MATRIX.md` |
-| **SEP** | SDK implementations vs. 19 Stellar Ecosystem Proposals | `compatibility/sep/SEP-XXXX_COMPATIBILITY_MATRIX.md` (one per SEP) |
+| **SEP** | SDK implementations vs. 20 Stellar Ecosystem Proposals | `compatibility/sep/SEP-XXXX_COMPATIBILITY_MATRIX.md` (one per SEP) |
 
 Each generator reads the SDK source tree, fetches the latest upstream specification from GitHub (Horizon router, RPC handler code, or SEP documents), and produces a coverage percentage with a detailed breakdown.
 
@@ -60,10 +60,10 @@ Generate a single SEP matrix:
 python tools/matrix-generator/sep/generate_sep_matrix.py --sep 10
 ```
 
-Generate all 19 supported SEPs:
+Generate all 20 supported SEPs:
 
 ```bash
-for sep in 01 02 05 06 07 08 09 10 11 12 24 30 38 45 46 47 48 51 53; do
+for sep in 01 02 05 06 07 08 09 10 11 12 24 29 30 38 45 46 47 48 51 53; do
   python tools/matrix-generator/sep/generate_sep_matrix.py --sep "$sep"
 done
 ```
@@ -87,7 +87,7 @@ tools/matrix-generator/
     generate_rpc_matrix.py       # RPC method comparator
     rpc_methods.json             # Cached RPC method specifications
   sep/
-    generate_sep_matrix.py       # SEP analyzers (all 19 in one file)
+    generate_sep_matrix.py       # SEP analyzers (all 20 in one file)
     data/
       sep_0046_definition.json   # SEP-46 spec (not available online)
       sep_0047_definition.json   # SEP-47 spec (not available online)
@@ -100,7 +100,7 @@ Output goes to:
 compatibility/
   horizon/HORIZON_COMPATIBILITY_MATRIX.md
   rpc/RPC_COMPATIBILITY_MATRIX.md
-  sep/SEP-XXXX_COMPATIBILITY_MATRIX.md  (x19)
+  sep/SEP-XXXX_COMPATIBILITY_MATRIX.md  (x20)
 ```
 
 ## How It Works

@@ -1,6 +1,6 @@
 # SEP Implementations
 
-The iOS SDK implements 18 Stellar Ecosystem Proposals (SEPs) that cover authentication, asset transfers, identity verification, and other standardized protocols for integrating with anchors and other Stellar services.
+The iOS SDK implements 21 Stellar Ecosystem Proposals (SEPs) that cover authentication, asset transfers, identity verification, and other standardized protocols for integrating with anchors and other Stellar services.
 
 All examples assume `import stellarsdk`.
 
@@ -24,6 +24,9 @@ All examples assume `import stellarsdk`.
 | SEP-30 | Account Recovery | Recover access to accounts via identity verification | [Details](sep-30.md) |
 | SEP-38 | Anchor RFQ API | Get exchange quotes for asset conversions | [Details](sep-38.md) |
 | SEP-45 | Web Auth for Contracts | Authenticate Soroban contract accounts | [Details](sep-45.md) |
+| SEP-46 | Contract Meta | Read key-value metadata embedded in contract WASM | [Details](soroban_contracts.md#contract-introspection) |
+| SEP-47 | Contract Interface Discovery | List the SEPs a contract declares in its `sep` meta entries | [Details](soroban_contracts.md#contract-introspection) |
+| SEP-48 | Contract Interface Specification | Parse function, type, and event specs from contract WASM | [Details](soroban_contracts.md#contract-introspection) |
 | SEP-51 | XDR-JSON | Convert XDR structures to JSON and back | [Details](sep-51.md) |
 | SEP-53 | Sign/Verify Messages | Sign and verify arbitrary messages with keypairs | [Details](sep-53.md) |
 
@@ -66,5 +69,6 @@ The following SEPs depend on other SEPs:
 - **SEP-30 (Account Recovery)** → Requires SEP-10 for authentication
 - **SEP-38 (Anchor RFQ API)** → Requires SEP-10 for authentication; used with SEP-06 or SEP-24
 - **SEP-45 (Web Auth for Contracts)** → Requires SEP-01 to discover web auth endpoint for contract accounts
+- **SEP-47 (Contract Interface Discovery)** → Reads the `sep` entries of SEP-46 contract meta
 
-No dependencies: SEP-02, SEP-05, SEP-07, SEP-08, SEP-09, SEP-11, SEP-23, SEP-29, SEP-51, SEP-53
+No dependencies: SEP-02, SEP-05, SEP-07, SEP-08, SEP-09, SEP-11, SEP-23, SEP-29, SEP-46, SEP-48, SEP-51, SEP-53

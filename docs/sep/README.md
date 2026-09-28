@@ -28,6 +28,9 @@ Think of SEPs as the "rules of the road" that let different Stellar applications
 | SEP-30 | Account Recovery | [sep-30.md](sep-30.md) |
 | SEP-38 | Anchor RFQ API | [sep-38.md](sep-38.md) |
 | SEP-45 | Contract Account Authentication | [sep-45.md](sep-45.md) |
+| SEP-46 | Contract Meta | [Contract Parser](../soroban.md#contract-parser); [Compatibility matrix](../../compatibility/sep/SEP-0046_COMPATIBILITY_MATRIX.md) |
+| SEP-47 | Contract Interface Discovery | [Contract Parser](../soroban.md#contract-parser); [Compatibility matrix](../../compatibility/sep/SEP-0047_COMPATIBILITY_MATRIX.md) |
+| SEP-48 | Contract Interface Specification | [Contract Parser](../soroban.md#contract-parser); [Compatibility matrix](../../compatibility/sep/SEP-0048_COMPATIBILITY_MATRIX.md) |
 | SEP-51 | XDR-JSON | [sep-51.md](sep-51.md) |
 | SEP-53 | Message Signing | [sep-53.md](sep-53.md) |
 
@@ -66,6 +69,7 @@ The issuer's approval server reviews each transaction and either approves, rejec
 | Strkey encoding and address validation | SEP-23 |
 | Account memo requirements | SEP-29 |
 | Account recovery via custodians | SEP-30 |
+| Read contract metadata, declared SEPs, and interface specifications from Wasm bytecode | SEP-46, SEP-47, SEP-48 |
 | Reading and diffing XDR structures as JSON | SEP-51 |
 | Message signing and verification | SEP-53 |
 

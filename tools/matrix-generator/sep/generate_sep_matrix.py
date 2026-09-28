@@ -5591,6 +5591,252 @@ class SEP24Analyzer:
             logger.warning(f"Error analyzing fee endpoint info fields: {e}")
 
 
+class SEP29Analyzer:
+    """Analyzer for SEP-29: Account Memo Requirements - Checking payment destinations for the config.memo_required data entry before submission"""
+
+    SECTION_FLAG = 'Memo Requirement Flag'
+    SECTION_CHECK = 'Sender-side Check'
+    SECTION_SUBMISSION = 'Submission Integration'
+
+    # Submit methods of TransactionsService that expose the skipMemoRequiredCheck opt-out.
+    SUBMIT_METHODS = {
+        'submit_transaction_opt_out': 'submitTransaction',
+        'submit_async_transaction_opt_out': 'submitAsyncTransaction',
+        'submit_fee_bump_transaction_opt_out': 'submitFeeBumpTransaction',
+        'submit_fee_bump_async_transaction_opt_out': 'submitFeeBumpAsyncTransaction',
+        'post_transaction_opt_out': 'postTransaction',
+        'post_transaction_async_opt_out': 'postTransactionAsync',
+    }
+
+    def __init__(self, sdk_analyzer: SDKAnalyzer):
+        self.sdk_analyzer = sdk_analyzer
+        self.parser = SEPMarkdownParser()
+
+    def analyze(self, sep_info: SEPInfo) -> CompatibilityMatrix:
+        """Analyze SEP-29 implementation"""
+        logger.info("Analyzing SEP-29 (Account Memo Requirements) implementation")
+
+        sections = self._create_sep29_sections()
+
+        # The check lives in TransactionsService, the fee bump unwrap in the envelope
+        # helpers, and setting the flag uses the manage data operation.
+        source_files = {
+            'service': 'TransactionsService.swift',
+            'envelope': 'TransactionEnvelopeXDR+Helpers.swift',
+            'manage_data': 'ManageDataOperation.swift',
+            'strict_send': 'PathPaymentStrictSendOperation.swift',
+            'strict_receive': 'PathPaymentStrictReceiveOperation.swift',
+        }
+        sources: Dict[str, str] = {}
+        implementation_files = []
+        for key, filename in source_files.items():
+            file_path = self.sdk_analyzer.find_file_by_name(filename)
+            if not file_path:
+                logger.warning(f"SEP-29 source file not found: {filename}")
+                sources[key] = ''
+                continue
+            try:
+                sources[key] = file_path.read_text(encoding='utf-8')
+            except Exception as e:
+                logger.warning(f"Error reading {filename}: {e}")
+                sources[key] = ''
+                continue
+            if key in ('service', 'envelope', 'manage_data'):
+                rel_path = self.sdk_analyzer.get_relative_path(file_path)
+                implementation_files.append(rel_path)
+                logger.info(f"Found {filename} at {rel_path}")
+
+        for section in sections:
+            self._analyze_section(section, sources)
+
+        matrix = CompatibilityMatrix(
+            sep_info=sep_info,
+            sections=sections,
+            sdk_version=SDK_VERSION,
+            implementation_files=implementation_files
+        )
+
+        matrix.implementation_notes = [
+            "The iOS SDK runs the SEP-29 check inside every submit and post method of TransactionsService",
+            "Transactions that carry a memo skip the check without any account lookup",
+            "Payment, path payment and account merge destinations with a G-address are loaded from Horizon",
+            "A destination whose config.memo_required data entry decodes to 1 stops the submission",
+            "A fee bump envelope is checked through its inner transaction",
+            "Passing skipMemoRequiredCheck: true submits without the check",
+        ]
+
+        if matrix.overall_coverage >= 100:
+            matrix.recommendations = [
+                "The SDK has full compatibility with SEP-29!",
+            ]
+        else:
+            missing_fields = []
+            for section in sections:
+                for field in section.fields:
+                    if not field.implemented:
+                        missing_fields.append(f"{section.name}: {field.name}")
+
+            matrix.recommendations = [
+                f"{len(missing_fields)} field(s) are not yet implemented:",
+                *[f"  - {f}" for f in missing_fields[:10]],
+                "Consider adding support for these fields to achieve full SEP-29 compliance",
+            ]
+
+        return matrix
+
+    def _create_sep29_sections(self) -> List[SEPSection]:
+        """Create SEP-29 sections with all fields"""
+
+        def make_field(name: str, section: str, description: str, requirements: str) -> SEPField:
+            return SEPField(
+                name=name,
+                section=section,
+                required=True,
+                description=description,
+                requirements=requirements
+            )
+
+        flag_section = SEPSection(name=self.SECTION_FLAG)
+        flag_section.fields = [
+            make_field(
+                'memo_required_data_entry', self.SECTION_FLAG,
+                "Reads the destination account's config.memo_required data entry and compares it with the base64 encoding of 1",
+                'config.memo_required data entry lookup'
+            ),
+            make_field(
+                'set_memo_required_flag', self.SECTION_FLAG,
+                'Sets or removes the data entry with a manage data operation',
+                'ManageDataOperation with an optional data value'
+            ),
+        ]
+
+        check_section = SEPSection(name=self.SECTION_CHECK)
+        check_section.fields = [
+            make_field(
+                'payment_destination', self.SECTION_CHECK,
+                'Checks the destination of a payment operation',
+                'PaymentOperation destination check'
+            ),
+            make_field(
+                'path_payment_strict_send_destination', self.SECTION_CHECK,
+                'Checks the destination of a path payment strict send operation',
+                'PathPaymentStrictSendOperation destination check'
+            ),
+            make_field(
+                'path_payment_strict_receive_destination', self.SECTION_CHECK,
+                'Checks the destination of a path payment strict receive operation',
+                'PathPaymentStrictReceiveOperation destination check'
+            ),
+            make_field(
+                'account_merge_destination', self.SECTION_CHECK,
+                'Checks the destination of an account merge operation',
+                'AccountMergeOperation destination check'
+            ),
+            make_field(
+                'muxed_destination_exempt', self.SECTION_CHECK,
+                'Checks G-address destinations only and skips multiplexed M-address destinations',
+                'Multiplexed destination detection'
+            ),
+            make_field(
+                'memo_present_skips_lookup', self.SECTION_CHECK,
+                'Performs no lookup when the transaction carries a memo',
+                'Memo presence short-circuit'
+            ),
+            make_field(
+                'fee_bump_inner_transaction', self.SECTION_CHECK,
+                'Checks a fee bump envelope through the memo and operations of its inner transaction',
+                'Fee bump inner transaction unwrap'
+            ),
+            make_field(
+                'unknown_destination_skipped', self.SECTION_CHECK,
+                'Skips a destination Horizon does not know and lets the network report it',
+                'HTTP 404 handling on account lookup'
+            ),
+        ]
+
+        submission_section = SEPSection(name=self.SECTION_SUBMISSION)
+        submission_section.fields = [
+            make_field(
+                name, self.SECTION_SUBMISSION,
+                f'{method} runs the check unless skipMemoRequiredCheck is true',
+                f'{method} skipMemoRequiredCheck parameter'
+            )
+            for name, method in self.SUBMIT_METHODS.items()
+        ]
+        submission_section.fields.append(
+            make_field(
+                'destination_requires_memo_result', self.SECTION_SUBMISSION,
+                'Submission result case carrying the id of the account that requires a memo',
+                'destinationRequiresMemo(destinationAccountId:) result case'
+            )
+        )
+
+        return [flag_section, check_section, submission_section]
+
+    def _analyze_section(self, section: SEPSection, sources: Dict[str, str]) -> None:
+        """Analyze implementation for a section"""
+        service = sources.get('service', '')
+        envelope = sources.get('envelope', '')
+        manage_data = sources.get('manage_data', '')
+        strict_send = sources.get('strict_send', '')
+        strict_receive = sources.get('strict_receive', '')
+
+        for field in section.fields:
+            detected, sdk_property = self._detect(
+                field.name, service, envelope, manage_data, strict_send, strict_receive
+            )
+            if detected:
+                field.implemented = True
+                field.sdk_property = sdk_property
+
+    def _detect(self, name: str, service: str, envelope: str, manage_data: str,
+                strict_send: str, strict_receive: str) -> Tuple[bool, Optional[str]]:
+        """Detect a single SEP-29 feature in the SDK sources"""
+        checks_path_payments = 'operation as? PathPaymentOperation' in service
+
+        if name == 'memo_required_data_entry':
+            if 'data["config.memo_required"]' in service and '"MQ=="' in service:
+                return True, 'checkMemoRequiredForDestinations (config.memo_required == "MQ==")'
+        elif name == 'set_memo_required_flag':
+            if 'public class ManageDataOperation' in manage_data and re.search(r'init\(sourceAccountId:\s*String\?,\s*name:\s*String,\s*data:\s*Data\?', manage_data):
+                return True, 'ManageDataOperation(sourceAccountId:name:data:)'
+        elif name == 'payment_destination':
+            if 'operation as? PaymentOperation' in service:
+                return True, 'checkMemoRequired (PaymentOperation)'
+        elif name == 'path_payment_strict_send_destination':
+            if checks_path_payments and re.search(r'class\s+PathPaymentStrictSendOperation\s*:\s*PathPaymentOperation', strict_send):
+                return True, 'checkMemoRequired (PathPaymentStrictSendOperation)'
+        elif name == 'path_payment_strict_receive_destination':
+            if checks_path_payments and re.search(r'class\s+PathPaymentStrictReceiveOperation\s*:\s*PathPaymentOperation', strict_receive):
+                return True, 'checkMemoRequired (PathPaymentStrictReceiveOperation)'
+        elif name == 'account_merge_destination':
+            if 'operation as? AccountMergeOperation' in service:
+                return True, 'checkMemoRequired (AccountMergeOperation)'
+        elif name == 'muxed_destination_exempt':
+            if service.count('destinationAccountId.hasPrefix("G")') >= 3:
+                return True, 'checkMemoRequired (M-address destinations skipped)'
+        elif name == 'memo_present_skips_lookup':
+            if 'transaction.memo != Memo.none' in service:
+                return True, 'checkMemoRequired (memo short-circuit)'
+        elif name == 'fee_bump_inner_transaction':
+            if 'Transaction(envelopeXdr: transactionEnvelope)' in service and 'tevf.tx.innerTx' in envelope:
+                return True, 'Transaction(envelopeXdr:) (fee bump inner transaction)'
+        elif name == 'unknown_destination_skipped':
+            if 'case .notFound(' in service and 'checkMemoRequiredForDestinations' in service:
+                return True, 'checkMemoRequiredForDestinations (HTTP 404 skipped)'
+        elif name in self.SUBMIT_METHODS:
+            method = self.SUBMIT_METHODS[name]
+            pattern = r'open\s+func\s+' + re.escape(method) + r'\([^)]*skipMemoRequiredCheck\s*:\s*Bool\s*=\s*false'
+            if re.search(pattern, service):
+                return True, f'{method}(skipMemoRequiredCheck:)'
+        elif name == 'destination_requires_memo_result':
+            if ('enum TransactionPostResponseEnum' in service
+                    and 'enum TransactionPostAsyncResponseEnum' in service
+                    and service.count('case destinationRequiresMemo(destinationAccountId: String)') >= 2):
+                return True, 'destinationRequiresMemo(destinationAccountId:)'
+        return False, None
+
+
 class SEP30Analyzer:
     """Analyzer for SEP-30 (Account Recovery: multi-party recovery of Stellar accounts)"""
 
@@ -9763,6 +10009,8 @@ class SEPAnalyzerFactory:
             "0012": SEP12Analyzer,
             "24": SEP24Analyzer,
             "0024": SEP24Analyzer,
+            "29": SEP29Analyzer,
+            "0029": SEP29Analyzer,
             "30": SEP30Analyzer,
             "0030": SEP30Analyzer,
             "38": SEP38Analyzer,
@@ -10087,6 +10335,13 @@ class MatrixRenderer:
                 'SCSpecUDTErrorEnumV0XDR': 'XDR type for user-defined error enum specifications',
                 'SCSpecEventV0XDR': 'XDR type for event specifications',
             }
+        elif sep_number in ["29", "0029"]:
+            class_descriptions = {
+                'TransactionsService': 'Horizon transactions service whose submit and post methods run the SEP-29 memo required check unless skipMemoRequiredCheck is true',
+                'TransactionPostResponseEnum': 'Submission result enum whose destinationRequiresMemo(destinationAccountId:) case names the account that requires a memo',
+                'TransactionPostAsyncResponseEnum': 'Async submission result enum with the same destinationRequiresMemo(destinationAccountId:) case',
+                'ManageDataOperation': 'Sets or removes the config.memo_required data entry on an account',
+            }
         elif sep_number in ["45", "0045"]:
             class_descriptions = {
                 'WebAuthForContracts': 'Main class implementing SEP-45 authentication flow for contract accounts (C... addresses)',
@@ -10284,7 +10539,7 @@ class SEPMatrixGenerator:
     @staticmethod
     def list_available_seps() -> List[str]:
         """List SEPs with implemented analyzers"""
-        return ["01", "02", "05", "06", "07", "08", "09", "10", "11", "12", "24", "30", "38", "45", "46", "47", "48", "51", "53"]
+        return ["01", "02", "05", "06", "07", "08", "09", "10", "11", "12", "24", "29", "30", "38", "45", "46", "47", "48", "51", "53"]
 
 
 def main():

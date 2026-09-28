@@ -1534,7 +1534,7 @@ if var authEntries = auth {
 
 ## Contract Parser
 
-Parse contract bytecode to access specifications, metadata, and environment information without deploying.
+Parse contract bytecode to access specifications (SEP-48), metadata (SEP-46), the SEPs a contract declares (SEP-47), and environment information without deploying.
 
 ### Parse from Bytecode
 
@@ -1554,6 +1554,9 @@ for entry in contractInfo.specEntries {
 
 // Contract meta (arbitrary metadata as key-value pairs)
 let meta = contractInfo.metaEntries
+
+// SEP numbers declared in the contract's "sep" meta entries
+let supportedSeps = contractInfo.supportedSeps
 ```
 
 ### Parse from Network
