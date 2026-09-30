@@ -6,6 +6,7 @@ fixtures/sep-0023.md is ecosystem/sep-0023.md of stellar-protocol at 9cd7030.
 import contextlib
 import io
 import logging
+import plistlib
 import re
 import sys
 import tempfile
@@ -18,8 +19,7 @@ REPO_ROOT = TOOL_DIR.parents[1]
 sys.path.insert(0, str(TOOL_DIR / "sep"))
 
 import generate_sep_matrix  # noqa: E402
-from generate_sep_matrix import SDKAnalyzer, SEP23Analyzer, SEP23SpecParser, SEPAnalyzerFactory, SEPInfo  # noqa: E402
-from generate_sep_matrix import SEPMatrixGenerator  # noqa: E402
+from generate_sep_matrix import SDKAnalyzer, SEP23Analyzer, SEP23SpecParser, SEPInfo  # noqa: E402
 
 SPEC = (Path(__file__).resolve().parent / "fixtures" / "sep-0023.md").read_text(encoding="utf-8")
 TRACKED_MATRIX = REPO_ROOT / "compatibility" / "sep" / "SEP-0023_COMPATIBILITY_MATRIX.md"
@@ -139,8 +139,10 @@ def without_span(text: str, start: str, end: str, replacement: str = "") -> str:
 
 def write_sdk_root(root: Path, version_byte=VERSION_BYTE_SWIFT, encoders=DATA_KEY_UTILS_SWIFT,
                    decoders=STRING_KEY_UTILS_SWIFT, unit_tests=EXACT_UNIT_TESTS) -> None:
-    """Create an SDK tree with the StrKey sources and unit test file; None leaves a file out."""
+    """Create an SDK tree with the Info.plist, the StrKey sources and unit test file; None leaves a source out."""
     (root / "stellarsdk" / "stellarsdk").mkdir(parents=True)
+    with open(root / "stellarsdk" / "stellarsdk" / "Info.plist", "wb") as f:
+        plistlib.dump({"CFBundleShortVersionString": "3.12.0"}, f)
     files = {VERSION_BYTE_PATH: version_byte, ENCODE_PATH: encoders, DECODE_PATH: decoders, TEST_FILE: unit_tests}
     for relative, text in files.items():
         if text is not None:
@@ -375,8 +377,8 @@ class RegistrationTest(unittest.TestCase):
             write_sdk_root(Path(tmp))
             for number in ("23", "0023"):
                 with self.subTest(number):
-                    self.assertIsInstance(SEPAnalyzerFactory.create_analyzer(number, SDKAnalyzer(Path(tmp))), SEP23Analyzer)
-        self.assertIn("23", SEPMatrixGenerator.list_available_seps())
+                    self.assertIsInstance(generate_sep_matrix.create_analyzer(number, SDKAnalyzer(Path(tmp))), SEP23Analyzer)
+        self.assertIn("23", generate_sep_matrix.ANALYZERS)
 
 
 class MainTest(unittest.TestCase):

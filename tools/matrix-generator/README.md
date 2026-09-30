@@ -32,7 +32,6 @@ python3 tools/matrix-generator/horizon/generate_horizon_matrix.py
 
 Options:
 - `--horizon-version VERSION` -- compare against a specific Horizon release (e.g. `v25.0.0`)
-- `--skip-api` -- skip GitHub API calls (useful with `--horizon-version` to avoid rate limits)
 - `--output PATH` -- custom output file path
 - `--verbose` -- enable debug logging
 
@@ -48,7 +47,7 @@ python3 tools/matrix-generator/rpc/extract_rpc_methods.py
 python3 tools/matrix-generator/rpc/generate_rpc_matrix.py
 ```
 
-The extractor uses the newest stable stellar-rpc release. The generator cites the release recorded in `rpc_methods.json`. Both exit non-zero and write nothing when a release lookup, fetch, or parse fails.
+The extractor uses the newest stable stellar-rpc release and reads the request and response structs from go-stellar-sdk at the version that the release's `go.mod` requires. The generator cites the release recorded in `rpc_methods.json`. Both exit non-zero and write nothing when a release lookup, fetch, or parse fails. An override to a stellar-rpc release before v25.0.0 fails: its `go.mod` pins no go-stellar-sdk release, and releases up to v22.1.1 also register methods as string literals, which the method check does not read.
 
 `extract_rpc_methods.py` options:
 - `--rpc-version VERSION` -- extract from a specific stellar-rpc release (a non-draft release; a prerelease is allowed)
@@ -72,6 +71,8 @@ for sep in 01 02 05 06 07 08 09 10 11 12 23 24 29 30 38 45 46 47 48 51 53; do
 done
 ```
 
+A class or file an analyzer cannot find renders its fields as not implemented. The run exits non-zero and writes nothing when it cannot fetch the SEP, read the SDK version or a found SDK file, or load a definition file in `sep/data/`.
+
 The SEP-23 matrix takes its key types and test vectors from the fetched SEP text. The run exits non-zero and writes nothing in these cases:
 - the SEP text has no readable version byte table or test case lists
 - a StrKey source file or `StrKeyUnitTests.swift` is missing or unreadable
@@ -90,6 +91,7 @@ Options:
 
 ```
 tools/matrix-generator/
+  sdk_version.py                 # SDK version lookup shared by the three generators
   horizon/
     generate_horizon_matrix.py   # Horizon endpoint comparator
     horizon_params.py            # Horizon query parameter definitions
@@ -101,10 +103,10 @@ tools/matrix-generator/
   sep/
     generate_sep_matrix.py       # SEP analyzers (all 21 in one file)
     data/
-      sep_0046_definition.json   # SEP-46 spec (not available online)
-      sep_0047_definition.json   # SEP-47 spec (not available online)
+      sep_0046_definition.json   # SEP-46 features (spec is prose, not field tables)
+      sep_0047_definition.json   # SEP-47 features (spec is prose, not field tables)
       sep_0051_definition.json   # SEP-51 features (spec is prose, not field tables)
-  tests/                         # Unit tests for the RPC tools and the SEP-23 analyzer (no network access)
+  tests/                         # Unit tests for the RPC tools, the SEP-23 analyzer, and the failed-run checks (no network access)
 ```
 
 Output goes to:
@@ -118,8 +120,8 @@ compatibility/
 
 ## How It Works
 
-1. **SDK version** is read from `stellarsdk/stellarsdk/Info.plist` (`CFBundleShortVersionString`).
-2. **Upstream specs** are fetched from GitHub (Horizon router files, RPC handler source, SEP Markdown documents). SEP specs that are not available online, or that define their requirements as prose rather than field tables, have their feature list bundled as JSON in `sep/data/`.
+1. **SDK version** is read from `stellarsdk/stellarsdk/Info.plist` (`CFBundleShortVersionString`); every generator exits non-zero when it cannot read it.
+2. **Upstream specs** are fetched from GitHub (Horizon router files, RPC handler source, SEP Markdown documents). SEP specs that define their requirements as prose rather than field tables have their feature list bundled as JSON in `sep/data/`.
 3. **SDK source** is scanned using regex and AST-level pattern matching against the Swift files under `stellarsdk/`.
 4. **Coverage** is computed per endpoint/method/feature and rendered into Markdown tables.
 

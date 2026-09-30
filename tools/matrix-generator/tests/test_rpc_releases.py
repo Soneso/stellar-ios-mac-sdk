@@ -24,36 +24,35 @@ class SelectNewestStableTest(unittest.TestCase):
 
     def test_selects_highest_stable_version_by_numeric_comparison(self):
         selected = select_newest_stable(release_list(), REPO)
-        self.assertEqual(selected.version, "v28.0.10")
-        self.assertEqual(selected.release_date, "2026-08-27")
+        self.assertEqual(selected.tag, "v28.0.10")
+        self.assertEqual(selected.published_date, "2026-08-27")
         self.assertEqual(selected.html_url, "https://github.com/stellar/stellar-rpc/releases/tag/v28.0.10")
-        self.assertFalse(selected.prerelease)
 
     def test_tag_with_prefix_is_not_a_candidate(self):
         releases = [release("rpcclient-v24.0.0"), release("v23.0.0")]
-        self.assertEqual(select_newest_stable(releases, REPO).version, "v23.0.0")
+        self.assertEqual(select_newest_stable(releases, REPO).tag, "v23.0.0")
 
     def test_suffixed_tag_is_not_a_candidate_even_when_not_flagged_prerelease(self):
         releases = [release("v29.0.0-rc.1"), release("v28.0.0")]
-        self.assertEqual(select_newest_stable(releases, REPO).version, "v28.0.0")
+        self.assertEqual(select_newest_stable(releases, REPO).tag, "v28.0.0")
 
     def test_suffixless_tag_flagged_prerelease_is_not_a_candidate(self):
         releases = [release("v30.0.0", prerelease=True), release("v28.0.0")]
-        self.assertEqual(select_newest_stable(releases, REPO).version, "v28.0.0")
+        self.assertEqual(select_newest_stable(releases, REPO).tag, "v28.0.0")
 
     def test_draft_is_filtered_before_published_at_is_read(self):
         releases = [release("v31.0.0", draft=True), release("v28.0.0")]
         self.assertIsNone(releases[0]["published_at"])
-        self.assertEqual(select_newest_stable(releases, REPO).version, "v28.0.0")
+        self.assertEqual(select_newest_stable(releases, REPO).tag, "v28.0.0")
 
     def test_empty_list_raises(self):
-        with self.assertRaisesRegex(ReleaseLookupError, "stellar/stellar-rpc has no stable release"):
+        with self.assertRaisesRegex(ReleaseLookupError, r"stellar/stellar-rpc has no stable vX\.Y\.Z release"):
             select_newest_stable([], REPO)
 
     def test_list_without_stable_release_raises(self):
         releases = [release("rpcclient-v24.0.0"), release("v29.0.0-rc.1", prerelease=True),
                     release("v31.0.0", draft=True)]
-        with self.assertRaisesRegex(ReleaseLookupError, "has no stable release"):
+        with self.assertRaisesRegex(ReleaseLookupError, r"has no stable vX\.Y\.Z release"):
             select_newest_stable(releases, REPO)
 
     def test_selected_release_without_published_at_raises(self):
@@ -66,33 +65,31 @@ class SelectNewestStableTest(unittest.TestCase):
 class FindReleaseTest(unittest.TestCase):
 
     def test_override_present_returns_that_record(self):
-        found = find_release(release_list(), "v28.0.9", REPO)
-        self.assertEqual(found.version, "v28.0.9")
-        self.assertEqual(found.release_date, "2026-09-05")
+        found = find_release(release_list(), REPO, "v28.0.9")
+        self.assertEqual(found.tag, "v28.0.9")
+        self.assertEqual(found.published_date, "2026-09-05")
         self.assertEqual(found.html_url, "https://github.com/stellar/stellar-rpc/releases/tag/v28.0.9")
-        self.assertFalse(found.prerelease)
 
-    def test_prerelease_override_is_allowed_and_flagged(self):
-        found = find_release(release_list(), "v29.0.0-rc.1", REPO)
-        self.assertEqual(found.version, "v29.0.0-rc.1")
-        self.assertTrue(found.prerelease)
+    def test_prerelease_override_is_allowed(self):
+        found = find_release(release_list(), REPO, "v29.0.0-rc.1")
+        self.assertEqual(found.tag, "v29.0.0-rc.1")
 
     def test_override_absent_raises(self):
-        with self.assertRaisesRegex(ReleaseLookupError, "has no release with tag v26.0.0"):
-            find_release(release_list(), "v26.0.0", REPO)
+        with self.assertRaisesRegex(ReleaseLookupError, "has no release tagged v26.0.0"):
+            find_release(release_list(), REPO, "v26.0.0")
 
     def test_override_pointing_at_draft_raises(self):
         with self.assertRaisesRegex(ReleaseLookupError, "v31.0.0 is a draft"):
-            find_release(release_list(), "v31.0.0", REPO)
+            find_release(release_list(), REPO, "v31.0.0")
 
     def test_override_outside_header_tag_form_raises(self):
         with self.assertRaisesRegex(ReleaseLookupError, "not a stellar/stellar-rpc release tag"):
-            find_release(release_list(), "rpcclient-v24.0.0", REPO)
+            find_release(release_list(), REPO, "rpcclient-v24.0.0")
 
     def test_override_with_hyphen_inside_suffix_raises(self):
         releases = [*release_list(), release("v29.0.0-rc-1", prerelease=True)]
         with self.assertRaisesRegex(ReleaseLookupError, "not a stellar/stellar-rpc release tag"):
-            find_release(releases, "v29.0.0-rc-1", REPO)
+            find_release(releases, REPO, "v29.0.0-rc-1")
 
 
 class FetchReleasesTest(unittest.TestCase):
@@ -114,18 +111,18 @@ class FetchReleasesTest(unittest.TestCase):
             ),
         })
         with mock.patch.object(rpc_releases.urllib.request, "urlopen", fake):
-            releases = fetch_releases("stellar", "stellar-rpc", "test-token")
+            releases = fetch_releases(REPO, "test-token")
 
         self.assertEqual(fake.urls, [FIRST_PAGE, SECOND_PAGE, THIRD_PAGE])
         self.assertEqual(len(releases), len(release_list()) + 2)
-        self.assertEqual(select_newest_stable(releases, REPO).version, "v28.1.0")
+        self.assertEqual(select_newest_stable(releases, REPO).tag, "v28.1.0")
         for request in fake.requests:
             self.assertEqual(request.get_header("Authorization"), "Bearer test-token")
 
     def test_single_page_without_link_header_stops(self):
         fake = FakeUrlopen({FIRST_PAGE: FakeResponse(release_list())})
         with mock.patch.object(rpc_releases.urllib.request, "urlopen", fake):
-            releases = fetch_releases("stellar", "stellar-rpc", None)
+            releases = fetch_releases(REPO, None)
         self.assertEqual(fake.urls, [FIRST_PAGE])
         self.assertEqual(len(releases), len(release_list()))
         self.assertIsNone(fake.requests[0].get_header("Authorization"))
@@ -134,31 +131,31 @@ class FetchReleasesTest(unittest.TestCase):
         failing = mock.Mock(side_effect=urllib.error.URLError("connection refused"))
         with mock.patch.object(rpc_releases.urllib.request, "urlopen", failing):
             with self.assertRaisesRegex(ReleaseLookupError, "connection refused"):
-                fetch_releases("stellar", "stellar-rpc", None)
+                fetch_releases(REPO, None)
 
     def test_http_error_raises(self):
         failing = mock.Mock(side_effect=urllib.error.HTTPError(FIRST_PAGE, 403, "rate limit exceeded", {}, None))
         with mock.patch.object(rpc_releases.urllib.request, "urlopen", failing):
-            with self.assertRaisesRegex(ReleaseLookupError, "HTTP 403"):
-                fetch_releases("stellar", "stellar-rpc", None)
+            with self.assertRaisesRegex(ReleaseLookupError, "HTTP Error 403"):
+                fetch_releases(REPO, None)
 
     def test_body_that_is_not_json_raises(self):
         fake = FakeUrlopen({FIRST_PAGE: FakeResponse(b"<html>unavailable</html>")})
         with mock.patch.object(rpc_releases.urllib.request, "urlopen", fake):
             with self.assertRaisesRegex(ReleaseLookupError, "invalid JSON"):
-                fetch_releases("stellar", "stellar-rpc", None)
+                fetch_releases(REPO, None)
 
     def test_json_body_that_is_not_a_release_list_raises(self):
         fake = FakeUrlopen({FIRST_PAGE: FakeResponse({"message": "Bad credentials"})})
         with mock.patch.object(rpc_releases.urllib.request, "urlopen", fake):
-            with self.assertRaisesRegex(ReleaseLookupError, "no list of release objects"):
-                fetch_releases("stellar", "stellar-rpc", None)
+            with self.assertRaisesRegex(ReleaseLookupError, "expected a list of releases"):
+                fetch_releases(REPO, None)
 
     def test_list_with_non_object_entry_raises(self):
         fake = FakeUrlopen({FIRST_PAGE: FakeResponse(["v28.0.1"])})
         with mock.patch.object(rpc_releases.urllib.request, "urlopen", fake):
             with self.assertRaisesRegex(ReleaseLookupError, "invalid release entry"):
-                fetch_releases("stellar", "stellar-rpc", None)
+                fetch_releases(REPO, None)
 
     def test_entry_with_missing_or_non_boolean_flags_or_tag_raises(self):
         variants = {
@@ -179,7 +176,7 @@ class FetchReleasesTest(unittest.TestCase):
             fake = FakeUrlopen({FIRST_PAGE: FakeResponse([entry, release("v28.0.0")])})
             with self.subTest(label), mock.patch.object(rpc_releases.urllib.request, "urlopen", fake):
                 with self.assertRaisesRegex(ReleaseLookupError, "invalid release entry"):
-                    fetch_releases("stellar", "stellar-rpc", None)
+                    fetch_releases(REPO, None)
 
     def test_invalid_second_page_raises(self):
         failing_second = FakeUrlopen({
@@ -188,7 +185,7 @@ class FetchReleasesTest(unittest.TestCase):
         })
         with mock.patch.object(rpc_releases.urllib.request, "urlopen", failing_second):
             with self.assertRaisesRegex(ReleaseLookupError, "invalid JSON"):
-                fetch_releases("stellar", "stellar-rpc", None)
+                fetch_releases(REPO, None)
 
 
 class GithubTokenTest(unittest.TestCase):

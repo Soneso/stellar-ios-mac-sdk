@@ -2,12 +2,11 @@
 """
 Horizon API Query Parameters Dictionary
 
-This module contains a comprehensive mapping of all Horizon API endpoints
-to their supported query parameters, extracted from the Horizon Go codebase.
+This module maps the Horizon API endpoints to their supported query
+parameters, taken from the Horizon Go codebase.
 
 Source: https://github.com/stellar/stellar-horizon
 Analyzed from: internal/actions/*.go files
-Last Updated: 2026-01-06
 
 Each entry is a tuple of (endpoint_path, http_method) mapping to a list of
 supported query parameter names.
@@ -16,14 +15,18 @@ Standard Pagination Parameters (included where applicable):
 - cursor: Pagination cursor for result set navigation
 - limit: Maximum number of records to return
 - order: Sort order (asc/desc)
-
-Author: Generated for Stellar iOS/Mac SDK Compatibility Matrix
 """
 
 from typing import Dict, List, Tuple
 
 # Standard pagination parameters used across most list endpoints
 PAGINATION_PARAMS = ["cursor", "limit", "order"]
+
+# Base and counter asset of a trade pair (/trades, /trade_aggregations)
+TRADE_ASSET_PAIR_PARAMS = [
+    "base_asset_type", "base_asset_code", "base_asset_issuer",
+    "counter_asset_type", "counter_asset_code", "counter_asset_issuer",
+]
 
 # Complete mapping of Horizon endpoints to their query parameters
 HORIZON_PARAMS: Dict[Tuple[str, str], List[str]] = {
@@ -231,12 +234,7 @@ HORIZON_PARAMS: Dict[Tuple[str, str], List[str]] = {
         "account_id",           # Filter by account ID
         "liquidity_pool_id",    # Filter by liquidity pool ID
         "trade_type",           # Filter by trade type (orderbook/liquidity_pool)
-        "base_asset_type",      # Base asset type
-        "base_asset_code",      # Base asset code
-        "base_asset_issuer",    # Base asset issuer
-        "counter_asset_type",   # Counter asset type
-        "counter_asset_code",   # Counter asset code
-        "counter_asset_issuer", # Counter asset issuer
+        *TRADE_ASSET_PAIR_PARAMS,
         *PAGINATION_PARAMS
     ],
     ("/trade_aggregations", "GET"): [
@@ -244,12 +242,7 @@ HORIZON_PARAMS: Dict[Tuple[str, str], List[str]] = {
         "end_time",             # End time in milliseconds
         "resolution",           # Aggregation resolution in milliseconds
         "offset",               # Time offset in milliseconds
-        "base_asset_type",      # Base asset type
-        "base_asset_code",      # Base asset code
-        "base_asset_issuer",    # Base asset issuer
-        "counter_asset_type",   # Counter asset type
-        "counter_asset_code",   # Counter asset code
-        "counter_asset_issuer", # Counter asset issuer
+        *TRADE_ASSET_PAIR_PARAMS,
         *PAGINATION_PARAMS
     ],
 
