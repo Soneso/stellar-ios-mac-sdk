@@ -7,6 +7,10 @@ and generates a detailed compatibility matrix with coverage statistics.
 
 Analyzes actual Swift source code to extract method signatures and response fields.
 
+The header cites the stellar-rpc release that rpc_methods.json was extracted from.
+A failed release lookup or an unreadable SDK version raises; the script then exits
+non-zero and writes no matrix.
+
 Author: Stellar iOS/macOS SDK Team
 License: Apache-2.0
 """
@@ -15,13 +19,16 @@ import json
 import plistlib
 import re
 import sys
-import urllib.request
-import urllib.error
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Any, Optional, Set
 from dataclasses import dataclass, field
 from enum import Enum
+
+from rpc_releases import Release, fetch_releases, find_release, get_github_token
+
+RPC_REPO_OWNER = "stellar"
+RPC_REPO_NAME = "stellar-rpc"
 
 
 class SupportStatus(Enum):
@@ -29,14 +36,6 @@ class SupportStatus(Enum):
     FULLY_SUPPORTED = "Full"
     PARTIALLY_SUPPORTED = "Partial"
     NOT_SUPPORTED = "Missing"
-
-
-@dataclass
-class RPCVersionInfo:
-    """RPC version information from GitHub"""
-    version: str
-    release_date: str
-    html_url: str
 
 
 @dataclass
@@ -76,48 +75,39 @@ class MethodComparison:
     category: str
 
 
-def fetch_rpc_version() -> RPCVersionInfo:
-    """Fetch the latest RPC version from GitHub releases API"""
-    url = "https://api.github.com/repos/stellar/stellar-rpc/releases"
+def fetch_rpc_version(rpc_data: Dict[str, Any]) -> Release:
+    """
+    Look up the stellar-rpc release that rpc_methods.json was extracted from.
 
-    try:
-        request = urllib.request.Request(url)
-        request.add_header('User-Agent', 'stellar-ios-sdk-compatibility-checker')
-
-        with urllib.request.urlopen(request, timeout=10) as response:
-            releases = json.loads(response.read().decode('utf-8'))
-
-            # Find the latest release that starts with 'v' (not rpcclient)
-            for release in releases:
-                tag = release.get('tag_name', '')
-                if tag.startswith('v') and not tag.startswith('rpcclient'):
-                    published = release.get('published_at', '')[:10]
-                    return RPCVersionInfo(
-                        version=tag,
-                        release_date=published,
-                        html_url=release.get('html_url', '')
-                    )
-
-    except (urllib.error.URLError, json.JSONDecodeError) as e:
-        print(f"Warning: Could not fetch RPC version from GitHub: {e}")
-
-    # Fallback to hardcoded version
-    return RPCVersionInfo(
-        version="v25.0.0",
-        release_date="2025-12-12",
-        html_url="https://github.com/stellar/stellar-rpc/releases/tag/v25.0.0"
-    )
+    Version, released date, and URL come from that one release record, so the
+    header cannot mix two releases. Raises when the file records no version or
+    the release list has no such non-draft release.
+    """
+    metadata = rpc_data.get("metadata")
+    recorded_version = metadata.get("version") if isinstance(metadata, dict) else None
+    if not isinstance(recorded_version, str) or not recorded_version:
+        raise ValueError("rpc_methods.json records no metadata.version; run extract_rpc_methods.py first")
+    releases = fetch_releases(RPC_REPO_OWNER, RPC_REPO_NAME, get_github_token())
+    return find_release(releases, recorded_version, f"{RPC_REPO_OWNER}/{RPC_REPO_NAME}")
 
 
 def get_sdk_version(sdk_root: Path) -> str:
-    """Extract SDK version from Info.plist"""
+    """
+    Read CFBundleShortVersionString from the SDK Info.plist.
+
+    Raises when the file cannot be read or holds no version, because the
+    SDK Version header line must name the SDK release.
+    """
     plist_path = sdk_root / "stellarsdk" / "stellarsdk" / "Info.plist"
     try:
         with open(plist_path, 'rb') as f:
             plist = plistlib.load(f)
-            return plist.get('CFBundleShortVersionString', '3.4.2')
-    except Exception:
-        return "3.4.2"
+    except (OSError, plistlib.InvalidFileException) as e:
+        raise ValueError(f"Cannot read the SDK version from {plist_path}: {e}") from e
+    version = plist.get('CFBundleShortVersionString') if isinstance(plist, dict) else None
+    if not isinstance(version, str) or not version.strip():
+        raise ValueError(f"{plist_path} has no CFBundleShortVersionString")
+    return version
 
 
 # RPC method categories for organization
@@ -318,28 +308,14 @@ class RPCMatrixGenerator:
 
     def __init__(self, sdk_root: Path, rpc_methods_file: Path):
         self.sdk_root = sdk_root
-        self.rpc_methods_file = rpc_methods_file
-        self.rpc_data: Dict[str, Any] = {}
-        self.rpc_version = fetch_rpc_version()
+        self.rpc_data: Dict[str, Any] = load_rpc_methods(rpc_methods_file)
+        self.rpc_version = fetch_rpc_version(self.rpc_data)
         self.sdk_version = get_sdk_version(sdk_root)
         self.analyzer = SwiftSourceAnalyzer(sdk_root)
         self.comparisons: List[MethodComparison] = []
 
     def analyze(self) -> None:
         """Analyze SDK implementation against RPC API"""
-        # Load RPC methods from JSON
-        print(f"  Loading RPC methods from: {self.rpc_methods_file.name}")
-        self.rpc_data = load_rpc_methods(self.rpc_methods_file)
-
-        # Update RPC version from JSON if available
-        metadata = self.rpc_data.get("metadata", {})
-        if metadata.get("rpc_version"):
-            self.rpc_version = RPCVersionInfo(
-                version=metadata.get("rpc_version", self.rpc_version.version),
-                release_date=metadata.get("rpc_release_date", self.rpc_version.release_date),
-                html_url=metadata.get("rpc_release_url", self.rpc_version.html_url)
-            )
-
         print("  Parsing Swift source files...")
         self.analyzer.analyze()
 
@@ -646,40 +622,6 @@ class RPCMatrixGenerator:
         output_path.write_text("\n".join(lines))
         print(f"  Generated: {output_path}")
 
-    def save_json_data(self, output_dir: Path) -> None:
-        """Save comparison data as JSON"""
-        data = {
-            "metadata": {
-                "rpc_version": self.rpc_version.version,
-                "rpc_release_date": self.rpc_version.release_date,
-                "rpc_release_url": self.rpc_version.html_url,
-                "sdk_version": self.sdk_version,
-                "generated_at": datetime.now().isoformat(),
-                "total_methods": len(self.comparisons)
-            },
-            "methods": {
-                comp.rpc_method: {
-                    "status": comp.status.value,
-                    "sdk_method": comp.sdk_method,
-                    "response_type": comp.response_type,
-                    "rpc_required_params": comp.rpc_required_params,
-                    "rpc_optional_params": comp.rpc_optional_params,
-                    "sdk_params": comp.sdk_params,
-                    "missing_params": comp.missing_params,
-                    "rpc_response_fields": comp.rpc_response_fields,
-                    "sdk_response_fields": comp.sdk_response_fields,
-                    "missing_fields": comp.missing_fields,
-                    "notes": comp.notes,
-                    "category": comp.category
-                }
-                for comp in self.comparisons
-            }
-        }
-
-        output_file = output_dir / "rpc_comparison_result.json"
-        output_file.write_text(json.dumps(data, indent=2))
-        print(f"  Generated: {output_file}")
-
 
 def main():
     """Main execution function"""
@@ -696,10 +638,8 @@ def main():
     rpc_methods_file = script_dir / "rpc_methods.json"
 
     try:
-        # Create generator
+        print(f"Loading {rpc_methods_file.name} and RPC release information...")
         generator = RPCMatrixGenerator(sdk_root, rpc_methods_file)
-
-        print("Loading RPC version information...")
         print(f"  RPC Version: {generator.rpc_version.version}")
         print(f"  Release Date: {generator.rpc_version.release_date}")
         print(f"  SDK Version: {generator.sdk_version}")

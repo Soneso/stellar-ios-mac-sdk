@@ -16,7 +16,9 @@ Each generator reads the SDK source tree, fetches the latest upstream specificat
 
 ## Requirements
 
-Python 3.10+ (standard library only, no third-party packages).
+Python 3.10+. The generators use the standard library only. `rpc/extract_rpc_methods.py` also needs `requests` (`pip install requests`).
+
+The RPC tools query the GitHub API. To raise the rate limit from 60 to 5,000 requests per hour, set `GITHUB_TOKEN`.
 
 ## Usage
 
@@ -25,7 +27,7 @@ All commands are run from the repository root.
 ### Horizon
 
 ```bash
-python tools/matrix-generator/horizon/generate_horizon_matrix.py
+python3 tools/matrix-generator/horizon/generate_horizon_matrix.py
 ```
 
 Options:
@@ -40,14 +42,16 @@ The RPC generator has a two-step workflow:
 
 ```bash
 # 1. Extract method specs from the stellar-rpc repo (updates rpc_methods.json)
-python tools/matrix-generator/rpc/extract_rpc_methods.py
+python3 tools/matrix-generator/rpc/extract_rpc_methods.py
 
 # 2. Generate the matrix
-python tools/matrix-generator/rpc/generate_rpc_matrix.py
+python3 tools/matrix-generator/rpc/generate_rpc_matrix.py
 ```
 
+The extractor uses the newest stable stellar-rpc release. The generator cites the release recorded in `rpc_methods.json`. Both exit non-zero and write nothing when a release lookup, fetch, or parse fails.
+
 `extract_rpc_methods.py` options:
-- `--rpc-version VERSION` -- extract from a specific stellar-rpc release
+- `--rpc-version VERSION` -- extract from a specific stellar-rpc release (a non-draft release; a prerelease is allowed)
 - `--token TOKEN` -- GitHub token for higher rate limits
 - `--output PATH` -- custom output path for the JSON spec
 - `--verbose` -- enable verbose output
@@ -57,14 +61,14 @@ python tools/matrix-generator/rpc/generate_rpc_matrix.py
 Generate a single SEP matrix:
 
 ```bash
-python tools/matrix-generator/sep/generate_sep_matrix.py --sep 10
+python3 tools/matrix-generator/sep/generate_sep_matrix.py --sep 10
 ```
 
 Generate all 20 supported SEPs:
 
 ```bash
 for sep in 01 02 05 06 07 08 09 10 11 12 24 29 30 38 45 46 47 48 51 53; do
-  python tools/matrix-generator/sep/generate_sep_matrix.py --sep "$sep"
+  python3 tools/matrix-generator/sep/generate_sep_matrix.py --sep "$sep"
 done
 ```
 
@@ -85,6 +89,7 @@ tools/matrix-generator/
   rpc/
     extract_rpc_methods.py       # Extracts RPC specs from GitHub
     generate_rpc_matrix.py       # RPC method comparator
+    rpc_releases.py              # GitHub release lookup shared by both RPC scripts
     rpc_methods.json             # Cached RPC method specifications
   sep/
     generate_sep_matrix.py       # SEP analyzers (all 20 in one file)
@@ -92,6 +97,7 @@ tools/matrix-generator/
       sep_0046_definition.json   # SEP-46 spec (not available online)
       sep_0047_definition.json   # SEP-47 spec (not available online)
       sep_0051_definition.json   # SEP-51 features (spec is prose, not field tables)
+  tests/                         # Unit tests for the RPC tools (no network access)
 ```
 
 Output goes to:
@@ -109,6 +115,12 @@ compatibility/
 2. **Upstream specs** are fetched from GitHub (Horizon router files, RPC handler source, SEP Markdown documents). SEP specs that are not available online, or that define their requirements as prose rather than field tables, have their feature list bundled as JSON in `sep/data/`.
 3. **SDK source** is scanned using regex and AST-level pattern matching against the Swift files under `stellarsdk/`.
 4. **Coverage** is computed per endpoint/method/feature and rendered into Markdown tables.
+
+## Tests
+
+```bash
+python3 -m unittest discover -s tools/matrix-generator/tests
+```
 
 ## When to Regenerate
 
