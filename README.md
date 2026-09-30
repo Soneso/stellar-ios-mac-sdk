@@ -1,6 +1,6 @@
 # [Stellar SDK for iOS & macOS](https://github.com/Soneso/stellar-ios-mac-sdk)
 
-[![GitHub release](https://img.shields.io/github/v/release/Soneso/stellar-ios-mac-sdk)](https://github.com/Soneso/stellar-ios-mac-sdk/releases) [![Tests](https://github.com/Soneso/stellar-ios-mac-sdk/actions/workflows/tests.yml/badge.svg)](https://github.com/Soneso/stellar-ios-mac-sdk/actions/workflows/tests.yml) [![codecov](https://codecov.io/gh/Soneso/stellar-ios-mac-sdk/branch/master/graph/badge.svg)](https://codecov.io/gh/Soneso/stellar-ios-mac-sdk) [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/Soneso/stellar-ios-mac-sdk)
+[![GitHub release](https://img.shields.io/github/v/release/Soneso/stellar-ios-mac-sdk)](https://github.com/Soneso/stellar-ios-mac-sdk/releases) [![Tests](https://github.com/Soneso/stellar-ios-mac-sdk/actions/workflows/tests.yml/badge.svg)](https://github.com/Soneso/stellar-ios-mac-sdk/actions/workflows/tests.yml) [![codecov](https://codecov.io/gh/Soneso/stellar-ios-mac-sdk/branch/master/graph/badge.svg)](https://codecov.io/gh/Soneso/stellar-ios-mac-sdk) [![Ask DeepWiki](https://img.shields.io/badge/Ask-DeepWiki-blue)](https://deepwiki.com/Soneso/stellar-ios-mac-sdk)
 
 Build and sign Stellar transactions, query [Horizon](https://developers.stellar.org/docs/data/apis/horizon), and interact with [Soroban](https://developers.stellar.org/docs/build/smart-contracts/overview) smart contracts via RPC. Communicate with anchors and external services using the built-in SEP protocol support.
 
