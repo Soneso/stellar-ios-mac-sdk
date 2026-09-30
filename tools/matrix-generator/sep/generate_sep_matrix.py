@@ -4735,6 +4735,392 @@ class SEP38Analyzer:
             logger.warning(f"Error analyzing fee details fields: {e}")
 
 
+@dataclass(frozen=True)
+class StrKeyType:
+    """One row of the SEP-23 version byte table"""
+    name: str  # Key type as printed (e.g. "STRKEY_PUBKEY")
+    base_expression: str  # Base value expression as printed (e.g. "6 << 3")
+    version_byte: int  # The evaluated base value (e.g. 48)
+    first_char: str  # First character of the encoded strkey (e.g. "G")
+
+
+@dataclass(frozen=True)
+class StrKeyTestVector:
+    """One numbered case of the SEP-23 valid or invalid test cases"""
+    name: str  # Position in its list (e.g. "valid_01", "invalid_09")
+    title: str  # Case title with its line breaks collapsed
+    strkey: str  # The strkey the case lists
+
+
+@dataclass(frozen=True)
+class StrKeySdkNames:
+    """The SDK names implementing one SEP-23 key type"""
+    version_byte_case: str  # Case of the VersionByte enum
+    encode_function: str  # Data extension function in Data+KeyUtils.swift
+    decode_function: str  # String extension function in String+KeyUtils.swift
+
+
+class SEP23SpecParser:
+    """Reads the key types and the test vectors from the SEP-23 Markdown
+
+    Items come from the fetched text, so a key type or test case added upstream appears in the
+    next matrix. A missing, empty or malformed table, section, subsection or case list raises
+    ValueError, which ends the run before a matrix is written.
+    """
+
+    SPECIFICATION_HEADING = '## Specification'
+    TESTS_HEADING = '## Tests'
+    VALID_HEADING = '### Valid test cases'
+    INVALID_HEADING = '### Invalid test cases'
+
+    KEY_TYPE_COLUMN = 'Key type'
+    BASE_VALUE_COLUMN = 'Base value'
+    FIRST_CHAR_COLUMN = 'First char'
+
+    # The paragraph after the invalid cases introduces a C array repeating their strkeys.
+    INVALID_LIST_END = 'You can paste'
+
+    HEADING = re.compile(r'^(#+)\s')
+    SEPARATOR_CELL = re.compile(r':?-+:?')
+    # A base value is an integer or a shift expression such as "6 << 3".
+    BASE_VALUE = re.compile(r'(?P<value>\d+)(?:\s*<<\s*(?P<shift>\d+))?')
+    CASE_START = re.compile(r'^\d+\.\s+(\S.*)$')
+    # The strkey sits on the "- Strkey" line or, after "- Strkey:", on the next line.
+    CASE_STRKEY = re.compile(r'- Strkey:?\s*\n?\s*`([^`]+)`')
+
+    def parse_key_types(self, content: str) -> List[StrKeyType]:
+        """The rows of the version byte table, in document order"""
+        specification = self._section(content.split('\n'), self.SPECIFICATION_HEADING) or []
+
+        header_index = next(
+            (index for index, line in enumerate(specification) if self._is_version_byte_header(line)),
+            None
+        )
+        if header_index is None:
+            raise ValueError(
+                f"SEP-23 text has no version byte table: no table under {self.SPECIFICATION_HEADING} "
+                f"has a header row naming '{self.KEY_TYPE_COLUMN}' and '{self.FIRST_CHAR_COLUMN}'"
+            )
+        header = self._cells(specification[header_index])
+        if self.BASE_VALUE_COLUMN not in header:
+            raise ValueError(f"SEP-23 version byte table has no '{self.BASE_VALUE_COLUMN}' column")
+
+        key_types = []
+        for line in specification[header_index + 1:]:
+            if not line.lstrip().startswith('|'):
+                break
+            cells = self._cells(line)
+            if all(self.SEPARATOR_CELL.fullmatch(cell) for cell in cells):
+                continue
+            row = dict(zip(header, cells))
+            if (len(cells) != len(header) or not row[self.KEY_TYPE_COLUMN]
+                    or not row[self.FIRST_CHAR_COLUMN]):
+                raise ValueError(f"SEP-23 version byte table row does not match its header: {line.strip()}")
+            key_types.append(StrKeyType(
+                name=row[self.KEY_TYPE_COLUMN],
+                base_expression=row[self.BASE_VALUE_COLUMN],
+                version_byte=self._evaluate_base_value(row[self.BASE_VALUE_COLUMN]),
+                first_char=row[self.FIRST_CHAR_COLUMN],
+            ))
+
+        if not key_types:
+            raise ValueError("SEP-23 version byte table has no rows")
+        return key_types
+
+    def _is_version_byte_header(self, line: str) -> bool:
+        """Whether a line is a table header row naming the key type and first char columns"""
+        cells = self._cells(line)
+        return (line.lstrip().startswith('|')
+                and self.KEY_TYPE_COLUMN in cells and self.FIRST_CHAR_COLUMN in cells)
+
+    def parse_test_vectors(self, content: str) -> Tuple[List[StrKeyTestVector], List[StrKeyTestVector]]:
+        """The valid and the invalid test cases, each list in document order"""
+        tests = self._section(content.split('\n'), self.TESTS_HEADING)
+        if tests is None:
+            raise ValueError(f"SEP-23 text has no {self.TESTS_HEADING} section")
+
+        valid = self._subsection(tests, self.VALID_HEADING)
+        invalid = self._subsection(tests, self.INVALID_HEADING)
+        end = next(
+            (index for index, line in enumerate(invalid) if line.startswith(self.INVALID_LIST_END)),
+            len(invalid)
+        )
+
+        return (
+            self._parse_cases(valid, 'valid', self.VALID_HEADING),
+            self._parse_cases(invalid[:end], 'invalid', self.INVALID_HEADING),
+        )
+
+    def _subsection(self, tests: List[str], heading: str) -> List[str]:
+        """The lines of a subsection of the Tests section"""
+        lines = self._section(tests, heading)
+        if lines is None:
+            raise ValueError(f"SEP-23 {self.TESTS_HEADING} section has no {heading} subsection")
+        return lines
+
+    def _parse_cases(self, lines: List[str], prefix: str, heading: str) -> List[StrKeyTestVector]:
+        """One test vector per numbered case, named by its position in the list
+
+        The title is the text after the list number up to the first blank line, with its line
+        breaks and indentation collapsed to single spaces.
+        """
+        starts = [index for index, line in enumerate(lines) if self.CASE_START.match(line)]
+        if not starts:
+            raise ValueError(f"SEP-23 {heading} lists no test cases")
+
+        vectors = []
+        for position, (start, end) in enumerate(zip(starts, starts[1:] + [len(lines)]), start=1):
+            case = lines[start:end]
+            title_lines = [self.CASE_START.match(case[0]).group(1)]
+            for line in case[1:]:
+                if not line.strip():
+                    break
+                title_lines.append(line)
+            title = ' '.join(line.strip() for line in title_lines)
+
+            strkeys = self.CASE_STRKEY.findall('\n'.join(case))
+            if len(strkeys) != 1:
+                raise ValueError(
+                    f"SEP-23 {heading} case '{title}' lists {len(strkeys)} strkeys, expected one"
+                )
+            vectors.append(StrKeyTestVector(name=f'{prefix}_{position:02d}', title=title, strkey=strkeys[0]))
+
+        return vectors
+
+    def _section(self, lines: List[str], heading: str) -> Optional[List[str]]:
+        """The lines below a heading up to the next heading of the same or a higher level
+
+        Returns None when the heading is absent.
+        """
+        level = len(heading) - len(heading.lstrip('#'))
+        start = next((index for index, line in enumerate(lines) if line.rstrip() == heading), None)
+        if start is None:
+            return None
+
+        body = []
+        for line in lines[start + 1:]:
+            marker = self.HEADING.match(line)
+            if marker and len(marker.group(1)) <= level:
+                break
+            body.append(line)
+        return body
+
+    def _evaluate_base_value(self, expression: str) -> int:
+        """The version byte a base value such as "6 << 3" or "48" stands for"""
+        match = self.BASE_VALUE.fullmatch(expression)
+        if not match:
+            raise ValueError(
+                f"SEP-23 base value '{expression}' is neither an integer nor a shift expression such as '6 << 3'"
+            )
+        return int(match.group('value')) << int(match.group('shift') or 0)
+
+    @staticmethod
+    def _cells(row: str) -> List[str]:
+        """The trimmed cells of a Markdown table row"""
+        return [cell.strip() for cell in row.strip().strip('|').split('|')]
+
+
+class SEP23Analyzer:
+    """Analyzer for SEP-23: Strkeys - The ASCII encoding of Stellar account IDs, muxed accounts, keys and signers
+
+    A key type is implemented when its VersionByte case carries the evaluated base value of the
+    version byte table. The case and the mapped encode and decode functions are looked up by name
+    in the file text; a key type mapped to None is one the SDK does not implement. A test vector
+    is implemented when it appears as a complete double-quoted literal in the StrKey unit test
+    file; presence does not show which assertion uses the vector, or in which direction.
+
+    The file names, the enum and the key type to SDK name mapping are generator constants. A
+    missing or unreadable file, an absent enum, case or function, a case value that is not a
+    Swift integer literal, or a key type without an entry in SDK_NAMES raises ValueError and ends
+    the run before a matrix is written.
+    """
+
+    SECTION_KEY_TYPES = 'Key types'
+    SECTION_TEST_VECTORS = 'Test vectors quoted in the StrKey unit test files'
+
+    VERSION_BYTE_FILE = 'VersionByte.swift'
+    ENCODE_FILE = 'Data+KeyUtils.swift'
+    DECODE_FILE = 'String+KeyUtils.swift'
+
+    # SDKAnalyzer searches only the SDK sources, so the unit test file is read by its path.
+    TEST_FILE = 'stellarsdk/stellarsdkUnitTests/sep/strkey/StrKeyUnitTests.swift'
+
+    # The VersionByte case, the Data encode function and the String decode function of each key
+    # type; None marks a key type the SDK does not implement.
+    SDK_NAMES: Dict[str, Optional[StrKeySdkNames]] = {
+        'STRKEY_PUBKEY': StrKeySdkNames('ed25519PublicKey', 'encodeEd25519PublicKey', 'decodeEd25519PublicKey'),
+        'STRKEY_MUXED': StrKeySdkNames('med25519PublicKey', 'encodeMEd25519AccountId', 'decodeMed25519PublicKey'),
+        'STRKEY_PRIVKEY': StrKeySdkNames('ed25519SecretSeed', 'encodeEd25519SecretSeed', 'decodeEd25519SecretSeed'),
+        'STRKEY_PRE_AUTH_TX': StrKeySdkNames('preAuthTX', 'encodePreAuthTx', 'decodePreAuthTx'),
+        'STRKEY_HASH_X': StrKeySdkNames('sha256Hash', 'encodeSha256Hash', 'decodeSha256Hash'),
+        'STRKEY_SIGNED_PAYLOAD': StrKeySdkNames('signedPayload', 'encodeSignedPayload', 'decodeSignedPayload'),
+        'STRKEY_CONTRACT': StrKeySdkNames('contract', 'encodeContractId', 'decodeContractId'),
+        'STRKEY_LIQUIDITY_POOL': StrKeySdkNames('liquidityPool', 'encodeLiquidityPoolId', 'decodeLiquidityPoolId'),
+        'STRKEY_CLAIMABLE_BALANCE': StrKeySdkNames('claimableBalance', 'encodeClaimableBalanceId', 'decodeClaimableBalanceId'),
+    }
+
+    # UInt8 is the raw type; further conformances may follow it.
+    VERSION_BYTE_ENUM = re.compile(r'\benum\s+VersionByte\s*:\s*UInt8\b[^{]*\{')
+    # A Swift integer literal: hexadecimal, octal, binary or decimal, with _ separators after
+    # the first digit.
+    SWIFT_INTEGER_LITERAL = re.compile(
+        r'0x(?P<hex>[0-9A-Fa-f][0-9A-Fa-f_]*)|0o(?P<octal>[0-7][0-7_]*)|0b(?P<binary>[01][01_]*)'
+        r'|(?P<decimal>[0-9][0-9_]*)'
+    )
+
+    def __init__(self, sdk_analyzer: SDKAnalyzer):
+        self.sdk_analyzer = sdk_analyzer
+        self.parser = SEP23SpecParser()
+
+    def analyze(self, sep_info: SEPInfo) -> CompatibilityMatrix:
+        """Analyze SEP-23 implementation"""
+        logger.info("Analyzing SEP-23 (Strkeys) implementation")
+
+        key_types = self.parser.parse_key_types(sep_info.raw_content)
+        valid_vectors, invalid_vectors = self.parser.parse_test_vectors(sep_info.raw_content)
+        logger.info(
+            f"SEP-23 lists {len(key_types)} key types, {len(valid_vectors)} valid and "
+            f"{len(invalid_vectors)} invalid test vectors"
+        )
+
+        paths = [self._find_source(name) for name in (self.VERSION_BYTE_FILE, self.ENCODE_FILE, self.DECODE_FILE)]
+        version_byte_path, encode_path, decode_path = paths
+        enum_body = self._enum_body(self._read(version_byte_path), version_byte_path)
+        sources = {
+            self.VERSION_BYTE_FILE: (version_byte_path, enum_body),
+            self.ENCODE_FILE: (encode_path, self._read(encode_path)),
+            self.DECODE_FILE: (decode_path, self._read(decode_path)),
+        }
+        test_source = self._read(self.TEST_FILE)
+
+        return CompatibilityMatrix(
+            sep_info=sep_info,
+            sections=[
+                self._key_type_section(key_types, sources),
+                self._test_vector_section(valid_vectors + invalid_vectors, test_source),
+            ],
+            sdk_version=SDK_VERSION,
+            implementation_files=paths
+        )
+
+    def _key_type_section(self, key_types: List[StrKeyType], sources: Dict[str, Tuple[str, str]]) -> SEPSection:
+        """One field per key type of the version byte table
+
+        sources maps each StrKey source file name to its SDK-relative path and text; for
+        VersionByte.swift the text is the enum body.
+        """
+        version_byte_path, enum_body = sources[self.VERSION_BYTE_FILE]
+        encode_path, encoders = sources[self.ENCODE_FILE]
+        decode_path, decoders = sources[self.DECODE_FILE]
+
+        section = SEPSection(name=self.SECTION_KEY_TYPES)
+        for key_type in key_types:
+            if key_type.name not in self.SDK_NAMES:
+                raise ValueError(f"SEP-23 key type {key_type.name} has no entry in SEP23Analyzer.SDK_NAMES")
+            names = self.SDK_NAMES[key_type.name]
+            field = SEPField(
+                name=key_type.name,
+                section=self.SECTION_KEY_TYPES,
+                required=True,
+                description=(
+                    f'Base value {key_type.base_expression} = {key_type.version_byte}, '
+                    f'first character {key_type.first_char}'
+                ),
+                requirements=f'Version byte {key_type.version_byte} with an encode and a decode function'
+            )
+            if names is not None:
+                value = self._case_value(enum_body, names.version_byte_case, version_byte_path)
+                self._require_function(encoders, names.encode_function, encode_path)
+                self._require_function(decoders, names.decode_function, decode_path)
+                if value == key_type.version_byte:
+                    field.implemented = True
+                    field.sdk_property = (
+                        f'VersionByte.{names.version_byte_case}, '
+                        f'{names.encode_function}(), {names.decode_function}()'
+                    )
+            section.fields.append(field)
+        return section
+
+    def _test_vector_section(self, vectors: List[StrKeyTestVector], test_source: str) -> SEPSection:
+        """One field per test case, implemented when its vector is a complete double-quoted literal in
+        stellarsdk/stellarsdkUnitTests/sep/strkey/StrKeyUnitTests.swift
+
+        The closing quote keeps a vector that prefixes a longer one apart. The description names
+        the file without its directory and before the case title, because the renderer cuts
+        descriptions at 150 characters.
+        """
+        section = SEPSection(name=self.SECTION_TEST_VECTORS)
+        file_name = Path(self.TEST_FILE).name
+        for vector in vectors:
+            field = SEPField(
+                name=vector.name,
+                section=self.SECTION_TEST_VECTORS,
+                required=True,
+                description=f'quoted in `{file_name}`: {vector.title}',
+                requirements=vector.strkey
+            )
+            if f'"{vector.strkey}"' in test_source:
+                field.implemented = True
+            section.fields.append(field)
+        return section
+
+    def _enum_body(self, source: str, path: str) -> str:
+        """The text between the braces of the VersionByte enum, found by counting braces"""
+        declaration = self.VERSION_BYTE_ENUM.search(source)
+        if declaration is None:
+            raise ValueError(f"SEP-23 enum VersionByte: UInt8 not found in {path}")
+        depth = 1
+        for brace in re.finditer(r'[{}]', source[declaration.end():]):
+            depth += 1 if brace.group() == '{' else -1
+            if depth == 0:
+                return source[declaration.end():declaration.end() + brace.start()]
+        raise ValueError(f"SEP-23 enum VersionByte: UInt8 in {path} has no closing brace")
+
+    def _case_value(self, enum_body: str, name: str, path: str) -> int:
+        """The raw value of a VersionByte case, read from its declaration line without its line comment"""
+        case = re.search(r'\bcase\s+' + re.escape(name) + r'\b(?P<definition>[^\n]*)', enum_body)
+        if case is None:
+            raise ValueError(f"SEP-23 VersionByte case {name} not found in {path}")
+        definition = case.group('definition').split('//')[0]
+        raw_value = re.fullmatch(r'\s*=\s*(?P<literal>\S+)\s*', definition)
+        value = None if raw_value is None else self._swift_integer(raw_value.group('literal'))
+        if value is None:
+            declaration = ' '.join((name + definition).split())
+            raise ValueError(f"SEP-23 cannot evaluate VersionByte case '{declaration}' in {path}")
+        return value
+
+    @classmethod
+    def _swift_integer(cls, literal: str) -> Optional[int]:
+        """The value of a Swift integer literal, or None when literal is not one"""
+        match = cls.SWIFT_INTEGER_LITERAL.fullmatch(literal)
+        if match is None:
+            return None
+        bases = {'hex': 16, 'octal': 8, 'binary': 2, 'decimal': 10}
+        kind = next(name for name in bases if match.group(name) is not None)
+        return int(match.group(kind).replace('_', ''), bases[kind])
+
+    @staticmethod
+    def _require_function(source: str, name: str, path: str) -> None:
+        """Raise unless the file text declares a function with this name"""
+        if re.search(r'\bfunc\s+' + re.escape(name) + r'\s*\(', source) is None:
+            raise ValueError(f"SEP-23 function {name} not found in {path}")
+
+    def _find_source(self, filename: str) -> str:
+        """The SDK-relative path of a StrKey source file"""
+        file_path = self.sdk_analyzer.find_file_by_name(filename)
+        if file_path is None:
+            search_root = self.sdk_analyzer.get_relative_path(self.sdk_analyzer.stellarsdk_path)
+            raise ValueError(f"SEP-23 source file {filename} not found under {search_root}")
+        return self.sdk_analyzer.get_relative_path(file_path)
+
+    def _read(self, path: str) -> str:
+        """The text of the file at an SDK-relative path"""
+        try:
+            return (self.sdk_analyzer.sdk_root / path).read_text(encoding='utf-8')
+        except (OSError, UnicodeDecodeError) as e:
+            raise ValueError(f"SEP-23 cannot read {path}: {e}") from e
+
+
 class SEP24Analyzer:
     """Analyzer for SEP-24 (Hosted Deposit and Withdrawal)"""
 
@@ -10007,6 +10393,8 @@ class SEPAnalyzerFactory:
             "0011": SEP11Analyzer,
             "12": SEP12Analyzer,
             "0012": SEP12Analyzer,
+            "23": SEP23Analyzer,
+            "0023": SEP23Analyzer,
             "24": SEP24Analyzer,
             "0024": SEP24Analyzer,
             "29": SEP29Analyzer,
@@ -10253,6 +10641,12 @@ class MatrixRenderer:
                 'KYCFinancialAccountFieldsEnum': 'SEP-9 financial account fields',
                 'KYCCardFieldsEnum': 'SEP-9 card payment fields',
                 'KycServiceError': 'Error enum for SEP-12 error cases (badRequest, notFound, unauthorized, payloadTooLarge)',
+            }
+        elif sep_number in ["23", "0023"]:
+            class_descriptions = {
+                'VersionByte': 'Enum of the version bytes, one case per SEP-23 key type, with the encoded lengths each type allows',
+                'Data+KeyUtils': 'Data extension with one encode function per key type, writing the version byte, the key bytes and the CRC-16 checksum as unpadded base32',
+                'String+KeyUtils': 'String extension with one decode and one isValid function per key type; decoding checks the length, the canonical base32 re-encoding, the version byte, the checksum and the signed payload and claimable balance framing',
             }
         elif sep_number in ["24", "0024"]:
             class_descriptions = {
@@ -10539,7 +10933,7 @@ class SEPMatrixGenerator:
     @staticmethod
     def list_available_seps() -> List[str]:
         """List SEPs with implemented analyzers"""
-        return ["01", "02", "05", "06", "07", "08", "09", "10", "11", "12", "24", "29", "30", "38", "45", "46", "47", "48", "51", "53"]
+        return ["01", "02", "05", "06", "07", "08", "09", "10", "11", "12", "23", "24", "29", "30", "38", "45", "46", "47", "48", "51", "53"]
 
 
 def main():
