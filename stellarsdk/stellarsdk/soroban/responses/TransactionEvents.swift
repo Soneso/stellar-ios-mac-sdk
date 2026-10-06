@@ -8,11 +8,15 @@
 
 import Foundation
 
-/// Container for Soroban transaction diagnostic and execution events in XDR format.
+/// Container for the transaction and contract events of a Soroban transaction in XDR format.
 public struct TransactionEvents: Decodable, Sendable {
 
-    /// XDR-encoded diagnostic events for debugging transaction execution.
-    public let diagnosticEventsXdr:[String]?
+    /// Backing storage for the deprecated diagnosticEventsXdr property.
+    private let _diagnosticEventsXdr:[String]?
+
+    /// XDR-encoded diagnostic events from the `diagnosticEventsXdr` key of the events object.
+    @available(*, deprecated, message: "stellar-rpc does not send this field; read diagnosticEventsXdr of GetTransactionResponse or TransactionInfo.")
+    public var diagnosticEventsXdr:[String]? { _diagnosticEventsXdr }
 
     /// XDR-encoded transaction events emitted during execution.
     public let transactionEventsXdr:[String]?
@@ -28,7 +32,7 @@ public struct TransactionEvents: Decodable, Sendable {
 
     public init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
-        diagnosticEventsXdr = try values.decodeIfPresent([String].self, forKey: .diagnosticEventsXdr)
+        _diagnosticEventsXdr = try values.decodeIfPresent([String].self, forKey: .diagnosticEventsXdr)
         transactionEventsXdr = try values.decodeIfPresent([String].self, forKey: .transactionEventsXdr)
         contractEventsXdr = try values.decodeIfPresent([[String]].self, forKey: .contractEventsXdr)
 

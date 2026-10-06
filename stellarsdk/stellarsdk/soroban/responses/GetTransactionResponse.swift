@@ -37,15 +37,18 @@ import Foundation
 ///         if let result = txInfo.resultValue {
 ///             print("Contract returned: \(result)")
 ///         }
-///         // Process events
-///         if let events = txInfo.events {
-///             for event in events.events {
-///                 print("Event: \(event)")
+///         // Process contract events, grouped by operation index
+///         for operationEvents in txInfo.events?.contractEventsXdr ?? [] {
+///             for eventXdr in operationEvents {
+///                 print("Contract event: \(eventXdr)")
 ///             }
 ///         }
 ///     case GetTransactionResponse.STATUS_FAILED:
 ///         if let error = txInfo.error {
 ///             print("Transaction failed: \(error.message)")
+///         }
+///         for eventXdr in txInfo.diagnosticEventsXdr ?? [] {
+///             print("Diagnostic event: \(eventXdr)")
 ///         }
 ///     case GetTransactionResponse.STATUS_NOT_FOUND:
 ///         print("Transaction not yet included")
@@ -75,7 +78,7 @@ public struct GetTransactionResponse: Decodable, Sendable {
     /// The sequence number of the latest ledger known to Soroban RPC at the time it handled the request.
     public let latestLedger:Int
 
-    /// The unix timestamp of the close time of the oldest ledger ingested by Soroban RPC at the time it handled the request.
+    /// The unix timestamp of the close time of the latest ledger ingested by Soroban RPC at the time it handled the request.
     public let latestLedgerCloseTime:String
 
     /// The sequence number of the oldest ledger ingested by Soroban RPC at the time it handled the request.
@@ -105,6 +108,9 @@ public struct GetTransactionResponse: Decodable, Sendable {
     /// (optional) A base64 encoded string of the raw TransactionMeta XDR struct for this transaction.
     public let resultMetaXdr:String?
 
+    /// (optional) A base64 encoded slice of xdr.DiagnosticEvent. This is only present if the ENABLE_SOROBAN_DIAGNOSTIC_EVENTS has been enabled in the stellar-core config.
+    public let diagnosticEventsXdr:[String]?
+
     /// hex-encoded transaction hash string. Only available for protocol version >= 22
     public let txHash:String?
 
@@ -127,6 +133,7 @@ public struct GetTransactionResponse: Decodable, Sendable {
         case envelopeXdr
         case resultXdr
         case resultMetaXdr
+        case diagnosticEventsXdr
         case txHash
         case error
         case events
@@ -146,6 +153,7 @@ public struct GetTransactionResponse: Decodable, Sendable {
         envelopeXdr = try values.decodeIfPresent(String.self, forKey: .envelopeXdr)
         resultXdr = try values.decodeIfPresent(String.self, forKey: .resultXdr)
         resultMetaXdr = try values.decodeIfPresent(String.self, forKey: .resultMetaXdr)
+        diagnosticEventsXdr = try values.decodeIfPresent([String].self, forKey: .diagnosticEventsXdr)
         txHash = try values.decodeIfPresent(String.self, forKey: .txHash) // protocol version >= 22
         error = try values.decodeIfPresent(TransactionStatusError.self, forKey: .error)
         events = try values.decodeIfPresent(TransactionEvents.self, forKey: .events) // protocol version >= 23
