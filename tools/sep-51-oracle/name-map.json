@@ -4,13 +4,16 @@
     "version": "28.0.1",
     "xdr_commit": "9c9c145953e80990d6ff1ae3a6a973a0ce6d0694"
   },
-  "sdk_xdr_commit": "c40231c76bf2ebce76b24aa11c72508ac3eaa329",
+  "sdk_xdr_commit": "c2612cf534e4448fa263e252afe1bdbac5512d14",
   "description": "SEP-0051 XDR-JSON names derived from the .x sources. Regenerate with ruby tools/sep-51-oracle/name_map.rb --diff after any XDR pin bump.",
   "verification": {
-    "enum_members_total": 593,
+    "enum_members_total": 595,
     "enum_members_checked": 593,
-    "enum_members_unresolvable": [],
-    "struct_types_total": 234,
+    "enum_members_unresolvable": [
+      "StellarValueType.STELLAR_VALUE_EMPTY_TX_SET_MS",
+      "StellarValueType.STELLAR_VALUE_SIGNED_MS"
+    ],
+    "struct_types_total": 236,
     "struct_types_field_comparable": 227,
     "struct_types_string_rendered": [
       "Int128Parts",
@@ -21,7 +24,10 @@
       "ed25519SignedPayload",
       "med25519"
     ],
-    "struct_types_unresolvable": [],
+    "struct_types_unresolvable": [
+      "StellarValueProposedMsValue",
+      "StellarValueSignedMsValue"
+    ],
     "mismatches": []
   },
   "enums": [
@@ -1585,6 +1591,16 @@
           "identifier": "STELLAR_VALUE_EMPTY_TX_SET",
           "value": 2,
           "json": "empty_tx_set"
+        },
+        {
+          "identifier": "STELLAR_VALUE_SIGNED_MS",
+          "value": 3,
+          "json": "signed_ms"
+        },
+        {
+          "identifier": "STELLAR_VALUE_EMPTY_TX_SET_MS",
+          "value": 4,
+          "json": "empty_tx_set_ms"
         }
       ]
     },
@@ -5630,6 +5646,50 @@
       "swift_name": "StellarValueXDRProposedValueXDR",
       "source": "Stellar-ledger.x",
       "fields": [
+        {
+          "identifier": "txSetHash",
+          "json": "tx_set_hash"
+        },
+        {
+          "identifier": "previousLedgerHash",
+          "json": "previous_ledger_hash"
+        },
+        {
+          "identifier": "previousLedgerVersion",
+          "json": "previous_ledger_version"
+        },
+        {
+          "identifier": "lcValueSignature",
+          "json": "lc_value_signature"
+        }
+      ]
+    },
+    {
+      "xdr_name": "signedMsValue",
+      "xdr_qualified_name": "StellarValueSignedMsValue",
+      "swift_name": "StellarValueXDRSignedMsValueXDR",
+      "source": "Stellar-ledger.x",
+      "fields": [
+        {
+          "identifier": "closeTimeMs",
+          "json": "close_time_ms"
+        },
+        {
+          "identifier": "lcValueSignature",
+          "json": "lc_value_signature"
+        }
+      ]
+    },
+    {
+      "xdr_name": "proposedMsValue",
+      "xdr_qualified_name": "StellarValueProposedMsValue",
+      "swift_name": "StellarValueXDRProposedMsValueXDR",
+      "source": "Stellar-ledger.x",
+      "fields": [
+        {
+          "identifier": "closeTimeMs",
+          "json": "close_time_ms"
+        },
         {
           "identifier": "txSetHash",
           "json": "tx_set_hash"
@@ -9769,6 +9829,16 @@
           "case": "STELLAR_VALUE_EMPTY_TX_SET",
           "json": "empty_tx_set",
           "void": false
+        },
+        {
+          "case": "STELLAR_VALUE_SIGNED_MS",
+          "json": "signed_ms",
+          "void": false
+        },
+        {
+          "case": "STELLAR_VALUE_EMPTY_TX_SET_MS",
+          "json": "empty_tx_set_ms",
+          "void": false
         }
       ]
     },
@@ -12901,6 +12971,14 @@
       "xdr_name": "Duration",
       "xdr_qualified_name": "Duration",
       "swift_name": "DurationXDR",
+      "source": "Stellar-types.x",
+      "swift_form": "typealias",
+      "swift_target": "UInt64"
+    },
+    {
+      "xdr_name": "TimePointMs",
+      "xdr_qualified_name": "TimePointMs",
+      "swift_name": "TimePointMsXDR",
       "source": "Stellar-types.x",
       "swift_form": "typealias",
       "swift_target": "UInt64"

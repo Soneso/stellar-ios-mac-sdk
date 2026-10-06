@@ -820,6 +820,30 @@ final class GeneratedXdrJsonStellarTypesUnitTests: XCTestCase {
                        "SignerKeyXDR must reach the same bytes through JSON and XDR")
     }
 
+    func test_TimePointMsXDR_rejectsWrongShape() throws {
+        XCTAssertThrowsError(try TimePointMsXDRJsonCodec.fromXdrJson("[]")) { error in
+            XCTAssertTrue(error is XdrJsonError,
+                          "TimePointMsXDR must report a shape it cannot read as an XdrJsonError")
+        }
+    }
+
+    func test_TimePointMsXDR_roundTrip() throws {
+        let original: TimePointMsXDR = UInt64(1234567)
+        let tree = try TimePointMsXDRJsonCodec.toXdrJsonValue(original)
+        let json = try TimePointMsXDRJsonCodec.toXdrJson(original)
+        let decoded = try TimePointMsXDRJsonCodec.fromXdrJson(json)
+        let viaValue = try TimePointMsXDRJsonCodec.fromXdrJsonValue(tree)
+        let viaTree = try TimePointMsXDRJsonCodec.fromXdrJsonTree(tree)
+        XCTAssertEqual(try TimePointMsXDRJsonCodec.toXdrJsonValue(decoded), tree,
+                       "TimePointMsXDR must produce the same tree after a round trip")
+        XCTAssertEqual(try TimePointMsXDRJsonCodec.toXdrJson(decoded), json,
+                       "TimePointMsXDR must produce the same text after a round trip")
+        XCTAssertEqual(try TimePointMsXDRJsonCodec.toXdrJson(viaValue), json,
+                       "TimePointMsXDR must read a tree the same way it reads text")
+        XCTAssertEqual(try TimePointMsXDRJsonCodec.toXdrJson(viaTree), json,
+                       "TimePointMsXDR must read a depth-checked tree the same way")
+    }
+
     func test_TimePointXDR_rejectsWrongShape() throws {
         XCTAssertThrowsError(try TimePointXDRJsonCodec.fromXdrJson("[]")) { error in
             XCTAssertTrue(error is XdrJsonError,

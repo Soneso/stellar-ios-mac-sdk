@@ -1843,6 +1843,16 @@ final class GeneratedXdrJsonStellarLedgerUnitTests: XCTestCase {
                        "empty_tx_set must read back as StellarValueTypeXDR.emptyTxSet")
     }
 
+    func test_StellarValueTypeXDR_STELLAR_VALUE_EMPTY_TX_SET_MS() throws {
+        let value: StellarValueTypeXDR = .emptyTxSetMs
+        XCTAssertEqual(try value.toXdrJson(), "\"empty_tx_set_ms\"",
+                       "StellarValueTypeXDR.emptyTxSetMs must render as empty_tx_set_ms")
+        XCTAssertEqual(value.rawValue, Int32(4),
+                       "StellarValueTypeXDR.emptyTxSetMs must keep its XDR value")
+        XCTAssertEqual(try StellarValueTypeXDR.fromXdrJson("\"empty_tx_set_ms\""), value,
+                       "empty_tx_set_ms must read back as StellarValueTypeXDR.emptyTxSetMs")
+    }
+
     func test_StellarValueTypeXDR_STELLAR_VALUE_SIGNED() throws {
         let value: StellarValueTypeXDR = .signed
         XCTAssertEqual(try value.toXdrJson(), "\"signed\"",
@@ -1851,6 +1861,16 @@ final class GeneratedXdrJsonStellarLedgerUnitTests: XCTestCase {
                        "StellarValueTypeXDR.signed must keep its XDR value")
         XCTAssertEqual(try StellarValueTypeXDR.fromXdrJson("\"signed\""), value,
                        "signed must read back as StellarValueTypeXDR.signed")
+    }
+
+    func test_StellarValueTypeXDR_STELLAR_VALUE_SIGNED_MS() throws {
+        let value: StellarValueTypeXDR = .signedMs
+        XCTAssertEqual(try value.toXdrJson(), "\"signed_ms\"",
+                       "StellarValueTypeXDR.signedMs must render as signed_ms")
+        XCTAssertEqual(value.rawValue, Int32(3),
+                       "StellarValueTypeXDR.signedMs must keep its XDR value")
+        XCTAssertEqual(try StellarValueTypeXDR.fromXdrJson("\"signed_ms\""), value,
+                       "signed_ms must read back as StellarValueTypeXDR.signedMs")
     }
 
     func test_StellarValueTypeXDR_rejectsUndeclaredValue() throws {
@@ -1916,6 +1936,38 @@ final class GeneratedXdrJsonStellarLedgerUnitTests: XCTestCase {
                        "StellarValueXDRExtXDR must reach the same bytes through JSON and XDR")
     }
 
+    func test_StellarValueXDRExtXDR_proposedMsValue_rejectsBareString() throws {
+        XCTAssertThrowsError(try StellarValueXDRExtXDR.fromXdrJson("\"empty_tx_set_ms\"")) { error in
+            guard case XdrJsonError.invalidValue(let type, let key, _) = error else {
+                return XCTFail("StellarValueXDRExtXDR.empty_tx_set_ms: expected invalidValue, got \(error)")
+            }
+            XCTAssertEqual(type, "StellarValueXDRExtXDR")
+            XCTAssertEqual(key, "empty_tx_set_ms",
+                           "the failure must name the arm rather than the catch-all")
+        }
+    }
+
+    func test_StellarValueXDRExtXDR_proposedMsValue_roundTrip() throws {
+        let original: StellarValueXDRExtXDR = .proposedMsValue(StellarValueXDRProposedMsValueXDR(closeTimeMs: UInt64(1234567), txSetHash: WrappedData32(Data(repeating: 0xAB, count: 32)), previousLedgerHash: WrappedData32(Data(repeating: 0xAB, count: 32)), previousLedgerVersion: UInt32(42), lcValueSignature: LedgerCloseValueSignatureXDR(nodeID: try PublicKey([UInt8](repeating: 0xAB, count: 32)), signature: Data([0x01, 0x02, 0x03]))))
+        let tree = try original.toXdrJsonValue()
+        let json = try original.toXdrJson()
+        let decoded = try StellarValueXDRExtXDR.fromXdrJson(json)
+        let viaValue = try StellarValueXDRExtXDR.fromXdrJsonValue(tree)
+        let viaTree = try StellarValueXDRExtXDR.fromXdrJsonTree(tree)
+        XCTAssertEqual(try decoded.toXdrJsonValue(), tree,
+                       "StellarValueXDRExtXDR must produce the same tree after a round trip")
+        XCTAssertEqual(try decoded.toXdrJson(), json,
+                       "StellarValueXDRExtXDR must produce the same text after a round trip")
+        XCTAssertEqual(try viaValue.toXdrJson(), json,
+                       "StellarValueXDRExtXDR must read a tree the same way it reads text")
+        XCTAssertEqual(try viaTree.toXdrJson(), json,
+                       "StellarValueXDRExtXDR must read a depth-checked tree the same way")
+        let originalBase64 = try Data(XDREncoder.encode(original)).base64EncodedString()
+        XCTAssertEqual(try Data(XDREncoder.encode(decoded)).base64EncodedString(),
+                       originalBase64,
+                       "StellarValueXDRExtXDR must reach the same bytes through JSON and XDR")
+    }
+
     func test_StellarValueXDRExtXDR_proposedValue_rejectsBareString() throws {
         XCTAssertThrowsError(try StellarValueXDRExtXDR.fromXdrJson("\"empty_tx_set\"")) { error in
             guard case XdrJsonError.invalidValue(let type, let key, _) = error else {
@@ -1958,6 +2010,66 @@ final class GeneratedXdrJsonStellarLedgerUnitTests: XCTestCase {
         }
     }
 
+    func test_StellarValueXDRExtXDR_signedMsValue_rejectsBareString() throws {
+        XCTAssertThrowsError(try StellarValueXDRExtXDR.fromXdrJson("\"signed_ms\"")) { error in
+            guard case XdrJsonError.invalidValue(let type, let key, _) = error else {
+                return XCTFail("StellarValueXDRExtXDR.signed_ms: expected invalidValue, got \(error)")
+            }
+            XCTAssertEqual(type, "StellarValueXDRExtXDR")
+            XCTAssertEqual(key, "signed_ms",
+                           "the failure must name the arm rather than the catch-all")
+        }
+    }
+
+    func test_StellarValueXDRExtXDR_signedMsValue_roundTrip() throws {
+        let original: StellarValueXDRExtXDR = .signedMsValue(StellarValueXDRSignedMsValueXDR(closeTimeMs: UInt64(1234567), lcValueSignature: LedgerCloseValueSignatureXDR(nodeID: try PublicKey([UInt8](repeating: 0xAB, count: 32)), signature: Data([0x01, 0x02, 0x03]))))
+        let tree = try original.toXdrJsonValue()
+        let json = try original.toXdrJson()
+        let decoded = try StellarValueXDRExtXDR.fromXdrJson(json)
+        let viaValue = try StellarValueXDRExtXDR.fromXdrJsonValue(tree)
+        let viaTree = try StellarValueXDRExtXDR.fromXdrJsonTree(tree)
+        XCTAssertEqual(try decoded.toXdrJsonValue(), tree,
+                       "StellarValueXDRExtXDR must produce the same tree after a round trip")
+        XCTAssertEqual(try decoded.toXdrJson(), json,
+                       "StellarValueXDRExtXDR must produce the same text after a round trip")
+        XCTAssertEqual(try viaValue.toXdrJson(), json,
+                       "StellarValueXDRExtXDR must read a tree the same way it reads text")
+        XCTAssertEqual(try viaTree.toXdrJson(), json,
+                       "StellarValueXDRExtXDR must read a depth-checked tree the same way")
+        let originalBase64 = try Data(XDREncoder.encode(original)).base64EncodedString()
+        XCTAssertEqual(try Data(XDREncoder.encode(decoded)).base64EncodedString(),
+                       originalBase64,
+                       "StellarValueXDRExtXDR must reach the same bytes through JSON and XDR")
+    }
+
+    func test_StellarValueXDRProposedMsValueXDR_rejectsWrongShape() throws {
+        XCTAssertThrowsError(try StellarValueXDRProposedMsValueXDR.fromXdrJson("[]")) { error in
+            XCTAssertTrue(error is XdrJsonError,
+                          "StellarValueXDRProposedMsValueXDR must report a shape it cannot read as an XdrJsonError")
+        }
+    }
+
+    func test_StellarValueXDRProposedMsValueXDR_roundTrip() throws {
+        let original: StellarValueXDRProposedMsValueXDR = StellarValueXDRProposedMsValueXDR(closeTimeMs: UInt64(1234567), txSetHash: WrappedData32(Data(repeating: 0xAB, count: 32)), previousLedgerHash: WrappedData32(Data(repeating: 0xAB, count: 32)), previousLedgerVersion: UInt32(42), lcValueSignature: LedgerCloseValueSignatureXDR(nodeID: try PublicKey([UInt8](repeating: 0xAB, count: 32)), signature: Data([0x01, 0x02, 0x03])))
+        let tree = try original.toXdrJsonValue()
+        let json = try original.toXdrJson()
+        let decoded = try StellarValueXDRProposedMsValueXDR.fromXdrJson(json)
+        let viaValue = try StellarValueXDRProposedMsValueXDR.fromXdrJsonValue(tree)
+        let viaTree = try StellarValueXDRProposedMsValueXDR.fromXdrJsonTree(tree)
+        XCTAssertEqual(try decoded.toXdrJsonValue(), tree,
+                       "StellarValueXDRProposedMsValueXDR must produce the same tree after a round trip")
+        XCTAssertEqual(try decoded.toXdrJson(), json,
+                       "StellarValueXDRProposedMsValueXDR must produce the same text after a round trip")
+        XCTAssertEqual(try viaValue.toXdrJson(), json,
+                       "StellarValueXDRProposedMsValueXDR must read a tree the same way it reads text")
+        XCTAssertEqual(try viaTree.toXdrJson(), json,
+                       "StellarValueXDRProposedMsValueXDR must read a depth-checked tree the same way")
+        let originalBase64 = try Data(XDREncoder.encode(original)).base64EncodedString()
+        XCTAssertEqual(try Data(XDREncoder.encode(decoded)).base64EncodedString(),
+                       originalBase64,
+                       "StellarValueXDRProposedMsValueXDR must reach the same bytes through JSON and XDR")
+    }
+
     func test_StellarValueXDRProposedValueXDR_rejectsWrongShape() throws {
         XCTAssertThrowsError(try StellarValueXDRProposedValueXDR.fromXdrJson("[]")) { error in
             XCTAssertTrue(error is XdrJsonError,
@@ -1984,6 +2096,34 @@ final class GeneratedXdrJsonStellarLedgerUnitTests: XCTestCase {
         XCTAssertEqual(try Data(XDREncoder.encode(decoded)).base64EncodedString(),
                        originalBase64,
                        "StellarValueXDRProposedValueXDR must reach the same bytes through JSON and XDR")
+    }
+
+    func test_StellarValueXDRSignedMsValueXDR_rejectsWrongShape() throws {
+        XCTAssertThrowsError(try StellarValueXDRSignedMsValueXDR.fromXdrJson("[]")) { error in
+            XCTAssertTrue(error is XdrJsonError,
+                          "StellarValueXDRSignedMsValueXDR must report a shape it cannot read as an XdrJsonError")
+        }
+    }
+
+    func test_StellarValueXDRSignedMsValueXDR_roundTrip() throws {
+        let original: StellarValueXDRSignedMsValueXDR = StellarValueXDRSignedMsValueXDR(closeTimeMs: UInt64(1234567), lcValueSignature: LedgerCloseValueSignatureXDR(nodeID: try PublicKey([UInt8](repeating: 0xAB, count: 32)), signature: Data([0x01, 0x02, 0x03])))
+        let tree = try original.toXdrJsonValue()
+        let json = try original.toXdrJson()
+        let decoded = try StellarValueXDRSignedMsValueXDR.fromXdrJson(json)
+        let viaValue = try StellarValueXDRSignedMsValueXDR.fromXdrJsonValue(tree)
+        let viaTree = try StellarValueXDRSignedMsValueXDR.fromXdrJsonTree(tree)
+        XCTAssertEqual(try decoded.toXdrJsonValue(), tree,
+                       "StellarValueXDRSignedMsValueXDR must produce the same tree after a round trip")
+        XCTAssertEqual(try decoded.toXdrJson(), json,
+                       "StellarValueXDRSignedMsValueXDR must produce the same text after a round trip")
+        XCTAssertEqual(try viaValue.toXdrJson(), json,
+                       "StellarValueXDRSignedMsValueXDR must read a tree the same way it reads text")
+        XCTAssertEqual(try viaTree.toXdrJson(), json,
+                       "StellarValueXDRSignedMsValueXDR must read a depth-checked tree the same way")
+        let originalBase64 = try Data(XDREncoder.encode(original)).base64EncodedString()
+        XCTAssertEqual(try Data(XDREncoder.encode(decoded)).base64EncodedString(),
+                       originalBase64,
+                       "StellarValueXDRSignedMsValueXDR must reach the same bytes through JSON and XDR")
     }
 
     func test_StellarValueXDR_rejectsWrongShape() throws {

@@ -7,15 +7,20 @@ Each seed is a dict:
               sole authority on the pairing; the two spellings differ in acronym
               case, in the reserved-name escape and in this SDK's XDR suffix, and
               a missing mapping fails the run rather than falling back to a guess.
-  json        The value written in the reference's own XDR-JSON form. The corpus
-              generator encodes it with the reference CLI, so a document that is
-              not valid XDR-JSON for that type fails the build.
+              A spec seed for a type the reference does not know is paired
+              through `../sep-51-oracle/name-map.json` instead.
+  json        The value in XDR-JSON form. Reference-backed seeds are encoded and
+              decoded by the pinned CLI, so a document that is not valid XDR-JSON
+              for that type fails the build. Spec seeds retain the JSON and XDR
+              authored from SEP-0051 and the `.x` layout.
   note        One sentence naming the shape the seed pins.
   oracle      Optional. "incomparable" marks a rendering where the SDK follows
               SEP-0051 and the reference does not; such a seed also carries
               spec_form and spec_form_paths. "spec" marks a value the pinned
               reference cannot resolve at all, which the generator admits only
               for a name the oracle's own unresolvable list carries.
+  xdr         Required with "spec", admitted nowhere else. The base64 XDR of the
+              value, packed by hand from the `.x` layout.
   spec_form   Required with "incomparable". Names the transformation the
               generator applies to the reference's output to derive what the SDK
               must emit: "integer_string" or "opaque_hex".
@@ -1594,6 +1599,33 @@ SEEDS = [
           {"start_sequence": 4294967295, "end_sequence": 0,
            "ledger_close_metas": []},
           "Ledger close meta batch at the unsigned 32-bit maximum sequence."),
+
+    # --- Millisecond close values: spec-derived ------------------------------
+    # The pinned reference cannot resolve these members and structs, so each JSON
+    # is written from SEP-0051 and the `.x`, and each `xdr` is packed by hand from
+    # the `.x` layout. The generator refuses them once the reference resolves them.
+    _seed("StellarValueType", "StellarValueTypeXDR", "signed_ms",
+          "Stellar value type signed member keeps its millisecond suffix.",
+          oracle="spec", xdr="AAAAAw=="),
+    _seed("StellarValueType", "StellarValueTypeXDR", "empty_tx_set_ms",
+          "Stellar value type empty-set member keeps its millisecond suffix.",
+          oracle="spec", xdr="AAAABA=="),
+    _seed("StellarValueSignedMsValue", "StellarValueXDRSignedMsValueXDR",
+          {"close_time_ms": "1700000000123",
+           "lc_value_signature": {"node_id": G1, "signature": "0a0b0c"}},
+          "Signed close value renders its millisecond close time as a string.",
+          oracle="spec",
+          xdr="AAABi8/laHsAAAAAAQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHyAAAAAD"
+              "CgsMAA=="),
+    _seed("StellarValueProposedMsValue", "StellarValueXDRProposedMsValueXDR",
+          {"close_time_ms": UINT64_MAX, "tx_set_hash": HASH1,
+           "previous_ledger_hash": HASH_ZERO, "previous_ledger_version": 29,
+           "lc_value_signature": {"node_id": G1, "signature": "0a0b"}},
+          "Empty-set close value at the unsigned 64-bit maximum close time.",
+          oracle="spec",
+          xdr="//////////8BAgMEBQYHCAkKCwwNDg8QERITFBUWFxgZGhscHR4fIAAAAAAAAAAA"
+              "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHQAAAAABAgMEBQYHCAkKCwwNDg8Q"
+              "ERITFBUWFxgZGhscHR4fIAAAAAIKCwAA"),
 
     # --- Both arms of every pair several XDR definitions render differently -
     # The Swift form of such a pair carries no conversion of its own, so each side

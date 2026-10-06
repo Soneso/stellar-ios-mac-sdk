@@ -7,6 +7,8 @@ public enum StellarValueXDRExtXDR: XDRCodable, Sendable {
   case basic
   case lcValueSignature(LedgerCloseValueSignatureXDR)
   case proposedValue(StellarValueXDRProposedValueXDR)
+  case signedMsValue(StellarValueXDRSignedMsValueXDR)
+  case proposedMsValue(StellarValueXDRProposedMsValueXDR)
 
   public init(from decoder: Decoder) throws {
     var container = try decoder.unkeyedContainer()
@@ -21,6 +23,12 @@ public enum StellarValueXDRExtXDR: XDRCodable, Sendable {
     case StellarValueTypeXDR.emptyTxSet.rawValue:
       let val = try container.decode(StellarValueXDRProposedValueXDR.self)
       self = .proposedValue(val)
+    case StellarValueTypeXDR.signedMs.rawValue:
+      let val = try container.decode(StellarValueXDRSignedMsValueXDR.self)
+      self = .signedMsValue(val)
+    case StellarValueTypeXDR.emptyTxSetMs.rawValue:
+      let val = try container.decode(StellarValueXDRProposedMsValueXDR.self)
+      self = .proposedMsValue(val)
     default:
       throw StellarSDKError.xdrDecodingError(message: "Unknown StellarValueXDRExtXDR discriminant: \(discriminant)")
     }
@@ -31,6 +39,8 @@ public enum StellarValueXDRExtXDR: XDRCodable, Sendable {
     case .basic: return StellarValueTypeXDR.basic.rawValue
     case .lcValueSignature: return StellarValueTypeXDR.signed.rawValue
     case .proposedValue: return StellarValueTypeXDR.emptyTxSet.rawValue
+    case .signedMsValue: return StellarValueTypeXDR.signedMs.rawValue
+    case .proposedMsValue: return StellarValueTypeXDR.emptyTxSetMs.rawValue
     }
   }
 
@@ -45,6 +55,10 @@ public enum StellarValueXDRExtXDR: XDRCodable, Sendable {
       try container.encode(val)
     case .proposedValue(let val):
       try container.encode(val)
+    case .signedMsValue(let val):
+      try container.encode(val)
+    case .proposedMsValue(let val):
+      try container.encode(val)
     }
   }
 }
@@ -57,6 +71,10 @@ extension StellarValueXDRExtXDR: XdrJsonCodable {
       return .object([XdrJsonMember(key: "signed", value: try payload.toXdrJsonValue())])
     case .proposedValue(let payload):
       return .object([XdrJsonMember(key: "empty_tx_set", value: try payload.toXdrJsonValue())])
+    case .signedMsValue(let payload):
+      return .object([XdrJsonMember(key: "signed_ms", value: try payload.toXdrJsonValue())])
+    case .proposedMsValue(let payload):
+      return .object([XdrJsonMember(key: "empty_tx_set_ms", value: try payload.toXdrJsonValue())])
     }
   }
 
@@ -70,6 +88,12 @@ extension StellarValueXDRExtXDR: XdrJsonCodable {
                                         message: "this arm carries a value, so it is written as a single-key object")
       case "empty_tx_set":
         throw XdrJsonError.invalidValue(type: "StellarValueXDRExtXDR", key: "empty_tx_set",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "signed_ms":
+        throw XdrJsonError.invalidValue(type: "StellarValueXDRExtXDR", key: "signed_ms",
+                                        message: "this arm carries a value, so it is written as a single-key object")
+      case "empty_tx_set_ms":
+        throw XdrJsonError.invalidValue(type: "StellarValueXDRExtXDR", key: "empty_tx_set_ms",
                                         message: "this arm carries a value, so it is written as a single-key object")
       default:
         throw XdrJsonError.unknownUnionArm(type: "StellarValueXDRExtXDR", key: name)
@@ -87,6 +111,12 @@ extension StellarValueXDRExtXDR: XdrJsonCodable {
     case "empty_tx_set":
       let proposedValue: StellarValueXDRProposedValueXDR = try StellarValueXDRProposedValueXDR.fromXdrJsonValue(member.value)
       return .proposedValue(proposedValue)
+    case "signed_ms":
+      let signedMsValue: StellarValueXDRSignedMsValueXDR = try StellarValueXDRSignedMsValueXDR.fromXdrJsonValue(member.value)
+      return .signedMsValue(signedMsValue)
+    case "empty_tx_set_ms":
+      let proposedMsValue: StellarValueXDRProposedMsValueXDR = try StellarValueXDRProposedMsValueXDR.fromXdrJsonValue(member.value)
+      return .proposedMsValue(proposedMsValue)
     default:
       throw XdrJsonError.unknownUnionArm(type: "StellarValueXDRExtXDR", key: member.key)
     }

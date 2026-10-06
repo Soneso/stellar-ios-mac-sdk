@@ -41,17 +41,17 @@ The reference is the XDR-JSON CLI pinned in `../sep-51-oracle/oracle-pin.json`.
 to run against a different build, because key spellings differ between reference
 releases.
 
-Every seed is encoded to XDR and decoded straight back through the reference, so
-a seed that is not valid XDR-JSON for its type fails the run rather than
-reaching the corpus. The decoded document — not the authored one — is what the
-corpus records, which is why authoring a value in a non-canonical form is
-harmless.
+Reference-backed seeds are encoded and decoded by the pinned CLI, so a seed that
+is not valid XDR-JSON for its type fails the run rather than reaching the corpus.
+The decoded document, not the authored one, is what the corpus records, which is
+why authoring a value in a non-canonical form is harmless. Spec seeds retain the
+JSON and XDR authored from SEP-0051 and the `.x` layout.
 
-Fixtures come from the reference build alone. The SDK's own output is never
-snapshotted into the committed file: a corpus that records what the SDK already
-does can detect drift but can never report an error, which is how the same
-defect survives release after release. The generator enforces this by rejecting
-any seed that carries the fields the reference is supposed to produce.
+Fixtures come from the reference build and the specification. The SDK's own
+output is never snapshotted into the committed file: a corpus that records what
+the SDK already does can detect drift but can never report an error, which is how
+the same defect survives release after release. The generator enforces this by
+rejecting any seed that carries the fields the reference is supposed to produce.
 
 ## Type names
 
@@ -60,7 +60,9 @@ Swift type name and the reference CLI's spelling of the same type. The two diffe
 in acronym case (`IPAddrTypeXDR` against `IpAddrType`), in the reserved-name
 escape (`ErrorXDR` against `SError`) and in the `XDR` suffix this SDK appends, so
 a seed whose SDK type has no mapping fails the run rather than falling back to a
-derived guess.
+derived guess. A spec seed for a type the reference does not know is the one
+exception: `type_map.json` lists that type under `unknown_to_oracle`, and the
+name table pairs it instead.
 
 That strictness carries a second rule. Several XDR definitions can share one
 Swift type, and where their renderings disagree the Swift type has no single
@@ -205,12 +207,18 @@ repository root `Makefile`, or the reference pin in
 `generate_corpus.py --validate-committed` checks the committed artefacts against
 each other rather than against the reference, so it runs where no CLI is
 installed: every seed obeys the shape rules, every seed reached the corpus with
-its declared metadata unchanged, every seed's SDK type has a reference spelling
-in `type_map.json`, the corpus records the pins committed today, and every
-completeness assertion holds. It cannot check the recorded JSON and base64 —
-those come from the reference and only `refresh_corpus.sh` can confirm them. It
-writes nothing and exits 0 on agreement, 1 on disagreement, 2 when a committed
-artefact it needs is absent.
+its declared metadata unchanged and every spec seed with its authored JSON and
+XDR, every seed's SDK type has a reference spelling in `type_map.json` or, for a
+spec seed, an exact pair the name table lists as an unresolvable struct, the
+corpus records the pins committed today, and every completeness assertion holds.
+It cannot check the JSON and base64 recorded for a reference-backed seed: those
+come from the reference and only `refresh_corpus.sh` can confirm them. It writes
+nothing and exits 0 on agreement, 1 on disagreement, 2 when a committed artefact
+it needs is absent.
+
+To probe the pairing guard, give a spec struct seed and its corpus entry the Swift
+name of another unresolvable struct: `--validate-committed` must exit 1 and name
+that Swift type.
 
 `refresh_corpus.sh`
 
@@ -249,11 +257,14 @@ difference.
 | `spec_form_paths` | incomparable | The JSON paths the transformation rewrote. |
 | `oracle_json` | incomparable | What the reference emits, recorded for the diff. |
 
-`oracle: "spec"` covers a type the pinned reference cannot resolve at all, whose
-value is written from SEP-0051 and the `.x`. The generator admits one only for a
-name that `../sep-51-oracle/name-map.json` lists as unresolvable and that the
-reference genuinely does not know, so the class stays empty while the reference
-vendors an XDR commit at least as new as the SDK's.
+`oracle: "spec"` covers a value the pinned reference cannot resolve at all, whose
+JSON is written from SEP-0051 and the `.x` and whose `xdr` is packed by hand from
+the `.x` layout. The generator admits one only for a name that
+`../sep-51-oracle/name-map.json` lists as unresolvable and only while the reference
+cannot process it: a struct type the reference does not know, under the name
+table's pairing of its XDR and Swift names, or the bare JSON name of an enum member
+the reference rejects, seeded on the enum type. The class stays empty while the
+reference vendors an XDR commit at least as new as the SDK's.
 
 ## Completeness
 

@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 """Builds the SEP-0051 (XDR-JSON) conformance corpus from the hand-authored seeds.
 
-Each seed is encoded to XDR with the pinned reference CLI and decoded straight
-back, so every entry is checked by the reference before it is written. The
-decoded document is what the SDK must emit, except for the seeds marked
-incomparable, where the reference and SEP-0051 disagree and a named
-transformation derives the specified form from the reference's output.
+Reference-backed seeds are encoded and decoded by the pinned CLI, so each of
+their entries is checked by the reference before it is written. Spec seeds
+retain the JSON and XDR authored from SEP-0051 and the `.x` layout. The decoded
+document is what the SDK must emit, except for the seeds marked incomparable,
+where the reference and SEP-0051 disagree and a named transformation derives
+the specified form from the reference's output.
 
 A transformation is not trusted to rewrite the right thing. Every incomparable
 seed declares the JSON paths it expects the transformation to touch, the
@@ -60,7 +61,7 @@ DUMP = dict(ensure_ascii=False, separators=(",", ":"))
 # The keys a seed may carry. A seed that supplies the fields the reference is
 # supposed to produce is how a corpus turns self-referential, so the whitelist is
 # enforced rather than documented. `xdr` is admitted only for a spec seed, whose
-# type the reference provably cannot resolve.
+# value the reference provably cannot resolve.
 SEED_KEYS = {"type", "ios_type", "json", "note", "oracle", "spec_form",
              "spec_form_paths", "input_variants", "non_utf8_paths"}
 SPEC_SEED_KEYS = SEED_KEYS | {"xdr"}
@@ -227,7 +228,22 @@ def check_seed_shape(seed):
 # --- Type names ---------------------------------------------------------------
 
 
-def check_type_names(type_map, available):
+def unresolvable_struct_pairs(name_map, unresolvable_struct_types):
+    """The `(XDR name, Swift name)` pair of every struct the pinned reference cannot resolve."""
+    return {(struct["xdr_qualified_name"], struct["swift_name"])
+            for struct in name_map.get("structs", [])
+            if struct["xdr_qualified_name"] in unresolvable_struct_types}
+
+
+def paired_by_name_table(seed, unresolvable_structs):
+    """Whether a spec seed names a struct the reference does not know, under the exact
+    pairing of XDR and Swift names the name table records. Such a type has no reference
+    spelling, so this pairing takes the place of `type_map.json` for it."""
+    return (seed.get("oracle") == "spec"
+            and (seed["type"], seed["ios_type"]) in unresolvable_structs)
+
+
+def check_type_names(type_map, unresolvable_structs, available):
     """`type_map.json` is the sole authority on the reference spelling of an SDK type.
 
     The reference names every type in Rust UpperCamelCase derived from the `.x`
@@ -249,6 +265,8 @@ def check_type_names(type_map, available):
                 "the reference CLI does not know the type %s (seed for %s)"
                 % (type_name, ios_type)
             )
+        if paired_by_name_table(seed, unresolvable_structs):
+            continue
         if ios_type not in type_map:
             raise GenerationError(
                 "no type_map.json entry for the SDK type %s (seed names %s as its "
@@ -573,25 +591,39 @@ def check_input_variants(cli, seed, base64_text, findings):
     return rendered
 
 
-def build_spec_entry(seed, available, unresolvable_names):
-    """Builds the entry for a type the pinned reference cannot resolve.
+def reference_encodes(cli, seed):
+    try:
+        encode(cli, seed["type"], seed["json"])
+    except GenerationError:
+        return False
+    return True
+
+
+def build_spec_entry(cli, seed, available, unresolvable_structs, unresolvable_members):
+    """Builds the entry for a value the pinned reference cannot resolve.
 
     Such a value cannot be produced by the reference at all, so it is written from
     SEP-0051 and the `.x` by hand. The two guards that keep that from becoming a
-    licence to hand-write anything: the type must appear in the name table's
-    unresolvable list, and the reference must genuinely not know it.
+    licence to hand-write anything: the value must appear in the name table's
+    unresolvable lists, and the reference must genuinely be unable to process it.
+    That admits a struct type the reference does not know, paired with its SDK type
+    through the name table, and the bare JSON name of an enum member the reference
+    rejects, on the enum type it does know.
     """
     if seed["type"] in available:
+        names_member = (isinstance(seed["json"], str)
+                        and (seed["ios_type"], seed["json"]) in unresolvable_members)
+        if not names_member or reference_encodes(cli, seed):
+            raise GenerationError(
+                "seed for %s is marked spec-derived, but the reference resolves it. A "
+                "spec-derived value is admissible only where the reference is silent; encode "
+                "this seed through the reference instead." % seed["type"]
+            )
+    elif not paired_by_name_table(seed, unresolvable_structs):
         raise GenerationError(
-            "seed for %s is marked spec-derived, but the reference resolves that type. A "
-            "spec-derived value is admissible only where the reference is silent; encode "
-            "this seed through the reference instead." % seed["type"]
-        )
-    if seed["type"] not in unresolvable_names and seed["ios_type"] not in unresolvable_names:
-        raise GenerationError(
-            "seed for %s is marked spec-derived, but the name table does not list it as "
-            "unresolvable. Rebuild the table with: "
-            "ruby tools/sep-51-oracle/name_map.rb --diff" % seed["type"]
+            "seed for %s (%s) is marked spec-derived, but the name table does not list that "
+            "pair as unresolvable. Rebuild the table with: "
+            "ruby tools/sep-51-oracle/name_map.rb --diff" % (seed["type"], seed["ios_type"])
         )
     if "xdr" not in seed:
         raise GenerationError(
@@ -608,7 +640,8 @@ def build_spec_entry(seed, available, unresolvable_names):
     }
 
 
-def build_entry(cli, seed, available, unresolvable_names, findings=None):
+def build_entry(cli, seed, available, unresolvable_structs, unresolvable_members,
+                findings=None):
     """Builds one corpus entry.
 
     A seed problem normally raises. When ``findings`` is a list the problem is appended to
@@ -618,7 +651,8 @@ def build_entry(cli, seed, available, unresolvable_names, findings=None):
     """
     if seed.get("oracle") == "spec":
         try:
-            return build_spec_entry(seed, available, unresolvable_names)
+            return build_spec_entry(cli, seed, available, unresolvable_structs,
+                                    unresolvable_members)
         except GenerationError as error:
             if findings is None:
                 raise
@@ -747,6 +781,14 @@ def divergent_wire_names(name_map):
     return divergent
 
 
+def member_json_names(name_map):
+    """Maps each `Enum.MEMBER` label of the name table to the enum's Swift name and the
+    member's JSON name, the form a corpus document carries."""
+    return {"%s.%s" % (enum["xdr_qualified_name"], member["identifier"]):
+            (enum["swift_name"], member["json"])
+            for enum in name_map.get("enums", []) for member in enum["members"]}
+
+
 def check_completeness(entries, name_map, unresolvable_enum_members,
                        unresolvable_struct_types, type_map):
     """Assertions read from the committed artefacts, never from a hardcoded list."""
@@ -765,18 +807,20 @@ def check_completeness(entries, name_map, unresolvable_enum_members,
 
     # Every name the pinned reference cannot resolve carries a spec-derived entry.
     spec_types = {entry["type"] for entry in entries if entry["oracle"] == "spec"}
-    spec_tokens = set()
+    # An enum member is matched as the bare value of its own enum type.
+    spec_members = set()
     for entry in entries:
-        if entry["oracle"] == "spec":
-            json_tokens(json.loads(entry["json"]), spec_tokens)
+        document = json.loads(entry["json"])
+        if entry["oracle"] == "spec" and isinstance(document, str):
+            spec_members.add((entry["ios_type"], document))
     for name in unresolvable_struct_types:
         if reference_name(name) not in spec_types and name not in spec_types:
             problems.append(
                 "the name table lists %s as unresolvable by the pinned reference, so it "
                 "needs a spec-derived corpus entry" % name)
+    members = member_json_names(name_map)
     for member in unresolvable_enum_members:
-        wire = member.rsplit(".", 1)[-1]
-        if wire not in spec_tokens:
+        if members[member] not in spec_members:
             problems.append(
                 "the name table lists the enum member %s as unresolvable by the pinned "
                 "reference, so it needs a spec-derived corpus entry" % member)
@@ -867,7 +911,9 @@ def seed_projection(seed):
     """The part of a corpus entry that is copied from its seed.
 
     Everything else in an entry comes from the reference and so cannot be re-derived
-    without it. These fields can, which is what makes an offline check possible.
+    without it. These fields can, which is what makes an offline check possible. A spec
+    seed's JSON and XDR are authored rather than produced by the reference, so they
+    belong to this part.
     """
     projected = {
         "type": seed["type"],
@@ -878,6 +924,9 @@ def seed_projection(seed):
     if projected["oracle"] == "incomparable":
         projected["spec_form"] = seed["spec_form"]
         projected["spec_form_paths"] = sorted(seed["spec_form_paths"])
+    if projected["oracle"] == "spec":
+        projected["json"] = json.dumps(seed["json"], **DUMP)
+        projected["xdr"] = seed.get("xdr")
     return projected
 
 
@@ -887,6 +936,9 @@ def entry_projection(entry):
     if projected["oracle"] == "incomparable":
         projected["spec_form"] = entry.get("spec_form")
         projected["spec_form_paths"] = entry.get("spec_form_paths")
+    if projected["oracle"] == "spec":
+        projected["json"] = entry.get("json")
+        projected["xdr"] = entry.get("xdr")
     return projected
 
 
@@ -894,10 +946,11 @@ def validate_committed(corpus_path=DEFAULT_OUTPUT):
     """Checks the committed artefacts against each other and against the seeds.
 
     This is the half of the corpus contract that needs no reference build: the seeds obey
-    the shape rules, every seed reached the corpus with its declared metadata intact, the
-    corpus was built from the pins that are committed today, and every completeness
-    assertion still holds. What it cannot check is the half that only the reference can
-    answer -- whether the recorded JSON and base64 are what the reference produces. That
+    the shape rules, every seed reached the corpus with its declared metadata intact and
+    every spec seed with its authored JSON and XDR, the corpus was built from the pins
+    that are committed today, and every completeness assertion still holds. What it
+    cannot check is the half that only the reference can answer -- whether the JSON and
+    base64 recorded for a reference-backed seed are what the reference produces. That
     stays with `refresh_corpus.sh`.
 
     Returns the list of problems found; an empty list means agreement.
@@ -925,11 +978,15 @@ def validate_committed(corpus_path=DEFAULT_OUTPUT):
     entries = corpus.get("entries") or []
     metadata = corpus.get("metadata") or {}
 
-    unmapped = sorted({seed["ios_type"] for seed in SEEDS} - set(type_map))
+    unresolvable_enum_members, unresolvable_struct_types = read_unresolvable(name_map)
+    unresolvable_structs = unresolvable_struct_pairs(name_map, unresolvable_struct_types)
+    unmapped = sorted({seed["ios_type"] for seed in SEEDS
+                       if not paired_by_name_table(seed, unresolvable_structs)}
+                      - set(type_map))
     if unmapped:
         problems.append(
-            "no reference spelling recorded for %s; type_map.json is the sole authority "
-            "on the pairing and a seed without one cannot be built" % ", ".join(unmapped)
+            "no reference spelling recorded for %s, and no unresolvable struct pair in the "
+            "name table covers it; a seed without either cannot be built" % ", ".join(unmapped)
         )
 
     expected = sorted((seed_projection(seed) for seed in SEEDS),
@@ -961,7 +1018,6 @@ def validate_committed(corpus_path=DEFAULT_OUTPUT):
                 % (field, metadata.get(field), expected_value)
             )
 
-    unresolvable_enum_members, unresolvable_struct_types = read_unresolvable(name_map)
     problems.extend(check_completeness(entries, name_map, unresolvable_enum_members,
                                        unresolvable_struct_types, type_map))
     return problems
@@ -998,12 +1054,15 @@ def generate(output_path, advisory=False):
         "Rebuild it with: ruby tools/sep-51-oracle/name_map.rb --diff",
     )["type_map"]
     available = known_types(cli)
-    check_type_names(type_map, available)
-
     unresolvable_enum_members, unresolvable_struct_types = read_unresolvable(name_map)
-    unresolvable_names = set(unresolvable_struct_types)
+    unresolvable_structs = unresolvable_struct_pairs(name_map, unresolvable_struct_types)
+    check_type_names(type_map, unresolvable_structs, available)
 
-    built = [build_entry(cli, seed, available, unresolvable_names, findings)
+    members = member_json_names(name_map)
+    unresolvable_members = {members[label] for label in unresolvable_enum_members}
+
+    built = [build_entry(cli, seed, available, unresolvable_structs, unresolvable_members,
+                         findings)
              for seed in SEEDS]
     entries = [entry for entry in built if entry is not None]
 
@@ -1054,7 +1113,8 @@ def main():
     parser.add_argument("--validate-committed", action="store_true",
                         help="check the committed corpus against the seeds, the pins and "
                              "the completeness rules without the reference CLI, and write "
-                             "nothing. Does not check the recorded JSON or base64.")
+                             "nothing. Does not check the JSON or base64 recorded for "
+                             "reference-backed seeds.")
     args = parser.parse_args()
 
     if args.validate_committed:
@@ -1088,6 +1148,7 @@ def main():
     entries = corpus["entries"]
     incomparable = [entry for entry in entries if entry["oracle"] == "incomparable"]
     incomparable_types = sorted({entry["type"] for entry in incomparable})
+    spec = [entry for entry in entries if entry["oracle"] == "spec"]
     if args.advisory:
         print("ADVISORY: generated against %s %s, not the pinned build."
               % (corpus["metadata"]["reference_tool"],
@@ -1095,9 +1156,11 @@ def main():
     print("Wrote %s" % args.output)
     print("  entries:        %d" % len(entries))
     print("  distinct types: %d" % len({entry["type"] for entry in entries}))
-    print("  comparable:     %d" % (len(entries) - len(incomparable)))
+    print("  comparable:     %d" % (len(entries) - len(incomparable) - len(spec)))
     print("  incomparable:   %d (%s)" % (len(incomparable),
                                          ", ".join(incomparable_types)))
+    print("  spec-derived:   %d (%s)" % (len(spec),
+                                         ", ".join(sorted({entry["type"] for entry in spec}))))
     print("  input variants: %d" % sum(len(entry.get("input_variants", []))
                                        for entry in entries))
 

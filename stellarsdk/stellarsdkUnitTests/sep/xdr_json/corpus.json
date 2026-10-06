@@ -4,10 +4,16 @@
     "reference_tool": "stellar-xdr",
     "reference_version": "28.0.1",
     "reference_xdr_commit": "9c9c145953e80990d6ff1ae3a6a973a0ce6d0694",
-    "sdk_xdr_commit": "c40231c76bf2ebce76b24aa11c72508ac3eaa329",
-    "entry_count": 449,
-    "unresolvable_enum_members": [],
-    "unresolvable_struct_types": []
+    "sdk_xdr_commit": "c2612cf534e4448fa263e252afe1bdbac5512d14",
+    "entry_count": 453,
+    "unresolvable_enum_members": [
+      "StellarValueType.STELLAR_VALUE_EMPTY_TX_SET_MS",
+      "StellarValueType.STELLAR_VALUE_SIGNED_MS"
+    ],
+    "unresolvable_struct_types": [
+      "StellarValueProposedMsValue",
+      "StellarValueSignedMsValue"
+    ]
   },
   "entries": [
     {
@@ -3594,6 +3600,38 @@
       "json": "{\"start_sequence\":4294967295,\"end_sequence\":0,\"ledger_close_metas\":[]}",
       "oracle": "reference",
       "note": "Ledger close meta batch at the unsigned 32-bit maximum sequence."
+    },
+    {
+      "type": "StellarValueType",
+      "ios_type": "StellarValueTypeXDR",
+      "xdr": "AAAAAw==",
+      "json": "\"signed_ms\"",
+      "oracle": "spec",
+      "note": "Stellar value type signed member keeps its millisecond suffix."
+    },
+    {
+      "type": "StellarValueType",
+      "ios_type": "StellarValueTypeXDR",
+      "xdr": "AAAABA==",
+      "json": "\"empty_tx_set_ms\"",
+      "oracle": "spec",
+      "note": "Stellar value type empty-set member keeps its millisecond suffix."
+    },
+    {
+      "type": "StellarValueSignedMsValue",
+      "ios_type": "StellarValueXDRSignedMsValueXDR",
+      "xdr": "AAABi8/laHsAAAAAAQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHyAAAAADCgsMAA==",
+      "json": "{\"close_time_ms\":\"1700000000123\",\"lc_value_signature\":{\"node_id\":\"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV\",\"signature\":\"0a0b0c\"}}",
+      "oracle": "spec",
+      "note": "Signed close value renders its millisecond close time as a string."
+    },
+    {
+      "type": "StellarValueProposedMsValue",
+      "ios_type": "StellarValueXDRProposedMsValueXDR",
+      "xdr": "//////////8BAgMEBQYHCAkKCwwNDg8QERITFBUWFxgZGhscHR4fIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHQAAAAABAgMEBQYHCAkKCwwNDg8QERITFBUWFxgZGhscHR4fIAAAAAIKCwAA",
+      "json": "{\"close_time_ms\":\"18446744073709551615\",\"tx_set_hash\":\"0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20\",\"previous_ledger_hash\":\"0000000000000000000000000000000000000000000000000000000000000000\",\"previous_ledger_version\":29,\"lc_value_signature\":{\"node_id\":\"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV\",\"signature\":\"0a0b\"}}",
+      "oracle": "spec",
+      "note": "Empty-set close value at the unsigned 64-bit maximum close time."
     },
     {
       "type": "Operation",

@@ -7,6 +7,8 @@ public enum StellarValueTypeXDR: Int32, XDRCodable, Equatable, Sendable {
   case basic = 0
   case signed = 1
   case emptyTxSet = 2
+  case signedMs = 3
+  case emptyTxSetMs = 4
 }
 
 extension StellarValueTypeXDR: XdrJsonCodable {
@@ -15,6 +17,8 @@ extension StellarValueTypeXDR: XdrJsonCodable {
     case .basic: return .string("basic")
     case .signed: return .string("signed")
     case .emptyTxSet: return .string("empty_tx_set")
+    case .signedMs: return .string("signed_ms")
+    case .emptyTxSetMs: return .string("empty_tx_set_ms")
     }
   }
 
@@ -24,6 +28,8 @@ extension StellarValueTypeXDR: XdrJsonCodable {
     case "basic": return .basic
     case "signed": return .signed
     case "empty_tx_set": return .emptyTxSet
+    case "signed_ms": return .signedMs
+    case "empty_tx_set_ms": return .emptyTxSetMs
     default:
       throw XdrJsonError.unknownEnumValue(type: "StellarValueTypeXDR", value: name)
     }

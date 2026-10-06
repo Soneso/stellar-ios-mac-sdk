@@ -224,6 +224,82 @@ class XDRLedgerTypesP1UnitTests: XCTestCase {
         }
     }
 
+    // The millisecond arms carry the close time as a uint64 count of milliseconds, which
+    // XDR-JSON renders as a decimal string. The expected documents follow the SEP-0051 rules:
+    // hashes and the signature as lowercase hex, the node ID as a G strkey, the version as a number.
+    private static let closeNodeID = "GCEZWKCA5VLDNRLN3RPRJMRZOX3Z6G5CHCGSNFHEYVXM3XOJMDS674JZ"
+    private static let closeSignatureBytes = Data([0x0A, 0x14, 0x1E, 0x28])
+    private static let closeSignatureJson =
+        "\"lc_value_signature\":{\"node_id\":\"\(closeNodeID)\",\"signature\":\"0a141e28\"}"
+    private static let stellarValuePrefixJson =
+        "{\"tx_set_hash\":\"\(hashHex(0xEF))\",\"close_time\":\"1700000000\","
+        + "\"upgrades\":[],\"ext\":"
+
+    private static func hashHex(_ byte: UInt8) -> String {
+        String(repeating: String(format: "%02x", byte), count: 32)
+    }
+
+    private func stellarValue(_ ext: StellarValueXDRExtXDR) -> StellarValueXDR {
+        StellarValueXDR(txSetHash: XDRTestHelpers.wrappedData32(), closeTime: 1700000000,
+                        upgrades: [], ext: ext)
+    }
+
+    /// Asserts the value's XDR-JSON text, then decodes the value from its own bytes and from that
+    /// text; the JSON decoding must encode to the same bytes.
+    private func decodeFromBytesAndJson(_ value: StellarValueXDR, json: String) throws -> [StellarValueXDR] {
+        let encoded = try XDREncoder.encode(value)
+        XCTAssertEqual(try value.toXdrJson(), json)
+        let fromJson = try StellarValueXDR.fromXdrJson(json)
+        XCTAssertEqual(try XDREncoder.encode(fromJson), encoded)
+        return [try XDRDecoder.decode(StellarValueXDR.self, data: encoded), fromJson]
+    }
+
+    func testStellarValueWithSignedMsExtRoundTrip() throws {
+        let signature = LedgerCloseValueSignatureXDR(nodeID: try XDRTestHelpers.publicKey(),
+                                                     signature: Self.closeSignatureBytes)
+        let original = stellarValue(.signedMsValue(StellarValueXDRSignedMsValueXDR(
+            closeTimeMs: 1700000000123, lcValueSignature: signature)))
+        let json = Self.stellarValuePrefixJson + "{\"signed_ms\":{\"close_time_ms\":\"1700000000123\","
+            + Self.closeSignatureJson + "}}}"
+
+        for decoded in try decodeFromBytesAndJson(original, json: json) {
+            XCTAssertEqual(decoded.ext.type(), StellarValueTypeXDR.signedMs.rawValue)
+            guard case .signedMsValue(let arm) = decoded.ext else {
+                return XCTFail("Expected .signedMsValue in ext")
+            }
+            XCTAssertEqual(arm.closeTimeMs, 1700000000123)
+            XCTAssertEqual(arm.lcValueSignature.nodeID.accountId, Self.closeNodeID)
+            XCTAssertEqual(arm.lcValueSignature.signature, Self.closeSignatureBytes)
+        }
+    }
+
+    func testStellarValueWithEmptyTxSetMsExtRoundTrip() throws {
+        let signature = LedgerCloseValueSignatureXDR(nodeID: try XDRTestHelpers.publicKey(),
+                                                     signature: Self.closeSignatureBytes)
+        let original = stellarValue(.proposedMsValue(StellarValueXDRProposedMsValueXDR(
+            closeTimeMs: 1700000000456,
+            txSetHash: HashXDR(Data(repeating: 0x33, count: 32)),
+            previousLedgerHash: HashXDR(Data(repeating: 0x44, count: 32)),
+            previousLedgerVersion: 29,
+            lcValueSignature: signature)))
+        let json = Self.stellarValuePrefixJson + "{\"empty_tx_set_ms\":{\"close_time_ms\":\"1700000000456\","
+            + "\"tx_set_hash\":\"\(Self.hashHex(0x33))\",\"previous_ledger_hash\":\"\(Self.hashHex(0x44))\","
+            + "\"previous_ledger_version\":29," + Self.closeSignatureJson + "}}}"
+
+        for decoded in try decodeFromBytesAndJson(original, json: json) {
+            XCTAssertEqual(decoded.ext.type(), StellarValueTypeXDR.emptyTxSetMs.rawValue)
+            guard case .proposedMsValue(let arm) = decoded.ext else {
+                return XCTFail("Expected .proposedMsValue in ext")
+            }
+            XCTAssertEqual(arm.closeTimeMs, 1700000000456)
+            XCTAssertEqual(arm.txSetHash.wrapped, Data(repeating: 0x33, count: 32))
+            XCTAssertEqual(arm.previousLedgerHash.wrapped, Data(repeating: 0x44, count: 32))
+            XCTAssertEqual(arm.previousLedgerVersion, 29)
+            XCTAssertEqual(arm.lcValueSignature.nodeID.accountId, Self.closeNodeID)
+            XCTAssertEqual(arm.lcValueSignature.signature, Self.closeSignatureBytes)
+        }
+    }
+
     // MARK: - LedgerHeaderExtensionV1XDR
 
     func testLedgerHeaderExtensionV1RoundTrip() throws {
