@@ -12,7 +12,7 @@ reference CLI; these tools are used when the XDR pin or the reference pin moves.
 Install the pinned reference CLI (user-level, no elevated privileges):
 
 ```bash
-cargo install stellar-xdr --features cli --version 28.0.0 --locked
+cargo install stellar-xdr --features cli --version 28.0.1 --locked
 ```
 
 It installs to `~/.cargo/bin/stellar-xdr`. Set `STELLAR_XDR` to use a binary from
