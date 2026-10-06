@@ -16,19 +16,18 @@ License: Apache-2.0
 """
 
 import json
-import plistlib
 import re
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Any, Optional, Set
-from dataclasses import dataclass, field
+from typing import Dict, List, Any
+from dataclasses import dataclass
 from enum import Enum
 
-from rpc_releases import Release, fetch_releases, find_release, get_github_token
+from rpc_releases import STELLAR_RPC_REPO, Release, get_github_token, resolve_release
 
-RPC_REPO_OWNER = "stellar"
-RPC_REPO_NAME = "stellar-rpc"
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from sdk_version import get_sdk_version  # noqa: E402
 
 
 class SupportStatus(Enum):
@@ -52,8 +51,7 @@ class SDKMethod:
 class SDKResponseType:
     """Parsed SDK response type information"""
     name: str
-    fields: List[str]  # JSON field names from direct CodingKeys
-    nested_fields: List[str] = field(default_factory=list)  # Fields from nested types (for matching only)
+    fields: List[str]  # JSON field names from the type's own CodingKeys
 
 
 @dataclass
@@ -87,27 +85,7 @@ def fetch_rpc_version(rpc_data: Dict[str, Any]) -> Release:
     recorded_version = metadata.get("version") if isinstance(metadata, dict) else None
     if not isinstance(recorded_version, str) or not recorded_version:
         raise ValueError("rpc_methods.json records no metadata.version; run extract_rpc_methods.py first")
-    releases = fetch_releases(RPC_REPO_OWNER, RPC_REPO_NAME, get_github_token())
-    return find_release(releases, recorded_version, f"{RPC_REPO_OWNER}/{RPC_REPO_NAME}")
-
-
-def get_sdk_version(sdk_root: Path) -> str:
-    """
-    Read CFBundleShortVersionString from the SDK Info.plist.
-
-    Raises when the file cannot be read or holds no version, because the
-    SDK Version header line must name the SDK release.
-    """
-    plist_path = sdk_root / "stellarsdk" / "stellarsdk" / "Info.plist"
-    try:
-        with open(plist_path, 'rb') as f:
-            plist = plistlib.load(f)
-    except (OSError, plistlib.InvalidFileException) as e:
-        raise ValueError(f"Cannot read the SDK version from {plist_path}: {e}") from e
-    version = plist.get('CFBundleShortVersionString') if isinstance(plist, dict) else None
-    if not isinstance(version, str) or not version.strip():
-        raise ValueError(f"{plist_path} has no CFBundleShortVersionString")
-    return version
+    return resolve_release(STELLAR_RPC_REPO, recorded_version, get_github_token())
 
 
 # RPC method categories for organization
@@ -270,37 +248,7 @@ class SwiftSourceAnalyzer:
                 json_key = raw_value if raw_value else case_name
                 fields.append(json_key)
 
-        # Collect fields from nested types referenced by properties in this struct.
-        # When the upstream Go spec embeds a struct (e.g. TransactionDetails), its fields
-        # appear as top-level in the RPC JSON. The SDK wraps them in a nested object
-        # (e.g. events: TransactionEvents). We track these separately for matching
-        # purposes only — they don't inflate the SDK field count.
-        nested_fields = []
-        nested_type_refs = re.findall(
-            r'public\s+(?:let|var)\s+\w+\s*:\s*(\w+)\??', content
-        )
-        responses_dir = file_path.parent
-        for ref_type in nested_type_refs:
-            nested_file = responses_dir / f"{ref_type}.swift"
-            if not nested_file.exists():
-                continue
-            nested_content = nested_file.read_text()
-            nested_keys_match = re.search(
-                r'private\s+enum\s+CodingKeys\s*:\s*String\s*,\s*CodingKey\s*\{([^}]+)\}',
-                nested_content,
-                re.DOTALL
-            )
-            if nested_keys_match:
-                for case_match in re.finditer(r'case\s+(\w+)(?:\s*=\s*"([^"]+)")?', nested_keys_match.group(1)):
-                    nested_key = case_match.group(2) or case_match.group(1)
-                    if nested_key not in fields and nested_key not in nested_fields:
-                        nested_fields.append(nested_key)
-
-        self.response_types[struct_name] = SDKResponseType(
-            name=struct_name,
-            fields=fields,
-            nested_fields=nested_fields
-        )
+        self.response_types[struct_name] = SDKResponseType(name=struct_name, fields=fields)
 
 
 class RPCMatrixGenerator:
@@ -326,49 +274,13 @@ class RPCMatrixGenerator:
         for rpc_method, rpc_def in rpc_methods.items():
             sdk_method = self.analyzer.methods.get(rpc_method)
 
-            # Extract response field names from the new JSON structure
-            # New format: {"response": {"fields": [{"name": "fieldName", ...}]}}
-            # Old format: {"response_fields": [{"json_name": "fieldName"}]}
-            rpc_response_field_names = []
-            response_data = rpc_def.get("response", {})
-            if isinstance(response_data, dict):
-                fields = response_data.get("fields", [])
-                for field in fields:
-                    if isinstance(field, dict):
-                        # New format uses "name", old format uses "json_name"
-                        field_name = field.get("name") or field.get("json_name", "")
-                        if field_name:
-                            # Skip JSON variant fields (SDK decodes XDR directly)
-                            if not field_name.endswith(IGNORED_FIELD_SUFFIXES):
-                                rpc_response_field_names.append(field_name)
-            else:
-                # Fallback for old format
-                rpc_response_fields_raw = rpc_def.get("response_fields", [])
-                for field in rpc_response_fields_raw:
-                    if isinstance(field, dict):
-                        field_name = field.get("json_name", "")
-                    else:
-                        field_name = field
-                    # Skip JSON variant fields
-                    if field_name and not field_name.endswith(IGNORED_FIELD_SUFFIXES):
-                        rpc_response_field_names.append(field_name)
-
-            # Extract parameters from new format
-            # New format: {"parameters": {"required": [...], "optional": [...]}}
-            # Old format: {"required_params": [...], "optional_params": [...]}
-            params_data = rpc_def.get("parameters", {})
-            if isinstance(params_data, dict) and ("required" in params_data or "optional" in params_data):
-                # New format - filter out ignored params
-                rpc_required_list = [p.get("name", p) if isinstance(p, dict) else p
-                                     for p in params_data.get("required", [])
-                                     if (p.get("name", p) if isinstance(p, dict) else p) not in IGNORED_RPC_PARAMS]
-                rpc_optional_list = [p.get("name", p) if isinstance(p, dict) else p
-                                     for p in params_data.get("optional", [])
-                                     if (p.get("name", p) if isinstance(p, dict) else p) not in IGNORED_RPC_PARAMS]
-            else:
-                # Old format - filter out ignored params
-                rpc_required_list = [p for p in rpc_def.get("required_params", []) if p not in IGNORED_RPC_PARAMS]
-                rpc_optional_list = [p for p in rpc_def.get("optional_params", []) if p not in IGNORED_RPC_PARAMS]
+            # Response fields without their JSON variants (the SDK decodes XDR directly)
+            rpc_response_field_names = [
+                entry["name"] for entry in rpc_def["response"]["fields"]
+                if not entry["name"].endswith(IGNORED_FIELD_SUFFIXES)
+            ]
+            rpc_required_list = [p["name"] for p in rpc_def["parameters"]["required"] if p["name"] not in IGNORED_RPC_PARAMS]
+            rpc_optional_list = [p["name"] for p in rpc_def["parameters"]["optional"] if p["name"] not in IGNORED_RPC_PARAMS]
 
             if sdk_method:
                 # Get response type fields
@@ -394,19 +306,14 @@ class RPCMatrixGenerator:
                         sdk_mapped_params.add("limit")
 
                 # Check required params
-                rpc_required = set(rpc_required_list)
-                rpc_optional = set(rpc_optional_list)
-                rpc_all_params = rpc_required | rpc_optional
+                missing_required = set(rpc_required_list) - sdk_mapped_params
+                missing_params = [p for p in rpc_required_list + rpc_optional_list
+                                  if p not in sdk_mapped_params]
 
-                missing_required = rpc_required - sdk_mapped_params
-                missing_optional = rpc_optional - sdk_mapped_params
-                missing_params = list(missing_required | missing_optional)
-
-                # Check response fields (include nested type fields for matching)
-                rpc_fields = set(rpc_response_field_names)
-                sdk_field_set = set(sdk_fields)
-                sdk_nested_fields = set(sdk_response.nested_fields) if sdk_response else set()
-                missing_fields = list(rpc_fields - sdk_field_set - sdk_nested_fields)
+                # Upstream response fields are top-level JSON keys, so only the
+                # response type's own CodingKeys can match them. Both lists keep
+                # the upstream order so the matrix renders the same on every run.
+                missing_fields = [f for f in rpc_response_field_names if f not in sdk_fields]
 
                 # Determine status
                 if missing_required:
@@ -507,8 +414,8 @@ class RPCMatrixGenerator:
         lines = [
             "# Soroban RPC vs iOS/macOS SDK Compatibility Matrix",
             "",
-            f"**RPC Version:** {self.rpc_version.version} (released {self.rpc_version.release_date}){br}",
-            f"**RPC Source:** [{self.rpc_version.version}]({self.rpc_version.html_url}){br}",
+            f"**RPC Version:** {self.rpc_version.tag} (released {self.rpc_version.published_date}){br}",
+            f"**RPC Source:** [{self.rpc_version.tag}]({self.rpc_version.html_url}){br}",
             f"**SDK Version:** {self.sdk_version}{br}",
             f"**Generated:** {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
             "",
@@ -640,8 +547,8 @@ def main():
     try:
         print(f"Loading {rpc_methods_file.name} and RPC release information...")
         generator = RPCMatrixGenerator(sdk_root, rpc_methods_file)
-        print(f"  RPC Version: {generator.rpc_version.version}")
-        print(f"  Release Date: {generator.rpc_version.release_date}")
+        print(f"  RPC Version: {generator.rpc_version.tag}")
+        print(f"  Release Date: {generator.rpc_version.published_date}")
         print(f"  SDK Version: {generator.sdk_version}")
         print()
 
@@ -662,7 +569,7 @@ def main():
         print("=" * 70)
         print("SUMMARY")
         print("=" * 70)
-        print(f"RPC Version: {generator.rpc_version.version}")
+        print(f"RPC Version: {generator.rpc_version.tag}")
         print(f"SDK Version: {generator.sdk_version}")
         print(f"Total Methods: {total}")
         print(f"Fully Supported: {fully}/{total} ({fully/total*100:.1f}%)")

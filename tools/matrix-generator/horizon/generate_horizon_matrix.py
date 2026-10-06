@@ -5,14 +5,13 @@ Horizon API Compatibility Matrix Generator for Stellar iOS/Mac SDK
 This script generates detailed compatibility matrices comparing the iOS/macOS SDK
 implementation against the Horizon API by fetching the latest Horizon release,
 parsing router.go to extract endpoints, analyzing Swift service files, and
-generating a comprehensive markdown matrix.
+generating a Markdown matrix.
 
 Features:
 - Automatic version detection from GitHub releases
 - Go Chi router parsing for endpoint extraction
 - Swift service file analysis for SDK method mapping
 - Detailed coverage statistics and streaming support tracking
-- Production-ready error handling and logging
 
 Usage:
     python generate_horizon_matrix.py
@@ -20,15 +19,13 @@ Usage:
     python generate_horizon_matrix.py --output custom_matrix.md
     python generate_horizon_matrix.py --verbose
 
-Author: Generated for Stellar iOS/Mac SDK
-Date: 2026-01-06
-Python: 3.10+
+An unreadable SDK version or a failed release lookup, router fetch or parse
+raises before any matrix is written, and the script exits non-zero.
 """
 
 import argparse
 import json
 import logging
-import plistlib
 import re
 import sys
 from dataclasses import dataclass, field
@@ -39,19 +36,10 @@ from urllib.request import Request, urlopen
 from urllib.error import URLError, HTTPError
 
 
-def get_sdk_version_from_plist(sdk_root: Path) -> str:
-    """Read SDK version from Info.plist"""
-    plist_path = sdk_root / "stellarsdk" / "stellarsdk" / "Info.plist"
-    try:
-        with open(plist_path, 'rb') as f:
-            plist = plistlib.load(f)
-            return plist.get('CFBundleShortVersionString', 'unknown')
-    except Exception as e:
-        logging.warning(f"Could not read version from Info.plist: {e}")
-        return 'unknown'
-
-# Import Horizon parameter definitions
 from horizon_params import HORIZON_PARAMS
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from sdk_version import get_sdk_version  # noqa: E402
 
 # Configure logging
 logging.basicConfig(
@@ -1406,8 +1394,7 @@ class HorizonMatrixGenerator:
     def generate(
         self,
         horizon_version: Optional[str] = None,
-        output_path: Optional[str] = None,
-        skip_api: bool = False
+        output_path: Optional[str] = None
     ) -> int:
         """
         Generate compatibility matrix
@@ -1415,24 +1402,15 @@ class HorizonMatrixGenerator:
         Args:
             horizon_version: Specific Horizon version (None for latest)
             output_path: Output file path (None for default)
-            skip_api: Skip GitHub API calls (use manual version info)
 
         Returns:
             Exit code (0 for success, 1 for failure)
         """
         try:
+            sdk_version = get_sdk_version(self.sdk_root)
+
             # Fetch Horizon release
-            if skip_api:
-                # Use manual version info to avoid GitHub API rate limits
-                version = horizon_version or "v25.0.0"
-                horizon_release = HorizonRelease(
-                    version=version,
-                    tag_name=version,
-                    release_date="2025-12-11",
-                    html_url=f"https://github.com/stellar/stellar-horizon/releases/tag/{version}"
-                )
-                logger.info(f"Using manual version info: {version} (--skip-api mode)")
-            elif horizon_version:
+            if horizon_version:
                 horizon_release = self.fetcher.get_release(horizon_version)
             else:
                 horizon_release = self.fetcher.get_latest_release()
@@ -1447,7 +1425,6 @@ class HorizonMatrixGenerator:
             sdk_methods = self.analyzer.analyze_all_services()
 
             # Compare
-            sdk_version = get_sdk_version_from_plist(self.sdk_root)
             result = self.comparator.compare(
                 horizon_endpoints,
                 sdk_methods,
@@ -1516,12 +1493,6 @@ Examples:
         help='Enable verbose logging'
     )
 
-    parser.add_argument(
-        '--skip-api',
-        action='store_true',
-        help='Skip GitHub API calls (use with --horizon-version to avoid rate limits)'
-    )
-
     args = parser.parse_args()
 
     # Determine SDK root
@@ -1536,8 +1507,7 @@ Examples:
     # Generate matrix
     return generator.generate(
         horizon_version=args.horizon_version,
-        output_path=args.output,
-        skip_api=args.skip_api
+        output_path=args.output
     )
 
 

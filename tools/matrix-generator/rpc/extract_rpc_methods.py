@@ -2,18 +2,19 @@
 """
 Stellar RPC Method Extractor
 
-Automatically extracts RPC method specifications from the stellar-rpc GitHub repository
-by parsing Go source files.
+Extracts RPC method specifications from the stellar-rpc GitHub repository by
+parsing Go source files.
 
-This script fetches the stellar-rpc source code of the newest stable release (or the
-release given by --rpc-version) from GitHub and generates a structured JSON file
-documenting all RPC methods with their parameters, response fields, and other metadata.
+This script reads the handlers of the newest stable stellar-rpc release (or the
+release given by --rpc-version) and the request and response structs of the
+go-stellar-sdk version that the release's go.mod requires, and writes a JSON
+file documenting all RPC methods with their parameters and response fields.
 
 Usage:
     python3 extract_rpc_methods.py [--output PATH] [--rpc-version VERSION] [--verbose]
 
 Requirements:
-    - Python 3.12+
+    - Python 3.10+
     - requests library (pip install requests)
 
 Authentication:
@@ -28,21 +29,21 @@ Authentication:
     Required scope: No scopes needed for public repo access (just need authentication)
 
 Failures:
-    A failed release lookup, a failed fetch or parse of any handler, request
-    definition, or response definition, or a set of methods registered in the
-    release's jsonrpc.go that differs from KNOWN_METHODS raises. The script then
-    exits non-zero and writes no JSON.
+    A failed release lookup, a go.mod without a go-stellar-sdk requirement (every
+    stellar-rpc release before v25.0.0), a failed fetch or parse of any handler,
+    request definition, or response definition, or a set of methods registered in
+    the release's jsonrpc.go that differs from KNOWN_METHODS raises. The script
+    then exits non-zero and writes no JSON.
 """
 
 import json
 import re
 import sys
 from collections.abc import Iterable
-from dataclasses import dataclass, field, asdict
+from dataclasses import dataclass, asdict
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Optional
-from urllib.parse import urljoin
 
 try:
     import requests
@@ -50,291 +51,81 @@ except ImportError:
     print("Error: requests library is required. Install with: pip install requests", file=sys.stderr)
     sys.exit(1)
 
-from rpc_releases import fetch_releases, find_release, get_github_token, select_newest_stable
+from rpc_releases import (
+    REQUEST_TIMEOUT_SECONDS,
+    STELLAR_RPC_REPO,
+    USER_AGENT,
+    get_github_token,
+    resolve_release,
+)
 
-
-class ResponseStructParser:
-    """Parses Go response structs from go-stellar-sdk protocol files."""
-
-    def __init__(self, go_stellar_sdk_path: Path, verbose: bool = False):
-        """
-        Initialize the parser.
-
-        Args:
-            go_stellar_sdk_path: Path to the go-stellar-sdk repository
-            verbose: Enable verbose logging
-        """
-        self.protocol_path = go_stellar_sdk_path / "protocols" / "rpc"
-        self.verbose = verbose
-        self.protocol_cache = {}  # Cache loaded protocol files
-        self._load_protocol_files()
-
-    def _load_protocol_files(self):
-        """Load all protocol .go files into memory."""
-        if not self.protocol_path.exists():
-            if self.verbose:
-                print(f"Warning: Protocol path not found: {self.protocol_path}")
-            return
-
-        for go_file in self.protocol_path.glob("*.go"):
-            try:
-                content = go_file.read_text(encoding="utf-8")
-            except (OSError, UnicodeDecodeError) as e:
-                raise RuntimeError(f"Failed to read local protocol file {go_file}: {e}") from e
-            self.protocol_cache[go_file.stem] = content
-            if self.verbose:
-                print(f"  Loaded protocol file: {go_file.name}")
-
-    def parse_response_struct(self, method_name: str) -> dict[str, Any]:
-        """
-        Parse the response struct for a given RPC method.
-
-        Args:
-            method_name: The RPC method name (e.g., "getHealth")
-
-        Returns:
-            Dictionary containing response structure with fields and nested types
-        """
-        # Convert method name to response struct name
-        struct_names = self._get_response_struct_names(method_name)
-
-        # Try to find the struct in protocol files
-        for struct_name in struct_names:
-            struct_def = self._find_struct_definition(struct_name)
-            if struct_def:
-                return self._parse_struct_fields(struct_name, struct_def)
-
-        # Not found
-        if self.verbose:
-            print(f"  Warning: Response struct not found for {method_name}")
-        return {"type": "object", "fields": [], "nested_types": {}}
-
-    def _get_response_struct_names(self, method_name: str) -> list[str]:
-        """
-        Get possible response struct names for a method.
-
-        Args:
-            method_name: The RPC method name (e.g., "getHealth")
-
-        Returns:
-            List of possible struct names to try
-        """
-        # Convert getHealth -> GetHealth
-        pascal_case = method_name[0].upper() + method_name[1:]
-
-        return [
-            f"{pascal_case}Response",  # GetHealthResponse
-            f"{pascal_case}Result",     # GetHealthResult
-        ]
-
-    def _find_struct_definition(self, struct_name: str) -> Optional[str]:
-        """
-        Find a struct definition in loaded protocol files.
-
-        Args:
-            struct_name: Name of the struct to find
-
-        Returns:
-            Struct body content or None if not found
-        """
-        pattern = rf'type\s+{re.escape(struct_name)}\s+struct\s*\{{([^}}]+(?:\{{[^}}]*\}}[^}}]*)*)\}}'
-
-        for file_content in self.protocol_cache.values():
-            match = re.search(pattern, file_content, re.DOTALL)
-            if match:
-                return match.group(1)
-
-        return None
-
-    def _parse_struct_fields(self, struct_name: str, struct_body: str, _seen: set | None = None) -> dict[str, Any]:
-        """
-        Parse fields from a struct body, resolving embedded structs.
-
-        Args:
-            struct_name: Name of the struct
-            struct_body: Body content of the struct
-            _seen: Set of already-visited struct names to prevent infinite recursion
-
-        Returns:
-            Dictionary with fields and nested types
-        """
-        if _seen is None:
-            _seen = set()
-        _seen.add(struct_name)
-
-        fields = []
-        nested_types = {}
-
-        # Resolve embedded structs (lines with just a type name, no field name or json tag)
-        embedded_pattern = r'^\s+(\w+)\s*$'
-        for match in re.finditer(embedded_pattern, struct_body, re.MULTILINE):
-            embedded_type = match.group(1)
-            if embedded_type in _seen:
-                continue
-            embedded_struct = self._find_struct_definition(embedded_type)
-            if embedded_struct:
-                embedded_result = self._parse_struct_fields(embedded_type, embedded_struct, _seen)
-                fields.extend(embedded_result["fields"])
-                nested_types.update(embedded_result.get("nested_types", {}))
-
-        # Pattern to match struct fields with json tags
-        # Handles: FieldName Type `json:"jsonName,omitempty"`
-        field_pattern = r'(\w+)\s+([\w\[\]\.\*]+)\s*`json:"([^"]+)"([^`]*)`'
-
-        for match in re.finditer(field_pattern, struct_body):
-            field_name = match.group(1)
-            field_type = match.group(2)
-            json_tag = match.group(3)
-
-            # Extract json field name (remove ,omitempty, ,string, etc.)
-            json_name = json_tag.split(',')[0]
-
-            # Skip if json:"-" (not serialized)
-            if json_name == "-":
-                continue
-
-            # Determine the JSON type
-            json_type = self._go_type_to_json_type(field_type)
-
-            # Check if this is a nested custom type
-            if self._is_custom_type(field_type):
-                nested_type_name = field_type.lstrip('*').lstrip('[').lstrip(']')
-                if nested_type_name not in nested_types:
-                    nested_struct = self._find_struct_definition(nested_type_name)
-                    if nested_struct:
-                        nested_types[nested_type_name] = self._parse_struct_fields(
-                            nested_type_name, nested_struct, _seen
-                        )
-
-            fields.append({
-                "name": json_name,
-                "type": json_type,
-                "description": f"Field: {json_name}"
-            })
-
-        return {
-            "type": "object",
-            "fields": fields,
-            "nested_types": nested_types
-        }
-
-    def _is_custom_type(self, go_type: str) -> bool:
-        """
-        Check if a Go type is a custom type (not a primitive).
-
-        Args:
-            go_type: The Go type string
-
-        Returns:
-            True if it's a custom type
-        """
-        # Remove pointer and array indicators
-        base_type = go_type.lstrip('*').lstrip('[').lstrip(']')
-
-        # List of Go primitive types
-        primitives = {
-            'string', 'bool', 'int', 'int8', 'int16', 'int32', 'int64',
-            'uint', 'uint8', 'uint16', 'uint32', 'uint64',
-            'float32', 'float64', 'byte', 'rune',
-            'json.RawMessage', 'time.Time'
-        }
-
-        return base_type not in primitives
-
-    def _go_type_to_json_type(self, go_type: str) -> str:
-        """
-        Convert Go type to JSON type description.
-
-        Args:
-            go_type: The Go type string
-
-        Returns:
-            JSON type description
-        """
-        # Remove pointer indicator
-        go_type = go_type.lstrip('*')
-
-        # Handle arrays
-        if go_type.startswith('[]'):
-            inner_type = go_type[2:]
-            return f"array[{self._go_type_to_json_type(inner_type)}]"
-
-        # Map Go types to JSON types
-        type_map = {
-            'string': 'string',
-            'bool': 'boolean',
-            'int': 'integer',
-            'int32': 'int32',
-            'int64': 'int64',
-            'uint': 'uint',
-            'uint32': 'uint32',
-            'uint64': 'uint64 (string)',
-            'float32': 'float',
-            'float64': 'float',
-            'json.RawMessage': 'object',
-            'time.Time': 'string (RFC3339)',
-        }
-
-        return type_map.get(go_type, go_type)
-
-    def count_all_fields(self, response_struct: dict[str, Any]) -> int:
-        """
-        Count all fields including nested types.
-
-        Args:
-            response_struct: The parsed response structure
-
-        Returns:
-            Total count of all fields including nested ones
-        """
-        count = len(response_struct.get("fields", []))
-
-        # Add counts from nested types
-        nested_types = response_struct.get("nested_types", {})
-        for nested_type in nested_types.values():
-            count += self.count_all_fields(nested_type)
-
-        return count
-
-
-# GitHub API configuration
-GITHUB_API_BASE = "https://api.github.com"
 GITHUB_RAW_BASE = "https://raw.githubusercontent.com"
-REPO_OWNER = "stellar"
-REPO_NAME = "stellar-rpc"
-DEFAULT_BRANCH = "main"
+GO_STELLAR_SDK_REPO = "stellar/go-stellar-sdk"
 
-# Method handler directories (different in different versions)
-# v21-v22: cmd/soroban-rpc/internal/methods
-# v23+: cmd/stellar-rpc/internal/methods
-METHODS_DIRS = [
-    "cmd/stellar-rpc/internal/methods",  # v23+
-    "cmd/soroban-rpc/internal/methods",  # v21-v22
+# stellar-rpc paths from v25.0.0, the first release whose go.mod requires go-stellar-sdk.
+METHODS_DIR = "cmd/stellar-rpc/internal/methods"
+REGISTRATION_FILE = "cmd/stellar-rpc/internal/jsonrpc.go"
+# The go-stellar-sdk directory that declares the request and response structs.
+PROTOCOL_DIR = "protocols/rpc"
+
+# The go.mod requirement of go-stellar-sdk. A Go pseudo-version is not a git tag;
+# its git ref is the trailing commit hash. Both pseudo-version forms carry a
+# 14-digit UTC timestamp directly before the final hash segment:
+# vX.Y.Z-yyyymmddhhmmss-<12 hex> and vX.Y.Z-0.yyyymmddhhmmss-<12 hex>.
+GO_STELLAR_SDK_REQUIREMENT = re.compile(r"github\.com/stellar/go-stellar-sdk\s+(\S+)")
+PSEUDO_VERSION = re.compile(r"v\S*\d{14}-([0-9a-f]{12})")
+
+# The JSON-RPC methods. Each one's handler file in METHODS_DIR and protocol file in
+# PROTOCOL_DIR are named after the method in snake_case.
+KNOWN_METHODS = [
+    "getHealth",
+    "getNetwork",
+    "getVersionInfo",
+    "getFeeStats",
+    "getLatestLedger",
+    "getLedgerEntries",
+    "getLedgers",
+    "getEvents",
+    "getTransaction",
+    "getTransactions",
+    "sendTransaction",
+    "simulateTransaction",
 ]
-# Protocol type definitions inside stellar-rpc; releases from v25.0.0 have no such
-# directory because go-stellar-sdk holds those types.
-PROTOCOL_DIR = "protocol"
 
-# Local go-stellar-sdk path for protocol definitions
-GO_STELLAR_SDK_PATH = Path("/Users/chris/projects/Stellar/go-stellar-sdk")
-GO_STELLAR_SDK_PROTOCOL_PATH = GO_STELLAR_SDK_PATH / "protocols" / "rpc"
 
-# Known RPC method list with their file mappings
-# Some methods have different file names in different versions
-KNOWN_METHODS = {
-    "getHealth": ["get_health.go", "health.go"],  # v25+ uses get_health.go, v21-v24 uses health.go
-    "getNetwork": "get_network.go",
-    "getVersionInfo": "get_version_info.go",
-    "getFeeStats": "get_fee_stats.go",
-    "getLatestLedger": "get_latest_ledger.go",
-    "getLedgerEntries": "get_ledger_entries.go",
-    "getLedgers": "get_ledgers.go",
-    "getEvents": "get_events.go",
-    "getTransaction": "get_transaction.go",
-    "getTransactions": "get_transactions.go",
-    "sendTransaction": "send_transaction.go",
-    "simulateTransaction": "simulate_transaction.go",
-}
+def go_file_name(method_name: str) -> str:
+    """The Go file of a method, in stellar-rpc and go-stellar-sdk alike: getLedgerEntries -> get_ledger_entries.go"""
+    return re.sub(r"(?<!^)(?=[A-Z])", "_", method_name).lower() + ".go"
+
+
+def pascal_case(method_name: str) -> str:
+    """The Go type prefix of a method: getHealth -> GetHealth"""
+    return method_name[0].upper() + method_name[1:]
+
+
+def _go_type_to_json_type(go_type: str) -> str:
+    """Convert a Go type string to a JSON type description."""
+    go_type = go_type.lstrip('*')
+
+    if go_type.startswith('[]'):
+        return f"array[{_go_type_to_json_type(go_type[2:])}]"
+
+    type_map = {
+        'string': 'string',
+        'bool': 'boolean',
+        'int': 'integer',
+        'int32': 'int32',
+        'int64': 'int64',
+        'uint': 'uint',
+        'uint32': 'uint32',
+        'uint64': 'uint64 (string)',
+        'float32': 'float',
+        'float64': 'float',
+        'json.RawMessage': 'object',
+        'time.Time': 'string (RFC3339)',
+    }
+
+    return type_map.get(go_type, go_type)
 
 
 def check_method_set(method_names: Iterable[str]) -> None:
@@ -352,68 +143,128 @@ def check_method_set(method_names: Iterable[str]) -> None:
         raise ValueError(f"Registered stellar-rpc methods differ from KNOWN_METHODS ({'; '.join(problems)})")
 
 
+# One member of a Go struct body, in declaration order: an embedded struct (a line holding
+# only its type name) or a field with a JSON tag (FieldName Type `json:"jsonName,omitempty"`).
+STRUCT_MEMBER = re.compile(
+    r'^\s+(?P<embedded>\w+)\s*$|\w+\s+(?P<type>[\w\[\]\.\*]+)\s*`json:"(?P<json>[^"]+)"[^`]*`',
+    re.MULTILINE,
+)
+
+
+class ResponseStructParser:
+    """Parses Go response structs from go-stellar-sdk protocol sources.
+
+    Embedded structs resolve across all sources, because a response can embed a
+    struct that another method's protocol file declares.
+    """
+
+    def __init__(self, sources: list[str]):
+        self.sources = sources
+
+    def parse_response_struct(self, method_name: str) -> dict[str, Any]:
+        """
+        Parse the <Method>Response struct of an RPC method.
+
+        Returns the struct's JSON fields in declaration order, an embedded struct's
+        fields at its position. Raises when no source declares the struct or the
+        struct has no JSON field.
+        """
+        struct_name = f"{pascal_case(method_name)}Response"
+        struct_def = self._find_struct_definition(struct_name)
+        if not struct_def:
+            raise ValueError(
+                f"Response struct {struct_name} for {method_name} not found in the go-stellar-sdk protocol sources"
+            )
+        fields = self._parse_struct_fields(struct_name, struct_def)
+        if not fields:
+            raise ValueError(f"Response struct {struct_name} for {method_name} has no JSON fields")
+        return {"type": "object", "fields": fields}
+
+    def _find_struct_definition(self, struct_name: str) -> Optional[str]:
+        """Return the body of a struct declared in the sources, or None."""
+        pattern = rf'type\s+{re.escape(struct_name)}\s+struct\s*\{{([^}}]+(?:\{{[^}}]*\}}[^}}]*)*)\}}'
+
+        for source in self.sources:
+            match = re.search(pattern, source, re.DOTALL)
+            if match:
+                return match.group(1)
+
+        return None
+
+    def _parse_struct_fields(self, struct_name: str, struct_body: str,
+                             _seen: set | None = None) -> list[dict[str, str]]:
+        """
+        Return the JSON fields of a struct body in declaration order.
+
+        An embedded struct contributes its own fields at its position; its fields are
+        part of the response, so an embedded type no source declares raises. _seen holds
+        the structs visited so far; an embedded type already in it adds nothing, which stops
+        recursion.
+        """
+        if _seen is None:
+            _seen = set()
+        _seen.add(struct_name)
+
+        fields = []
+        for member in STRUCT_MEMBER.finditer(struct_body):
+            embedded_type = member.group("embedded")
+            if embedded_type:
+                if embedded_type in _seen:
+                    continue
+                embedded_struct = self._find_struct_definition(embedded_type)
+                if not embedded_struct:
+                    raise ValueError(
+                        f"{struct_name} embeds {embedded_type}, which no go-stellar-sdk protocol source declares"
+                    )
+                fields.extend(self._parse_struct_fields(embedded_type, embedded_struct, _seen))
+                continue
+
+            # The JSON name without options such as omitempty; json:"-" is not serialized.
+            json_name = member.group("json").split(',')[0]
+            if json_name != "-":
+                fields.append({"name": json_name, "type": _go_type_to_json_type(member.group("type"))})
+
+        return fields
+
+
 @dataclass
 class Parameter:
     """Represents a method parameter."""
     name: str
     type: str
-    description: str
-    required: bool = False
-    default: Optional[str] = None
-
-
-@dataclass
-class Field:
-    """Represents a response field."""
-    name: str
-    type: str
-    description: str
+    required: bool
 
 
 @dataclass
 class MethodSpec:
     """Represents an RPC method specification."""
     name: str
-    description: str
     handler_file: str
-    parameters: dict[str, list[Parameter]] = field(default_factory=lambda: {"required": [], "optional": []})
-    response: dict[str, Any] = field(default_factory=dict)
-    introduced_in: str = ""
-    last_modified: str = ""
-    notes: str = ""
+    parameters: dict[str, list[Parameter]]
+    response: dict[str, Any]
 
     def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
-        result = {
+        return {
             "name": self.name,
-            "description": self.description,
             "handler_file": self.handler_file,
             "parameters": {
                 "required": [asdict(p) for p in self.parameters["required"]],
                 "optional": [asdict(p) for p in self.parameters["optional"]]
             },
             "response": self.response,
-            "introduced_in": self.introduced_in,
-            "last_modified": self.last_modified,
         }
-        if self.notes:
-            result["notes"] = self.notes
-        return result
-
-
-class NotFoundError(RuntimeError):
-    """The requested file or directory does not exist at the given ref (HTTP 404)."""
 
 
 class GitHubFetcher:
-    """Handles fetching files from GitHub."""
+    """Fetches stellar-rpc and go-stellar-sdk files from GitHub."""
 
     def __init__(self, token: Optional[str] = None, verbose: bool = False):
         # Auto-detect token if not explicitly provided
         self.token = token if token else get_github_token()
         self.verbose = verbose
         self.session = requests.Session()
-        self.session.headers.update({"User-Agent": "stellar-php-sdk-compatibility-tools"})
+        self.session.headers.update({"User-Agent": USER_AGENT})
         if self.token:
             self.session.headers.update({"Authorization": f"Bearer {self.token}"})
             if verbose:
@@ -422,40 +273,6 @@ class GitHubFetcher:
             print("Authentication: Not configured (60 requests/hour)")
             print("  Tip: Set GITHUB_TOKEN env var for higher rate limits")
 
-    def fetch_go_stellar_sdk_protocol_file(self, method_name: str, ref: str) -> str:
-        """Fetch the protocol file that defines a method's request and response types from go-stellar-sdk at ref."""
-        # Map method name to protocol file
-        protocol_files = {
-            "getLedgerEntries": "get_ledger_entries.go",
-            "getLedgers": "get_ledgers.go",
-            "getEvents": "get_events.go",
-            "getTransaction": "get_transaction.go",
-            "getTransactions": "get_transactions.go",
-            "sendTransaction": "send_transaction.go",
-            "simulateTransaction": "simulate_transaction.go",
-            "getHealth": "get_health.go",
-            "getNetwork": "get_network.go",
-            "getVersionInfo": "get_version_info.go",
-            "getFeeStats": "get_fee_stats.go",
-            "getLatestLedger": "get_latest_ledger.go",
-        }
-
-        protocol_file = protocol_files.get(method_name)
-        if not protocol_file:
-            raise ValueError(f"No go-stellar-sdk protocol file is mapped for {method_name}")
-
-        url = f"{GITHUB_RAW_BASE}/stellar/go-stellar-sdk/{ref}/protocols/rpc/{protocol_file}"
-
-        if self.verbose:
-            print(f"  Fetching protocol file: protocols/rpc/{protocol_file}")
-
-        try:
-            response = self.session.get(url, timeout=30)
-            response.raise_for_status()
-            return response.text
-        except requests.RequestException as e:
-            raise RuntimeError(f"Failed to fetch go-stellar-sdk protocols/rpc/{protocol_file} at {ref}: {e}") from e
-
     def resolve_rpc_version(self, override: Optional[str] = None) -> str:
         """
         Return the stellar-rpc release tag to extract from.
@@ -463,93 +280,59 @@ class GitHubFetcher:
         Without an override, the newest stable release. An override must name a
         non-draft release; a prerelease is allowed.
         """
-        releases = fetch_releases(REPO_OWNER, REPO_NAME, self.token)
-        if override:
-            release = find_release(releases, override, f"{REPO_OWNER}/{REPO_NAME}")
-            if release.prerelease:
-                print(f"Note: {release.version} is a prerelease")
-        else:
-            release = select_newest_stable(releases, f"{REPO_OWNER}/{REPO_NAME}")
+        version = resolve_release(STELLAR_RPC_REPO, override, self.token).tag
         if self.verbose:
-            print(f"stellar-rpc version: {release.version}")
-        return release.version
+            print(f"stellar-rpc version: {version}")
+        return version
 
-    def get_latest_go_stellar_sdk_release(self) -> str:
-        """Return the newest stable go-stellar-sdk release tag (the protocols module is
-        versioned as vX.Y.Z). Protocol param definitions are read from this released
-        ref, so fields not yet in a released RPC are not measured."""
-        release = select_newest_stable(fetch_releases("stellar", "go-stellar-sdk", self.token), "stellar/go-stellar-sdk")
+    def go_stellar_sdk_ref(self, rpc_version: str) -> str:
+        """
+        Return the go-stellar-sdk git ref that stellar-rpc's go.mod requires at rpc_version.
+
+        A release version is its own tag; a pseudo-version names a commit, and the
+        ref is its hash. Raises when go.mod requires no go-stellar-sdk version.
+        """
+        go_mod = self.fetch_file("go.mod", rpc_version)
+        match = GO_STELLAR_SDK_REQUIREMENT.search(go_mod)
+        if not match:
+            raise RuntimeError(
+                f"stellar-rpc go.mod at {rpc_version} requires no github.com/stellar/go-stellar-sdk version"
+            )
+        pseudo = PSEUDO_VERSION.fullmatch(match.group(1))
+        ref = pseudo.group(1) if pseudo else match.group(1)
         if self.verbose:
-            print(f"Latest go-stellar-sdk release: {release.version}")
-        return release.version
-
-    def get_latest_commit_hash(self, branch: str = DEFAULT_BRANCH) -> str:
-        """Fetch the latest commit hash for a branch."""
-        url = f"{GITHUB_API_BASE}/repos/{REPO_OWNER}/{REPO_NAME}/commits/{branch}"
-        try:
-            response = self.session.get(url, timeout=30)
-            response.raise_for_status()
-            commit_data = response.json()
-            commit_hash = commit_data["sha"][:8]
-            if self.verbose:
-                print(f"Latest commit: {commit_hash}")
-            return commit_hash
-        except requests.RequestException as e:
-            raise RuntimeError(f"Failed to fetch commit hash: {e}") from e
+            print(f"go-stellar-sdk ref: {ref}")
+        return ref
 
     def fetch_file(self, file_path: str, ref: str) -> str:
-        """Fetch a file from the repository at ref. Raises NotFoundError when the file does not exist at ref."""
-        url = f"{GITHUB_RAW_BASE}/{REPO_OWNER}/{REPO_NAME}/{ref}/{file_path}"
+        """Fetch a stellar-rpc file at ref."""
+        return self._get(f"{GITHUB_RAW_BASE}/{STELLAR_RPC_REPO}/{ref}/{file_path}", f"{file_path} at {ref}")
 
+    def fetch_protocol_file(self, method_name: str, ref: str) -> str:
+        """Fetch the go-stellar-sdk file that declares a method's request and response structs at ref."""
+        file_path = f"{PROTOCOL_DIR}/{go_file_name(method_name)}"
+        return self._get(f"{GITHUB_RAW_BASE}/{GO_STELLAR_SDK_REPO}/{ref}/{file_path}",
+                         f"go-stellar-sdk {file_path} at {ref}")
+
+    def _get(self, url: str, description: str) -> str:
+        """GET a raw file; any request error or HTTP error status raises, naming the file."""
         if self.verbose:
-            print(f"Fetching: {file_path}")
-
+            print(f"Fetching: {description}")
         try:
-            response = self.session.get(url, timeout=30)
-            if response.status_code == 404:
-                raise NotFoundError(f"{file_path} does not exist at {ref}")
+            response = self.session.get(url, timeout=REQUEST_TIMEOUT_SECONDS)
             response.raise_for_status()
             return response.text
         except requests.RequestException as e:
-            raise RuntimeError(f"Failed to fetch {file_path}: {e}") from e
-
-    def list_directory(self, dir_path: str, ref: str) -> list[dict[str, Any]]:
-        """List directory contents at ref via GitHub API. Raises NotFoundError when the directory does not exist at ref."""
-        url = f"{GITHUB_API_BASE}/repos/{REPO_OWNER}/{REPO_NAME}/contents/{dir_path}?ref={ref}"
-
-        if self.verbose:
-            print(f"Listing directory: {dir_path}")
-
-        try:
-            response = self.session.get(url, timeout=30)
-            if response.status_code == 404:
-                raise NotFoundError(f"{dir_path} does not exist at {ref}")
-            response.raise_for_status()
-            listing = response.json()
-        except requests.RequestException as e:
-            raise RuntimeError(f"Failed to list directory {dir_path}: {e}") from e
-        if not isinstance(listing, list):
-            raise RuntimeError(f"Directory listing of {dir_path} is not a list")
-        return listing
+            raise RuntimeError(f"Failed to fetch {description}: {e}") from e
 
 
 class GoSourceParser:
     """Parses Go source files to extract RPC method specifications."""
 
-    def __init__(self, verbose: bool = False, go_stellar_sdk_path: Optional[Path] = None):
+    def __init__(self, protocol_sources: list[str], verbose: bool = False):
         self.verbose = verbose
-        self.protocol_source = None  # Cache for protocol file source
-        
-        # Initialize the response struct parser if path is provided
-        self.response_parser = None
-        if go_stellar_sdk_path and go_stellar_sdk_path.exists():
-            self.response_parser = ResponseStructParser(go_stellar_sdk_path, verbose=verbose)
-            if verbose:
-                print("ResponseStructParser initialized successfully")
-
-    def set_protocol_source(self, protocol_source: str):
-        """Set the protocol file source for extracting external type definitions."""
-        self.protocol_source = protocol_source
+        self.protocol_source = "\n\n".join(protocol_sources)
+        self.response_parser = ResponseStructParser(protocol_sources)
 
     def parse_method_handler(self, method_name: str, go_source: str, handler_file: str) -> MethodSpec:
         """
@@ -566,44 +349,12 @@ class GoSourceParser:
         if self.verbose:
             print(f"  Parsing {method_name}...")
 
-        # Extract description from comments
-        description = self._extract_description(go_source, method_name)
-
-        # Extract parameters from request struct
-        parameters = self._extract_parameters(go_source, method_name)
-
-        # Extract response structure
-        response = self._extract_response(go_source, method_name)
-
-        method_spec = MethodSpec(
+        return MethodSpec(
             name=method_name,
-            description=description,
             handler_file=handler_file,
-            parameters=parameters,
-            response=response
+            parameters=self._extract_parameters(go_source, method_name),
+            response=self.response_parser.parse_response_struct(method_name),
         )
-
-        return method_spec
-
-    def _extract_description(self, go_source: str, method_name: str) -> str:
-        """Extract method description from comments."""
-        # Look for comments above the Handler function or Request struct
-        patterns = [
-            # Look for comment above Handler function
-            rf'//\s*(.+?)[\r\n]+func\s+\(.*?\)\s*{re.escape(method_name)}Handler',
-            # Look for comment above NewXHandler function
-            rf'//\s*(.+?)[\r.n]+func\s+New[A-Z]\w*Handler',
-            # Look for package-level comments
-            r'//\s*Package\s+methods\s+(.+)',
-        ]
-
-        for pattern in patterns:
-            match = re.search(pattern, go_source, re.MULTILINE | re.IGNORECASE)
-            if match:
-                return match.group(1).strip()
-
-        # Fallback to generic description
-        return f"RPC method: {method_name}"
 
     def _extract_parameters(self, go_source: str, method_name: str) -> dict[str, list[Parameter]]:
         """
@@ -615,16 +366,11 @@ class GoSourceParser:
         """
         parameters = {"required": [], "optional": []}
 
-        # Convert method name to struct name (e.g., getHealth -> GetHealthRequest)
-        struct_name = self._method_to_struct_name(method_name) + "Request"
+        struct_name = pascal_case(method_name) + "Request"
 
         # Find the request struct definition - first try handler file, then protocol source
         struct_pattern = rf'type\s+{struct_name}\s+struct\s*\{{([^}}]*)\}}'
-        match = re.search(struct_pattern, go_source, re.DOTALL)
-
-        # If not found and we have protocol source, try that
-        if not match and self.protocol_source:
-            match = re.search(struct_pattern, self.protocol_source, re.DOTALL)
+        match = re.search(struct_pattern, go_source, re.DOTALL) or re.search(struct_pattern, self.protocol_source, re.DOTALL)
 
         if not match:
             raise ValueError(
@@ -639,7 +385,6 @@ class GoSourceParser:
         field_pattern = r'(\w+)\s+([\*\[\]]*[\w\.]+(?:\[[\w\.]+\])?)\s*`json:"([^"]+)"([^`]*)`'
 
         for field_match in re.finditer(field_pattern, struct_body):
-            field_name = field_match.group(1)
             field_type = field_match.group(2)
             json_tag = field_match.group(3)
             tags = field_match.group(4)
@@ -661,16 +406,7 @@ class GoSourceParser:
                 "optional:" in tags
             )
 
-            # Get better type description and parameter description
-            param_type = self._go_type_to_json_type(field_type)
-            param_description = self._generate_parameter_description(method_name, json_name, field_type)
-
-            param = Parameter(
-                name=json_name,
-                type=param_type,
-                description=param_description,
-                required=not is_optional
-            )
+            param = Parameter(name=json_name, type=_go_type_to_json_type(field_type), required=not is_optional)
 
             if is_optional:
                 parameters["optional"].append(param)
@@ -684,158 +420,12 @@ class GoSourceParser:
 
         return parameters
 
-    def _generate_parameter_description(self, method_name: str, param_name: str, go_type: str) -> str:
-        """Generate a descriptive parameter description based on context."""
-        # Map common parameter names to descriptions
-        descriptions = {
-            "keys": "Array of ledger entry keys to fetch (base64-encoded XDR)",
-            "hash": "Transaction hash to retrieve",
-            "transaction": "Base64-encoded transaction envelope XDR",
-            "startLedger": "Starting ledger sequence number (inclusive)",
-            "endLedger": "Ending ledger sequence number (exclusive)",
-            "filters": "Event filters to apply",
-            "pagination": "Pagination options (cursor and limit)",
-            "cursor": "Pagination cursor",
-            "limit": "Maximum number of results to return",
-            "resourceConfig": "Resource configuration for simulation",
-            "authMode": "Authorization mode (enforce, record, or record_allow_nonroot)",
-            "xdrFormat": "Output format (xdr or json)",
-        }
-
-        # Use predefined description if available
-        if param_name in descriptions:
-            return descriptions[param_name]
-
-        # Generate generic description
-        return f"Parameter: {param_name}"
-
-    def _extract_response(self, go_source: str, method_name: str) -> dict[str, Any]:
-        """
-        Extract the response structure.
-
-        Sources in order: the local go-stellar-sdk checkout, the handler source, the
-        protocol source. Raises when no source holds a response struct with at least
-        one JSON field.
-        """
-        # Use ResponseStructParser if available
-        if self.response_parser:
-            response_struct = self.response_parser.parse_response_struct(method_name)
-            if response_struct and response_struct.get("fields"):
-                return response_struct
-        
-        # Fallback to old parsing logic if ResponseStructParser not available or fails
-        # Try multiple naming patterns for response struct
-        struct_names = [
-            self._method_to_struct_name(method_name) + "Response",  # GetNetworkResponse
-            self._method_to_struct_name(method_name) + "Result",    # HealthCheckResult
-        ]
-
-        # Also look for special cases
-        if method_name == "getHealth":
-            struct_names.insert(0, "HealthCheckResult")
-
-        struct_body = None
-        struct_name = None
-
-        # First try to find in the handler file itself
-        for name in struct_names:
-            # Find the response struct definition
-            struct_pattern = rf'type\s+{name}\s+struct\s*\{{([^}}]+)\}}'
-            match = re.search(struct_pattern, go_source, re.DOTALL)
-            if match:
-                struct_body = match.group(1)
-                struct_name = name
-                break
-
-        # If not found and we have protocol source, try that
-        if not struct_body and self.protocol_source:
-            for name in struct_names:
-                struct_pattern = rf'type\s+{name}\s+struct\s*\{{([^}}]+)\}}'
-                match = re.search(struct_pattern, self.protocol_source, re.DOTALL)
-                if match:
-                    struct_body = match.group(1)
-                    struct_name = name
-                    break
-
-        if not struct_body:
-            raise ValueError(
-                f"Response struct ({', '.join(struct_names)}) for {method_name} not found in the local "
-                "go-stellar-sdk checkout, the handler source, or the protocol source"
-            )
-
-        # Parse each field in the struct
-        fields = []
-        field_pattern = r'(\w+)\s+([\w\[\]\.\*]+)\s*`json:"([^"]+)"([^`]*)`'
-
-        for field_match in re.finditer(field_pattern, struct_body):
-            field_name = field_match.group(1)
-            field_type = field_match.group(2)
-            json_tag = field_match.group(3)
-            tags = field_match.group(4)
-
-            # Extract just the field name from json tag (remove omitempty, etc.)
-            json_name = json_tag.split(',')[0]
-
-            # Skip if json:"-" (not serialized)
-            if json_name == "-":
-                continue
-
-            fields.append({
-                "name": json_name,
-                "type": self._go_type_to_json_type(field_type),
-                "description": f"Field: {json_name}"
-            })
-
-        if not fields:
-            raise ValueError(f"Response struct {struct_name} for {method_name} has no JSON fields")
-
-        return {
-            "type": "object",
-            "fields": fields,
-            "nested_types": {}
-        }
-
-    def _method_to_struct_name(self, method_name: str) -> str:
-        """Convert method name to struct name."""
-        # getHealth -> GetHealth
-        # getFeeStats -> GetFeeStats
-        if not method_name:
-            return ""
-        return method_name[0].upper() + method_name[1:]
-
-    def _go_type_to_json_type(self, go_type: str) -> str:
-        """Convert Go type to JSON type description."""
-        # Remove pointer indicators
-        go_type = go_type.lstrip('*')
-
-        # Handle arrays
-        if go_type.startswith('[]'):
-            inner_type = go_type[2:]
-            return f"array[{self._go_type_to_json_type(inner_type)}]"
-
-        # Map Go types to JSON types
-        type_map = {
-            'string': 'string',
-            'bool': 'boolean',
-            'int': 'integer',
-            'int32': 'int32',
-            'int64': 'int64',
-            'uint': 'uint',
-            'uint32': 'uint32',
-            'uint64': 'uint64 (string)',
-            'float32': 'float',
-            'float64': 'float',
-        }
-
-        return type_map.get(go_type, go_type)
-
 
 class RPCMethodExtractor:
     """Main extraction orchestrator."""
 
     def __init__(self, github_token: Optional[str] = None, verbose: bool = False):
         self.fetcher = GitHubFetcher(token=github_token, verbose=verbose)
-        self.parser = GoSourceParser(verbose=verbose, go_stellar_sdk_path=GO_STELLAR_SDK_PATH)
         self.verbose = verbose
 
     def extract(self, rpc_version: Optional[str] = None) -> dict[str, Any]:
@@ -850,38 +440,36 @@ class RPCMethodExtractor:
             print("Starting RPC method extraction...")
 
         rpc_version = self.fetcher.resolve_rpc_version(rpc_version)
-
-        self._fetch_protocol_files(rpc_version)
-
-        # Protocol param definitions live in go-stellar-sdk. Read them from its newest
-        # stable release so unreleased fields are not measured against the SDK.
-        go_sdk_version = self.fetcher.get_latest_go_stellar_sdk_release()
-
-        methods = {}
-        for method_name, file_names in KNOWN_METHODS.items():
-            # Support both single file name and list of file names
-            if isinstance(file_names, str):
-                file_names = [file_names]
-
-            try:
-                method_spec = self._extract_method(method_name, file_names, rpc_version, go_sdk_version)
-            except Exception as e:
-                raise RuntimeError(f"Failed to extract {method_name}: {e}") from e
-            methods[method_name] = method_spec.to_dict()
-
-        # KNOWN_METHODS must match the methods the extracted release registers.
+        go_sdk_ref = self.fetcher.go_stellar_sdk_ref(rpc_version)
+        # KNOWN_METHODS must match the methods the release registers. The check runs before the
+        # handler and protocol fetches, so a removed or renamed method fails with its name.
         check_method_set(self._registered_methods(rpc_version))
 
-        # Build output structure
+        # Every protocol file is fetched before any method is parsed, because a response
+        # can embed a struct that another method's protocol file declares.
+        parser = GoSourceParser(
+            [self.fetcher.fetch_protocol_file(method_name, go_sdk_ref) for method_name in KNOWN_METHODS],
+            verbose=self.verbose,
+        )
+
+        methods = {}
+        for method_name in KNOWN_METHODS:
+            handler_file = f"{METHODS_DIR}/{go_file_name(method_name)}"
+            try:
+                go_source = self.fetcher.fetch_file(handler_file, rpc_version)
+                methods[method_name] = parser.parse_method_handler(method_name, go_source, handler_file).to_dict()
+            except Exception as e:
+                raise RuntimeError(f"Failed to extract {method_name}: {e}") from e
+
         output = {
             "metadata": {
                 "source": "stellar-rpc",
-                "repository": f"https://github.com/{REPO_OWNER}/{REPO_NAME}",
+                "repository": f"https://github.com/{STELLAR_RPC_REPO}",
                 "version": rpc_version,
                 "extracted_date": datetime.now().strftime("%Y-%m-%d"),
                 "total_methods": len(methods),
                 "protocol": "JSON-RPC 2.0",
-                "protocol_definitions": f"https://github.com/stellar/go-stellar-sdk/tree/{go_sdk_version}/protocols/rpc"
+                "protocol_definitions": f"https://github.com/{GO_STELLAR_SDK_REPO}/tree/{go_sdk_ref}/{PROTOCOL_DIR}"
             },
             "methods": methods
         }
@@ -892,48 +480,14 @@ class RPCMethodExtractor:
 
         return output
 
-    def _fetch_protocol_files(self, rpc_version: str):
-        """
-        Load the Go files of the stellar-rpc PROTOCOL_DIR at rpc_version into the parser.
-
-        A release without the directory (HTTP 404) adds no source here. Any other
-        listing or file fetch failure raises.
-        """
-        try:
-            files = self.fetcher.list_directory(PROTOCOL_DIR, rpc_version)
-        except NotFoundError:
-            if self.verbose:
-                print(f"No stellar-rpc {PROTOCOL_DIR} directory at {rpc_version}")
-            return
-
-        sources = []
-        for file_info in files:
-            if file_info.get("type") == "file" and file_info.get("name", "").endswith(".go"):
-                sources.append(self.fetcher.fetch_file(f"{PROTOCOL_DIR}/{file_info['name']}", rpc_version))
-                if self.verbose:
-                    print(f"  Loaded protocol file: {file_info['name']}")
-
-        if sources:
-            self.parser.set_protocol_source("\n\n".join(sources))
-
     def _registered_methods(self, rpc_version: str) -> list[str]:
         """
-        Return the JSON-RPC method names that stellar-rpc registers in jsonrpc.go at rpc_version.
+        Return the JSON-RPC method names that stellar-rpc registers in REGISTRATION_FILE at rpc_version.
 
-        The file sits next to a METHODS_DIRS handler directory; a directory without it
-        (HTTP 404) is skipped. Raises when no directory has the file, on any other fetch
-        failure, and when the file holds no protocol.<Name>MethodName registrations.
+        Raises on a fetch failure and when the file holds no protocol.<Name>MethodName
+        registrations.
         """
-        for methods_dir in METHODS_DIRS:
-            registration_path = methods_dir.removesuffix("/methods") + "/jsonrpc.go"
-            try:
-                registration_source = self.fetcher.fetch_file(registration_path, rpc_version)
-                break
-            except NotFoundError:
-                continue
-        else:
-            raise RuntimeError(f"No jsonrpc.go registration file at {rpc_version}")
-
+        registration_source = self.fetcher.fetch_file(REGISTRATION_FILE, rpc_version)
         registered = re.findall(
             r"\bmethodName:\s*protocol\.([A-Za-z][A-Za-z0-9]*)MethodName\b",
             registration_source,
@@ -941,33 +495,6 @@ class RPCMethodExtractor:
         if not registered:
             raise RuntimeError(f"No protocol.<Name>MethodName registrations found in jsonrpc.go at {rpc_version}")
         return [name[0].lower() + name[1:] for name in registered]
-
-    def _extract_method(self, method_name: str, file_names: list[str], rpc_version: str, go_sdk_version: str) -> MethodSpec:
-        """
-        Extract a single method specification.
-
-        The handler is the first candidate file that exists at rpc_version. A
-        candidate that does not exist (HTTP 404) is skipped; any other fetch
-        failure raises.
-        """
-        candidates = [f"{methods_dir}/{file_name}" for file_name in file_names for methods_dir in METHODS_DIRS]
-        for handler_file in candidates:
-            try:
-                go_source = self.fetcher.fetch_file(handler_file, rpc_version)
-                break
-            except NotFoundError:
-                continue
-        else:
-            raise RuntimeError(f"No handler file at {rpc_version}; tried {', '.join(candidates)}")
-
-        # The go-stellar-sdk protocol file defines the request and response types.
-        protocol_source = self.fetcher.fetch_go_stellar_sdk_protocol_file(method_name, go_sdk_version)
-        if self.parser.protocol_source:
-            self.parser.protocol_source += "\n\n" + protocol_source
-        else:
-            self.parser.set_protocol_source(protocol_source)
-
-        return self.parser.parse_method_handler(method_name, go_source, handler_file)
 
 
 def main() -> int:

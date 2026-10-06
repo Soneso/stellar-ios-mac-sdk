@@ -4,19 +4,18 @@ import json
 from typing import Optional
 
 
-def release(tag: str, published_at: Optional[str] = None, prerelease: bool = False, draft: bool = False,
-            repo: str = "stellar/stellar-rpc") -> dict:
+def release(tag: str, published_at: Optional[str] = None, prerelease: bool = False, draft: bool = False) -> dict:
     """One entry of a GitHub release list. Drafts carry published_at null, as the API returns them."""
     return {
         "tag_name": tag,
         "draft": draft,
         "prerelease": prerelease,
         "published_at": None if draft else (published_at or "2026-01-01T00:00:00Z"),
-        "html_url": f"https://github.com/{repo}/releases/tag/{tag}",
+        "html_url": f"https://github.com/stellar/stellar-rpc/releases/tag/{tag}",
     }
 
 
-def release_list(repo: str = "stellar/stellar-rpc") -> list:
+def release_list() -> list:
     """
     A release list in creation order, which differs from version order.
 
@@ -25,13 +24,13 @@ def release_list(repo: str = "stellar/stellar-rpc") -> list:
     suffix-less tag flagged prerelease.
     """
     return [
-        release("rpcclient-v24.0.0", "2026-09-20T10:00:00Z", repo=repo),
-        release("v31.0.0", draft=True, repo=repo),
-        release("v29.0.0-rc.1", "2026-09-15T10:00:00Z", prerelease=True, repo=repo),
-        release("v30.0.0", "2026-09-10T10:00:00Z", prerelease=True, repo=repo),
-        release("v28.0.9", "2026-09-05T10:00:00Z", repo=repo),
-        release("v28.0.10", "2026-08-27T18:40:46Z", repo=repo),
-        release("v27.1.1", "2026-07-01T10:00:00Z", repo=repo),
+        release("rpcclient-v24.0.0", "2026-09-20T10:00:00Z"),
+        release("v31.0.0", draft=True),
+        release("v29.0.0-rc.1", "2026-09-15T10:00:00Z", prerelease=True),
+        release("v30.0.0", "2026-09-10T10:00:00Z", prerelease=True),
+        release("v28.0.9", "2026-09-05T10:00:00Z"),
+        release("v28.0.10", "2026-08-27T18:40:46Z"),
+        release("v27.1.1", "2026-07-01T10:00:00Z"),
     ]
 
 
