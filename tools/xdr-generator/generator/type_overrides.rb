@@ -10,6 +10,7 @@ TYPE_OVERRIDES = {
   "PoolIDXDR"                        => "WrappedData32",
   "DurationXDR"                      => "UInt64",
   "TimePointXDR"                     => "UInt64",
+  "TimePointMsXDR"                   => "UInt64",
   "SequenceNumberXDR"                => "Int64",
   "ContractIDXDR"                    => "WrappedData32",
   # AssetCode is now mapped to AllowTrustOpAssetXDR via NAME_OVERRIDES

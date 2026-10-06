@@ -4,7 +4,7 @@
   "tool_commit": "ced6bd3cc9f5d8d03445bdf0d7e907814822b370",
   "xdr_commit": "9c9c145953e80990d6ff1ae3a6a973a0ce6d0694",
   "install": "cargo install stellar-xdr --features cli --version 28.0.1 --locked",
-  "sdk_xdr_commit": "c40231c76bf2ebce76b24aa11c72508ac3eaa329",
+  "sdk_xdr_commit": "c2612cf534e4448fa263e252afe1bdbac5512d14",
   "sep_spec": {
     "version": "2.0.1",
     "status": "Draft",

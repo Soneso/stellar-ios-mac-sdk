@@ -1198,8 +1198,14 @@ enum GeneratedXdrJsonCorpusDispatch {
         case "StellarValueXDRExtXDR":
             let value = try XDRDecoder.decode(StellarValueXDRExtXDR.self, data: data)
             return try value.toXdrJson()
+        case "StellarValueXDRProposedMsValueXDR":
+            let value = try XDRDecoder.decode(StellarValueXDRProposedMsValueXDR.self, data: data)
+            return try value.toXdrJson()
         case "StellarValueXDRProposedValueXDR":
             let value = try XDRDecoder.decode(StellarValueXDRProposedValueXDR.self, data: data)
+            return try value.toXdrJson()
+        case "StellarValueXDRSignedMsValueXDR":
+            let value = try XDRDecoder.decode(StellarValueXDRSignedMsValueXDR.self, data: data)
             return try value.toXdrJson()
         case "StoredDebugTransactionSetXDR":
             let value = try XDRDecoder.decode(StoredDebugTransactionSetXDR.self, data: data)
@@ -1240,6 +1246,9 @@ enum GeneratedXdrJsonCorpusDispatch {
         case "TimeBoundsXDR":
             let value = try XDRDecoder.decode(TimeBoundsXDR.self, data: data)
             return try value.toXdrJson()
+        case "TimePointMsXDR":
+            let value = try XDRDecoder.decode(TimePointMsXDR.self, data: data)
+            return try TimePointMsXDRJsonCodec.toXdrJson(value)
         case "TimePointXDR":
             let value = try XDRDecoder.decode(TimePointXDR.self, data: data)
             return try TimePointXDRJsonCodec.toXdrJson(value)
@@ -2589,8 +2598,14 @@ enum GeneratedXdrJsonCorpusDispatch {
         case "StellarValueXDRExtXDR":
             let value = try StellarValueXDRExtXDR.fromXdrJson(json)
             return try Data(XDREncoder.encode(value)).base64EncodedString()
+        case "StellarValueXDRProposedMsValueXDR":
+            let value = try StellarValueXDRProposedMsValueXDR.fromXdrJson(json)
+            return try Data(XDREncoder.encode(value)).base64EncodedString()
         case "StellarValueXDRProposedValueXDR":
             let value = try StellarValueXDRProposedValueXDR.fromXdrJson(json)
+            return try Data(XDREncoder.encode(value)).base64EncodedString()
+        case "StellarValueXDRSignedMsValueXDR":
+            let value = try StellarValueXDRSignedMsValueXDR.fromXdrJson(json)
             return try Data(XDREncoder.encode(value)).base64EncodedString()
         case "StoredDebugTransactionSetXDR":
             let value = try StoredDebugTransactionSetXDR.fromXdrJson(json)
@@ -2630,6 +2645,9 @@ enum GeneratedXdrJsonCorpusDispatch {
             return try Data(XDREncoder.encode(value)).base64EncodedString()
         case "TimeBoundsXDR":
             let value = try TimeBoundsXDR.fromXdrJson(json)
+            return try Data(XDREncoder.encode(value)).base64EncodedString()
+        case "TimePointMsXDR":
+            let value = try TimePointMsXDRJsonCodec.fromXdrJson(json)
             return try Data(XDREncoder.encode(value)).base64EncodedString()
         case "TimePointXDR":
             let value = try TimePointXDRJsonCodec.fromXdrJson(json)
@@ -3207,7 +3225,9 @@ enum GeneratedXdrJsonCorpusDispatch {
         "StellarValueTypeXDR",
         "StellarValueXDR",
         "StellarValueXDRExtXDR",
+        "StellarValueXDRProposedMsValueXDR",
         "StellarValueXDRProposedValueXDR",
+        "StellarValueXDRSignedMsValueXDR",
         "StoredDebugTransactionSetXDR",
         "StoredTransactionSetXDR",
         "String32XDR",
@@ -3221,6 +3241,7 @@ enum GeneratedXdrJsonCorpusDispatch {
         "ThresholdIndexesXDR",
         "ThresholdsXDR",
         "TimeBoundsXDR",
+        "TimePointMsXDR",
         "TimePointXDR",
         "TimeSlicedNodeDataXDR",
         "TimeSlicedPeerDataListXDR",
