@@ -656,7 +656,6 @@ final class SorobanFiltersResponsesUnitTests: XCTestCase {
             "createdAt": 1700000000,
             "txHash": "abc123",
             "events": {
-                "diagnosticEventsXdr": ["FFFF"],
                 "transactionEventsXdr": ["GGGG"],
                 "contractEventsXdr": [["HHHH", "IIII"]]
             }
@@ -938,8 +937,8 @@ final class SorobanFiltersResponsesUnitTests: XCTestCase {
                     "ledger": 1000000,
                     "createdAt": 1700000000,
                     "txHash": "abc123",
+                    "diagnosticEventsXdr": ["DDDD"],
                     "events": {
-                        "diagnosticEventsXdr": ["DDDD"],
                         "transactionEventsXdr": ["EEEE"],
                         "contractEventsXdr": [["FFFF"]]
                     }
@@ -957,8 +956,8 @@ final class SorobanFiltersResponsesUnitTests: XCTestCase {
         let response = try decoder.decode(GetTransactionsResponse.self, from: jsonData)
 
         XCTAssertEqual(response.transactions.count, 1)
+        XCTAssertEqual(response.transactions[0].diagnosticEventsXdr, ["DDDD"])
         XCTAssertNotNil(response.transactions[0].events)
-        XCTAssertEqual(response.transactions[0].events?.diagnosticEventsXdr?.count, 1)
         XCTAssertEqual(response.transactions[0].events?.transactionEventsXdr?.count, 1)
         XCTAssertEqual(response.transactions[0].events?.contractEventsXdr?.count, 1)
     }

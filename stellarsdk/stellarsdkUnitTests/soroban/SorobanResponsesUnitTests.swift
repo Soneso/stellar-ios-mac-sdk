@@ -601,8 +601,8 @@ final class SorobanResponsesUnitTests: XCTestCase {
             "resultXdr": "AAAAAAAAAGQAAAAAAAAAAQAAAAAAAAABAAAAAAAAAAA=",
             "resultMetaXdr": "AAAAAwAAAAAAAAACAAAAAAAPPIAAAAAB",
             "txHash": "abc123",
+            "diagnosticEventsXdr": ["AAAA", "BBBB"],
             "events": {
-                "diagnosticEventsXdr": ["AAAA", "BBBB"],
                 "transactionEventsXdr": ["CCCC"],
                 "contractEventsXdr": [["DDDD", "EEEE"]]
             }
@@ -615,8 +615,8 @@ final class SorobanResponsesUnitTests: XCTestCase {
 
         XCTAssertEqual(response.status, GetTransactionResponse.STATUS_SUCCESS)
         XCTAssertEqual(response.txHash, "abc123")
+        XCTAssertEqual(response.diagnosticEventsXdr, ["AAAA", "BBBB"])
         XCTAssertNotNil(response.events)
-        XCTAssertEqual(response.events?.diagnosticEventsXdr?.count, 2)
         XCTAssertEqual(response.events?.transactionEventsXdr?.count, 1)
         XCTAssertEqual(response.events?.contractEventsXdr?.count, 1)
     }

@@ -228,6 +228,12 @@ class SorobanEventsTest: XCTestCase {
         switch txResultEnum {
         case .success(let statusResponse):
             XCTAssertEqual(GetTransactionResponse.STATUS_SUCCESS, statusResponse.status)
+            let diagnosticEventsXdr = statusResponse.diagnosticEventsXdr
+            XCTAssertNotNil(diagnosticEventsXdr)
+            XCTAssertFalse(diagnosticEventsXdr?.isEmpty ?? true)
+            for eventXdr in diagnosticEventsXdr ?? [] {
+                XCTAssertNoThrow(try DiagnosticEventXDR(xdr: eventXdr), "invalid diagnostic event xdr \(eventXdr)")
+            }
         case .failure(let error):
             self.printError(error: error)
             XCTFail()
@@ -375,16 +381,16 @@ class SorobanEventsTest: XCTestCase {
         jsonDecoder.dateDecodingStrategy = .formatted(DateFormatter.iso8601)
         let jsonData = success.data(using: .utf8)!
         let response = try jsonDecoder.decode(GetTransactionResponse.self, from: jsonData)
+        let diagnosticEvents = try XCTUnwrap(response.diagnosticEventsXdr)
         XCTAssertNotNil(response.events)
-        XCTAssertNotNil(response.events?.diagnosticEventsXdr)
         XCTAssertNotNil(response.events?.transactionEventsXdr)
         XCTAssertNotNil(response.events?.contractEventsXdr)
-        XCTAssertEqual(response.events!.diagnosticEventsXdr!.count, 21)
+        XCTAssertEqual(diagnosticEvents.count, 24)
         XCTAssertEqual(response.events!.transactionEventsXdr!.count, 2)
         XCTAssertEqual(response.events!.contractEventsXdr!.count, 2)
         XCTAssertEqual(response.events!.contractEventsXdr!.first!.count, 2)
         
-        for eventXdrStr in response.events!.diagnosticEventsXdr! {
+        for eventXdrStr in diagnosticEvents {
             guard let _ = try? DiagnosticEventXDR.init(xdr: eventXdrStr) else {
                 XCTFail("invalid diagnostic event xdr \(eventXdrStr)")
                 return

@@ -765,6 +765,52 @@ final class SorobanServerAdditionalUnitTests: XCTestCase {
         }
     }
 
+    func testGetTransactionDiagnosticEventsXdr() async {
+        // A fn_return and a core_metrics event from the recorded response in SorobanEventsTest.
+        let diagnosticEventsXdr = [
+            "AAAAAQAAAAAAAAAB3+uRtuHcrdavl7t8RV+X83R3Cn949pVzuZ9dW/hJznwAAAACAAAAAAAAAAIAAAAPAAAACWZuX3JldHVybgAAAAAAAA8AAAANY3JlYXRlX2VzY3JvdwAAAAAAAAE=",
+            "AAAAAAAAAAAAAAAAAAAAAgAAAAAAAAACAAAADwAAAAxjb3JlX21ldHJpY3MAAAAPAAAACnJlYWRfZW50cnkAAAAAAAUAAAAAAAAAAw=="
+        ]
+        let mockResponse = """
+        {
+            "jsonrpc": "2.0",
+            "id": "test-id",
+            "result": {
+                "status": "SUCCESS",
+                "latestLedger": 1000000,
+                "latestLedgerCloseTime": "1700000000",
+                "oldestLedger": 900000,
+                "oldestLedgerCloseTime": "1690000000",
+                "ledger": 999999,
+                "createdAt": "1699999000",
+                "applicationOrder": 1,
+                "feeBump": false,
+                "envelopeXdr": "AAAAAAAAAAAAAAAA",
+                "resultXdr": "BBBBBBBBBBBBBBBB",
+                "resultMetaXdr": "CCCCCCCCCCCCCCCC",
+                "diagnosticEventsXdr": ["\(diagnosticEventsXdr[0])", "\(diagnosticEventsXdr[1])"]
+            }
+        }
+        """
+
+        let mock = RequestMock(
+            host: testHost,
+            path: "/",
+            httpMethod: "POST",
+            mockHandler: { _, _ in mockResponse }
+        )
+        ServerMock.add(mock: mock)
+
+        let response = await server.getTransaction(transactionHash: "abc123")
+
+        switch response {
+        case .success(let tx):
+            XCTAssertEqual(tx.diagnosticEventsXdr, diagnosticEventsXdr)
+        case .failure(let error):
+            XCTFail("Expected success, got error: \(error)")
+        }
+    }
+
     // MARK: - getTransactions Tests
 
     func testGetTransactionsSuccess() async {
