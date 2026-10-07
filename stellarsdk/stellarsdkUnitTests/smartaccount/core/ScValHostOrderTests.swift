@@ -407,6 +407,9 @@ final class ScValHostOrderTests: XCTestCase {
             XCTAssertLessThan(compareScValHostOrder(ascending[i], ascending[i + 1]), 0, "#\(i) < #\(i + 1)")
             XCTAssertGreaterThan(compareScValHostOrder(ascending[i + 1], ascending[i]), 0, "#\(i + 1) > #\(i)")
         }
+        let sameAsFirst = instance(.wasm(WrappedData32(Data(count: 32))), nil)
+        XCTAssertEqual(compareScValHostOrder(ascending[0], sameAsFirst), 0)
+        XCTAssertEqual(compareScValHostOrder(sameAsFirst, ascending[0]), 0)
     }
 
     /// Decoding keeps a map's wire order: a map whose keys are out of host order re-encodes

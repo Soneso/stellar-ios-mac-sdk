@@ -78,7 +78,7 @@ extension SorobanAuthorizationEntryXDR {
     ///   `requested` differs from the stored expiration, or when the delegate tree nests
     ///   deeper than 128 levels.
     internal func signatureExpirationForNewSignature(requested: UInt32?) throws -> UInt32? {
-        guard let creds = credentials.addressCredentials, try carriesSignature() else {
+        guard let creds = credentials.addressCredentials, try carriesSignature(topLevel: creds) else {
             return requested
         }
         let stored = creds.signatureExpirationLedger
@@ -90,18 +90,12 @@ extension SorobanAuthorizationEntryXDR {
         return stored
     }
 
-    /// `true` when the top-level address credentials or any delegate node carries a
-    /// signature other than `.void`.
-    private func carriesSignature() throws -> Bool {
-        switch credentials {
-        case .address(let creds), .addressV2(let creds):
-            return !creds.signature.isVoid
-        case .addressWithDelegates(let withDelegates):
-            return try !withDelegates.addressCredentials.signature.isVoid
-                || delegateTreeCarriesSignature(withDelegates.delegates)
-        case .sourceAccount:
-            return false
-        }
+    /// `true` when `topLevel`, the entry's top-level address credentials, or any delegate
+    /// node carries a signature other than `.void`.
+    private func carriesSignature(topLevel: SorobanAddressCredentialsXDR) throws -> Bool {
+        if !topLevel.signature.isVoid { return true }
+        guard case .addressWithDelegates(let withDelegates) = credentials else { return false }
+        return try delegateTreeCarriesSignature(withDelegates.delegates)
     }
 
     // MARK: - Signing

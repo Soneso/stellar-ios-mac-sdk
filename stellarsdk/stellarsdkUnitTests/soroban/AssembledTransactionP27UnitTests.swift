@@ -1423,6 +1423,26 @@ final class AssembledTransactionP27UnitTests: XCTestCase {
         XCTAssertEqual(stub.requestCount, 1)
     }
 
+    /// A failing latest-ledger request surfaces from `signAuthEntries` and leaves the
+    /// transaction's auth entries unchanged.
+    func testSignAuthEntries_latestLedgerFailureKeepsEntries() async throws {
+        ServerMock.add(mock: RequestMock(host: "soroban-testnet.stellar.org", path: "*", httpMethod: "POST") { mock, _ in
+            mock.statusCode = 200
+            return "{\"jsonrpc\":\"2.0\",\"id\":1,\"error\":{\"code\":-32603,\"message\":\"ledger unavailable\"}}"
+        })
+        let at = makeAssembledTransaction(tx: try makeTransactionWithEntry(try makeAddressV2Entry(keyPair: keyPair)))
+        let before = try authEntries(at).map { $0.xdrEncoded }
+
+        do {
+            try await at.signAuthEntries(signerKeyPair: keyPair)
+            XCTFail("expected the latest-ledger error")
+        } catch SorobanRpcRequestError.errorResponse(let rpcError) {
+            XCTAssertEqual(rpcError.code, -32603)
+            XCTAssertEqual(rpcError.message, "ledger unavailable")
+        }
+        XCTAssertEqual(try authEntries(at).map { $0.xdrEncoded }, before)
+    }
+
     /// A fixed cosigner whose raw public key sorts after `keyPair`'s, so appending its
     /// signature keeps the vector in the ascending key order the host requires.
     private func makeCosigner() throws -> KeyPair {
