@@ -12,6 +12,9 @@ permissions:
 jobs:
   unit-tests:
     runs-on: macos-15
+    permissions:
+      contents: read
+      id-token: write
     steps:
       - name: Checkout code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -39,8 +42,8 @@ jobs:
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
         with:
-          token: ${{ secrets.CODECOV_TOKEN }}
+          use_oidc: true
           files: coverage/lcov.info
           flags: unit
-          fail_ci_if_error: false
+          fail_ci_if_error: true
           verbose: true
