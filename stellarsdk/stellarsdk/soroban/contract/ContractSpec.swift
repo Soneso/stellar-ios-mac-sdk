@@ -262,8 +262,10 @@ public final class ContractSpec: Sendable {
     /// - Parameters:
     ///   - val: Native Swift value
     ///   - ty: The expected type
-    /// - Returns: The converted SCValXDR
-    /// - Throws: ContractSpecError if conversion fails
+    /// - Returns: The converted SCValXDR; maps and structs carry their entries in the
+    ///   Soroban host's key order (see `SCValXDR.sortedMap(_:)`).
+    /// - Throws: ContractSpecError if conversion fails; `StellarSDKError.invalidArgument`
+    ///   when two map keys convert to equal values.
     public func nativeToXdrSCVal(val: Any?, ty: SCSpecTypeDefXDR) throws -> SCValXDR {
         // Handle UDT (User Defined Types)
         switch ty {
@@ -419,7 +421,7 @@ public final class ContractSpec: Sendable {
             mapEntries.append(SCMapEntryXDR(key: entryKey, val: entryVal))
         }
         
-        return SCValXDR.map(mapEntries)
+        return try SCValXDR.sortedMap(mapEntries)
     }
     
     private func nativeToUnion(val: NativeUnionVal, unionDef: SCSpecUDTUnionV0XDR) throws -> SCValXDR {
@@ -505,7 +507,7 @@ public final class ContractSpec: Sendable {
                 let mapEntryValue = try nativeToXdrSCVal(val: value, ty: map.valueType)
                 mapEntries.append(SCMapEntryXDR(key: mapEntryKey, val: mapEntryValue))
             }
-            return SCValXDR.map(mapEntries)
+            return try SCValXDR.sortedMap(mapEntries)
         default:
             throw ContractSpecError.invalidType(message: "Type was not map but val was dictionary")
         }

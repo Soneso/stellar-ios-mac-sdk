@@ -1307,25 +1307,177 @@ final class AssembledTransactionP27UnitTests: XCTestCase {
     }
 
     private func setupGetLatestLedgerMock() {
-        let handler: MockHandler = { mock, _ in
+        stubLatestLedger().sequence = 999900
+    }
+
+    // MARK: - signAuthEntries: shared expiration
+
+    /// Answers getLatestLedger with `sequence` and counts the requests.
+    private final class LatestLedgerStub: @unchecked Sendable {
+        var sequence: UInt32 = 2000
+        var requestCount = 0
+    }
+
+    private func stubLatestLedger() -> LatestLedgerStub {
+        let stub = LatestLedgerStub()
+        ServerMock.add(mock: RequestMock(host: "soroban-testnet.stellar.org", path: "*", httpMethod: "POST") { mock, _ in
+            stub.requestCount += 1
             mock.statusCode = 200
-            return """
-            {
-                "jsonrpc": "2.0",
-                "id": 1,
-                "result": {
-                    "id": "abc123",
-                    "sequence": 999900,
-                    "protocolVersion": 27
-                }
-            }
-            """
+            return "{\"jsonrpc\":\"2.0\",\"id\":1,\"result\":{\"id\":\"abc\",\"sequence\":\(stub.sequence),\"protocolVersion\":27}}"
+        })
+        return stub
+    }
+
+    private func authEntries(_ at: AssembledTransaction) throws -> [SorobanAuthorizationEntryXDR] {
+        return try XCTUnwrap(at.tx?.operations.first as? InvokeHostFunctionOperation).auth
+    }
+
+    /// `true` when `signature` holds an element for `signer` whose ed25519 signature verifies
+    /// over the entry's payload hash, built with the SDK's preimage builder.
+    private func verifies(_ signature: SCValXDR, signer: KeyPair, entry: SorobanAuthorizationEntryXDR) throws -> Bool {
+        let fields = try XCTUnwrap(signature.vec?.compactMap { $0.map }.first { element in
+            element.contains { $0.key.symbol == "public_key" && $0.val.bytes == Data(signer.publicKey.bytes) }
+        })
+        let sigBytes = try XCTUnwrap(fields.first { $0.key.symbol == "signature" }?.val.bytes)
+        let payload = Data(try XDREncoder.encode(try entry.buildPreimage(network: network))).sha256Hash
+        return try signer.verify(signature: [UInt8](sigBytes), message: [UInt8](payload))
+    }
+
+    /// A second signer reuses the stored expiration without fetching a ledger, so the first
+    /// signature stays valid.
+    func testSignAuthEntries_secondSignerKeepsStoredExpiration() async throws {
+        let stub = stubLatestLedger()
+        let entry = try makeWithDelegatesEntry(topLevelKeyPair: keyPair, delegateKeyPair: delegateKeyPair,
+                                               topLevelSigned: false, delegateSigned: false)
+        let at = makeAssembledTransaction(tx: try makeTransactionWithEntry(entry))
+
+        try await at.signAuthEntries(signerKeyPair: keyPair)
+        stub.sequence = 5000
+        try await at.signAuthEntries(signerKeyPair: delegateKeyPair)
+
+        let signed = try XCTUnwrap(try authEntries(at).first)
+        guard case .addressWithDelegates(let withDelegates) = signed.credentials else {
+            return XCTFail("expected WITH_DELEGATES credentials")
         }
-        ServerMock.add(mock: RequestMock(
-            host: "soroban-testnet.stellar.org",
-            path: "*",
-            httpMethod: "POST",
-            mockHandler: handler
-        ))
+        XCTAssertEqual(withDelegates.addressCredentials.signatureExpirationLedger, 2100)
+        XCTAssertEqual(stub.requestCount, 1, "the second call must not fetch the latest ledger")
+        XCTAssertTrue(try verifies(withDelegates.addressCredentials.signature, signer: keyPair, entry: signed))
+        XCTAssertTrue(try verifies(try XCTUnwrap(withDelegates.delegates.first).signature, signer: delegateKeyPair, entry: signed))
+    }
+
+    /// An explicit expiration that differs from the stored one of a partly signed entry
+    /// throws; neither the entry nor the transaction changes, although an earlier entry was
+    /// already signed in the same call.
+    func testSignAuthEntries_conflictingExpirationThrowsAndKeepsEntries() async throws {
+        let stub = stubLatestLedger()
+        let fresh = try makeAddressV2Entry(keyPair: keyPair)
+        var partlySigned = try makeWithDelegatesEntry(topLevelKeyPair: keyPair, delegateKeyPair: delegateKeyPair,
+                                                      topLevelSigned: false, delegateSigned: true)
+        let at = makeAssembledTransaction(tx: try makeTransactionWithEntries([fresh, partlySigned]))
+        let before = try authEntries(at).map { $0.xdrEncoded }
+
+        do {
+            try await at.signAuthEntries(signerKeyPair: keyPair, validUntilLedgerSeq: 2_000_000)
+            XCTFail("expected an expiration conflict")
+        } catch StellarSDKError.invalidArgument(let message) {
+            XCTAssertTrue(message.contains("1000000") && message.contains("2000000"), message)
+        }
+        XCTAssertEqual(try authEntries(at).map { $0.xdrEncoded }, before)
+        XCTAssertEqual(stub.requestCount, 0)
+
+        let entryBefore = partlySigned.xdrEncoded
+        XCTAssertThrowsError(try partlySigned.sign(signer: keyPair, network: network, signatureExpirationLedger: 2_000_000))
+        XCTAssertEqual(partlySigned.xdrEncoded, entryBefore)
+    }
+
+    /// An explicit expiration equal to the stored one of a partly signed entry signs it.
+    func testSignAuthEntries_matchingExpirationSignsPartlySignedEntry() async throws {
+        let stub = stubLatestLedger()
+        var partlySigned = try makeWithDelegatesEntry(topLevelKeyPair: keyPair, delegateKeyPair: delegateKeyPair,
+                                                      topLevelSigned: false, delegateSigned: true)
+        let at = makeAssembledTransaction(tx: try makeTransactionWithEntry(partlySigned))
+
+        try await at.signAuthEntries(signerKeyPair: keyPair, validUntilLedgerSeq: 1_000_000)
+
+        let signed = try XCTUnwrap(try authEntries(at).first)
+        XCTAssertEqual(signed.credentials.addressCredentials?.signatureExpirationLedger, 1_000_000)
+        XCTAssertTrue(try verifies(try XCTUnwrap(signed.credentials.addressCredentials).signature, signer: keyPair, entry: signed))
+        XCTAssertEqual(stub.requestCount, 0)
+
+        try partlySigned.sign(signer: keyPair, network: network, signatureExpirationLedger: 1_000_000)
+        XCTAssertEqual(partlySigned.xdrEncoded, signed.xdrEncoded)
+    }
+
+    /// Fresh entries get the explicit expiration, or latest ledger + 100 from a single fetch.
+    func testSignAuthEntries_freshEntriesStampExplicitOrDefaultExpiration() async throws {
+        let stub = stubLatestLedger()
+        let explicitAt = makeAssembledTransaction(tx: try makeTransactionWithEntry(try makeAddressV2Entry(keyPair: keyPair)))
+        try await explicitAt.signAuthEntries(signerKeyPair: keyPair, validUntilLedgerSeq: 3000)
+        XCTAssertEqual(try authEntries(explicitAt).first?.credentials.addressCredentials?.signatureExpirationLedger, 3000)
+        XCTAssertEqual(stub.requestCount, 0)
+
+        let entries = [try makeAddressV2Entry(keyPair: keyPair), try makeAddressV2Entry(keyPair: keyPair)]
+        let defaultAt = makeAssembledTransaction(tx: try makeTransactionWithEntries(entries))
+        try await defaultAt.signAuthEntries(signerKeyPair: keyPair)
+        XCTAssertEqual(try authEntries(defaultAt).map { $0.credentials.addressCredentials?.signatureExpirationLedger }, [2100, 2100])
+        XCTAssertEqual(stub.requestCount, 1)
+    }
+
+    /// A fixed cosigner whose raw public key sorts after `keyPair`'s, so appending its
+    /// signature keeps the vector in the ascending key order the host requires.
+    private func makeCosigner() throws -> KeyPair {
+        let cosigner = try KeyPair(secretSeed: "SCCFZHKX3JFWZL7IATBIFSDTX2WX7GZLQCHZKJGUJDKCJOAA4T2MPMAB")
+        XCTAssertTrue(keyPair.publicKey.bytes.lexicographicallyPrecedes(cosigner.publicKey.bytes))
+        return cosigner
+    }
+
+    /// A second cosigner on the same top-level node reuses the stored expiration without a
+    /// ledger fetch; an explicit different value throws and leaves the transaction unchanged.
+    func testSignAuthEntries_secondCosignerOnSameNodeKeepsStoredExpiration() async throws {
+        let stub = stubLatestLedger()
+        let cosigner = try makeCosigner()
+        let accountOnly = try KeyPair(accountId: keyPair.accountId)
+        let cosign: (SorobanAuthorizationEntryXDR, Network) async throws -> SorobanAuthorizationEntryXDR = { entry, network in
+            var cosigned = entry
+            try cosigned.sign(signer: cosigner, network: network)
+            return cosigned
+        }
+        let at = makeAssembledTransaction(tx: try makeTransactionWithEntry(try makeAddressV2Entry(keyPair: keyPair)))
+        try await at.signAuthEntries(signerKeyPair: keyPair)
+        stub.sequence = 5000
+        let before = try authEntries(at).map { $0.xdrEncoded }
+
+        do {
+            try await at.signAuthEntries(signerKeyPair: accountOnly, authorizeEntryCallback: cosign, validUntilLedgerSeq: 5100)
+            XCTFail("expected an expiration conflict")
+        } catch StellarSDKError.invalidArgument(let message) {
+            XCTAssertTrue(message.contains("2100") && message.contains("5100"), message)
+        }
+        XCTAssertEqual(try authEntries(at).map { $0.xdrEncoded }, before)
+
+        try await at.signAuthEntries(signerKeyPair: accountOnly, authorizeEntryCallback: cosign)
+        let signed = try XCTUnwrap(try authEntries(at).first)
+        let creds = try XCTUnwrap(signed.credentials.addressCredentials)
+        XCTAssertEqual(creds.signatureExpirationLedger, 2100)
+        XCTAssertEqual(stub.requestCount, 1)
+        XCTAssertTrue(try verifies(creds.signature, signer: keyPair, entry: signed))
+        XCTAssertTrue(try verifies(creds.signature, signer: cosigner, entry: signed))
+    }
+
+    /// The entry helper applies the same rule to a second cosigner on the same node.
+    func testEntrySign_secondCosignerOnSameNodeKeepsStoredExpiration() throws {
+        let cosigner = try makeCosigner()
+        var entry = try makeAddressV2Entry(keyPair: keyPair)
+        try entry.sign(signer: keyPair, network: network, signatureExpirationLedger: 3000)
+        let afterFirst = entry.xdrEncoded
+
+        XCTAssertThrowsError(try entry.sign(signer: cosigner, network: network, signatureExpirationLedger: 3001))
+        XCTAssertEqual(entry.xdrEncoded, afterFirst)
+
+        try entry.sign(signer: cosigner, network: network, signatureExpirationLedger: 3000)
+        let creds = try XCTUnwrap(entry.credentials.addressCredentials)
+        XCTAssertEqual(creds.signatureExpirationLedger, 3000)
+        XCTAssertTrue(try verifies(creds.signature, signer: keyPair, entry: entry))
+        XCTAssertTrue(try verifies(creds.signature, signer: cosigner, entry: entry))
     }
 }

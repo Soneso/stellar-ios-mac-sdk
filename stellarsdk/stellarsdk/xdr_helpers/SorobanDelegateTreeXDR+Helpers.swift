@@ -140,6 +140,26 @@ internal enum DelegateLookupResult {
     case found
 }
 
+/// Returns `true` when any node in `nodes`, at any depth, carries a signature other
+/// than `.void`.
+///
+/// - Throws: `StellarSDKError.invalidArgument` when nesting exceeds 128 levels.
+internal func delegateTreeCarriesSignature(
+    _ nodes: [SorobanDelegateSignatureXDR],
+    depth: Int = 0
+) throws -> Bool {
+    guard depth <= 128 else {
+        throw StellarSDKError.invalidArgument(
+            message: "Delegate tree nesting exceeds the maximum allowed depth (128)"
+        )
+    }
+    for node in nodes {
+        if !node.signature.isVoid { return true }
+        if try delegateTreeCarriesSignature(node.nestedDelegates, depth: depth + 1) { return true }
+    }
+    return false
+}
+
 /// Walks the delegate tree depth-first, appending `signature` to every node whose
 /// XDR-encoded address matches `targetAddress`.
 ///
