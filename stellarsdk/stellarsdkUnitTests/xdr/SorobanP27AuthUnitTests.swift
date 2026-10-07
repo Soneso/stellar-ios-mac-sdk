@@ -837,6 +837,28 @@ final class SorobanP27AuthUnitTests: XCTestCase {
         }
     }
 
+    /// A delegate chain `levels` nodes deep; only the innermost node carries `leafSignature`.
+    private func delegateChain(levels: Int, leafSignature: SCValXDR) throws -> [SorobanDelegateSignatureXDR] {
+        let address = try SCAddressXDR(accountId: GoldenVectors.signerAccountId)
+        var chain = [SorobanDelegateSignatureXDR(address: address, signature: leafSignature, nestedDelegates: [])]
+        for _ in 1..<levels {
+            chain = [SorobanDelegateSignatureXDR(address: address, signature: .void, nestedDelegates: chain)]
+        }
+        return chain
+    }
+
+    func testDelegateTreeCarriesSignature_depthLimit() throws {
+        let signed = SCValXDR.vec([.u32(1)])
+        XCTAssertTrue(try delegateTreeCarriesSignature(try delegateChain(levels: 128, leafSignature: signed)))
+        XCTAssertFalse(try delegateTreeCarriesSignature(try delegateChain(levels: 128, leafSignature: .void)))
+        XCTAssertThrowsError(try delegateTreeCarriesSignature(try delegateChain(levels: 129, leafSignature: .void))) { error in
+            guard case StellarSDKError.invalidArgument(let message) = error else {
+                return XCTFail("expected invalidArgument, got \(error)")
+            }
+            XCTAssertTrue(message.contains("maximum allowed depth (128)"), message)
+        }
+    }
+
     func testSignerAccountIdIsValid() throws {
         let addr = try SCAddressXDR(accountId: GoldenVectors.signerAccountId)
         if case .account(let pk) = addr {

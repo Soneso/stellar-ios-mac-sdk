@@ -170,7 +170,9 @@ public class ChangeTrustAsset : Asset, @unchecked Sendable {
         }
         
         // validate asset order
-        // Native < AlphaNum4 < AlphaNum12, then by Code, then by Issuer, using lexicographic ordering.
+        // stellar-core requires assetA < assetB in XDR order: the asset type
+        // (Native < AlphaNum4 < AlphaNum12), then the code bytes, then the issuer's raw
+        // ed25519 public key bytes, unsigned.
         var sortError = false
         if assetA.type > assetB.type {
             sortError = true
@@ -178,19 +180,21 @@ public class ChangeTrustAsset : Asset, @unchecked Sendable {
             guard let codeA = assetA.code, let codeB = assetB.code else {
                 throw StellarSDKError.invalidArgument(message: "Non-native assets must have a code")
             }
-            if codeA > codeB {
+            let codeBytesA = Array(codeA.utf8)
+            let codeBytesB = Array(codeB.utf8)
+            if codeBytesB.lexicographicallyPrecedes(codeBytesA) {
                 sortError = true
-            } else if codeA == codeB {
+            } else if codeBytesA == codeBytesB {
                 guard let issuerA = assetA.issuer, let issuerB = assetB.issuer else {
                     throw StellarSDKError.invalidArgument(message: "Non-native assets must have an issuer")
                 }
-                if issuerA.accountId > issuerB.accountId {
+                if issuerB.publicKey.bytes.lexicographicallyPrecedes(issuerA.publicKey.bytes) {
                     sortError = true
                 }
             }
         }
         if sortError {
-            throw StellarSDKError.invalidArgument(message: "Assets are in wrong order. Sort by: Native < AlphaNum4 < AlphaNum12, then by Code, then by Issuer, using lexicographic ordering.")
+            throw StellarSDKError.invalidArgument(message: "Assets are in wrong order: \(assetA.toCanonicalForm()) sorts after \(assetB.toCanonicalForm()). Sort by: Native < AlphaNum4 < AlphaNum12, then by code bytes, then by issuer public key bytes.")
         }
         
         self.assetA = assetA

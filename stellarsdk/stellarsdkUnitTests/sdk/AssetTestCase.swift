@@ -387,4 +387,44 @@ final class AssetTestCase: XCTestCase {
         XCTAssertEqual(restoredRegular.code, "EUR")
         XCTAssertEqual(restoredRegular.issuer?.accountId, testIssuerAccountId)
     }
+
+    // MARK: - Pool share issuer order
+
+    // Raw keys 0x68.. (X) and 0x74.. (Y): X sorts first by key bytes, Y by strkey text.
+    let poolIssuerX = "GBUACAQDAQCQMBYIBEFAWDANBYHRAEISCMKBKFQXDAMRUGY4DUPB6CLH"
+    let poolIssuerY = "GB2ACAQDAQCQMBYIBEFAWDANBYHRAEISCMKBKFQXDAMRUGY4DUPB7BZ4"
+    let poolParametersXY = "AAAAAAAAAAFVU0RDAAAAAGgBAgMEBQYHCAkKCwwNDg8QERITFBUWFxgZGhscHR4fAAAAAVVTREMAAAAAdAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8AAAAe"
+
+    private func usdc(_ issuer: String) throws -> Asset {
+        return try XCTUnwrap(Asset(type: AssetType.ASSET_TYPE_CREDIT_ALPHANUM4, code: "USDC", issuer: try KeyPair(accountId: issuer)))
+    }
+
+    func testPoolShare_sameCodeIssuersOrderedByRawKeyBytes() throws {
+        let pool = try XCTUnwrap(try ChangeTrustAsset(assetA: try usdc(poolIssuerX), assetB: try usdc(poolIssuerY)))
+        guard case .poolShare(let params) = try pool.toChangeTrustAssetXDR() else {
+            return XCTFail("expected a pool share")
+        }
+        XCTAssertEqual(params.xdrEncoded, poolParametersXY)
+        let poolId = "2c325546b1bf03f8d1b9c0b74974cdef7609c60202d72a30e34f393ccf5eed1c"
+        XCTAssertEqual(pool.toCanonicalForm(), poolId + ":lp")
+        XCTAssertEqual(try poolId.encodeLiquidityPoolIdHex(), "LAWDEVKGWG7QH6GRXHALOSLUZXXXMCOGAIBNOKRQ4NHTSPGPL3WRYKDA")
+
+        XCTAssertThrowsError(try ChangeTrustAsset(assetA: try usdc(poolIssuerY), assetB: try usdc(poolIssuerX))) { error in
+            guard case StellarSDKError.invalidArgument(let message) = error else {
+                return XCTFail("Wrong error type: \(error)")
+            }
+            XCTAssertTrue(message.contains("wrong order"), message)
+            XCTAssertTrue(message.contains("USDC:" + self.poolIssuerY) && message.contains("USDC:" + self.poolIssuerX), message)
+        }
+    }
+
+    func testChangeTrustPoolShare_decodesAndReencodesByteIdentically() throws {
+        let data = try XCTUnwrap(Data(base64Encoded: poolParametersXY))
+        let params = try LiquidityPoolParametersXDR(from: XDRDecoder(data: data))
+        let operationXDR = OperationXDR(body: .changeTrustOp(ChangeTrustOperationXDR(asset: .poolShare(params), limit: 10_000_000_000)))
+
+        let decoded = try XCTUnwrap(try Operation.fromXDR(operationXDR: operationXDR) as? ChangeTrustOperation)
+        XCTAssertEqual(decoded.asset.assetA?.issuer?.accountId, poolIssuerX)
+        XCTAssertEqual(try decoded.toXDRBase64(), operationXDR.xdrEncoded)
+    }
 }

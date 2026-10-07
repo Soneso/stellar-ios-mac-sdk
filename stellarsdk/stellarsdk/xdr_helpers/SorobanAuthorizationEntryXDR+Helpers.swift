@@ -61,6 +61,43 @@ extension SorobanAuthorizationEntryXDR {
         }
     }
 
+    // MARK: - Expiration
+
+    /// Resolves the expiration ledger a new signature on this entry commits to.
+    ///
+    /// The entry stores one `signatureExpirationLedger` in its top-level address credentials,
+    /// and every signature on the entry, top-level and delegate, commits to it through the
+    /// shared preimage. Signing appends to a node's signature vector and never removes an
+    /// earlier signature, so while any node carries a signature other than `.void` the
+    /// stored value is the only one that keeps the entry valid.
+    ///
+    /// - Parameter requested: The expiration the caller asks for, or `nil` for none.
+    /// - Returns: The stored expiration when a node carries a signature; otherwise
+    ///   `requested`, where `nil` leaves the choice of a default to the caller.
+    /// - Throws: `StellarSDKError.invalidArgument` when a node carries a signature and
+    ///   `requested` differs from the stored expiration, or when the delegate tree nests
+    ///   deeper than 128 levels.
+    internal func signatureExpirationForNewSignature(requested: UInt32?) throws -> UInt32? {
+        guard let creds = credentials.addressCredentials, try carriesSignature(topLevel: creds) else {
+            return requested
+        }
+        let stored = creds.signatureExpirationLedger
+        if let requested = requested, requested != stored {
+            throw StellarSDKError.invalidArgument(
+                message: "The authorization entry already carries a signature committed to signatureExpirationLedger \(stored); the requested expiration \(requested) would invalidate it. Pass \(stored) or omit the expiration."
+            )
+        }
+        return stored
+    }
+
+    /// `true` when `topLevel`, the entry's top-level address credentials, or any delegate
+    /// node carries a signature other than `.void`.
+    private func carriesSignature(topLevel: SorobanAddressCredentialsXDR) throws -> Bool {
+        if !topLevel.signature.isVoid { return true }
+        guard case .addressWithDelegates(let withDelegates) = credentials else { return false }
+        return try delegateTreeCarriesSignature(withDelegates.delegates)
+    }
+
     // MARK: - Signing
 
     /// Signs this authorization entry with `signer` and stamps `signatureExpirationLedger`.
@@ -99,13 +136,16 @@ extension SorobanAuthorizationEntryXDR {
     /// - Parameters:
     ///   - signer: Key pair that must include the private key.
     ///   - network: Network the entry targets.
-    ///   - signatureExpirationLedger: Ledger at which the signature expires. Must be set
-    ///     before signing; passing `nil` preserves the current value in the credentials
-    ///     (useful when the expiration was already stamped externally).
+    ///   - signatureExpirationLedger: Ledger at which the signature expires; `nil` keeps
+    ///     the value stored in the credentials. While any node of the entry carries a
+    ///     signature, only the stored value is accepted, because every signature on the
+    ///     entry commits to it.
     ///   - forAddress: Optional strkey routing the signature to matching nodes only.
     ///     `nil` signs the top-level node.
     /// - Throws: `StellarSDKError.invalidArgument` for source-account credentials, when
-    ///   the signer has no private key, or when `forAddress` matches no node.
+    ///   the signer has no private key, when `forAddress` matches no node, or when
+    ///   `signatureExpirationLedger` differs from the stored value of an entry that
+    ///   already carries a signature.
     public mutating func sign(
         signer: KeyPair,
         network: Network,
@@ -124,7 +164,7 @@ extension SorobanAuthorizationEntryXDR {
         }
 
         // Stamp expiration into credentials before hashing.
-        if let expLedger = signatureExpirationLedger {
+        if let expLedger = try signatureExpirationForNewSignature(requested: signatureExpirationLedger) {
             guard var creds = credentials.addressCredentials else {
                 throw StellarSDKError.invalidArgument(message: "signing requires address-type credentials")
             }

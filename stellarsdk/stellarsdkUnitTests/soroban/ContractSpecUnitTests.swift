@@ -544,4 +544,49 @@ class ContractSpecUnitTests: XCTestCase {
             XCTFail("Expected bytes SCVal")
         }
     }
+
+    // MARK: - ScMap key order
+
+    /// Maps and structs come out in the Soroban host's key order, whatever order the
+    /// caller's dictionary or the spec's field list has; keys that convert to equal values
+    /// are rejected.
+    func testNativeToXdrSCVal_mapsAndStructsInHostKeyOrder() throws {
+        func keys(_ value: SCValXDR) -> [String?] {
+            return (value.map ?? []).map { $0.key.xdrEncoded }
+        }
+        let symbols = ["A", "AB", "B", "_", "a"]
+        let fields = ["a", "_", "AB", "B", "A"].map {
+            SCSpecUDTStructFieldV0XDR(doc: "", name: $0, type: .u32)
+        }
+        let spec = ContractSpec(entries: [.structV0(SCSpecUDTStructV0XDR(doc: "", lib: "", name: "Keys", fields: fields))])
+        let structVal = try spec.nativeToXdrSCVal(
+            val: Dictionary(uniqueKeysWithValues: symbols.map { ($0, 1) }),
+            ty: .udt(SCSpecTypeUDTXDR(name: "Keys"))
+        )
+        XCTAssertEqual(keys(structVal), symbols.map { SCValXDR.symbol($0).xdrEncoded })
+
+        let maps: [(SCSpecTypeDefXDR, [AnyHashable], [SCValXDR])] = [
+            (.i32, [1, 0, -1, Int(Int32.min)], [.i32(Int32.min), .i32(-1), .i32(0), .i32(1)]),
+            (.symbol, ["a", "_", "B", "AB", "A"], symbols.map { .symbol($0) }),
+            (.string, ["b", "ab", "a", ""], [.string(""), .string("a"), .string("ab"), .string("b")])
+        ]
+        for (keyType, shuffledKeys, expected) in maps {
+            let mapVal = try spec.nativeToXdrSCVal(
+                val: Dictionary(uniqueKeysWithValues: shuffledKeys.map { ($0, 1) }),
+                ty: .map(SCSpecTypeMapXDR(keyType: keyType, valueType: .u32))
+            )
+            XCTAssertEqual(keys(mapVal), expected.map { $0.xdrEncoded })
+        }
+
+        let equalKeys: [AnyHashable: Int] = [1: 1, "1": 2]
+        XCTAssertThrowsError(try spec.nativeToXdrSCVal(
+            val: equalKeys,
+            ty: .map(SCSpecTypeMapXDR(keyType: .i128, valueType: .u32))
+        )) { error in
+            guard case StellarSDKError.invalidArgument(let message) = error else {
+                return XCTFail("expected invalidArgument, got \(error)")
+            }
+            XCTAssertTrue(message.contains("Duplicate ScMap key"), message)
+        }
+    }
 }

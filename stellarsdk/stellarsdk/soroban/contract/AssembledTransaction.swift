@@ -500,22 +500,21 @@ public final class AssembledTransaction: @unchecked Sendable {
     /// authorized by the transaction-envelope signer, not by auth-entry signing. An entry
     /// whose top-level address and delegate tree both differ from the signer is also silently
     /// skipped (multi-party transactions carry entries for different signers).
+    ///
+    /// **Expiration**: every signature on an entry commits to the entry's single stored
+    /// `signatureExpirationLedger`. While any node of a matching entry carries a signature,
+    /// the stored value is kept, and a `validUntilLedgerSeq` that differs from it throws
+    /// `StellarSDKError.invalidArgument`. Otherwise the entry gets `validUntilLedgerSeq`,
+    /// or the latest ledger + 100 when it is `nil`; the latest ledger is fetched at most
+    /// once per call, and only when an entry needs it.
+    ///
+    /// The transaction's auth entries are replaced only after every matching entry is
+    /// signed; on any error the transaction keeps the entries it had.
     public func signAuthEntries(signerKeyPair: KeyPair, authorizeEntryCallback: ((_ entry: SorobanAuthorizationEntryXDR, _ network: Network) async throws -> SorobanAuthorizationEntryXDR)? = nil, validUntilLedgerSeq: UInt32? = nil) async throws {
         let signerAddress = signerKeyPair.accountId
 
         guard let transaction = tx else {
             throw AssembledTransactionError.notYetSimulated(message: "Transaction has not yet been simulated")
-        }
-
-        var expirationLedger = validUntilLedgerSeq
-        if expirationLedger == nil {
-            let latestLedgerResponseEnum = await server.getLatestLedger()
-            switch latestLedgerResponseEnum {
-            case .success(let response):
-                expirationLedger = response.sequence + 100
-            case .failure(let error):
-                throw error
-            }
         }
 
         let ops = transaction.operations
@@ -527,73 +526,49 @@ public final class AssembledTransaction: @unchecked Sendable {
             throw AssembledTransactionError.unexpectedTxType(message: "Unexpected Transaction type; no invoke host function operations found.")
         }
 
+        var defaultExpirationLedger: UInt32?
         var authEntries = invokeHostFuncOp.auth
         for i in 0..<authEntries.count {
             var entry = authEntries[i]
 
-            switch entry.credentials {
-            case .sourceAccount:
-                // Source-account entries are authorized by the transaction envelope signer;
-                // they carry no explicit address to match against.
-                continue
+            // Source-account entries are authorized by the transaction envelope signer;
+            // they carry no explicit address to match against.
+            guard var creds = entry.credentials.addressCredentials else { continue }
 
-            case .address(let creds):
+            // A WITH_DELEGATES entry matches when the signer is the top-level address or any
+            // delegate node; sign(forAddress:) then routes the signature into every matching
+            // node, top-level or delegate, depth-first.
+            let forAddress: String?
+            if case .addressWithDelegates(let withDelegates) = entry.credentials {
+                guard creds.address.accountId == signerAddress
+                        || delegateTreeContainsAccountId(nodes: withDelegates.delegates, accountId: signerAddress)
+                else { continue }
+                forAddress = signerAddress
+            } else {
                 guard creds.address.accountId == signerAddress else { continue }
-                var updatedCreds = creds
-                updatedCreds.signatureExpirationLedger = expirationLedger!
-                entry.credentials = .address(updatedCreds)
-                if let callback = authorizeEntryCallback {
-                    authEntries[i] = try await callback(entry, options.clientOptions.network)
-                } else {
-                    if signerKeyPair.privateKey == nil {
-                        throw AssembledTransactionError.missingPrivateKey(message: "Signer keypair requires private key if no authorization callback provided")
-                    }
-                    try entry.sign(signer: signerKeyPair, network: options.clientOptions.network)
-                    authEntries[i] = entry
+                forAddress = nil
+            }
+
+            let expirationLedger: UInt32
+            if let resolved = try entry.signatureExpirationForNewSignature(requested: validUntilLedgerSeq) {
+                expirationLedger = resolved
+            } else if let cached = defaultExpirationLedger {
+                expirationLedger = cached
+            } else {
+                expirationLedger = try await latestLedgerSequence() + 100
+                defaultExpirationLedger = expirationLedger
+            }
+            creds.signatureExpirationLedger = expirationLedger
+            entry.credentials = try entry.credentials.withAddressCredentials(creds)
+
+            if let callback = authorizeEntryCallback {
+                authEntries[i] = try await callback(entry, options.clientOptions.network)
+            } else {
+                if signerKeyPair.privateKey == nil {
+                    throw AssembledTransactionError.missingPrivateKey(message: "Signer keypair requires private key if no authorization callback provided")
                 }
-
-            case .addressV2(let creds):
-                guard creds.address.accountId == signerAddress else { continue }
-                var updatedCreds = creds
-                updatedCreds.signatureExpirationLedger = expirationLedger!
-                entry.credentials = .addressV2(updatedCreds)
-                if let callback = authorizeEntryCallback {
-                    authEntries[i] = try await callback(entry, options.clientOptions.network)
-                } else {
-                    if signerKeyPair.privateKey == nil {
-                        throw AssembledTransactionError.missingPrivateKey(message: "Signer keypair requires private key if no authorization callback provided")
-                    }
-                    try entry.sign(signer: signerKeyPair, network: options.clientOptions.network)
-                    authEntries[i] = entry
-                }
-
-            case .addressWithDelegates(let withDelegates):
-                // Determine whether this signer is relevant to this entry: the signer must
-                // match the top-level address or at least one delegate node.
-                let topLevelMatches = withDelegates.addressCredentials.address.accountId == signerAddress
-                let delegateMatches = delegateTreeContainsAccountId(nodes: withDelegates.delegates, accountId: signerAddress)
-                guard topLevelMatches || delegateMatches else { continue }
-
-                // Stamp the expiration on the top-level credentials before signing.
-                var updatedCreds = withDelegates.addressCredentials
-                updatedCreds.signatureExpirationLedger = expirationLedger!
-                let updatedWithDelegates = SorobanAddressCredentialsWithDelegatesXDR(
-                    addressCredentials: updatedCreds,
-                    delegates: withDelegates.delegates
-                )
-                entry.credentials = .addressWithDelegates(updatedWithDelegates)
-
-                if let callback = authorizeEntryCallback {
-                    authEntries[i] = try await callback(entry, options.clientOptions.network)
-                } else {
-                    if signerKeyPair.privateKey == nil {
-                        throw AssembledTransactionError.missingPrivateKey(message: "Signer keypair requires private key if no authorization callback provided")
-                    }
-                    // sign(forAddress:) routes the signature into every matching node,
-                    // top-level or delegate, depth-first.
-                    try entry.sign(signer: signerKeyPair, network: options.clientOptions.network, forAddress: signerAddress)
-                    authEntries[i] = entry
-                }
+                try entry.sign(signer: signerKeyPair, network: options.clientOptions.network, forAddress: forAddress)
+                authEntries[i] = entry
             }
         }
 
@@ -601,6 +576,16 @@ public final class AssembledTransaction: @unchecked Sendable {
             throw AssembledTransactionError.notYetSimulated(message: "Transaction has not yet been simulated")
         }
         transaction.setSorobanAuth(auth: authEntries)
+    }
+
+    /// Sequence of the latest ledger the RPC server reports.
+    private func latestLedgerSequence() async throws -> UInt32 {
+        switch await server.getLatestLedger() {
+        case .success(let response):
+            return response.sequence
+        case .failure(let error):
+            throw error
+        }
     }
 
     /// Returns `true` when a `WITH_DELEGATES` entry's top-level address is void but every

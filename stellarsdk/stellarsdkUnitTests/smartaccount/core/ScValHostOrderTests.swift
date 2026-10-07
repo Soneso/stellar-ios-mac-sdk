@@ -303,4 +303,124 @@ final class ScValHostOrderTests: XCTestCase {
             OZPolicyManager.scValToXdrBytes(try signerA.toScVal())
         )
     }
+
+    // MARK: - Shared host-order vector
+
+    /// One key per ordering rule, in ascending host order (rs-soroban-env `Compare<ScVal>`).
+    private func hostOrderVector() throws -> [SCValXDR] {
+        let max64 = UInt64.max
+        let zeroKey = [UInt8](repeating: 0x00, count: 32)
+        let ffKey = [UInt8](repeating: 0xff, count: 32)
+        return [
+            .bool(false), .bool(true), .void,
+            .error(.contract(1)), .error(.contract(2)), .error(.wasmVm(.invalidInput)),
+            .u32(0), .u32(UInt32.max), .i32(Int32.min), .i32(-1), .i32(0), .i32(1),
+            .u64(0), .u64(max64), .i64(Int64.min), .i64(-1), .i64(0),
+            .timepoint(0), .timepoint(1), .duration(0),
+            .u128(UInt128PartsXDR(hi: 0, lo: 1)), .u128(UInt128PartsXDR(hi: 0, lo: max64)),
+            .u128(UInt128PartsXDR(hi: 1, lo: 0)),
+            .i128(Int128PartsXDR(hi: -1, lo: max64)), .i128(Int128PartsXDR(hi: 0, lo: 0)),
+            .i128(Int128PartsXDR(hi: 0, lo: max64)), .i128(Int128PartsXDR(hi: 1, lo: 0)),
+            .u256(UInt256PartsXDR(hiHi: 0, hiLo: 0, loHi: 0, loLo: 1)),
+            .u256(UInt256PartsXDR(hiHi: 1, hiLo: 0, loHi: 0, loLo: 0)),
+            .i256(Int256PartsXDR(hiHi: -1, hiLo: max64, loHi: max64, loLo: max64)),
+            .i256(Int256PartsXDR(hiHi: 0, hiLo: 0, loHi: 0, loLo: 0)),
+            bytes(), bytes(0x01), bytes(0x01, 0x00), bytes(0x02), bytes(0xff),
+            .string(""), .string("a"), .string("ab"), .string("b"),
+            .symbol("A"), .symbol("AB"), .symbol("B"), .symbol("_"), .symbol("a"),
+            .vec([]), .vec([.u32(1)]), .vec([.u32(1), .u32(0)]), .vec([.u32(2)]), .vec([.i32(-1)]),
+            .map([]), .map([SCMapEntryXDR(key: .u32(1), val: .u32(1))]),
+            .map([SCMapEntryXDR(key: .u32(1), val: .u32(2))]), .map([SCMapEntryXDR(key: .u32(2), val: .u32(0))]),
+            .address(.account(try PublicKey(zeroKey))), .address(.account(try PublicKey(ffKey))),
+            .address(.contract(WrappedData32(Data(zeroKey)))), .address(.contract(WrappedData32(Data(ffKey)))),
+            .address(.muxedAccount(MuxedAccountMed25519XDR(id: 0, sourceAccountEd25519: ffKey))),
+            .address(.muxedAccount(MuxedAccountMed25519XDR(id: 1, sourceAccountEd25519: zeroKey))),
+            .ledgerKeyContractInstance,
+            .ledgerKeyNonce(SCNonceKeyXDR(nonce: -1)), .ledgerKeyNonce(SCNonceKeyXDR(nonce: 0))
+        ]
+    }
+
+    /// Every pair i < j of the vector compares as less, in both directions.
+    func testHostOrderVector_everyPairOrdered() throws {
+        let vector = try hostOrderVector()
+        XCTAssertEqual(vector.count, 63)
+        for i in vector.indices {
+            XCTAssertEqual(compareScValHostOrder(vector[i], vector[i]), 0, "#\(i + 1) equals itself")
+            for j in (i + 1)..<vector.count {
+                XCTAssertLessThan(compareScValHostOrder(vector[i], vector[j]), 0, "#\(i + 1) < #\(j + 1)")
+                XCTAssertGreaterThan(compareScValHostOrder(vector[j], vector[i]), 0, "#\(j + 1) > #\(i + 1)")
+            }
+        }
+    }
+
+    /// The list reversed, then every second neighbour pair swapped.
+    private func shuffled<T>(_ values: [T]) -> [T] {
+        var result = Array(values.reversed())
+        for i in stride(from: 0, to: result.count - 1, by: 2) {
+            result.swapAt(i, i + 1)
+        }
+        return result
+    }
+
+    /// The builder restores host order with every value on its key, is idempotent, and
+    /// rejects a key that equals another one under the host order.
+    func testSortedMap_restoresHostOrderAndRejectsDuplicateKeys() throws {
+        let ordered = try hostOrderVector().enumerated().map {
+            SCMapEntryXDR(key: $0.element, val: .u32(UInt32($0.offset)))
+        }
+        let sorted = try SCValXDR.sortedMap(shuffled(ordered))
+        XCTAssertEqual(sorted.xdrEncoded, SCValXDR.map(ordered).xdrEncoded)
+        XCTAssertEqual(try SCValXDR.sortedMap(try XCTUnwrap(sorted.map)).xdrEncoded, sorted.xdrEncoded)
+
+        let duplicateKey = try SCValXDR.address(SCAddressXDR(contractId: verifier))
+        let withDuplicate = [
+            SCMapEntryXDR(key: .address(try SCAddressXDR(contractId: verifier)), val: .u32(1)),
+            SCMapEntryXDR(key: .i32(-1), val: .u32(2)),
+            SCMapEntryXDR(key: duplicateKey, val: .u32(3))
+        ]
+        XCTAssertThrowsError(try SCValXDR.sortedMap(withDuplicate)) { error in
+            guard case StellarSDKError.invalidArgument(let message) = error else {
+                return XCTFail("expected invalidArgument, got \(error)")
+            }
+            XCTAssertTrue(message.contains(verifier), message)
+        }
+    }
+
+    /// Contract instances compare by executable (an external reference by owner, then tag
+    /// content), then by storage with absent storage first and maps compared entry-wise.
+    func testContractInstanceComparands_executableThenStorage() throws {
+        let owner = try SCAddressXDR(contractId: verifier)
+        func instance(_ executable: ContractExecutableXDR, _ storage: [SCMapEntryXDR]?) -> SCValXDR {
+            return .contractInstance(SCContractInstanceXDR(executable: executable, storage: storage))
+        }
+        let wasm = ContractExecutableXDR.wasm(WrappedData32(Data(count: 32)))
+        let ascending = [
+            instance(wasm, nil),
+            instance(wasm, []),
+            instance(wasm, [SCMapEntryXDR(key: .symbol("a"), val: .u32(0)), SCMapEntryXDR(key: .symbol("c"), val: .u32(0))]),
+            instance(wasm, [SCMapEntryXDR(key: .symbol("b"), val: .u32(0))]),
+            instance(.token, nil),
+            instance(.externalRef(ContractExecutableExternalRefXDR(executableOwner: owner, tag: "aa")), nil),
+            instance(.externalRef(ContractExecutableExternalRefXDR(executableOwner: owner, tag: "b")), nil)
+        ]
+        for i in ascending.indices.dropLast() {
+            XCTAssertLessThan(compareScValHostOrder(ascending[i], ascending[i + 1]), 0, "#\(i) < #\(i + 1)")
+            XCTAssertGreaterThan(compareScValHostOrder(ascending[i + 1], ascending[i]), 0, "#\(i + 1) > #\(i)")
+        }
+        let sameAsFirst = instance(.wasm(WrappedData32(Data(count: 32))), nil)
+        XCTAssertEqual(compareScValHostOrder(ascending[0], sameAsFirst), 0)
+        XCTAssertEqual(compareScValHostOrder(sameAsFirst, ascending[0]), 0)
+    }
+
+    /// Decoding keeps a map's wire order: a map whose keys are out of host order re-encodes
+    /// byte-identically.
+    func testDecodedMap_keepsWireOrder() throws {
+        let outOfOrder = SCValXDR.map([
+            SCMapEntryXDR(key: .symbol("b"), val: .u32(1)),
+            SCMapEntryXDR(key: .i32(-1), val: .u32(2)),
+            SCMapEntryXDR(key: .i32(1), val: .u32(3))
+        ])
+        let wire = try XCTUnwrap(outOfOrder.xdrEncoded)
+        XCTAssertEqual(try SCValXDR.fromXdr(base64: wire).xdrEncoded, wire)
+    }
 }
