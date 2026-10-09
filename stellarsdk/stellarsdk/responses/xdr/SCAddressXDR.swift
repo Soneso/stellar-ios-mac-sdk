@@ -9,6 +9,7 @@ public enum SCAddressXDR: XDRCodable, Sendable {
   case muxedAccount(MuxedAccountMed25519XDR)
   case claimableBalanceId(ClaimableBalanceIDXDR)
   case liquidityPoolId(WrappedData32)
+  case muxedContract(MuxedContractXDR)
 
   public init(from decoder: Decoder) throws {
     var container = try decoder.unkeyedContainer()
@@ -30,6 +31,9 @@ public enum SCAddressXDR: XDRCodable, Sendable {
     case SCAddressType.liquidityPool.rawValue:
       let val = try container.decode(WrappedData32.self)
       self = .liquidityPoolId(val)
+    case SCAddressType.muxedContract.rawValue:
+      let val = try container.decode(MuxedContractXDR.self)
+      self = .muxedContract(val)
     default:
       throw StellarSDKError.xdrDecodingError(message: "Unknown SCAddressXDR discriminant: \(discriminant)")
     }
@@ -42,6 +46,7 @@ public enum SCAddressXDR: XDRCodable, Sendable {
     case .muxedAccount: return SCAddressType.muxedAccount.rawValue
     case .claimableBalanceId: return SCAddressType.claimableBalance.rawValue
     case .liquidityPoolId: return SCAddressType.liquidityPool.rawValue
+    case .muxedContract: return SCAddressType.muxedContract.rawValue
     }
   }
 
@@ -59,6 +64,8 @@ public enum SCAddressXDR: XDRCodable, Sendable {
     case .claimableBalanceId(let val):
       try container.encode(val)
     case .liquidityPoolId(let val):
+      try container.encode(val)
+    case .muxedContract(let val):
       try container.encode(val)
     }
   }
@@ -82,6 +89,9 @@ extension SCAddressXDR {
     case .liquidityPoolId(let val):
       lines.append("\(prefix).type: SC_ADDRESS_TYPE_LIQUIDITY_POOL")
       lines.append("\(prefix).liquidityPoolId: \(TxRepHelper.bytesToHex(val.wrapped))")
+    case .muxedContract(let val):
+      lines.append("\(prefix).type: SC_ADDRESS_TYPE_MUXED_CONTRACT")
+      try val.toTxRep(prefix: "\(prefix).muxedContract", lines: &lines)
     }
   }
 
@@ -106,6 +116,9 @@ extension SCAddressXDR {
     case "SC_ADDRESS_TYPE_LIQUIDITY_POOL":
       let val: WrappedData32 = try TxRepHelper.requireLiquidityPoolId(map, "\(prefix).liquidityPoolId")
       return .liquidityPoolId(val)
+    case "SC_ADDRESS_TYPE_MUXED_CONTRACT":
+      let val = try MuxedContractXDR.fromTxRep(map, prefix: "\(prefix).muxedContract")
+      return .muxedContract(val)
     default:
       throw TxRepError.invalidValue(key: discKey)
     }
@@ -125,6 +138,8 @@ extension SCAddressXDR: XdrJsonCodable {
       return try balance.toXdrJsonValue()
     case .liquidityPoolId(let pool):
       return try PoolIDXDRJsonCodec.toXdrJsonValue(pool, type: "SCAddressXDR", key: "liquidity_pool")
+    case .muxedContract(let muxedContract):
+      return try muxedContract.toXdrJsonValue()
     }
   }
 
@@ -141,11 +156,13 @@ extension SCAddressXDR: XdrJsonCodable {
       return .claimableBalanceId(try ClaimableBalanceIDXDR.fromXdrJsonValue(value))
     case "L":
       return .liquidityPoolId(try PoolIDXDRJsonCodec.fromXdrJsonValue(value, type: "SCAddressXDR", key: "liquidity_pool"))
+    case "W":
+      return .muxedContract(try MuxedContractXDR.fromXdrJsonValue(value))
     default:
       throw XdrJsonError.invalidValue(
         type: "SCAddressXDR", key: nil,
-        message: "not an account, contract, muxed account, claimable balance " +
-                 "or liquidity pool strkey: \(XdrJson.preview(text))")
+        message: "not an account, contract, muxed account, claimable balance, " +
+                 "liquidity pool or muxed contract strkey: \(XdrJson.preview(text))")
     }
   }
 }

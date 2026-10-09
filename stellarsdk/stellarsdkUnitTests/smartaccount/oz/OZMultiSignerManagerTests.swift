@@ -1023,6 +1023,35 @@ final class OZMultiSignerManagerTests: XCTestCase {
         }
     }
 
+    /// A muxed wallet address is refused before the adapter is asked to sign, even when the
+    /// adapter claims it.
+    func test_submitWithMultipleSigners_muxedWalletAddress_throwsInvalidInput() async throws {
+        for muxed in ["MA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVAAAAAAAAAAAAAJLK",
+                      "WA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAAAAAAAAAPCIA6IG"] {
+            let config = try OZSmartAccountConfig.builder(
+                rpcUrl: "http://127.0.0.1:1",
+                networkPassphrase: Network.testnet.passphrase,
+                accountWasmHash: "a" + String(repeating: "0", count: 63),
+                webauthnVerifierAddress: validContractId
+            )
+            .externalWallet(FakeCanSignWalletAdapter(address: muxed))
+            .build()
+            let kit = MockOZSmartAccountKit(config: config)
+            kit.setConnectedState(credentialId: "test-cred", contractId: validContractId)
+            let hostFn = HostFunctionXDR.invokeContract(
+                InvokeContractArgsXDR(contractAddress: try SCAddressXDR(contractId: validContractId),
+                                      functionName: "pay", args: []))
+            do {
+                _ = try await OZMultiSignerManager(kit: kit).submitWithMultipleSigners(
+                    hostFunction: hostFn, selectedSigners: [.wallet(accountId: muxed)])
+                XCTFail("expected SmartAccountValidationException.InvalidInput for \(muxed)")
+            } catch let error as SmartAccountValidationException.InvalidInput {
+                XCTAssertEqual(error.message, "Invalid input for selectedSigners: Muxed account (M...) and muxed " +
+                               "contract (W...) addresses are not valid Soroban auth addresses: \(muxed)")
+            }
+        }
+    }
+
     /// Supplying a wallet adapter via `config.externalWallet` (custody model 1)
     /// is the other wallet path. The adapter claims `canSignFor` = true for
     /// `validAccountAddress`, so validation passes and the pipeline reaches RPC.

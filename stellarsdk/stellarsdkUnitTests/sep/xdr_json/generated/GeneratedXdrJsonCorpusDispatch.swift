@@ -760,6 +760,9 @@ enum GeneratedXdrJsonCorpusDispatch {
         case "MuxedAccountXDRMed25519XDR":
             let value = try XDRDecoder.decode(MuxedAccountXDRMed25519XDR.self, data: data)
             return try value.toXdrJson()
+        case "MuxedContractXDR":
+            let value = try XDRDecoder.decode(MuxedContractXDR.self, data: data)
+            return try value.toXdrJson()
         case "NodeIDXDR":
             let value = try XDRDecoder.decode(NodeIDXDR.self, data: data)
             return try NodeIDXDRJsonCodec.toXdrJson(value)
@@ -2160,6 +2163,9 @@ enum GeneratedXdrJsonCorpusDispatch {
         case "MuxedAccountXDRMed25519XDR":
             let value = try MuxedAccountXDRMed25519XDR.fromXdrJson(json)
             return try Data(XDREncoder.encode(value)).base64EncodedString()
+        case "MuxedContractXDR":
+            let value = try MuxedContractXDR.fromXdrJson(json)
+            return try Data(XDREncoder.encode(value)).base64EncodedString()
         case "NodeIDXDR":
             let value = try NodeIDXDRJsonCodec.fromXdrJson(json)
             return try Data(XDREncoder.encode(value)).base64EncodedString()
@@ -3079,6 +3085,7 @@ enum GeneratedXdrJsonCorpusDispatch {
         "MuxedAccountMed25519XDR",
         "MuxedAccountXDR",
         "MuxedAccountXDRMed25519XDR",
+        "MuxedContractXDR",
         "NodeIDXDR",
         "OfferEntryFlagsXDR",
         "OfferEntryXDR",

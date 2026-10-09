@@ -1060,6 +1060,15 @@ static func parseTxRepLines(_ lines: [String]) -> [String: String] {
         XCTAssertEqual(decoded, original, "TxRep roundtrip failed for SCAddressType.muxedAccount")
     }
 
+    func test_SCAddressType_SC_ADDRESS_TYPE_MUXED_CONTRACT() throws {
+        let original: SCAddressType = .muxedContract
+        var lines: [String] = []
+        try original.toTxRep(prefix: "k", lines: &lines)
+        let map = Self.parseTxRepLines(lines)
+        let decoded = try SCAddressType.fromTxRep(map, prefix: "k")
+        XCTAssertEqual(decoded, original, "TxRep roundtrip failed for SCAddressType.muxedContract")
+    }
+
     func test_SCErrorCode_SCEC_ARITH_DOMAIN() throws {
         let original: SCErrorCode = .arithDomain
         var lines: [String] = []

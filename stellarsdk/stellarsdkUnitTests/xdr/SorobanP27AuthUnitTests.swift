@@ -1360,4 +1360,82 @@ final class SorobanP27AuthUnitTests: XCTestCase {
         }
         XCTAssertEqual(nestedVec.count, 1, "Nested node must have exactly one signature element")
     }
+
+    // MARK: - Muxed addresses are refused as auth addresses
+
+    private let muxedAccountAddress = "MA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVAAAAAAAAAAAAAJLK"
+    private let muxedContractAddress = "WA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAAAAAAAAAPCIA6IG"
+
+    private func muxedCredentialAddresses() throws -> [SCAddressXDR] {
+        return [try SCAddressXDR(accountId: muxedAccountAddress), try SCAddressXDR(muxedContractId: muxedContractAddress)]
+    }
+
+    private func credentialMessage(_ strKey: String) -> String {
+        return "Muxed account (M...) and muxed contract (W...) addresses are not valid Soroban auth " +
+            "credential addresses: \(strKey); use the underlying G... or C... address instead"
+    }
+
+    private func addressMessage(_ strKey: String) -> String {
+        return "Muxed account (M...) and muxed contract (W...) addresses are not valid Soroban auth addresses: \(strKey)"
+    }
+
+    private func goldenEntry(credentialAddress: SCAddressXDR) throws -> SorobanAuthorizationEntryXDR {
+        var entry = try makeGoldenEntry(expirationLedger: 100, credentialArm: .v2)
+        var creds = try XCTUnwrap(entry.credentials.addressCredentials)
+        creds.address = credentialAddress
+        entry.credentials = .addressV2(creds)
+        return entry
+    }
+
+    private func assertInvalidArgument<T>(_ expression: @autoclosure () throws -> T, _ expected: String,
+                                          line: UInt = #line) {
+        XCTAssertThrowsError(try expression(), line: line) { error in
+            guard case StellarSDKError.invalidArgument(let message) = error else {
+                return XCTFail("Expected invalidArgument, got \(error)", line: line)
+            }
+            XCTAssertEqual(message, expected, line: line)
+        }
+    }
+
+    /// The default path refuses a muxed credential address before it stamps the expiration.
+    func testSignRefusesMuxedCredentialAddress() throws {
+        let signer = try KeyPair(secretSeed: GoldenVectors.signerSeed)
+        for muxed in try muxedCredentialAddresses() {
+            var entry = try goldenEntry(credentialAddress: muxed)
+            let before = try XDREncoder.encode(entry)
+            assertInvalidArgument(try entry.sign(signer: signer, network: GoldenVectors.network,
+                                                 signatureExpirationLedger: 500),
+                                  credentialMessage(try muxed.toStrKey()))
+            XCTAssertEqual(try XDREncoder.encode(entry), before)
+        }
+    }
+
+    /// The explicit-target path refuses a muxed target before it stamps the expiration.
+    func testSignRefusesMuxedForAddress() throws {
+        let signer = try KeyPair(secretSeed: GoldenVectors.signerSeed)
+        for target in [muxedAccountAddress, muxedContractAddress] {
+            var entry = try makeGoldenEntry(expirationLedger: 100, credentialArm: .withDelegates)
+            let before = try XDREncoder.encode(entry)
+            assertInvalidArgument(try entry.sign(signer: signer, network: GoldenVectors.network,
+                                                 signatureExpirationLedger: 500, forAddress: target),
+                                  addressMessage(target))
+            XCTAssertEqual(try XDREncoder.encode(entry), before)
+        }
+    }
+
+    func testWithDelegatesRefusesMuxedAddresses() throws {
+        for muxed in try muxedCredentialAddresses() {
+            assertInvalidArgument(try SorobanAuthorizationEntryXDR.withDelegates(
+                                    entry: try goldenEntry(credentialAddress: muxed), delegates: [], expirationLedger: 100),
+                                  credentialMessage(try muxed.toStrKey()))
+        }
+        let source = try makeGoldenEntry(expirationLedger: 100, credentialArm: .v2)
+        for delegate in [muxedAccountAddress, muxedContractAddress] {
+            let descriptor = SorobanDelegateDescriptor(
+                address: GoldenVectors.contractId, nestedDelegates: [SorobanDelegateDescriptor(address: delegate)])
+            assertInvalidArgument(try SorobanAuthorizationEntryXDR.withDelegates(
+                                    entry: source, delegates: [descriptor], expirationLedger: 100),
+                                  addressMessage(delegate))
+        }
+    }
 }

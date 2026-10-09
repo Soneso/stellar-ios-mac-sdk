@@ -207,6 +207,6 @@ leaves an empty name, and a member whose stripped remainder is exactly `Error`,
 which the reference escapes. Neither occurs in the current `.x` set.
 
 The reference CLI vendors a different XDR commit than the SDK generates from, so
-it can lag behind on newly added types. At the current pins, two enum members and
-two structs are unresolvable. Such members and types are reported as unresolvable
+it can lag behind on newly added types. At the current pins, twelve enum members and
+three structs are unresolvable. Such members and types are reported as unresolvable
 rather than as mismatches.

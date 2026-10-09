@@ -177,11 +177,13 @@ class XDRContractConfigUnitTests: XCTestCase {
     }
 
     func testContractCostTypeLastCase() throws {
-        let original = ContractCostType.bn254G1Msm
+        let original = ContractCostType.verifyMlDsa87Sig
         let encoded = try XDREncoder.encode(original)
         let decoded = try XDRDecoder.decode(ContractCostType.self, data: encoded)
         XCTAssertEqual(original, decoded)
-        XCTAssertEqual(decoded.rawValue, 85)
+        XCTAssertEqual(decoded.rawValue, 94)
+        XCTAssertEqual(try decoded.toXdrJson(), "\"verify_ml_dsa87_sig\"")
+        XCTAssertEqual(try ContractCostType.fromXdrJson("\"verify_ml_dsa87_sig\""), original)
     }
 
     func testContractCostTypeMiddleCases() throws {
@@ -220,7 +222,10 @@ class XDRContractConfigUnitTests: XCTestCase {
             .bn254G1Add, .bn254G1Mul, .bn254Pairing,
             .bn254FrFromU256, .bn254FrToU256,
             .bn254FrAddSub, .bn254FrMul, .bn254FrPow, .bn254FrInv,
-            .bn254G1Msm
+            .bn254G1Msm,
+            .mlDsa44DecodeVerifyingKey, .mlDsa65DecodeVerifyingKey, .mlDsa87DecodeVerifyingKey,
+            .mlDsa44DecodeSignature, .mlDsa65DecodeSignature, .mlDsa87DecodeSignature,
+            .verifyMlDsa44Sig, .verifyMlDsa65Sig
         ]
         for costType in cases {
             let encoded = try XDREncoder.encode(costType)

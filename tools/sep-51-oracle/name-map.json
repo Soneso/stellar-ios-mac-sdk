@@ -4,16 +4,26 @@
     "version": "28.0.1",
     "xdr_commit": "9c9c145953e80990d6ff1ae3a6a973a0ce6d0694"
   },
-  "sdk_xdr_commit": "c2612cf534e4448fa263e252afe1bdbac5512d14",
+  "sdk_xdr_commit": "579a90b2654e3811e8b672e128a5e094c7325b27",
   "description": "SEP-0051 XDR-JSON names derived from the .x sources. Regenerate with ruby tools/sep-51-oracle/name_map.rb --diff after any XDR pin bump.",
   "verification": {
-    "enum_members_total": 595,
+    "enum_members_total": 605,
     "enum_members_checked": 593,
     "enum_members_unresolvable": [
+      "ContractCostType.MlDsa44DecodeSignature",
+      "ContractCostType.MlDsa44DecodeVerifyingKey",
+      "ContractCostType.MlDsa65DecodeSignature",
+      "ContractCostType.MlDsa65DecodeVerifyingKey",
+      "ContractCostType.MlDsa87DecodeSignature",
+      "ContractCostType.MlDsa87DecodeVerifyingKey",
+      "ContractCostType.VerifyMlDsa44Sig",
+      "ContractCostType.VerifyMlDsa65Sig",
+      "ContractCostType.VerifyMlDsa87Sig",
+      "SCAddressType.SC_ADDRESS_TYPE_MUXED_CONTRACT",
       "StellarValueType.STELLAR_VALUE_EMPTY_TX_SET_MS",
       "StellarValueType.STELLAR_VALUE_SIGNED_MS"
     ],
-    "struct_types_total": 236,
+    "struct_types_total": 237,
     "struct_types_field_comparable": 227,
     "struct_types_string_rendered": [
       "Int128Parts",
@@ -25,6 +35,7 @@
       "med25519"
     ],
     "struct_types_unresolvable": [
+      "MuxedContract",
       "StellarValueProposedMsValue",
       "StellarValueSignedMsValue"
     ],
@@ -494,6 +505,51 @@
           "identifier": "Bn254G1Msm",
           "value": 85,
           "json": "bn254_g1_msm"
+        },
+        {
+          "identifier": "MlDsa44DecodeVerifyingKey",
+          "value": 86,
+          "json": "ml_dsa44_decode_verifying_key"
+        },
+        {
+          "identifier": "MlDsa65DecodeVerifyingKey",
+          "value": 87,
+          "json": "ml_dsa65_decode_verifying_key"
+        },
+        {
+          "identifier": "MlDsa87DecodeVerifyingKey",
+          "value": 88,
+          "json": "ml_dsa87_decode_verifying_key"
+        },
+        {
+          "identifier": "MlDsa44DecodeSignature",
+          "value": 89,
+          "json": "ml_dsa44_decode_signature"
+        },
+        {
+          "identifier": "MlDsa65DecodeSignature",
+          "value": 90,
+          "json": "ml_dsa65_decode_signature"
+        },
+        {
+          "identifier": "MlDsa87DecodeSignature",
+          "value": 91,
+          "json": "ml_dsa87_decode_signature"
+        },
+        {
+          "identifier": "VerifyMlDsa44Sig",
+          "value": 92,
+          "json": "verify_ml_dsa44_sig"
+        },
+        {
+          "identifier": "VerifyMlDsa65Sig",
+          "value": 93,
+          "json": "verify_ml_dsa65_sig"
+        },
+        {
+          "identifier": "VerifyMlDsa87Sig",
+          "value": 94,
+          "json": "verify_ml_dsa87_sig"
         }
       ]
     },
@@ -1163,6 +1219,11 @@
           "identifier": "SC_ADDRESS_TYPE_LIQUIDITY_POOL",
           "value": 4,
           "json": "liquidity_pool"
+        },
+        {
+          "identifier": "SC_ADDRESS_TYPE_MUXED_CONTRACT",
+          "value": 5,
+          "json": "muxed_contract"
         }
       ]
     },
@@ -4721,6 +4782,22 @@
         {
           "identifier": "ed25519",
           "json": "ed25519"
+        }
+      ]
+    },
+    {
+      "xdr_name": "MuxedContract",
+      "xdr_qualified_name": "MuxedContract",
+      "swift_name": "MuxedContractXDR",
+      "source": "Stellar-contract.x",
+      "fields": [
+        {
+          "identifier": "id",
+          "json": "id"
+        },
+        {
+          "identifier": "contractId",
+          "json": "contract_id"
         }
       ]
     },
@@ -9009,6 +9086,11 @@
         {
           "case": "SC_ADDRESS_TYPE_LIQUIDITY_POOL",
           "json": "liquidity_pool",
+          "void": false
+        },
+        {
+          "case": "SC_ADDRESS_TYPE_MUXED_CONTRACT",
+          "json": "muxed_contract",
           "void": false
         }
       ]

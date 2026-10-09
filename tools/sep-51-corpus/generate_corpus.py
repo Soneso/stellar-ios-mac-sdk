@@ -31,6 +31,7 @@ Exit codes:
 """
 
 import argparse
+import base64
 import json
 import os
 import shutil
@@ -60,11 +61,11 @@ DUMP = dict(ensure_ascii=False, separators=(",", ":"))
 
 # The keys a seed may carry. A seed that supplies the fields the reference is
 # supposed to produce is how a corpus turns self-referential, so the whitelist is
-# enforced rather than documented. `xdr` is admitted only for a spec seed, whose
-# value the reference provably cannot resolve.
+# enforced rather than documented. `xdr` and `arm` are admitted only for a spec seed,
+# whose value the reference provably cannot resolve.
 SEED_KEYS = {"type", "ios_type", "json", "note", "oracle", "spec_form",
              "spec_form_paths", "input_variants", "non_utf8_paths"}
-SPEC_SEED_KEYS = SEED_KEYS | {"xdr"}
+SPEC_SEED_KEYS = SEED_KEYS | {"xdr", "arm"}
 
 ORACLE_VALUES = {"reference", "incomparable", "spec"}
 
@@ -599,6 +600,24 @@ def reference_encodes(cli, seed):
     return True
 
 
+def unresolvable_arm_discriminant(seed, unresolvable_members):
+    """The discriminant value of the arm a spec seed of a known union names under `arm`,
+    None unless that arm's enum member is one the pinned reference cannot resolve."""
+    name_map = read_name_map()
+    for union in name_map.get("unions", []):
+        if union["swift_name"] != seed["ios_type"] or union.get("discriminant_kind") != "enum":
+            continue
+        cases = {arm["json"]: arm["case"] for arm in union["arms"]}
+        for enum in name_map.get("enums", []):
+            if enum["xdr_qualified_name"] != union["discriminant_type"]:
+                continue
+            for member in enum["members"]:
+                if (member["identifier"] == cases.get(seed["arm"])
+                        and (enum["swift_name"], member["json"]) in unresolvable_members):
+                    return member["value"]
+    return None
+
+
 def build_spec_entry(cli, seed, available, unresolvable_structs, unresolvable_members):
     """Builds the entry for a value the pinned reference cannot resolve.
 
@@ -607,13 +626,25 @@ def build_spec_entry(cli, seed, available, unresolvable_structs, unresolvable_me
     licence to hand-write anything: the value must appear in the name table's
     unresolvable lists, and the reference must genuinely be unable to process it.
     That admits a struct type the reference does not know, paired with its SDK type
-    through the name table, and the bare JSON name of an enum member the reference
-    rejects, on the enum type it does know.
+    through the name table, the bare JSON name of an enum member the reference
+    rejects, on the enum type it does know, and a value of a union the reference
+    knows whose `arm` selects such a member, provided its `xdr` opens with that
+    member's discriminant. Sep51CorpusUnitTests requires the SDK to encode every
+    entry's JSON to exactly its `xdr`.
     """
     if seed["type"] in available:
         names_member = (isinstance(seed["json"], str)
                         and (seed["ios_type"], seed["json"]) in unresolvable_members)
-        if not names_member or reference_encodes(cli, seed):
+        arm_value = (unresolvable_arm_discriminant(seed, unresolvable_members)
+                     if "arm" in seed else None)
+        if arm_value is not None and "xdr" in seed:
+            opening = int.from_bytes(base64.b64decode(seed["xdr"])[:4], "big", signed=True)
+            if opening != arm_value:
+                raise GenerationError(
+                    "seed for %s names the arm %s, whose discriminant is %d, but its xdr "
+                    "opens with %d" % (seed["type"], seed["arm"], arm_value, opening)
+                )
+        if not (names_member or arm_value is not None) or reference_encodes(cli, seed):
             raise GenerationError(
                 "seed for %s is marked spec-derived, but the reference resolves it. A "
                 "spec-derived value is admissible only where the reference is silent; encode "

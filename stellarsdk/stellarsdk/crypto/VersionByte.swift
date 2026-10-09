@@ -22,6 +22,7 @@ import Foundation
 /// Common address prefixes:
 /// - G: Ed25519 public key (standard account address)
 /// - M: Multiplexed Ed25519 public key (account with memo ID)
+/// - W: Multiplexed contract address (contract with a multiplexing ID)
 /// - S: Ed25519 secret seed (private key)
 /// - T: Pre-authorized transaction hash (used in signers)
 /// - X: SHA256 hash (used in signers)
@@ -42,6 +43,9 @@ enum VersionByte:UInt8 {
 
     /// Multiplexed Ed25519 public key - Account address with memo ID starting with 'M'
     case med25519PublicKey = 96 // 12 << 3 - M
+
+    /// Multiplexed contract address - Contract address with a multiplexing ID starting with 'W'
+    case muxedContract = 176 // 22 << 3 - W
 
     /// Pre-authorized transaction hash - Used in multisig signers starting with 'T'
     case preAuthTX = 152 // 19 << 3 - T
@@ -77,6 +81,8 @@ extension VersionByte {
             return StellarProtocolConstants.STRKEY_ENCODED_LENGTH_STANDARD...StellarProtocolConstants.STRKEY_ENCODED_LENGTH_STANDARD
         case .med25519PublicKey:
             return StellarProtocolConstants.STRKEY_ENCODED_LENGTH_MUXED...StellarProtocolConstants.STRKEY_ENCODED_LENGTH_MUXED
+        case .muxedContract:
+            return StellarProtocolConstants.STRKEY_ENCODED_LENGTH_MUXED_CONTRACT...StellarProtocolConstants.STRKEY_ENCODED_LENGTH_MUXED_CONTRACT
         case .signedPayload:
             return StellarProtocolConstants.STRKEY_SIGNED_PAYLOAD_MIN_LENGTH...StellarProtocolConstants.STRKEY_ENCODED_LENGTH_SIGNED_PAYLOAD_MAX
         case .claimableBalance:

@@ -93,7 +93,8 @@ public enum OZSmartAccountAuth {
     ///   - networkPassphrase: Network passphrase.
     /// - Returns: 32-byte SHA-256 hash of the authorisation payload.
     /// - Throws: `SmartAccountTransactionException.SigningFailed` when credentials are not an
-    ///           address type or when XDR encoding fails.
+    ///           address type, when their address is a muxed account (M...) or muxed contract
+    ///           (W...) address, or when XDR encoding fails.
     public static func buildAuthPayloadHash(
         entry: SorobanAuthorizationEntryXDR,
         expirationLedger: UInt32,
@@ -103,6 +104,9 @@ public enum OZSmartAccountAuth {
             throw SmartAccountTransactionException.signingFailed(
                 reason: "Credentials must be of an address type to build auth payload hash"
             )
+        }
+        if let refusal = try muxedCredentialAddressRefusal(creds.address) {
+            throw SmartAccountTransactionException.signingFailed(reason: refusal)
         }
         // Stamp the expiration into a temporary copy so the preimage reflects the
         // final expiration value without mutating the caller's entry.
@@ -148,7 +152,8 @@ public enum OZSmartAccountAuth {
     ///   - useUpgradedAuth: `true` (the default) for `ADDRESS_V2` replacement credentials,
     ///     `false` for the legacy `ADDRESS` arm.
     /// - Returns: 32-byte SHA-256 hash of the authorisation payload.
-    /// - Throws: `SmartAccountTransactionException.SigningFailed` when XDR encoding fails.
+    /// - Throws: `SmartAccountTransactionException.SigningFailed` when `address` is a muxed
+    ///           account (M...) or muxed contract (W...) address or when XDR encoding fails.
     public static func buildSourceAccountAuthPayloadHash(
         entry: SorobanAuthorizationEntryXDR,
         address: SCAddressXDR,
@@ -157,6 +162,9 @@ public enum OZSmartAccountAuth {
         networkPassphrase: String,
         useUpgradedAuth: Bool = true
     ) async throws -> Data {
+        if let refusal = try muxedCredentialAddressRefusal(address) {
+            throw SmartAccountTransactionException.signingFailed(reason: refusal)
+        }
         // Build a temporary entry in the arm the replacement credentials will carry so
         // buildPreimage derives the matching preimage from the same fields.
         let tempCreds = SorobanAddressCredentialsXDR(

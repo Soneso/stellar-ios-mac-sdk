@@ -589,4 +589,98 @@ class ContractSpecUnitTests: XCTestCase {
             XCTAssertTrue(message.contains("Duplicate ScMap key"), message)
         }
     }
+
+    // MARK: - Address and MuxedAddress parameters
+
+    private let accountG = "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ"
+    private let muxedAccountM = "MA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVAAAAAAAAAAAAAJLK"
+    private let contractC = "CA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE"
+    private let muxedContractW = "WA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAAAAAAAAAPCIA6IG"
+    private let claimableBalanceB = "BAAD6DBUX6J22DMZOHIEZTEQ64CVCHEDRKWZONFEUL5Q26QD7R76RGR4TU"
+    private let liquidityPoolL = "LA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUPJN"
+    private let addressTakes = "Address takes an account (G...) or contract (C...) address"
+    private let muxedAddressTakes = "MuxedAddress takes an account (G...), muxed account (M...), contract (C...) or muxed contract (W...) address"
+
+    private func scAddress(_ strKey: String) throws -> SCAddressXDR {
+        switch strKey.first {
+        case "G", "M": return try SCAddressXDR(accountId: strKey)
+        case "C": return try SCAddressXDR(contractId: strKey)
+        case "W": return try SCAddressXDR(muxedContractId: strKey)
+        case "B": return try SCAddressXDR(claimableBalanceId: strKey)
+        default: return try SCAddressXDR(liquidityPoolId: strKey)
+        }
+    }
+
+    private func assertInvalidType(_ value: Any, _ ty: SCSpecTypeDefXDR, _ expected: String, line: UInt = #line) {
+        XCTAssertThrowsError(try ContractSpec(entries: []).nativeToXdrSCVal(val: value, ty: ty), line: line) { error in
+            guard case ContractSpecError.invalidType(let message) = error else {
+                return XCTFail("Expected invalidType, got \(error)", line: line)
+            }
+            XCTAssertEqual(message, expected, line: line)
+        }
+    }
+
+    func testAddressParametersAcceptTheirKinds() throws {
+        let spec = ContractSpec(entries: [])
+        let accepted: [(SCSpecTypeDefXDR, [String])] = [
+            (.address, [accountG, contractC]),
+            (.muxedAddress, [accountG, muxedAccountM, contractC, muxedContractW]),
+        ]
+        for (ty, strKeys) in accepted {
+            for strKey in strKeys {
+                for value in [strKey as Any, try scAddress(strKey) as Any] {
+                    let scVal = try spec.nativeToXdrSCVal(val: value, ty: ty)
+                    XCTAssertEqual(try scVal.address?.toStrKey(), strKey, "\(ty) must accept \(value)")
+                }
+            }
+        }
+    }
+
+    func testAddressParametersRefuseOtherKinds() throws {
+        for (ty, takes) in [(SCSpecTypeDefXDR.address, addressTakes), (.muxedAddress, muxedAddressTakes)] {
+            for value in [claimableBalanceB as Any, try scAddress(claimableBalanceB) as Any] {
+                assertInvalidType(value, ty, "\(takes), got the claimable balance address \(claimableBalanceB), " +
+                                  "which is produced by the host and is not a contract input")
+            }
+            for value in [liquidityPoolL as Any, try scAddress(liquidityPoolL) as Any] {
+                assertInvalidType(value, ty, "\(takes), got the liquidity pool address \(liquidityPoolL), " +
+                                  "which is produced by the host and is not a contract input")
+            }
+            assertInvalidType("GA7QYNF7", ty, "Invalid address format: GA7QYNF7; \(takes)")
+            assertInvalidType(42, ty, "\(takes), got Int")
+        }
+        for muxed in [muxedAccountM, muxedContractW] {
+            for value in [muxed as Any, try scAddress(muxed) as Any] {
+                assertInvalidType(value, .address,
+                                  "\(addressTakes), got the muxed address \(muxed), which needs a MuxedAddress parameter")
+            }
+        }
+    }
+
+    func testAddressObjectThatDoesNotEncodeThrowsTheSpecError() {
+        let wideId = WrappedData32(Data(repeating: 1, count: 33))
+        assertInvalidType(SCAddressXDR.contract(wideId), .address,
+                          "\(addressTakes), got an address that does not encode: SCAddressXDR.contract: expected 32 bytes, got 33")
+        assertInvalidType(SCAddressXDR.muxedContract(MuxedContractXDR(id: 1, contractId: wideId)), .muxedAddress,
+                          "\(muxedAddressTakes), got an address that does not encode: MuxedContractXDR: expected 40 bytes, got 41")
+    }
+
+    func testTransferTakesMuxedContractRecipient() throws {
+        let inputs = [
+            SCSpecFunctionInputV0XDR(doc: "", name: "from", type: .address),
+            SCSpecFunctionInputV0XDR(doc: "", name: "to", type: .muxedAddress),
+            SCSpecFunctionInputV0XDR(doc: "", name: "amount", type: .i128),
+        ]
+        let transfer = SCSpecFunctionV0XDR(doc: "", name: "transfer", inputs: inputs, outputs: [])
+        let spec = ContractSpec(entries: [.functionV0(transfer)])
+        let values = try spec.funcArgsToXdrSCValues(
+            name: "transfer", args: ["from": accountG, "to": muxedContractW, "amount": 100])
+        XCTAssertEqual(values.count, 3)
+        XCTAssertEqual(try values[0].address?.toStrKey(), accountG)
+        guard case .address(.muxedContract(let recipient)) = values[1] else {
+            return XCTFail("Expected the muxed contract recipient, got \(values[1])")
+        }
+        XCTAssertEqual(recipient.id, 123456)
+        XCTAssertEqual(values[2].i128String, "100")
+    }
 }

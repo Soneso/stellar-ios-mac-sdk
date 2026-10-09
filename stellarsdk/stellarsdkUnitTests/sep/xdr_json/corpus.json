@@ -4,13 +4,24 @@
     "reference_tool": "stellar-xdr",
     "reference_version": "28.0.1",
     "reference_xdr_commit": "9c9c145953e80990d6ff1ae3a6a973a0ce6d0694",
-    "sdk_xdr_commit": "c2612cf534e4448fa263e252afe1bdbac5512d14",
-    "entry_count": 453,
+    "sdk_xdr_commit": "579a90b2654e3811e8b672e128a5e094c7325b27",
+    "entry_count": 465,
     "unresolvable_enum_members": [
+      "ContractCostType.MlDsa44DecodeSignature",
+      "ContractCostType.MlDsa44DecodeVerifyingKey",
+      "ContractCostType.MlDsa65DecodeSignature",
+      "ContractCostType.MlDsa65DecodeVerifyingKey",
+      "ContractCostType.MlDsa87DecodeSignature",
+      "ContractCostType.MlDsa87DecodeVerifyingKey",
+      "ContractCostType.VerifyMlDsa44Sig",
+      "ContractCostType.VerifyMlDsa65Sig",
+      "ContractCostType.VerifyMlDsa87Sig",
+      "SCAddressType.SC_ADDRESS_TYPE_MUXED_CONTRACT",
       "StellarValueType.STELLAR_VALUE_EMPTY_TX_SET_MS",
       "StellarValueType.STELLAR_VALUE_SIGNED_MS"
     ],
     "unresolvable_struct_types": [
+      "MuxedContract",
       "StellarValueProposedMsValue",
       "StellarValueSignedMsValue"
     ]
@@ -3632,6 +3643,102 @@
       "json": "{\"close_time_ms\":\"18446744073709551615\",\"tx_set_hash\":\"0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20\",\"previous_ledger_hash\":\"0000000000000000000000000000000000000000000000000000000000000000\",\"previous_ledger_version\":29,\"lc_value_signature\":{\"node_id\":\"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV\",\"signature\":\"0a0b\"}}",
       "oracle": "spec",
       "note": "Empty-set close value at the unsigned 64-bit maximum close time."
+    },
+    {
+      "type": "ScAddressType",
+      "ios_type": "SCAddressType",
+      "xdr": "AAAABQ==",
+      "json": "\"muxed_contract\"",
+      "oracle": "spec",
+      "note": "Address type muxed contract member drops the shared prefix."
+    },
+    {
+      "type": "MuxedContract",
+      "ios_type": "MuxedContractXDR",
+      "xdr": "AAAAAAAB4kA2Pqo4Z4QfutD07YjHeeT+ZuVqJHDcmMDsnAc9BcexAw==",
+      "json": "\"WA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAAAAAAAAAPCIA6IG\"",
+      "oracle": "spec",
+      "note": "Muxed contract renders as a W strkey, contract id ahead of the id."
+    },
+    {
+      "type": "ScAddress",
+      "ios_type": "SCAddressXDR",
+      "xdr": "AAAABQAAAAAAAeJANj6qOGeEH7rQ9O2Ix3nk/mblaiRw3JjA7JwHPQXHsQM=",
+      "json": "\"WA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAAAAAAAAAPCIA6IG\"",
+      "oracle": "spec",
+      "note": "Muxed contract arm renders as a W strkey."
+    },
+    {
+      "type": "ContractCostType",
+      "ios_type": "ContractCostType",
+      "xdr": "AAAAVg==",
+      "json": "\"ml_dsa44_decode_verifying_key\"",
+      "oracle": "spec",
+      "note": "ML-DSA-44 verifying key cost type keeps the digits after dsa."
+    },
+    {
+      "type": "ContractCostType",
+      "ios_type": "ContractCostType",
+      "xdr": "AAAAVw==",
+      "json": "\"ml_dsa65_decode_verifying_key\"",
+      "oracle": "spec",
+      "note": "ML-DSA-65 verifying key cost type keeps the digits after dsa."
+    },
+    {
+      "type": "ContractCostType",
+      "ios_type": "ContractCostType",
+      "xdr": "AAAAWA==",
+      "json": "\"ml_dsa87_decode_verifying_key\"",
+      "oracle": "spec",
+      "note": "ML-DSA-87 verifying key cost type keeps the digits after dsa."
+    },
+    {
+      "type": "ContractCostType",
+      "ios_type": "ContractCostType",
+      "xdr": "AAAAWQ==",
+      "json": "\"ml_dsa44_decode_signature\"",
+      "oracle": "spec",
+      "note": "ML-DSA-44 signature decode cost type keeps the digits after dsa."
+    },
+    {
+      "type": "ContractCostType",
+      "ios_type": "ContractCostType",
+      "xdr": "AAAAWg==",
+      "json": "\"ml_dsa65_decode_signature\"",
+      "oracle": "spec",
+      "note": "ML-DSA-65 signature decode cost type keeps the digits after dsa."
+    },
+    {
+      "type": "ContractCostType",
+      "ios_type": "ContractCostType",
+      "xdr": "AAAAWw==",
+      "json": "\"ml_dsa87_decode_signature\"",
+      "oracle": "spec",
+      "note": "ML-DSA-87 signature decode cost type keeps the digits after dsa."
+    },
+    {
+      "type": "ContractCostType",
+      "ios_type": "ContractCostType",
+      "xdr": "AAAAXA==",
+      "json": "\"verify_ml_dsa44_sig\"",
+      "oracle": "spec",
+      "note": "ML-DSA-44 verification cost type keeps the digits after dsa."
+    },
+    {
+      "type": "ContractCostType",
+      "ios_type": "ContractCostType",
+      "xdr": "AAAAXQ==",
+      "json": "\"verify_ml_dsa65_sig\"",
+      "oracle": "spec",
+      "note": "ML-DSA-65 verification cost type keeps the digits after dsa."
+    },
+    {
+      "type": "ContractCostType",
+      "ios_type": "ContractCostType",
+      "xdr": "AAAAXg==",
+      "json": "\"verify_ml_dsa87_sig\"",
+      "oracle": "spec",
+      "note": "ML-DSA-87 verification cost type keeps the digits after dsa."
     },
     {
       "type": "Operation",

@@ -66,6 +66,11 @@ public struct StellarProtocolConstants: Sendable {
     /// Reference: [Stellar developer docs](https://developers.stellar.org)
     public static let STRKEY_ENCODED_LENGTH_MUXED = 69
 
+    /// StrKey encoded string length for muxed contract (69 characters)
+    /// Calculation: (1 version + 40 data + 2 checksum) bytes × 8 bits ÷ 5 bits/char = 69 chars
+    /// Reference: SEP-23 https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0023.md
+    public static let STRKEY_ENCODED_LENGTH_MUXED_CONTRACT = 69
+
     /// StrKey encoded string length for claimable balance (58 characters)
     /// Calculation: (1 version + 33 data + 2 checksum) bytes × 8 bits ÷ 5 bits/char = 58 chars
     /// Reference: [Stellar developer docs](https://developers.stellar.org)
@@ -97,6 +102,10 @@ public struct StellarProtocolConstants: Sendable {
     /// Decoded payload size for muxed account (40 bytes = 32 bytes key + 8 bytes ID)
     /// Reference: [Stellar developer docs](https://developers.stellar.org)
     public static let STRKEY_DECODED_SIZE_MUXED = 40
+
+    /// Decoded payload size for muxed contract (40 bytes = 32 bytes contract ID + 8 bytes ID)
+    /// Reference: SEP-23 https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0023.md
+    public static let STRKEY_DECODED_SIZE_MUXED_CONTRACT = 40
 
     /// Size of the muxed account ID field (8 bytes)
     /// Reference: [Stellar developer docs](https://developers.stellar.org)
@@ -318,6 +327,11 @@ public struct StellarProtocolConstants: Sendable {
     /// Encoded muxed accounts start with 'M'
     /// Reference: [Stellar developer docs](https://developers.stellar.org)
     public static let STRKEY_PREFIX_MUXED = "M"
+
+    /// StrKey prefix for muxed contract addresses
+    /// Encoded muxed contracts start with 'W'
+    /// Reference: CAP-84 https://github.com/stellar/stellar-protocol/blob/master/core/cap-0084.md
+    public static let STRKEY_PREFIX_MUXED_CONTRACT = "W"
 
     /// StrKey prefix for pre-authorized transactions
     /// Encoded pre-auth TX start with 'T'

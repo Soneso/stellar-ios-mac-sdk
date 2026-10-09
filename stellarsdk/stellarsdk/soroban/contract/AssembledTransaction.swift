@@ -510,6 +510,10 @@ public final class AssembledTransaction: @unchecked Sendable {
     ///
     /// The transaction's auth entries are replaced only after every matching entry is
     /// signed; on any error the transaction keeps the entries it had.
+    ///
+    /// An entry whose credential address is a muxed account (M...) or muxed contract (W...)
+    /// address throws `StellarSDKError.invalidArgument` before any entry is stamped or handed
+    /// to `authorizeEntryCallback`.
     public func signAuthEntries(signerKeyPair: KeyPair, authorizeEntryCallback: ((_ entry: SorobanAuthorizationEntryXDR, _ network: Network) async throws -> SorobanAuthorizationEntryXDR)? = nil, validUntilLedgerSeq: UInt32? = nil) async throws {
         let signerAddress = signerKeyPair.accountId
 
@@ -525,6 +529,7 @@ public final class AssembledTransaction: @unchecked Sendable {
         guard let invokeHostFuncOp = ops.first as? InvokeHostFunctionOperation else {
             throw AssembledTransactionError.unexpectedTxType(message: "Unexpected Transaction type; no invoke host function operations found.")
         }
+        try requireUnmuxedCredentialAddresses(invokeHostFuncOp.auth)
 
         var defaultExpirationLedger: UInt32?
         var authEntries = invokeHostFuncOp.auth

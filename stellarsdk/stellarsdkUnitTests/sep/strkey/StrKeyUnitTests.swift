@@ -808,6 +808,54 @@ final class StrKeyUnitTests: XCTestCase {
         XCTAssertEqual(try Data(XDREncoder.encode(mux)).encodeMuxedAccount(), muxedIdZero)
     }
 
+    /// The SEP-23 muxed contract vectors (CAP-0084): the 32 byte contract id followed by the
+    /// 8 byte big-endian multiplexing id.
+    func testSep23MuxedContractVectors() throws {
+        let vectors: [(muxed: String, contract: String, id: UInt64)] = [
+            ("WA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAAAAAAAAWWC",
+             "CA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUWDA", 0),
+            ("WA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVAAAAAAAAAAAACWJY",
+             "CA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUWDA", 9223372036854775808),
+            ("WA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAAAAAAAAAPCIA6IG",
+             "CA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE", 123456),
+        ]
+        for vector in vectors {
+            XCTAssertTrue(vector.muxed.isValidMuxedContractId(), vector.muxed)
+            XCTAssertFalse(vector.muxed.isValidContractId(), vector.muxed)
+            XCTAssertFalse(vector.muxed.isValidMed25519PublicKey(), vector.muxed)
+            let payload = try vector.muxed.decodeMuxedContractId()
+            XCTAssertEqual(payload.count, 40)
+            XCTAssertEqual(Data(payload.prefix(32)), try vector.contract.decodeContractId())
+            XCTAssertEqual(Data(payload.suffix(8)), withUnsafeBytes(of: vector.id.bigEndian) { Data($0) })
+            XCTAssertEqual(try payload.encodeMuxedContractId(), vector.muxed)
+        }
+    }
+
+    func testInvalidMuxedContractStrKeys() throws {
+        let invalid: [(strKey: String, reason: String, error: KeyUtilsError)] = [
+            ("WA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAAAAAAAAWWD", "unused trailing bit set", .invalidEncodedString),
+            ("WA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAAAAAAAAWWCA", "length congruent to 6 mod 8", .invalidEncodedString),
+            ("WA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAAAAAAAAAIOUI", "decodes to 44 bytes", .invalidEncodedString),
+            ("W47QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAAAAAAADXHW", "algorithm 7, checksum recomputed", .invalidVersionByte),
+            ("W47QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAAAAAAAAWWC", "algorithm 7, checksum kept", .invalidVersionByte),
+            ("WA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAAAAAAAAWWA", "checksum", .invalidChecksum),
+            ("WA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAAAAAAAAWWC===", "padding", .invalidEncodedString),
+        ]
+        for vector in invalid {
+            XCTAssertFalse(vector.strKey.isValidMuxedContractId(), vector.reason)
+            XCTAssertThrowsError(try vector.strKey.decodeMuxedContractId(), vector.reason) { error in
+                XCTAssertEqual(error as? KeyUtilsError, vector.error, vector.reason)
+            }
+        }
+
+        XCTAssertThrowsError(try Data(repeating: 1, count: 39).encodeMuxedContractId()) { error in
+            guard case StellarSDKError.invalidArgument(let message) = error else {
+                return XCTFail("Expected invalidArgument, got \(error)")
+            }
+            XCTAssertEqual(message, "invalid muxed contract length 39, must be 40 bytes")
+        }
+    }
+
     func testInvalidStrKeys() throws {
         // The unused trailing bit must be zero in the encoding of the last three
         // bytes (24 bits) as five base-32 symbols (25 bits)

@@ -263,6 +263,34 @@ final class GeneratedXdrJsonStellarContractUnitTests: XCTestCase {
                        "MuxedAccountMed25519XDR must reach the same bytes through JSON and XDR")
     }
 
+    func test_MuxedContractXDR_rejectsWrongShape() throws {
+        XCTAssertThrowsError(try MuxedContractXDR.fromXdrJson("[]")) { error in
+            XCTAssertTrue(error is XdrJsonError,
+                          "MuxedContractXDR must report a shape it cannot read as an XdrJsonError")
+        }
+    }
+
+    func test_MuxedContractXDR_roundTrip() throws {
+        let original: MuxedContractXDR = MuxedContractXDR(id: UInt64(1234567), contractId: WrappedData32(Data(repeating: 0xAB, count: 32)))
+        let tree = try original.toXdrJsonValue()
+        let json = try original.toXdrJson()
+        let decoded = try MuxedContractXDR.fromXdrJson(json)
+        let viaValue = try MuxedContractXDR.fromXdrJsonValue(tree)
+        let viaTree = try MuxedContractXDR.fromXdrJsonTree(tree)
+        XCTAssertEqual(try decoded.toXdrJsonValue(), tree,
+                       "MuxedContractXDR must produce the same tree after a round trip")
+        XCTAssertEqual(try decoded.toXdrJson(), json,
+                       "MuxedContractXDR must produce the same text after a round trip")
+        XCTAssertEqual(try viaValue.toXdrJson(), json,
+                       "MuxedContractXDR must read a tree the same way it reads text")
+        XCTAssertEqual(try viaTree.toXdrJson(), json,
+                       "MuxedContractXDR must read a depth-checked tree the same way")
+        let originalBase64 = try Data(XDREncoder.encode(original)).base64EncodedString()
+        XCTAssertEqual(try Data(XDREncoder.encode(decoded)).base64EncodedString(),
+                       originalBase64,
+                       "MuxedContractXDR must reach the same bytes through JSON and XDR")
+    }
+
     func test_SCAddressType_SC_ADDRESS_TYPE_ACCOUNT() throws {
         let value: SCAddressType = .account
         XCTAssertEqual(try value.toXdrJson(), "\"account\"",
@@ -311,6 +339,16 @@ final class GeneratedXdrJsonStellarContractUnitTests: XCTestCase {
                        "SCAddressType.muxedAccount must keep its XDR value")
         XCTAssertEqual(try SCAddressType.fromXdrJson("\"muxed_account\""), value,
                        "muxed_account must read back as SCAddressType.muxedAccount")
+    }
+
+    func test_SCAddressType_SC_ADDRESS_TYPE_MUXED_CONTRACT() throws {
+        let value: SCAddressType = .muxedContract
+        XCTAssertEqual(try value.toXdrJson(), "\"muxed_contract\"",
+                       "SCAddressType.muxedContract must render as muxed_contract")
+        XCTAssertEqual(value.rawValue, Int32(5),
+                       "SCAddressType.muxedContract must keep its XDR value")
+        XCTAssertEqual(try SCAddressType.fromXdrJson("\"muxed_contract\""), value,
+                       "muxed_contract must read back as SCAddressType.muxedContract")
     }
 
     func test_SCAddressType_rejectsUndeclaredValue() throws {
@@ -409,6 +447,27 @@ final class GeneratedXdrJsonStellarContractUnitTests: XCTestCase {
 
     func test_SCAddressXDR_muxedAccount_roundTrip() throws {
         let original: SCAddressXDR = .muxedAccount(MuxedAccountMed25519XDR(id: UInt64(1), sourceAccountEd25519: [UInt8](repeating: 0xAB, count: 32)))
+        let tree = try original.toXdrJsonValue()
+        let json = try original.toXdrJson()
+        let decoded = try SCAddressXDR.fromXdrJson(json)
+        let viaValue = try SCAddressXDR.fromXdrJsonValue(tree)
+        let viaTree = try SCAddressXDR.fromXdrJsonTree(tree)
+        XCTAssertEqual(try decoded.toXdrJsonValue(), tree,
+                       "SCAddressXDR must produce the same tree after a round trip")
+        XCTAssertEqual(try decoded.toXdrJson(), json,
+                       "SCAddressXDR must produce the same text after a round trip")
+        XCTAssertEqual(try viaValue.toXdrJson(), json,
+                       "SCAddressXDR must read a tree the same way it reads text")
+        XCTAssertEqual(try viaTree.toXdrJson(), json,
+                       "SCAddressXDR must read a depth-checked tree the same way")
+        let originalBase64 = try Data(XDREncoder.encode(original)).base64EncodedString()
+        XCTAssertEqual(try Data(XDREncoder.encode(decoded)).base64EncodedString(),
+                       originalBase64,
+                       "SCAddressXDR must reach the same bytes through JSON and XDR")
+    }
+
+    func test_SCAddressXDR_muxedContract_roundTrip() throws {
+        let original: SCAddressXDR = .muxedContract(MuxedContractXDR(id: UInt64(1234567), contractId: WrappedData32(Data(repeating: 0xAB, count: 32))))
         let tree = try original.toXdrJsonValue()
         let json = try original.toXdrJson()
         let decoded = try SCAddressXDR.fromXdrJson(json)

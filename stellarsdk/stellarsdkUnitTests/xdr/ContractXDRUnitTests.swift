@@ -125,6 +125,38 @@ class ContractXDRUnitTests: XCTestCase {
         XCTAssertEqual(contractAddress.type(), SCAddressType.contract.rawValue)
     }
 
+    /// The muxed contract address (CAP-0084) of contract
+    /// CA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE with id 123456.
+    func testSCAddressXDRMuxedContract() throws {
+        let contractId = "CA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE"
+        let muxedContractId = "WA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAAAAAAAAAPCIA6IG"
+        let referenceBytes = "AAAABQAAAAAAAeJANj6qOGeEH7rQ9O2Ix3nk/mblaiRw3JjA7JwHPQXHsQM="
+
+        let address = try SCAddressXDR(muxedContractId: muxedContractId)
+        guard case .muxedContract(let muxed) = address else {
+            return XCTFail("Expected the muxed contract arm, got \(address)")
+        }
+        XCTAssertEqual(muxed.id, 123456)
+        XCTAssertEqual(muxed.contractId.wrapped, try contractId.decodeContractId())
+        XCTAssertEqual(try address.toStrKey(), muxedContractId)
+        XCTAssertNil(address.accountId)
+        XCTAssertNil(address.contractId)
+
+        let encoded = Data(try XDREncoder.encode(address))
+        XCTAssertEqual(encoded.base64EncodedString(), referenceBytes)
+        XCTAssertEqual(try XDRDecoder.decode(SCAddressXDR.self, data: [UInt8](encoded)).toStrKey(), muxedContractId)
+
+        let factory = try SCAddressXDR(contractId: contractId, id: 123456)
+        XCTAssertEqual(Data(try XDREncoder.encode(factory)).base64EncodedString(), referenceBytes)
+
+        let scVal = SCValXDR.address(address)
+        let decodedVal = try XDRDecoder.decode(SCValXDR.self, data: try XDREncoder.encode(scVal))
+        XCTAssertEqual(try decodedVal.address?.toStrKey(), muxedContractId)
+        XCTAssertEqual(decodedVal.toNative() as? String, muxedContractId)
+
+        XCTAssertThrowsError(try SCAddressXDR(muxedContractId: contractId))
+    }
+
     // MARK: - SCNonceKeyXDR Tests
 
     func testSCNonceKeyXDR() throws {
