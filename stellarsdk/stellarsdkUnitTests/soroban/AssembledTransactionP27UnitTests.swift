@@ -791,6 +791,40 @@ final class AssembledTransactionP27UnitTests: XCTestCase {
 
     // MARK: - signAuthEntries authorizeEntryCallback paths
 
+    /// A muxed credential address is refused before any entry is stamped or handed to the
+    /// callback, including a well-formed entry that comes first.
+    func testSignAuthEntries_muxedCredentialAddress_refusedBeforeCallback() async throws {
+        let muxedAddresses = [
+            try SCAddressXDR(accountId: MuxedAccount(keyPair: keyPair, sequenceNumber: 0, id: 7).accountId),
+            try SCAddressXDR(muxedContractId: "WA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAAAAAAAAAPCIA6IG"),
+        ]
+        for muxed in muxedAddresses {
+            var muxedEntry = try makeAddressV2Entry(keyPair: keyPair)
+            var creds = try XCTUnwrap(muxedEntry.credentials.addressCredentials)
+            creds.address = muxed
+            muxedEntry.credentials = .addressV2(creds)
+            let entries = [try makeAddressV2Entry(keyPair: keyPair), muxedEntry]
+            let at = makeAssembledTransaction(tx: try makeTransactionWithEntries(entries))
+
+            var callbackCalls = 0
+            do {
+                try await at.signAuthEntries(signerKeyPair: keyPair,
+                                             authorizeEntryCallback: { entry, _ in
+                                                 callbackCalls += 1
+                                                 return entry
+                                             },
+                                             validUntilLedgerSeq: 1_000_000)
+                XCTFail("Expected the muxed credential address to be refused")
+            } catch StellarSDKError.invalidArgument(let message) {
+                XCTAssertEqual(message, "Muxed account (M...) and muxed contract (W...) addresses are not valid Soroban " +
+                               "auth credential addresses: \(try muxed.toStrKey()); use the underlying G... or C... address instead")
+            }
+            XCTAssertEqual(callbackCalls, 0)
+            let auth = try XCTUnwrap(at.tx?.operations.first as? InvokeHostFunctionOperation).auth
+            XCTAssertEqual(try auth.map { try XDREncoder.encode($0) }, try entries.map { try XDREncoder.encode($0) })
+        }
+    }
+
     /// Exercises the `authorizeEntryCallback` path for the `.addressV2` arm.
     /// When a callback is provided, signAuthEntries must route the V2 entry through the callback
     /// rather than directly calling `entry.sign`.

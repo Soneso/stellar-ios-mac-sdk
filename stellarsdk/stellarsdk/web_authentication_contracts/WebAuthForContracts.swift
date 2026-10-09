@@ -621,7 +621,9 @@ public final class WebAuthForContracts: @unchecked Sendable {
     /// - Parameter clientDomainAccountId: Optional client domain account ID (used with callback)
     /// - Parameter clientDomainSigningCallback: Optional callback for remote signing (single entry)
     /// - Returns: Signed authorization entries
-    /// - Throws: Error if signing fails
+    /// - Throws: StellarSDKError.invalidArgument, before any entry is stamped or handed to the
+    ///   callback, when an entry's credential address is a muxed account (M...) or muxed
+    ///   contract (W...) address; an error if signing fails
     public func signAuthorizationEntries(
         authEntries: [SorobanAuthorizationEntryXDR],
         clientAccountId: String,
@@ -631,6 +633,7 @@ public final class WebAuthForContracts: @unchecked Sendable {
         clientDomainAccountId: String?,
         clientDomainSigningCallback: ((SorobanAuthorizationEntryXDR) async throws -> SorobanAuthorizationEntryXDR)?
     ) async throws -> [SorobanAuthorizationEntryXDR] {
+        try requireUnmuxedCredentialAddresses(authEntries)
         var signedEntries: [SorobanAuthorizationEntryXDR] = []
 
         for var entry in authEntries {
@@ -915,6 +918,8 @@ public final class WebAuthForContracts: @unchecked Sendable {
             return try balanceId.paddedBalanceIdHex.encodeClaimableBalanceIdHex()
         case .liquidityPoolId(let poolId):
             return try poolId.wrapped.encodeLiquidityPoolId()
+        case .muxedContract(let muxedContract):
+            return try muxedContract.toStrKey()
         }
     }
 
@@ -936,6 +941,10 @@ public final class WebAuthForContracts: @unchecked Sendable {
             return balanceId.paddedBalanceIdHex
         case .liquidityPoolId(let poolId):
             return poolId.wrapped.base16EncodedString()
+        case .muxedContract(let muxedContract):
+            // The W strkey payload, the contract id followed by the multiplexing id, which
+            // no 32-byte contract id equals.
+            return muxedContract.strKeyPayload.base16EncodedString()
         }
     }
 }

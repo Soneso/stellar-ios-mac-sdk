@@ -104,6 +104,24 @@ extension Data {
         return try encodeCheck(versionByte: .med25519PublicKey)
     }
     
+    /// Encodes data to strkey muxed contract address ("W...").
+    ///
+    /// The data is the 32 byte contract id followed by the 8 byte big-endian multiplexing id,
+    /// the payload [SEP-23](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0023.md)
+    /// gives the muxed contract addresses of
+    /// [CAP-0084](https://github.com/stellar/stellar-protocol/blob/master/core/cap-0084.md).
+    /// The XDR `MuxedContract` struct carries the two fields in the reverse order.
+    ///
+    /// The contract `CA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUWDA` with id 0 encodes
+    /// to `WA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAAAAAAAAWWC`.
+    ///
+    /// - Throws: StellarSDKError.invalidArgument if the data is not the 40 bytes the 32 byte
+    /// contract id and the 8 byte multiplexing id occupy
+    public func encodeMuxedContractId() throws -> String {
+        try requireSize(StellarProtocolConstants.STRKEY_DECODED_SIZE_MUXED_CONTRACT, "muxed contract")
+        return try encodeCheck(versionByte: .muxedContract)
+    }
+
     /// Encodes data to strkey preAuthTx. ("T...")
     ///
     /// - Throws: StellarSDKError.invalidArgument if the data is not the 32 bytes a pre

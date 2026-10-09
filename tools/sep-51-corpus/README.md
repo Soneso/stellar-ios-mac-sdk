@@ -261,10 +261,14 @@ difference.
 JSON is written from SEP-0051 and the `.x` and whose `xdr` is packed by hand from
 the `.x` layout. The generator admits one only for a name that
 `../sep-51-oracle/name-map.json` lists as unresolvable and only while the reference
-cannot process it: a struct type the reference does not know, under the name
-table's pairing of its XDR and Swift names, or the bare JSON name of an enum member
-the reference rejects, seeded on the enum type. The class stays empty while the
-reference vendors an XDR commit at least as new as the SDK's.
+cannot process it: a struct type the reference does not know, under the name table's
+pairing of its XDR and Swift names, or the bare JSON name of an enum member the
+reference rejects, seeded on the enum type. A value of a union the reference knows
+is admitted when the seed's `arm` names an arm whose discriminant member the
+reference rejects and its `xdr` opens with that member's value; the unit test that
+walks the corpus then requires the SDK to encode its JSON to exactly those bytes.
+The class stays empty while the reference vendors an XDR commit at least as new as
+the SDK's.
 
 ## Completeness
 

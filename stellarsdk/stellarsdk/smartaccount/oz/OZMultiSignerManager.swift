@@ -537,7 +537,8 @@ public class OZMultiSignerManager: OZManagerHelpers, @unchecked Sendable {
     // MARK: - Pipeline step helpers
 
     /// Validates the selected-signer set:
-    /// - Every wallet signer must be reachable through the kit's external-signer manager.
+    /// - Every wallet signer must be reachable through the kit's external-signer manager and
+    ///   must not be a muxed account (M...) or muxed contract (W...) address.
     /// - Every passkey signer must carry pre-fetched `keyData` so the
     ///   rule-resolution loop avoids an extra on-chain lookup.
     /// - Every Ed25519 signer must have a valid verifier address, correct public-key length,
@@ -568,12 +569,17 @@ public class OZMultiSignerManager: OZManagerHelpers, @unchecked Sendable {
     /// Verifies that the kit's external-signer manager can sign for every wallet signer address.
     ///
     /// - Parameter walletSigners: G-address strings extracted from the `selectedSigners` list.
-    /// - Throws: ``SmartAccountValidationException`` when a signer address has no signing source available.
+    /// - Throws: ``SmartAccountValidationException`` when a signer address is a muxed account
+    ///   (M...) or muxed contract (W...) address, which Soroban auth never takes, or has no
+    ///   signing source available.
     private func validateWalletSigners(
         _ walletSigners: [String]
     ) async throws {
         guard !walletSigners.isEmpty else { return }
         for walletAddress in walletSigners {
+            if let refusal = muxedAuthAddressRefusal(strKey: walletAddress) {
+                throw SmartAccountValidationException.invalidInput(field: "selectedSigners", reason: refusal)
+            }
             let canSign = await kit.externalSigners.canSignFor(address: walletAddress)
             if !canSign {
                 throw SmartAccountValidationException.invalidInput(

@@ -1886,6 +1886,66 @@ final class GeneratedXdrJsonStellarContractConfigSettingUnitTests: XCTestCase {
                        "mem_cpy must read back as ContractCostType.memCpy")
     }
 
+    func test_ContractCostType_MlDsa44DecodeSignature() throws {
+        let value: ContractCostType = .mlDsa44DecodeSignature
+        XCTAssertEqual(try value.toXdrJson(), "\"ml_dsa44_decode_signature\"",
+                       "ContractCostType.mlDsa44DecodeSignature must render as ml_dsa44_decode_signature")
+        XCTAssertEqual(value.rawValue, Int32(89),
+                       "ContractCostType.mlDsa44DecodeSignature must keep its XDR value")
+        XCTAssertEqual(try ContractCostType.fromXdrJson("\"ml_dsa44_decode_signature\""), value,
+                       "ml_dsa44_decode_signature must read back as ContractCostType.mlDsa44DecodeSignature")
+    }
+
+    func test_ContractCostType_MlDsa44DecodeVerifyingKey() throws {
+        let value: ContractCostType = .mlDsa44DecodeVerifyingKey
+        XCTAssertEqual(try value.toXdrJson(), "\"ml_dsa44_decode_verifying_key\"",
+                       "ContractCostType.mlDsa44DecodeVerifyingKey must render as ml_dsa44_decode_verifying_key")
+        XCTAssertEqual(value.rawValue, Int32(86),
+                       "ContractCostType.mlDsa44DecodeVerifyingKey must keep its XDR value")
+        XCTAssertEqual(try ContractCostType.fromXdrJson("\"ml_dsa44_decode_verifying_key\""), value,
+                       "ml_dsa44_decode_verifying_key must read back as ContractCostType.mlDsa44DecodeVerifyingKey")
+    }
+
+    func test_ContractCostType_MlDsa65DecodeSignature() throws {
+        let value: ContractCostType = .mlDsa65DecodeSignature
+        XCTAssertEqual(try value.toXdrJson(), "\"ml_dsa65_decode_signature\"",
+                       "ContractCostType.mlDsa65DecodeSignature must render as ml_dsa65_decode_signature")
+        XCTAssertEqual(value.rawValue, Int32(90),
+                       "ContractCostType.mlDsa65DecodeSignature must keep its XDR value")
+        XCTAssertEqual(try ContractCostType.fromXdrJson("\"ml_dsa65_decode_signature\""), value,
+                       "ml_dsa65_decode_signature must read back as ContractCostType.mlDsa65DecodeSignature")
+    }
+
+    func test_ContractCostType_MlDsa65DecodeVerifyingKey() throws {
+        let value: ContractCostType = .mlDsa65DecodeVerifyingKey
+        XCTAssertEqual(try value.toXdrJson(), "\"ml_dsa65_decode_verifying_key\"",
+                       "ContractCostType.mlDsa65DecodeVerifyingKey must render as ml_dsa65_decode_verifying_key")
+        XCTAssertEqual(value.rawValue, Int32(87),
+                       "ContractCostType.mlDsa65DecodeVerifyingKey must keep its XDR value")
+        XCTAssertEqual(try ContractCostType.fromXdrJson("\"ml_dsa65_decode_verifying_key\""), value,
+                       "ml_dsa65_decode_verifying_key must read back as ContractCostType.mlDsa65DecodeVerifyingKey")
+    }
+
+    func test_ContractCostType_MlDsa87DecodeSignature() throws {
+        let value: ContractCostType = .mlDsa87DecodeSignature
+        XCTAssertEqual(try value.toXdrJson(), "\"ml_dsa87_decode_signature\"",
+                       "ContractCostType.mlDsa87DecodeSignature must render as ml_dsa87_decode_signature")
+        XCTAssertEqual(value.rawValue, Int32(91),
+                       "ContractCostType.mlDsa87DecodeSignature must keep its XDR value")
+        XCTAssertEqual(try ContractCostType.fromXdrJson("\"ml_dsa87_decode_signature\""), value,
+                       "ml_dsa87_decode_signature must read back as ContractCostType.mlDsa87DecodeSignature")
+    }
+
+    func test_ContractCostType_MlDsa87DecodeVerifyingKey() throws {
+        let value: ContractCostType = .mlDsa87DecodeVerifyingKey
+        XCTAssertEqual(try value.toXdrJson(), "\"ml_dsa87_decode_verifying_key\"",
+                       "ContractCostType.mlDsa87DecodeVerifyingKey must render as ml_dsa87_decode_verifying_key")
+        XCTAssertEqual(value.rawValue, Int32(88),
+                       "ContractCostType.mlDsa87DecodeVerifyingKey must keep its XDR value")
+        XCTAssertEqual(try ContractCostType.fromXdrJson("\"ml_dsa87_decode_verifying_key\""), value,
+                       "ml_dsa87_decode_verifying_key must read back as ContractCostType.mlDsa87DecodeVerifyingKey")
+    }
+
     func test_ContractCostType_ParseWasmDataSegmentBytes() throws {
         let value: ContractCostType = .parseWasmDataSegmentBytes
         XCTAssertEqual(try value.toXdrJson(), "\"parse_wasm_data_segment_bytes\"",
@@ -2044,6 +2104,36 @@ final class GeneratedXdrJsonStellarContractConfigSettingUnitTests: XCTestCase {
                        "ContractCostType.verifyEd25519Sig must keep its XDR value")
         XCTAssertEqual(try ContractCostType.fromXdrJson("\"verify_ed25519_sig\""), value,
                        "verify_ed25519_sig must read back as ContractCostType.verifyEd25519Sig")
+    }
+
+    func test_ContractCostType_VerifyMlDsa44Sig() throws {
+        let value: ContractCostType = .verifyMlDsa44Sig
+        XCTAssertEqual(try value.toXdrJson(), "\"verify_ml_dsa44_sig\"",
+                       "ContractCostType.verifyMlDsa44Sig must render as verify_ml_dsa44_sig")
+        XCTAssertEqual(value.rawValue, Int32(92),
+                       "ContractCostType.verifyMlDsa44Sig must keep its XDR value")
+        XCTAssertEqual(try ContractCostType.fromXdrJson("\"verify_ml_dsa44_sig\""), value,
+                       "verify_ml_dsa44_sig must read back as ContractCostType.verifyMlDsa44Sig")
+    }
+
+    func test_ContractCostType_VerifyMlDsa65Sig() throws {
+        let value: ContractCostType = .verifyMlDsa65Sig
+        XCTAssertEqual(try value.toXdrJson(), "\"verify_ml_dsa65_sig\"",
+                       "ContractCostType.verifyMlDsa65Sig must render as verify_ml_dsa65_sig")
+        XCTAssertEqual(value.rawValue, Int32(93),
+                       "ContractCostType.verifyMlDsa65Sig must keep its XDR value")
+        XCTAssertEqual(try ContractCostType.fromXdrJson("\"verify_ml_dsa65_sig\""), value,
+                       "verify_ml_dsa65_sig must read back as ContractCostType.verifyMlDsa65Sig")
+    }
+
+    func test_ContractCostType_VerifyMlDsa87Sig() throws {
+        let value: ContractCostType = .verifyMlDsa87Sig
+        XCTAssertEqual(try value.toXdrJson(), "\"verify_ml_dsa87_sig\"",
+                       "ContractCostType.verifyMlDsa87Sig must render as verify_ml_dsa87_sig")
+        XCTAssertEqual(value.rawValue, Int32(94),
+                       "ContractCostType.verifyMlDsa87Sig must keep its XDR value")
+        XCTAssertEqual(try ContractCostType.fromXdrJson("\"verify_ml_dsa87_sig\""), value,
+                       "verify_ml_dsa87_sig must read back as ContractCostType.verifyMlDsa87Sig")
     }
 
     func test_ContractCostType_VisitObject() throws {

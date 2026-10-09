@@ -69,6 +69,17 @@ extension String {
         return isValid(versionByte: .med25519PublicKey)
     }
     
+    /// Decodes strkey muxed contract address ("W...") to raw data: the 32 byte contract id
+    /// followed by the 8 byte big-endian multiplexing id (SEP-23, CAP-0084).
+    public func decodeMuxedContractId() throws -> Data {
+        return try decodeCheck(versionByte: .muxedContract)
+    }
+
+    /// Returns true if the string represents a valid strkey muxed contract address. Must start with "W"
+    public func isValidMuxedContractId() -> Bool {
+        return isValid(versionByte: .muxedContract)
+    }
+
     /// Decodes strkey PreAuthTx ("T...") to raw data.
     public func decodePreAuthTx() throws -> Data {
         return try decodeCheck(versionByte: .preAuthTX)

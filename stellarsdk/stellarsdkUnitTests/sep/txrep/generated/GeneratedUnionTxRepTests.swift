@@ -903,6 +903,17 @@ static func parseTxRepLines(_ lines: [String]) -> [String: String] {
         XCTAssertEqual(backB64, originalB64, "TxRep roundtrip mismatch for SCAddressXDR.muxedAccount")
     }
 
+    func test_SCAddressXDR_muxedContract() throws {
+        let original: SCAddressXDR = .muxedContract(MuxedContractXDR(id: UInt64(1234567), contractId: WrappedData32(Data(repeating: 0xAB, count: 32))))
+        var lines: [String] = []
+        try original.toTxRep(prefix: "k", lines: &lines)
+        let map = Self.parseTxRepLines(lines)
+        let back = try SCAddressXDR.fromTxRep(map, prefix: "k")
+        let originalB64 = try Data(XDREncoder.encode(original)).base64EncodedString()
+        let backB64 = try Data(XDREncoder.encode(back)).base64EncodedString()
+        XCTAssertEqual(backB64, originalB64, "TxRep roundtrip mismatch for SCAddressXDR.muxedContract")
+    }
+
     func test_SCErrorXDR_auth() throws {
         let original: SCErrorXDR = .auth(.arithDomain)
         var lines: [String] = []

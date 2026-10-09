@@ -680,6 +680,63 @@ final class WebAuthForContractsP27UnitTests: XCTestCase {
         }
     }
 
+    /// A muxed credential address anywhere in the list is refused before any entry is stamped
+    /// or handed to the client-domain callback, including a valid domain entry that comes first.
+    func testSignAuthorizationEntries_muxedCredentialAddress_refusedBeforeCallback() async throws {
+        let webAuth = try makeWebAuth()
+        let signer = try KeyPair(secretSeed: signerSeed)
+        let muxedAddresses = [
+            try SCAddressXDR(accountId: MuxedAccount(keyPair: signer, sequenceNumber: 0, id: 7).accountId),
+            try SCAddressXDR(muxedContractId: "WA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAAAAAAAAAPCIA6IG"),
+        ]
+        for muxed in muxedAddresses {
+            let strKey = try muxed.toStrKey()
+            let validDomainEntry = try makeChallengeEntry(credentialsAddress: signer.accountId, expirationLedger: 0, arm: .v2)
+            var muxedEntry = validDomainEntry
+            var creds = try XCTUnwrap(muxedEntry.credentials.addressCredentials)
+            creds.address = muxed
+            muxedEntry.credentials = .addressV2(creds)
+
+            var callbackRan = false
+            do {
+                _ = try await webAuth.signAuthorizationEntries(
+                    authEntries: [validDomainEntry, muxedEntry], clientAccountId: clientContractId, signers: [signer],
+                    signatureExpirationLedger: 4_000_000, clientDomainKeyPair: nil,
+                    clientDomainAccountId: signer.accountId,
+                    clientDomainSigningCallback: { entry in
+                        callbackRan = true
+                        return entry
+                    })
+                XCTFail("Expected the muxed credential address to be refused")
+            } catch StellarSDKError.invalidArgument(let message) {
+                XCTAssertEqual(message, "Muxed account (M...) and muxed contract (W...) addresses are not valid Soroban " +
+                               "auth credential addresses: \(strKey); use the underlying G... or C... address instead")
+            }
+            XCTAssertFalse(callbackRan)
+        }
+    }
+
+    /// A muxed contract invocation target fails the contract address check and is reported as
+    /// its W strkey, even when it multiplexes the web auth contract itself.
+    func testValidateChallengeRejectsMuxedContractInvocationTarget() throws {
+        let webAuth = try makeWebAuth()
+        let target = try SCAddressXDR(contractId: webAuthContractId, id: 7)
+        let invocation = SorobanAuthorizedInvocationXDR(
+            function: .contractFn(InvokeContractArgsXDR(contractAddress: target, functionName: "web_auth_verify",
+                                                        args: [makeArgsMap()])),
+            subInvocations: [])
+        let serverEntry = try makeChallengeEntry(credentialsAddress: serverPublicKey)
+        let entry = SorobanAuthorizationEntryXDR(credentials: serverEntry.credentials, rootInvocation: invocation)
+
+        XCTAssertThrowsError(try webAuth.validateChallenge(authEntries: [entry], clientAccountId: clientContractId)) { error in
+            guard case ContractChallengeValidationError.invalidContractAddress(let expected, let received) = error else {
+                return XCTFail("Expected invalidContractAddress, got \(error)")
+            }
+            XCTAssertEqual(expected, webAuthContractId)
+            XCTAssertEqual(received, try? target.toStrKey())
+        }
+    }
+
     // MARK: - signAuthorizationEntries: legacy arm preservation
 
     func testSignAuthorizationEntriesPreservesLegacyArm() async throws {

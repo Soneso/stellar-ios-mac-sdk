@@ -10,7 +10,8 @@ import Foundation
 /// and rejects within-array duplicate addresses.
 public struct SorobanDelegateDescriptor: Sendable {
 
-    /// Stellar address as a strkey (`G…` for account, `C…` for contract).
+    /// Stellar address as a strkey (`G…` for account, `C…` for contract). Muxed account
+    /// (`M…`) and muxed contract (`W…`) addresses are refused when the tree is built.
     public let address: String
 
     /// Initial signature for this node. Defaults to `.void`.
@@ -118,10 +119,15 @@ internal func delegateSignatureXDR(
 
 // MARK: - String strkey to SCAddressXDR
 
-/// Converts a strkey to an `SCAddressXDR`.
+/// Converts the strkey of a Soroban auth address to an `SCAddressXDR`.
 ///
-/// Accepts G-address (account) and C-address (contract) strkeys. Throws for other prefixes.
+/// Accepts G-address (account) and C-address (contract) strkeys. A muxed account (M...) or
+/// muxed contract (W...) strkey throws the muxed auth address refusal; other prefixes throw
+/// too.
 internal func scAddressXDR(fromStrkey strkey: String) throws -> SCAddressXDR {
+    if let refusal = muxedAuthAddressRefusal(strKey: strkey) {
+        throw StellarSDKError.invalidArgument(message: refusal)
+    }
     if strkey.hasPrefix("G") {
         return try SCAddressXDR(accountId: strkey)
     } else if strkey.hasPrefix("C") {

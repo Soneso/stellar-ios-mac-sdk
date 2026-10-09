@@ -21,6 +21,9 @@ Each seed is a dict:
               for a name the oracle's own unresolvable list carries.
   xdr         Required with "spec", admitted nowhere else. The base64 XDR of the
               value, packed by hand from the `.x` layout.
+  arm         Optional with "spec", admitted nowhere else. On a union the reference
+              knows, the JSON name of the arm whose discriminant member the
+              reference cannot resolve; the seed's `xdr` must open with it.
   spec_form   Required with "incomparable". Names the transformation the
               generator applies to the reference's output to derive what the SDK
               must emit: "integer_string" or "opaque_hex".
@@ -175,7 +178,7 @@ SIMPLE_PAYMENT_RESULT = {"destination": G1, "asset": ASSET_A4, "amount": "5"}
 
 def _seed(type_name, ios_type, json_value, note, oracle=None, spec_form=None,
           spec_form_paths=None, input_variants=None, non_utf8_paths=None,
-          xdr=None):
+          xdr=None, arm=None):
     seed = {
         "type": type_name,
         "ios_type": ios_type,
@@ -194,6 +197,8 @@ def _seed(type_name, ios_type, json_value, note, oracle=None, spec_form=None,
         seed["non_utf8_paths"] = non_utf8_paths
     if xdr is not None:
         seed["xdr"] = xdr
+    if arm is not None:
+        seed["arm"] = arm
     return seed
 
 
@@ -1626,6 +1631,51 @@ SEEDS = [
           xdr="//////////8BAgMEBQYHCAkKCwwNDg8QERITFBUWFxgZGhscHR4fIAAAAAAAAAAA"
               "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHQAAAAABAgMEBQYHCAkKCwwNDg8Q"
               "ERITFBUWFxgZGhscHR4fIAAAAAIKCwAA"),
+
+    # --- Muxed contract addresses and ML-DSA cost types: spec-derived --------
+    # CAP-0084 and CAP-0087 add these members and the MuxedContract struct, which the
+    # pinned reference cannot resolve; JSON and `xdr` are written the same way. The
+    # muxed contract renders as its W strkey, contract id first, the reverse of the
+    # XDR layout, and is the payload of the muxed contract arm of SCAddress.
+    _seed("ScAddressType", "SCAddressType", "muxed_contract",
+          "Address type muxed contract member drops the shared prefix.",
+          oracle="spec", xdr="AAAABQ=="),
+    _seed("MuxedContract", "MuxedContractXDR",
+          "WA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAAAAAAAAAPCIA6IG",
+          "Muxed contract renders as a W strkey, contract id ahead of the id.",
+          oracle="spec", xdr="AAAAAAAB4kA2Pqo4Z4QfutD07YjHeeT+ZuVqJHDcmMDsnAc9BcexAw=="),
+    _seed("ScAddress", "SCAddressXDR",
+          "WA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAAAAAAAAAPCIA6IG",
+          "Muxed contract arm renders as a W strkey.",
+          oracle="spec", arm="muxed_contract",
+          xdr="AAAABQAAAAAAAeJANj6qOGeEH7rQ9O2Ix3nk/mblaiRw3JjA7JwHPQXHsQM="),
+    _seed("ContractCostType", "ContractCostType", "ml_dsa44_decode_verifying_key",
+          "ML-DSA-44 verifying key cost type keeps the digits after dsa.",
+          oracle="spec", xdr="AAAAVg=="),
+    _seed("ContractCostType", "ContractCostType", "ml_dsa65_decode_verifying_key",
+          "ML-DSA-65 verifying key cost type keeps the digits after dsa.",
+          oracle="spec", xdr="AAAAVw=="),
+    _seed("ContractCostType", "ContractCostType", "ml_dsa87_decode_verifying_key",
+          "ML-DSA-87 verifying key cost type keeps the digits after dsa.",
+          oracle="spec", xdr="AAAAWA=="),
+    _seed("ContractCostType", "ContractCostType", "ml_dsa44_decode_signature",
+          "ML-DSA-44 signature decode cost type keeps the digits after dsa.",
+          oracle="spec", xdr="AAAAWQ=="),
+    _seed("ContractCostType", "ContractCostType", "ml_dsa65_decode_signature",
+          "ML-DSA-65 signature decode cost type keeps the digits after dsa.",
+          oracle="spec", xdr="AAAAWg=="),
+    _seed("ContractCostType", "ContractCostType", "ml_dsa87_decode_signature",
+          "ML-DSA-87 signature decode cost type keeps the digits after dsa.",
+          oracle="spec", xdr="AAAAWw=="),
+    _seed("ContractCostType", "ContractCostType", "verify_ml_dsa44_sig",
+          "ML-DSA-44 verification cost type keeps the digits after dsa.",
+          oracle="spec", xdr="AAAAXA=="),
+    _seed("ContractCostType", "ContractCostType", "verify_ml_dsa65_sig",
+          "ML-DSA-65 verification cost type keeps the digits after dsa.",
+          oracle="spec", xdr="AAAAXQ=="),
+    _seed("ContractCostType", "ContractCostType", "verify_ml_dsa87_sig",
+          "ML-DSA-87 verification cost type keeps the digits after dsa.",
+          oracle="spec", xdr="AAAAXg=="),
 
     # --- Both arms of every pair several XDR definitions render differently -
     # The Swift form of such a pair carries no conversion of its own, so each side

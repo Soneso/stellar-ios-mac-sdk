@@ -22,6 +22,7 @@ module Sep51JsonOverrides
     MuxedAccountXDR
     MuxedAccountMed25519XDR
     MuxedAccountXDRMed25519XDR
+    MuxedContractXDR
     SCAddressXDR
     SignerKeyXDR
     Ed25519SignedPayload
@@ -48,6 +49,8 @@ module Sep51JsonOverrides
           return try balance.toXdrJsonValue()
         case .liquidityPoolId(let pool):
           return try PoolIDXDRJsonCodec.toXdrJsonValue(pool, type: "SCAddressXDR", key: "liquidity_pool")
+        case .muxedContract(let muxedContract):
+          return try muxedContract.toXdrJsonValue()
         }
       SWIFT
       read: <<~SWIFT
@@ -63,11 +66,13 @@ module Sep51JsonOverrides
           return .claimableBalanceId(try ClaimableBalanceIDXDR.fromXdrJsonValue(value))
         case "L":
           return .liquidityPoolId(try PoolIDXDRJsonCodec.fromXdrJsonValue(value, type: "SCAddressXDR", key: "liquidity_pool"))
+        case "W":
+          return .muxedContract(try MuxedContractXDR.fromXdrJsonValue(value))
         default:
           throw XdrJsonError.invalidValue(
             type: "SCAddressXDR", key: nil,
-            message: "not an account, contract, muxed account, claimable balance " +
-                     "or liquidity pool strkey: \\(XdrJson.preview(text))")
+            message: "not an account, contract, muxed account, claimable balance, " +
+                     "liquidity pool or muxed contract strkey: \\(XdrJson.preview(text))")
         }
       SWIFT
     },
@@ -236,6 +241,20 @@ module Sep51JsonOverrides
         let inverted = try XDRDecoder.decode(MuxedAccountMed25519XDRInverted.self, data: [UInt8](raw))
         return MuxedAccountXDRMed25519XDR(
           id: inverted.id, ed25519: Uint256XDR(Data(inverted.sourceAccountEd25519)))
+      SWIFT
+    },
+
+    # The W strkey packs the contract id ahead of the multiplexing id, the reverse of the XDR
+    # body; MuxedContractXDR.strKeyPayload owns that layout.
+    'MuxedContractXDR' => {
+      emit: <<~SWIFT,
+        return .string(try XdrJson.strKey(self.strKeyPayload, expectedLength: 40,
+                                          type: "MuxedContractXDR", key: nil) { try $0.encodeMuxedContractId() })
+      SWIFT
+      read: <<~SWIFT
+        let text = try XdrJson.string(value, type: "MuxedContractXDR")
+        return MuxedContractXDR(strKeyPayload: try XdrJson.strKeyBytes(text, expectedLength: 40,
+                                                                       type: "MuxedContractXDR", key: nil) { try $0.decodeMuxedContractId() })
       SWIFT
     },
 

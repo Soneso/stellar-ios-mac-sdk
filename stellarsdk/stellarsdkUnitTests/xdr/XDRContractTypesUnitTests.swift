@@ -127,7 +127,7 @@ class XDRContractTypesUnitTests: XCTestCase {
 
     func testSCAddressTypeAllCasesRoundTrip() throws {
         let allCases: [SCAddressType] = [
-            .account, .contract, .muxedAccount, .claimableBalance, .liquidityPool
+            .account, .contract, .muxedAccount, .claimableBalance, .liquidityPool, .muxedContract
         ]
         for original in allCases {
             let encoded = try XDREncoder.encode(original)
@@ -142,6 +142,7 @@ class XDRContractTypesUnitTests: XCTestCase {
         XCTAssertEqual(SCAddressType.muxedAccount.rawValue, 2)
         XCTAssertEqual(SCAddressType.claimableBalance.rawValue, 3)
         XCTAssertEqual(SCAddressType.liquidityPool.rawValue, 4)
+        XCTAssertEqual(SCAddressType.muxedContract.rawValue, 5)
     }
 
     // MARK: - SCErrorXDR Union Tests (detailed code extraction)
@@ -522,6 +523,117 @@ class XDRContractTypesUnitTests: XCTestCase {
             XCTAssertEqual(pid.wrapped, poolId.wrapped)
         } else {
             XCTFail("Expected .liquidityPoolId arm")
+        }
+    }
+
+    // MARK: - Muxed contract (CAP-0084)
+
+    /// Contract CA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE multiplexed with id 123456.
+    private let muxedContractId = "WA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAAAAAAAAAPCIA6IG"
+    private let muxedContractHash = "363eaa3867841fbad0f4ed88c779e4fe66e56a2470dc98c0ec9c073d05c7b103"
+
+    func testMuxedContractXDRBinaryRoundTrip() throws {
+        let original = MuxedContractXDR(id: 123456, contractId: WrappedData32(try Data(base16Encoded: muxedContractHash)))
+        let encoded = try XDREncoder.encode(original)
+        // The XDR body is the id first, then the contract id.
+        XCTAssertEqual(Data(encoded).base64EncodedString(), "AAAAAAAB4kA2Pqo4Z4QfutD07YjHeeT+ZuVqJHDcmMDsnAc9BcexAw==")
+        let decoded = try XDRDecoder.decode(MuxedContractXDR.self, data: encoded)
+        XCTAssertEqual(decoded.id, 123456)
+        XCTAssertEqual(decoded.contractId.wrapped.base16EncodedString(), muxedContractHash)
+    }
+
+    func testMuxedContractXDRRendersAsWStrkey() throws {
+        let original = MuxedContractXDR(id: 123456, contractId: WrappedData32(try Data(base16Encoded: muxedContractHash)))
+        XCTAssertEqual(try original.toXdrJson(), "\"\(muxedContractId)\"")
+        let parsed = try MuxedContractXDR.fromXdrJson("\"\(muxedContractId)\"")
+        XCTAssertEqual(parsed.id, 123456)
+        XCTAssertEqual(parsed.contractId.wrapped.base16EncodedString(), muxedContractHash)
+        // The contract and muxed account strkeys of the same bytes are other kinds.
+        for other in ["CA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE",
+                      "MA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVAAAAAAAAAAAAAJLK"] {
+            XCTAssertThrowsError(try MuxedContractXDR.fromXdrJson("\"\(other)\"")) { error in
+                XCTAssertTrue(error is XdrJsonError, "\(other) must fail as an XdrJsonError, got \(error)")
+            }
+        }
+    }
+
+    func testSCAddressXDRMuxedContractArm() throws {
+        let original = SCAddressXDR.muxedContract(
+            MuxedContractXDR(id: 123456, contractId: WrappedData32(try Data(base16Encoded: muxedContractHash))))
+        let encoded = try XDREncoder.encode(original)
+        XCTAssertEqual(Data(encoded).base64EncodedString(), "AAAABQAAAAAAAeJANj6qOGeEH7rQ9O2Ix3nk/mblaiRw3JjA7JwHPQXHsQM=")
+        XCTAssertEqual(try XDRDecoder.decode(SCAddressXDR.self, data: encoded).type(), SCAddressType.muxedContract.rawValue)
+
+        XCTAssertEqual(try original.toXdrJson(), "\"\(muxedContractId)\"")
+        guard case .muxedContract(let fromJson) = try SCAddressXDR.fromXdrJson("\"\(muxedContractId)\"") else {
+            return XCTFail("Expected the muxed contract arm from the W strkey")
+        }
+        XCTAssertEqual(fromJson.id, 123456)
+        XCTAssertEqual(fromJson.contractId.wrapped.base16EncodedString(), muxedContractHash)
+
+        var lines: [String] = []
+        try original.toTxRep(prefix: "k", lines: &lines)
+        XCTAssertEqual(lines, ["k.type: SC_ADDRESS_TYPE_MUXED_CONTRACT", "k.muxedContract: \(muxedContractId)"])
+        let back = try SCAddressXDR.fromTxRep(["k.type": "SC_ADDRESS_TYPE_MUXED_CONTRACT", "k.muxedContract": muxedContractId],
+                                              prefix: "k")
+        XCTAssertEqual(Data(try XDREncoder.encode(back)), Data(encoded))
+    }
+
+    /// The multiplexing id survives binary, XDR-JSON and TxRep exactly at 0, 2^63 and 2^64-1.
+    func testMuxedContractIdRoundTripsAtTheBoundaries() throws {
+        let hash = WrappedData32(try "CA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUWDA".decodeContractId())
+        let cases: [(id: UInt64, decimal: String, strKey: String)] = [
+            (0, "0", "WA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAAAAAAAAWWC"),
+            (1 << 63, "9223372036854775808", "WA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVAAAAAAAAAAAACWJY"),
+            (UInt64.max, "18446744073709551615", "WA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJV7777777777777GMO"),
+        ]
+        func decimalId(_ address: SCAddressXDR) -> String? {
+            guard case .muxedContract(let muxed) = address else { return nil }
+            return String(muxed.id)
+        }
+        for item in cases {
+            let original = SCAddressXDR.muxedContract(MuxedContractXDR(id: item.id, contractId: hash))
+            XCTAssertEqual(decimalId(try XDRDecoder.decode(SCAddressXDR.self, data: try XDREncoder.encode(original))),
+                           item.decimal)
+            XCTAssertEqual(try original.toXdrJson(), "\"\(item.strKey)\"")
+            XCTAssertEqual(decimalId(try SCAddressXDR.fromXdrJson("\"\(item.strKey)\"")), item.decimal)
+            var lines: [String] = []
+            try original.toTxRep(prefix: "k", lines: &lines)
+            XCTAssertEqual(lines.last, "k.muxedContract: \(item.strKey)")
+            let back = try SCAddressXDR.fromTxRep(["k.type": "SC_ADDRESS_TYPE_MUXED_CONTRACT", "k.muxedContract": item.strKey],
+                                                  prefix: "k")
+            XCTAssertEqual(decimalId(back), item.decimal)
+        }
+    }
+
+    /// The muxed contract TxRep line reports a contract id with no strkey, a missing line and
+    /// a line that holds no W strkey under the key of that line.
+    func testMuxedContractTxRepErrorsNameTheKey() throws {
+        let wide = SCAddressXDR.muxedContract(MuxedContractXDR(id: 1, contractId: WrappedData32(Data(count: 33))))
+        var lines: [String] = []
+        XCTAssertThrowsError(try wide.toTxRep(prefix: "k", lines: &lines)) { error in
+            guard case TxRepError.invalidValue(let key) = error else { return XCTFail("Expected invalidValue, got \(error)") }
+            XCTAssertEqual(key, "k.muxedContract")
+        }
+        let type = ["k.type": "SC_ADDRESS_TYPE_MUXED_CONTRACT"]
+        XCTAssertThrowsError(try SCAddressXDR.fromTxRep(type, prefix: "k")) { error in
+            guard case TxRepError.missingValue(let key) = error else { return XCTFail("Expected missingValue, got \(error)") }
+            XCTAssertEqual(key, "k.muxedContract")
+        }
+        let contractLine = type.merging(["k.muxedContract": "CA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE"]) { $1 }
+        XCTAssertThrowsError(try SCAddressXDR.fromTxRep(contractLine, prefix: "k")) { error in
+            guard case TxRepError.invalidValue(let key) = error else { return XCTFail("Expected invalidValue, got \(error)") }
+            XCTAssertEqual(key, "k.muxedContract")
+        }
+    }
+
+    func testSCAddressXDRJsonRejectsUnknownStrkeyKindNamingMuxedContract() {
+        XCTAssertThrowsError(try SCAddressXDR.fromXdrJson("\"QABC\"")) { error in
+            guard case XdrJsonError.invalidValue(_, _, let message) = error else {
+                return XCTFail("Expected invalidValue, got \(error)")
+            }
+            XCTAssertEqual(message, "not an account, contract, muxed account, claimable balance, " +
+                           "liquidity pool or muxed contract strkey: QABC")
         }
     }
 

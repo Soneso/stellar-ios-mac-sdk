@@ -342,11 +342,15 @@ public actor OZExternalSignerManager {
     ///            signature and the signer address that produced it.
     /// - Throws: ``SmartAccountSignerException/NotFound`` when no signer is available for
     ///           the address; ``SmartAccountTransactionException/SigningFailed`` when the
-    ///           signing operation fails.
+    ///           address is a muxed account (M...) or muxed contract (W...) address, which
+    ///           Soroban auth never takes, or when the signing operation fails.
     public func signAuthEntry(
         address: String,
         authEntry: String
     ) async throws -> OZSignAuthEntryResult {
+        if let refusal = muxedAuthAddressRefusal(strKey: address) {
+            throw SmartAccountTransactionException.signingFailed(reason: refusal)
+        }
 
         if let keypair = keypairSigners[address] {
             return try signWithKeypair(

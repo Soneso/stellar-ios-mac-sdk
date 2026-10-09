@@ -206,6 +206,10 @@ module TxRepTypes
     'SCValType',
     'SCAddress',
     'SCAddressType',
+    # MuxedContract, the payload of the muxed contract arm of SCAddress, is absent on
+    # purpose: its TxRep form is the single "W..." strkey line written by hand in
+    # txrep/extensions/MuxedContractXDR+TxRep.swift, the form MuxedAccountMed25519XDR
+    # gives the muxed account arm.
     'SCContractInstance',
     'SCNonceKey',
     'SCMapEntry',

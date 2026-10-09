@@ -222,6 +222,37 @@ final class OZSmartAccountAuthTests: XCTestCase {
         }
     }
 
+    func testPayloadHashBuilders_refuseMuxedCredentialAddresses() async throws {
+        let muxedAddresses = [
+            try SCAddressXDR(accountId: "MA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVAAAAAAAAAAAAAJLK"),
+            try SCAddressXDR(muxedContractId: "WA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAAAAAAAAAPCIA6IG"),
+        ]
+        for muxed in muxedAddresses {
+            let expected = "Transaction signing failed: Muxed account (M...) and muxed contract (W...) addresses " +
+                "are not valid Soroban auth credential addresses: \(try muxed.toStrKey()); " +
+                "use the underlying G... or C... address instead"
+            var entry = try makeEntry(nonce: 5, expirationLedger: 200)
+            var creds = try XCTUnwrap(entry.credentials.addressCredentials)
+            creds.address = muxed
+            entry.credentials = .addressV2(creds)
+            do {
+                _ = try await OZSmartAccountAuth.buildAuthPayloadHash(
+                    entry: entry, expirationLedger: 200, networkPassphrase: testNetwork)
+                XCTFail("Expected buildAuthPayloadHash to refuse \(muxed)")
+            } catch let error as SmartAccountTransactionException.SigningFailed {
+                XCTAssertEqual(error.message, expected)
+            }
+            do {
+                _ = try await OZSmartAccountAuth.buildSourceAccountAuthPayloadHash(
+                    entry: try makeEntry(), address: muxed, nonce: 5, expirationLedger: 200,
+                    networkPassphrase: testNetwork)
+                XCTFail("Expected buildSourceAccountAuthPayloadHash to refuse \(muxed)")
+            } catch let error as SmartAccountTransactionException.SigningFailed {
+                XCTAssertEqual(error.message, expected)
+            }
+        }
+    }
+
     func testBuildAuthPayloadHash_andBuildSourceAccountAuthPayloadHash_sameInputsProduceSameHash() async throws {
         let address = try tempAccountAddress()
         var v2Entry = try makeEntry(nonce: 5, expirationLedger: 200)

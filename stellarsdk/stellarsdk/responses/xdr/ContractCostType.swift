@@ -90,6 +90,15 @@ public enum ContractCostType: Int32, XDRCodable, Equatable, Sendable {
   case bn254FrPow = 83
   case bn254FrInv = 84
   case bn254G1Msm = 85
+  case mlDsa44DecodeVerifyingKey = 86
+  case mlDsa65DecodeVerifyingKey = 87
+  case mlDsa87DecodeVerifyingKey = 88
+  case mlDsa44DecodeSignature = 89
+  case mlDsa65DecodeSignature = 90
+  case mlDsa87DecodeSignature = 91
+  case verifyMlDsa44Sig = 92
+  case verifyMlDsa65Sig = 93
+  case verifyMlDsa87Sig = 94
 }
 
 extension ContractCostType: XdrJsonCodable {
@@ -181,6 +190,15 @@ extension ContractCostType: XdrJsonCodable {
     case .bn254FrPow: return .string("bn254_fr_pow")
     case .bn254FrInv: return .string("bn254_fr_inv")
     case .bn254G1Msm: return .string("bn254_g1_msm")
+    case .mlDsa44DecodeVerifyingKey: return .string("ml_dsa44_decode_verifying_key")
+    case .mlDsa65DecodeVerifyingKey: return .string("ml_dsa65_decode_verifying_key")
+    case .mlDsa87DecodeVerifyingKey: return .string("ml_dsa87_decode_verifying_key")
+    case .mlDsa44DecodeSignature: return .string("ml_dsa44_decode_signature")
+    case .mlDsa65DecodeSignature: return .string("ml_dsa65_decode_signature")
+    case .mlDsa87DecodeSignature: return .string("ml_dsa87_decode_signature")
+    case .verifyMlDsa44Sig: return .string("verify_ml_dsa44_sig")
+    case .verifyMlDsa65Sig: return .string("verify_ml_dsa65_sig")
+    case .verifyMlDsa87Sig: return .string("verify_ml_dsa87_sig")
     }
   }
 
@@ -273,6 +291,15 @@ extension ContractCostType: XdrJsonCodable {
     case "bn254_fr_pow": return .bn254FrPow
     case "bn254_fr_inv": return .bn254FrInv
     case "bn254_g1_msm": return .bn254G1Msm
+    case "ml_dsa44_decode_verifying_key": return .mlDsa44DecodeVerifyingKey
+    case "ml_dsa65_decode_verifying_key": return .mlDsa65DecodeVerifyingKey
+    case "ml_dsa87_decode_verifying_key": return .mlDsa87DecodeVerifyingKey
+    case "ml_dsa44_decode_signature": return .mlDsa44DecodeSignature
+    case "ml_dsa65_decode_signature": return .mlDsa65DecodeSignature
+    case "ml_dsa87_decode_signature": return .mlDsa87DecodeSignature
+    case "verify_ml_dsa44_sig": return .verifyMlDsa44Sig
+    case "verify_ml_dsa65_sig": return .verifyMlDsa65Sig
+    case "verify_ml_dsa87_sig": return .verifyMlDsa87Sig
     default:
       throw XdrJsonError.unknownEnumValue(type: "ContractCostType", value: name)
     }

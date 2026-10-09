@@ -24,6 +24,30 @@ extension SCAddressXDR {
     /// - Throws: KeyUtilsError if a "C..." strkey is malformed,
     /// StellarSDKError.invalidArgument if a hex id is not exactly 64 hexadecimal characters
     public init(contractId: String) throws {
+        self = .contract(try SCAddressXDR.contractIdBytes(contractId))
+    }
+
+    /// Creates a muxed contract address
+    /// ([CAP-0084](https://github.com/stellar/stellar-protocol/blob/master/core/cap-0084.md))
+    /// that pairs a contract with a 64-bit multiplexing id.
+    ///
+    /// - Parameter contractId: the "C..." strkey contract id or the 64 character hex of the
+    ///   32 byte id
+    /// - Parameter id: the multiplexing id
+    /// - Throws: KeyUtilsError if a "C..." strkey is malformed,
+    /// StellarSDKError.invalidArgument if a hex id is not exactly 64 hexadecimal characters
+    public init(contractId: String, id: UInt64) throws {
+        self = .muxedContract(MuxedContractXDR(id: id, contractId: try SCAddressXDR.contractIdBytes(contractId)))
+    }
+
+    /// Creates a muxed contract address from its "W..." strkey.
+    ///
+    /// - Throws: KeyUtilsError if the string is not a valid muxed contract strkey
+    public init(muxedContractId: String) throws {
+        self = .muxedContract(try MuxedContractXDR(muxedContractId: muxedContractId))
+    }
+
+    private static func contractIdBytes(_ contractId: String) throws -> WrappedData32 {
         var contractIdHex = contractId
         // "C" is a hexadecimal digit, so only a string of the strkey's exact length reads
         // as a strkey; a 64 character hex id may lead with "C" too.
@@ -31,7 +55,7 @@ extension SCAddressXDR {
             && contractId.count == StellarProtocolConstants.STRKEY_ENCODED_LENGTH_STANDARD {
             contractIdHex = try contractId.decodeContractIdToHex()
         }
-        self = .contract(try contractIdHex.wrappedData32FromHex(idKind: "contract id"))
+        return try contractIdHex.wrappedData32FromHex(idKind: "contract id")
     }
 
     public init(claimableBalanceId: String) throws {
@@ -113,9 +137,9 @@ extension SCAddressXDR {
     /// The strkey this address spells.
     ///
     /// Every address kind has one: an account gives its "G..." key, a muxed account its
-    /// "M...", a contract its "C...", a claimable balance its "B..." and a liquidity pool
-    /// its "L...". The `contractId`, `claimableBalanceId` and `liquidityPoolId` accessors
-    /// read the same ids as hex.
+    /// "M...", a contract its "C...", a claimable balance its "B...", a liquidity pool its
+    /// "L..." and a muxed contract its "W...". The `contractId`, `claimableBalanceId` and
+    /// `liquidityPoolId` accessors read the same ids as hex.
     ///
     /// - Returns: the strkey of the address
     /// - Throws: XdrJsonError.invalidValue if the payload bytes have no strkey encoding.
@@ -135,6 +159,8 @@ extension SCAddressXDR {
             encoded = try balance.toXdrJsonValue()
         case .liquidityPoolId(let pool):
             encoded = try PoolIDXDRJsonCodec.toXdrJsonValue(pool, type: "SCAddressXDR", key: "liquidity_pool")
+        case .muxedContract(let muxedContract):
+            encoded = try muxedContract.toXdrJsonValue()
         }
         return try XdrJson.string(encoded, type: "SCAddressXDR")
     }

@@ -295,6 +295,17 @@ public final class ContractSpec: Sendable {
             return scVal
         }
         
+        if let value = val {
+            switch ty {
+            case .address:
+                return try handleAddressConversion(value: value, muxed: false)
+            case .muxedAddress:
+                return try handleAddressConversion(value: value, muxed: true)
+            default:
+                break
+            }
+        }
+
         // Handle arrays
         if let array = val as? [Any] {
             return try handleArrayConversion(array: array, ty: ty)
@@ -570,15 +581,6 @@ public final class ContractSpec: Sendable {
         case .symbol:
             return SCValXDR.symbol(stringVal)
             
-        case .address:
-            let address: SCAddressXDR
-            if stringVal.hasPrefix("C") {
-                address = try SCAddressXDR(contractId: stringVal)
-            } else {
-                address = try SCAddressXDR(accountId: stringVal)
-            }
-            return SCValXDR.address(address)
-            
         case .u128:
             return try SCValXDR.u128(stringValue: stringVal)
             
@@ -596,6 +598,74 @@ public final class ContractSpec: Sendable {
         }
     }
     
+    /// Converts an address for an `Address` or `MuxedAddress` parameter.
+    ///
+    /// An `Address` parameter takes an account (G...) or contract (C...) address; a
+    /// `MuxedAddress` parameter also takes a muxed account (M...) or muxed contract (W...)
+    /// address (CAP-0067, CAP-0084). Claimable balance (B...) and liquidity pool (L...)
+    /// addresses are produced by the host and are never contract inputs. The value is a
+    /// strkey `String`, whose kind the strkey codec decides, or an `SCAddressXDR`.
+    private func handleAddressConversion(value: Any, muxed: Bool) throws -> SCValXDR {
+        let expected = muxed
+            ? "MuxedAddress takes an account (G...), muxed account (M...), contract (C...) or muxed contract (W...) address"
+            : "Address takes an account (G...) or contract (C...) address"
+        let address: SCAddressXDR
+        let strKey: String
+        if let scAddress = value as? SCAddressXDR {
+            do {
+                strKey = try scAddress.toStrKey()
+            } catch {
+                let reason = (error as? XdrJsonError)?.message ?? error.localizedDescription
+                throw ContractSpecError.invalidType(message: "\(expected), got an address that does not encode: \(reason)")
+            }
+            address = scAddress
+        } else if let text = value as? String {
+            guard let parsed = try scAddress(strKey: text) else {
+                throw ContractSpecError.invalidType(message: "Invalid address format: \(text); \(expected)")
+            }
+            address = parsed
+            strKey = text
+        } else {
+            throw ContractSpecError.invalidType(message: "\(expected), got \(type(of: value))")
+        }
+        switch address {
+        case .account, .contract:
+            return .address(address)
+        case .muxedAccount, .muxedContract:
+            guard muxed else {
+                throw ContractSpecError.invalidType(
+                    message: "\(expected), got the muxed address \(strKey), which needs a MuxedAddress parameter")
+            }
+            return .address(address)
+        case .claimableBalanceId:
+            throw ContractSpecError.invalidType(
+                message: "\(expected), got the claimable balance address \(strKey), which is produced by the host and is not a contract input")
+        case .liquidityPoolId:
+            throw ContractSpecError.invalidType(
+                message: "\(expected), got the liquidity pool address \(strKey), which is produced by the host and is not a contract input")
+        }
+    }
+
+    /// The address a strkey names, nil when the string is no address strkey.
+    private func scAddress(strKey: String) throws -> SCAddressXDR? {
+        if strKey.isValidEd25519PublicKey() || strKey.isValidMed25519PublicKey() {
+            return try SCAddressXDR(accountId: strKey)
+        }
+        if strKey.isValidContractId() {
+            return try SCAddressXDR(contractId: strKey)
+        }
+        if strKey.isValidMuxedContractId() {
+            return try SCAddressXDR(muxedContractId: strKey)
+        }
+        if strKey.isValidClaimableBalanceId() {
+            return try SCAddressXDR(claimableBalanceId: strKey)
+        }
+        if strKey.isValidLiquidityPoolId() {
+            return try SCAddressXDR(liquidityPoolId: strKey)
+        }
+        return nil
+    }
+
     private func handleDataConversion(dataVal: Data, ty: SCSpecTypeDefXDR) throws -> SCValXDR {
         switch ty {
         case .bytes, .bytesN(_):

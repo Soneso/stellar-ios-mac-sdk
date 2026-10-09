@@ -143,16 +143,17 @@ extension SorobanAuthorizationEntryXDR {
     ///   - forAddress: Optional strkey routing the signature to matching nodes only.
     ///     `nil` signs the top-level node.
     /// - Throws: `StellarSDKError.invalidArgument` for source-account credentials, when
-    ///   the signer has no private key, when `forAddress` matches no node, or when
-    ///   `signatureExpirationLedger` differs from the stored value of an entry that
-    ///   already carries a signature.
+    ///   the signer has no private key, when the credential address or `forAddress` is a
+    ///   muxed account (M...) or muxed contract (W...) address, when `forAddress` matches no
+    ///   node, or when `signatureExpirationLedger` differs from the stored value of an entry
+    ///   that already carries a signature.
     public mutating func sign(
         signer: KeyPair,
         network: Network,
         signatureExpirationLedger: UInt32? = nil,
         forAddress: String? = nil
     ) throws {
-        guard credentials.addressCredentials != nil else {
+        guard let credentialAddress = credentials.addressCredentials?.address else {
             throw StellarSDKError.invalidArgument(
                 message: "credentials must be of an address type to sign"
             )
@@ -162,6 +163,10 @@ extension SorobanAuthorizationEntryXDR {
                 message: "signer KeyPair must contain the private key to be able to sign"
             )
         }
+        if let refusal = try muxedCredentialAddressRefusal(credentialAddress) {
+            throw StellarSDKError.invalidArgument(message: refusal)
+        }
+        let target = try forAddress.map { (strkey: $0, address: try scAddressXDR(fromStrkey: $0)) }
 
         // Stamp expiration into credentials before hashing.
         if let expLedger = try signatureExpirationForNewSignature(requested: signatureExpirationLedger) {
@@ -180,14 +185,13 @@ extension SorobanAuthorizationEntryXDR {
         let accountSig = AccountEd25519Signature(publicKey: signer.publicKey, signature: sigBytes)
         let sigVal = SCValXDR(accountEd25519Signature: accountSig)
 
-        if let targetStrkey = forAddress {
+        if let target {
             // Route signature to matching nodes.
-            let targetAddress = try scAddressXDR(fromStrkey: targetStrkey)
             var didSign = false
 
             // Check top-level node.
             if let topCreds = credentials.addressCredentials,
-               sorobanAddressXDREqual(topCreds.address, targetAddress) {
+               sorobanAddressXDREqual(topCreds.address, target.address) {
                 var creds = topCreds
                 creds.appendSignature(signature: sigVal)
                 credentials = try credentials.withAddressCredentials(creds)
@@ -198,7 +202,7 @@ extension SorobanAuthorizationEntryXDR {
             if case .addressWithDelegates(var withDelegates) = credentials {
                 let result = try appendSignatureToMatchingDelegates(
                     nodes: &withDelegates.delegates,
-                    targetAddress: targetAddress,
+                    targetAddress: target.address,
                     signature: sigVal
                 )
                 if result == .found {
@@ -209,7 +213,7 @@ extension SorobanAuthorizationEntryXDR {
 
             if !didSign {
                 throw StellarSDKError.invalidArgument(
-                    message: "forAddress '\(targetStrkey)' does not match any node in this authorization entry"
+                    message: "forAddress '\(target.strkey)' does not match any node in this authorization entry"
                 )
             }
         } else {
@@ -259,8 +263,9 @@ extension SorobanAuthorizationEntryXDR {
     ///     `addressCredentials` of the returned entry.
     /// - Returns: New authorization entry with `WITH_DELEGATES` credentials.
     /// - Throws: `StellarSDKError.invalidArgument` when `entry` is already
-    ///   `WITH_DELEGATES`, has source-account credentials, or a delegate array contains
-    ///   duplicate addresses.
+    ///   `WITH_DELEGATES`, has source-account credentials or a muxed credential address,
+    ///   when a delegate address is a muxed account (M...) or muxed contract (W...) address,
+    ///   or when a delegate array contains duplicate addresses.
     public static func withDelegates(
         entry: SorobanAuthorizationEntryXDR,
         delegates: [SorobanDelegateDescriptor],
@@ -275,6 +280,9 @@ extension SorobanAuthorizationEntryXDR {
             throw StellarSDKError.invalidArgument(
                 message: "withDelegates: source entry already carries WITH_DELEGATES credentials; build from an ADDRESS or ADDRESS_V2 entry"
             )
+        }
+        if let refusal = try muxedCredentialAddressRefusal(sourceCreds.address) {
+            throw StellarSDKError.invalidArgument(message: refusal)
         }
 
         // Build delegate XDR nodes, sorting and validating each array recursively.
@@ -297,5 +305,53 @@ extension SorobanAuthorizationEntryXDR {
             credentials: .addressWithDelegates(withDelegates),
             rootInvocation: entry.rootInvocation
         )
+    }
+}
+
+// MARK: - Muxed addresses in Soroban auth
+
+/// The text refusing a muxed account or muxed contract address, `strKey`, where Soroban auth
+/// takes an account or contract address. A credential address adds the hint to the address
+/// that takes its place.
+internal func muxedAuthAddressMessage(_ strKey: String, credential: Bool = false) -> String {
+    let refusal = "Muxed account (M...) and muxed contract (W...) addresses are not valid Soroban auth"
+    guard credential else {
+        return "\(refusal) addresses: \(strKey)"
+    }
+    return "\(refusal) credential addresses: \(strKey); use the underlying G... or C... address instead"
+}
+
+/// The text refusing `strKey` as a Soroban auth address, nil unless it is a muxed account
+/// (M...) or muxed contract (W...) strkey.
+internal func muxedAuthAddressRefusal(strKey: String) -> String? {
+    guard strKey.isValidMed25519PublicKey() || strKey.isValidMuxedContractId() else {
+        return nil
+    }
+    return muxedAuthAddressMessage(strKey)
+}
+
+/// The text refusing `address` as the address of Soroban auth credentials, nil for every
+/// address that is not muxed.
+///
+/// The host names accounts and contracts in credentials; a muxed account (M...) or muxed
+/// contract (W...) address there makes an entry no signature can authorize.
+internal func muxedCredentialAddressRefusal(_ address: SCAddressXDR) throws -> String? {
+    switch address {
+    case .muxedAccount, .muxedContract:
+        return muxedAuthAddressMessage(try address.toStrKey(), credential: true)
+    case .account, .contract, .claimableBalanceId, .liquidityPoolId:
+        return nil
+    }
+}
+
+/// Throws for the first entry whose credential address is a muxed account (M...) or muxed
+/// contract (W...) address. Helpers that sign a list of entries run it before they stamp an
+/// expiration or hand an entry to a caller's callback.
+internal func requireUnmuxedCredentialAddresses(_ entries: [SorobanAuthorizationEntryXDR]) throws {
+    for entry in entries {
+        if let address = entry.credentials.addressCredentials?.address,
+           let refusal = try muxedCredentialAddressRefusal(address) {
+            throw StellarSDKError.invalidArgument(message: refusal)
+        }
     }
 }

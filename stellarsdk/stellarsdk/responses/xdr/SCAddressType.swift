@@ -9,6 +9,7 @@ public enum SCAddressType: Int32, XDRCodable, Equatable, Sendable {
   case muxedAccount = 2
   case claimableBalance = 3
   case liquidityPool = 4
+  case muxedContract = 5
 }
 
 extension SCAddressType {
@@ -19,6 +20,7 @@ extension SCAddressType {
     case .muxedAccount: return "SC_ADDRESS_TYPE_MUXED_ACCOUNT"
     case .claimableBalance: return "SC_ADDRESS_TYPE_CLAIMABLE_BALANCE"
     case .liquidityPool: return "SC_ADDRESS_TYPE_LIQUIDITY_POOL"
+    case .muxedContract: return "SC_ADDRESS_TYPE_MUXED_CONTRACT"
     }
   }
 
@@ -29,6 +31,7 @@ extension SCAddressType {
     case "SC_ADDRESS_TYPE_MUXED_ACCOUNT": return .muxedAccount
     case "SC_ADDRESS_TYPE_CLAIMABLE_BALANCE": return .claimableBalance
     case "SC_ADDRESS_TYPE_LIQUIDITY_POOL": return .liquidityPool
+    case "SC_ADDRESS_TYPE_MUXED_CONTRACT": return .muxedContract
     default:
       let prefix = "SCAddressType#"
       if name.hasPrefix(prefix), let v = Int32(name.dropFirst(prefix.count)), let parsed = SCAddressType(rawValue: v) {
@@ -58,6 +61,7 @@ extension SCAddressType: XdrJsonCodable {
     case .muxedAccount: return .string("muxed_account")
     case .claimableBalance: return .string("claimable_balance")
     case .liquidityPool: return .string("liquidity_pool")
+    case .muxedContract: return .string("muxed_contract")
     }
   }
 
@@ -69,6 +73,7 @@ extension SCAddressType: XdrJsonCodable {
     case "muxed_account": return .muxedAccount
     case "claimable_balance": return .claimableBalance
     case "liquidity_pool": return .liquidityPool
+    case "muxed_contract": return .muxedContract
     default:
       throw XdrJsonError.unknownEnumValue(type: "SCAddressType", value: name)
     }

@@ -305,6 +305,25 @@ final class OZExternalSignerManagerTests: XCTestCase {
         }
     }
 
+    /// A muxed address is refused before any signer is consulted, even one the adapter claims.
+    func test_signAuthEntry_muxedAddress_refusedBeforeAdapter() async throws {
+        let adapter = FakeExternalWalletAdapter()
+        let manager = makeManager(walletAdapter: adapter)
+        for muxed in ["MA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVAAAAAAAAAAAAAJLK",
+                      "WA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAAAAAAAAAPCIA6IG"] {
+            adapter.preset(wallet: OZConnectedWallet(address: muxed, walletId: "wallet-1", walletName: "WalletOne"))
+            do {
+                _ = try await manager.signAuthEntry(
+                    address: muxed, authEntry: Data(repeating: 0x33, count: 32).base64EncodedString())
+                XCTFail("expected SmartAccountTransactionException.SigningFailed for \(muxed)")
+            } catch let error as SmartAccountTransactionException.SigningFailed {
+                XCTAssertEqual(error.message, "Transaction signing failed: Muxed account (M...) and muxed contract " +
+                               "(W...) addresses are not valid Soroban auth addresses: \(muxed)")
+            }
+        }
+        XCTAssertEqual(adapter.signAuthCallCount, 0)
+    }
+
     func test_signAuthEntry_neitherSignerAvailable_throwsSignerNotFound() async throws {
         let manager = makeManager()
 
