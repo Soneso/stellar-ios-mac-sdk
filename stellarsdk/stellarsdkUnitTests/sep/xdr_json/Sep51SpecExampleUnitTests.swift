@@ -308,6 +308,68 @@ final class Sep51SpecExampleUnitTests: XCTestCase {
         XCTAssertEqual(try AssetCode12XDRJsonCodec.fromXdrJson(#""ABC\\0\\0""#).wrapped, three.wrapped)
     }
 
+    /// SEP-0051 §Asset Code Types: "`AssetCode12` is always 5 encoded characters or more." The
+    /// floor counts bytes after unescaping, so each escaped NUL counts as one byte. The section
+    /// prints two examples; these values apply its rule at both ends of the range, and their
+    /// base64 is the reference implementation's encoding. Every value is read standalone and as
+    /// the `asset_code` of an `AlphaNum12`, and written back unchanged.
+    func testAssetCode12ReadsFiveToTwelveBytesAfterUnescaping() throws {
+        let accepted: [(json: String, code: String, alphaNum12: String)] = [
+            (#""ABC\\0\\0""#, "QUJDAAAAAAAAAAAA",
+             "QUJDAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"),
+            (#""ABCD\\0""#, "QUJDRAAAAAAAAAAA",
+             "QUJDRAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"),
+            ("\"ABCDE\"", "QUJDREUAAAAAAAAA",
+             "QUJDREUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"),
+            ("\"ABCDEFGHIJKL\"", "QUJDREVGR0hJSktM",
+             "QUJDREVGR0hJSktMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"),
+        ]
+
+        for (json, codeBase64, alphaNum12Base64) in accepted {
+            let code = try AssetCode12XDRJsonCodec.fromXdrJson(json)
+            XCTAssertEqual(try Self.base64(code), codeBase64, json)
+            XCTAssertEqual(try AssetCode12XDRJsonCodec.toXdrJson(code), json, json)
+
+            let document = Self.alphaNum12Json(assetCode: json)
+            let alphaNum12 = try Alpha12XDR.fromXdrJson(document)
+            XCTAssertEqual(try Self.base64(alphaNum12), alphaNum12Base64, json)
+            XCTAssertEqual(try alphaNum12.toXdrJson(), document, json)
+        }
+    }
+
+    func testAssetCode12RejectsFewerThanFiveOrMoreThanTwelveBytesAfterUnescaping() {
+        let rejected: [(json: String, byteCount: Int)] = [
+            ("\"ABC\"", 3),
+            ("\"ABCD\"", 4),
+            (#""ABC\\0""#, 4),
+            ("\"\"", 0),
+            ("\"ABCDEFGHIJKLM\"", 13),
+        ]
+
+        for (json, byteCount) in rejected {
+            let message = "expected 5 to 12 bytes, got \(byteCount)"
+            XCTAssertThrowsError(try AssetCode12XDRJsonCodec.fromXdrJson(json), json) { error in
+                Self.assertInvalidValue(error, type: "AssetCode12XDR", key: nil, message: message)
+            }
+            XCTAssertThrowsError(try Alpha12XDR.fromXdrJson(Self.alphaNum12Json(assetCode: json)),
+                                 json) { error in
+                Self.assertInvalidValue(error, type: "Alpha12XDR", key: "asset_code", message: message)
+            }
+        }
+    }
+
+    /// Escape validation runs before the length check, so an invalid escape reports itself
+    /// whatever the length of the rest of the string.
+    func testAssetCode12RejectsAnInvalidEscapeBeforeCountingBytes() {
+        let message = #"unrecognised escape sequence \q in AB\q"#
+        XCTAssertThrowsError(try AssetCode12XDRJsonCodec.fromXdrJson(#""AB\\q""#)) { error in
+            Self.assertInvalidValue(error, type: "AssetCode12XDR", key: nil, message: message)
+        }
+        XCTAssertThrowsError(try Alpha12XDR.fromXdrJson(Self.alphaNum12Json(assetCode: #""AB\\q""#))) { error in
+            Self.assertInvalidValue(error, type: "Alpha12XDR", key: "asset_code", message: message)
+        }
+    }
+
     /// SEP-0051 §Asset Code Types says the `AssetCode` union renders according to its arm,
     /// which makes it a bare string rather than the keyed object a union otherwise takes.
     func testAssetCodeUnionRendersAsABareString() throws {
@@ -391,5 +453,21 @@ final class Sep51SpecExampleUnitTests: XCTestCase {
 
     private static func base64(_ value: XDREncodable) throws -> String {
         Data(try XDREncoder.encode(value)).base64EncodedString()
+    }
+
+    /// An `AlphaNum12` document around the given JSON string, issued by the all-zero account.
+    private static func alphaNum12Json(assetCode: String) -> String {
+        "{\"asset_code\":\(assetCode),"
+            + "\"issuer\":\"GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWHF\"}"
+    }
+
+    private static func assertInvalidValue(_ error: Error, type: String, key: String?, message: String,
+                                           file: StaticString = #filePath, line: UInt = #line) {
+        guard case XdrJsonError.invalidValue(let actualType, let actualKey, let actualMessage) = error else {
+            return XCTFail("wrong error: \(error)", file: file, line: line)
+        }
+        XCTAssertEqual(actualType, type, file: file, line: line)
+        XCTAssertEqual(actualKey, key, file: file, line: line)
+        XCTAssertEqual(actualMessage, message, file: file, line: line)
     }
 }

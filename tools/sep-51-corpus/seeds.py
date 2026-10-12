@@ -74,9 +74,9 @@ and exporter definitions, which this SDK generates and which carry the address
 family enum, the reserved-name type escape and a union with inline opaque arms.
 
 A SignerKeyEd25519SignedPayload with a zero-length payload is deliberately
-absent: the reference decodes it to a strkey it then refuses to encode, so it
-cannot round-trip through the generator. That input is pinned by a hand-written
-negative test instead.
+absent: the reference decodes it to an `<INVALID:...:EMPTY_PAYLOAD>` diagnostic
+it then refuses to encode, so it cannot round-trip through the generator. That
+input is pinned by a hand-written negative test instead.
 
 Where several XDR definitions share one Swift type and render differently, the
 Swift type is never seeded: only the union arm that selects a definition can
@@ -265,8 +265,9 @@ SEEDS = [
           non_utf8_paths=[""]),
     _seed("AssetCode4", "AssetCode4XDR", "a\\\\b",
           "Backslash inside a four-byte asset code doubles."),
-    _seed("AssetCode12", "AssetCode12XDR", "ABC",
-          "Three-character twelve-byte asset code keeps its short form."),
+    _seed("AssetCode12", "AssetCode12XDR", "ABC\\0\\0",
+          "Three-character twelve-byte asset code keeps two escaped NULs to reach "
+          "the five-byte floor."),
     _seed("AssetCode12", "AssetCode12XDR", "ABCDE",
           "Five-character asset code sits at the twelve-byte floor."),
     _seed("AssetCode12", "AssetCode12XDR", "ABCDEFGH",
@@ -1605,77 +1606,50 @@ SEEDS = [
            "ledger_close_metas": []},
           "Ledger close meta batch at the unsigned 32-bit maximum sequence."),
 
-    # --- Millisecond close values: spec-derived ------------------------------
-    # The pinned reference cannot resolve these members and structs, so each JSON
-    # is written from SEP-0051 and the `.x`, and each `xdr` is packed by hand from
-    # the `.x` layout. The generator refuses them once the reference resolves them.
+    # --- Millisecond close values -------------------------------------------
     _seed("StellarValueType", "StellarValueTypeXDR", "signed_ms",
-          "Stellar value type signed member keeps its millisecond suffix.",
-          oracle="spec", xdr="AAAAAw=="),
+          "Stellar value type signed member keeps its millisecond suffix."),
     _seed("StellarValueType", "StellarValueTypeXDR", "empty_tx_set_ms",
-          "Stellar value type empty-set member keeps its millisecond suffix.",
-          oracle="spec", xdr="AAAABA=="),
+          "Stellar value type empty-set member keeps its millisecond suffix."),
     _seed("StellarValueSignedMsValue", "StellarValueXDRSignedMsValueXDR",
           {"close_time_ms": "1700000000123",
            "lc_value_signature": {"node_id": G1, "signature": "0a0b0c"}},
-          "Signed close value renders its millisecond close time as a string.",
-          oracle="spec",
-          xdr="AAABi8/laHsAAAAAAQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHyAAAAAD"
-              "CgsMAA=="),
+          "Signed close value renders its millisecond close time as a string."),
     _seed("StellarValueProposedMsValue", "StellarValueXDRProposedMsValueXDR",
           {"close_time_ms": UINT64_MAX, "tx_set_hash": HASH1,
            "previous_ledger_hash": HASH_ZERO, "previous_ledger_version": 29,
            "lc_value_signature": {"node_id": G1, "signature": "0a0b"}},
-          "Empty-set close value at the unsigned 64-bit maximum close time.",
-          oracle="spec",
-          xdr="//////////8BAgMEBQYHCAkKCwwNDg8QERITFBUWFxgZGhscHR4fIAAAAAAAAAAA"
-              "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHQAAAAABAgMEBQYHCAkKCwwNDg8Q"
-              "ERITFBUWFxgZGhscHR4fIAAAAAIKCwAA"),
+          "Empty-set close value at the unsigned 64-bit maximum close time."),
 
-    # --- Muxed contract addresses and ML-DSA cost types: spec-derived --------
-    # CAP-0084 and CAP-0087 add these members and the MuxedContract struct, which the
-    # pinned reference cannot resolve; JSON and `xdr` are written the same way. The
-    # muxed contract renders as its W strkey, contract id first, the reverse of the
-    # XDR layout, and is the payload of the muxed contract arm of SCAddress.
+    # --- Muxed contract addresses and ML-DSA cost types ---------------------
+    # The muxed contract renders as its W strkey, contract id first, the reverse of
+    # the XDR layout, and is the payload of the muxed contract arm of SCAddress.
     _seed("ScAddressType", "SCAddressType", "muxed_contract",
-          "Address type muxed contract member drops the shared prefix.",
-          oracle="spec", xdr="AAAABQ=="),
+          "Address type muxed contract member drops the shared prefix."),
     _seed("MuxedContract", "MuxedContractXDR",
           "WA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAAAAAAAAAPCIA6IG",
-          "Muxed contract renders as a W strkey, contract id ahead of the id.",
-          oracle="spec", xdr="AAAAAAAB4kA2Pqo4Z4QfutD07YjHeeT+ZuVqJHDcmMDsnAc9BcexAw=="),
+          "Muxed contract renders as a W strkey, contract id ahead of the id."),
     _seed("ScAddress", "SCAddressXDR",
           "WA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAAAAAAAAAPCIA6IG",
-          "Muxed contract arm renders as a W strkey.",
-          oracle="spec", arm="muxed_contract",
-          xdr="AAAABQAAAAAAAeJANj6qOGeEH7rQ9O2Ix3nk/mblaiRw3JjA7JwHPQXHsQM="),
+          "Muxed contract arm renders as a W strkey."),
     _seed("ContractCostType", "ContractCostType", "ml_dsa44_decode_verifying_key",
-          "ML-DSA-44 verifying key cost type keeps the digits after dsa.",
-          oracle="spec", xdr="AAAAVg=="),
+          "ML-DSA-44 verifying key cost type keeps the digits after dsa."),
     _seed("ContractCostType", "ContractCostType", "ml_dsa65_decode_verifying_key",
-          "ML-DSA-65 verifying key cost type keeps the digits after dsa.",
-          oracle="spec", xdr="AAAAVw=="),
+          "ML-DSA-65 verifying key cost type keeps the digits after dsa."),
     _seed("ContractCostType", "ContractCostType", "ml_dsa87_decode_verifying_key",
-          "ML-DSA-87 verifying key cost type keeps the digits after dsa.",
-          oracle="spec", xdr="AAAAWA=="),
+          "ML-DSA-87 verifying key cost type keeps the digits after dsa."),
     _seed("ContractCostType", "ContractCostType", "ml_dsa44_decode_signature",
-          "ML-DSA-44 signature decode cost type keeps the digits after dsa.",
-          oracle="spec", xdr="AAAAWQ=="),
+          "ML-DSA-44 signature decode cost type keeps the digits after dsa."),
     _seed("ContractCostType", "ContractCostType", "ml_dsa65_decode_signature",
-          "ML-DSA-65 signature decode cost type keeps the digits after dsa.",
-          oracle="spec", xdr="AAAAWg=="),
+          "ML-DSA-65 signature decode cost type keeps the digits after dsa."),
     _seed("ContractCostType", "ContractCostType", "ml_dsa87_decode_signature",
-          "ML-DSA-87 signature decode cost type keeps the digits after dsa.",
-          oracle="spec", xdr="AAAAWw=="),
+          "ML-DSA-87 signature decode cost type keeps the digits after dsa."),
     _seed("ContractCostType", "ContractCostType", "verify_ml_dsa44_sig",
-          "ML-DSA-44 verification cost type keeps the digits after dsa.",
-          oracle="spec", xdr="AAAAXA=="),
+          "ML-DSA-44 verification cost type keeps the digits after dsa."),
     _seed("ContractCostType", "ContractCostType", "verify_ml_dsa65_sig",
-          "ML-DSA-65 verification cost type keeps the digits after dsa.",
-          oracle="spec", xdr="AAAAXQ=="),
+          "ML-DSA-65 verification cost type keeps the digits after dsa."),
     _seed("ContractCostType", "ContractCostType", "verify_ml_dsa87_sig",
-          "ML-DSA-87 verification cost type keeps the digits after dsa.",
-          oracle="spec", xdr="AAAAXg=="),
+          "ML-DSA-87 verification cost type keeps the digits after dsa."),
 
     # --- Both arms of every pair several XDR definitions render differently -
     # The Swift form of such a pair carries no conversion of its own, so each side
