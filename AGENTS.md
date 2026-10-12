@@ -30,7 +30,7 @@ Before reporting a change as done:
 4. `CHANGELOG.md` has an entry under `[Unreleased]` in the Keep a Changelog section the change belongs to (Added, Changed, Deprecated, Removed, Fixed, Security), in present tense, one entry per user-visible change.
 5. No generated file was edited by hand. The user documentation under `docs/` and the skill under `skills/` describe the released SDK; they change on the `release-docs` branch with the release. `docs/documentation-strategy.md` is a process document and changes in the pull request that changes a fact it states.
 
-Every pull request runs `.github/workflows/tests.yml`: the unit suite with coverage on a macOS runner, the Codecov upload, and the `agents-md-paths` job. That job runs `.github/scripts/check_agents_md_paths.py`, which fails when a path this file names does not exist, so a change that moves a file also changes the line here. `.github/workflows/xdr-generator.yml` runs when its path filter matches. It runs the generator snapshot tests and regenerates the three generated trees on Linux, where the case-sensitive file system also catches stray files; any tracked or untracked difference fails it. It also runs the SEP-51 checks, which include that `docs/sep/sep-51.md` and the skill's SEP-51 page quote the pinned SEP-51 version. The branch rules require the Codecov project status; `codecov.yml` holds the targets and the ignore list. A pull request body states what was verified and how.
+Every pull request runs `.github/workflows/tests.yml`: the unit suite with coverage on a macOS runner, the Codecov upload, and the `agents-md-paths` job. That job runs `.github/scripts/check_agents_md_paths.py`, which fails when a path this file names does not exist, so a change that moves a file also changes the line here. `.github/workflows/xdr-generator.yml` runs when its path filter matches. It runs the generator snapshot tests and regenerates the three generated trees on Linux, where the case-sensitive file system also catches stray files; any tracked or untracked difference fails it. It also runs the SEP-51 checks, which include that `docs/sep/sep-51.md` and the skill's SEP-51 page quote the pinned SEP-51 version. The branch rules require the Codecov project status; `codecov.yml` holds the targets and the ignore list.
 
 ## Generated code and data
 
@@ -49,19 +49,17 @@ Generated files are never edited by hand. Change the generator or its override f
 - The service APIs (`AccountService` and its siblings) return `async` response enums with `.success` and `.failure`; `SorobanClient` and the smart-account APIs throw. Follow the convention of the API you extend, because callers of one service expect one error shape.
 - Public declarations carry `///` documentation comments that describe current behavior and its reason, never history; the API documentation is generated from them.
 - New code uses the typed API; raw XDR appears only where no typed path exists, because the typed layer carries the validation and the documentation users read.
-- SwiftPM writes `.build/`, the coverage export writes `coverage/`, Jazzy rewrites `api-docs/`, and the corpus tool writes `tools/sep-51-corpus/.tmp/`; all are gitignored. The matrix and skill generators dirty tracked files (see above).
 
 ## Boundaries
 
-- Releases are the maintainer's. An agent never changes the version in `stellarsdk/stellarsdk/Info.plist`, `.jazzy.yaml`, the install snippets in `README.md`, `docs/getting-started.md` and `docs/quick-start.md`, the skill version fields in `skills/stellar-ios-mac-sdk/SKILL.md`, `skills/.claude-plugin/plugin.json` and `.claude-plugin/marketplace.json`, the zip `skills/stellar-ios-mac-sdk.zip`, a tag, a GitHub release, or the `gh-pages` branch. Swift Package Manager distributes from the tags; there is no registry step.
-- Never edit `xdr/*.x`, a generated file, `tools/sep-51-oracle/name-map.json` or `stellarsdk/stellarsdkUnitTests/sep/xdr_json/corpus.json` by hand.
+- Releases are the maintainer's. An agent never changes the version in `stellarsdk/stellarsdk/Info.plist`, `.jazzy.yaml`, the install snippets in `README.md`, `docs/getting-started.md` and `docs/quick-start.md`, the skill version fields in `skills/stellar-ios-mac-sdk/SKILL.md`, `skills/.claude-plugin/plugin.json` and `.claude-plugin/marketplace.json`, the zip `skills/stellar-ios-mac-sdk.zip`, a tag, a GitHub release, or the `gh-pages` branch.
 - No credential lives in the repository. CI uses OIDC for the Codecov and SBOM uploads. Ask before adding a dependency, a workflow, or a new generated artifact; each is a maintenance commitment the maintainer carries after the pull request.
 
 ## Changes
 
 - Branch from `master` with a short kebab-case name that names the change; open the pull request against `master`.
 - The commit subject is one imperative sentence of at most 72 characters without a type prefix; the body states the motivation and what the change does, so the log reads without the diff. The pull request body follows the same form and names what was verified.
-- A pull request carries code, tests, and the CHANGELOG entry. `AGENTS.md`, `CONTRIBUTING.md` and `docs/documentation-strategy.md` change in the pull request that changes a fact they state.
+- A pull request carries code, tests, and the CHANGELOG entry.
 
 ## Where details live
 
@@ -69,8 +67,3 @@ Generated files are never edited by hand. Change the generator or its override f
 - Before writing or changing a page under `docs/` or a documentation example, read `docs/documentation-strategy.md`; it holds the page template, the example rules (`try!` only for fixed known-good values) and the release policy for documentation.
 - Before touching the skill under `skills/`, read `skills/README.md` and `tools/skill-generator/README.md`; they hold the skill's structure and the reference generator.
 - Before changing a tool under `tools/`, read its README; every tool directory has one.
-
-## Locations
-
-- The C target `stellarsdk/stellarsdk/libs/ed25519-C/` is the only non-Swift source compiled into the package.
-- `soroban.md` at the root is a redirect stub kept for links in older material; the page lives in `docs/`.
