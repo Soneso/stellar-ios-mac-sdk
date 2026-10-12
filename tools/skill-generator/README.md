@@ -42,26 +42,21 @@ cd stellar-ios-mac-sdk && zip -r ../stellar-ios-mac-sdk.zip . -x "*.DS_Store"
 
 ## When to regenerate
 
-Regenerate whenever the SDK's public API surface changes:
-
-- New SEP implementation added
-- New public class, method, or property in any non-XDR / non-SEP source area
-- Type moved between directories
-- Property renamed, type changed, or signature otherwise modified
-- Type deprecated or removed
-
-Stale generation will not break the SDK build, but the agent skill will offer
-out-of-date guidance to consumers.
+The reference describes the released SDK, so it is regenerated during release
+preparation, together with the skill version fields and the zip. A pull request
+that changes the public API leaves the reference and the zip unchanged. Between
+releases, the output on `master` differs from the committed file by the API
+added since the last release.
 
 ## What gets scanned
 
 - **Scanned source**: a recursive walk of `stellarsdk/stellarsdk/`. SEP
-  implementations (e.g. `kyc/`, `toml/`, `web_authentication/`,
-  `transfer_server_protocol/`) ARE scanned; there is no `sep/` directory.
+  implementations, such as `kyc/`, `toml/`, `web_authentication/`, and
+  `transfer_server_protocol/`, ARE scanned; there is no `sep/` directory.
 - **Excluded directories**: effectively only `xdr` and `Tests`, plus any
   `.xcodeproj` / `.xcassets` bundles. Exclusion is by **basename at any depth**
   (the `SKIP_DIRS` set is matched against a directory's final path component
-  wherever it occurs), so the nested `responses/xdr` is also skipped — which is
+  wherever it occurs), so the nested `responses/xdr` is also skipped, which is
   intended. This basename match is path-blind and therefore fragile: any future
   directory that happens to be named `xdr` or `Tests` anywhere under the source
   tree would be skipped too.
@@ -71,9 +66,9 @@ out-of-date guidance to consumers.
   explicit `public` / `open` modifier, OR when it carries no explicit access
   modifier and its enclosing context makes members public by default. The
   public-by-default contexts are:
-  - **Protocol bodies** — all protocol requirements are public-by-default, so
+  - **Protocol bodies**: all protocol requirements are public-by-default, so
     every requirement of a public/open protocol is emitted.
-  - **`public` / `open` extensions** — members with no explicit access inherit
+  - **`public` / `open` extensions**: members with no explicit access inherit
     the extension's access. A member explicitly marked
     `private`/`fileprivate`/`internal` inside such an extension is still
     excluded.
@@ -115,5 +110,5 @@ This is a regex-based parser, not a Swift compiler frontend. It correctly
 handles every pattern present in the current SDK source but is not a general
 Swift parser. If a future SDK change uses a declaration shape that the script
 does not yet recognize, the affected types silently drop from the output.
-After any large API change, sanity-check the regenerated `api_reference.md`
+After any large API change, check the regenerated `api_reference.md`
 against the actual source (counts and a few spot-checked sections).

@@ -49,13 +49,13 @@ cd tools/xdr-generator && bundle install
 ./probe.sh --check
 
 # Render one value: probe.sh <REFERENCE TYPE NAME> <BASE64>
-./probe.sh ScVal AAAAAQAAAAU=
+./probe.sh ScVal AAAAAwAAAAU=
 ./probe.sh --schema AccountEntryExtensionV2
 
 # Rebuild the name table and check it against the reference
 ruby name_map.rb --diff
 
-# Check without writing: are the names right, and are the artefacts current?
+# Check without writing: are the names right, and are the artifacts current?
 ruby name_map.rb --check
 
 # Compare against a build other than the pinned one, writing nothing
@@ -70,7 +70,7 @@ ruby emitted_names.rb
 
 `name_map.rb --diff` exits non-zero if any derived name disagrees with the
 reference, so it can gate a change. `--check` runs the same comparison but
-writes nothing and additionally fails when a committed artefact is out of date,
+writes nothing and additionally fails when a committed artifact is out of date,
 which is the form to run from a build.
 
 `--offline-check` asks the half of that question a machine with no Rust toolchain
@@ -81,7 +81,7 @@ to say about it. `type_map.json` is not checked, because deciding which types th
 reference knows is exactly what needs the reference. That makes it the per-pull-request
 form; `--check` remains the authority and runs where the pinned CLI is installed.
 
-### The type map is load-bearing
+### Oracle lookups go through the type map
 
 The reference CLI names every type in Rust `UpperCamelCase` derived from the `.x`
 identifier, so its spelling differs from this SDK's in three separate ways:
@@ -98,16 +98,16 @@ unresolvable, so every tool that addresses the oracle goes through
 
 | Code | Meaning |
 |---|---|
-| 0 | The derived names agree with the reference, and the artefacts are current. |
-| 1 | A name disagrees, or a committed artefact is stale. |
+| 0 | The derived names agree with the reference, and the artifacts are current. |
+| 1 | A name disagrees, or a committed artifact is stale. |
 | 2 | The reference CLI is missing or does not match the pin. |
 
 Under `--offline-check` the codes mean the same things measured against the `.x`
 sources alone: 0 that the committed table matches them, 1 that it does not or is
 absent. No reference CLI is consulted, so exit 2 does not arise.
 
-A missing CLI is a separate code because it calls for a different response —
-install the pinned build — and a caller that read every non-zero exit as
+A missing CLI is a separate code because it calls for a different response:
+installing the pinned build. A caller that read every non-zero exit as
 disagreement would report it as a name mismatch.
 
 `emitted_names.rb` needs no reference CLI. It exits 0 on agreement, 1 on any
@@ -128,8 +128,8 @@ enumerates the names that differ. A missing or unrunnable binary is still exit 2
 substitutes for the other.
 
 `name_map.rb` answers "are the derivation rules right?" It calls
-`tools/xdr-generator/generator/json_names.rb` — the same module the generator
-calls — and compares the result with the reference, member by member. But it
+`tools/xdr-generator/generator/json_names.rb`, the same module the generator
+calls, and compares the result with the reference, member by member. But it
 calls that module *its own way*, over its own walk of the `.x` sources. It
 therefore cannot see how the generator invokes it. By construction it stays green
 when the rules are right and the generator uses them wrongly.
@@ -148,7 +148,7 @@ table. The failure modes it is the only guard against:
   computed from the wrong set and every member of that enum is stripped wrongly;
 - a key emitted under the wrong field, or a field emitted twice, or one dropped;
 - struct keys emitted in an order other than `.x` declaration order, which is a
-  wire-format change even though the key set is unchanged — so struct keys are
+  wire-format change even though the key set is unchanged, so struct keys are
   compared as an ordered list, not a set;
 - a type-level override that stopped being applied, leaving a type that should
   render as a single string emitting an object instead.
@@ -179,7 +179,7 @@ nested structs `med25519` and `ed25519SignedPayload`, which this SDK generates a
 so the field diff does not apply; `name_map.rb` classifies them separately and
 asserts the set is exactly the expected one. A struct entering or leaving that
 set is reported as a mismatch, because it means a type's wire form changed. A
-type the reference cannot resolve is exempt from the leaving check — it is
+type the reference cannot resolve is exempt from the leaving check. It is
 reported once, as unresolvable, since an absent type is no evidence about its
 rendering.
 
@@ -196,10 +196,10 @@ different JSON renderings.
 
 Re-run `ruby name_map.rb --diff` after either pin moves:
 
-- **XDR pin** (`Makefile`'s `XDR_COMMIT`) — new enum members or types can
+- **XDR pin** (`Makefile`'s `XDR_COMMIT`): new enum members or types can
   introduce identifier shapes the rules handle differently from the reference.
-- **Reference pin** (`oracle-pin.json`) — a reference release can change key
-  spellings, as the `type_` to `type` fix in 28.0.0 did.
+- **Reference pin** (`oracle-pin.json`): a reference release can change key
+  spellings.
 
 Two identifier shapes have no agreed JSON name and make `name_map.rb` raise
 rather than guess: a member identifier equal to its enum's shared prefix, which
