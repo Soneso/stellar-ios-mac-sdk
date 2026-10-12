@@ -25,6 +25,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   account memo requirement support.
 
 ### Changed
+- Breaking: `AssetCode12XDRJsonCodec` rejects an XDR-JSON string that unescapes to fewer than five
+  bytes, as the reference implementation does since 30.0.0, and so do the asset types that carry a
+  twelve-byte code (`Alpha12XDR` inside `AssetXDR`, `ChangeTrustAssetXDR` and `TrustlineAssetXDR`);
+  a short code is written with escaped NUL bytes, `"ABC\0\0"` for a three-character code. Before
+  this change, `"ABC"` was accepted and produced an asset code that the network rejects as invalid.
 - Breaking: `ContractSpec.nativeToXdrSCVal(val:ty:)` and `funcArgsToXdrSCValues(name:args:)` accept
   `G...` or `C...` strkeys or account or contract `SCAddressXDR` values for an `Address` parameter.
   A `MuxedAddress` parameter also accepts `M...` and `W...` strkeys or the corresponding

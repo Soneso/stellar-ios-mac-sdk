@@ -151,8 +151,9 @@ arm key is an ordinary object key, so `ip.i_pv4` addresses an arm payload with t
 same syntax struct fields use.
 
 Two SEP-0051 divergences deliberately have no corpus entry. A
-`SignerKeyEd25519SignedPayload` with a zero-length payload decodes to a strkey the
-reference then refuses to encode, so it cannot round-trip through the generator;
+`SignerKeyEd25519SignedPayload` with a zero-length payload decodes to
+`<INVALID:...:EMPTY_PAYLOAD>`, which the reference then refuses to encode, so it
+cannot round-trip through the generator;
 and `$schema` acceptance is input-side and cannot survive the encode step above.
 Both are pinned by hand-written tests.
 

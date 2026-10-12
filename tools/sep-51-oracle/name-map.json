@@ -1,44 +1,28 @@
 {
   "oracle": {
     "tool": "stellar-xdr",
-    "version": "28.0.1",
-    "xdr_commit": "9c9c145953e80990d6ff1ae3a6a973a0ce6d0694"
+    "version": "30.0.0",
+    "xdr_commit": "4f524bbac80c781c06e4fb5fc93a2d0d331d6705"
   },
   "sdk_xdr_commit": "579a90b2654e3811e8b672e128a5e094c7325b27",
   "description": "SEP-0051 XDR-JSON names derived from the .x sources. Regenerate with ruby tools/sep-51-oracle/name_map.rb --diff after any XDR pin bump.",
   "verification": {
     "enum_members_total": 605,
-    "enum_members_checked": 593,
-    "enum_members_unresolvable": [
-      "ContractCostType.MlDsa44DecodeSignature",
-      "ContractCostType.MlDsa44DecodeVerifyingKey",
-      "ContractCostType.MlDsa65DecodeSignature",
-      "ContractCostType.MlDsa65DecodeVerifyingKey",
-      "ContractCostType.MlDsa87DecodeSignature",
-      "ContractCostType.MlDsa87DecodeVerifyingKey",
-      "ContractCostType.VerifyMlDsa44Sig",
-      "ContractCostType.VerifyMlDsa65Sig",
-      "ContractCostType.VerifyMlDsa87Sig",
-      "SCAddressType.SC_ADDRESS_TYPE_MUXED_CONTRACT",
-      "StellarValueType.STELLAR_VALUE_EMPTY_TX_SET_MS",
-      "StellarValueType.STELLAR_VALUE_SIGNED_MS"
-    ],
+    "enum_members_checked": 605,
+    "enum_members_unresolvable": [],
     "struct_types_total": 237,
-    "struct_types_field_comparable": 227,
+    "struct_types_field_comparable": 229,
     "struct_types_string_rendered": [
       "Int128Parts",
       "Int256Parts",
+      "MuxedContract",
       "MuxedEd25519Account",
       "UInt128Parts",
       "UInt256Parts",
       "ed25519SignedPayload",
       "med25519"
     ],
-    "struct_types_unresolvable": [
-      "MuxedContract",
-      "StellarValueProposedMsValue",
-      "StellarValueSignedMsValue"
-    ],
+    "struct_types_unresolvable": [],
     "mismatches": []
   },
   "enums": [

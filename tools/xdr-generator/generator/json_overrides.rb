@@ -388,6 +388,8 @@ module Sep51JsonOverrides
 
     # The twelve-character code keeps a floor of five bytes after trimming, which is what
     # keeps the two AssetCode arms distinguishable when the union renders as a bare string.
+    # Input must unescape to five to twelve bytes, because SEP-0051 renders every
+    # twelve-character code with at least five; a shorter code carries escaped NULs.
     'AssetCode12XDR' => {
       emit: <<~SWIFT,
         guard value.wrapped.count == 12 else {
@@ -399,10 +401,10 @@ module Sep51JsonOverrides
       SWIFT
       read: <<~SWIFT
         let raw = try XdrJson.unescapeString(value, type: type, key: key)
-        guard raw.count <= 12 else {
+        guard (5...12).contains(raw.count) else {
           throw XdrJsonError.invalidValue(
             type: type, key: key,
-            message: "expected at most 12 bytes, got \\(raw.count)")
+            message: "expected 5 to 12 bytes, got \\(raw.count)")
         }
         return AssetCode12XDR(XdrJson.rightPad(raw, to: 12))
       SWIFT

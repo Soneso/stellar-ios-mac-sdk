@@ -16,10 +16,11 @@ import stellarsdk
 /// the suite states conformance to an external record rather than self-consistency.
 ///
 /// An entry's `json` is authoritative whatever its `oracle` class says. `reference` marks the
-/// SDK and the reference agreeing; `incomparable` and `spec` mark the places where SEP-0051 and
-/// the reference disagree and the SDK follows the spec. The reference's own output is recorded
-/// in `oracle_json` for the maintainer's benefit and is deliberately not decoded here: asserting
-/// it would pin the divergence the SDK does not follow.
+/// SDK and the reference agreeing; `spec` marks a value the pinned reference cannot resolve, so
+/// the JSON is derived from SEP-0051; `incomparable` marks the places where SEP-0051 and the
+/// reference disagree and the SDK follows the spec. For those, the reference's own output is
+/// recorded in `oracle_json` for the maintainer's benefit and is deliberately not decoded here:
+/// asserting it would pin the divergence the SDK does not follow.
 final class Sep51CorpusUnitTests: XCTestCase {
 
     // MARK: - Emission

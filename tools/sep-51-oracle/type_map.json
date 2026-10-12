@@ -1,8 +1,8 @@
 {
   "oracle": {
     "tool": "stellar-xdr",
-    "version": "28.0.1",
-    "xdr_commit": "9c9c145953e80990d6ff1ae3a6a973a0ce6d0694"
+    "version": "30.0.0",
+    "xdr_commit": "4f524bbac80c781c06e4fb5fc93a2d0d331d6705"
   },
   "sdk_xdr_commit": "579a90b2654e3811e8b672e128a5e094c7325b27",
   "description": "Maps this SDK's generated XDR type names to the reference CLI's spelling. The two differ in acronym casing, in the reserved-name escape and in this SDK's XDR suffix, so a tool that guesses one from the other reports resolvable types as unresolvable. unknown_to_oracle lists every type the reference build does not resolve, whatever the cause; the expected cause is a type added after the XDR commit that build vendors.",
@@ -248,6 +248,7 @@
     "MuxedAccountMed25519XDR": "MuxedEd25519Account",
     "MuxedAccountXDR": "MuxedAccount",
     "MuxedAccountXDRMed25519XDR": "MuxedAccountMed25519",
+    "MuxedContractXDR": "MuxedContract",
     "NodeIDXDR": "NodeId",
     "OfferEntryFlagsXDR": "OfferEntryFlags",
     "OfferEntryXDR": "OfferEntry",
@@ -398,7 +399,9 @@
     "StellarValueTypeXDR": "StellarValueType",
     "StellarValueXDR": "StellarValue",
     "StellarValueXDRExtXDR": "StellarValueExt",
+    "StellarValueXDRProposedMsValueXDR": "StellarValueProposedMsValue",
     "StellarValueXDRProposedValueXDR": "StellarValueProposedValue",
+    "StellarValueXDRSignedMsValueXDR": "StellarValueSignedMsValue",
     "StoredDebugTransactionSetXDR": "StoredDebugTransactionSet",
     "StoredTransactionSetXDR": "StoredTransactionSet",
     "String32XDR": "String32",
@@ -412,6 +415,7 @@
     "ThresholdIndexesXDR": "ThresholdIndexes",
     "ThresholdsXDR": "Thresholds",
     "TimeBoundsXDR": "TimeBounds",
+    "TimePointMsXDR": "TimePointMs",
     "TimePointXDR": "TimePoint",
     "TimeSlicedNodeDataXDR": "TimeSlicedNodeData",
     "TimeSlicedPeerDataListXDR": "TimeSlicedPeerDataList",
@@ -474,10 +478,5 @@
     "UpgradeTypeXDR": "UpgradeType",
     "ValueXDR": "Value"
   },
-  "unknown_to_oracle": [
-    "MuxedContractXDR",
-    "StellarValueXDRProposedMsValueXDR",
-    "StellarValueXDRSignedMsValueXDR",
-    "TimePointMsXDR"
-  ]
+  "unknown_to_oracle": []
 }

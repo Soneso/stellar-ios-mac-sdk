@@ -12,7 +12,7 @@ reference CLI; these tools are used when the XDR pin or the reference pin moves.
 Install the pinned reference CLI (user-level, no elevated privileges):
 
 ```bash
-cargo install stellar-xdr --features cli --version 28.0.1 --locked
+cargo install stellar-xdr --features cli --version 30.0.0 --locked
 ```
 
 It installs to `~/.cargo/bin/stellar-xdr`. Set `STELLAR_XDR` to use a binary from
@@ -172,15 +172,15 @@ The check is exhaustive over two surfaces:
   about field *names* only and says nothing about emission order. Emission order
   is declaration order, and `decode` output is the authority there.
 
-Seven structs are rendered by SEP-0051 as a single JSON string rather than an
-object: the four integer-parts types, plus `MuxedEd25519Account` and the two
-nested structs `med25519` and `ed25519SignedPayload`, which this SDK generates as
-`MuxedAccountMed25519XDR` and `Ed25519SignedPayload`. They carry no field names,
-so the field diff does not apply; `name_map.rb` classifies them separately and
-asserts the set is exactly the expected one. A struct entering or leaving that
-set is reported as a mismatch, because it means a type's wire form changed. A
-type the reference cannot resolve is exempt from the leaving check. It is
-reported once, as unresolvable, since an absent type is no evidence about its
+Eight structs are rendered by SEP-0051 as a single JSON string rather than an
+object: the four integer-parts types, plus `MuxedEd25519Account`, `MuxedContract`
+and the two nested structs `med25519` and `ed25519SignedPayload`, which this SDK
+generates as `MuxedAccountMed25519XDR` and `Ed25519SignedPayload`. They carry no
+field names, so the field diff does not apply; `name_map.rb` classifies them
+separately and asserts the set is exactly the expected one. A struct entering or
+leaving that set is reported as a mismatch, because it means a type's wire form
+changed. A type the reference cannot resolve is exempt from the leaving check. It
+is reported once, as unresolvable, since an absent type is no evidence about its
 rendering.
 
 Union arm keys are derived rather than probed. An arm keyed by an enum member is
@@ -207,6 +207,6 @@ leaves an empty name, and a member whose stripped remainder is exactly `Error`,
 which the reference escapes. Neither occurs in the current `.x` set.
 
 The reference CLI vendors a different XDR commit than the SDK generates from, so
-it can lag behind on newly added types. At the current pins, twelve enum members and
-three structs are unresolvable. Such members and types are reported as unresolvable
-rather than as mismatches.
+it can lag behind on newly added types. At the current pins, the pinned build
+resolves every enum member and struct, so no name is unresolvable. A member or type
+it cannot resolve is reported as unresolvable rather than as a mismatch.

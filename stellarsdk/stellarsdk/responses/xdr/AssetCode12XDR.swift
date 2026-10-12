@@ -29,10 +29,10 @@ public enum AssetCode12XDRJsonCodec {
 
   static func fromXdrJsonValue(_ value: XdrJsonValue, type: String, key: String?) throws -> AssetCode12XDR {
     let raw = try XdrJson.unescapeString(value, type: type, key: key)
-    guard raw.count <= 12 else {
+    guard (5...12).contains(raw.count) else {
       throw XdrJsonError.invalidValue(
         type: type, key: key,
-        message: "expected at most 12 bytes, got \(raw.count)")
+        message: "expected 5 to 12 bytes, got \(raw.count)")
     }
     return AssetCode12XDR(XdrJson.rightPad(raw, to: 12))
   }
