@@ -22,7 +22,7 @@ bundle install --path vendor/bundle
 From the repo root using the Makefile:
 
 ```bash
-make xdr-generate         # fetch .x files and generate Swift types
+make xdr-generate         # download missing .x files, generate Swift types and emitted tests
 make xdr-update           # re-download .x files and regenerate
 make xdr-clean-generated  # remove only generated Swift files
 make xdr-clean-all        # remove generated Swift files and .x definitions
@@ -43,7 +43,7 @@ Output goes to `stellarsdk/stellarsdk/responses/xdr/`. Types listed in `SKIP_TYP
 2. Run `make xdr-update`
 3. Build and test: `swift build && swift test --filter stellarsdkUnitTests`
 4. If new types introduce naming conflicts, update the override files (see below)
-5. If a new type is reachable from the transaction envelope graph (operations, Soroban host functions, SCVal), add its canonical XDR name to `TXREP_XDR_NAMES` in `generator/txrep_types.rb` and regenerate — otherwise the type's TxRep methods are not emitted and referencing generated code fails to compile
+5. If a new type is reachable from the transaction envelope graph (operations, Soroban host functions, SCVal), add its canonical XDR name to `TXREP_XDR_NAMES` in `generator/txrep_types.rb` and regenerate. Without that entry, the generator emits no TxRep methods for the type, and generated code that references them fails to compile
 6. If a new struct has underscore-separated field names, add a camelCase mapping to `generator/field_overrides.rb` (TxRep keys keep the raw XDR name)
 7. Run `make xdr-generator-test` and, if the diffs are intentional, `make xdr-generator-update-snapshots`
 
@@ -74,6 +74,10 @@ bundle exec ruby test/validate_generated_types.rb
 | `generator/field_overrides.rb` | Maps struct property names |
 | `generator/type_overrides.rb` | Typedef resolution, extension point handling, mutability |
 | `generator/txrep_types.rb` | Registry of envelope-reachable types that receive TxRep methods |
+| `generator/json_overrides.rb` | SEP-51 (XDR-JSON) conversions for types no structural rule covers: strkeys, asset codes, integer parts |
+| `generator/json_field_overrides.rb` | Per-field SEP-51 (XDR-JSON) conversions for a field whose declaration does not determine it; empty |
+| `generator/json_names.rb` | SEP-51 (XDR-JSON) name derivation rules for enum members, struct fields, and union arm keys |
+| `generator/json_codecs.rb` | Chooses the SEP-51 (XDR-JSON) conversion for one declaration site, dispatching on the declaration's AST node |
 | `test/generator_snapshot_test.rb` | Snapshot tests comparing generated output to expected files |
 | `test/update_snapshots.rb` | Regenerates snapshot files after intentional generator changes |
 | `test/validate_generated_types.rb` | Validates generated files against XDR definitions |

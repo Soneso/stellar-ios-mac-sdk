@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 #
 # Verifies that running generate_tests.rb twice produces byte-identical output.
-# Used by CI / manual audit after every change to the test generator.
+# Run it by hand after every change to the test generator.
 #
 #   cd tools/xdr-generator && bundle exec ruby test/check_idempotence.rb
 #

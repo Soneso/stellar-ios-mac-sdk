@@ -100,7 +100,7 @@ tools/sep-51-corpus/.tmp/
 tools/p28-owner-fixture/target/
 
 # Scripts
-scripts/
+/scripts/
 
 # Internal planning/tracking artifacts — not shipped
 plans/

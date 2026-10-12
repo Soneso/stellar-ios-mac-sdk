@@ -1,76 +1,41 @@
 # Contributing to the iOS Stellar SDK
 
-Thank you for your interest in contributing! 🚀  
-This SDK is an open-source project maintained by [Soneso](https://github.com/Soneso).  
-Contributions, feedback, and feature requests from the community are highly appreciated. 🙏  
+Thank you for helping to improve the SDK. This guide covers bug reports, feature proposals, setup and the pull request process. The commands, the definition of done and the repository rules are in `AGENTS.md`.
 
----
+## Reporting a bug
 
-## 📣 How to Provide Feedback
+Open a bug report issue; the template asks for what you did, what happened, what you expected, the SDK version, the Xcode or Swift version, and the platform. A failing test or a short snippet that reproduces the behavior shortens the fix.
 
-We’d love to hear your thoughts about the SDK:
-- ✅ What’s working well?
-- ⚡ What could be improved?
-- 🌟 Features you’d like to see in the future?
+## Proposing a feature
 
-👉 Please share your feedback in [GitHub Discussions](https://github.com/Soneso/stellar-ios-mac-sdk/discussions).
+Open a feature request issue and describe the use case and the proposed behavior. For a SEP or a protocol feature, name the specification. Discuss before writing a large change, so the design is settled before the code.
 
----
+## Setting up
 
-## 🐞 Reporting Bugs
+- Xcode as `README.md` states it, with the Swift tools version in `Package.swift`. The package builds and tests from the command line; the Commands section of `AGENTS.md` has the commands, including the filter that runs the unit suite without the long integration suite. Opening `Package.swift` in Xcode works as well.
+- For the XDR generator: Docker, or Ruby with Bundler for the setup without Docker; a cold run needs network for the image and the gems. For the SEP-51 tools: Ruby with the generator's gems, Python 3, and Rust's cargo for the pinned reference CLI. For the compatibility matrices: Python 3 and network; a GitHub token raises the API rate limit. Each tool's README under `tools/` names its requirements.
 
-If you find a bug:
-1. Check [existing issues](https://github.com/Soneso/stellar-ios-mac-sdk/issues) to avoid duplicates.
-2. Open a new [Bug Report](https://github.com/Soneso/stellar-ios-mac-sdk/issues/new?template=bug_report.yml).  
-   Please include:
-   - Steps to reproduce
-   - Expected vs. actual behavior
-   - Error messages/logs
-   - SDK version
-   - Xcode version
-   - Swift version
-   - iOS/macOS version
-   - Device/simulator details
+Run the unit suite as `AGENTS.md` describes before you change anything, so you know the baseline is green on your machine.
 
-The more details, the faster we can fix it!
+## Submitting a change
 
----
+1. Fork the repository and branch from `master` with a short kebab-case name that names the change.
+2. Make the change with its tests. A bug fix starts with a test that fails before the fix.
+3. Add an entry under `[Unreleased]` in `CHANGELOG.md`, in the section the change belongs to.
+4. Run the gates listed under "Definition of done" in `AGENTS.md`.
+5. Commit with an imperative subject and a body that states the motivation and what the change does. Open the pull request against `master` and describe what you verified.
 
-## 🌟 Requesting Features
+The user documentation under `docs/` and the skill under `skills/` describe the released SDK and are updated on the `release-docs` branch with the release; a pull request does not change them. Describe the needed documentation change in the pull request, and the maintainer adds it on that branch. `docs/documentation-strategy.md`, `AGENTS.md` and this file are process documents: change them in the pull request that changes a fact they state. A documentation example that your change affects has a test under the integration test target; change that test in the same pull request.
 
-Have an idea for an improvement or a new feature?  
-1. First, check [existing feature requests](https://github.com/Soneso/stellar-ios-mac-sdk/issues?q=label%3Aenhancement).  
-2. Open a new [Feature Request](https://github.com/Soneso/stellar-ios-mac-sdk/issues/new?template=feature_request.yml).  
-   Tell us:
-   - What problem the feature solves
-   - Why it would be useful
-   - Any proposed solutions or alternatives
+## What the review checks
 
----
+- The change does what the pull request says, and nothing else.
+- The tests fail without the change and pass with it; unit tests mock HTTP.
+- The conventions in `AGENTS.md`: typed API, `Sendable` types, documentation comments on public declarations, the error and response conventions of the API you extend.
+- The CHANGELOG entry; no hand edits to generated files; no change to the user documentation or the skill.
 
-## 🤝 Contributing Code
+CI runs the unit suite with coverage on a macOS runner; the Codecov project status must pass.
 
-1. Fork the repository.
-2. Create a feature branch (`git checkout -b feature/my-new-feature`).
-3. Commit your changes (`git commit -m "Add my new feature"`).
-4. Push to your fork (`git push origin feature/my-new-feature`).
-5. Open a Pull Request.
+## Questions
 
-Please ensure your code:
-- Follows Swift/iOS best practices.
-- Includes tests for new functionality.
-- Updates documentation/examples if relevant.
-- Runs successfully in Xcode.
-
----
-
-## 💬 Questions?
-
-If you’re not sure whether something should be a bug report, feature request, or discussion,  
-just start with [GitHub Discussions](https://github.com/Soneso/stellar-ios-mac-sdk/discussions).  
-We’ll help point you in the right direction.  
-
----
-
-Thanks again for contributing to the Stellar ecosystem! 🌌
-
+Use GitHub Discussions for questions about using the SDK or about a change you plan.

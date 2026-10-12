@@ -14,7 +14,6 @@ on:
       - 'docs/sep/sep-51.md'
       - 'skills/stellar-ios-mac-sdk/references/sep-51.md'
   pull_request:
-    branches: [master]
     paths:
       - 'tools/xdr-generator/**'
       - 'tools/sep-51-oracle/**'
