@@ -19,7 +19,34 @@ All documentation is written for **SDK Users** - developers who want to integrat
 
 ## Release Policy for Docs
 
-Master's `docs/` and `skills/` describe the released SDK, because users read them on GitHub against the SDK they can install. Documentation and skill content for unreleased behavior goes to the `release-docs` branch, not to the feature branch that implements the behavior; `release-docs` is merged as the first step of release preparation. Feature branches carry only code, tests (including doc tests), and version-independent process documents.
+`master`'s user documentation in `docs/` and the skill in `skills/` describe the released SDK, because users read them on GitHub against the SDK they can install. Documentation and skill content for unreleased behavior goes to the `release-docs` branch, not to the feature or fix branch that implements the behavior. Before a release, `master` is merged into `release-docs`, and `release-docs` is merged into the release preparation branch; `release-docs` is never the head of a pull request and is never merged directly into `master`. After the release it is fast-forwarded to `master`. Feature and fix branches carry code, tests, the CHANGELOG entry under `[Unreleased]`, and the version-independent process documents (`AGENTS.md`, `CONTRIBUTING.md`, this strategy) when a fact in them changes. Skill archives and the skill's generated API reference change only during release preparation; a run that regenerates them to check a change restores the committed files.
+
+## Migration Guides
+
+A release gets a migration guide when it changes behavior that existing code can observe. The test: code that compiled, ran, or passed its tests on the previous release fails to compile, behaves differently, or needs a change to keep its result. This covers changed defaults, removed or retyped API, stricter validation, and a new error type or message from an existing call. It also covers changed output spelling, new network requests, changes to the wire form, and fixes that end an error a caller may have worked around. A generated XDR addition gets a note when an exhaustive match over the type stops compiling or skips the new value silently. A deprecation gets a note only when the API also changes behavior; a removal always does. Additions, refactors, performance work, documentation, and CI changes get none.
+
+The guide is `docs/migration/X.Y.Z.md`, titled `# Migrating to X.Y.Z`, and is written during release preparation from the final CHANGELOG section of the version. Its introduction reads (the clause on earlier guides is omitted when none exists):
+
+```markdown
+This guide covers the observable changes between P.Q.R and X.Y.Z. If you upgrade from an older version, also review the CHANGELOG between your version and P.Q.R and the earlier migration guides, newest first: [A.B.C](A.B.C.md). Each note describes one situation: whether you are affected, how it shows, and what to do.
+```
+
+When a guide covers more than one area, its notes are grouped under `## <area>` headings in the order of the CHANGELOG section; a guide with one area stays a flat list. Each note is one bullet for one situation:
+
+1. "If you <what the affected code does>:", naming the API.
+2. What happens in X.Y.Z, with the exact type, message, or value.
+3. "In P.Q.R <what happened>.", naming the version.
+4. The action in the imperative, with the opt-out if one exists, and what stays unaffected.
+
+The previous-version sentence is the only history a note carries. A note stays under 120 words; a note over 150 words is split by situation.
+
+A note carries a fenced before-and-after pair, labeled with both versions, when the action rewrites a call, a type, an override signature, or a multi-step recipe; the after block compiles against X.Y.Z. A one-token action (add `try`, catch a type, pass a flag) stays inline.
+
+Every CHANGELOG `Breaking:` entry and every change of a kind this section names has a note, and every note traces to a CHANGELOG entry. The CHANGELOG states what the API does; the note says who is affected and what to do.
+
+The CHANGELOG section of the version opens with `Migration guide: [docs/migration/X.Y.Z.md](docs/migration/X.Y.Z.md)`. The release notes end with a "Migrating to X.Y.Z" line that links the guide at the tag `X.Y.Z`. `docs/README.md` lists all guides, newest first. A correction of a published guide also updates the release notes of the version.
+
+Review: a reviewer who did not write the guide starts from code that worked on P.Q.R and, note by note, decides whether they are affected, recognizes the symptom, and applies the action without the CHANGELOG or the source. A step that needs either fails the note.
 
 ## Core Principles
 
@@ -80,7 +107,7 @@ All code must:
 
 Examples must work with Swift 6.0+ and Xcode 16+:
 - Use modern Swift syntax (async/await, structured concurrency)
-- Note any Swift/Xcode version requirements clearly
+- Note the Swift/Xcode version requirements
 - Use type annotations consistently
 - Avoid deprecated Swift features
 
@@ -93,7 +120,7 @@ Documentation must read like it was written by a developer, not generated by AI.
 - Don't use: "serves as", "stands as", "is a testament to"
 - Don't use: "Additionally", "Moreover", "Furthermore" to start sentences
 - Don't use: "It's important to note that...", "It should be noted..."
-- Don't use: excessive em dashes (—) for dramatic effect
+- Don't use em dashes; use a comma, a period, or a colon
 - Don't use: forced groups of three ("fast, reliable, and secure")
 - Don't use: vague attributions ("experts recommend", "developers often...")
 
@@ -107,7 +134,7 @@ Documentation must read like it was written by a developer, not generated by AI.
 
 **No changelog residue:**
 
-Documentation states the current contract, never the story of how the code got there — and never the counterfactual of what the code would do without one of its checks. Sentences shaped like "X happens rather than Y" or "X instead of Y", where Y is a former defect or a hypothetical failure, leak the author's editing context into the reader's head: the reader never imagined Y, learns nothing about the API from it, and is left wondering why it is mentioned.
+Documentation states the current contract, never the story of how the code got there, and never the counterfactual of what the code would do without one of its checks. Sentences shaped like "X happens rather than Y" or "X instead of Y", where Y is a former defect or a hypothetical failure, leak the author's editing context into the reader's head. The reader never imagined Y, learns nothing about the API from it, and is left wondering why it is mentioned. Migration guides are the one exception: each note names the previous version once (see Migration Guides).
 
 Keep a "rather than"/"instead of" contrast only when both branches are real choices or plausible expectations for the reader ("returns nil rather than throwing", "catch the error rather than forcing the call with `try!`"). Delete it when the second branch exists only in the author's memory of the code.
 
@@ -146,7 +173,7 @@ let keyPair = try! KeyPair.generateRandomKeyPair()
 - Mnemonic generation and key derivation (SEP-5)
 - Transaction building and submission
 - All Stellar operations with real use cases
-- Horizon queries (accounts, transactions, effects, etc.)
+- Horizon queries such as accounts, transactions, and effects
 - Asset operations and trustlines
 - DEX operations (offers, order book)
 - Streaming/SSE support
@@ -182,9 +209,9 @@ Soroban documentation covers:
 
 ### Multi-Class Namespace Reference Documentation
 
-Some SDK namespaces span enough public classes that DocC alone does not give consumers a single discoverable surface. The `smart-accounts/` directory is the current example: an 8-manager kit with its own configuration, error hierarchy, event stream, builder helpers, and per-platform providers.
+Some SDK namespaces span enough public classes that the generated API reference alone does not give consumers a single discoverable surface. The `smart-accounts/` directory is the current example: a kit with its own managers, configuration, error hierarchy, event stream, builder helpers, and per-platform providers.
 
-For namespaces of this shape, a dedicated `api-reference.md` is permitted alongside the conceptual docs. The reference file complements DocC rather than replacing it: it groups related symbols, surfaces their relationships, and shows worked end-to-end examples that DocC's per-symbol pages cannot. Principle 5 (Conciseness Over Completeness) still applies — link to DocC for symbol-level docs (parameter doc-comments, type aliases, source files) and keep the reference file focused on the multi-symbol patterns a consumer needs to wire the namespace together.
+For namespaces of this shape, a dedicated `api-reference.md` is permitted alongside the conceptual docs. The reference file complements the generated API reference: it groups related symbols, surfaces their relationships, and shows worked end-to-end examples that per-symbol pages cannot. Principle 5 (Conciseness Over Completeness) still applies. Link to the API reference, generated by jazzy and published at https://soneso.github.io/stellar-ios-mac-sdk/, for symbol-level docs (parameter doc-comments, type aliases, source files). Keep the reference file focused on the multi-symbol patterns a consumer needs to wire the namespace together.
 
 Conceptual material (overview, architecture, lifecycle, key concepts) belongs in `README.md` and `onboarding.md`. Per-platform setup (entitlements, association files, signing) belongs in `webauthn-*.md` (or analogous setup pages for other namespaces).
 
@@ -197,7 +224,7 @@ Each example file should:
 - Include complete error handling where appropriate
 - Link to relevant Stellar documentation
 
-**Error handling in examples:** use `try!` when the input is fixed and known good (hardcoded literals, freshly generated values) — a failure there is a programming error. Use `do`/`catch` where a value arrives at runtime (user input, network data). Never show `try!` on user-supplied input. The convention is explained to readers once, in getting-started.md; other pages follow it without restating it.
+**Error handling in examples:** use `try!` when the input is fixed and known good (hardcoded literals, freshly generated values): a failure there is a programming error. Use `do`/`catch` where a value arrives at runtime (user input, network data). Never show `try!` on user-supplied input. The convention is explained to readers once, in getting-started.md; other pages follow it without restating it.
 
 **Example file template:**
 ```markdown
@@ -242,7 +269,7 @@ Before publishing or updating documentation, verify:
 - [ ] Comments explain WHY, not WHAT
 - [ ] Real-world use cases shown
 - [ ] Links to related documentation
-- [ ] Testnet vs Public net clearly noted
+- [ ] Testnet or Public net noted
 - [ ] No changelog residue: no "rather than"/"instead of" clause whose second branch is former behavior or a hypothetical defect
 
 ### Strategy Alignment
@@ -414,6 +441,9 @@ docs/
 │   ├── sep-45.md              # Contract account authentication
 │   ├── sep-51.md              # XDR-JSON conversion
 │   └── sep-53.md              # Message signing and verification
+├── migration/                 # Migration guides, one per release
+│   ├── 3.10.0.md              # Migrating to 3.10.0
+│   └── 3.12.0.md              # Migrating to 3.12.0
 └── documentation-strategy.md   # This file
 ```
 
@@ -436,7 +466,7 @@ docs/
 ### For Existing Documentation
 
 1. **Audit** against quality checklist
-2. **Identify** violations (hypothetical code, framework code, etc.)
+2. **Identify** violations such as hypothetical code or framework code
 3. **Fix** issues systematically
 4. **Verify** improvements maintain value
 5. **Update** cross-references
@@ -477,6 +507,6 @@ Good documentation achieves:
 
 ---
 
-**Last Updated**: 2026-08-25
+**Last Updated**: 2026-10-13
 
-**Next Review**: 2026-11-25 (Quarterly maintenance)
+**Next Review**: 2027-01-13 (Quarterly maintenance)
