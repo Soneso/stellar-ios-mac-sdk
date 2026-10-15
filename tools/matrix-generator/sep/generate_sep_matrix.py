@@ -2681,6 +2681,7 @@ class SEP23Analyzer(SEPAnalyzerBase):
         'STRKEY_CONTRACT': StrKeySdkNames('contract', 'encodeContractId', 'decodeContractId'),
         'STRKEY_LIQUIDITY_POOL': StrKeySdkNames('liquidityPool', 'encodeLiquidityPoolId', 'decodeLiquidityPoolId'),
         'STRKEY_CLAIMABLE_BALANCE': StrKeySdkNames('claimableBalance', 'encodeClaimableBalanceId', 'decodeClaimableBalanceId'),
+        'STRKEY_MUXED_CONTRACT': StrKeySdkNames('muxedContract', 'encodeMuxedContractId', 'decodeMuxedContractId'),
     }
 
     # UInt8 is the raw type; further conformances may follow it.
