@@ -13,7 +13,7 @@ swift test --filter 'stellarsdkUnitTests.StrKeyUnitTests/testIsValid$'
 swift test --filter stellarsdkIntegrationTests
 ```
 
-- `swift build` takes about half a minute from a clean tree. The unit suite (about 9,900 tests) takes about 75 seconds with a warm build; the first `swift test` after a build compiles both test targets and takes longer. Five unit tests reach live Horizon (see the mock rule below); every other unit test runs offline.
+- `swift build` takes about half a minute from a clean tree. The unit suite (about 9,900 tests) takes about 75 seconds with a warm build; the first `swift test` after a build compiles both test targets and takes longer. The unit suite passes with outbound IP connections denied; some error-path tests attempt a connection and expect it to fail.
 - `--filter` is a regular expression. Anchor a method name with `$`, otherwise `testIsValid` also runs `testIsValidPreAuthTx` and `testIsValidSha256Hash`. The XCTest line `Executed N tests` is the result; the Swift Testing line `0 tests in 0 suites` after it is noise.
 - The integration suite runs against live testnet and futurenet with Friendbot funding, is not part of CI, and runs long. Integration tests choose their network per class with `static let testOn`.
 - CI runs the unit suite with `--enable-code-coverage` and exports `coverage/lcov.info` through `xcrun llvm-cov export`.
@@ -45,7 +45,7 @@ Generated files are never edited by hand. Change the generator or its override f
 ## Conventions and gotchas
 
 - The package builds in the Swift language mode `Package.swift` sets, with strict concurrency checking: data-race safety findings are compile errors, and public types are `Sendable` unless their documentation says otherwise (`OZSmartAccountAuthPayload` is a documented mutable exception).
-- Unit tests mock HTTP with `ServerMock`, a `URLProtocol` registered in `setUp` and cleared with `ServerMock.removeAll()` in `tearDown`; `ResponsesMock` subclasses override `requestMock()`. When no mock matches, `canInit` returns false and the request reaches the real host, so a test with an unmatched mock depends on the network; five unit tests do.
+- Unit tests mock HTTP with `ServerMock`, a `URLProtocol` registered in `setUp` and cleared with `ServerMock.removeAll()` in `tearDown`; `ResponsesMock` subclasses override `requestMock()`. When no mock matches, `canInit` returns false and the request reaches the real host. A `ResponsesMock` removes its mock in `deinit`, so a test keeps the mock in a stored property until `tearDown`. A discarded mock (`_ = SomeMock()`) can be released before its request runs. Capture `self` weakly in a `ResponsesMock` handler, so the stored property alone decides how long the mock lives.
 - The service APIs (`AccountService` and its siblings) return `async` response enums with `.success` and `.failure`; `SorobanClient` and the smart-account APIs throw. Follow the convention of the API you extend, because callers of one service expect one error shape.
 - Public declarations carry `///` documentation comments that describe current behavior and its reason, never history; the API documentation is generated from them.
 - New code uses the typed API; raw XDR appears only where no typed path exists, because the typed layer carries the validation and the documentation users read.

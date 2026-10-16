@@ -13,6 +13,10 @@ class LedgersAdditionalUnitTests: XCTestCase {
 
     let sdk = StellarSDK()
     var mockRegistered = false
+    var ledgersUrlTestMock: LedgersUrlTestMock? = nil
+    var ledgerNotFoundMock: LedgerNotFoundMock? = nil
+    var ledgerErrorMock: LedgerErrorMock? = nil
+    var ledgerFullFieldsMock: LedgerFullFieldsMock? = nil
 
     override func setUp() {
         super.setUp()
@@ -24,6 +28,10 @@ class LedgersAdditionalUnitTests: XCTestCase {
     }
 
     override func tearDown() {
+        ledgersUrlTestMock = nil
+        ledgerNotFoundMock = nil
+        ledgerErrorMock = nil
+        ledgerFullFieldsMock = nil
         ServerMock.removeAll()
         super.tearDown()
     }
@@ -31,7 +39,7 @@ class LedgersAdditionalUnitTests: XCTestCase {
     // MARK: - getLedgersFromUrl() Tests
 
     func testGetLedgersFromUrlWithValidUrl() async {
-        _ = LedgersUrlTestMock()
+        ledgersUrlTestMock = LedgersUrlTestMock()
 
         // Test that getLedgersFromUrl works with a proper ledger URL
         let url = "https://horizon-testnet.stellar.org/ledgers?limit=1"
@@ -47,10 +55,12 @@ class LedgersAdditionalUnitTests: XCTestCase {
             StellarSDKLog.printHorizonRequestErrorMessage(tag: "testGetLedgersFromUrlWithValidUrl()", horizonRequestError: error)
             XCTFail("getLedgersFromUrl should succeed with valid URL")
         }
+
+        assertSingleRequest(ledgersUrlTestMock?.requestedUrls ?? [], path: "/ledgers", query: ["limit": "1"])
     }
 
     func testGetLedgersFromUrlNotFound() async {
-        _ = LedgerNotFoundMock()
+        ledgerNotFoundMock = LedgerNotFoundMock()
 
         // Test that getLedgersFromUrl properly handles 404 errors
         let url = "https://horizon-testnet.stellar.org/ledgers/999999999"
@@ -66,12 +76,14 @@ class LedgersAdditionalUnitTests: XCTestCase {
                 XCTFail("Expected notFound error, got: \(error)")
             }
         }
+
+        assertSingleRequest(ledgerNotFoundMock?.requestedUrls ?? [], path: "/ledgers/999999999")
     }
 
     // MARK: - Edge Cases and Boundary Tests
 
     func testGetLedgerWithZeroSequence() async {
-        _ = LedgerErrorMock()
+        ledgerErrorMock = LedgerErrorMock()
 
         // Ledger sequence 0 doesn't exist - should return error
         let responseEnum = await sdk.ledgers.getLedger(sequenceNumber: "0")
@@ -92,7 +104,7 @@ class LedgersAdditionalUnitTests: XCTestCase {
     }
 
     func testGetLedgerWithNegativeSequence() async {
-        _ = LedgerErrorMock()
+        ledgerErrorMock = LedgerErrorMock()
 
         // Negative sequence should fail
         let responseEnum = await sdk.ledgers.getLedger(sequenceNumber: "-1")
@@ -113,7 +125,7 @@ class LedgersAdditionalUnitTests: XCTestCase {
     }
 
     func testGetLedgerWithInvalidSequence() async {
-        _ = LedgerErrorMock()
+        ledgerErrorMock = LedgerErrorMock()
 
         // Non-numeric sequence should fail
         let responseEnum = await sdk.ledgers.getLedger(sequenceNumber: "invalid")
@@ -138,7 +150,7 @@ class LedgersAdditionalUnitTests: XCTestCase {
     // MARK: - LedgerResponse Field Tests
 
     func testLedgerResponseAllFieldsPresent() async {
-        _ = LedgerFullFieldsMock()
+        ledgerFullFieldsMock = LedgerFullFieldsMock()
 
         let responseEnum = await sdk.ledgers.getLedger(sequenceNumber: "777777")
 
@@ -170,7 +182,7 @@ class LedgersAdditionalUnitTests: XCTestCase {
     }
 
     func testLedgerLinksStructure() async {
-        _ = LedgerFullFieldsMock()
+        ledgerFullFieldsMock = LedgerFullFieldsMock()
 
         let responseEnum = await sdk.ledgers.getLedger(sequenceNumber: "777777")
 
@@ -196,7 +208,7 @@ class LedgersAdditionalUnitTests: XCTestCase {
     // MARK: - Pagination Tests
 
     func testGetLedgersWithLargeLimit() async {
-        _ = LedgersUrlTestMock()
+        ledgersUrlTestMock = LedgersUrlTestMock()
 
         // Test with maximum limit value (Horizon typically maxes at 200)
         let responseEnum = await sdk.ledgers.getLedgers(limit: 200)
@@ -211,10 +223,12 @@ class LedgersAdditionalUnitTests: XCTestCase {
             StellarSDKLog.printHorizonRequestErrorMessage(tag: "testGetLedgersWithLargeLimit()", horizonRequestError: error)
             XCTFail("should accept large limit value")
         }
+
+        assertSingleRequest(ledgersUrlTestMock?.requestedUrls ?? [], path: "/ledgers", query: ["limit": "200"])
     }
 
     func testGetLedgersAscendingOrder() async {
-        _ = LedgersUrlTestMock()
+        ledgersUrlTestMock = LedgersUrlTestMock()
 
         let responseEnum = await sdk.ledgers.getLedgers(order: .ascending, limit: 2)
 
@@ -233,14 +247,38 @@ class LedgersAdditionalUnitTests: XCTestCase {
             StellarSDKLog.printHorizonRequestErrorMessage(tag: "testGetLedgersAscendingOrder()", horizonRequestError: error)
             XCTFail("should retrieve ledgers in ascending order")
         }
+
+        assertSingleRequest(ledgersUrlTestMock?.requestedUrls ?? [], path: "/ledgers", query: ["order": "asc", "limit": "2"])
+    }
+
+    /// Asserts that `urls` holds exactly one request, for `path` with exactly the
+    /// query items of `query`. The SDK builds the query from a dictionary, so the
+    /// order of the items varies between runs and is not compared.
+    private func assertSingleRequest(_ urls: [URL], path: String, query: [String: String] = [:],
+                                     file: StaticString = #filePath, line: UInt = #line) {
+        XCTAssertEqual(urls.count, 1, "requests: \(urls)", file: file, line: line)
+        guard let url = urls.first,
+              let components = URLComponents(url: url, resolvingAgainstBaseURL: false) else {
+            return
+        }
+        XCTAssertEqual(components.path, path, file: file, line: line)
+        let sentQuery = (components.queryItems ?? []).map { "\($0.name)=\($0.value ?? "")" }.sorted()
+        let expectedQuery = query.map { "\($0.key)=\($0.value)" }.sorted()
+        XCTAssertEqual(sentQuery, expectedQuery, file: file, line: line)
     }
 }
 
 // MARK: - Mock Classes
 
 class LedgersUrlTestMock: ResponsesMock {
+    /// The URL of every request this mock served, in order.
+    var requestedUrls: [URL] = []
+
     override func requestMock() -> RequestMock {
-        let handler: MockHandler = { mock, request in
+        let handler: MockHandler = { [weak self] mock, request in
+            if let url = request.url {
+                self?.requestedUrls.append(url)
+            }
             return """
             {
                 "_links": {
@@ -351,10 +389,10 @@ class LedgersUrlTestMock: ResponsesMock {
 
 class LedgerFullFieldsMock: ResponsesMock {
     override func requestMock() -> RequestMock {
-        let handler: MockHandler = { mock, request in
+        let handler: MockHandler = { [weak self] mock, request in
             guard let sequence = mock.variables["sequence"] else {
                 mock.statusCode = 404
-                return self.resourceMissingResponse()
+                return self?.resourceMissingResponse()
             }
 
             return """
@@ -409,8 +447,14 @@ class LedgerFullFieldsMock: ResponsesMock {
 }
 
 class LedgerNotFoundMock: ResponsesMock {
+    /// The URL of every request this mock served, in order.
+    var requestedUrls: [URL] = []
+
     override func requestMock() -> RequestMock {
         let handler: MockHandler = { [weak self] mock, request in
+            if let url = request.url {
+                self?.requestedUrls.append(url)
+            }
             mock.statusCode = 404
             return self?.resourceMissingResponse()
         }
@@ -424,21 +468,21 @@ class LedgerNotFoundMock: ResponsesMock {
 
 class LedgerErrorMock: ResponsesMock {
     override func requestMock() -> RequestMock {
-        let handler: MockHandler = { mock, request in
+        let handler: MockHandler = { [weak self] mock, request in
             guard let sequence = mock.variables["sequence"] else {
                 mock.statusCode = 400
-                return self.badRequestResponse()
+                return self?.badRequestResponse()
             }
 
             // Return bad request for invalid sequences (0, negative, non-numeric)
             if sequence == "0" || sequence == "-1" || Int(sequence) == nil {
                 mock.statusCode = 400
-                return self.badRequestResponse()
+                return self?.badRequestResponse()
             }
 
             // For other sequences, return not found
             mock.statusCode = 404
-            return self.resourceMissingResponse()
+            return self?.resourceMissingResponse()
         }
 
         return RequestMock(host: "horizon-testnet.stellar.org",
