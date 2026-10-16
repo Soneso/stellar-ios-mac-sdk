@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- Muxed contract addresses (`W...`, CAP-0084, protocol 30 and higher).
+- Muxed contract addresses (`W...`, CAP-0084).
   `Data.encodeMuxedContractId()` encodes the SEP-0023 payload: the 32-byte contract id followed by
   the 8-byte big-endian id. `String.decodeMuxedContractId()` and `String.isValidMuxedContractId()`
   decode and validate it. `SCAddressXDR` gains `init(muxedContractId:)` and `init(contractId:id:)`;
@@ -98,7 +98,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   every matching entry signs successfully, so a failure leaves them unchanged. Before this change,
   `signAuthEntries` passed a fresh expiration ledger on every call. A second signer whose call
   computed a later default or passed another explicit value therefore signed a different payload
-  than the first, and the host rejected the entry.
+  than the first, and the host rejected the entry. A signature value of void or an empty vector
+  counts as unsigned, which matches the placeholder js-stellar-sdk writes;
+  `SorobanAuthorizationEntryXDR.carriesSignature(_:)` exposes the check.
 - Breaking: `ContractSpec` builds maps and map-encoded structs in the Soroban host's key order,
   fixing host rejection of arguments emitted in insertion order. Callers must supply distinct keys;
   keys equal in host order throw `StellarSDKError.invalidArgument` naming the duplicate key. The
@@ -115,3 +117,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `SorobanServer.getTransaction(transactionHash:)`. Before this change, events that stellar-rpc
   supplied outside the nested events object went unread. The documentation of
   `GetTransactionResponse.latestLedgerCloseTime` describes the latest ledger's close time.
+- Breaking: `AssembledTransaction.sign` stops on every unsigned account that
+  `needsNonInvokerSigningBy` reports, at the top level of an entry and in its delegate nodes at any
+  depth. It never stops on a contract address, because the contract's `__check_auth` decides which
+  signatures it needs. Before this change, `sign` treated an unsigned account at the top level of a
+  `SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES` entry as satisfied when every delegate node carried a
+  signature. It skipped every other unsigned entry of that account as well, and the host rejected
+  the envelope, because an account authenticates with its own signatures (CAP-71). It also stopped
+  on every unsigned contract address.

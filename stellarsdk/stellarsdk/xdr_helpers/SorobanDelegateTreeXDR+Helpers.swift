@@ -146,8 +146,8 @@ internal enum DelegateLookupResult {
     case found
 }
 
-/// Returns `true` when any node in `nodes`, at any depth, carries a signature other
-/// than `.void`.
+/// Returns `true` when any node in `nodes`, at any depth, carries a signature
+/// (`SorobanAuthorizationEntryXDR.carriesSignature(_:)`).
 ///
 /// - Throws: `StellarSDKError.invalidArgument` when nesting exceeds 128 levels.
 internal func delegateTreeCarriesSignature(
@@ -160,7 +160,7 @@ internal func delegateTreeCarriesSignature(
         )
     }
     for node in nodes {
-        if !node.signature.isVoid { return true }
+        if SorobanAuthorizationEntryXDR.carriesSignature(node.signature) { return true }
         if try delegateTreeCarriesSignature(node.nestedDelegates, depth: depth + 1) { return true }
     }
     return false
