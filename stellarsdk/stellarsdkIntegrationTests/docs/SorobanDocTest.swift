@@ -440,6 +440,97 @@ final class SorobanDocTest: XCTestCase {
         XCTAssertEqual(GetTransactionResponse.STATUS_SUCCESS, response.status)
     }
 
+    // MARK: - Delegated Authorization
+
+    func testDelegatedAuthorization() async throws {
+        // Delegated Authorization: the page's WITH_DELEGATES flow against a deployed auth contract
+        let server = SorobanServer(endpoint: rpcUrl)
+        guard case .success(let ledgerInfo) = await server.getLatestLedger() else {
+            return XCTFail("could not load the latest ledger")
+        }
+        guard ledgerInfo.protocolVersion >= 27 else {
+            throw XCTSkip("Testnet runs protocol \(ledgerInfo.protocolVersion); WITH_DELEGATES needs protocol 27")
+        }
+
+        let authWasmHash = try await installContract(fileName: authContractFileName)
+        let authClient = try await deployContract(wasmHash: authWasmHash)
+
+        // The setUp account submits; the top-level signer and the delegate are separate accounts.
+        let sourceKeyPair: KeyPair = sourceAccountKeyPair
+        let topLevelKeyPair = try KeyPair.generateRandomKeyPair()
+        let delegateKeyPair = try KeyPair.generateRandomKeyPair()
+        try await fundTestAccountAndAwaitVisibility(accountId: topLevelKeyPair.accountId, rpc: server)
+        try await fundTestAccountAndAwaitVisibility(accountId: delegateKeyPair.accountId, rpc: server)
+
+        let invokeOp = try InvokeHostFunctionOperation.forInvokingContract(
+            contractId: authClient.contractId,
+            functionName: "increment",
+            functionArguments: [
+                SCValXDR.address(try SCAddressXDR(accountId: topLevelKeyPair.accountId)),
+                SCValXDR.u32(1)
+            ]
+        )
+        guard case .success(let account) = await server.getAccount(accountId: sourceKeyPair.accountId) else {
+            return XCTFail("could not load the source account")
+        }
+        let transaction = try Transaction(
+            sourceAccount: account,
+            operations: [invokeOp],
+            memo: nil
+        )
+        let simEnum = await server.simulateTransaction(
+            simulateTxRequest: SimulateTransactionRequest(transaction: transaction)
+        )
+        guard case .success(let sim) = simEnum else {
+            return XCTFail("transaction simulation failed")
+        }
+        XCTAssertNil(sim.error)
+
+        // The page's prerequisite: address credentials for the top-level account.
+        guard let entry = sim.sorobanAuth?.first(where: {
+            $0.credentials.addressCredentials?.address.accountId == topLevelKeyPair.accountId
+        }) else {
+            return XCTFail("no address credentials for the top-level account in \(String(describing: sim.sorobanAuth))")
+        }
+
+        guard case .success(let latestLedger) = await server.getLatestLedger() else {
+            return XCTFail("could not load the latest ledger")
+        }
+        var delegated = try SorobanAuthorizationEntryXDR.withDelegates(
+            entry: entry,
+            delegates: [
+                SorobanDelegateDescriptor(address: delegateKeyPair.accountId)
+            ],
+            expirationLedger: latestLedger.sequence + 100
+        )
+        try delegated.sign(signer: topLevelKeyPair, network: Network.testnet)
+        try delegated.sign(
+            signer: delegateKeyPair,
+            network: Network.testnet,
+            forAddress: delegateKeyPair.accountId
+        )
+        transaction.setSorobanAuth(auth: [delegated])
+
+        guard case .addressWithDelegates(let creds) = delegated.credentials else {
+            return XCTFail("expected ADDRESS_WITH_DELEGATES credentials, got \(delegated.credentials)")
+        }
+        XCTAssertEqual(creds.addressCredentials.address.accountId, topLevelKeyPair.accountId)
+        XCTAssertEqual(creds.addressCredentials.signatureExpirationLedger, latestLedger.sequence + 100)
+        XCTAssertEqual(creds.delegates.count, 1)
+        XCTAssertEqual(creds.delegates.first?.address.accountId, delegateKeyPair.accountId)
+
+        // Both signatures commit to one payload, bound to the top-level credential address.
+        let preimage = try delegated.buildPreimage(network: Network.testnet)
+        let payload = [UInt8](Data(try XDREncoder.encode(preimage)).sha256Hash)
+        XCTAssertTrue(try signatureVerifies(creds.addressCredentials.signature, signer: topLevelKeyPair, payload: payload))
+        XCTAssertTrue(try signatureVerifies(creds.delegates[0].signature, signer: delegateKeyPair, payload: payload))
+
+        // The transaction carries the signed entry.
+        let invoke = try XCTUnwrap(transaction.operations.first as? InvokeHostFunctionOperation)
+        XCTAssertEqual(invoke.auth.count, 1)
+        XCTAssertEqual(invoke.auth.first?.xdrEncoded, delegated.xdrEncoded)
+    }
+
     // MARK: - Type Conversions (Snippets 23-36)
 
     func testPrimitiveTypes() {
@@ -495,17 +586,26 @@ final class SorobanDocTest: XCTestCase {
 
     func testAddresses() throws {
         // Snippet 25: Addresses
-        let keyPair = try KeyPair.generateRandomKeyPair()
+        let account = SCValXDR.address(try SCAddressXDR(accountId: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ"))
+        XCTAssertEqual(SCValType.address.rawValue, account.type())
 
-        let accountAddr = SCValXDR.address(try SCAddressXDR(accountId: keyPair.accountId))
-        XCTAssertEqual(SCValType.address.rawValue, accountAddr.type())
+        let contract = SCValXDR.address(try SCAddressXDR(contractId: "CB3FU6M3TOAGRBLN5WDLXL6A7VR5SSRGULMXQQOABNMPS25YRJ4CN5VV"))
+        XCTAssertEqual(SCValType.address.rawValue, contract.type())
 
-        let contractId = "CCCZVCWISWKWZ3NNH737WGOVCDUI3P776QE3ZM7AUWMJKQBHCPW7NW3D"
-        let contractAddr = SCValXDR.address(try SCAddressXDR(contractId: contractId))
-        XCTAssertEqual(SCValType.address.rawValue, contractAddr.type())
+        let muxedContract = SCValXDR.address(try SCAddressXDR(muxedContractId: "WA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAAAAAAAAAPCIA6IG"))
+        guard case .muxedContract(let muxedContractXdr)? = muxedContract.address else {
+            return XCTFail("expected the muxed contract arm, got \(String(describing: muxedContract.address))")
+        }
+        XCTAssertEqual(muxedContractXdr.id, 123456)
+
+        // The same muxed contract address from its contract ID and 64-bit ID
+        let sameMuxedContract = SCValXDR.address(try SCAddressXDR(contractId: "CA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE", id: 123456))
+        XCTAssertEqual(try sameMuxedContract.address?.toStrKey(),
+                       "WA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAAAAAAAAAPCIA6IG")
+        XCTAssertEqual(try sameMuxedContract.address?.toStrKey(), try muxedContract.address?.toStrKey())
     }
 
-    func testCollections() {
+    func testCollections() throws {
         // Snippet 26: Collections
         let vec = SCValXDR.vec([
             SCValXDR.symbol("a"),
@@ -514,10 +614,14 @@ final class SorobanDocTest: XCTestCase {
         XCTAssertEqual(2, vec.vec?.count)
 
         let map = SCValXDR.map([
-            SCMapEntryXDR(key: SCValXDR.symbol("name"), val: SCValXDR.string("Alice")),
             SCMapEntryXDR(key: SCValXDR.symbol("age"), val: SCValXDR.u32(30)),
+            SCMapEntryXDR(key: SCValXDR.symbol("name"), val: SCValXDR.string("Alice")),
         ])
         XCTAssertEqual(2, map.map?.count)
+
+        // The page lists the keys in the host's ScMap key order, the order sortedMap produces.
+        let sorted = try SCValXDR.sortedMap(map.map ?? [])
+        XCTAssertEqual(map.map?.map { $0.key.symbol }, sorted.map?.map { $0.key.symbol })
     }
 
     func testContractSpecUsage() async throws {
@@ -1041,6 +1145,18 @@ final class SorobanDocTest: XCTestCase {
         }
     }
 
+    /// Whether `signature`, the signature vector of an authorization node, holds exactly one
+    /// signature by `signer` that verifies over `payload`.
+    func signatureVerifies(_ signature: SCValXDR, signer: KeyPair, payload: [UInt8]) throws -> Bool {
+        guard let elements = signature.vec, elements.count == 1, let fields = elements[0].map,
+              let publicKey = fields.first(where: { $0.key.symbol == "public_key" })?.val.bytes,
+              let signatureBytes = fields.first(where: { $0.key.symbol == "signature" })?.val.bytes,
+              publicKey == Data(signer.publicKey.bytes) else {
+            return false
+        }
+        return try signer.verify(signature: [UInt8](signatureBytes), message: payload)
+    }
+
     func mintToken(tokenClient: SorobanClient, adminKp: KeyPair, toAccountId: String, amount: UInt64) async throws {
         let spec = tokenClient.getContractSpec()
         let args = try spec.funcArgsToXdrSCValues(name: "mint", args: [
@@ -1066,11 +1182,14 @@ final class SorobanDocOfflineTest: XCTestCase {
         // A map with symbol keys becomes a dictionary. Look an entry up by its key and
         // cast it to the type the conversion gives.
         let record = SCValXDR.map([
-            SCMapEntryXDR(key: SCValXDR.symbol("name"), val: SCValXDR.string("Alice")),
             SCMapEntryXDR(key: SCValXDR.symbol("age"), val: SCValXDR.u32(30)),
             SCMapEntryXDR(key: SCValXDR.symbol("amount"),
                           val: try! SCValXDR.i128(stringValue: "170141183460469231731687303715884105727")),
+            SCMapEntryXDR(key: SCValXDR.symbol("name"), val: SCValXDR.string("Alice")),
         ])
+        // The page lists the keys in the host's ScMap key order, the order sortedMap produces.
+        XCTAssertEqual(record.map?.map { $0.key.symbol },
+                       (try? SCValXDR.sortedMap(record.map ?? []))?.map?.map { $0.key.symbol })
         guard let fields = record.toNative() as? [AnyHashable: Any?] else {
             XCTFail("expected a dictionary")
             return

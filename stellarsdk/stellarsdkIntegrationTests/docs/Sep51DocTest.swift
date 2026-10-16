@@ -166,6 +166,24 @@ class Sep51DocTest: XCTestCase {
         }
     }
 
+    // MARK: - Asset codes
+
+    func testTwelveByteAssetCodesKeepFiveBytes() throws {
+        let issuer = try KeyPair(accountId: issuerAccountId)
+        let code = WrappedData12(Data("ABC".utf8) + Data(count: 9))
+        let asset = AssetXDR.alphanum12(Alpha12XDR(assetCode: code, issuer: issuer.publicKey))
+
+        // The escaped string is ABC\0\0; the JSON writer doubles each backslash.
+        let json = try asset.toXdrJson()
+        XCTAssertEqual(json, #"{"credit_alphanum12":{"asset_code":"ABC\\0\\0","issuer":"GAZFEVBSEGJJ63WPVVIWXLZLWN2JYZECECGT6GUNP4FJDVZVNXWQWMYI"}}"#)
+        XCTAssertEqual(try AssetXDR.fromXdrJson(json).xdrEncoded, asset.xdrEncoded)
+
+        // Input that unescapes to fewer than five bytes is rejected.
+        assertMessage("Alpha12XDR.asset_code: expected 5 to 12 bytes, got 3") {
+            _ = try AssetXDR.fromXdrJson(#"{"credit_alphanum12":{"asset_code":"ABC","issuer":"GAZFEVBSEGJJ63WPVVIWXLZLWN2JYZECECGT6GUNP4FJDVZVNXWQWMYI"}}"#)
+        }
+    }
+
     // MARK: - Byte equality and structural equality
 
     func testStructuralEqualityRatherThanByteEquality() throws {
@@ -216,6 +234,17 @@ class Sep51DocTest: XCTestCase {
         let shortest = Ed25519SignedPayload(ed25519: WrappedData32(Data(repeating: 0x01, count: 32)),
                                             payload: Data([0x2a]))
         XCTAssertNoThrow(try SignerKeyXDR.signedPayload(shortest).toXdrJson())
+
+        // On input, a P strkey with an empty payload fails the strkey decode.
+        let emptyPayloadStrKey = "PAAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAAAAAAOPVY"
+        XCTAssertFalse(emptyPayloadStrKey.isValidSignedPayload())
+        XCTAssertThrowsError(try SignerKeyXDR.fromXdrJson("\"\(emptyPayloadStrKey)\"")) { error in
+            guard case XdrJsonError.invalidValue? = error as? XdrJsonError else {
+                return XCTFail("expected invalidValue, got \(error)")
+            }
+            XCTAssertEqual((error as? XdrJsonError)?.message,
+                           "Ed25519SignedPayload: not a signed payload strkey: \(emptyPayloadStrKey)")
+        }
     }
 
     // MARK: - Error handling

@@ -244,6 +244,7 @@ case .success(let txInfo):
     // txInfo.envelopeXdr: String?
     // txInfo.resultXdr: String?
     // txInfo.resultMetaXdr: String?
+    // txInfo.diagnosticEventsXdr: [String]? -- base64 DiagnosticEvent XDR
     // txInfo.wasmId: String? -- if contract was installed
     // txInfo.createdContractId: String? -- if contract was deployed
     switch txInfo.status {

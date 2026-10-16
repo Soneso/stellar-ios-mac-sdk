@@ -5,7 +5,7 @@ Platform-specific guide for configuring WebAuthn passkey authentication in iOS a
 ## Prerequisites
 
 - iOS 16.0+ (the underlying `ASAuthorizationPlatformPublicKeyCredentialProvider` API is gated `@available(iOS 16.0, *)`).
-- Xcode 14+.
+- Xcode 16+.
 - An Apple Developer account with the Associated Domains capability enabled for the App ID.
 - A domain you control over HTTPS for hosting `apple-app-site-association`.
 

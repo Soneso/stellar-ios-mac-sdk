@@ -599,7 +599,8 @@ let tx = try await client.buildInvokeMethodTx(
     ]
 )
 
-// Check who needs to sign (returns list of account IDs)
+// Check who needs to sign: the addresses of the unsigned nodes,
+// accounts as G... strkeys and contracts as hex ids
 let neededSigners = try tx.needsNonInvokerSigningBy()
 // e.g., ["GBOB..."] - Bob needs to authorize
 ```
@@ -617,6 +618,8 @@ try await tx.signAuthEntries(signerKeyPair: bob)
 // Submit (Alice signs the transaction envelope)
 let response = try await tx.signAndSend()
 ```
+
+Every signature on an entry commits to the entry's single `signatureExpirationLedger`, so the first signer of an entry chooses it. For an entry that carries no signature yet, `signAuthEntries` writes `validUntilLedgerSeq`, or the latest ledger plus 100 when you pass none. It fetches the latest ledger at most once per call, and only when an entry needs the default. Once any node of an entry carries a signature, the stored value stays, and a different `validUntilLedgerSeq` throws `StellarSDKError.invalidArgument` naming both values. The transaction's entries are replaced only after every matching entry is signed, so a failed call leaves them unchanged.
 
 ### Remote Signing
 
@@ -644,6 +647,8 @@ try await tx.signAuthEntries(
 let response = try await tx.signAndSend()
 ```
 
+`signAuthEntries` writes the expiration into the entry before the callback receives it, so the remote signer signs with the value the entry carries.
+
 ### Protocol 27 Credentials (CAP-71)
 
 Protocol 27 adds two address-credential arms to `SorobanCredentialsXDR`:
@@ -653,7 +658,9 @@ Protocol 27 adds two address-credential arms to `SorobanCredentialsXDR`:
 
 `ADDRESS_V2` is the default arm for simulation: `useUpgradedAuth` defaults to `true` on `MethodOptions` and `SimulateTransactionRequest`. The legacy `.address` arm stays fully valid, and entry construction is arm-explicit — the `SorobanCredentialsXDR` cases name the arm directly. Set `useUpgradedAuth` to `false` on a network below protocol 27, where the newer arms invalidate the transaction.
 
-All signing APIs (`signAuthEntries`, `SorobanAuthorizationEntryXDR.sign`, SEP-45) support all three arms and preserve the arm on write-back. `needsNonInvokerSigningBy` reports the address of every node whose signature is void, including each unsigned delegate node of a `WITH_DELEGATES` entry.
+All signing APIs (`signAuthEntries`, `SorobanAuthorizationEntryXDR.sign`, SEP-45) support all three arms and preserve the arm on write-back. Their credential addresses are account (`G...`) or contract (`C...`) addresses, and a muxed address (`M...` or `W...`) throws `StellarSDKError.invalidArgument`.
+
+A signature value of void or an empty vector is an unsigned placeholder; `SorobanAuthorizationEntryXDR.carriesSignature(_:)` exposes the check. `needsNonInvokerSigningBy` reports the address of every node that carries no signature, at the top level of an entry and in the delegate nodes of a `WITH_DELEGATES` entry. `sign` and `signAndSend` throw `AssembledTransactionError.multipleSignersRequired` while one of those nodes is an account, at the top level or at any delegate depth. A contract address never stops them, because the contract's `__check_auth` decides which signatures it needs.
 
 #### V2 Entries from Simulation
 
@@ -691,23 +698,29 @@ Rules enforced by the host and handled by the SDK builder:
 
 - Every delegate array must be sorted ascending by the XDR-encoded bytes of the delegate address, with no duplicates within one array. The builder sorts automatically and throws on duplicates -- always construct trees through `withDelegates` rather than assembling the XDR by hand.
 - Every signer in the tree -- top-level and delegates at any depth -- signs the same payload, which is bound to the top-level credential address. Delegates carry no nonce and no expiration; only the top-level credentials do.
-- A void top-level signature is legitimate when the delegates sign (delegates-only pattern).
+- An account authenticates with its own signatures, so a `G...` top level signs even when its delegates sign. A custom account contract whose `__check_auth` accepts the delegates' signatures can leave its top-level signature void.
 
 ```swift
 import stellarsdk
 
 let server = SorobanServer(endpoint: "https://soroban-testnet.stellar.org")
+let sourceKeyPair = try KeyPair(secretSeed: sourceSecretSeed) // sourceSecretSeed: the funded account that submits the transaction ("S...")
 let topLevelKeyPair = try KeyPair(secretSeed: topLevelSecretSeed) // topLevelSecretSeed: the top-level signer's secret seed ("S...")
 let delegateKeyPair = try KeyPair(secretSeed: delegateSecretSeed) // delegateSecretSeed: a delegate signer's secret seed ("S...")
 
-// Build and simulate the invocation to obtain its authorization entry
+// Build and simulate the invocation to obtain its authorization entry. The contract's
+// increment(user, value) calls user.require_auth(), so the call needs the top-level
+// account's authorization.
 let invokeOp = try InvokeHostFunctionOperation.forInvokingContract(
-    contractId: "CB3FU6M3TOAGRBLN5WDLXL6A7VR5SSRGULMXQQOABNMPS25YRJ4CN5VV", // example contract id — use your deployed contract's id
+    contractId: "CB3FU6M3TOAGRBLN5WDLXL6A7VR5SSRGULMXQQOABNMPS25YRJ4CN5VV", // example contract id: use your deployed contract's id
     functionName: "increment",
-    functionArguments: []
+    functionArguments: [
+        SCValXDR.address(try SCAddressXDR(accountId: topLevelKeyPair.accountId)),
+        SCValXDR.u32(1)
+    ]
 )
-guard case .success(let account) = await server.getAccount(accountId: topLevelKeyPair.accountId) else {
-    throw StellarSDKError.invalidArgument(message: "Could not load the top-level signer account")
+guard case .success(let account) = await server.getAccount(accountId: sourceKeyPair.accountId) else {
+    throw StellarSDKError.invalidArgument(message: "Could not load the source account")
 }
 let transaction = try Transaction(
     sourceAccount: account,
@@ -721,8 +734,14 @@ guard case .success(let sim) = simEnum else {
     throw StellarSDKError.invalidArgument(message: "Transaction simulation failed")
 }
 
-// A protocol-27 RPC returns an ADDRESS_V2 entry by default; withDelegates also accepts a legacy ADDRESS entry
-let entry = sim.sorobanAuth![0]
+// The top-level account is not the transaction source, so simulation returns address
+// credentials for it. A protocol-27 RPC returns an ADDRESS_V2 entry by default;
+// withDelegates also accepts a legacy ADDRESS entry.
+guard let entry = sim.sorobanAuth?.first(where: {
+    $0.credentials.addressCredentials?.address.accountId == topLevelKeyPair.accountId
+}) else {
+    throw StellarSDKError.invalidArgument(message: "Simulation returned no address credentials for the top-level account")
+}
 
 // Latest ledger, used to set the signature expiration
 guard case .success(let latestLedger) = await server.getLatestLedger() else {
@@ -739,7 +758,8 @@ var delegated = try SorobanAuthorizationEntryXDR.withDelegates(
     expirationLedger: latestLedger.sequence + 100
 )
 
-// Top-level signer (skip this for the delegates-only pattern).
+// Top-level signer: the top-level address is an account, which authenticates
+// with its own signature.
 // When one node needs multiple classical (G-address) signatures, add them in
 // ascending public-key order -- the host requires that order and the SDK
 // appends signatures in the order you call sign.
@@ -767,7 +787,7 @@ transaction.setSorobanAuth(auth: [delegated])
 //   transaction.setSorobanAuth(auth: [delegated])
 ```
 
-`SorobanDelegateDescriptor` supports nesting via `nestedDelegates` and accepts a pre-built `signature` (default `.void`) for nodes signed externally, such as contract addresses. `forAddress` matches every node in the tree (top-level or delegate, depth-first) and throws when no node matches.
+`SorobanDelegateDescriptor` supports nesting via `nestedDelegates` and accepts a pre-built `signature` (default `.void`) for nodes signed externally, such as contract addresses. `forAddress` matches every node in the tree (top-level or delegate, depth-first) and throws when no node matches. Delegate addresses and `forAddress` targets are account (`G...`) or contract (`C...`) addresses too, and a muxed address (`M...` or `W...`) throws `StellarSDKError.invalidArgument`.
 
 ## Type Conversions
 
@@ -821,7 +841,7 @@ let largeU128 = try spec.nativeToXdrSCVal(
 
 #### Addresses
 
-Account and contract addresses for referencing entities on the network.
+Account, contract, and muxed contract addresses for referencing entities on the network.
 
 ```swift
 import stellarsdk
@@ -831,6 +851,12 @@ let account = SCValXDR.address(try SCAddressXDR(accountId: "GA7QYNF7SOWQ3GLR2BGM
 
 // Contract address (C...)
 let contract = SCValXDR.address(try SCAddressXDR(contractId: "CB3FU6M3TOAGRBLN5WDLXL6A7VR5SSRGULMXQQOABNMPS25YRJ4CN5VV"))
+
+// Muxed contract address (W...), for a MuxedAddress parameter
+let muxedContract = SCValXDR.address(try SCAddressXDR(muxedContractId: "WA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAAAAAAAAAPCIA6IG"))
+
+// The same muxed contract address from its contract ID and 64-bit ID
+let sameMuxedContract = SCValXDR.address(try SCAddressXDR(contractId: "CA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE", id: 123456))
 ```
 
 #### Collections
@@ -846,10 +872,11 @@ let vec = SCValXDR.vec([
     SCValXDR.symbol("b"),
 ])
 
-// Map (key-value pairs)
+// Map (key-value pairs). The host requires the keys in its ScMap key order;
+// SCValXDR.sortedMap(_:) sorts entries into it.
 let map = SCValXDR.map([
-    SCMapEntryXDR(key: SCValXDR.symbol("name"), val: SCValXDR.string("Alice")),
     SCMapEntryXDR(key: SCValXDR.symbol("age"), val: SCValXDR.u32(30)),
+    SCMapEntryXDR(key: SCValXDR.symbol("name"), val: SCValXDR.string("Alice")),
 ])
 ```
 
@@ -879,6 +906,8 @@ let args = try spec.funcArgsToXdrSCValues(name: "swap", args: [
 let functions = spec.funcs()
 let swapFunc = spec.getFunc(name: "swap")
 ```
+
+An `Address` parameter takes a `G...` or `C...` strkey or an account or contract `SCAddressXDR`. A `MuxedAddress` parameter also takes `M...` and `W...` strkeys and the matching `SCAddressXDR` values. Any other address kind, a malformed string, an address that does not encode, and any other value type throw `ContractSpecError.invalidType`. For an address parameter, a prebuilt `SCValXDR` passes through unchanged, and `nil` is accepted only for void and option types.
 
 ### Advanced Type Conversions
 
@@ -933,6 +962,8 @@ let val = try spec.nativeToXdrSCVal(val: [
     "bob": "GCZHXL5HXQX5ABDM26LHYRCQZ5OJFHLOPLZX47WEBP3V2PF5AVFK2A5D",
 ], ty: mapTypeDef)
 ```
+
+`ContractSpec` emits the entries in the host's key order and throws `StellarSDKError.invalidArgument` when two keys convert to values that are equal in that order.
 
 #### Tuples
 
@@ -990,6 +1021,8 @@ let val = try spec.nativeToXdrSCVal(val: [
     "field3": true,
 ] as [String: Any], ty: structType)
 ```
+
+A struct with named fields becomes a map whose entries follow the host's key order.
 
 **Union** -- use `NativeUnionVal`:
 
@@ -1062,7 +1095,7 @@ if let map = result.map {
 | `u128`, `i128`, `u256`, `i256` | decimal `String` |
 | `bytes` | `Data` |
 | `string`, `symbol` | `String` |
-| `address` | strkey `String` (`G`, `M`, `C`, `B` or `L`) via `SCAddressXDR.toStrKey()` |
+| `address` | strkey `String` (`G`, `M`, `C`, `B`, `L` or `W`) via `SCAddressXDR.toStrKey()` |
 | `vec` | `[Any?]`, element order preserved |
 | `map` | `[AnyHashable: Any?]` |
 | `error`, `contractInstance`, `ledgerKeyContractInstance`, `ledgerKeyNonce`, `executableTag` | the `SCValXDR` itself |
@@ -1089,12 +1122,13 @@ if let nativeBalance = balance.toNative() as? UInt64 {
 }
 
 // A map with symbol keys becomes a dictionary. Look an entry up by its key and
-// cast it to the type the conversion gives.
+// cast it to the type the conversion gives. The host requires the keys in its
+// ScMap key order; SCValXDR.sortedMap(_:) sorts entries into it.
 let record = SCValXDR.map([
-    SCMapEntryXDR(key: SCValXDR.symbol("name"), val: SCValXDR.string("Alice")),
     SCMapEntryXDR(key: SCValXDR.symbol("age"), val: SCValXDR.u32(30)),
     SCMapEntryXDR(key: SCValXDR.symbol("amount"),
                   val: try! SCValXDR.i128(stringValue: "170141183460469231731687303715884105727")),
+    SCMapEntryXDR(key: SCValXDR.symbol("name"), val: SCValXDR.string("Alice")),
 ])
 if let fields = record.toNative() as? [AnyHashable: Any?] {
     print(fields.count)                       // 3

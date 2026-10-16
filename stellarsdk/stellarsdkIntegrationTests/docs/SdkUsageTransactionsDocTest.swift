@@ -503,14 +503,37 @@ class SdkUsageTransactionsDocTest: XCTestCase {
 
     func testPoolShareAssets() {
         // Snippet: Pool Share Assets
-        let issuerKeyPair = try! KeyPair(accountId: "GCZHXL5HXQX5ABDM26LHYRCQZ5OJFHLOPLZX47WEBP3V2PF5AVFK2A5D")
+        let issuerKeyPair = try! KeyPair(accountId: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ")
         let usdAsset = Asset(type: AssetType.ASSET_TYPE_CREDIT_ALPHANUM4, code: "USD", issuer: issuerKeyPair)!
 
         let poolShareAsset = try! ChangeTrustAsset(assetA: Asset(type: AssetType.ASSET_TYPE_NATIVE)!, assetB: usdAsset)!
         XCTAssertEqual(poolShareAsset.type, AssetType.ASSET_TYPE_POOL_SHARE)
+
+        // A reversed pair throws StellarSDKError.invalidArgument
+        XCTAssertThrowsError(try ChangeTrustAsset(assetA: usdAsset, assetB: Asset(type: AssetType.ASSET_TYPE_NATIVE)!)) { error in
+            guard case StellarSDKError.invalidArgument? = error as? StellarSDKError else {
+                return XCTFail("expected invalidArgument, got \(error)")
+            }
+        }
     }
 
     // MARK: - Liquidity Pool Operations
+
+    func testPoolShareTrustline() {
+        // Snippet: Pool Share Trustline
+        let issuerKeyPair = try! KeyPair(accountId: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ")
+        let usdAsset = Asset(type: AssetType.ASSET_TYPE_CREDIT_ALPHANUM4, code: "USD", issuer: issuerKeyPair)!
+
+        let poolShareAsset = try! ChangeTrustAsset(assetA: Asset(type: AssetType.ASSET_TYPE_NATIVE)!, assetB: usdAsset)!
+
+        let trustPoolOp = ChangeTrustOperation(
+            sourceAccountId: nil,
+            asset: poolShareAsset
+        )
+        XCTAssertEqual(trustPoolOp.asset.type, AssetType.ASSET_TYPE_POOL_SHARE)
+        XCTAssertEqual(poolShareAsset.assetA?.type, AssetType.ASSET_TYPE_NATIVE)
+        XCTAssertEqual(poolShareAsset.assetB?.code, "USD")
+    }
 
     func testLiquidityPoolOperations() {
         // Snippet: Liquidity Pool Deposit/Withdraw

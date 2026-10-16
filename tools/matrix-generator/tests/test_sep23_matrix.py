@@ -1,6 +1,6 @@
 """Tests for the SEP-23 matrix: the specification parser, the SDK checks, and the rendered matrix.
 
-fixtures/sep-0023.md is ecosystem/sep-0023.md of stellar-protocol at 9cd7030.
+fixtures/sep-0023.md is ecosystem/sep-0023.md of stellar-protocol at f2d3649.
 """
 
 import contextlib
@@ -37,6 +37,7 @@ KEY_TYPES = [
     ("STRKEY_HASH_X", "23 << 3", 184, "X"), ("STRKEY_SIGNED_PAYLOAD", "15 << 3", 120, "P"),
     ("STRKEY_CONTRACT", "2 << 3", 16, "C"), ("STRKEY_LIQUIDITY_POOL", "11 << 3", 88, "L"),
     ("STRKEY_CLAIMABLE_BALANCE", "1 << 3", 8, "B"),
+    ("STRKEY_MUXED_CONTRACT", "22 << 3", 176, "W"),
 ]
 ALL_KEY_TYPES = {name for name, _, _, _ in KEY_TYPES}
 
@@ -52,6 +53,10 @@ VALID_VECTORS = [
     ("valid_06", "Valid contract", "CA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUWDA"),
     ("valid_07", "Valid liquidity pool address", "LA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUPJN"),
     ("valid_08", "Valid claimable balance address", "BAAD6DBUX6J22DMZOHIEZTEQ64CVCHEDRKWZONFEUL5Q26QD7R76RGR4TU"),
+    ("valid_09", "Valid muxed contract address",
+     "WA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAAAAAAAAWWC"),
+    ("valid_10", "Valid muxed contract address in which unsigned id exceeds maximum signed 64-bit integer",
+     "WA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVAAAAAAAAAAAACWJY"),
 ]
 
 INVALID_VECTORS = [
@@ -82,6 +87,17 @@ INVALID_VECTORS = [
      "BAAD6DBUX6J22DMZOHIEZTEQ64CVCHEDRKWZONFEUL5Q26QD7R76RGR4TV"),
     ("invalid_15", "Invalid claimable balance type (first byte of binary key is not 0)",
      "BAAT6DBUX6J22DMZOHIEZTEQ64CVCHEDRKWZONFEUL5Q26QD7R76RGXACA"),
+    ("invalid_16", "The unused trailing bit must be zero in the encoding of the last three bytes (24 bits) as five "
+     "base-32 symbols (25 bits) of a muxed contract",
+     "WA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAAAAAAAAWWD"),
+    ("invalid_17", "Invalid length (congruent to 6 mod 8) of a muxed contract",
+     "WA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAAAAAAAAWWCA"),
+    ("invalid_18", "Invalid length (base-32 decoding should yield 43 bytes, not 44) of a muxed contract",
+     "WA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAAAAAAAAAIOUI"),
+    ("invalid_19", "Invalid algorithm (low 3 bits of version byte are 7) of a muxed contract",
+     "W47QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAAAAAAADXHW"),
+    ("invalid_20", "Invalid checksum of a muxed contract",
+     "WA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAAAAAAAAWWA"),
 ]
 
 # The VersionByte case, raw value, encode function and decode function the SDK declares per key type.
@@ -95,6 +111,7 @@ SDK_DECLARATIONS = [
     ("contract", "16", "encodeContractId", "decodeContractId"),
     ("liquidityPool", "88", "encodeLiquidityPoolId", "decodeLiquidityPoolId"),
     ("claimableBalance", "8", "encodeClaimableBalanceId", "decodeClaimableBalanceId"),
+    ("muxedContract", "176", "encodeMuxedContractId", "decodeMuxedContractId"),
 ]
 VERSION_BYTE_SWIFT = "enum VersionByte:UInt8 {\n" + "".join(
     f"    /// Version byte of {case}\n    case {case} = {value} // SEP-23 base value\n"
@@ -154,7 +171,7 @@ def analyze(content: str = SPEC, **sdk_files):
     """Run the SEP-23 analyzer against a temporary SDK tree."""
     with tempfile.TemporaryDirectory() as tmp:
         write_sdk_root(Path(tmp), **sdk_files)
-        info = SEPInfo(number="23", title="Strkeys", purpose="Strkey", version="1.3.0", status="Active",
+        info = SEPInfo(number="23", title="Strkeys", purpose="Strkey", version="1.4.0", status="Active",
                        raw_content=content)
         return SEP23Analyzer(SDKAnalyzer(Path(tmp))).analyze(info)
 
@@ -186,7 +203,9 @@ class SpecParserTest(unittest.TestCase):
     def test_both_sections_follow_the_upstream_text(self):
         for base_value, version_byte in (("7 << 3", 56), ("48", 48)):
             with self.subTest(base_value):
-                document = edited(edited(SPEC, "| 6 << 3     |", f"| {base_value:<10} |"), "7UJUWDA`", "7UJUWDB`")
+                document = edited(edited(SPEC, "| 6 << 3     |", f"| {base_value:<10} |"),
+                                  "   - Strkey `CA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUWDA`",
+                                  "   - Strkey `CA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUWDB`")
                 pubkey = SEP23SpecParser().parse_key_types(document)[0]
                 valid, _ = SEP23SpecParser().parse_test_vectors(document)
                 self.assertEqual((pubkey.base_expression, pubkey.version_byte), (base_value, version_byte))
@@ -241,7 +260,7 @@ class SpecParserTest(unittest.TestCase):
 
 class KeyTypeCheckTest(unittest.TestCase):
 
-    def test_all_nine_key_types_implemented(self):
+    def test_all_ten_key_types_implemented(self):
         matrix = analyze()
         fields = {field.name: field for field in matrix.sections[0].fields}
         self.assertEqual(list(fields), [name for name, _, _, _ in KEY_TYPES])
@@ -400,7 +419,7 @@ class MainTest(unittest.TestCase):
             output = Path(tmp) / "SEP-0023_COMPATIBILITY_MATRIX.md"
             self.assertEqual(self.run_main(SPEC, output), 0)
             document = output.read_text(encoding="utf-8")
-        self.assertIn("**Total Coverage:** 100.0% (32/32 fields)", document)
+        self.assertIn("**Total Coverage:** 100.0% (40/40 fields)", document)
         self.assertEqual(normalized(document), normalized(TRACKED_MATRIX.read_text(encoding="utf-8")))
 
     def test_failed_run_exits_non_zero_and_writes_nothing(self):

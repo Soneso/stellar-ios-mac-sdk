@@ -1,10 +1,10 @@
 # SEP-0023 (Strkeys) Compatibility Matrix
 
-**Generated:** 2026-09-30
+**Generated:** 2026-10-16
 
-**SDK Version:** 3.12.0
+**SDK Version:** 3.13.0
 
-**SEP Version:** 1.3.0
+**SEP Version:** 1.4.0
 
 **SEP Status:** Active
 
@@ -16,12 +16,12 @@ Strkey is an ASCII format for representing Stellar account IDs and addresses.
 
 ## Overall Coverage
 
-**Total Coverage:** 100.0% (32/32 fields)
+**Total Coverage:** 100.0% (40/40 fields)
 
-- ✅ **Implemented:** 32/32
-- ❌ **Not Implemented:** 0/32
+- ✅ **Implemented:** 40/40
+- ❌ **Not Implemented:** 0/40
 
-**Required Fields:** 100.0% (32/32)
+**Required Fields:** 100.0% (40/40)
 
 **Optional Fields:** 100.0% (0/0)
 
@@ -45,8 +45,8 @@ Strkey is an ASCII format for representing Stellar account IDs and addresses.
 
 | Section | Coverage | Required Coverage | Implemented | Total |
 |---------|----------|-------------------|-------------|-------|
-| Key types | 100.0% | 100.0% | 9 | 9 |
-| Test vectors quoted in the StrKey unit test files | 100.0% | 100.0% | 23 | 23 |
+| Key types | 100.0% | 100.0% | 10 | 10 |
+| Test vectors quoted in the StrKey unit test files | 100.0% | 100.0% | 30 | 30 |
 
 ## Detailed Field Comparison
 
@@ -63,6 +63,7 @@ Strkey is an ASCII format for representing Stellar account IDs and addresses.
 | `STRKEY_CONTRACT` | ✓ | ✅ | `VersionByte.contract, encodeContractId(), decodeContractId()` | Base value 2 << 3 = 16, first character C |
 | `STRKEY_LIQUIDITY_POOL` | ✓ | ✅ | `VersionByte.liquidityPool, encodeLiquidityPoolId(), decodeLiquidityPoolId()` | Base value 11 << 3 = 88, first character L |
 | `STRKEY_CLAIMABLE_BALANCE` | ✓ | ✅ | `VersionByte.claimableBalance, encodeClaimableBalanceId(), decodeClaimableBalanceId()` | Base value 1 << 3 = 8, first character B |
+| `STRKEY_MUXED_CONTRACT` | ✓ | ✅ | `VersionByte.muxedContract, encodeMuxedContractId(), decodeMuxedContractId()` | Base value 22 << 3 = 176, first character W |
 
 ### Test vectors quoted in the StrKey unit test files
 
@@ -76,6 +77,8 @@ Strkey is an ASCII format for representing Stellar account IDs and addresses.
 | `valid_06` | ✓ | ✅ | - | quoted in `StrKeyUnitTests.swift`: Valid contract |
 | `valid_07` | ✓ | ✅ | - | quoted in `StrKeyUnitTests.swift`: Valid liquidity pool address |
 | `valid_08` | ✓ | ✅ | - | quoted in `StrKeyUnitTests.swift`: Valid claimable balance address |
+| `valid_09` | ✓ | ✅ | - | quoted in `StrKeyUnitTests.swift`: Valid muxed contract address |
+| `valid_10` | ✓ | ✅ | - | quoted in `StrKeyUnitTests.swift`: Valid muxed contract address in which unsigned id exceeds maximum signed 64-bit integer |
 | `invalid_01` | ✓ | ✅ | - | quoted in `StrKeyUnitTests.swift`: Invalid length (Ed25519 should be 32 bytes, not 5) |
 | `invalid_02` | ✓ | ✅ | - | quoted in `StrKeyUnitTests.swift`: The unused trailing bit must be zero in the encoding of the last three bytes (24 bits) as five base-32 symbols (... |
 | `invalid_03` | ✓ | ✅ | - | quoted in `StrKeyUnitTests.swift`: Invalid length (congruent to 1 mod 8) |
@@ -91,6 +94,11 @@ Strkey is an ASCII format for representing Stellar account IDs and addresses.
 | `invalid_13` | ✓ | ✅ | - | quoted in `StrKeyUnitTests.swift`: No zero padding in signed payload |
 | `invalid_14` | ✓ | ✅ | - | quoted in `StrKeyUnitTests.swift`: The unused trailing 2-bits must be zero in the encoding of the last symbol. |
 | `invalid_15` | ✓ | ✅ | - | quoted in `StrKeyUnitTests.swift`: Invalid claimable balance type (first byte of binary key is not 0) |
+| `invalid_16` | ✓ | ✅ | - | quoted in `StrKeyUnitTests.swift`: The unused trailing bit must be zero in the encoding of the last three bytes (24 bits) as five base-32 symbols (... |
+| `invalid_17` | ✓ | ✅ | - | quoted in `StrKeyUnitTests.swift`: Invalid length (congruent to 6 mod 8) of a muxed contract |
+| `invalid_18` | ✓ | ✅ | - | quoted in `StrKeyUnitTests.swift`: Invalid length (base-32 decoding should yield 43 bytes, not 44) of a muxed contract |
+| `invalid_19` | ✓ | ✅ | - | quoted in `StrKeyUnitTests.swift`: Invalid algorithm (low 3 bits of version byte are 7) of a muxed contract |
+| `invalid_20` | ✓ | ✅ | - | quoted in `StrKeyUnitTests.swift`: Invalid checksum of a muxed contract |
 
 ## Implementation Gaps
 

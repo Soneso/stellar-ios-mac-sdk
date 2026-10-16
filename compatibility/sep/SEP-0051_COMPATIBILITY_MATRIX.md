@@ -1,8 +1,8 @@
 # SEP-0051 (XDR-JSON) Compatibility Matrix
 
-**Generated:** 2026-09-27
+**Generated:** 2026-10-16
 
-**SDK Version:** 3.12.0
+**SDK Version:** 3.13.0
 
 **SEP Version:** 2.0.1
 
@@ -148,8 +148,8 @@ This proposal defines XDR-JSON, a standard mapping between Stellar's XDR (Extern
 | `from_xdr_json` | ✓ | ✅ | `XdrJsonCodable.fromXdrJson(_:)` | Read an XDR value from XDR-JSON text |
 | `from_xdr_json_value` | ✓ | ✅ | `XdrJsonCodable.fromXdrJsonValue(_:)` | Read an XDR value from an XDR-JSON tree |
 | `from_xdr_json_tree` | ✓ | ✅ | `XdrJsonCodable.fromXdrJsonTree(_:)` | Read an XDR value from a tree built by hand, with container nesting bounded |
-| `typedef_codec_namespace` | ✓ | ✅ | `29 <Name>JsonCodec namespace(s)` | XDR types a typedef collapses onto another Swift type keep their own conversion entry points |
-| `xdr_type_conversions` | ✓ | ✅ | `466 XDR type(s), all convertible` | Every XDR type in the SDK has an XDR-JSON conversion |
+| `typedef_codec_namespace` | ✓ | ✅ | `30 <Name>JsonCodec namespace(s)` | XDR types a typedef collapses onto another Swift type keep their own conversion entry points |
+| `xdr_type_conversions` | ✓ | ✅ | `470 XDR type(s), all convertible` | Every XDR type in the SDK has an XDR-JSON conversion |
 
 ## Implementation Gaps
 

@@ -17,16 +17,17 @@ All examples assume `import stellarsdk`.
 5. [Muxed Accounts (M-addresses)](#muxed-accounts)
 6. [Signed Payloads (P-addresses)](#signed-payloads)
 7. [Contract IDs (C-addresses)](#contract-ids)
-8. [Liquidity Pool IDs (L-addresses)](#liquidity-pool-ids)
-9. [Claimable Balance IDs (B-addresses)](#claimable-balance-ids)
-10. [Error Handling](#error-handling)
-11. [Common Pitfalls](#common-pitfalls)
+8. [Muxed Contracts (W-addresses)](#muxed-contracts)
+9. [Liquidity Pool IDs (L-addresses)](#liquidity-pool-ids)
+10. [Claimable Balance IDs (B-addresses)](#claimable-balance-ids)
+11. [Error Handling](#error-handling)
+12. [Common Pitfalls](#common-pitfalls)
 
 ---
 
 ## Address Types and Prefixes
 
-The `VersionByte` enum defines the version byte for each address type:
+The SDK's internal `VersionByte` enum defines the version byte for each address type. It is not public API: code uses the public `String` and `Data` helpers, which apply the right version byte. The table lists the bytes for reference:
 
 | Type | Prefix | `VersionByte` case | Raw value | Use |
 |------|--------|-------------------|-----------|-----|
@@ -37,10 +38,11 @@ The `VersionByte` enum defines the version byte for each address type:
 | SHA-256 hash | `X` | `.sha256Hash` | 184 | Hash-based signer |
 | Signed payload | `P` | `.signedPayload` | 120 | CAP-40 payload signer |
 | Smart contract | `C` | `.contract` | 16 | Soroban contract address |
+| Muxed contract | `W` | `.muxedContract` | 176 | Contract with embedded multiplexing ID |
 | Liquidity pool | `L` | `.liquidityPool` | 88 | AMM pool identifier |
 | Claimable balance | `B` | `.claimableBalance` | 8 | Claimable balance identifier |
 
-All standard address types (G, S, T, X, C, L) encode to **56 characters**. Muxed accounts (M) are **69 characters**. Claimable balances (B) are **58 characters**. Signed payloads (P) are **69–165 characters**.
+All standard address types (G, S, T, X, C, L) encode to **56 characters**. Muxed accounts (M) and muxed contracts (W) are **69 characters**. Claimable balances (B) are **58 characters**. Signed payloads (P) are **69 to 165 characters**.
 
 ---
 
@@ -90,6 +92,9 @@ let muxed: MuxedAccountXDR = try "MA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA
 // M-address → raw data (for raw XDR bytes)
 let muxedData: Data = try "MA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVAAAAAAAAAAAAAJLK".decodeMed25519PublicKey()
 
+// W-address → raw data (40 bytes: 32-byte contract ID + 8-byte big-endian multiplexing ID)
+let muxedContractData: Data = try "WA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAAAAAAAAAPCIA6IG".decodeMuxedContractId()
+
 // P-address → Ed25519SignedPayload
 let signedPayload: Ed25519SignedPayload = try "PA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAQACAQDAQCQMBYIBEFAWDANBYHRAEISCMKBKFQXDAMRUGY4DUPB6IBZGM".decodeSignedPayload()
 let pk: PublicKey = try signedPayload.publicKey()           // the signer's public key
@@ -105,9 +110,9 @@ let payloadBytes: Data = signedPayload.payload              // the raw payload
 ```swift
 import stellarsdk
 
-// pubKeyData, seedData, preAuthData, hashData, contractData, lpData, cbData and
-// muxedData are the values the decode calls above bind; xdrEncodedMuxedData is the
-// XDR encoding of a MuxedAccountXDR
+// pubKeyData, seedData, preAuthData, hashData, contractData, lpData, cbData, muxedData
+// and muxedContractData are the values the decode calls above bind; xdrEncodedMuxedData
+// is the XDR encoding of a MuxedAccountXDR
 
 // 32-byte raw data → G-address
 let gAddress: String = try pubKeyData.encodeEd25519PublicKey()
@@ -139,6 +144,9 @@ let muxedAddress: String = try xdrEncodedMuxedData.encodeMuxedAccount()
 
 // XDR-encoded MuxedAccountXDR → M-address only (med25519 raw data)
 let mAddress: String = try muxedData.encodeMEd25519AccountId()
+
+// 40-byte raw data → W-address
+let wAddress: String = try muxedContractData.encodeMuxedContractId()
 ```
 
 ### Encode from hex strings
@@ -187,7 +195,7 @@ Validation methods return `Bool` and never throw. Use them to check user input b
 
 | Rule | What must hold |
 |------|----------------|
-| Encoded length | Exactly 56 characters for G, S, T, X, C, L; 69 for M; 58 for B; 69–165 for P. A length outside the range is rejected before anything is decoded |
+| Encoded length | Exactly 56 characters for G, S, T, X, C, L; 69 for M and W; 58 for B; 69 to 165 for P. A length outside the range is rejected before anything is decoded |
 | Base32 | Only A–Z and 2–7, no `=` padding, and the string must be the canonical encoding of the bytes it decodes to |
 | Version byte | The leading decoded byte must be the one the requested type uses |
 | Checksum | The trailing CRC-16 must match the version byte plus the body |
@@ -206,14 +214,18 @@ Validation methods return `Bool` and never throw. Use them to check user input b
 // Muxed account (M-address, 69 chars)
 "MA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVAAAAAAAAAAAAAJLK".isValidMed25519PublicKey()  // true
 
+// Muxed contract (W-address, 69 chars)
+"WA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAAAAAAAAAPCIA6IG".isValidMuxedContractId()  // true
+"CA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE".isValidMuxedContractId()  // false (C-address)
+
 // Pre-auth TX hash (T-address, 56 chars)
-someStrKey.isValidPreAuthTx()
+"TA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGZAM".isValidPreAuthTx()  // true
 
 // SHA-256 hash (X-address, 56 chars)
-someStrKey.isValidSha256Hash()
+"XA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQH5FV".isValidSha256Hash()  // true
 
-// Signed payload (P-address, 69–165 chars)
-someStrKey.isValidSignedPayload()
+// Signed payload (P-address, 69 to 165 chars)
+"PA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAQACAQDAQCQMBYIBEFAWDANBYHRAEISCMKBKFQXDAMRUGY4DUPB6IBZGM".isValidSignedPayload()  // true
 
 // Contract ID (C-address, 56 chars)
 "CA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE".isValidContractId()  // true
@@ -364,6 +376,41 @@ let address = try SCAddressXDR(contractId: contractStrKey)   // accepts C-addres
 
 ---
 
+## Muxed Contracts
+
+Muxed contract addresses (W-addresses, CAP-84) pair a contract ID with a 64-bit multiplexing ID. They are valid for `MuxedAddress` contract parameters and never as Soroban authorization addresses.
+
+```swift
+import stellarsdk
+import Foundation
+
+// Build from a C-address and an ID
+let muxed = try MuxedContract(contractId: "CA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE", id: 123456)
+let wAddress: String = muxed.address
+// → "WA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAAAAAAAAAPCIA6IG"
+
+// Parse a W-address: contractId is the underlying C-address, id the multiplexing ID
+let parsed = try MuxedContract(address: wAddress)
+let baseContractId: String = parsed.contractId   // "CA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE"
+let muxId: UInt64? = parsed.id                   // 123456
+
+// A C-address parses too: id is nil and address is the C-address
+let plain = try MuxedContract(address: baseContractId)
+// plain.id == nil
+
+// Convert to and from SCAddressXDR (the .muxedContract arm)
+let scAddress: SCAddressXDR = parsed.toSCAddress()
+let fromScAddress = try MuxedContract(scAddress: scAddress)
+let fromStrKey = try SCAddressXDR(muxedContractId: wAddress)
+let fromParts = try SCAddressXDR(contractId: baseContractId, id: 123456)
+
+// MuxedContractXDR round trip
+let muxedXdr = try MuxedContractXDR(muxedContractId: wAddress)
+let reEncoded: String = try muxedXdr.toStrKey()   // same W-address
+```
+
+---
+
 ## Liquidity Pool IDs
 
 ```swift
@@ -491,7 +538,7 @@ The encoders reject the payloads that would produce a strkey no decoder reads ba
 | Method | Requirement |
 |--------|-------------|
 | `encodeEd25519PublicKey`, `encodeEd25519SecretSeed`, `encodePreAuthTx`, `encodeSha256Hash`, `encodeContractId`, `encodeLiquidityPoolId` | Exactly 32 bytes |
-| `encodeMEd25519AccountId` | Exactly 40 bytes |
+| `encodeMEd25519AccountId`, `encodeMuxedContractId` | Exactly 40 bytes |
 | `encodeClaimableBalanceId` | 32 bytes (discriminant prepended), 33 bytes opening with `0x00`, or the 36-byte XDR form Horizon reports (verified, discriminant stripped) |
 | `encodeSignedPayload` | A body carrying the signed payload framing, signed data 1–64 bytes |
 | `Signer.signedPayload(accountId:payload:)` | Payload 1–64 bytes |

@@ -209,6 +209,65 @@ class Sep23DocTest: XCTestCase {
         XCTAssertEqual(decodedBalance.count, 33)
     }
 
+    // MARK: - Creating muxed contracts
+
+    func testCreatingMuxedContracts() throws {
+        let contractId = "CA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE"
+        let userId: UInt64 = 123456
+
+        // Create a muxed contract from a C-address and an ID
+        let muxedContract = try MuxedContract(contractId: contractId, id: userId)
+        XCTAssertEqual(muxedContract.address,
+                       "WA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAAAAAAAAAPCIA6IG")
+
+        // Parse an existing W-address
+        let parsedMuxed = try MuxedContract(
+            address: "WA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAAAAAAAAWWC"
+        )
+        XCTAssertEqual(parsedMuxed.contractId, "CA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUWDA")
+        XCTAssertEqual(parsedMuxed.id, 0)
+    }
+
+    // MARK: - Extracting muxed contract components
+
+    func testExtractingMuxedContractComponents() throws {
+        let muxedContractAddress =
+            "WA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAAAAAAAAAPCIA6IG"
+
+        let muxedContract = try MuxedContract(address: muxedContractAddress)
+
+        // The underlying C-address and the 64-bit ID
+        XCTAssertEqual(muxedContract.contractId, "CA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE")
+        let id: UInt64? = muxedContract.id
+        XCTAssertEqual(id, 123456)
+
+        // A C-address parses too: its id is nil and address is the C-address itself
+        let plainContract = try MuxedContract(address: muxedContract.contractId)
+        XCTAssertNil(plainContract.id)
+        XCTAssertEqual(plainContract.address, muxedContract.contractId)
+    }
+
+    // MARK: - Low-level muxed contract encoding
+
+    func testLowLevelMuxedContractEncoding() throws {
+        let muxedContractAddress =
+            "WA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAAAAAAAAAPCIA6IG"
+
+        // Validate W-address format
+        XCTAssertTrue(muxedContractAddress.isValidMuxedContractId())
+
+        // Decode to the 40-byte payload: the contract ID, then the big-endian ID
+        let rawData: Data = try muxedContractAddress.decodeMuxedContractId()
+        XCTAssertEqual(rawData.count, 40)
+        XCTAssertEqual(rawData.prefix(32),
+                       try "CA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE".decodeContractId())
+        XCTAssertEqual([UInt8](rawData.suffix(8)), [0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0xe2, 0x40])
+
+        // Encode the payload back to a W-address
+        let encoded: String = try rawData.encodeMuxedContractId()
+        XCTAssertEqual(encoded, muxedContractAddress)
+    }
+
     // MARK: - Validation
 
     func testValidation() throws {
