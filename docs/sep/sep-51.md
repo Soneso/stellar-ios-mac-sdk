@@ -140,7 +140,9 @@ print(try PoolIDXDRJsonCodec.toXdrJson(raw))
 // "LAFQWCYLBMFQWCYLBMFQWCYLBMFQWCYLBMFQWCYLBMFQWCYLBMFQXFAD"
 ```
 
-There are 29 such namespaces, one per collapsed typedef, each named `<TypeName>JsonCodec`. `WrappedData4`, `WrappedData12`, `WrappedData16`, `WrappedData32`, `Data`, `String`, `Int32`, `UInt32`, `Int64`, `UInt64`, `Array` and `Optional` carry no XDR-JSON members for the same reason.
+There is one such namespace per collapsed typedef, each named `<TypeName>JsonCodec`. `WrappedData4`, `WrappedData12`, `WrappedData16`, `WrappedData32`, `Data`, `String`, `Int32`, `UInt32`, `Int64`, `UInt64`, `Array` and `Optional` carry no XDR-JSON members for the same reason.
+
+Address types have Swift types of their own: an `SCAddressXDR` renders as the strkey of its kind (`G…`, `M…`, `C…`, `B…`, `L…` or `W…`), and a `MuxedContractXDR` as its `W…` strkey.
 
 The same rule applies one level up, where two XDR definitions share a Swift type and disagree on field names. `PathPaymentOperationXDR` is the Swift form of both `PathPaymentStrictReceiveOp` (`send_max`, `dest_amount`) and `PathPaymentStrictSendOp` (`send_amount`, `dest_min`); `ManageOfferOperationXDR` covers `ManageSellOfferOp` (`amount`) and `ManageBuyOfferOp` (`buy_amount`); `PathPaymentResultCode` and `PathPaymentResultXDR` disagree on one member. Those four types carry no XDR-JSON members. Convert the enclosing `OperationXDR` or `OperationResultXDR` instead, which knows which definition applies:
 
@@ -225,6 +227,16 @@ Extension points are void arms of an integer-cased union, so they render as `"v0
 
 An XDR `string<>` is escaped byte by byte before it becomes a JSON string: `0x00` to `\0`, `0x09` to `\t`, `0x0A` to `\n`, `0x0D` to `\r`, `0x5C` to `\\`, printable ASCII verbatim, and everything else to `\xNN` with lowercase hex digits. The result is then escaped a second time by the JSON writer, which is why the tab above appears as `\\t` in the document.
 
+### Asset codes
+
+An `AssetCode4` or `AssetCode12` renders as an escaped string with its trailing NUL bytes trimmed. A twelve-byte code keeps at least five bytes, so the code `ABC` of a `credit_alphanum12` asset becomes the string `ABC\0\0`, which the JSON text spells `"ABC\\0\\0"`.
+
+On input, a twelve-byte code string must unescape to five to twelve bytes, as in the reference implementation. A shorter one raises `XdrJsonError.invalidValue`, here for the JSON text `"ABC"`:
+
+```
+Alpha12XDR.asset_code: expected 5 to 12 bytes, got 3
+```
+
 ### Byte equality and structural equality
 
 The SDK emits canonical output, so converting the same value twice gives the same bytes. That guarantee does not extend to documents from elsewhere. Another producer may indent its output, order keys differently, or escape a character the SDK does not, and still describe exactly the same XDR value. The SDK ships no normaliser for foreign input.
@@ -294,7 +306,7 @@ Three points where the SDK follows the specification text and the `stellar-xdr` 
 
 **Non-UTF-8 strings.** The escape ladder is byte-wise and reversible for any byte, but the SDK stores every XDR `string<>` in a Swift `String`, which is always well-formed Unicode. An XDR string carrying invalid UTF-8 cannot be held by this SDK at any layer, so those documents cannot be round-tripped here. Opaque fields are `Data` and are byte-exact, so asset codes and hashes are unaffected.
 
-**Zero-length signed payloads.** A `SignerKey` of type `ED25519_SIGNED_PAYLOAD` with an empty payload is valid XDR, but no `P…` strkey the ecosystem accepts encodes it. Converting one raises `XdrJsonError.unrepresentable` rather than emitting a strkey other software will reject. Payloads of one byte and longer convert normally.
+**Zero-length signed payloads.** A `SignerKey` of type `ED25519_SIGNED_PAYLOAD` with an empty payload is valid XDR, but no `P…` strkey the ecosystem accepts encodes it. Converting the XDR value to XDR-JSON raises `XdrJsonError.unrepresentable`. On input, a `P…` strkey with an empty payload fails the strkey decode, so reading it raises `XdrJsonError.invalidValue` with the message `Ed25519SignedPayload: not a signed payload strkey: P…`. The reference implementation renders the value as `<INVALID:G…:EMPTY_PAYLOAD>`, with the signer's `G…` key in the middle, and refuses to encode that text back. Payloads of one byte and longer convert normally.
 
 ## Error handling
 
@@ -391,7 +403,7 @@ See the [SEP-0051 compatibility matrix](../../compatibility/sep/SEP-0051_COMPATI
 ## Related SEPs
 
 - [SEP-11](sep-11.md) - Txrep, a human-readable text representation of transactions
-- [SEP-23](sep-23.md) - Strkey encoding, which supplies the `G…`, `C…`, `L…`, `B…` and `P…` forms used here
+- [SEP-23](sep-23.md) - Strkey encoding, which supplies the `G…`, `M…`, `C…`, `W…`, `L…`, `B…` and `P…` forms used here
 
 ## Reference
 

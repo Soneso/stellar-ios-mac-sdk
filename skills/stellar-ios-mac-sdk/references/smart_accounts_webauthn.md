@@ -315,7 +315,7 @@ Tests / ephemeral use only; inject a persistent adapter in production (see [Over
 ### Prerequisites
 
 - iOS 16.0+ (the provider is gated `@available(iOS 16.0, *)`).
-- Xcode 14+.
+- Xcode 16+.
 - An Apple Developer account with the **Associated Domains** capability enabled for the App ID.
 - A domain you control, served over HTTPS, hosting `apple-app-site-association`.
 
@@ -489,7 +489,7 @@ func buildKit() throws -> OZSmartAccountKit {
 ### Prerequisites
 
 - macOS 13.0+ (Ventura; the provider is gated `@available(iOS 16.0, macOS 13.0, *)`).
-- Xcode 14+.
+- Xcode 16+.
 - An Apple Developer account.
 - A domain you control, served over HTTPS, hosting `apple-app-site-association`.
 - Developer ID signing, App Store signing, **or** the App Sandbox entitlement — Associated Domains is ignored without one.

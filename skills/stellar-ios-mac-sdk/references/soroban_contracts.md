@@ -254,7 +254,8 @@ let val = try spec.nativeToXdrSCVal(val: 42, ty: .u32)  // SCValXDR.u32(42)
 
 | Spec type | Swift input | Notes |
 |-----------|-------------|-------|
-| `.address` | `String` (G... or C...) | Auto-converts to SCAddressXDR |
+| `.address` | `String` (G... or C...) or an account or contract `SCAddressXDR` | Auto-converts to SCAddressXDR |
+| `.muxedAddress` | `String` (G..., M..., C... or W...) or the matching `SCAddressXDR` | Auto-converts to SCAddressXDR |
 | `.u32`/`.i32`/`.u64`/`.i64` | `Int` | Negative Int throws for unsigned |
 | `.u128`/`.i128`/`.u256`/`.i256` | `Int`, `String`, or `Data` | Use `String` for values > Int.max |
 | `.string` | `String` | |
@@ -262,9 +263,11 @@ let val = try spec.nativeToXdrSCVal(val: 42, ty: .u32)  // SCValXDR.u32(42)
 | `.bool` | `Bool` | |
 | `.bytes` / `.bytesN` | `String` (UTF-8) or `Data` | |
 | `.vec(...)` | `[Any]` | Element type from spec |
-| `.map(...)` | `[AnyHashable: Any]` | Key/value types from spec |
+| `.map(...)` | `[AnyHashable: Any]` | Key/value types from spec; entries in host key order, keys equal in that order throw `StellarSDKError.invalidArgument` |
 | `.udt(name)` | dict (struct), `Int` (enum), `NativeUnionVal` (union) | See below |
-| Any `SCValXDR` | `SCValXDR` | Returned as-is (passthrough) |
+| Any type but `.udt` and `.void` | `SCValXDR` | Returned as-is (passthrough); `.option` applies the rule of its inner type |
+
+Any other address kind (B..., L...), a malformed string, an address that does not encode, and any other value type for an address parameter throw `ContractSpecError.invalidType`. A prebuilt `SCValXDR` passes through for every type except `.udt`, which converts the value by its definition, and `.void`, which accepts `nil` or `NSNull`; `.option` applies its inner type. `nil` is accepted only for `.void` and `.option` types.
 
 **NativeUnionVal — passing union arguments:**
 
@@ -285,7 +288,7 @@ Two methods turn a returned contract value into native Swift values:
 
 ```swift
 public func toNative() -> Any?          // SCValXDR: the whole value tree, never throws
-public func toStrKey() throws -> String // SCAddressXDR: the "G"/"M"/"C"/"B"/"L" strkey
+public func toStrKey() throws -> String // SCAddressXDR: the "G"/"M"/"C"/"B"/"L"/"W" strkey
 ```
 
 `toNative()` is opt-in -- `SorobanClient`, `AssembledTransaction` and the response types keep returning `SCValXDR`. It never throws: a value with no native counterpart comes back as the `SCValXDR` itself, which `is SCValXDR` detects.
@@ -348,8 +351,8 @@ import stellarsdk
 
 // A symbol-keyed map becomes a dictionary; look entries up by their key.
 let record = SCValXDR.map([
-    SCMapEntryXDR(key: SCValXDR.symbol("name"), val: SCValXDR.string("Alice")),
     SCMapEntryXDR(key: SCValXDR.symbol("age"), val: SCValXDR.u32(30)),
+    SCMapEntryXDR(key: SCValXDR.symbol("name"), val: SCValXDR.string("Alice")),
 ])
 if let fields = record.toNative() as? [AnyHashable: Any?] {
     print(fields.count)                     // 2
@@ -899,12 +902,12 @@ public struct SorobanDelegateDescriptor {
 
 Behavior:
 
-- `sign` handles all three address arms, preserves the arm on write-back, and stamps `signatureExpirationLedger` into the credentials before hashing. `forAddress: nil` signs the top-level node; a non-nil strkey routes the signature into every matching node (top-level or delegate, depth-first) and throws when no node matches.
-- `withDelegates` builds a `WITH_DELEGATES` entry from an `ADDRESS`/`ADDRESS_V2` entry: it sorts every delegate array by XDR-encoded address bytes (host requirement -- never sort by strkey), throws on within-array duplicates, copies address and nonce, stamps the expiration, and resets the top-level signature to `.void`.
+- `sign` handles all three address arms and preserves the arm on write-back. While no node of the entry carries a signature, an explicit `signatureExpirationLedger` is written into the credentials before hashing; `nil` keeps the stored value. Once a node carries a signature, only the stored value is accepted, and a different one throws `StellarSDKError.invalidArgument` naming both. `forAddress: nil` signs the top-level node; a non-nil strkey routes the signature into every matching node (top-level or delegate, depth-first) and throws when no node matches. Credential addresses and `forAddress` targets are account (`G...`) or contract (`C...`) addresses; a muxed address (`M...`, `W...`) throws `StellarSDKError.invalidArgument`.
+- `withDelegates` builds a `WITH_DELEGATES` entry from an `ADDRESS`/`ADDRESS_V2` entry. It sorts every delegate array by XDR-encoded address bytes (a host requirement; never sort by strkey) and throws on within-array duplicates. It copies address and nonce, stamps the expiration, and resets the top-level signature to `.void`. A muxed (`M...`, `W...`) credential or delegate address throws `StellarSDKError.invalidArgument`.
 - One payload per entry: every signer in the tree (top-level and delegates at any depth) signs the same hash, bound to the top-level credential address. Delegates carry no nonce and no expiration.
-- A void top-level signature is the legitimate delegates-only pattern; `signAndSend` treats a `WITH_DELEGATES` entry as satisfied when every delegate node carries a signature.
-- `needsNonInvokerSigningBy` reports the address of every node with a void signature, including each unsigned delegate node.
-- `signAuthEntries(signerKeyPair:)` matches the signer against the top-level address and all delegate nodes and routes signatures via `forAddress` internally.
+- A signature value of void or an empty vector is an unsigned placeholder; `SorobanAuthorizationEntryXDR.carriesSignature(_:)` exposes the check. `sign` and `signAndSend` throw `AssembledTransactionError.multipleSignersRequired` while an account node is unsigned, at the top level or in a delegate node at any depth. An unsigned contract node never stops them, because the contract's `__check_auth` decides which signatures it needs. An account authenticates with its own signatures, so a `G...` top level signs even when its delegates sign.
+- `needsNonInvokerSigningBy` reports the address of every node that carries no signature, the top level included: an account as its `G...` strkey, a contract as its 64-character lowercase hex id.
+- `signAuthEntries(signerKeyPair:)` matches the signer against the top-level address and all delegate nodes and routes signatures via `forAddress` internally. An entry that carries no signature gets `validUntilLedgerSeq`, or the latest ledger plus 100 when it is `nil`; an entry that carries one keeps its stored value, and a different `validUntilLedgerSeq` throws. The latest ledger is fetched at most once per call, and the transaction's entries are replaced only after every matching entry signed.
 - Simulation never returns `WITH_DELEGATES` entries; clients assemble the tree with `withDelegates`.
 
 ```swift
@@ -922,7 +925,7 @@ var delegated = try SorobanAuthorizationEntryXDR.withDelegates(
     expirationLedger: latestLedger.sequence + 100
 )
 
-// Top-level signature (optional: skip for the delegates-only pattern).
+// Top-level signature: the top-level address is an account, which authenticates with its own signature.
 // Multiple classical (G) signatures on one node must be added in ascending public-key order.
 try delegated.sign(signer: topLevelKeyPair, network: Network.testnet)
 

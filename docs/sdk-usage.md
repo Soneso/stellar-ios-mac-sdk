@@ -1099,7 +1099,8 @@ import stellarsdk
 let issuerKeyPair = try! KeyPair(accountId: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ")
 let usdAsset = Asset(type: AssetType.ASSET_TYPE_CREDIT_ALPHANUM4, code: "USD", issuer: issuerKeyPair)!
 
-// Create pool share asset (assets must be in lexicographic order)
+// Create pool share asset. The pair sorts by asset type (native first), then code,
+// then the issuer's raw 32-byte public key; a reversed pair throws StellarSDKError.invalidArgument
 let poolShareAsset = try! ChangeTrustAsset(assetA: Asset(type: AssetType.ASSET_TYPE_NATIVE)!, assetB: usdAsset)!
 
 // Establish trustline for pool shares
@@ -2690,7 +2691,8 @@ import stellarsdk
 let issuerKeyPair = try! KeyPair(accountId: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ")
 let usdAsset = Asset(type: AssetType.ASSET_TYPE_CREDIT_ALPHANUM4, code: "USD", issuer: issuerKeyPair)!
 
-// Create pool share asset (assets must be in lexicographic order)
+// Create pool share asset. The pair sorts by asset type (native first), then code,
+// then the issuer's raw 32-byte public key; a reversed pair throws StellarSDKError.invalidArgument
 let poolShareAsset = try! ChangeTrustAsset(assetA: Asset(type: AssetType.ASSET_TYPE_NATIVE)!, assetB: usdAsset)!
 ```
 

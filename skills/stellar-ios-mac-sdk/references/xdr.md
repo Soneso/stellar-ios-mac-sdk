@@ -209,6 +209,10 @@ import stellarsdk
 let accountAddr = SCValXDR.address(try SCAddressXDR(accountId: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ"))
 
 let contractAddr = SCValXDR.address(try SCAddressXDR(contractId: "CB3FU6M3TOAGRBLN5WDLXL6A7VR5SSRGULMXQQOABNMPS25YRJ4CN5VV"))
+
+// Muxed contract (W...): from the strkey, or from the contract ID and the 64-bit ID
+let muxedContractAddr = SCValXDR.address(try SCAddressXDR(muxedContractId: "WA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAAAAAAAAAPCIA6IG"))
+let sameMuxedContractAddr = SCValXDR.address(try SCAddressXDR(contractId: "CA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE", id: 123456))
 ```
 
 ### Collections
@@ -225,8 +229,8 @@ let vecVal = SCValXDR.vec([
 
 // Map
 let mapVal = SCValXDR.map([
-    SCMapEntryXDR(key: SCValXDR.symbol("name"), val: SCValXDR.string("Alice")),
-    SCMapEntryXDR(key: SCValXDR.symbol("age"), val: SCValXDR.u32(30))
+    SCMapEntryXDR(key: SCValXDR.symbol("age"), val: SCValXDR.u32(30)),
+    SCMapEntryXDR(key: SCValXDR.symbol("name"), val: SCValXDR.string("Alice"))
 ])
 
 // Special: ledger key for contract instance lookup

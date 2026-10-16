@@ -1430,6 +1430,8 @@ Accessed via `kit.multiSignerManager`. Collects signatures from a caller-supplie
 
 Signatures are collected sequentially in the order supplied via `selectedSigners`. Each `OZSelectedSigner.passkey(...)` triggers exactly one OS WebAuthn authentication prompt; each `OZSelectedSigner.wallet(...)` triggers exactly one external-wallet signing request; each `OZSelectedSigner.ed25519(...)` calls `OZExternalSignerManager.signEd25519AuthDigest(...)` using the signing source registered for that `(verifierAddress, publicKey)` pair. Sequential collection enables fail-fast behaviour on user cancellation. The connected passkey is NOT added implicitly — include it explicitly via `OZSelectedSigner.passkey(...)` when the connected passkey should sign.
 
+A muxed account (`M...`) or muxed contract (`W...`) wallet address in `selectedSigners` throws `SmartAccountValidationException.InvalidInput` before any signer is asked.
+
 #### multiSignerTransfer(...)
 
 ```swift
@@ -1632,7 +1634,7 @@ public func signAuthEntry(
 
 Signs a base64-encoded Soroban authorization preimage on behalf of the named signer. Keypair signers run an in-process Ed25519 sign; wallet signers delegate to the configured `walletAdapter`. Returns an `OZSignAuthEntryResult` containing the signature and (when available) the address that produced it.
 
-**Throws**: `SmartAccountSignerException.NotFound` when no signer matches the address; `SmartAccountTransactionException.SigningFailed` when signing fails.
+**Throws**: `SmartAccountSignerException.NotFound` when no signer matches the address; `SmartAccountTransactionException.SigningFailed` when `address` is a muxed account (`M...`) or muxed contract (`W...`) address or when signing fails.
 
 #### remove(address:)
 
@@ -3020,8 +3022,8 @@ public enum OZSmartAccountAuth {
 ```
 
 - `buildAuthDigest(signaturePayload:contextRuleIds:)` — computes `SHA-256(signaturePayload || contextRuleIds.toXDR())`.
-- `buildAuthPayloadHash(entry:expirationLedger:networkPassphrase:)` — computes the auth-payload hash that must be signed to authorize an entry with address credentials. The preimage envelope type follows the entry's credential arm: `HashIDPreimage::SorobanAuthorization` for the legacy `ADDRESS` arm; `HashIDPreimage::SorobanAuthorizationWithAddress` (protocol 27) for the `ADDRESS_V2` and `ADDRESS_WITH_DELEGATES` arms.
-- `buildSourceAccountAuthPayloadHash(entry:address:nonce:expirationLedger:networkPassphrase:useUpgradedAuth:)` — variant for source-account credentials, typically used when converting them to address credentials for relayer fee sponsoring. `address:` is required and must be the address carried by the credentials the resulting signature is attached to; the host reconstructs the preimage from the submitted credentials. `useUpgradedAuth:` selects the credential arm of the replacement credentials and with it the preimage envelope type: `true` (the default) builds `ADDRESS_V2` credentials and hashes the `HashIDPreimage::SorobanAuthorizationWithAddress` preimage; `false` builds the legacy `ADDRESS` arm and hashes the `HashIDPreimage::SorobanAuthorization` preimage, which carries no address.
+- `buildAuthPayloadHash(entry:expirationLedger:networkPassphrase:)`: computes the auth-payload hash that must be signed to authorize an entry with address credentials. The preimage envelope type follows the entry's credential arm: `HashIDPreimage::SorobanAuthorization` for the legacy `ADDRESS` arm; `HashIDPreimage::SorobanAuthorizationWithAddress` (protocol 27) for the `ADDRESS_V2` and `ADDRESS_WITH_DELEGATES` arms. An entry whose credential address is a muxed account (`M...`) or muxed contract (`W...`) address throws `SmartAccountTransactionException.SigningFailed`.
+- `buildSourceAccountAuthPayloadHash(entry:address:nonce:expirationLedger:networkPassphrase:useUpgradedAuth:)`: variant for source-account credentials, typically used when converting them to address credentials for relayer fee sponsoring. `address:` is required and must be the address carried by the credentials the resulting signature is attached to; the host reconstructs the preimage from the submitted credentials. A muxed account (`M...`) or muxed contract (`W...`) `address:` throws `SmartAccountTransactionException.SigningFailed`. `useUpgradedAuth:` selects the credential arm of the replacement credentials and with it the preimage envelope type: `true` (the default) builds `ADDRESS_V2` credentials and hashes the `HashIDPreimage::SorobanAuthorizationWithAddress` preimage; `false` builds the legacy `ADDRESS` arm and hashes the `HashIDPreimage::SorobanAuthorization` preimage, which carries no address.
 - `signAuthEntry(entry:signer:signature:expirationLedger:contextRuleIds:)` — attaches a pre-computed signature to an authorization entry. Does NOT perform cryptographic signing. Returns a fresh entry; when `contextRuleIds` is non-empty it overrides any existing identifiers in the payload.
 - `addRawSignatureMapEntry(entry:signerKey:signatureValue:contextRuleIds:)` — adds a raw key/value entry to the auth entry's signature map. Used for delegated-signer placeholders where the value is `Bytes` rather than a signature.
 

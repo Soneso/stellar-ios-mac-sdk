@@ -1,6 +1,6 @@
 # SEP-23: Strkey Encoding
 
-SEP-23 defines how Stellar encodes addresses between raw binary data and human-readable strings. Each address type starts with a specific letter -- account IDs start with "G", secret seeds with "S", muxed accounts with "M", contracts with "C", and so on.
+SEP-23 defines how Stellar encodes addresses between raw binary data and human-readable strings. Each address type starts with a specific letter: account IDs start with "G", secret seeds with "S", muxed accounts with "M", contracts with "C", and muxed contracts with "W". The [version bytes reference](#version-bytes-reference) lists every type.
 
 **When to use:** Validating user-entered addresses, converting between raw bytes and string representations, working with different key types, and creating muxed accounts for sub-account tracking.
 
@@ -292,6 +292,83 @@ print(cbXdr.paddedBalanceIdHex)
 // "00000000929b20b72e5890ab51c24f1cc46fa01c4f318d8d33367d24dd614cfd00000000"
 ```
 
+## Muxed contracts (W...)
+
+Muxed contract addresses (defined in [CAP-84](https://github.com/stellar/stellar-protocol/blob/master/core/cap-0084.md)) pair a contract with a 64-bit ID, the way a muxed account pairs an account with one. A W-address is valid for a `MuxedAddress` contract parameter and is never a Soroban authorization address.
+
+A muxed contract address combines:
+- A contract ID (C-address), the contract on the network
+- A 64-bit unsigned integer ID
+
+Its 40-byte payload is the 32-byte contract ID followed by the 8-byte big-endian ID, and the encoded address is 69 characters long.
+
+### Creating muxed contracts
+
+You can create a muxed contract by combining a C-address with a numeric ID, or by parsing a W-address string.
+
+```swift
+import stellarsdk
+
+let contractId = "CA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE"
+let userId: UInt64 = 123456
+
+// Create a muxed contract from a C-address and an ID
+let muxedContract = try MuxedContract(contractId: contractId, id: userId)
+print(muxedContract.address)
+// WA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAAAAAAAAAPCIA6IG
+
+// Parse an existing W-address
+let parsedMuxed = try MuxedContract(
+    address: "WA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAAAAAAAAWWC"
+)
+```
+
+### Extracting muxed contract components
+
+When you receive a W-address, you can extract both the underlying C-address and the numeric ID.
+
+```swift
+import stellarsdk
+
+let muxedContractAddress =
+    "WA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAAAAAAAAAPCIA6IG"
+
+let muxedContract = try MuxedContract(address: muxedContractAddress)
+
+// Get the underlying C-address (the contract on the network)
+print("Contract: \(muxedContract.contractId)")
+// Contract: CA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE
+
+// Get the 64-bit ID
+let id: UInt64? = muxedContract.id
+print("ID: \(id ?? 0)") // ID: 123456
+
+// A C-address parses too: its id is nil and address is the C-address itself
+let plainContract = try MuxedContract(address: muxedContract.contractId)
+print(plainContract.id == nil) // true
+```
+
+### Low-level muxed contract encoding
+
+For direct manipulation of the 40-byte payload, use the String and Data extension methods.
+
+```swift
+import stellarsdk
+import Foundation
+
+let muxedContractAddress =
+    "WA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAAAAAAAAAPCIA6IG"
+
+// Validate W-address format
+muxedContractAddress.isValidMuxedContractId() // true
+
+// Decode to the 40-byte payload: the contract ID, then the big-endian ID
+let rawData: Data = try muxedContractAddress.decodeMuxedContractId()
+
+// Encode the payload back to a W-address
+let encoded: String = try rawData.encodeMuxedContractId()
+```
+
 ## Version bytes reference
 
 Each strkey type has a unique version byte that determines its prefix character:
@@ -305,6 +382,7 @@ Each strkey type has a unique version byte that determines its prefix character:
 | X | SHA-256 Hash | Hash signer |
 | P | Signed Payload | Public key + payload |
 | C | Contract ID | Soroban smart contract |
+| W | Muxed Contract | Contract ID + 64-bit ID |
 | L | Liquidity Pool ID | AMM liquidity pool |
 | B | Claimable Balance | Claimable balance entry |
 
@@ -382,7 +460,7 @@ do {
 
 A strkey is rejected when any of these does not hold:
 
-- **Encoded length**: exactly 56 characters for G, S, T, X, C and L, 69 for M, 58 for B, and 69 to 165 for P
+- **Encoded length**: exactly 56 characters for G, S, T, X, C and L, 69 for M and W, 58 for B, and 69 to 165 for P
 - **Base32 characters**: only A-Z and 2-7, and the string must be the canonical encoding of the bytes it decodes to
 - **Padding**: strkeys carry no `=` padding characters
 - **Version byte**: the leading byte must be the one the requested type uses
@@ -390,7 +468,7 @@ A strkey is rejected when any of these does not hold:
 - **Signed payload framing** (P): the body is the 32-byte signer key, a 4-byte big-endian length field naming 1 to 64 bytes of signed data, that signed data, and zero padding up to a multiple of four bytes. The body must be exactly 36 bytes plus the padded width of the signed data, and every padding byte must be zero
 - **Claimable balance discriminant** (B): the body must open with `CLAIMABLE_BALANCE_ID_TYPE_V0` (byte `0x00`), the only type the XDR union defines
 
-The encoders enforce the same rules on the bytes you hand them, so anything they accept decodes back. `Data.encodeSignedPayload()` requires the framing above, while `Data.encodeClaimableBalanceId()` takes the bare 32-byte id, putting the discriminant in front of it, the 33-byte body that already opens with it, or the 36-byte XDR encoding Horizon reports, whose four-byte union discriminant it verifies and strips. `Signer.signedPayload(accountId:payload:)` takes 1 to 64 bytes of payload. The fixed-width encoders -- `encodeEd25519PublicKey()`, `encodeEd25519SecretSeed()`, `encodePreAuthTx()`, `encodeSha256Hash()`, `encodeContractId()` and `encodeLiquidityPoolId()` at 32 bytes, `encodeMEd25519AccountId()` at 40 -- take that width and nothing else. All of them throw `StellarSDKError.invalidArgument`.
+The encoders enforce the same rules on the bytes you hand them, so anything they accept decodes back. `Data.encodeSignedPayload()` requires the signed payload framing. `Data.encodeClaimableBalanceId()` takes the bare 32-byte id and puts the discriminant in front of it. It also takes the 33-byte body that already opens with the discriminant, or the 36-byte XDR encoding Horizon reports, whose four-byte union discriminant it verifies and strips. `Signer.signedPayload(accountId:payload:)` takes 1 to 64 bytes of payload. The fixed-width encoders take their width and nothing else: `encodeEd25519PublicKey()`, `encodeEd25519SecretSeed()`, `encodePreAuthTx()`, `encodeSha256Hash()`, `encodeContractId()` and `encodeLiquidityPoolId()` take 32 bytes, `encodeMEd25519AccountId()` and `encodeMuxedContractId()` take 40. All of them throw `StellarSDKError.invalidArgument`.
 
 ```swift
 import stellarsdk

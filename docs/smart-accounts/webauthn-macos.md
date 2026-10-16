@@ -5,7 +5,7 @@ Platform-specific guide for configuring WebAuthn passkey authentication in macOS
 ## Prerequisites
 
 - macOS 13.0+ (Ventura; the underlying `ASAuthorizationPlatformPublicKeyCredentialProvider` API is gated `@available(macOS 13.0, *)`).
-- Xcode 14+.
+- Xcode 16+.
 - An Apple Developer account.
 - A domain you control over HTTPS for hosting `apple-app-site-association`.
 - Developer ID signing, App Store signing, or the App Sandbox entitlement for Associated Domains.

@@ -97,9 +97,12 @@ if case .string(let minTime)? = tree.member("min_time") {
 | optional | `null` or the value; **the key stays present** |
 | `AccountID`, `PublicKey`, `NodeID` | `G…` strkey |
 | `MuxedAccount` | `G…` or `M…` |
+| `SCAddress` | `G…` / `M…` / `C…` / `B…` / `L…` / `W…`, by address kind |
+| `MuxedContract` | `W…` |
 | `ContractID` / `PoolID` / `ClaimableBalanceID` | `C…` / `L…` / `B…` |
 | `SignerKey` | `G…` / `T…` / `X…` / `P…` |
 | `AssetCode4` / `AssetCode12` | trailing NULs trimmed, then escaped |
+| `AssetCode12` | at least five bytes kept: code `ABC` is the string `ABC\0\0`, JSON text `"ABC\\0\\0"`; input must unescape to 5 to 12 bytes |
 | `Int128Parts` and the other three parts types | one base-10 decimal string |
 | `$schema` | accepted on input, stripped, never emitted |
 
@@ -107,7 +110,7 @@ if case .string(let minTime)? = tree.member("min_time") {
 
 Some XDR definitions share a Swift type and render differently, so the shared type carries no conversion.
 
-**Collapsed typedefs** get a codec namespace instead. There are 29, each named `<TypeName>JsonCodec` with the same five operations as a free function taking the value:
+**Collapsed typedefs** get a codec namespace instead, one per collapsed typedef, each named `<TypeName>JsonCodec` with the same five operations as a free function taking the value:
 
 ```swift
 import stellarsdk
@@ -150,10 +153,12 @@ Rejected: uppercase or mixed-case hex, uppercase `\XNN` escapes, unrecognised es
 
 A field named `type` is emitted as `type` and also accepts the alias `type_`. Supplying both is a duplicate key.
 
+Shared with the reference: a twelve-byte asset code string must unescape to five to twelve bytes. Reading the JSON text `"ABC"` raises `invalidValue` (`Alpha12XDR.asset_code: expected 5 to 12 bytes, got 3`); write `"ABC\\0\\0"`.
+
 ## Limitations
 
 - **Non-UTF-8 strings.** Every XDR `string<>` is a Swift `String`, so a value carrying invalid UTF-8 cannot be held by the SDK at all. Opaque fields are `Data` and are byte-exact.
-- **Zero-length signed payloads.** A `SignerKey` of type `ED25519_SIGNED_PAYLOAD` with an empty payload raises `unrepresentable`: no `P…` strkey the ecosystem accepts encodes it. One byte and longer convert normally.
+- **Zero-length signed payloads.** A `SignerKey` of type `ED25519_SIGNED_PAYLOAD` with an empty payload raises `unrepresentable` on conversion to XDR-JSON: no `P…` strkey the ecosystem accepts encodes it. On input, a `P…` strkey with an empty payload fails the strkey decode and raises `invalidValue` (`Ed25519SignedPayload: not a signed payload strkey: P…`). The reference renders the value as `<INVALID:G…:EMPTY_PAYLOAD>` and refuses to encode that text back. One byte and longer convert normally.
 
 ## Divergences from the reference implementation
 
