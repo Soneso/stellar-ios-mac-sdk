@@ -67,7 +67,8 @@ private func makeTestEntry(
     expirationLedger: UInt32,
     functionName: String = "hello",
     args: [SCValXDR] = [.u64(1234)],
-    credentialArm: CredentialArm = .legacy
+    credentialArm: CredentialArm = .legacy,
+    signature: SCValXDR = .void
 ) throws -> SorobanAuthorizationEntryXDR {
     let credsAddr = try scAddressXDR(fromStrkey: credentialsAddress)
     let contractAddress = try SCAddressXDR(contractId: invocationContractId)
@@ -83,7 +84,7 @@ private func makeTestEntry(
         address: credsAddr,
         nonce: nonce,
         signatureExpirationLedger: expirationLedger,
-        signature: .void
+        signature: signature
     )
     let credentials: SorobanCredentialsXDR
     switch credentialArm {
@@ -856,6 +857,56 @@ final class SorobanP27AuthUnitTests: XCTestCase {
                 return XCTFail("expected invalidArgument, got \(error)")
             }
             XCTAssertTrue(message.contains("maximum allowed depth (128)"), message)
+        }
+    }
+
+    /// Void and an empty vector, with or without its list, are unsigned placeholders; every
+    /// other value carries a signature.
+    func testCarriesSignatureClassifiesPlaceholders() throws {
+        for placeholder in [SCValXDR.void, .vec([]), .vec(nil)] {
+            XCTAssertFalse(SorobanAuthorizationEntryXDR.carriesSignature(placeholder), "\(placeholder)")
+        }
+        let signer = try KeyPair(secretSeed: GoldenVectors.signerSeed)
+        let ed25519 = SCValXDR(accountEd25519Signature: AccountEd25519Signature(
+            publicKey: signer.publicKey, signature: [UInt8](repeating: 7, count: 64)))
+        let map = SCValXDR.map([SCMapEntryXDR(key: .symbol("k"), val: .u32(1))])
+        for signature in [SCValXDR.vec([.u32(1)]), .vec([ed25519]), .bytes(Data([1])), map] {
+            XCTAssertTrue(SorobanAuthorizationEntryXDR.carriesSignature(signature), "\(signature)")
+        }
+    }
+
+    /// `true` when `signature` is a one-element vector whose element is `signer`'s ed25519
+    /// signature over the payload hash of `entry`.
+    private func holdsOneVerifyingSignature(_ signature: SCValXDR, signer: KeyPair,
+                                            entry: SorobanAuthorizationEntryXDR) throws -> Bool {
+        let elements = try XCTUnwrap(signature.vec)
+        guard elements.count == 1, let fields = elements[0].map,
+              fields.first(where: { $0.key.symbol == "public_key" })?.val.bytes == Data(signer.publicKey.bytes),
+              let sigBytes = fields.first(where: { $0.key.symbol == "signature" })?.val.bytes else {
+            return false
+        }
+        let payload = Data(try XDREncoder.encode(try entry.buildPreimage(network: GoldenVectors.network))).sha256Hash
+        return try signer.verify(signature: [UInt8](sigBytes), message: [UInt8](payload))
+    }
+
+    /// The unsigned entry js-stellar-sdk builds, an empty signature vector with expiration 0,
+    /// takes an explicit expiration in both address arms.
+    func testSignPlaceholderEntryTakesExplicitExpiration() throws {
+        let signer = try KeyPair(secretSeed: GoldenVectors.signerSeed)
+        for arm in [CredentialArm.legacy, .v2] {
+            var entry = try makeTestEntry(
+                credentialsAddress: GoldenVectors.signerAccountId,
+                invocationContractId: GoldenVectors.contractId,
+                nonce: GoldenVectors.nonce,
+                expirationLedger: 0,
+                credentialArm: arm,
+                signature: .vec([])
+            )
+            try entry.sign(signer: signer, network: GoldenVectors.network, signatureExpirationLedger: 500)
+
+            let creds = try XCTUnwrap(entry.credentials.addressCredentials)
+            XCTAssertEqual(creds.signatureExpirationLedger, 500, "\(arm)")
+            XCTAssertTrue(try holdsOneVerifyingSignature(creds.signature, signer: signer, entry: entry), "\(arm)")
         }
     }
 

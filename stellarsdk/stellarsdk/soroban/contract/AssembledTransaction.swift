@@ -291,6 +291,9 @@ public final class AssembledTransaction: @unchecked Sendable {
     }
 
     /// Signs the transaction envelope with the source account keypair.
+    ///
+    /// - Throws: `AssembledTransactionError.multipleSignersRequired` while an account address
+    ///   that `needsNonInvokerSigningBy()` reports carries no signature.
     public func sign(sourceAccountKeyPair:KeyPair? = nil, force:Bool = false) throws {
         if tx == nil {
             throw AssembledTransactionError.notYetSimulated(message: "Transaction has not yet been simulated")
@@ -305,14 +308,8 @@ public final class AssembledTransaction: @unchecked Sendable {
             throw AssembledTransactionError.missingPrivateKey(message: "Source account keypair has no private key, but needed for signing.")
         }
         
-        let allNeededSigners = try needsNonInvokerSigningBy()
-        // Filter out top-level addresses of WITH_DELEGATES entries where every delegate
-        // node already carries a signature: the void top-level is the legitimate
-        // delegates-only pattern and must not block the send flow.
-        let unsatisfiedSigners = allNeededSigners.filter { address in
-            !address.starts(with: "C") && !isTopLevelVoidCoveredByDelegates(address: address)
-        }
-        if !unsatisfiedSigners.isEmpty {
+        // Only unsigned accounts block; a contract's `__check_auth` decides what it needs.
+        if try unsignedAuthNodeAddresses(includeAlreadySigned: false).contains(where: { $0.accountId != nil }) {
             throw AssembledTransactionError.multipleSignersRequired(message: "Transaction requires signatures from multiple signers. See `needsNonInvokerSigningBy` for details.")
         }
 
@@ -363,25 +360,31 @@ public final class AssembledTransaction: @unchecked Sendable {
 
     }
 
-    /// Returns the addresses of every node whose signature is void, across all authorization entries.
+    /// Returns the addresses of every node that carries no signature
+    /// (`SorobanAuthorizationEntryXDR.carriesSignature(_:)`), across all authorization entries.
     ///
     /// **All three credential arms are supported** (`ADDRESS`, `ADDRESS_V2`,
-    /// `ADDRESS_WITH_DELEGATES`). For `WITH_DELEGATES` entries, the top-level address and
-    /// every unsigned delegate node (depth-first) are reported individually. A top-level
-    /// signature alongside delegates is a legal pattern, so the top-level address is always
-    /// included when its signature is void, even when delegates are present.
+    /// `ADDRESS_WITH_DELEGATES`). For `WITH_DELEGATES` entries, the top-level node and every
+    /// delegate node (depth-first) are reported individually; an unsigned top level is
+    /// reported whatever its delegate nodes carry.
     ///
-    /// **`WITH_DELEGATES` send precheck**: `sign()` and `signAndSend()` treat a
-    /// `WITH_DELEGATES` entry as satisfied when every delegate node in the tree carries a
-    /// non-void signature, regardless of the void top-level. Do not block the send flow
-    /// solely because this method reports the top-level address of a fully-delegate-signed
-    /// entry.
+    /// `sign()` and `signAndSend()` throw `AssembledTransactionError.multipleSignersRequired`
+    /// while a reported node is an account address. Contract addresses never block them,
+    /// because the contract's `__check_auth` decides which signatures it needs.
     ///
     /// `.sourceAccount` entries are ignored (they carry no explicit signer address).
     ///
-    /// - Parameter includeAlreadySigned: When `true`, includes addresses whose signature is
-    ///   non-void. Defaults to `false`.
+    /// - Parameter includeAlreadySigned: When `true`, also includes the nodes that carry a
+    ///   signature. Defaults to `false`.
     public func needsNonInvokerSigningBy(includeAlreadySigned: Bool = false) throws -> [String] {
+        return try unsignedAuthNodeAddresses(includeAlreadySigned: includeAlreadySigned)
+            .compactMap { $0.accountId ?? $0.contractId }
+    }
+
+    /// The address of every node that carries no signature, or of every node when
+    /// `includeAlreadySigned` is true: entry by entry, each top-level node before its
+    /// delegate nodes, which follow depth-first.
+    private func unsignedAuthNodeAddresses(includeAlreadySigned: Bool) throws -> [SCAddressXDR] {
         guard let transaction = tx else {
             throw AssembledTransactionError.notYetSimulated(message: "Transaction has not yet been simulated")
         }
@@ -389,7 +392,7 @@ public final class AssembledTransaction: @unchecked Sendable {
         if ops.isEmpty {
             throw AssembledTransactionError.unexpectedTxType(message: "Unexpected Transaction type; no operations found.")
         }
-        var needed: [String] = []
+        var needed: [SCAddressXDR] = []
         guard let invokeHostFuncOp = ops.first as? InvokeHostFunctionOperation else {
             return needed
         }
@@ -400,19 +403,13 @@ public final class AssembledTransaction: @unchecked Sendable {
                 // Source-account entries do not carry an explicit signer address.
                 break
             case .address(let creds), .addressV2(let creds):
-                if includeAlreadySigned || creds.signature.type() == SCValType.void.rawValue {
-                    if let signer = creds.address.accountId ?? creds.address.contractId {
-                        needed.append(signer)
-                    }
+                if includeAlreadySigned || !SorobanAuthorizationEntryXDR.carriesSignature(creds.signature) {
+                    needed.append(creds.address)
                 }
             case .addressWithDelegates(let withDelegates):
                 let creds = withDelegates.addressCredentials
-                // Top-level node: always report when void (top-level signature alongside
-                // delegates is legal; the caller decides which nodes to sign).
-                if includeAlreadySigned || creds.signature.type() == SCValType.void.rawValue {
-                    if let signer = creds.address.accountId ?? creds.address.contractId {
-                        needed.append(signer)
-                    }
+                if includeAlreadySigned || !SorobanAuthorizationEntryXDR.carriesSignature(creds.signature) {
+                    needed.append(creds.address)
                 }
                 // Delegate nodes: depth-first.
                 try collectUnsignedDelegates(nodes: withDelegates.delegates, into: &needed, includeAlreadySigned: includeAlreadySigned)
@@ -421,13 +418,13 @@ public final class AssembledTransaction: @unchecked Sendable {
         return needed
     }
 
-    /// Recursively collects the strkey addresses of unsigned (or all, when
-    /// `includeAlreadySigned` is true) delegate nodes into `result`.
+    /// Recursively collects the addresses of the delegate nodes that carry no signature (or
+    /// of all, when `includeAlreadySigned` is true) into `result`.
     ///
     /// - Throws: `StellarSDKError.invalidArgument` when nesting exceeds 128 levels.
     private func collectUnsignedDelegates(
         nodes: [SorobanDelegateSignatureXDR],
-        into result: inout [String],
+        into result: inout [SCAddressXDR],
         includeAlreadySigned: Bool,
         depth: Int = 0
     ) throws {
@@ -437,10 +434,8 @@ public final class AssembledTransaction: @unchecked Sendable {
             )
         }
         for node in nodes {
-            if includeAlreadySigned || node.signature.type() == SCValType.void.rawValue {
-                if let signer = node.address.accountId ?? node.address.contractId {
-                    result.append(signer)
-                }
+            if includeAlreadySigned || !SorobanAuthorizationEntryXDR.carriesSignature(node.signature) {
+                result.append(node.address)
             }
             try collectUnsignedDelegates(nodes: node.nestedDelegates, into: &result, includeAlreadySigned: includeAlreadySigned, depth: depth + 1)
         }
@@ -507,6 +502,7 @@ public final class AssembledTransaction: @unchecked Sendable {
     /// `StellarSDKError.invalidArgument`. Otherwise the entry gets `validUntilLedgerSeq`,
     /// or the latest ledger + 100 when it is `nil`; the latest ledger is fetched at most
     /// once per call, and only when an entry needs it.
+    /// `SorobanAuthorizationEntryXDR.carriesSignature(_:)` decides whether a node carries one.
     ///
     /// The transaction's auth entries are replaced only after every matching entry is
     /// signed; on any error the transaction keeps the entries it had.
@@ -591,40 +587,6 @@ public final class AssembledTransaction: @unchecked Sendable {
         case .failure(let error):
             throw error
         }
-    }
-
-    /// Returns `true` when a `WITH_DELEGATES` entry's top-level address is void but every
-    /// delegate node in the tree carries a non-void signature.
-    ///
-    /// This is the legitimate delegates-only pattern: the top-level signer opted out and
-    /// all delegates have signed. The send precheck must not block on such an entry.
-    private func isTopLevelVoidCoveredByDelegates(address: String) -> Bool {
-        guard let transaction = tx else { return false }
-        guard let invokeHostFuncOp = transaction.operations.first as? InvokeHostFunctionOperation else { return false }
-
-        for entry in invokeHostFuncOp.auth {
-            guard case .addressWithDelegates(let withDelegates) = entry.credentials else { continue }
-            let creds = withDelegates.addressCredentials
-            guard creds.address.accountId == address else { continue }
-            // Only applicable when the top-level is void.
-            guard creds.signature.type() == SCValType.void.rawValue else { continue }
-            // Entry is covered when it has at least one delegate and all are signed.
-            if !withDelegates.delegates.isEmpty && allDelegatesSigned(nodes: withDelegates.delegates) {
-                return true
-            }
-        }
-        return false
-    }
-
-    /// Returns `true` when every delegate node in the tree (depth-first) carries a non-void
-    /// signature. Returns `false` when nesting exceeds 128 levels (treated as unsigned).
-    private func allDelegatesSigned(nodes: [SorobanDelegateSignatureXDR], depth: Int = 0) -> Bool {
-        guard depth <= 128 else { return false }
-        for node in nodes {
-            if node.signature.type() == SCValType.void.rawValue { return false }
-            if !allDelegatesSigned(nodes: node.nestedDelegates, depth: depth + 1) { return false }
-        }
-        return true
     }
 
     /// Returns `true` when any node in the delegate tree has the given account ID.

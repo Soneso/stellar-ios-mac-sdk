@@ -222,23 +222,26 @@ final class AssembledTransactionP27UnitTests: XCTestCase {
         XCTAssertTrue(signers.contains(delegateKeyPair.accountId), "Unsigned delegate must appear")
     }
 
-    // MARK: - send precheck: WITH_DELEGATES delegates-only pattern must not block
+    // MARK: - send precheck: an unsigned account blocks whatever its delegates carry
 
-    /// When a WITH_DELEGATES entry has a void top-level but all delegates are signed,
-    /// sign() must not throw multipleSignersRequired.
-    func testSign_withDelegatesFullySigned_doesNotBlock() throws {
-        let entry = try makeWithDelegatesEntry(
-            topLevelKeyPair: keyPair,
+    /// An account authenticates with its own signatures, so a WITH_DELEGATES entry whose
+    /// void top-level account has a signed delegate makes sign() throw multipleSignersRequired.
+    func testSign_withDelegatesTopLevelAccountUnsigned_blocks() throws {
+        let topLevel = try makeCosigner()
+        var entry = try makeWithDelegatesEntry(
+            topLevelKeyPair: topLevel,
             delegateKeyPair: delegateKeyPair,
-            topLevelSigned: false,  // void top-level (delegates-only pattern)
-            delegateSigned: true    // all delegates signed
+            topLevelSigned: false,
+            delegateSigned: false
         )
+        // The delegate signs its own node; the top-level signature stays void.
+        try entry.sign(signer: delegateKeyPair, network: network, forAddress: delegateKeyPair.accountId)
         let tx = try makeTransactionWithEntry(entry)
         let at = makeAssembledTransaction(tx: tx)
         at.simulationResponse = makeWriteCallSimResponse(authEntries: [entry])
 
-        // Must not throw multipleSignersRequired despite the void top-level.
-        XCTAssertNoThrow(try at.sign(force: true))
+        XCTAssertEqual(try at.needsNonInvokerSigningBy(), [topLevel.accountId])
+        assertSignBlocks(at)
     }
 
     /// When a WITH_DELEGATES entry has unsigned delegates, sign() must block.
@@ -497,28 +500,44 @@ final class AssembledTransactionP27UnitTests: XCTestCase {
             address: delegateKeyPair.accountId,
             signature: delegateSig
         )
-        let sourceEntry = try makeAddressV2Entry(keyPair: topLevelKeyPair)
-        var entry = try SorobanAuthorizationEntryXDR.withDelegates(
-            entry: sourceEntry,
-            delegates: [descriptor],
-            expirationLedger: 1_000_000
+        return try makeWithDelegatesEntry(
+            topLevel: try SCAddressXDR(accountId: topLevelKeyPair.accountId),
+            topLevelSignature: topLevelSigned ? makeMockSignatureVec() : SCValXDR.void,
+            delegates: [descriptor]
         )
-        if topLevelSigned {
-            // Stamp a mock signature into the top-level credentials.
-            if case .addressWithDelegates(var wd) = entry.credentials {
-                wd.addressCredentials.signature = makeMockSignatureVec()
-                entry.credentials = .addressWithDelegates(wd)
-            }
+    }
+
+    private func makeWithDelegatesEntry(
+        topLevel: SCAddressXDR,
+        topLevelSignature: SCValXDR,
+        delegates: [SorobanDelegateDescriptor],
+        expirationLedger: UInt32 = 1_000_000
+    ) throws -> SorobanAuthorizationEntryXDR {
+        var entry = try SorobanAuthorizationEntryXDR.withDelegates(
+            entry: try makeAddressV2Entry(address: topLevel),
+            delegates: delegates,
+            expirationLedger: expirationLedger
+        )
+        if case .addressWithDelegates(var wd) = entry.credentials {
+            wd.addressCredentials.signature = topLevelSignature
+            entry.credentials = .addressWithDelegates(wd)
         }
         return entry
     }
 
-    private func makeAddressV2Entry(keyPair: KeyPair) throws -> SorobanAuthorizationEntryXDR {
+    private func makeAddressV2Entry(keyPair: KeyPair, signature: SCValXDR = .void,
+                                    expirationLedger: UInt32 = 0) throws -> SorobanAuthorizationEntryXDR {
+        return try makeAddressV2Entry(address: try SCAddressXDR(accountId: keyPair.accountId),
+                                      signature: signature, expirationLedger: expirationLedger)
+    }
+
+    private func makeAddressV2Entry(address: SCAddressXDR, signature: SCValXDR = .void,
+                                    expirationLedger: UInt32 = 0) throws -> SorobanAuthorizationEntryXDR {
         let creds = SorobanAddressCredentialsXDR(
-            address: try SCAddressXDR(accountId: keyPair.accountId),
+            address: address,
             nonce: 1,
-            signatureExpirationLedger: 0,
-            signature: SCValXDR.void
+            signatureExpirationLedger: expirationLedger,
+            signature: signature
         )
         return SorobanAuthorizationEntryXDR(
             credentials: SorobanCredentialsXDR.addressV2(creds),
@@ -1533,5 +1552,257 @@ final class AssembledTransactionP27UnitTests: XCTestCase {
         XCTAssertEqual(creds.signatureExpirationLedger, 3000)
         XCTAssertTrue(try verifies(creds.signature, signer: keyPair, entry: entry))
         XCTAssertTrue(try verifies(creds.signature, signer: cosigner, entry: entry))
+    }
+
+    // MARK: - Placeholder signatures: void and an empty vector are unsigned
+
+    /// The unsigned entry js-stellar-sdk builds for `keyPair`: an empty signature vector and
+    /// expiration 0.
+    private func makePlaceholderEntry(arm: AddressArm, keyPair: KeyPair) throws -> SorobanAuthorizationEntryXDR {
+        var entry = try makeAddressV2Entry(keyPair: keyPair, signature: .vec([]))
+        if arm == .address {
+            entry.credentials = .address(try XCTUnwrap(entry.credentials.addressCredentials))
+        }
+        return entry
+    }
+
+    /// A placeholder entry is listed and blocks sign() until its account signs it with the
+    /// default expiration, in both address arms.
+    func testPlaceholderEntry_unsignedUntilSignedWithDefaultExpiration() async throws {
+        let stub = stubLatestLedger()
+        let cosigner = try makeCosigner()
+        for arm in [AddressArm.address, .addressV2] {
+            let entry = try makePlaceholderEntry(arm: arm, keyPair: cosigner)
+            let at = makeAssembledTransaction(tx: try makeTransactionWithEntry(entry))
+            at.simulationResponse = makeWriteCallSimResponse(authEntries: [entry])
+            XCTAssertEqual(try at.needsNonInvokerSigningBy(), [cosigner.accountId], "\(arm)")
+            assertSignBlocks(at)
+
+            let requestsBefore = stub.requestCount
+            try await at.signAuthEntries(signerKeyPair: cosigner)
+
+            let signed = try XCTUnwrap(try authEntries(at).first)
+            let creds = try XCTUnwrap(signed.credentials.addressCredentials)
+            XCTAssertEqual(creds.signatureExpirationLedger, 2100, "\(arm)")
+            XCTAssertEqual(stub.requestCount, requestsBefore + 1, "\(arm)")
+            XCTAssertEqual(creds.signature.vec?.count, 1, "\(arm)")
+            XCTAssertTrue(try verifies(creds.signature, signer: cosigner, entry: signed), "\(arm)")
+            XCTAssertEqual(try at.needsNonInvokerSigningBy(), [], "\(arm)")
+            try at.sign()
+            XCTAssertNotNil(at.signed, "\(arm)")
+        }
+    }
+
+    /// A placeholder entry takes an explicit expiration without a ledger fetch, in both
+    /// address arms.
+    func testPlaceholderEntry_takesExplicitExpiration() async throws {
+        let stub = stubLatestLedger()
+        let cosigner = try makeCosigner()
+        for arm in [AddressArm.address, .addressV2] {
+            let entry = try makePlaceholderEntry(arm: arm, keyPair: cosigner)
+            let at = makeAssembledTransaction(tx: try makeTransactionWithEntry(entry))
+            try await at.signAuthEntries(signerKeyPair: cosigner, validUntilLedgerSeq: 500)
+
+            let signed = try XCTUnwrap(try authEntries(at).first)
+            let creds = try XCTUnwrap(signed.credentials.addressCredentials)
+            XCTAssertEqual(creds.signatureExpirationLedger, 500, "\(arm)")
+            XCTAssertEqual(creds.signature.vec?.count, 1, "\(arm)")
+            XCTAssertTrue(try verifies(creds.signature, signer: cosigner, entry: signed), "\(arm)")
+        }
+        XCTAssertEqual(stub.requestCount, 0)
+    }
+
+    /// A custom account contract entry whose top level and account delegate carry the
+    /// placeholder takes an explicit expiration for the delegate's signature, through
+    /// signAuthEntries and through the entry's sign.
+    func testPlaceholderDelegate_takesExplicitExpiration() async throws {
+        let stub = stubLatestLedger()
+        let delegate = try makeCosigner()
+        let contract = try SCAddressXDR(contractId: mockContractId)
+        let entry = try makeWithDelegatesEntry(
+            topLevel: contract,
+            topLevelSignature: .vec([]),
+            delegates: [SorobanDelegateDescriptor(address: delegate.accountId, signature: .vec([]))],
+            expirationLedger: 0
+        )
+        let at = makeAssembledTransaction(tx: try makeTransactionWithEntry(entry))
+        XCTAssertEqual(try at.needsNonInvokerSigningBy(), [try XCTUnwrap(contract.contractId), delegate.accountId])
+
+        try await at.signAuthEntries(signerKeyPair: delegate, validUntilLedgerSeq: 500)
+
+        let signed = try XCTUnwrap(try authEntries(at).first)
+        guard case .addressWithDelegates(let withDelegates) = signed.credentials else {
+            return XCTFail("expected WITH_DELEGATES credentials")
+        }
+        let delegateSignature = try XCTUnwrap(withDelegates.delegates.first).signature
+        XCTAssertEqual(withDelegates.addressCredentials.signatureExpirationLedger, 500)
+        XCTAssertEqual(delegateSignature.vec?.count, 1)
+        XCTAssertTrue(try verifies(delegateSignature, signer: delegate, entry: signed))
+        XCTAssertEqual(stub.requestCount, 0)
+
+        var entrySigned = entry
+        try entrySigned.sign(signer: delegate, network: network, signatureExpirationLedger: 500,
+                             forAddress: delegate.accountId)
+        XCTAssertEqual(entrySigned.xdrEncoded, signed.xdrEncoded)
+    }
+
+    /// A bytes value and a one-element vector at the top level carry a signature: the account
+    /// is not listed, and an explicit different expiration throws naming both values.
+    func testNonEmptySignatureValues_countAsSigned() async throws {
+        let stub = stubLatestLedger()
+        let cosigner = try makeCosigner()
+        for signature in [SCValXDR.bytes(Data([1])), makeMockSignatureVec()] {
+            let entry = try makeAddressV2Entry(keyPair: cosigner, signature: signature, expirationLedger: 1_000_000)
+            let at = makeAssembledTransaction(tx: try makeTransactionWithEntry(entry))
+            XCTAssertEqual(try at.needsNonInvokerSigningBy(), [], "\(signature)")
+            do {
+                try await at.signAuthEntries(signerKeyPair: cosigner, validUntilLedgerSeq: 500)
+                XCTFail("expected an expiration conflict for \(signature)")
+            } catch StellarSDKError.invalidArgument(let message) {
+                XCTAssertTrue(message.contains("1000000") && message.contains("500"), message)
+            }
+        }
+        XCTAssertEqual(stub.requestCount, 0)
+    }
+
+    // MARK: - send precheck: unsigned accounts block, contracts never do
+
+    /// Asserts that sign() throws multipleSignersRequired and leaves `signed` unset.
+    private func assertSignBlocks(_ at: AssembledTransaction, file: StaticString = #filePath, line: UInt = #line) {
+        XCTAssertThrowsError(try at.sign(), file: file, line: line) { error in
+            guard case AssembledTransactionError.multipleSignersRequired = error else {
+                return XCTFail("expected multipleSignersRequired, got \(error)", file: file, line: line)
+            }
+        }
+        XCTAssertNil(at.signed, file: file, line: line)
+    }
+
+    /// The placeholder at an account's top level blocks although its delegate signed.
+    func testSign_placeholderTopLevelAccountWithSignedDelegate_blocks() throws {
+        let entry = try makeWithDelegatesEntry(
+            topLevel: try SCAddressXDR(accountId: try makeCosigner().accountId),
+            topLevelSignature: .vec([]),
+            delegates: [SorobanDelegateDescriptor(address: delegateKeyPair.accountId, signature: makeMockSignatureVec())]
+        )
+        let at = makeAssembledTransaction(tx: try makeTransactionWithEntry(entry))
+        at.simulationResponse = makeWriteCallSimResponse(authEntries: [entry])
+        assertSignBlocks(at)
+    }
+
+    /// An unsigned plain entry of an account blocks although a WITH_DELEGATES entry of the
+    /// same account has a signed delegate, and that entry's void top level blocks as well.
+    func testSign_unsignedAccountAcrossEntries_blocks() throws {
+        let account = try makeCosigner()
+        let plain = try makeAddressV2Entry(keyPair: account)
+        let delegated = try makeWithDelegatesEntry(topLevelKeyPair: account, delegateKeyPair: delegateKeyPair,
+                                                   topLevelSigned: false, delegateSigned: true)
+        let at = makeAssembledTransaction(tx: try makeTransactionWithEntries([plain, delegated]))
+        at.simulationResponse = makeWriteCallSimResponse(authEntries: [plain, delegated])
+
+        XCTAssertEqual(try at.needsNonInvokerSigningBy(), [account.accountId, account.accountId])
+        assertSignBlocks(at)
+    }
+
+    /// An unsigned contract at the top level of an ADDRESS_V2 entry is listed and does not
+    /// block sign().
+    func testSign_unsignedContractTopLevel_addressV2_doesNotBlock() throws {
+        let contract = try SCAddressXDR(contractId: mockContractId)
+        let entry = try makeAddressV2Entry(address: contract)
+        let at = makeAssembledTransaction(tx: try makeTransactionWithEntry(entry))
+        at.simulationResponse = makeWriteCallSimResponse(authEntries: [entry])
+
+        XCTAssertEqual(try at.needsNonInvokerSigningBy(), [try XCTUnwrap(contract.contractId)])
+        try at.sign()
+        XCTAssertNotNil(at.signed)
+    }
+
+    /// An unsigned contract at the top level of a WITH_DELEGATES entry whose account
+    /// delegate signed is listed and does not block sign().
+    func testSign_unsignedContractTopLevel_withDelegates_doesNotBlock() throws {
+        let contract = try SCAddressXDR(contractId: mockContractId)
+        let entry = try makeWithDelegatesEntry(
+            topLevel: contract,
+            topLevelSignature: .void,
+            delegates: [SorobanDelegateDescriptor(address: delegateKeyPair.accountId, signature: makeMockSignatureVec())]
+        )
+        let at = makeAssembledTransaction(tx: try makeTransactionWithEntry(entry))
+        at.simulationResponse = makeWriteCallSimResponse(authEntries: [entry])
+
+        XCTAssertEqual(try at.needsNonInvokerSigningBy(), [try XCTUnwrap(contract.contractId)])
+        try at.sign()
+        XCTAssertNotNil(at.signed)
+    }
+
+    /// An unsigned contract delegate node under a signed account top level is listed and
+    /// does not block sign().
+    func testSign_unsignedContractDelegate_doesNotBlock() throws {
+        let contract = try SCAddressXDR(contractId: mockContractId)
+        let entry = try makeWithDelegatesEntry(
+            topLevel: try SCAddressXDR(accountId: try makeCosigner().accountId),
+            topLevelSignature: makeMockSignatureVec(),
+            delegates: [SorobanDelegateDescriptor(address: mockContractId)]
+        )
+        let at = makeAssembledTransaction(tx: try makeTransactionWithEntry(entry))
+        at.simulationResponse = makeWriteCallSimResponse(authEntries: [entry])
+
+        XCTAssertEqual(try at.needsNonInvokerSigningBy(), [try XCTUnwrap(contract.contractId)])
+        try at.sign()
+        XCTAssertNotNil(at.signed)
+    }
+
+    /// An unsigned muxed-account credential address is listed in its M... form and blocks.
+    func testSign_unsignedMuxedAccountCredential_blocks() throws {
+        let muxed = try MuxedAccount(accountId: try makeCosigner().accountId, id: 1234567890)
+        let address = try SCAddressXDR(accountId: muxed.accountId)
+        guard case .muxedAccount = address else {
+            return XCTFail("expected a muxed account address, got \(address)")
+        }
+        let entry = try makeAddressV2Entry(address: address)
+        let at = makeAssembledTransaction(tx: try makeTransactionWithEntry(entry))
+        at.simulationResponse = makeWriteCallSimResponse(authEntries: [entry])
+
+        XCTAssertEqual(try at.needsNonInvokerSigningBy(), [muxed.accountId])
+        assertSignBlocks(at)
+    }
+
+    /// A void account top level without delegates blocks until the account signs it.
+    func testSign_voidTopLevelAccountWithoutDelegates_blocksUntilSigned() async throws {
+        _ = stubLatestLedger()
+        let topLevel = try makeCosigner()
+        let entry = try makeWithDelegatesEntry(
+            topLevel: try SCAddressXDR(accountId: topLevel.accountId),
+            topLevelSignature: .void,
+            delegates: []
+        )
+        let at = makeAssembledTransaction(tx: try makeTransactionWithEntry(entry))
+        at.simulationResponse = makeWriteCallSimResponse(authEntries: [entry])
+        assertSignBlocks(at)
+
+        try await at.signAuthEntries(signerKeyPair: topLevel)
+
+        let signed = try XCTUnwrap(try authEntries(at).first)
+        XCTAssertTrue(try verifies(try XCTUnwrap(signed.credentials.addressCredentials).signature, signer: topLevel, entry: signed))
+        XCTAssertEqual(try at.needsNonInvokerSigningBy(), [])
+        try at.sign()
+        XCTAssertNotNil(at.signed)
+    }
+
+    /// An unsigned account delegate two levels deep under signed nodes blocks.
+    func testSign_unsignedNestedAccountDelegate_blocks() throws {
+        let nested = try KeyPair.generateRandomKeyPair()
+        let entry = try makeWithDelegatesEntry(
+            topLevel: try SCAddressXDR(accountId: try makeCosigner().accountId),
+            topLevelSignature: makeMockSignatureVec(),
+            delegates: [SorobanDelegateDescriptor(
+                address: delegateKeyPair.accountId,
+                signature: makeMockSignatureVec(),
+                nestedDelegates: [SorobanDelegateDescriptor(address: nested.accountId)]
+            )]
+        )
+        let at = makeAssembledTransaction(tx: try makeTransactionWithEntry(entry))
+        at.simulationResponse = makeWriteCallSimResponse(authEntries: [entry])
+
+        XCTAssertEqual(try at.needsNonInvokerSigningBy(), [nested.accountId])
+        assertSignBlocks(at)
     }
 }

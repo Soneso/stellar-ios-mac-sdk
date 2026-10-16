@@ -61,6 +61,30 @@ extension SorobanAuthorizationEntryXDR {
         }
     }
 
+    // MARK: - Signature presence
+
+    /// Whether `signature`, the signature value of a credential or of a delegate node,
+    /// carries a signature.
+    ///
+    /// `.void` and a vector without elements (`.vec([])` or `.vec(nil)`) are unsigned
+    /// placeholders; every other value carries a signature. js-stellar-sdk 17.2.1 writes an
+    /// empty vector with a `signatureExpirationLedger` of 0 into the unsigned entries it
+    /// builds (`src/base/auth.ts`, lines 482 to 487) and treats void and an empty vector alike
+    /// as unsigned (`signaturePresent`, lines 1108 to 1122).
+    ///
+    /// The check classifies placeholders only. It does not judge whether an empty vector
+    /// authorizes a custom account contract; the contract's `__check_auth` decides that.
+    public static func carriesSignature(_ signature: SCValXDR) -> Bool {
+        switch signature {
+        case .void:
+            return false
+        case .vec(let elements):
+            return !(elements ?? []).isEmpty
+        default:
+            return true
+        }
+    }
+
     // MARK: - Expiration
 
     /// Resolves the expiration ledger a new signature on this entry commits to.
@@ -68,7 +92,7 @@ extension SorobanAuthorizationEntryXDR {
     /// The entry stores one `signatureExpirationLedger` in its top-level address credentials,
     /// and every signature on the entry, top-level and delegate, commits to it through the
     /// shared preimage. Signing appends to a node's signature vector and never removes an
-    /// earlier signature, so while any node carries a signature other than `.void` the
+    /// earlier signature, so while any node carries a signature (`carriesSignature(_:)`) the
     /// stored value is the only one that keeps the entry valid.
     ///
     /// - Parameter requested: The expiration the caller asks for, or `nil` for none.
@@ -78,7 +102,7 @@ extension SorobanAuthorizationEntryXDR {
     ///   `requested` differs from the stored expiration, or when the delegate tree nests
     ///   deeper than 128 levels.
     internal func signatureExpirationForNewSignature(requested: UInt32?) throws -> UInt32? {
-        guard let creds = credentials.addressCredentials, try carriesSignature(topLevel: creds) else {
+        guard let creds = credentials.addressCredentials, try anyNodeCarriesSignature(topLevel: creds) else {
             return requested
         }
         let stored = creds.signatureExpirationLedger
@@ -91,9 +115,9 @@ extension SorobanAuthorizationEntryXDR {
     }
 
     /// `true` when `topLevel`, the entry's top-level address credentials, or any delegate
-    /// node carries a signature other than `.void`.
-    private func carriesSignature(topLevel: SorobanAddressCredentialsXDR) throws -> Bool {
-        if !topLevel.signature.isVoid { return true }
+    /// node carries a signature (`carriesSignature(_:)`).
+    private func anyNodeCarriesSignature(topLevel: SorobanAddressCredentialsXDR) throws -> Bool {
+        if Self.carriesSignature(topLevel.signature) { return true }
         guard case .addressWithDelegates(let withDelegates) = credentials else { return false }
         return try delegateTreeCarriesSignature(withDelegates.delegates)
     }
@@ -129,9 +153,11 @@ extension SorobanAuthorizationEntryXDR {
     ///
     /// **Void top-level signature**
     ///
-    /// A void top-level signature is legitimate for `WITH_DELEGATES` entries where only
-    /// delegates sign. This method never rejects or fills in a void top-level signature;
-    /// when `forAddress` points to a delegate, the top-level node is not modified.
+    /// A void top-level signature is legitimate for a `WITH_DELEGATES` entry whose top-level
+    /// address is a custom account contract that accepts delegated signers (CAP-71), because
+    /// an account address authenticates with its own signatures. A `nil` `forAddress` signs
+    /// the top-level node; a `forAddress` that matches only delegate nodes leaves the
+    /// top-level signature unchanged.
     ///
     /// - Parameters:
     ///   - signer: Key pair that must include the private key.

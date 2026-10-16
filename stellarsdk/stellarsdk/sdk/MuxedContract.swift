@@ -9,8 +9,7 @@
 import Foundation
 
 /// A contract with an optional 64-bit multiplexing id
-/// ([CAP-0084](https://github.com/stellar/stellar-protocol/blob/master/core/cap-0084.md),
-/// protocol 30 and higher).
+/// ([CAP-0084](https://github.com/stellar/stellar-protocol/blob/master/core/cap-0084.md)).
 ///
 /// A muxed contract address pairs a contract with an id the way a muxed account address pairs
 /// an account with one. Its address is the "W..." strkey when the multiplexing id is set and
