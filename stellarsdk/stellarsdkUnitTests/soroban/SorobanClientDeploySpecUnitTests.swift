@@ -48,7 +48,7 @@ final class SorobanClientDeploySpecUnitTests: XCTestCase {
 
         mockRpcUrl = "https://deploy-spec-unit-tests.mock"
         mockContractId = "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM"
-        keyPair = try! KeyPair.generateRandomKeyPair()
+        keyPair = KeyPair(seed: try! Seed(bytes: [UInt8](repeating: 1, count: 32)))
         wasmHashBytes = Data(repeating: 0, count: 32)
         requestLog = RequestLog()
 
@@ -113,10 +113,17 @@ final class SorobanClientDeploySpecUnitTests: XCTestCase {
                 return self.deploySuccessResponseJson()
             }
             if bodyString.contains("getLedgerEntries") {
-                // Dispatch on the requested ledger key type: CONTRACT_CODE
-                // encodes with discriminant 7 ("AAAABw"), CONTRACT_DATA with
-                // 6 ("AAAABg"); anything else is the account fetch.
-                if bodyString.contains("AAAABw") {
+                // Dispatch on the type of the first ledger key in params.keys.
+                // A key of any other type gets no answer, so the test fails.
+                guard let json = try? JSONSerialization.jsonObject(with: bodyData) as? [String: Any],
+                      let params = json["params"] as? [String: Any],
+                      let keys = params["keys"] as? [String],
+                      let firstKey = keys.first,
+                      let ledgerKey = try? LedgerKeyXDR(fromBase64: firstKey) else {
+                    return nil
+                }
+                switch ledgerKey {
+                case .contractCode:
                     log.entries.append("code")
                     let answer = log.codeRequests < codeEntryAnswers.count
                         ? codeEntryAnswers[log.codeRequests]
@@ -135,13 +142,15 @@ final class SorobanClientDeploySpecUnitTests: XCTestCase {
                         """
                     }
                     return self.ledgerEntryResponseJson(entryData: self.contractCodeEntry(code: code))
-                }
-                if bodyString.contains("AAAABg") {
+                case .contractData:
                     log.entries.append("contractData")
                     return self.ledgerEntryResponseJson(entryData: self.contractInstanceEntry())
+                case .account:
+                    log.entries.append("account")
+                    return self.ledgerEntryResponseJson(entryData: self.accountEntry())
+                default:
+                    return nil
                 }
-                log.entries.append("account")
-                return self.ledgerEntryResponseJson(entryData: self.accountEntry())
             }
             return nil
         }
@@ -277,24 +286,50 @@ final class SorobanClientDeploySpecUnitTests: XCTestCase {
         )
     }
 
-    // MARK: - Tests
-
-    func testDeployLoadsSpecFromWasmCodeEntryBeforeSubmitting() async throws {
+    /// Deploys with the token wasm as the code entry and asserts that the spec
+    /// is loaded from it before the transaction is submitted.
+    private func assertDeployLoadsSpecFromWasmCodeEntryBeforeSubmitting(
+        file: StaticString = #filePath, line: UInt = #line) async throws {
         setupDeployFlowMock(codeEntryAnswers: [tokenWasm])
 
         let client = try await SorobanClient.deploy(deployRequest: deployRequest())
 
-        XCTAssertEqual(client.contractId, mockContractId)
-        XCTAssertTrue(client.methodNames.contains("transfer"))
+        XCTAssertEqual(client.contractId, mockContractId, file: file, line: line)
+        XCTAssertTrue(client.methodNames.contains("transfer"), file: file, line: line)
         // The spec came from the code entry requested before submission; the
         // contract instance is never read.
-        XCTAssertFalse(requestLog.entries.contains("contractData"))
+        XCTAssertFalse(requestLog.entries.contains("contractData"), file: file, line: line)
         guard let codeIndex = requestLog.entries.firstIndex(of: "code"),
               let sendIndex = requestLog.entries.firstIndex(of: "send") else {
-            XCTFail("Expected both a code request and a send request, got: \(requestLog.entries)")
+            XCTFail("Expected both a code request and a send request, got: \(requestLog.entries)",
+                    file: file, line: line)
             return
         }
-        XCTAssertLessThan(codeIndex, sendIndex)
+        XCTAssertLessThan(codeIndex, sendIndex, file: file, line: line)
+    }
+
+    // MARK: - Tests
+
+    func testDeployLoadsSpecFromWasmCodeEntryBeforeSubmitting() async throws {
+        try await assertDeployLoadsSpecFromWasmCodeEntryBeforeSubmitting()
+    }
+
+    func testDeployLoadsSpecForSourceKeyWithFirstByte0x70() async throws {
+        // The base64 of this account's ledger key contains "AAAABw", which
+        // starts the base64 of the contract code key in these tests.
+        keyPair = KeyPair(seed: try Seed(bytes: [UInt8](repeating: 0x3d, count: 32)))
+        XCTAssertEqual(keyPair.publicKey.bytes.first, 0x70)
+
+        try await assertDeployLoadsSpecFromWasmCodeEntryBeforeSubmitting()
+    }
+
+    func testDeployLoadsSpecForSourceKeyWithFirstByte0x60() async throws {
+        // The base64 of this account's ledger key contains "AAAABg", which
+        // starts the base64 of the contract instance key in these tests.
+        keyPair = KeyPair(seed: try Seed(bytes: [UInt8](repeating: 0xd8, count: 32)))
+        XCTAssertEqual(keyPair.publicKey.bytes.first, 0x60)
+
+        try await assertDeployLoadsSpecFromWasmCodeEntryBeforeSubmitting()
     }
 
     func testDeployFallsBackWhenCodeEntryMissing() async throws {

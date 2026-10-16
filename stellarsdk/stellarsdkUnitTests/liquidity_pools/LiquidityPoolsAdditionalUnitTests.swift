@@ -12,6 +12,7 @@ import stellarsdk
 class LiquidityPoolsAdditionalUnitTests: XCTestCase {
     let sdk = StellarSDK()
     var mockRegistered = false
+    var liquidityPoolNotFoundMock: LiquidityPoolNotFoundMock? = nil
 
     override func setUp() {
         super.setUp()
@@ -24,6 +25,7 @@ class LiquidityPoolsAdditionalUnitTests: XCTestCase {
     }
 
     override func tearDown() {
+        liquidityPoolNotFoundMock = nil
         ServerMock.removeAll()
         super.tearDown()
     }
@@ -31,7 +33,7 @@ class LiquidityPoolsAdditionalUnitTests: XCTestCase {
     // MARK: - Error Handling Tests
 
     func testGetLiquidityPoolNotFound() async {
-        _ = LiquidityPoolNotFoundMock()
+        liquidityPoolNotFoundMock = LiquidityPoolNotFoundMock()
         let invalidPoolId = "0000000000000000000000000000000000000000000000000000000000000000"
 
         let response = await sdk.liquidityPools.getLiquidityPool(poolId: invalidPoolId)
@@ -46,6 +48,10 @@ class LiquidityPoolsAdditionalUnitTests: XCTestCase {
                 XCTFail("Expected notFound error but got: \(error)")
             }
         }
+
+        let requestedUrls = liquidityPoolNotFoundMock?.requestedUrls ?? []
+        XCTAssertEqual(requestedUrls.count, 1, "requests: \(requestedUrls)")
+        XCTAssertEqual(requestedUrls.first?.path, "/liquidity_pools/" + invalidPoolId)
     }
 
     func testGetLiquidityPoolMalformedJSON() async {
@@ -380,8 +386,14 @@ class LiquidityPoolsAdditionalUnitTests: XCTestCase {
 // MARK: - Mock Classes
 
 class LiquidityPoolNotFoundMock: ResponsesMock {
+    /// The URL of every request this mock served, in order.
+    var requestedUrls: [URL] = []
+
     override func requestMock() -> RequestMock {
         let handler: MockHandler = { [weak self] mock, request in
+            if let url = request.url {
+                self?.requestedUrls.append(url)
+            }
             mock.statusCode = 404
             return self?.resourceMissingResponse()
         }
