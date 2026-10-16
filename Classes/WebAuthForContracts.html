@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          stellarsdk 3.12.0 Docs
+          stellarsdk 3.13.0 Docs
         </a>
          (94% documented)
       </p>
@@ -1539,6 +1539,9 @@
                 <a class="nav-group-task-link" href="../Functions.html#/s:10stellarsdk4ceilyAA4BIntVAA7BDoubleVF">ceil(_:)</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Functions.html#/s:10stellarsdk21compareScValHostOrderySiAA8SCValXDRO_ADtF">compareScValHostOrder(_:_:)</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Functions.html#/s:10stellarsdk5flooryAA4BIntVAA7BDoubleVF">floor(_:)</a>
               </li>
               <li class="nav-group-task">
@@ -1847,6 +1850,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/MemoTypeAsString.html">MemoTypeAsString</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/MuxedContract.html">MuxedContract</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/NetworkConstants.html">NetworkConstants</a>
@@ -2403,7 +2409,7 @@ authentication logic in their __check_auth function.</p>
 </ul>
 
               <div class="slightly-smaller">
-                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/web_authentication_contracts/WebAuthForContracts.swift#L99-L941">Show on GitHub</a>
+                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/web_authentication_contracts/WebAuthForContracts.swift#L99-L950">Show on GitHub</a>
               </div>
           </div>
         </section>
@@ -3229,7 +3235,9 @@ Can be empty for contracts whose __check_auth implementation does not require si
                         <p>Signs the authorization entries for the client account.</p>
 <div class="aside aside-throws">
     <p class="aside-title">Throws</p>
-    Error if signing fails
+    StellarSDKError.invalidArgument, before any entry is stamped or handed to the
+callback, when an entry&rsquo;s credential address is a muxed account (M&hellip;) or muxed
+contract (W&hellip;) address; an error if signing fails
 
 </div>
 
@@ -3346,7 +3354,7 @@ Can be empty for contracts whose __check_auth implementation does not require si
                         <p>Signed authorization entries</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/web_authentication_contracts/WebAuthForContracts.swift#L625-L695">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/web_authentication_contracts/WebAuthForContracts.swift#L627-L698">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3404,7 +3412,7 @@ Can be empty for contracts whose __check_auth implementation does not require si
                         <p>SubmitContractChallengeResponseEnum with JWT token or error</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/web_authentication_contracts/WebAuthForContracts.swift#L701-L752">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/web_authentication_contracts/WebAuthForContracts.swift#L704-L755">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3462,7 +3470,7 @@ Can be empty for contracts whose __check_auth implementation does not require si
                         <p>Array of authorization entries</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/web_authentication_contracts/WebAuthForContracts.swift#L759-L780">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/web_authentication_contracts/WebAuthForContracts.swift#L762-L783">Show on GitHub</a>
                       </div>
                     </section>
                   </div>

@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          stellarsdk 3.12.0 Docs
+          stellarsdk 3.13.0 Docs
         </a>
          (94% documented)
       </p>
@@ -1539,6 +1539,9 @@
                 <a class="nav-group-task-link" href="../Functions.html#/s:10stellarsdk4ceilyAA4BIntVAA7BDoubleVF">ceil(_:)</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Functions.html#/s:10stellarsdk21compareScValHostOrderySiAA8SCValXDRO_ADtF">compareScValHostOrder(_:_:)</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Functions.html#/s:10stellarsdk5flooryAA4BIntVAA7BDoubleVF">floor(_:)</a>
               </li>
               <li class="nav-group-task">
@@ -1847,6 +1850,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/MemoTypeAsString.html">MemoTypeAsString</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/MuxedContract.html">MuxedContract</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/NetworkConstants.html">NetworkConstants</a>
@@ -2323,7 +2329,7 @@ used throughout the Stellar network.</p>
 <p>Reference: <a href="https://developers.stellar.org">Stellar developer docs</a></p>
 
               <div class="slightly-smaller">
-                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L16-L351">Show on GitHub</a>
+                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L16-L365">Show on GitHub</a>
               </div>
           </div>
         </section>
@@ -2696,6 +2702,38 @@ Reference: <a href="https://developers.stellar.org">Stellar developer docs</a></
                 <li class="item">
                   <div>
                     <code>
+                    <a name="/s:10stellarsdk24StellarProtocolConstantsV36STRKEY_ENCODED_LENGTH_MUXED_CONTRACTSivpZ"></a>
+                    <a name="//apple_ref/swift/Variable/STRKEY_ENCODED_LENGTH_MUXED_CONTRACT" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk24StellarProtocolConstantsV36STRKEY_ENCODED_LENGTH_MUXED_CONTRACTSivpZ">STRKEY_ENCODED_LENGTH_MUXED_CONTRACT</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>StrKey encoded string length for muxed contract (69 characters)
+Calculation: (1 version + 40 data + 2 checksum) bytes × 8 bits ÷ 5 bits/char = 69 chars
+Reference: SEP-23 <a href="https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0023.md">https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0023.md</a></p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">static</span> <span class="k">let</span> <span class="nv">STRKEY_ENCODED_LENGTH_MUXED_CONTRACT</span><span class="p">:</span> <span class="kt">Int</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L72">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
                     <a name="/s:10stellarsdk24StellarProtocolConstantsV39STRKEY_ENCODED_LENGTH_CLAIMABLE_BALANCESivpZ"></a>
                     <a name="//apple_ref/swift/Variable/STRKEY_ENCODED_LENGTH_CLAIMABLE_BALANCE" class="dashAnchor"></a>
                     <a class="token" href="#/s:10stellarsdk24StellarProtocolConstantsV39STRKEY_ENCODED_LENGTH_CLAIMABLE_BALANCESivpZ">STRKEY_ENCODED_LENGTH_CLAIMABLE_BALANCE</a>
@@ -2720,7 +2758,7 @@ Reference: <a href="https://developers.stellar.org">Stellar developer docs</a></
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L72">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L77">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2760,7 +2798,7 @@ Reference: CAP-40 <a href="https://github.com/stellar/stellar-protocol/blob/mast
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L82">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L87">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2793,7 +2831,7 @@ Reference: CAP-40 <a href="https://github.com/stellar/stellar-protocol/blob/mast
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L88">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L93">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2838,7 +2876,7 @@ Reference: <a href="https://developers.stellar.org">Stellar developer docs</a></
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L95">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L100">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2869,7 +2907,38 @@ Reference: <a href="https://developers.stellar.org">Stellar developer docs</a></
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L99">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L104">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10stellarsdk24StellarProtocolConstantsV34STRKEY_DECODED_SIZE_MUXED_CONTRACTSivpZ"></a>
+                    <a name="//apple_ref/swift/Variable/STRKEY_DECODED_SIZE_MUXED_CONTRACT" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk24StellarProtocolConstantsV34STRKEY_DECODED_SIZE_MUXED_CONTRACTSivpZ">STRKEY_DECODED_SIZE_MUXED_CONTRACT</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Decoded payload size for muxed contract (40 bytes = 32 bytes contract ID + 8 bytes ID)
+Reference: SEP-23 <a href="https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0023.md">https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0023.md</a></p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">static</span> <span class="k">let</span> <span class="nv">STRKEY_DECODED_SIZE_MUXED_CONTRACT</span><span class="p">:</span> <span class="kt">Int</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L108">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2900,7 +2969,7 @@ Reference: <a href="https://developers.stellar.org">Stellar developer docs</a></
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L103">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L112">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2931,7 +3000,7 @@ Reference: CAP-40 <a href="https://github.com/stellar/stellar-protocol/blob/mast
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L107">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L116">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2962,7 +3031,7 @@ Reference: CAP-40 <a href="https://github.com/stellar/stellar-protocol/blob/mast
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L111">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L120">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2995,7 +3064,7 @@ Reference: CAP-40 <a href="https://github.com/stellar/stellar-protocol/blob/mast
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L117">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L126">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3026,7 +3095,7 @@ Reference: CAP-40 <a href="https://github.com/stellar/stellar-protocol/blob/mast
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L121">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L130">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3057,7 +3126,7 @@ Reference: <a href="https://developers.stellar.org">Stellar developer docs</a></
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L125">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L134">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3102,7 +3171,7 @@ Reference: <a href="https://developers.stellar.org">Stellar developer docs</a></
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L132">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L141">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3134,7 +3203,7 @@ Reference: <a href="https://developers.stellar.org">Stellar developer docs</a></
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L137">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L146">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3166,7 +3235,7 @@ Reference: <a href="https://developers.stellar.org">Stellar developer docs</a></
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L142">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L151">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3198,7 +3267,7 @@ Reference: <a href="https://developers.stellar.org">Stellar developer docs</a></
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L147">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L156">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3230,7 +3299,7 @@ Reference: <a href="https://developers.stellar.org">Stellar developer docs</a></
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L152">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L161">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3262,7 +3331,7 @@ Reference: <a href="https://developers.stellar.org">Stellar developer docs</a></
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L157">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L166">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3294,7 +3363,7 @@ Reference: CAP-40 <a href="https://github.com/stellar/stellar-protocol/blob/mast
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L162">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L171">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3326,7 +3395,7 @@ Reference: <a href="https://developers.stellar.org">Stellar developer docs</a></
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L167">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L176">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3358,7 +3427,7 @@ Reference: <a href="https://developers.stellar.org">Stellar developer docs</a></
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L172">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L181">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3390,7 +3459,7 @@ Reference: <a href="https://developers.stellar.org">Stellar developer docs</a></
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L177">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L186">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3434,7 +3503,7 @@ Reference: <a href="https://developers.stellar.org">Stellar developer docs</a></
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L183">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L192">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3465,7 +3534,7 @@ Reference: <a href="https://developers.stellar.org">Stellar developer docs</a></
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L187">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L196">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3496,7 +3565,7 @@ Reference: <a href="https://developers.stellar.org">Stellar developer docs</a></
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L191">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L200">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3527,7 +3596,7 @@ Reference: <a href="https://developers.stellar.org">Stellar developer docs</a></
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L195">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L204">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3571,7 +3640,7 @@ Reference: <a href="https://developers.stellar.org">Stellar developer docs</a></
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L201">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L210">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3615,7 +3684,7 @@ Reference: <a href="https://developers.stellar.org">Stellar developer docs</a></
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L207">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L216">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3646,7 +3715,7 @@ Reference: <a href="https://developers.stellar.org">Stellar developer docs</a></
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L211">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L220">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3677,7 +3746,7 @@ Reference: <a href="https://developers.stellar.org">Stellar developer docs</a></
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L215">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L224">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3721,7 +3790,7 @@ Reference: <a href="https://developers.stellar.org">Stellar developer docs</a></
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L221">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L230">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3752,7 +3821,7 @@ Reference: <a href="https://developers.stellar.org">Stellar developer docs</a></
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L225">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L234">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3796,7 +3865,7 @@ Reference: <a href="https://developers.stellar.org">Stellar developer docs</a></
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L231">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L240">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3842,7 +3911,7 @@ Reference: <a href="https://developers.stellar.org">Stellar developer docs</a></
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L239">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L248">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3889,7 +3958,7 @@ for approximate time-based period calculations.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L248">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L257">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3922,7 +3991,7 @@ value only for approximate time-based period calculations.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L254">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L263">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3966,7 +4035,7 @@ Reference: CAP-40 <a href="https://github.com/stellar/stellar-protocol/blob/mast
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L260">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L269">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -4010,7 +4079,7 @@ Reference: <a href="https://developers.stellar.org">Stellar developer docs</a></
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L266">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L275">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -4054,7 +4123,7 @@ Reference: <a href="https://developers.stellar.org">Stellar developer docs</a></
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L272">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L281">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -4085,7 +4154,7 @@ Reference: <a href="https://developers.stellar.org">Stellar developer docs</a></
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L276">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L285">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -4129,7 +4198,7 @@ Reference: <a href="https://developers.stellar.org">Stellar developer docs</a></
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L282">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L291">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -4160,7 +4229,7 @@ Reference: <a href="https://developers.stellar.org">Stellar developer docs</a></
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L286">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L295">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -4192,7 +4261,7 @@ Reference: <a href="https://developers.stellar.org">Stellar developer docs</a></
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L291">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L300">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -4236,7 +4305,7 @@ Reference: <a href="https://developers.stellar.org">Stellar developer docs</a></
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L297">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L306">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -4280,7 +4349,7 @@ Reference: <a href="https://developers.stellar.org">Stellar developer docs</a></
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L303">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L312">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -4325,7 +4394,7 @@ Reference: <a href="https://developers.stellar.org">Stellar developer docs</a></
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L310">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L319">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -4357,7 +4426,7 @@ Reference: <a href="https://developers.stellar.org">Stellar developer docs</a></
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L315">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L324">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -4389,7 +4458,39 @@ Reference: <a href="https://developers.stellar.org">Stellar developer docs</a></
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L320">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L329">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10stellarsdk24StellarProtocolConstantsV28STRKEY_PREFIX_MUXED_CONTRACTSSvpZ"></a>
+                    <a name="//apple_ref/swift/Variable/STRKEY_PREFIX_MUXED_CONTRACT" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk24StellarProtocolConstantsV28STRKEY_PREFIX_MUXED_CONTRACTSSvpZ">STRKEY_PREFIX_MUXED_CONTRACT</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>StrKey prefix for muxed contract addresses
+Encoded muxed contracts start with &lsquo;W&rsquo;
+Reference: CAP-84 <a href="https://github.com/stellar/stellar-protocol/blob/master/core/cap-0084.md">https://github.com/stellar/stellar-protocol/blob/master/core/cap-0084.md</a></p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">static</span> <span class="k">let</span> <span class="nv">STRKEY_PREFIX_MUXED_CONTRACT</span><span class="p">:</span> <span class="kt">String</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L334">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -4421,7 +4522,7 @@ Reference: <a href="https://developers.stellar.org">Stellar developer docs</a></
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L325">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L339">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -4453,7 +4554,7 @@ Reference: <a href="https://developers.stellar.org">Stellar developer docs</a></
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L330">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L344">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -4485,7 +4586,7 @@ Reference: CAP-40 <a href="https://github.com/stellar/stellar-protocol/blob/mast
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L335">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L349">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -4517,7 +4618,7 @@ Reference: <a href="https://developers.stellar.org">Stellar developer docs</a></
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L340">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L354">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -4549,7 +4650,7 @@ Reference: <a href="https://developers.stellar.org">Stellar developer docs</a></
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L345">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L359">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -4581,7 +4682,7 @@ Reference: <a href="https://developers.stellar.org">Stellar developer docs</a></
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L350">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L364">Show on GitHub</a>
                       </div>
                     </section>
                   </div>

@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          stellarsdk 3.12.0 Docs
+          stellarsdk 3.13.0 Docs
         </a>
          (94% documented)
       </p>
@@ -1539,6 +1539,9 @@
                 <a class="nav-group-task-link" href="../Functions.html#/s:10stellarsdk4ceilyAA4BIntVAA7BDoubleVF">ceil(_:)</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Functions.html#/s:10stellarsdk21compareScValHostOrderySiAA8SCValXDRO_ADtF">compareScValHostOrder(_:_:)</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Functions.html#/s:10stellarsdk5flooryAA4BIntVAA7BDoubleVF">floor(_:)</a>
               </li>
               <li class="nav-group-task">
@@ -1847,6 +1850,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/MemoTypeAsString.html">MemoTypeAsString</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/MuxedContract.html">MuxedContract</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/NetworkConstants.html">NetworkConstants</a>
@@ -3086,6 +3092,51 @@ ed25519 key and the 8 byte muxed account id occupy
                 <li class="item">
                   <div>
                     <code>
+                    <a name="/s:10Foundation4DataV10stellarsdkE21encodeMuxedContractIdSSyKF"></a>
+                    <a name="//apple_ref/swift/Method/encodeMuxedContractId()" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10Foundation4DataV10stellarsdkE21encodeMuxedContractIdSSyKF">encodeMuxedContractId()</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Encodes data to strkey muxed contract address (&ldquo;W&hellip;&rdquo;).</p>
+
+<p>The data is the 32 byte contract id followed by the 8 byte big-endian multiplexing id,
+the payload <a href="https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0023.md">SEP-23</a>
+gives the muxed contract addresses of
+<a href="https://github.com/stellar/stellar-protocol/blob/master/core/cap-0084.md">CAP-0084</a>.
+The XDR <code><a href="../Structs/MuxedContract.html">MuxedContract</a></code> struct carries the two fields in the reverse order.</p>
+
+<p>The contract <code>CA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUWDA</code> with id 0 encodes
+to <code>WA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAAAAAAAAWWC</code>.</p>
+<div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    StellarSDKError.invalidArgument if the data is not the 40 bytes the 32 byte
+contract id and the 8 byte multiplexing id occupy
+
+</div>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">encodeMuxedContractId</span><span class="p">()</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt">String</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/extensions/Data+KeyUtils.swift#L120-L123">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
                     <a name="/s:10Foundation4DataV10stellarsdkE15encodePreAuthTxSSyKF"></a>
                     <a name="//apple_ref/swift/Method/encodePreAuthTx()" class="dashAnchor"></a>
                     <a class="token" href="#/s:10Foundation4DataV10stellarsdkE15encodePreAuthTxSSyKF">encodePreAuthTx()</a>
@@ -3114,7 +3165,7 @@ authorized transaction hash is wide
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/extensions/Data+KeyUtils.swift#L111-L114">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/extensions/Data+KeyUtils.swift#L129-L132">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3150,7 +3201,7 @@ hash is wide
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/extensions/Data+KeyUtils.swift#L120-L123">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/extensions/Data+KeyUtils.swift#L138-L141">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3191,7 +3242,7 @@ as that length padded to a multiple of four bytes, or if the padding is not zero
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/extensions/Data+KeyUtils.swift#L134-L140">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/extensions/Data+KeyUtils.swift#L152-L158">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3227,7 +3278,7 @@ id is wide
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/extensions/Data+KeyUtils.swift#L146-L149">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/extensions/Data+KeyUtils.swift#L164-L167">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3270,7 +3321,7 @@ encoding, or if a body does not open with that discriminant
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/extensions/Data+KeyUtils.swift#L162-L174">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/extensions/Data+KeyUtils.swift#L180-L192">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3306,7 +3357,7 @@ pool id is wide
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/extensions/Data+KeyUtils.swift#L180-L183">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/extensions/Data+KeyUtils.swift#L198-L201">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3350,7 +3401,7 @@ the data is not exactly the width its key type names.
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/extensions/Data+KeyUtils.swift#L197-L219">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/extensions/Data+KeyUtils.swift#L215-L237">Show on GitHub</a>
                       </div>
                     </section>
                   </div>

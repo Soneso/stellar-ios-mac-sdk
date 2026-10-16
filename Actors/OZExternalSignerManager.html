@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          stellarsdk 3.12.0 Docs
+          stellarsdk 3.13.0 Docs
         </a>
          (94% documented)
       </p>
@@ -1539,6 +1539,9 @@
                 <a class="nav-group-task-link" href="../Functions.html#/s:10stellarsdk4ceilyAA4BIntVAA7BDoubleVF">ceil(_:)</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Functions.html#/s:10stellarsdk21compareScValHostOrderySiAA8SCValXDRO_ADtF">compareScValHostOrder(_:_:)</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Functions.html#/s:10stellarsdk5flooryAA4BIntVAA7BDoubleVF">floor(_:)</a>
               </li>
               <li class="nav-group-task">
@@ -1847,6 +1850,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/MemoTypeAsString.html">MemoTypeAsString</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/MuxedContract.html">MuxedContract</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/NetworkConstants.html">NetworkConstants</a>
@@ -2332,7 +2338,7 @@ of the running process.</li>
 </code></pre>
 
               <div class="slightly-smaller">
-                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZExternalSignerManager.swift#L144-L676">Show on GitHub</a>
+                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZExternalSignerManager.swift#L144-L680">Show on GitHub</a>
               </div>
           </div>
         </section>
@@ -2773,7 +2779,8 @@ signer matches.</p>
     <p class="aside-title">Throws</p>
     <code><a href="../Classes/SmartAccountSignerException/NotFound.html">NotFound</a></code> when no signer is available for
       the address; <code><a href="../Classes/SmartAccountTransactionException/SigningFailed.html">SigningFailed</a></code> when the
-      signing operation fails.
+      address is a muxed account (M&hellip;) or muxed contract (W&hellip;) address, which
+      Soroban auth never takes, or when the signing operation fails.
 
 </div>
 
@@ -2826,7 +2833,7 @@ signer matches.</p>
        signature and the signer address that produced it.</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZExternalSignerManager.swift#L346-L392">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZExternalSignerManager.swift#L347-L396">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2889,7 +2896,7 @@ cleared.</p>
                         </table>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZExternalSignerManager.swift#L458-L463">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZExternalSignerManager.swift#L462-L467">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2924,7 +2931,7 @@ caller.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZExternalSignerManager.swift#L468-L474">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZExternalSignerManager.swift#L472-L478">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3018,7 +3025,7 @@ under which the signer is registered on-chain.</p>
                         <p>The derived 32-byte Ed25519 public key.</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZExternalSignerManager.swift#L505-L535">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZExternalSignerManager.swift#L509-L539">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3089,7 +3096,7 @@ checking whether an in-memory keypair is registered for <code>(verifierAddress, 
 this <code>(verifierAddress, publicKey)</code> pair.</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZExternalSignerManager.swift#L549-L555">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZExternalSignerManager.swift#L553-L559">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3185,7 +3192,7 @@ the in-memory keypair registry is used. Throws when neither source is available.
                         <p>64-byte raw Ed25519 signature over <code>authDigest</code>.</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZExternalSignerManager.swift#L572-L605">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZExternalSignerManager.swift#L576-L609">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3249,7 +3256,7 @@ keypair is registered for that pair. The adapter is not affected by this call.</
                         </table>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZExternalSignerManager.swift#L615-L618">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZExternalSignerManager.swift#L619-L622">Show on GitHub</a>
                       </div>
                     </section>
                   </div>

@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="index.html">
-          stellarsdk 3.12.0 Docs
+          stellarsdk 3.13.0 Docs
         </a>
          (94% documented)
       </p>
@@ -1537,6 +1537,9 @@
                 <a class="nav-group-task-link" href="Functions.html#/s:10stellarsdk4ceilyAA4BIntVAA7BDoubleVF">ceil(_:)</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Functions.html#/s:10stellarsdk21compareScValHostOrderySiAA8SCValXDRO_ADtF">compareScValHostOrder(_:_:)</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Functions.html#/s:10stellarsdk5flooryAA4BIntVAA7BDoubleVF">floor(_:)</a>
               </li>
               <li class="nav-group-task">
@@ -1845,6 +1848,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Structs/MemoTypeAsString.html">MemoTypeAsString</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/MuxedContract.html">MuxedContract</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Structs/NetworkConstants.html">NetworkConstants</a>
@@ -2925,6 +2931,93 @@
                       </div>
                       <div class="slightly-smaller">
                         <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/libs/HDWallet/BigInt/SMP.swift#L2939-L2941">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10stellarsdk21compareScValHostOrderySiAA8SCValXDRO_ADtF"></a>
+                    <a name="//apple_ref/swift/Function/compareScValHostOrder(_:_:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk21compareScValHostOrderySiAA8SCValXDRO_ADtF">compareScValHostOrder(_:<wbr>_:<wbr>)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Orders two <code>SCValXDR</code> values the way the Soroban host orders ScMap keys.</p>
+
+<p>The host stores and validates ScMap keys in this order and rejects a contract argument
+map whose keys are out of order with <code>InvalidInput</code>.</p>
+
+<p>Ordering (rs-soroban-env <code>Compare&lt;ScVal&gt;</code>):</p>
+
+<ul>
+<li>Values of different types compare by their <code>SCValType</code> discriminant.</li>
+<li><code>I32</code>, <code>I64</code> and <code>LedgerKeyNonce</code> compare numerically as signed values; <code>I128</code> and
+<code>I256</code> compare the signed high part first, then the unsigned lower parts.</li>
+<li><code>Vec</code> compares element-wise (recursively); the shorter vec sorts first on a prefix tie.</li>
+<li><code>Map</code> compares entry-wise (key, then value, recursively); the map with fewer entries
+sorts first on a prefix tie.</li>
+<li><code>Bytes</code>, <code>String</code>, <code>Symbol</code>, and <code>ExecutableTag</code> compare by content, byte for byte
+(unsigned); the shorter value sorts first on a prefix tie.</li>
+<li><code>ContractInstance</code> compares by executable (type, then payload; an external reference by
+owner, then tag content), then by storage; absent storage sorts first.</li>
+<li><p>All remaining types (<code>Bool</code>, <code>Void</code>, <code>Error</code>, the unsigned integers, <code>Timepoint</code>,
+<code>Duration</code>, <code>Address</code>, <code>LedgerKeyContractInstance</code>) consist of non-negative big-endian
+fields in XDR field order, so their XDR encodings compare in host order.</p></li>
+</ul>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">compareScValHostOrder</span><span class="p">(</span><span class="n">_</span> <span class="nv">a</span><span class="p">:</span> <span class="kt">SCValXDR</span><span class="p">,</span> <span class="n">_</span> <span class="nv">b</span><span class="p">:</span> <span class="kt">SCValXDR</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Int</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>a</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The first value to compare.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>b</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The second value to compare.</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>A negative value when <code>a</code> sorts before <code>b</code>, zero when the two values are
+equal under the host order, and a positive value when <code>a</code> sorts after <code>b</code>.</p>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/ScValHostOrder.swift#L35-L93">Show on GitHub</a>
                       </div>
                     </section>
                   </div>

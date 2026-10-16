@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          stellarsdk 3.12.0 Docs
+          stellarsdk 3.13.0 Docs
         </a>
          (94% documented)
       </p>
@@ -1539,6 +1539,9 @@
                 <a class="nav-group-task-link" href="../Functions.html#/s:10stellarsdk4ceilyAA4BIntVAA7BDoubleVF">ceil(_:)</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Functions.html#/s:10stellarsdk21compareScValHostOrderySiAA8SCValXDRO_ADtF">compareScValHostOrder(_:_:)</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Functions.html#/s:10stellarsdk5flooryAA4BIntVAA7BDoubleVF">floor(_:)</a>
               </li>
               <li class="nav-group-task">
@@ -1847,6 +1850,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/MemoTypeAsString.html">MemoTypeAsString</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/MuxedContract.html">MuxedContract</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/NetworkConstants.html">NetworkConstants</a>
@@ -2458,7 +2464,7 @@ you can provide a callback function for signing the auth entry:</p>
 transaction is invoked by yet another party, check out in the SorobanClientTest.atomicSwapTest()</p>
 
               <div class="slightly-smaller">
-                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/AssembledTransaction.swift#L178-L703">Show on GitHub</a>
+                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/AssembledTransaction.swift#L178-L655">Show on GitHub</a>
               </div>
           </div>
         </section>
@@ -2826,6 +2832,12 @@ transaction is invoked by yet another party, check out in the SorobanClientTest.
                       <div class="pointer"></div>
                       <div class="abstract">
                         <p>Signs the transaction envelope with the source account keypair.</p>
+<div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    <code>AssembledTransactionError.multipleSignersRequired</code> while an account address
+that <code>needsNonInvokerSigningBy()</code> reports carries no signature.
+
+</div>
 
                       </div>
                       <div class="declaration">
@@ -2837,7 +2849,7 @@ transaction is invoked by yet another party, check out in the SorobanClientTest.
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/AssembledTransaction.swift#L294-L328">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/AssembledTransaction.swift#L297-L325">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2871,7 +2883,7 @@ Returns the final transaction status including success/failure and return value.
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/AssembledTransaction.swift#L332-L364">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/AssembledTransaction.swift#L329-L361">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2889,19 +2901,17 @@ Returns the final transaction status including success/failure and return value.
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Returns the addresses of every node whose signature is void, across all authorization entries.</p>
+                        <p>Returns the addresses of every node that carries no signature
+(<code>SorobanAuthorizationEntryXDR.carriesSignature(_:)</code>), across all authorization entries.</p>
 
 <p><strong>All three credential arms are supported</strong> (<code>ADDRESS</code>, <code>ADDRESS_V2</code>,
-<code>ADDRESS_WITH_DELEGATES</code>). For <code>WITH_DELEGATES</code> entries, the top-level address and
-every unsigned delegate node (depth-first) are reported individually. A top-level
-signature alongside delegates is a legal pattern, so the top-level address is always
-included when its signature is void, even when delegates are present.</p>
+<code>ADDRESS_WITH_DELEGATES</code>). For <code>WITH_DELEGATES</code> entries, the top-level node and every
+delegate node (depth-first) are reported individually; an unsigned top level is
+reported whatever its delegate nodes carry.</p>
 
-<p><strong><code>WITH_DELEGATES</code> send precheck</strong>: <code>sign()</code> and <code>signAndSend()</code> treat a
-<code>WITH_DELEGATES</code> entry as satisfied when every delegate node in the tree carries a
-non-void signature, regardless of the void top-level. Do not block the send flow
-solely because this method reports the top-level address of a fully-delegate-signed
-entry.</p>
+<p><code>sign()</code> and <code>signAndSend()</code> throw <code>AssembledTransactionError.multipleSignersRequired</code>
+while a reported node is an account address. Contract addresses never block them,
+because the contract&rsquo;s <code>__check_auth</code> decides which signatures it needs.</p>
 
 <p><code>.sourceAccount</code> entries are ignored (they carry no explicit signer address).</p>
 
@@ -2926,8 +2936,8 @@ entry.</p>
                               </td>
                               <td>
                                 <div>
-                                  <p>When <code>true</code>, includes addresses whose signature is
-non-void. Defaults to <code>false</code>.</p>
+                                  <p>When <code>true</code>, also includes the nodes that carry a
+signature. Defaults to <code>false</code>.</p>
                                 </div>
                               </td>
                             </tr>
@@ -2935,7 +2945,7 @@ non-void. Defaults to <code>false</code>.</p>
                         </table>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/AssembledTransaction.swift#L384-L422">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/AssembledTransaction.swift#L379-L382">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2966,7 +2976,7 @@ Returns true if the call has no auth entries and writes no ledger data.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/AssembledTransaction.swift#L451-L456">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/AssembledTransaction.swift#L446-L451">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2997,7 +3007,7 @@ Throws if transaction has not been simulated or simulation failed.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/AssembledTransaction.swift#L460-L486">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/AssembledTransaction.swift#L455-L481">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3034,6 +3044,21 @@ authorized by the transaction-envelope signer, not by auth-entry signing. An ent
 whose top-level address and delegate tree both differ from the signer is also silently
 skipped (multi-party transactions carry entries for different signers).</p>
 
+<p><strong>Expiration</strong>: every signature on an entry commits to the entry&rsquo;s single stored
+<code>signatureExpirationLedger</code>. While any node of a matching entry carries a signature,
+the stored value is kept, and a <code>validUntilLedgerSeq</code> that differs from it throws
+<code>StellarSDKError.invalidArgument</code>. Otherwise the entry gets <code>validUntilLedgerSeq</code>,
+or the latest ledger + 100 when it is <code>nil</code>; the latest ledger is fetched at most
+once per call, and only when an entry needs it.
+<code>SorobanAuthorizationEntryXDR.carriesSignature(_:)</code> decides whether a node carries one.</p>
+
+<p>The transaction&rsquo;s auth entries are replaced only after every matching entry is
+signed; on any error the transaction keeps the entries it had.</p>
+
+<p>An entry whose credential address is a muxed account (M&hellip;) or muxed contract (W&hellip;)
+address throws <code>StellarSDKError.invalidArgument</code> before any entry is stamped or handed
+to <code>authorizeEntryCallback</code>.</p>
+
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
@@ -3044,7 +3069,7 @@ skipped (multi-party transactions carry entries for different signers).</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/AssembledTransaction.swift#L503-L604">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/AssembledTransaction.swift#L513-L580">Show on GitHub</a>
                       </div>
                     </section>
                   </div>

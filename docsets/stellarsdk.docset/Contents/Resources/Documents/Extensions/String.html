@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          stellarsdk 3.12.0 Docs
+          stellarsdk 3.13.0 Docs
         </a>
          (94% documented)
       </p>
@@ -1539,6 +1539,9 @@
                 <a class="nav-group-task-link" href="../Functions.html#/s:10stellarsdk4ceilyAA4BIntVAA7BDoubleVF">ceil(_:)</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Functions.html#/s:10stellarsdk21compareScValHostOrderySiAA8SCValXDRO_ADtF">compareScValHostOrder(_:_:)</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Functions.html#/s:10stellarsdk5flooryAA4BIntVAA7BDoubleVF">floor(_:)</a>
               </li>
               <li class="nav-group-task">
@@ -1847,6 +1850,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/MemoTypeAsString.html">MemoTypeAsString</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/MuxedContract.html">MuxedContract</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/NetworkConstants.html">NetworkConstants</a>
@@ -3190,6 +3196,67 @@ characters
                 <li class="item">
                   <div>
                     <code>
+                    <a name="/s:SS10stellarsdkE21decodeMuxedContractId10Foundation4DataVyKF"></a>
+                    <a name="//apple_ref/swift/Method/decodeMuxedContractId()" class="dashAnchor"></a>
+                    <a class="token" href="#/s:SS10stellarsdkE21decodeMuxedContractId10Foundation4DataVyKF">decodeMuxedContractId()</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Decodes strkey muxed contract address (&ldquo;W&hellip;&rdquo;) to raw data: the 32 byte contract id
+followed by the 8 byte big-endian multiplexing id (SEP-23, CAP-0084).</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">decodeMuxedContractId</span><span class="p">()</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt">Data</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/extensions/String+KeyUtils.swift#L74-L76">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:SS10stellarsdkE22isValidMuxedContractIdSbyF"></a>
+                    <a name="//apple_ref/swift/Method/isValidMuxedContractId()" class="dashAnchor"></a>
+                    <a class="token" href="#/s:SS10stellarsdkE22isValidMuxedContractIdSbyF">isValidMuxedContractId()</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Returns true if the string represents a valid strkey muxed contract address. Must start with &ldquo;W&rdquo;</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">isValidMuxedContractId</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kt">Bool</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/extensions/String+KeyUtils.swift#L79-L81">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
                     <a name="/s:SS10stellarsdkE15decodePreAuthTx10Foundation4DataVyKF"></a>
                     <a name="//apple_ref/swift/Method/decodePreAuthTx()" class="dashAnchor"></a>
                     <a class="token" href="#/s:SS10stellarsdkE15decodePreAuthTx10Foundation4DataVyKF">decodePreAuthTx()</a>
@@ -3212,7 +3279,7 @@ characters
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/extensions/String+KeyUtils.swift#L73-L75">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/extensions/String+KeyUtils.swift#L84-L86">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3242,7 +3309,7 @@ characters
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/extensions/String+KeyUtils.swift#L78-L80">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/extensions/String+KeyUtils.swift#L89-L91">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3272,7 +3339,7 @@ characters
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/extensions/String+KeyUtils.swift#L83-L85">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/extensions/String+KeyUtils.swift#L94-L96">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3302,7 +3369,7 @@ characters
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/extensions/String+KeyUtils.swift#L88-L90">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/extensions/String+KeyUtils.swift#L99-L101">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3332,7 +3399,7 @@ characters
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/extensions/String+KeyUtils.swift#L93-L96">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/extensions/String+KeyUtils.swift#L104-L107">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3362,7 +3429,7 @@ characters
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/extensions/String+KeyUtils.swift#L99-L101">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/extensions/String+KeyUtils.swift#L110-L112">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3392,7 +3459,7 @@ characters
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/extensions/String+KeyUtils.swift#L104-L106">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/extensions/String+KeyUtils.swift#L115-L117">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3422,7 +3489,7 @@ characters
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/extensions/String+KeyUtils.swift#L109-L112">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/extensions/String+KeyUtils.swift#L120-L123">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3452,7 +3519,7 @@ characters
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/extensions/String+KeyUtils.swift#L115-L117">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/extensions/String+KeyUtils.swift#L126-L128">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3482,7 +3549,7 @@ characters
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/extensions/String+KeyUtils.swift#L120-L122">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/extensions/String+KeyUtils.swift#L131-L133">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3512,7 +3579,7 @@ characters
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/extensions/String+KeyUtils.swift#L125-L128">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/extensions/String+KeyUtils.swift#L136-L139">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3542,7 +3609,7 @@ characters
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/extensions/String+KeyUtils.swift#L131-L133">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/extensions/String+KeyUtils.swift#L142-L144">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3572,7 +3639,7 @@ characters
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/extensions/String+KeyUtils.swift#L136-L138">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/extensions/String+KeyUtils.swift#L147-L149">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3602,7 +3669,7 @@ characters
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/extensions/String+KeyUtils.swift#L141-L144">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/extensions/String+KeyUtils.swift#L152-L155">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3632,7 +3699,7 @@ characters
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/extensions/String+KeyUtils.swift#L147-L149">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/extensions/String+KeyUtils.swift#L158-L160">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3662,7 +3729,7 @@ characters
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/extensions/String+KeyUtils.swift#L152-L166">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/extensions/String+KeyUtils.swift#L163-L177">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3702,7 +3769,7 @@ if it does not hold the 32 bytes a contract id is wide
                         <p>StrKey encoded contract id</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/extensions/String+KeyUtils.swift#L173-L178">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/extensions/String+KeyUtils.swift#L184-L189">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3744,7 +3811,7 @@ opening with the four byte union discriminant, the shape Horizon reports
                         <p>StrKey encoded claimable balance id</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/extensions/String+KeyUtils.swift#L187-L192">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/extensions/String+KeyUtils.swift#L198-L203">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3784,7 +3851,7 @@ if it does not hold the 32 bytes a liquidity pool id is wide
                         <p>StrKey encoded liquidity pool id</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/extensions/String+KeyUtils.swift#L199-L204">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/extensions/String+KeyUtils.swift#L210-L215">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3818,7 +3885,7 @@ if it does not hold the 32 bytes a liquidity pool id is wide
                         <p>True if the string is valid hexadecimal, false otherwise</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/extensions/String+KeyUtils.swift#L209-L214">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/extensions/String+KeyUtils.swift#L220-L225">Show on GitHub</a>
                       </div>
                     </section>
                   </div>

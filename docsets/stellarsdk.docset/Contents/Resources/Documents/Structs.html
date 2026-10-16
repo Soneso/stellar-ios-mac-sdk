@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="index.html">
-          stellarsdk 3.12.0 Docs
+          stellarsdk 3.13.0 Docs
         </a>
          (94% documented)
       </p>
@@ -1537,6 +1537,9 @@
                 <a class="nav-group-task-link" href="Functions.html#/s:10stellarsdk4ceilyAA4BIntVAA7BDoubleVF">ceil(_:)</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Functions.html#/s:10stellarsdk21compareScValHostOrderySiAA8SCValXDRO_ADtF">compareScValHostOrder(_:_:)</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Functions.html#/s:10stellarsdk5flooryAA4BIntVAA7BDoubleVF">floor(_:)</a>
               </li>
               <li class="nav-group-task">
@@ -1845,6 +1848,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Structs/MemoTypeAsString.html">MemoTypeAsString</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/MuxedContract.html">MuxedContract</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Structs/NetworkConstants.html">NetworkConstants</a>
@@ -2446,7 +2452,7 @@ used throughout the Stellar network.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L16-L351">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/constants/StellarProtocolConstants.swift#L16-L365">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -6821,6 +6827,51 @@ If any operation fails, the entire transaction fails and no changes are made.</p
                 <li class="item">
                   <div>
                     <code>
+                    <a name="/s:10stellarsdk13MuxedContractV"></a>
+                    <a name="//apple_ref/swift/Struct/MuxedContract" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk13MuxedContractV">MuxedContract</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>A contract with an optional 64-bit multiplexing id
+(<a href="https://github.com/stellar/stellar-protocol/blob/master/core/cap-0084.md">CAP-0084</a>).</p>
+
+<p>A muxed contract address pairs a contract with an id the way a muxed account address pairs
+an account with one. Its address is the &ldquo;W&hellip;&rdquo; strkey when the multiplexing id is set and
+the &ldquo;C&hellip;&rdquo; strkey of the contract when it is not. The Stellar Asset Contract accepts a muxed
+contract address as the recipient of a transfer; it is never an authorization address.</p>
+<pre class="highlight swift"><code><span class="k">let</span> <span class="nv">muxed</span> <span class="o">=</span> <span class="k">try</span> <span class="kt">MuxedContract</span><span class="p">(</span><span class="nv">contractId</span><span class="p">:</span> <span class="s">"CA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE"</span><span class="p">,</span>
+                              <span class="nv">id</span><span class="p">:</span> <span class="mi">123456</span><span class="p">)</span>
+<span class="nf">print</span><span class="p">(</span><span class="n">muxed</span><span class="o">.</span><span class="n">address</span><span class="p">)</span> <span class="c1">// WA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAAAAAAAAAPCIA6IG</span>
+
+<span class="k">let</span> <span class="nv">parsed</span> <span class="o">=</span> <span class="k">try</span> <span class="kt">MuxedContract</span><span class="p">(</span><span class="nv">address</span><span class="p">:</span> <span class="n">muxed</span><span class="o">.</span><span class="n">address</span><span class="p">)</span>
+<span class="nf">print</span><span class="p">(</span><span class="n">parsed</span><span class="o">.</span><span class="n">contractId</span><span class="p">)</span> <span class="c1">// CA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE</span>
+<span class="nf">print</span><span class="p">(</span><span class="n">parsed</span><span class="o">.</span><span class="n">id</span> <span class="p">??</span> <span class="mi">0</span><span class="p">)</span>    <span class="c1">// 123456</span>
+</code></pre>
+
+                        <a href="Structs/MuxedContract.html" class="slightly-smaller">See more</a>
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">MuxedContract</span> <span class="p">:</span> <span class="kt">Equatable</span><span class="p">,</span> <span class="kt">Sendable</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/MuxedContract.swift#L28-L101">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
                     <a name="/s:10stellarsdk23WebAuthnAllowCredentialV"></a>
                     <a name="//apple_ref/swift/Struct/WebAuthnAllowCredential" class="dashAnchor"></a>
                     <a class="token" href="#/s:10stellarsdk23WebAuthnAllowCredentialV">WebAuthnAllowCredential</a>
@@ -8872,15 +8923,18 @@ if the transaction has been included in a ledger and whether it succeeded or fai
         <span class="k">if</span> <span class="k">let</span> <span class="nv">result</span> <span class="o">=</span> <span class="n">txInfo</span><span class="o">.</span><span class="n">resultValue</span> <span class="p">{</span>
             <span class="nf">print</span><span class="p">(</span><span class="s">"Contract returned: </span><span class="se">\(</span><span class="n">result</span><span class="se">)</span><span class="s">"</span><span class="p">)</span>
         <span class="p">}</span>
-        <span class="c1">// Process events</span>
-        <span class="k">if</span> <span class="k">let</span> <span class="nv">events</span> <span class="o">=</span> <span class="n">txInfo</span><span class="o">.</span><span class="n">events</span> <span class="p">{</span>
-            <span class="k">for</span> <span class="n">event</span> <span class="k">in</span> <span class="n">events</span><span class="o">.</span><span class="n">events</span> <span class="p">{</span>
-                <span class="nf">print</span><span class="p">(</span><span class="s">"Event: </span><span class="se">\(</span><span class="n">event</span><span class="se">)</span><span class="s">"</span><span class="p">)</span>
+        <span class="c1">// Process contract events, grouped by operation index</span>
+        <span class="k">for</span> <span class="n">operationEvents</span> <span class="k">in</span> <span class="n">txInfo</span><span class="o">.</span><span class="n">events</span><span class="p">?</span><span class="o">.</span><span class="n">contractEventsXdr</span> <span class="p">??</span> <span class="p">[]</span> <span class="p">{</span>
+            <span class="k">for</span> <span class="n">eventXdr</span> <span class="k">in</span> <span class="n">operationEvents</span> <span class="p">{</span>
+                <span class="nf">print</span><span class="p">(</span><span class="s">"Contract event: </span><span class="se">\(</span><span class="n">eventXdr</span><span class="se">)</span><span class="s">"</span><span class="p">)</span>
             <span class="p">}</span>
         <span class="p">}</span>
     <span class="k">case</span> <span class="kt">GetTransactionResponse</span><span class="o">.</span><span class="kt">STATUS_FAILED</span><span class="p">:</span>
         <span class="k">if</span> <span class="k">let</span> <span class="nv">error</span> <span class="o">=</span> <span class="n">txInfo</span><span class="o">.</span><span class="n">error</span> <span class="p">{</span>
             <span class="nf">print</span><span class="p">(</span><span class="s">"Transaction failed: </span><span class="se">\(</span><span class="n">error</span><span class="o">.</span><span class="n">message</span><span class="se">)</span><span class="s">"</span><span class="p">)</span>
+        <span class="p">}</span>
+        <span class="k">for</span> <span class="n">eventXdr</span> <span class="k">in</span> <span class="n">txInfo</span><span class="o">.</span><span class="n">diagnosticEventsXdr</span> <span class="p">??</span> <span class="p">[]</span> <span class="p">{</span>
+            <span class="nf">print</span><span class="p">(</span><span class="s">"Diagnostic event: </span><span class="se">\(</span><span class="n">eventXdr</span><span class="se">)</span><span class="s">"</span><span class="p">)</span>
         <span class="p">}</span>
     <span class="k">case</span> <span class="kt">GetTransactionResponse</span><span class="o">.</span><span class="kt">STATUS_NOT_FOUND</span><span class="p">:</span>
         <span class="nf">print</span><span class="p">(</span><span class="s">"Transaction not yet included"</span><span class="p">)</span>
@@ -8910,7 +8964,7 @@ if the transaction has been included in a ledger and whether it succeeded or fai
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/responses/GetTransactionResponse.swift#L63-L210">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/responses/GetTransactionResponse.swift#L66-L218">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -9399,7 +9453,7 @@ a single element with the contract&rsquo;s return value.</p>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Container for Soroban transaction diagnostic and execution events in XDR format.</p>
+                        <p>Container for the transaction and contract events of a Soroban transaction in XDR format.</p>
 
                         <a href="Structs/TransactionEvents.html" class="slightly-smaller">See more</a>
                       </div>
@@ -9412,7 +9466,7 @@ a single element with the contract&rsquo;s return value.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/responses/TransactionEvents.swift#L12-L36">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/responses/TransactionEvents.swift#L12-L40">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -11104,7 +11158,7 @@ and rejects within-array duplicate addresses.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/xdr_helpers/SorobanDelegateTreeXDR+Helpers.swift#L11-L34">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/xdr_helpers/SorobanDelegateTreeXDR+Helpers.swift#L11-L35">Show on GitHub</a>
                       </div>
                     </section>
                   </div>

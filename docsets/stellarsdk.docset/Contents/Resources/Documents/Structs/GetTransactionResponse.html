@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          stellarsdk 3.12.0 Docs
+          stellarsdk 3.13.0 Docs
         </a>
          (94% documented)
       </p>
@@ -1539,6 +1539,9 @@
                 <a class="nav-group-task-link" href="../Functions.html#/s:10stellarsdk4ceilyAA4BIntVAA7BDoubleVF">ceil(_:)</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Functions.html#/s:10stellarsdk21compareScValHostOrderySiAA8SCValXDRO_ADtF">compareScValHostOrder(_:_:)</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Functions.html#/s:10stellarsdk5flooryAA4BIntVAA7BDoubleVF">floor(_:)</a>
               </li>
               <li class="nav-group-task">
@@ -1847,6 +1850,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/MemoTypeAsString.html">MemoTypeAsString</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/MuxedContract.html">MuxedContract</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/NetworkConstants.html">NetworkConstants</a>
@@ -2350,15 +2356,18 @@ if the transaction has been included in a ledger and whether it succeeded or fai
         <span class="k">if</span> <span class="k">let</span> <span class="nv">result</span> <span class="o">=</span> <span class="n">txInfo</span><span class="o">.</span><span class="n">resultValue</span> <span class="p">{</span>
             <span class="nf">print</span><span class="p">(</span><span class="s">"Contract returned: </span><span class="se">\(</span><span class="n">result</span><span class="se">)</span><span class="s">"</span><span class="p">)</span>
         <span class="p">}</span>
-        <span class="c1">// Process events</span>
-        <span class="k">if</span> <span class="k">let</span> <span class="nv">events</span> <span class="o">=</span> <span class="n">txInfo</span><span class="o">.</span><span class="n">events</span> <span class="p">{</span>
-            <span class="k">for</span> <span class="n">event</span> <span class="k">in</span> <span class="n">events</span><span class="o">.</span><span class="n">events</span> <span class="p">{</span>
-                <span class="nf">print</span><span class="p">(</span><span class="s">"Event: </span><span class="se">\(</span><span class="n">event</span><span class="se">)</span><span class="s">"</span><span class="p">)</span>
+        <span class="c1">// Process contract events, grouped by operation index</span>
+        <span class="k">for</span> <span class="n">operationEvents</span> <span class="k">in</span> <span class="n">txInfo</span><span class="o">.</span><span class="n">events</span><span class="p">?</span><span class="o">.</span><span class="n">contractEventsXdr</span> <span class="p">??</span> <span class="p">[]</span> <span class="p">{</span>
+            <span class="k">for</span> <span class="n">eventXdr</span> <span class="k">in</span> <span class="n">operationEvents</span> <span class="p">{</span>
+                <span class="nf">print</span><span class="p">(</span><span class="s">"Contract event: </span><span class="se">\(</span><span class="n">eventXdr</span><span class="se">)</span><span class="s">"</span><span class="p">)</span>
             <span class="p">}</span>
         <span class="p">}</span>
     <span class="k">case</span> <span class="kt">GetTransactionResponse</span><span class="o">.</span><span class="kt">STATUS_FAILED</span><span class="p">:</span>
         <span class="k">if</span> <span class="k">let</span> <span class="nv">error</span> <span class="o">=</span> <span class="n">txInfo</span><span class="o">.</span><span class="n">error</span> <span class="p">{</span>
             <span class="nf">print</span><span class="p">(</span><span class="s">"Transaction failed: </span><span class="se">\(</span><span class="n">error</span><span class="o">.</span><span class="n">message</span><span class="se">)</span><span class="s">"</span><span class="p">)</span>
+        <span class="p">}</span>
+        <span class="k">for</span> <span class="n">eventXdr</span> <span class="k">in</span> <span class="n">txInfo</span><span class="o">.</span><span class="n">diagnosticEventsXdr</span> <span class="p">??</span> <span class="p">[]</span> <span class="p">{</span>
+            <span class="nf">print</span><span class="p">(</span><span class="s">"Diagnostic event: </span><span class="se">\(</span><span class="n">eventXdr</span><span class="se">)</span><span class="s">"</span><span class="p">)</span>
         <span class="p">}</span>
     <span class="k">case</span> <span class="kt">GetTransactionResponse</span><span class="o">.</span><span class="kt">STATUS_NOT_FOUND</span><span class="p">:</span>
         <span class="nf">print</span><span class="p">(</span><span class="s">"Transaction not yet included"</span><span class="p">)</span>
@@ -2378,7 +2387,7 @@ if the transaction has been included in a ledger and whether it succeeded or fai
 </ul>
 
               <div class="slightly-smaller">
-                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/responses/GetTransactionResponse.swift#L63-L210">Show on GitHub</a>
+                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/responses/GetTransactionResponse.swift#L66-L218">Show on GitHub</a>
               </div>
           </div>
         </section>
@@ -2412,7 +2421,7 @@ if the transaction has been included in a ledger and whether it succeeded or fai
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/responses/GetTransactionResponse.swift#L66">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/responses/GetTransactionResponse.swift#L69">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2442,7 +2451,7 @@ if the transaction has been included in a ledger and whether it succeeded or fai
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/responses/GetTransactionResponse.swift#L68">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/responses/GetTransactionResponse.swift#L71">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2472,7 +2481,7 @@ if the transaction has been included in a ledger and whether it succeeded or fai
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/responses/GetTransactionResponse.swift#L70">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/responses/GetTransactionResponse.swift#L73">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2502,7 +2511,7 @@ if the transaction has been included in a ledger and whether it succeeded or fai
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/responses/GetTransactionResponse.swift#L73">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/responses/GetTransactionResponse.swift#L76">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2532,7 +2541,7 @@ if the transaction has been included in a ledger and whether it succeeded or fai
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/responses/GetTransactionResponse.swift#L76">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/responses/GetTransactionResponse.swift#L79">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2550,7 +2559,7 @@ if the transaction has been included in a ledger and whether it succeeded or fai
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>The unix timestamp of the close time of the oldest ledger ingested by Soroban RPC at the time it handled the request.</p>
+                        <p>The unix timestamp of the close time of the latest ledger ingested by Soroban RPC at the time it handled the request.</p>
 
                       </div>
                       <div class="declaration">
@@ -2562,7 +2571,7 @@ if the transaction has been included in a ledger and whether it succeeded or fai
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/responses/GetTransactionResponse.swift#L79">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/responses/GetTransactionResponse.swift#L82">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2592,7 +2601,7 @@ if the transaction has been included in a ledger and whether it succeeded or fai
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/responses/GetTransactionResponse.swift#L82">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/responses/GetTransactionResponse.swift#L85">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2622,7 +2631,7 @@ if the transaction has been included in a ledger and whether it succeeded or fai
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/responses/GetTransactionResponse.swift#L85">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/responses/GetTransactionResponse.swift#L88">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2652,7 +2661,7 @@ if the transaction has been included in a ledger and whether it succeeded or fai
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/responses/GetTransactionResponse.swift#L88">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/responses/GetTransactionResponse.swift#L91">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2682,7 +2691,7 @@ if the transaction has been included in a ledger and whether it succeeded or fai
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/responses/GetTransactionResponse.swift#L91">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/responses/GetTransactionResponse.swift#L94">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2712,7 +2721,7 @@ if the transaction has been included in a ledger and whether it succeeded or fai
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/responses/GetTransactionResponse.swift#L94">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/responses/GetTransactionResponse.swift#L97">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2742,7 +2751,7 @@ if the transaction has been included in a ledger and whether it succeeded or fai
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/responses/GetTransactionResponse.swift#L97">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/responses/GetTransactionResponse.swift#L100">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2772,7 +2781,7 @@ if the transaction has been included in a ledger and whether it succeeded or fai
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/responses/GetTransactionResponse.swift#L100">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/responses/GetTransactionResponse.swift#L103">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2802,7 +2811,7 @@ if the transaction has been included in a ledger and whether it succeeded or fai
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/responses/GetTransactionResponse.swift#L103">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/responses/GetTransactionResponse.swift#L106">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2832,7 +2841,37 @@ if the transaction has been included in a ledger and whether it succeeded or fai
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/responses/GetTransactionResponse.swift#L106">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/responses/GetTransactionResponse.swift#L109">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10stellarsdk22GetTransactionResponseV19diagnosticEventsXdrSaySSGSgvp"></a>
+                    <a name="//apple_ref/swift/Property/diagnosticEventsXdr" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk22GetTransactionResponseV19diagnosticEventsXdrSaySSGSgvp">diagnosticEventsXdr</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>(optional) A base64 encoded slice of xdr.DiagnosticEvent. This is only present if the ENABLE_SOROBAN_DIAGNOSTIC_EVENTS has been enabled in the stellar-core config.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">let</span> <span class="nv">diagnosticEventsXdr</span><span class="p">:</span> <span class="p">[</span><span class="kt">String</span><span class="p">]?</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/responses/GetTransactionResponse.swift#L112">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2862,7 +2901,7 @@ if the transaction has been included in a ledger and whether it succeeded or fai
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/responses/GetTransactionResponse.swift#L109">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/responses/GetTransactionResponse.swift#L115">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2892,7 +2931,7 @@ if the transaction has been included in a ledger and whether it succeeded or fai
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/responses/GetTransactionResponse.swift#L112">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/responses/GetTransactionResponse.swift#L118">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2922,7 +2961,7 @@ if the transaction has been included in a ledger and whether it succeeded or fai
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/responses/GetTransactionResponse.swift#L115">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/responses/GetTransactionResponse.swift#L121">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2951,7 +2990,7 @@ if the transaction has been included in a ledger and whether it succeeded or fai
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/responses/GetTransactionResponse.swift#L135-L152">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/responses/GetTransactionResponse.swift#L142-L160">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2981,7 +3020,7 @@ if the transaction has been included in a ledger and whether it succeeded or fai
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/responses/GetTransactionResponse.swift#L155-L164">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/responses/GetTransactionResponse.swift#L163-L172">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3011,7 +3050,7 @@ if the transaction has been included in a ledger and whether it succeeded or fai
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/responses/GetTransactionResponse.swift#L167-L172">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/responses/GetTransactionResponse.swift#L175-L180">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3041,7 +3080,7 @@ if the transaction has been included in a ledger and whether it succeeded or fai
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/responses/GetTransactionResponse.swift#L175-L180">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/responses/GetTransactionResponse.swift#L183-L188">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3071,7 +3110,7 @@ if the transaction has been included in a ledger and whether it succeeded or fai
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/responses/GetTransactionResponse.swift#L183-L188">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/responses/GetTransactionResponse.swift#L191-L196">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3101,7 +3140,7 @@ if the transaction has been included in a ledger and whether it succeeded or fai
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/responses/GetTransactionResponse.swift#L191-L193">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/responses/GetTransactionResponse.swift#L199-L201">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3131,7 +3170,7 @@ if the transaction has been included in a ledger and whether it succeeded or fai
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/responses/GetTransactionResponse.swift#L196-L198">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/responses/GetTransactionResponse.swift#L204-L206">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
