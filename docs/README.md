@@ -24,6 +24,7 @@ Welcome to the documentation for the Stellar SDK for iOS and macOS. Whether you'
 - **[SEP Implementations](sep/README.md)** - Stellar Ecosystem Proposal support
 
 ### Migration guides
+- **[Migrating to 3.13.0](migration/3.13.0.md)** - Observable changes between 3.12.0 and 3.13.0
 - **[Migrating to 3.12.0](migration/3.12.0.md)** - Observable changes between 3.11.0 and 3.12.0
 - **[Migrating to 3.10.0](migration/3.10.0.md)** - Observable changes between 3.9.0 and 3.10.0
 

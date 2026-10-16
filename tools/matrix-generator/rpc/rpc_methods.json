@@ -2,16 +2,15 @@
   "metadata": {
     "source": "stellar-rpc",
     "repository": "https://github.com/stellar/stellar-rpc",
-    "version": "v29.0.0",
-    "extracted_date": "2026-10-02",
+    "version": "v29.0.1",
+    "extracted_date": "2026-10-16",
     "total_methods": 12,
     "protocol": "JSON-RPC 2.0",
-    "protocol_definitions": "https://github.com/stellar/go-stellar-sdk/tree/v0.7.3/protocols/rpc"
+    "protocol_definitions": "https://github.com/stellar/go-stellar-sdk/tree/v0.7.2/protocols/rpc"
   },
   "methods": {
     "getHealth": {
       "name": "getHealth",
-      "description": "RPC method: getHealth",
       "handler_file": "cmd/stellar-rpc/internal/methods/get_health.go",
       "parameters": {
         "required": [],
@@ -22,43 +21,33 @@
         "fields": [
           {
             "name": "status",
-            "type": "string",
-            "description": "Field: status"
+            "type": "string"
           },
           {
             "name": "latestLedger",
-            "type": "uint32",
-            "description": "Field: latestLedger"
+            "type": "uint32"
           },
           {
             "name": "latestLedgerCloseTime",
-            "type": "int64",
-            "description": "Field: latestLedgerCloseTime"
+            "type": "int64"
           },
           {
             "name": "oldestLedger",
-            "type": "uint32",
-            "description": "Field: oldestLedger"
+            "type": "uint32"
           },
           {
             "name": "oldestLedgerCloseTime",
-            "type": "int64",
-            "description": "Field: oldestLedgerCloseTime"
+            "type": "int64"
           },
           {
             "name": "ledgerRetentionWindow",
-            "type": "uint32",
-            "description": "Field: ledgerRetentionWindow"
+            "type": "uint32"
           }
-        ],
-        "nested_types": {}
-      },
-      "introduced_in": "",
-      "last_modified": ""
+        ]
+      }
     },
     "getNetwork": {
       "name": "getNetwork",
-      "description": "RPC method: getNetwork",
       "handler_file": "cmd/stellar-rpc/internal/methods/get_network.go",
       "parameters": {
         "required": [],
@@ -69,28 +58,21 @@
         "fields": [
           {
             "name": "friendbotUrl",
-            "type": "string",
-            "description": "Field: friendbotUrl"
+            "type": "string"
           },
           {
             "name": "passphrase",
-            "type": "string",
-            "description": "Field: passphrase"
+            "type": "string"
           },
           {
             "name": "protocolVersion",
-            "type": "integer",
-            "description": "Field: protocolVersion"
+            "type": "integer"
           }
-        ],
-        "nested_types": {}
-      },
-      "introduced_in": "",
-      "last_modified": ""
+        ]
+      }
     },
     "getVersionInfo": {
       "name": "getVersionInfo",
-      "description": "RPC method: getVersionInfo",
       "handler_file": "cmd/stellar-rpc/internal/methods/get_version_info.go",
       "parameters": {
         "required": [],
@@ -101,38 +83,29 @@
         "fields": [
           {
             "name": "version",
-            "type": "string",
-            "description": "Field: version"
+            "type": "string"
           },
           {
             "name": "commitHash",
-            "type": "string",
-            "description": "Field: commitHash"
+            "type": "string"
           },
           {
             "name": "buildTimestamp",
-            "type": "string",
-            "description": "Field: buildTimestamp"
+            "type": "string"
           },
           {
             "name": "captiveCoreVersion",
-            "type": "string",
-            "description": "Field: captiveCoreVersion"
+            "type": "string"
           },
           {
             "name": "protocolVersion",
-            "type": "uint32",
-            "description": "Field: protocolVersion"
+            "type": "uint32"
           }
-        ],
-        "nested_types": {}
-      },
-      "introduced_in": "",
-      "last_modified": ""
+        ]
+      }
     },
     "getFeeStats": {
       "name": "getFeeStats",
-      "description": "RPC method: getFeeStats",
       "handler_file": "cmd/stellar-rpc/internal/methods/get_fee_stats.go",
       "parameters": {
         "required": [],
@@ -143,115 +116,21 @@
         "fields": [
           {
             "name": "sorobanInclusionFee",
-            "type": "FeeDistribution",
-            "description": "Field: sorobanInclusionFee"
+            "type": "FeeDistribution"
           },
           {
             "name": "inclusionFee",
-            "type": "FeeDistribution",
-            "description": "Field: inclusionFee"
+            "type": "FeeDistribution"
           },
           {
             "name": "latestLedger",
-            "type": "uint32",
-            "description": "Field: latestLedger"
+            "type": "uint32"
           }
-        ],
-        "nested_types": {
-          "FeeDistribution": {
-            "type": "object",
-            "fields": [
-              {
-                "name": "max",
-                "type": "uint64 (string)",
-                "description": "Field: max"
-              },
-              {
-                "name": "min",
-                "type": "uint64 (string)",
-                "description": "Field: min"
-              },
-              {
-                "name": "mode",
-                "type": "uint64 (string)",
-                "description": "Field: mode"
-              },
-              {
-                "name": "p10",
-                "type": "uint64 (string)",
-                "description": "Field: p10"
-              },
-              {
-                "name": "p20",
-                "type": "uint64 (string)",
-                "description": "Field: p20"
-              },
-              {
-                "name": "p30",
-                "type": "uint64 (string)",
-                "description": "Field: p30"
-              },
-              {
-                "name": "p40",
-                "type": "uint64 (string)",
-                "description": "Field: p40"
-              },
-              {
-                "name": "p50",
-                "type": "uint64 (string)",
-                "description": "Field: p50"
-              },
-              {
-                "name": "p60",
-                "type": "uint64 (string)",
-                "description": "Field: p60"
-              },
-              {
-                "name": "p70",
-                "type": "uint64 (string)",
-                "description": "Field: p70"
-              },
-              {
-                "name": "p80",
-                "type": "uint64 (string)",
-                "description": "Field: p80"
-              },
-              {
-                "name": "p90",
-                "type": "uint64 (string)",
-                "description": "Field: p90"
-              },
-              {
-                "name": "p95",
-                "type": "uint64 (string)",
-                "description": "Field: p95"
-              },
-              {
-                "name": "p99",
-                "type": "uint64 (string)",
-                "description": "Field: p99"
-              },
-              {
-                "name": "transactionCount",
-                "type": "uint32",
-                "description": "Field: transactionCount"
-              },
-              {
-                "name": "ledgerCount",
-                "type": "uint32",
-                "description": "Field: ledgerCount"
-              }
-            ],
-            "nested_types": {}
-          }
-        }
-      },
-      "introduced_in": "",
-      "last_modified": ""
+        ]
+      }
     },
     "getLatestLedger": {
       "name": "getLatestLedger",
-      "description": "RPC method: getLatestLedger",
       "handler_file": "cmd/stellar-rpc/internal/methods/get_latest_ledger.go",
       "parameters": {
         "required": [],
@@ -262,61 +141,47 @@
         "fields": [
           {
             "name": "id",
-            "type": "string",
-            "description": "Field: id"
+            "type": "string"
           },
           {
             "name": "protocolVersion",
-            "type": "uint32",
-            "description": "Field: protocolVersion"
+            "type": "uint32"
           },
           {
             "name": "sequence",
-            "type": "uint32",
-            "description": "Field: sequence"
+            "type": "uint32"
           },
           {
             "name": "closeTime",
-            "type": "int64",
-            "description": "Field: closeTime"
+            "type": "int64"
           },
           {
             "name": "headerXdr",
-            "type": "string",
-            "description": "Field: headerXdr"
+            "type": "string"
           },
           {
             "name": "metadataXdr",
-            "type": "string",
-            "description": "Field: metadataXdr"
+            "type": "string"
           }
-        ],
-        "nested_types": {}
-      },
-      "introduced_in": "",
-      "last_modified": ""
+        ]
+      }
     },
     "getLedgerEntries": {
       "name": "getLedgerEntries",
-      "description": "RPC method: getLedgerEntries",
       "handler_file": "cmd/stellar-rpc/internal/methods/get_ledger_entries.go",
       "parameters": {
         "required": [
           {
             "name": "keys",
             "type": "array[string]",
-            "description": "Array of ledger entry keys to fetch (base64-encoded XDR)",
-            "required": true,
-            "default": null
+            "required": true
           }
         ],
         "optional": [
           {
             "name": "xdrFormat",
             "type": "string",
-            "description": "Output format (xdr or json)",
-            "required": false,
-            "default": null
+            "required": false
           }
         ]
       },
@@ -325,95 +190,36 @@
         "fields": [
           {
             "name": "entries",
-            "type": "array[LedgerEntryResult]",
-            "description": "Field: entries"
+            "type": "array[LedgerEntryResult]"
           },
           {
             "name": "latestLedger",
-            "type": "uint32",
-            "description": "Field: latestLedger"
+            "type": "uint32"
           }
-        ],
-        "nested_types": {
-          "LedgerEntryResult": {
-            "type": "object",
-            "fields": [
-              {
-                "name": "key",
-                "type": "string",
-                "description": "Field: key"
-              },
-              {
-                "name": "keyJson",
-                "type": "object",
-                "description": "Field: keyJson"
-              },
-              {
-                "name": "xdr",
-                "type": "string",
-                "description": "Field: xdr"
-              },
-              {
-                "name": "dataJson",
-                "type": "object",
-                "description": "Field: dataJson"
-              },
-              {
-                "name": "lastModifiedLedgerSeq",
-                "type": "uint32",
-                "description": "Field: lastModifiedLedgerSeq"
-              },
-              {
-                "name": "liveUntilLedgerSeq",
-                "type": "uint32",
-                "description": "Field: liveUntilLedgerSeq"
-              },
-              {
-                "name": "extXdr",
-                "type": "string",
-                "description": "Field: extXdr"
-              },
-              {
-                "name": "extJson",
-                "type": "object",
-                "description": "Field: extJson"
-              }
-            ],
-            "nested_types": {}
-          }
-        }
-      },
-      "introduced_in": "",
-      "last_modified": ""
+        ]
+      }
     },
     "getLedgers": {
       "name": "getLedgers",
-      "description": "RPC method: getLedgers",
       "handler_file": "cmd/stellar-rpc/internal/methods/get_ledgers.go",
       "parameters": {
         "required": [
           {
             "name": "startLedger",
             "type": "uint32",
-            "description": "Starting ledger sequence number (inclusive)",
-            "required": true,
-            "default": null
+            "required": true
           }
         ],
         "optional": [
           {
             "name": "pagination",
             "type": "LedgerPaginationOptions",
-            "description": "Pagination options (cursor and limit)",
-            "required": false,
-            "default": null
+            "required": false
           },
           {
             "name": "xdrFormat",
             "type": "string",
-            "description": "Output format (xdr or json)",
-            "required": false,
-            "default": null
+            "required": false
           }
         ]
       },
@@ -422,124 +228,62 @@
         "fields": [
           {
             "name": "ledgers",
-            "type": "array[LedgerInfo]",
-            "description": "Field: ledgers"
+            "type": "array[LedgerInfo]"
           },
           {
             "name": "latestLedger",
-            "type": "uint32",
-            "description": "Field: latestLedger"
+            "type": "uint32"
           },
           {
             "name": "latestLedgerCloseTime",
-            "type": "int64",
-            "description": "Field: latestLedgerCloseTime"
+            "type": "int64"
           },
           {
             "name": "oldestLedger",
-            "type": "uint32",
-            "description": "Field: oldestLedger"
+            "type": "uint32"
           },
           {
             "name": "oldestLedgerCloseTime",
-            "type": "int64",
-            "description": "Field: oldestLedgerCloseTime"
+            "type": "int64"
           },
           {
             "name": "cursor",
-            "type": "string",
-            "description": "Field: cursor"
+            "type": "string"
           }
-        ],
-        "nested_types": {
-          "LedgerInfo": {
-            "type": "object",
-            "fields": [
-              {
-                "name": "hash",
-                "type": "string",
-                "description": "Field: hash"
-              },
-              {
-                "name": "sequence",
-                "type": "uint32",
-                "description": "Field: sequence"
-              },
-              {
-                "name": "ledgerCloseTime",
-                "type": "int64",
-                "description": "Field: ledgerCloseTime"
-              },
-              {
-                "name": "headerXdr",
-                "type": "string",
-                "description": "Field: headerXdr"
-              },
-              {
-                "name": "headerJson",
-                "type": "object",
-                "description": "Field: headerJson"
-              },
-              {
-                "name": "metadataXdr",
-                "type": "string",
-                "description": "Field: metadataXdr"
-              },
-              {
-                "name": "metadataJson",
-                "type": "object",
-                "description": "Field: metadataJson"
-              }
-            ],
-            "nested_types": {}
-          }
-        }
-      },
-      "introduced_in": "",
-      "last_modified": ""
+        ]
+      }
     },
     "getEvents": {
       "name": "getEvents",
-      "description": "RPC method: getEvents",
       "handler_file": "cmd/stellar-rpc/internal/methods/get_events.go",
       "parameters": {
         "required": [
           {
             "name": "filters",
             "type": "array[EventFilter]",
-            "description": "Event filters to apply",
-            "required": true,
-            "default": null
+            "required": true
           }
         ],
         "optional": [
           {
             "name": "startLedger",
             "type": "uint32",
-            "description": "Starting ledger sequence number (inclusive)",
-            "required": false,
-            "default": null
+            "required": false
           },
           {
             "name": "endLedger",
             "type": "uint32",
-            "description": "Ending ledger sequence number (exclusive)",
-            "required": false,
-            "default": null
+            "required": false
           },
           {
             "name": "pagination",
             "type": "PaginationOptions",
-            "description": "Pagination options (cursor and limit)",
-            "required": false,
-            "default": null
+            "required": false
           },
           {
             "name": "xdrFormat",
             "type": "string",
-            "description": "Output format (xdr or json)",
-            "required": false,
-            "default": null
+            "required": false
           }
         ]
       },
@@ -548,128 +292,47 @@
         "fields": [
           {
             "name": "events",
-            "type": "array[EventInfo]",
-            "description": "Field: events"
+            "type": "array[EventInfo]"
           },
           {
             "name": "cursor",
-            "type": "string",
-            "description": "Field: cursor"
+            "type": "string"
           },
           {
             "name": "latestLedger",
-            "type": "uint32",
-            "description": "Field: latestLedger"
+            "type": "uint32"
           },
           {
             "name": "oldestLedger",
-            "type": "uint32",
-            "description": "Field: oldestLedger"
+            "type": "uint32"
           },
           {
             "name": "latestLedgerCloseTime",
-            "type": "int64",
-            "description": "Field: latestLedgerCloseTime"
+            "type": "int64"
           },
           {
             "name": "oldestLedgerCloseTime",
-            "type": "int64",
-            "description": "Field: oldestLedgerCloseTime"
+            "type": "int64"
           }
-        ],
-        "nested_types": {
-          "EventInfo": {
-            "type": "object",
-            "fields": [
-              {
-                "name": "type",
-                "type": "string",
-                "description": "Field: type"
-              },
-              {
-                "name": "ledger",
-                "type": "int32",
-                "description": "Field: ledger"
-              },
-              {
-                "name": "ledgerClosedAt",
-                "type": "string",
-                "description": "Field: ledgerClosedAt"
-              },
-              {
-                "name": "contractId",
-                "type": "string",
-                "description": "Field: contractId"
-              },
-              {
-                "name": "id",
-                "type": "string",
-                "description": "Field: id"
-              },
-              {
-                "name": "operationIndex",
-                "type": "uint32",
-                "description": "Field: operationIndex"
-              },
-              {
-                "name": "transactionIndex",
-                "type": "uint32",
-                "description": "Field: transactionIndex"
-              },
-              {
-                "name": "txHash",
-                "type": "string",
-                "description": "Field: txHash"
-              },
-              {
-                "name": "topic",
-                "type": "array[string]",
-                "description": "Field: topic"
-              },
-              {
-                "name": "topicJson",
-                "type": "array[object]",
-                "description": "Field: topicJson"
-              },
-              {
-                "name": "value",
-                "type": "string",
-                "description": "Field: value"
-              },
-              {
-                "name": "valueJson",
-                "type": "object",
-                "description": "Field: valueJson"
-              }
-            ],
-            "nested_types": {}
-          }
-        }
-      },
-      "introduced_in": "",
-      "last_modified": ""
+        ]
+      }
     },
     "getTransaction": {
       "name": "getTransaction",
-      "description": "RPC method: getTransaction",
       "handler_file": "cmd/stellar-rpc/internal/methods/get_transaction.go",
       "parameters": {
         "required": [
           {
             "name": "hash",
             "type": "string",
-            "description": "Transaction hash to retrieve",
-            "required": true,
-            "default": null
+            "required": true
           }
         ],
         "optional": [
           {
             "name": "xdrFormat",
             "type": "string",
-            "description": "Output format (xdr or json)",
-            "required": false,
-            "default": null
+            "required": false
           }
         ]
       },
@@ -677,161 +340,105 @@
         "type": "object",
         "fields": [
           {
-            "name": "status",
-            "type": "string",
-            "description": "Field: status"
-          },
-          {
-            "name": "txHash",
-            "type": "string",
-            "description": "Field: txHash"
-          },
-          {
-            "name": "applicationOrder",
-            "type": "int32",
-            "description": "Field: applicationOrder"
-          },
-          {
-            "name": "feeBump",
-            "type": "boolean",
-            "description": "Field: feeBump"
-          },
-          {
-            "name": "envelopeXdr",
-            "type": "string",
-            "description": "Field: envelopeXdr"
-          },
-          {
-            "name": "envelopeJson",
-            "type": "object",
-            "description": "Field: envelopeJson"
-          },
-          {
-            "name": "resultXdr",
-            "type": "string",
-            "description": "Field: resultXdr"
-          },
-          {
-            "name": "resultJson",
-            "type": "object",
-            "description": "Field: resultJson"
-          },
-          {
-            "name": "resultMetaXdr",
-            "type": "string",
-            "description": "Field: resultMetaXdr"
-          },
-          {
-            "name": "resultMetaJson",
-            "type": "object",
-            "description": "Field: resultMetaJson"
-          },
-          {
-            "name": "diagnosticEventsXdr",
-            "type": "array[string]",
-            "description": "Field: diagnosticEventsXdr"
-          },
-          {
-            "name": "diagnosticEventsJson",
-            "type": "array[object]",
-            "description": "Field: diagnosticEventsJson"
-          },
-          {
-            "name": "events",
-            "type": "Events",
-            "description": "Field: events"
-          },
-          {
-            "name": "ledger",
-            "type": "uint32",
-            "description": "Field: ledger"
-          },
-          {
             "name": "latestLedger",
-            "type": "uint32",
-            "description": "Field: latestLedger"
+            "type": "uint32"
           },
           {
             "name": "latestLedgerCloseTime",
-            "type": "int64",
-            "description": "Field: latestLedgerCloseTime"
+            "type": "int64"
           },
           {
             "name": "oldestLedger",
-            "type": "uint32",
-            "description": "Field: oldestLedger"
+            "type": "uint32"
           },
           {
             "name": "oldestLedgerCloseTime",
-            "type": "int64",
-            "description": "Field: oldestLedgerCloseTime"
+            "type": "int64"
+          },
+          {
+            "name": "status",
+            "type": "string"
+          },
+          {
+            "name": "txHash",
+            "type": "string"
+          },
+          {
+            "name": "applicationOrder",
+            "type": "int32"
+          },
+          {
+            "name": "feeBump",
+            "type": "boolean"
+          },
+          {
+            "name": "envelopeXdr",
+            "type": "string"
+          },
+          {
+            "name": "envelopeJson",
+            "type": "object"
+          },
+          {
+            "name": "resultXdr",
+            "type": "string"
+          },
+          {
+            "name": "resultJson",
+            "type": "object"
+          },
+          {
+            "name": "resultMetaXdr",
+            "type": "string"
+          },
+          {
+            "name": "resultMetaJson",
+            "type": "object"
+          },
+          {
+            "name": "diagnosticEventsXdr",
+            "type": "array[string]"
+          },
+          {
+            "name": "diagnosticEventsJson",
+            "type": "array[object]"
+          },
+          {
+            "name": "events",
+            "type": "Events"
+          },
+          {
+            "name": "ledger",
+            "type": "uint32"
           },
           {
             "name": "createdAt",
-            "type": "int64",
-            "description": "Field: createdAt"
+            "type": "int64"
           }
-        ],
-        "nested_types": {
-          "Events": {
-            "type": "object",
-            "fields": [
-              {
-                "name": "transactionEventsXdr",
-                "type": "array[string]",
-                "description": "Field: transactionEventsXdr"
-              },
-              {
-                "name": "transactionEventsJson",
-                "type": "array[object]",
-                "description": "Field: transactionEventsJson"
-              },
-              {
-                "name": "contractEventsXdr",
-                "type": "array[array[string]]",
-                "description": "Field: contractEventsXdr"
-              },
-              {
-                "name": "contractEventsJson",
-                "type": "array[array[object]]",
-                "description": "Field: contractEventsJson"
-              }
-            ],
-            "nested_types": {}
-          }
-        }
-      },
-      "introduced_in": "",
-      "last_modified": ""
+        ]
+      }
     },
     "getTransactions": {
       "name": "getTransactions",
-      "description": "RPC method: getTransactions",
       "handler_file": "cmd/stellar-rpc/internal/methods/get_transactions.go",
       "parameters": {
         "required": [
           {
             "name": "startLedger",
             "type": "uint32",
-            "description": "Starting ledger sequence number (inclusive)",
-            "required": true,
-            "default": null
+            "required": true
           }
         ],
         "optional": [
           {
             "name": "pagination",
             "type": "LedgerPaginationOptions",
-            "description": "Pagination options (cursor and limit)",
-            "required": false,
-            "default": null
+            "required": false
           },
           {
             "name": "xdrFormat",
             "type": "string",
-            "description": "Output format (xdr or json)",
-            "required": false,
-            "default": null
+            "required": false
           }
         ]
       },
@@ -840,170 +447,47 @@
         "fields": [
           {
             "name": "transactions",
-            "type": "array[TransactionInfo]",
-            "description": "Field: transactions"
+            "type": "array[TransactionInfo]"
           },
           {
             "name": "latestLedger",
-            "type": "uint32",
-            "description": "Field: latestLedger"
+            "type": "uint32"
           },
           {
             "name": "latestLedgerCloseTimestamp",
-            "type": "int64",
-            "description": "Field: latestLedgerCloseTimestamp"
+            "type": "int64"
           },
           {
             "name": "oldestLedger",
-            "type": "uint32",
-            "description": "Field: oldestLedger"
+            "type": "uint32"
           },
           {
             "name": "oldestLedgerCloseTimestamp",
-            "type": "int64",
-            "description": "Field: oldestLedgerCloseTimestamp"
+            "type": "int64"
           },
           {
             "name": "cursor",
-            "type": "string",
-            "description": "Field: cursor"
+            "type": "string"
           }
-        ],
-        "nested_types": {
-          "TransactionInfo": {
-            "type": "object",
-            "fields": [
-              {
-                "name": "status",
-                "type": "string",
-                "description": "Field: status"
-              },
-              {
-                "name": "txHash",
-                "type": "string",
-                "description": "Field: txHash"
-              },
-              {
-                "name": "applicationOrder",
-                "type": "int32",
-                "description": "Field: applicationOrder"
-              },
-              {
-                "name": "feeBump",
-                "type": "boolean",
-                "description": "Field: feeBump"
-              },
-              {
-                "name": "envelopeXdr",
-                "type": "string",
-                "description": "Field: envelopeXdr"
-              },
-              {
-                "name": "envelopeJson",
-                "type": "object",
-                "description": "Field: envelopeJson"
-              },
-              {
-                "name": "resultXdr",
-                "type": "string",
-                "description": "Field: resultXdr"
-              },
-              {
-                "name": "resultJson",
-                "type": "object",
-                "description": "Field: resultJson"
-              },
-              {
-                "name": "resultMetaXdr",
-                "type": "string",
-                "description": "Field: resultMetaXdr"
-              },
-              {
-                "name": "resultMetaJson",
-                "type": "object",
-                "description": "Field: resultMetaJson"
-              },
-              {
-                "name": "diagnosticEventsXdr",
-                "type": "array[string]",
-                "description": "Field: diagnosticEventsXdr"
-              },
-              {
-                "name": "diagnosticEventsJson",
-                "type": "array[object]",
-                "description": "Field: diagnosticEventsJson"
-              },
-              {
-                "name": "events",
-                "type": "Events",
-                "description": "Field: events"
-              },
-              {
-                "name": "ledger",
-                "type": "uint32",
-                "description": "Field: ledger"
-              },
-              {
-                "name": "createdAt",
-                "type": "int64",
-                "description": "Field: createdAt"
-              }
-            ],
-            "nested_types": {
-              "Events": {
-                "type": "object",
-                "fields": [
-                  {
-                    "name": "transactionEventsXdr",
-                    "type": "array[string]",
-                    "description": "Field: transactionEventsXdr"
-                  },
-                  {
-                    "name": "transactionEventsJson",
-                    "type": "array[object]",
-                    "description": "Field: transactionEventsJson"
-                  },
-                  {
-                    "name": "contractEventsXdr",
-                    "type": "array[array[string]]",
-                    "description": "Field: contractEventsXdr"
-                  },
-                  {
-                    "name": "contractEventsJson",
-                    "type": "array[array[object]]",
-                    "description": "Field: contractEventsJson"
-                  }
-                ],
-                "nested_types": {}
-              }
-            }
-          }
-        }
-      },
-      "introduced_in": "",
-      "last_modified": ""
+        ]
+      }
     },
     "sendTransaction": {
       "name": "sendTransaction",
-      "description": "RPC method: sendTransaction",
       "handler_file": "cmd/stellar-rpc/internal/methods/send_transaction.go",
       "parameters": {
         "required": [
           {
             "name": "transaction",
             "type": "string",
-            "description": "Base64-encoded transaction envelope XDR",
-            "required": true,
-            "default": null
+            "required": true
           }
         ],
         "optional": [
           {
             "name": "xdrFormat",
             "type": "string",
-            "description": "Output format (xdr or json)",
-            "required": false,
-            "default": null
+            "required": false
           }
         ]
       },
@@ -1012,92 +496,70 @@
         "fields": [
           {
             "name": "errorResultXdr",
-            "type": "string",
-            "description": "Field: errorResultXdr"
+            "type": "string"
           },
           {
             "name": "errorResultJson",
-            "type": "object",
-            "description": "Field: errorResultJson"
+            "type": "object"
           },
           {
             "name": "diagnosticEventsXdr",
-            "type": "array[string]",
-            "description": "Field: diagnosticEventsXdr"
+            "type": "array[string]"
           },
           {
             "name": "diagnosticEventsJson",
-            "type": "array[object]",
-            "description": "Field: diagnosticEventsJson"
+            "type": "array[object]"
           },
           {
             "name": "status",
-            "type": "string",
-            "description": "Field: status"
+            "type": "string"
           },
           {
             "name": "hash",
-            "type": "string",
-            "description": "Field: hash"
+            "type": "string"
           },
           {
             "name": "latestLedger",
-            "type": "uint32",
-            "description": "Field: latestLedger"
+            "type": "uint32"
           },
           {
             "name": "latestLedgerCloseTime",
-            "type": "int64",
-            "description": "Field: latestLedgerCloseTime"
+            "type": "int64"
           }
-        ],
-        "nested_types": {}
-      },
-      "introduced_in": "",
-      "last_modified": ""
+        ]
+      }
     },
     "simulateTransaction": {
       "name": "simulateTransaction",
-      "description": "RPC method: simulateTransaction",
       "handler_file": "cmd/stellar-rpc/internal/methods/simulate_transaction.go",
       "parameters": {
         "required": [
           {
             "name": "transaction",
             "type": "string",
-            "description": "Base64-encoded transaction envelope XDR",
-            "required": true,
-            "default": null
+            "required": true
           }
         ],
         "optional": [
           {
             "name": "resourceConfig",
             "type": "ResourceConfig",
-            "description": "Resource configuration for simulation",
-            "required": false,
-            "default": null
+            "required": false
           },
           {
             "name": "authMode",
             "type": "string",
-            "description": "Authorization mode (enforce, record, or record_allow_nonroot)",
-            "required": false,
-            "default": null
+            "required": false
           },
           {
             "name": "xdrFormat",
             "type": "string",
-            "description": "Output format (xdr or json)",
-            "required": false,
-            "default": null
+            "required": false
           },
           {
             "name": "useUpgradedAuth",
             "type": "boolean",
-            "description": "Parameter: useUpgradedAuth",
-            "required": false,
-            "default": null
+            "required": false
           }
         ]
       },
@@ -1106,148 +568,46 @@
         "fields": [
           {
             "name": "error",
-            "type": "string",
-            "description": "Field: error"
+            "type": "string"
           },
           {
             "name": "transactionData",
-            "type": "string",
-            "description": "Field: transactionData"
+            "type": "string"
           },
           {
             "name": "transactionDataJson",
-            "type": "object",
-            "description": "Field: transactionDataJson"
+            "type": "object"
           },
           {
             "name": "events",
-            "type": "array[string]",
-            "description": "Field: events"
+            "type": "array[string]"
           },
           {
             "name": "eventsJson",
-            "type": "array[object]",
-            "description": "Field: eventsJson"
+            "type": "array[object]"
           },
           {
             "name": "minResourceFee",
-            "type": "int64",
-            "description": "Field: minResourceFee"
+            "type": "int64"
           },
           {
             "name": "results",
-            "type": "array[SimulateHostFunctionResult]",
-            "description": "Field: results"
+            "type": "array[SimulateHostFunctionResult]"
           },
           {
             "name": "restorePreamble",
-            "type": "RestorePreamble",
-            "description": "Field: restorePreamble"
+            "type": "RestorePreamble"
           },
           {
             "name": "stateChanges",
-            "type": "array[LedgerEntryChange]",
-            "description": "Field: stateChanges"
+            "type": "array[LedgerEntryChange]"
           },
           {
             "name": "latestLedger",
-            "type": "uint32",
-            "description": "Field: latestLedger"
+            "type": "uint32"
           }
-        ],
-        "nested_types": {
-          "SimulateHostFunctionResult": {
-            "type": "object",
-            "fields": [
-              {
-                "name": "auth",
-                "type": "array[string]",
-                "description": "Field: auth"
-              },
-              {
-                "name": "authJson",
-                "type": "array[object]",
-                "description": "Field: authJson"
-              },
-              {
-                "name": "xdr",
-                "type": "string",
-                "description": "Field: xdr"
-              },
-              {
-                "name": "returnValueJson",
-                "type": "object",
-                "description": "Field: returnValueJson"
-              }
-            ],
-            "nested_types": {}
-          },
-          "RestorePreamble": {
-            "type": "object",
-            "fields": [
-              {
-                "name": "transactionData",
-                "type": "string",
-                "description": "Field: transactionData"
-              },
-              {
-                "name": "transactionDataJson",
-                "type": "object",
-                "description": "Field: transactionDataJson"
-              },
-              {
-                "name": "minResourceFee",
-                "type": "int64",
-                "description": "Field: minResourceFee"
-              }
-            ],
-            "nested_types": {}
-          },
-          "LedgerEntryChange": {
-            "type": "object",
-            "fields": [
-              {
-                "name": "type",
-                "type": "LedgerEntryChangeType",
-                "description": "Field: type"
-              },
-              {
-                "name": "key",
-                "type": "string",
-                "description": "Field: key"
-              },
-              {
-                "name": "keyJson",
-                "type": "object",
-                "description": "Field: keyJson"
-              },
-              {
-                "name": "before",
-                "type": "string",
-                "description": "Field: before"
-              },
-              {
-                "name": "beforeJson",
-                "type": "object",
-                "description": "Field: beforeJson"
-              },
-              {
-                "name": "after",
-                "type": "string",
-                "description": "Field: after"
-              },
-              {
-                "name": "afterJson",
-                "type": "object",
-                "description": "Field: afterJson"
-              }
-            ],
-            "nested_types": {}
-          }
-        }
-      },
-      "introduced_in": "",
-      "last_modified": ""
+        ]
+      }
     }
   }
 }

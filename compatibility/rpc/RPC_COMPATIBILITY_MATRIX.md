@@ -1,9 +1,9 @@
 # Soroban RPC vs iOS/macOS SDK Compatibility Matrix
 
-**RPC Version:** v29.0.0 (released 2026-10-01)  
-**RPC Source:** [v29.0.0](https://github.com/stellar/stellar-rpc/releases/tag/v29.0.0)  
-**SDK Version:** 3.12.0  
-**Generated:** 2026-10-02 01:27:02
+**RPC Version:** v29.0.1 (released 2026-10-12)  
+**RPC Source:** [v29.0.1](https://github.com/stellar/stellar-rpc/releases/tag/v29.0.1)  
+**SDK Version:** 3.13.0  
+**Generated:** 2026-10-16 13:39:30
 
 ## Overall Coverage
 
@@ -79,7 +79,7 @@ Detailed breakdown of response field support per method.
 | getLedgerEntries | 2 | 2 | - |
 | getLedgers | 6 | 6 | - |
 | getNetwork | 3 | 3 | - |
-| getTransaction | 15 | 15 | - |
+| getTransaction | 15 | 16 | - |
 | getTransactions | 6 | 6 | - |
 | getVersionInfo | 5 | 5 | - |
 | sendTransaction | 6 | 7 | - |

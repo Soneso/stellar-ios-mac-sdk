@@ -1,8 +1,8 @@
 # SEP-0029 (Account Memo Requirements) Compatibility Matrix
 
-**Generated:** 2026-09-28
+**Generated:** 2026-10-16
 
-**SDK Version:** 3.12.0
+**SDK Version:** 3.13.0
 
 **SEP Version:** 0.5.0
 
