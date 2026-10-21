@@ -29,6 +29,15 @@ public class ContractCreditedEffectResponse: EffectResponse, @unchecked Sendable
 
     /// The issuer account ID of the asset. Nil for native assets.
     public let assetIssuer:String?
+
+    /// The muxed contract address (`W...` strkey) that received the credit, built from
+    /// `contract` and `contractMuxedId`. Horizon sets it for a transfer or mint to a muxed
+    /// contract address, otherwise it is nil.
+    public let contractMuxed:String?
+
+    /// The multiplexing id of the muxed contract address, as the decimal string Horizon sends.
+    /// Horizon sets it for a transfer or mint to a muxed contract address, otherwise it is nil.
+    public let contractMuxedId:String?
     
     // Properties to encode and decode
     private enum CodingKeys: String, CodingKey {
@@ -37,6 +46,8 @@ public class ContractCreditedEffectResponse: EffectResponse, @unchecked Sendable
         case assetType = "asset_type"
         case assetCode = "asset_code"
         case assetIssuer = "asset_issuer"
+        case contractMuxed = "contract_muxed"
+        case contractMuxedId = "contract_muxed_id"
     }
     
     /**
@@ -52,6 +63,8 @@ public class ContractCreditedEffectResponse: EffectResponse, @unchecked Sendable
         assetType = try values.decode(String.self, forKey: .assetType)
         assetCode = try values.decodeIfPresent(String.self, forKey: .assetCode)
         assetIssuer = try values.decodeIfPresent(String.self, forKey: .assetIssuer)
+        contractMuxed = try values.decodeIfPresent(String.self, forKey: .contractMuxed)
+        contractMuxedId = try values.decodeIfPresent(String.self, forKey: .contractMuxedId)
         try super.init(from: decoder)
     }
 }

@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- `ContractCreditedEffectResponse` carries `contractMuxed` and `contractMuxedId` when Horizon reports a transfer or mint to a muxed contract address.
+
 ## [3.13.0] - 2026-10-16
 
 Migration guide: [docs/migration/3.13.0.md](docs/migration/3.13.0.md)
