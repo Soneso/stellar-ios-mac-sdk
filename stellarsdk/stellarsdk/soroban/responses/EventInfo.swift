@@ -58,8 +58,8 @@ public struct EventInfo: Decodable, Sendable {
     /// Backing storage for deprecated inSuccessfulContractCall property.
     private let _inSuccessfulContractCall: Bool?
 
-    /// Deprecated for protocol version 23+. Indicates if the event was emitted during a successful contract invocation.
-    @available(*, deprecated, message: "Deprecated for protocol version >= 23. If true the event was emitted during a successful contract call.")
+    /// Whether the event was emitted in a successful contract call. Stellar RPC 30 and later omit this field; the SDK still reads it from older servers.
+    @available(*, deprecated, message: "Stellar RPC 30 and later omit this field; the SDK still reads it from older servers.")
     public var inSuccessfulContractCall: Bool? { _inSuccessfulContractCall }
 
     /// List containing the topic this event was emitted with. [XdrSCVal as base64|]
