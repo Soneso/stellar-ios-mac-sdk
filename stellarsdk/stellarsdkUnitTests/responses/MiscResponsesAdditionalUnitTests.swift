@@ -1803,6 +1803,29 @@ class MiscResponsesAdditionalUnitTests: XCTestCase {
         XCTAssertEqual(effect.contract, "CDCYWK73YTYFJZZSJ5V7EDFNHYBG4QN3VUNG2IGD27KJDDPNCZKBCBXK")
         XCTAssertEqual(effect.amount, "1000.0000000")
         XCTAssertEqual(effect.assetCode, "USDC")
+        XCTAssertNil(effect.contractMuxed)
+        XCTAssertNil(effect.contractMuxedId)
+    }
+
+    func testContractCreditedEffectToMuxedContractParsing() throws {
+        let contract = "CA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE"
+        let contractMuxed = "WA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAAAAAAAAAPCIA6IG"
+        let jsonData = makeEffectJson(typeI: 96, type: "contract_credited", extraFields: """
+"contract": "\(contract)",
+            "contract_muxed": "\(contractMuxed)",
+            "contract_muxed_id": "123456",
+            "amount": "1000.0000000",
+            "asset_type": "native"
+""")
+        let decoder = JSONDecoder()
+        let effect = try decoder.decode(ContractCreditedEffectResponse.self, from: jsonData)
+
+        XCTAssertEqual(effect.contract, contract)
+        XCTAssertEqual(effect.contractMuxed, contractMuxed)
+        XCTAssertEqual(effect.contractMuxedId, "123456")
+        let payload = try XCTUnwrap(effect.contractMuxed).decodeMuxedContractId()
+        XCTAssertEqual(Data(payload.prefix(32)), try effect.contract.decodeContractId())
+        XCTAssertEqual(payload.suffix(8).reduce(UInt64(0)) { $0 << 8 | UInt64($1) }, 123456)
     }
 
     func testContractDebitedEffectParsing() throws {
