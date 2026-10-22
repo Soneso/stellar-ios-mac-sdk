@@ -10,6 +10,8 @@ import Foundation
 
 class ServerMock: URLProtocol {
     private nonisolated(unsafe) static var registeredRequestMocks = [RequestMock]()
+    private let stopLock = NSLock()
+    private var stopped = false
     
     static func add(mock: RequestMock) {
         registeredRequestMocks.append(mock)
@@ -59,10 +61,16 @@ class ServerMock: URLProtocol {
                 return
             }
         
-        let data = mock.mockHandler(mock, request) ?? String()
+        let text = mock.mockHandler(mock, request) ?? String()
+        if mock.stalls {
+            return
+        }
+        let body = mock.bodyData ?? text.data(using: String.Encoding.utf8, allowLossyConversion: false)!
         
         var headers = mock.headers
-        headers["Content-Length"] = String(format: "%lu", data.count)
+        if mock.bodyParts == nil {
+            headers["Content-Length"] = String(body.count)
+        }
         
         guard let response = HTTPURLResponse(url: url,
                                              statusCode: mock.statusCode,
@@ -72,13 +80,44 @@ class ServerMock: URLProtocol {
                                             }
         
         self.client?.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)
-        self.client?.urlProtocol(self, didLoad: data.data(using: String.Encoding.utf8, allowLossyConversion: false)!)
+        if let parts = mock.bodyParts {
+            sendPart(at: 0, of: parts, mock: mock)
+            return
+        }
+        self.client?.urlProtocol(self, didLoad: body)
         self.client?.urlProtocolDidFinishLoading(self)
+    }
+
+    /// Sends `parts[index]` after the mock's part delay, then the next part, and ends the response
+    /// after the last one. Sending stops once the client stops loading.
+    private func sendPart(at index: Int, of parts: [Data], mock: RequestMock) {
+        guard index < parts.count else { return }
+        let state = UncheckedSendable(value: (self, mock))
+        DispatchQueue.global().asyncAfter(deadline: .now() + mock.partDelay) {
+            let (serverMock, mock) = state.value
+            serverMock.stopLock.lock()
+            defer { serverMock.stopLock.unlock() }
+            guard !serverMock.stopped else { return }
+            mock.recordSentPart()
+            serverMock.client?.urlProtocol(serverMock, didLoad: parts[index])
+            if index + 1 == parts.count {
+                serverMock.client?.urlProtocolDidFinishLoading(serverMock)
+            } else {
+                serverMock.sendPart(at: index + 1, of: parts, mock: mock)
+            }
+        }
     }
     
     override func stopLoading() {
-        
+        stopLock.lock()
+        stopped = true
+        stopLock.unlock()
+        (URLProtocol.property(forKey: "mock", in: request) as? RequestMock)?.recordStop()
     }
+}
+
+private struct UncheckedSendable<Value>: @unchecked Sendable {
+    let value: Value
 }
 
 typealias MockHandler = (RequestMock, URLRequest) -> String?
@@ -92,6 +131,36 @@ class RequestMock {
     var contentType: String
     var headers: [String: String]
     var mockHandler: MockHandler
+    /// Body bytes sent in place of the handler's text, for bodies that are not UTF-8.
+    var bodyData: Data?
+    /// When true, the mock never answers, so the request runs into its timeout.
+    var stalls = false
+    /// Body parts sent after the response headers, `partDelay` seconds apart, in place of a body
+    /// sent at once. An empty array sends the headers and then nothing.
+    var bodyParts: [Data]?
+    var partDelay: TimeInterval = 0
+    private let countLock = NSLock()
+    private var sentParts = 0
+    private var stops = 0
+
+    /// The body parts sent so far and the number of `stopLoading()` calls for this mock.
+    var counts: (sentParts: Int, stops: Int) {
+        countLock.lock()
+        defer { countLock.unlock() }
+        return (sentParts, stops)
+    }
+
+    func recordSentPart() {
+        countLock.lock()
+        sentParts += 1
+        countLock.unlock()
+    }
+
+    func recordStop() {
+        countLock.lock()
+        stops += 1
+        countLock.unlock()
+    }
     
     var variables = [String: String]()
     

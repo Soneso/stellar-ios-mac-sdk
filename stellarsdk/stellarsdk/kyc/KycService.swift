@@ -287,6 +287,8 @@ public final class KycService: @unchecked Sendable {
     ///
     /// Fetches the stellar.toml file from `{domain}/.well-known/stellar.toml` and extracts the KYC_SERVER
     /// or TRANSFER_SERVER URL (KYC_SERVER takes precedence).
+    /// The load follows the rules of `StellarToml.from(domain:secure:)` and returns `.invalidToml`
+    /// when it fails.
     ///
     /// - Parameter domain: The anchor's domain including scheme (e.g., "https://testanchor.stellar.org")
     /// - Returns: KycServiceForDomainEnum with the service instance, or an error
@@ -299,7 +301,7 @@ public final class KycService: @unchecked Sendable {
         }
         
         do {
-            let tomlString = try String(contentsOf: url, encoding: .utf8)
+            let tomlString = try await StellarTomlLoader.load(url: url)
             let toml = try Toml(withString: tomlString)
             if let kycServerAddress = toml.string(kycServerKey) ?? toml.string(transferServerKey) {
                 let kycService = KycService(kycServiceAddress: kycServerAddress)

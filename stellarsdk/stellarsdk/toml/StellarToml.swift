@@ -43,6 +43,46 @@ public enum TomlCurrencyFromUrlEnum: Sendable {
     case failure(error: TomlCurrencyLoadError)
 }
 
+/// Loads TOML documents for SEP-1 discovery.
+enum StellarTomlLoader {
+    /// Loads the document at `url` as text.
+    ///
+    /// The load fails after `timeout` seconds, for an HTTP status outside 200 to 299, for a body
+    /// larger than `DiscoveryLimits.stellarTomlMaxBytes`, and for a body that is not UTF-8.
+    ///
+    /// - Parameter url: The URL of the TOML document
+    /// - Parameter timeout: Seconds the whole load may take
+    /// - Returns: The document text
+    /// - Throws: HorizonRequestError.requestFailed naming the URL and the failed check, or the
+    ///   session's error when the transfer fails
+    static func load(url: URL, timeout: TimeInterval = DiscoveryLimits.stellarTomlTimeout) async throws -> String {
+        let request = URLRequest(url: url)
+        // The first child to finish wins: the load, or the timer with nil.
+        let loaded = try await withThrowingTaskGroup(of: (Data, URLResponse)?.self) { group in
+            group.addTask {
+                try await ServiceHelper.cappedData(for: request, maxBytes: DiscoveryLimits.stellarTomlMaxBytes)
+            }
+            group.addTask {
+                try await Task.sleep(nanoseconds: UInt64(timeout * 1_000_000_000))
+                return nil
+            }
+            defer { group.cancelAll() }
+            return try await group.next() ?? nil
+        }
+        guard case let (data, response)? = loaded else {
+            throw HorizonRequestError.requestFailed(message: "Loading \(url.absoluteString) exceeded the timeout of \(timeout) seconds", horizonErrorResponse: nil)
+        }
+        guard let httpResponse = response as? HTTPURLResponse, (200...299).contains(httpResponse.statusCode) else {
+            let status = (response as? HTTPURLResponse).map { String($0.statusCode) } ?? "none"
+            throw HorizonRequestError.requestFailed(message: "Loading \(url.absoluteString) returned HTTP status \(status)", horizonErrorResponse: nil)
+        }
+        guard let text = String(data: data, encoding: .utf8) else {
+            throw HorizonRequestError.requestFailed(message: "The document at \(url.absoluteString) is not UTF-8 text", horizonErrorResponse: nil)
+        }
+        return text
+    }
+}
+
 /// Implements SEP-0001 - stellar.toml Discovery and Configuration.
 ///
 /// This class parses and provides access to a domain's stellar.toml file, which contains
@@ -157,7 +197,9 @@ public final class StellarToml: Sendable {
     /// Loads and parses stellar.toml file from a domain per SEP-0001.
     ///
     /// Fetches the stellar.toml file from `https://{domain}/.well-known/stellar.toml`
-    /// (or `http://` if secure is false) and parses its contents.
+    /// (or `http://` if secure is false) and parses its contents. The load returns `.invalidToml`
+    /// after 30 seconds, for an HTTP status outside 200 to 299, for a file larger than 100 KB (the
+    /// SEP-1 limit) and for a file that is not UTF-8.
     ///
     /// - Parameter domain: The domain without scheme (e.g., "example.com")
     /// - Parameter secure: If true, uses HTTPS to fetch stellar.toml (default: true)
@@ -168,7 +210,7 @@ public final class StellarToml: Sendable {
         }
         
         do {
-            let tomlString = try String(contentsOf: url, encoding: .utf8)
+            let tomlString = try await StellarTomlLoader.load(url: url)
             let stellarToml = try StellarToml(fromString: tomlString)
             return .success(response: stellarToml)
         } catch {
@@ -180,6 +222,7 @@ public final class StellarToml: Sendable {
     ///
     /// Per SEP-0001, a stellar.toml can link to separate TOML files for individual currencies
     /// by specifying `toml="https://DOMAIN/.well-known/CURRENCY.toml"` as the currency's only field.
+    /// The load follows the rules of `from(domain:secure:)` and returns `.invalidToml` when it fails.
     ///
     /// - Parameter url: The complete URL to the currency TOML file
     /// - Returns: TomlCurrencyFromUrlEnum with the parsed CurrencyDocumentation or an error
@@ -189,7 +232,7 @@ public final class StellarToml: Sendable {
         }
         
         do {
-            let tomlString = try String(contentsOf: url1, encoding: .utf8)
+            let tomlString = try await StellarTomlLoader.load(url: url1)
             let toml = try Toml(withString: tomlString)
             let currency = CurrencyDocumentation(fromToml: toml)
             return .success(response: currency)

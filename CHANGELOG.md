@@ -20,6 +20,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `Transaction(xdr:)` and `Transaction(envelopeXdr:)` throw `StellarSDKError.xdrDecodingError` when the decoded transaction holds a payment, path payment, offer, clawback or set trustline flags operation whose asset code is empty, too short for its type or not UTF-8; SEP-7 signing of such an envelope returns a failure, and `postTransaction` submits it without the SEP-29 memo check.
 - `Transaction(xdr:)` and `Transaction(envelopeXdr:)` throw `StellarSDKError.invalidArgument` for the sequence number `Int64.min`.
 - `WalletUtils.createKeyPair` throws `StellarSDKError.invalidArgument` for an index outside 0 to 2147483647, the hardened BIP-32 range.
+- `StellarToml.from(domain:secure:)`, `StellarToml.currencyFrom(url:)` and the `forDomain` functions of `KycService`, `InteractiveService`, `TransferServerService` and `RegulatedAssetsService` load stellar.toml asynchronously and return `.invalidToml` after 30 seconds, for an HTTP status outside 200 to 299, for a file larger than 100 KB (102,400 bytes, the SEP-1 limit) and for a file that is not UTF-8.
+- `Federation` lookups fail with `FederationError.horizonError` for a response larger than 100 KB (102,400 bytes) and cancel the transfer at the first byte beyond that limit.
 
 ## [3.13.0] - 2026-10-16
 

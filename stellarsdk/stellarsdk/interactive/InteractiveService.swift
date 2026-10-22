@@ -237,6 +237,8 @@ public final class InteractiveService: @unchecked Sendable {
     /// Creates an InteractiveService instance based on information from the stellar.toml file for a given domain.
     ///
     /// Fetches the stellar.toml file from `{domain}/.well-known/stellar.toml` and extracts the TRANSFER_SERVER_SEP0024 URL.
+    /// The load follows the rules of `StellarToml.from(domain:secure:)` and returns `.invalidToml`
+    /// when it fails.
     ///
     /// - Parameter domain: The anchor's domain including scheme (e.g., "https://testanchor.stellar.org")
     /// - Returns: InteractiveServiceForDomainEnum with the service instance, or an error
@@ -248,7 +250,7 @@ public final class InteractiveService: @unchecked Sendable {
         }
         
         do {
-            let tomlString = try String(contentsOf: url, encoding: .utf8)
+            let tomlString = try await StellarTomlLoader.load(url: url)
             let toml = try Toml(withString: tomlString)
             if let interactiveAddress = toml.string(interactiveServerKey) {
                 let interactiveService = InteractiveService(serviceAddress: interactiveAddress)

@@ -149,6 +149,8 @@ public final class TransferServerService: @unchecked Sendable {
     /// Creates a TransferServerService instance based on information from the stellar.toml file for a given domain.
     ///
     /// Fetches the stellar.toml file from the domain and extracts the TRANSFER_SERVER URL.
+    /// The load follows the rules of `StellarToml.from(domain:secure:)` and returns `.invalidToml`
+    /// when it fails.
     ///
     /// - Parameter domain: The domain to fetch stellar.toml from (e.g., "https://example.com")
     /// - Returns: TransferServerServiceForDomainEnum with the service instance or an error
@@ -160,7 +162,7 @@ public final class TransferServerService: @unchecked Sendable {
         }
         
         do {
-            let tomlString = try String(contentsOf: url, encoding: .utf8)
+            let tomlString = try await StellarTomlLoader.load(url: url)
             let toml = try Toml(withString: tomlString)
             if let transferServerAddress = toml.string(transferServerKey) {
                 let transferServerService = TransferServerService(serviceAddress: transferServerAddress)

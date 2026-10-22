@@ -179,6 +179,8 @@ public final class RegulatedAssetsService: @unchecked Sendable {
     /// Creates a RegulatedAssetsService instance based on information from the stellar.toml file for a given domain.
     ///
     /// Fetches the stellar.toml file from `{domain}/.well-known/stellar.toml` and extracts regulated asset information.
+    /// The load follows the rules of `StellarToml.from(domain:secure:)` and returns `.invalidToml`
+    /// when it fails.
     ///
     /// - Parameter domain: The issuer's domain including scheme (e.g., "https://issuer.example.com")
     /// - Parameter horizonUrl: Optional custom Horizon API URL. If not provided, uses URL from TOML or network default.
@@ -191,7 +193,7 @@ public final class RegulatedAssetsService: @unchecked Sendable {
         }
         
         do {
-            let tomlString = try String(contentsOf: url, encoding: .utf8)
+            let tomlString = try await StellarTomlLoader.load(url: url)
             let toml = try StellarToml(fromString: tomlString)
             
             let service =  try RegulatedAssetsService(tomlData: toml, horizonUrl: horizonUrl, network: network)
