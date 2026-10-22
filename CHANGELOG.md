@@ -26,6 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `EventSource` treats a record without an `event` field, with an empty one and with `event: message` alike, as the SSE specification says: each reaches `onMessage` and a listener registered for `message`.
 - A closed `EventSource` stays closed when `close()` is called while a reconnect is scheduled.
 - `EventSource` applies the reconnect delay that Horizon sends with its `open` and `close` events. A stream reconnects 10 milliseconds after Horizon ends a page of records and 1 second after a failed connection; both delays were 3 seconds.
+- `EventInfo` decodes `operationIndex` and `transactionIndex` from `getEvents` responses, so `opIndex` and `txIndex` carry the indexes the server sends.
 
 ## [3.13.0] - 2026-10-16
 
