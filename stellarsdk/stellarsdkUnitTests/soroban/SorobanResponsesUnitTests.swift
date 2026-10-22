@@ -829,7 +829,9 @@ final class SorobanResponsesUnitTests: XCTestCase {
                     "inSuccessfulContractCall": true,
                     "topic": ["AAAADwAAAAh0cmFuc2Zlcg=="],
                     "value": "AAAAAQ==",
-                    "txHash": "a4721e2a61e9a1b5c3b8f3e5a7c4d6e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4"
+                    "txHash": "a4721e2a61e9a1b5c3b8f3e5a7c4d6e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4",
+                    "operationIndex": 0,
+                    "transactionIndex": 2
                 }
             ],
             "cursor": "999900-1"
@@ -850,6 +852,8 @@ final class SorobanResponsesUnitTests: XCTestCase {
         XCTAssertEqual(event.id, "0000999900-0000000001")
         XCTAssertNotNil(event.contractId)
         XCTAssertNotNil(event.type)
+        XCTAssertEqual(event.opIndex, 0)
+        XCTAssertEqual(event.txIndex, 2)
     }
 
     func testParseGetEventsResponseEmpty() throws {

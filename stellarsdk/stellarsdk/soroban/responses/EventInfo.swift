@@ -74,10 +74,10 @@ public struct EventInfo: Decodable, Sendable {
     /// The transaction which triggered this event.
     public let txHash:String
 
-    /// The operation at which an event occurred. Only available for protocol version >= 23
+    /// Index of the operation that emitted the event within its transaction, from the `operationIndex` field of the response.
     public let opIndex:Int?
 
-    /// The transaction at which an event occurred. Only available for protocol version >= 23
+    /// Index of the transaction within its ledger, from the `transactionIndex` field of the response.
     public let txIndex:Int?
 
     private enum CodingKeys: String, CodingKey {
@@ -90,8 +90,8 @@ public struct EventInfo: Decodable, Sendable {
         case topic
         case value
         case txHash
-        case opIndex
-        case txIndex
+        case opIndex = "operationIndex"
+        case txIndex = "transactionIndex"
     }
 
     public init(from decoder: Decoder) throws {
