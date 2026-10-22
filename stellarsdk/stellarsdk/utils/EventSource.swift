@@ -120,7 +120,16 @@ open class EventSource: NSObject, URLSessionDataDelegate, @unchecked Sendable {
     fileprivate var errorBeforeSetErrorCallBack: NSError?
     internal var receivedDataBuffer: Data
     fileprivate let uniqueIdentifier: String
-    fileprivate let validNewlineCharacters = ["\r\n", "\n", "\r"]
+    fileprivate let stateLock = NSLock()
+    fileprivate var closedByCaller = false
+    // Parser state of the record being read. The last event ID buffer lives as long as the
+    // EventSource, so a record without an id after a reconnect keeps the resume position.
+    fileprivate var pendingEventType = ""
+    fileprivate var pendingData = [String]()
+    fileprivate var lastEventIdBuffer: String?
+    // The id the last dispatched record committed; a connection that ends restores the buffer to it.
+    fileprivate var lastDispatchedEventId: String?
+    fileprivate var lastLineEndedWithCarriageReturn = false
     
     var event = Dictionary<String, String>()
     var defaults = Dictionary<String, String>()
@@ -143,6 +152,8 @@ open class EventSource: NSObject, URLSessionDataDelegate, @unchecked Sendable {
         self.headers = headers
         self.readyState = EventSourceState.closed
         self.operationQueue = OperationQueue()
+        // A serial delegate queue keeps the parser's delegate calls in order.
+        self.operationQueue.maxConcurrentOperationCount = 1
         self.receivedString = nil
         self.receivedDataBuffer = Data()
         
@@ -158,10 +169,18 @@ open class EventSource: NSObject, URLSessionDataDelegate, @unchecked Sendable {
         self.connect()
     }
     
-    /// Establishes connection to the Server-Sent Events endpoint.
+    /// Establishes connection to the Server-Sent Events endpoint, replacing the session of a
+    /// finished connection. Does nothing once `close()` was called.
     func connect() {
+        stateLock.lock()
+        defer { stateLock.unlock() }
+        guard !closedByCaller else {
+            return
+        }
+        self.urlSession?.invalidateAndCancel()
+
         var additionalHeaders = self.headers
-        if let eventID = self.lastEventID {
+        if let eventID = self.lastEventID, !eventID.isEmpty {
             additionalHeaders["Last-Event-Id"] = eventID
         }
         
@@ -190,8 +209,12 @@ open class EventSource: NSObject, URLSessionDataDelegate, @unchecked Sendable {
                                      delegateQueue: operationQueue)
     }
     
-    /// Closes the Server-Sent Events connection and prevents automatic reconnection.
+    /// Closes the Server-Sent Events connection and prevents automatic reconnection. A closed
+    /// EventSource stays closed: a reconnect scheduled before the call does not open it again.
     open func close() {
+        stateLock.lock()
+        defer { stateLock.unlock() }
+        closedByCaller = true
         self.readyState = EventSourceState.closed
         self.urlSession?.invalidateAndCancel()
         self.urlSession = nil
@@ -354,8 +377,9 @@ open class EventSource: NSObject, URLSessionDataDelegate, @unchecked Sendable {
         }
         
         self.receivedDataBuffer.append(data)
-        let eventStream = extractEventsFromBuffer()
-        self.parseEventStream(eventStream)
+        for line in extractLinesFromBuffer() {
+            processLine(line)
+        }
     }
 
     /// URLSessionDataDelegate method called when the initial response is received from the server.
@@ -375,6 +399,12 @@ open class EventSource: NSObject, URLSessionDataDelegate, @unchecked Sendable {
     /// URLSessionDelegate method called when the connection completes or encounters an error.
     open func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
         self.readyState = EventSourceState.closed
+        // A record that the stream ended in the middle of is discarded, its id included.
+        self.receivedDataBuffer.removeAll()
+        self.lastEventIdBuffer = self.lastDispatchedEventId
+        self.lastLineEndedWithCarriageReturn = false
+        self.pendingEventType = ""
+        self.pendingData = []
         
         if self.receivedMessageToClose(task.response as? HTTPURLResponse) {
             return
@@ -387,7 +417,7 @@ open class EventSource: NSObject, URLSessionDataDelegate, @unchecked Sendable {
             let nanoseconds = Double(self.retryTime) / 1000.0 * Double(NSEC_PER_SEC)
             let delayTime = DispatchTime.now() + Double(Int64(nanoseconds)) / Double(NSEC_PER_SEC)
             DispatchQueue.main.asyncAfter(deadline: delayTime) { [weak self] in
-                self?.close()
+                // connect() checks whether close() was called during the delay.
                 self?.connect()
             }
             return
@@ -402,80 +432,102 @@ open class EventSource: NSObject, URLSessionDataDelegate, @unchecked Sendable {
         }
     }
     
-    /// Extracts complete events from the received data buffer.
-    fileprivate func extractEventsFromBuffer() -> [String] {
-        var events = [String]()
-
-        var searchRange = receivedDataBuffer.startIndex..<receivedDataBuffer.endIndex
-        while let foundRange = searchForEventInRange(searchRange) {
-            if foundRange.lowerBound > searchRange.lowerBound {
-                let dataChunk = receivedDataBuffer[searchRange.lowerBound..<foundRange.lowerBound]
-
-                if let text = String(bytes: dataChunk, encoding: .utf8) {
-                    events.append(text)
+    /// Removes every complete line from the buffer and returns it without its terminator. A line
+    /// ends at CRLF, LF or CR. When a chunk ends with CR, an LF that starts the next chunk belongs
+    /// to that CRLF and is skipped.
+    fileprivate func extractLinesFromBuffer() -> [String] {
+        if lastLineEndedWithCarriageReturn, let first = receivedDataBuffer.first {
+            if first == 0x0A {
+                receivedDataBuffer.removeFirst()
+            }
+            lastLineEndedWithCarriageReturn = false
+        }
+        var lines = [String]()
+        var lineStart = receivedDataBuffer.startIndex
+        while let end = receivedDataBuffer[lineStart...].firstIndex(where: { $0 == 0x0A || $0 == 0x0D }) {
+            var next = receivedDataBuffer.index(after: end)
+            if receivedDataBuffer[end] == 0x0D {
+                if next == receivedDataBuffer.endIndex {
+                    lastLineEndedWithCarriageReturn = true
+                } else if receivedDataBuffer[next] == 0x0A {
+                    next = receivedDataBuffer.index(after: next)
                 }
             }
-            let nextStart = foundRange.upperBound
-            searchRange = nextStart..<receivedDataBuffer.endIndex
+            lines.append(String(decoding: receivedDataBuffer[lineStart..<end], as: UTF8.self))
+            lineStart = next
         }
-
-        self.receivedDataBuffer.removeSubrange(receivedDataBuffer.startIndex..<searchRange.lowerBound)
-
-        return events
+        receivedDataBuffer.removeSubrange(receivedDataBuffer.startIndex..<lineStart)
+        return lines
     }
-    
-    fileprivate func searchForEventInRange(_ searchRange: Range<Data.Index>) -> Range<Data.Index>? {
-        let delimiters = validNewlineCharacters.map { "\($0)\($0)".data(using: String.Encoding.utf8)! }
 
-        for delimiter in delimiters {
-            if let range = receivedDataBuffer.range(of: delimiter, options: [], in: searchRange) {
-                return range
-            }
+    /// Applies one line of the stream as the SSE specification says: a blank line dispatches the
+    /// record, a line starting with a colon is a comment, the `event`, `data`, `id` and `retry`
+    /// fields fill the record, and other fields are ignored.
+    fileprivate func processLine(_ line: String) {
+        if line.isEmpty {
+            dispatchPendingEvent()
+            return
         }
-
-        return nil
+        if line.hasPrefix(":") {
+            return
+        }
+        let field: Substring
+        var value: Substring = ""
+        if let colon = line.firstIndex(of: ":") {
+            field = line[..<colon]
+            value = line[line.index(after: colon)...]
+            if value.hasPrefix(" ") {
+                value = value.dropFirst()
+            }
+        } else {
+            field = line[...]
+        }
+        switch field {
+        case "event":
+            pendingEventType = String(value)
+        case "data":
+            pendingData.append(String(value))
+        case "id":
+            if !value.contains("\0") {
+                lastEventIdBuffer = String(value)
+            }
+        case "retry":
+            if !value.isEmpty, value.unicodeScalars.allSatisfy({ ("0"..."9").contains($0) }), let milliseconds = Int(value) {
+                retryTime = milliseconds
+            }
+        default:
+            break
+        }
     }
-    
-    fileprivate func parseEventStream(_ events: [String]) {
-        var parsedEvents: [(id: String?, event: String?, data: String?)] = Array()
-        
-        for event in events {
-            if event.isEmpty {
-                continue
-            }
-            
-            if event.hasPrefix(":") {
-                continue
-            }
-            
-            if event.contains("retry:") {
-                if let reconnectTime = parseRetryTime(event) {
-                    self.retryTime = reconnectTime
-                }
-                continue
-            }
-            
-            parsedEvents.append(parseEvent(event))
-        }
-        
-        for parsedEvent in parsedEvents {
+
+    /// Dispatches the record read so far: a record without a `data` field only updates the last
+    /// event ID; the type `message`, or no type, goes to `onMessage`, and a type with a registered
+    /// listener goes to that listener.
+    fileprivate func dispatchPendingEvent() {
+        let eventType = pendingEventType.isEmpty ? "message" : pendingEventType
+        let data = pendingData.joined(separator: "\n")
+        let hasData = !pendingData.isEmpty
+        pendingEventType = ""
+        pendingData = []
+
+        let id = lastEventIdBuffer
+        lastDispatchedEventId = id
+        if let id = id {
             DispatchQueue.main.async { [weak self] in
-                self?.lastEventID = parsedEvent.id
+                self?.lastEventID = id
             }
-              
-            if parsedEvent.event == nil {
-                if let data = parsedEvent.data, let onMessage = self.onMessageCallback {
-                    DispatchQueue.main.async { [weak self] in
-                        onMessage(self?.lastEventID, "message", data)
-                    }
-                }
+        }
+        guard hasData else {
+            return
+        }
+        if eventType == "message", let onMessage = self.onMessageCallback {
+            DispatchQueue.main.async {
+                onMessage(id, "message", data)
             }
-            
-            if let event = parsedEvent.event, let data = parsedEvent.data, let eventHandler = self.eventListeners[event] {
-                let handler = eventHandler
-                DispatchQueue.main.async { [weak self] in
-                    handler(self?.lastEventID, event, data)
-                }
+        }
+        if let handler = self.eventListeners[eventType] {
+            DispatchQueue.main.async {
+                handler(id, eventType, data)
             }
         }
     }
@@ -496,62 +548,6 @@ open class EventSource: NSObject, URLSessionDataDelegate, @unchecked Sendable {
         }
     }
     
-    fileprivate func parseEvent(_ eventString: String) -> (id: String?, event: String?, data: String?) {
-        var event = Dictionary<String, String>()
-        
-        for line in eventString.components(separatedBy: CharacterSet.newlines) as [String] {
-            autoreleasepool {
-                let (k, value) = self.parseKeyValuePair(line)
-                guard let key = k else { return }
-                
-                if let value = value {
-                    if event[key] != nil {
-                        event[key] = "\(event[key]!)\n\(value)"
-                    } else {
-                        event[key] = value
-                    }
-                } else if value == nil {
-                    event[key] = ""
-                }
-            }
-        }
-        
-        return (event["id"], event["event"], event["data"])
-    }
-    
-    fileprivate func parseKeyValuePair(_ line: String) -> (String?, String?) {
-        let scanner = Scanner(string: line)
-        let key = scanner.scanUpToString(":")
-        _ = scanner.scanString(":")
-
-        var value: String?
-        for newline in validNewlineCharacters {
-            if let scannedValue = scanner.scanUpToString(newline) {
-                value = scannedValue
-                break
-            }
-        }
-
-        return (key, value)
-    }
-    
-    fileprivate func parseRetryTime(_ eventString: String) -> Int? {
-        var reconnectTime: Int?
-        let separators = CharacterSet(charactersIn: ":")
-        if let milli = eventString.components(separatedBy: separators).last {
-            let milliseconds = trim(milli)
-            
-            if let intMiliseconds = Int(milliseconds) {
-                reconnectTime = intMiliseconds
-            }
-        }
-        return reconnectTime
-    }
-    
-    fileprivate func trim(_ string: String) -> String {
-        return string.trimmingCharacters(in: CharacterSet.whitespaces)
-    }
-
     /// Creates an AsyncStream for receiving Server-Sent Events.
     ///
     /// This method provides a modern async/await alternative to the callback-based API.

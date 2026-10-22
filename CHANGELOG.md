@@ -22,6 +22,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `WalletUtils.createKeyPair` throws `StellarSDKError.invalidArgument` for an index outside 0 to 2147483647, the hardened BIP-32 range.
 - `StellarToml.from(domain:secure:)`, `StellarToml.currencyFrom(url:)` and the `forDomain` functions of `KycService`, `InteractiveService`, `TransferServerService` and `RegulatedAssetsService` load stellar.toml asynchronously and return `.invalidToml` after 30 seconds, for an HTTP status outside 200 to 299, for a file larger than 100 KB (102,400 bytes, the SEP-1 limit) and for a file that is not UTF-8.
 - `Federation` lookups fail with `FederationError.horizonError` for a response larger than 100 KB (102,400 bytes) and cancel the transfer at the first byte beyond that limit.
+- `EventSource` delivers a streamed record whose data contains the text `retry:` or that holds a comment line; it reads the stream line by line as the SSE specification says, so only a `retry` field line sets the reconnect delay, and a record cut off by the end of a connection is discarded, its `id` included.
+- `EventSource` treats a record without an `event` field, with an empty one and with `event: message` alike, as the SSE specification says: each reaches `onMessage` and a listener registered for `message`.
+- A closed `EventSource` stays closed when `close()` is called while a reconnect is scheduled.
+- `EventSource` applies the reconnect delay that Horizon sends with its `open` and `close` events. A stream reconnects 10 milliseconds after Horizon ends a page of records and 1 second after a failed connection; both delays were 3 seconds.
 
 ## [3.13.0] - 2026-10-16
 
