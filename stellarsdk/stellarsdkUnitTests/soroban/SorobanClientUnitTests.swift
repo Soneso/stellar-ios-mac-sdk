@@ -60,6 +60,28 @@ final class SorobanClientUnitTests: XCTestCase {
         }
     }
 
+    /// A muxed address as the contract of the options is refused before the spec is loaded.
+    func testForClientOptionsRefusesMuxedContractIds() async {
+        let muxedContract = "WA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAAAAAAAAAPCIA6IG"
+        let muxedAccount = "MA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVAAAAAAAAAAAAAJLK"
+        let cases = [
+            (muxedContract, "The contract to load must be a contract (C...) address, got a muxed contract (W...) address: \(muxedContract); use its base contract (C...) address"),
+            (muxedAccount, "The contract to load must be a contract (C...) address, got a muxed account (M...) address: \(muxedAccount)"),
+        ]
+        for (contractId, message) in cases {
+            let options = ClientOptions(sourceAccountKeyPair: keyPair, contractId: contractId,
+                                        network: Network.testnet, rpcUrl: mockRpcUrl)
+            do {
+                _ = try await SorobanClient.forClientOptions(options: options)
+                XCTFail("Expected \(contractId) to be refused")
+            } catch SorobanRpcRequestError.requestFailed(let actual) {
+                XCTAssertEqual(actual, message)
+            } catch {
+                XCTFail("Unexpected error: \(error)")
+            }
+        }
+    }
+
     // MARK: - SorobanClient invokeMethod Tests
     // Note: These tests would require a valid contract instance which needs network calls
     // Testing via integration tests is more appropriate

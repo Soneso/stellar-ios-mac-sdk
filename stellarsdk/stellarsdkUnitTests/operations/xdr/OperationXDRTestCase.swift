@@ -991,6 +991,66 @@ class OperationXDRTestCase: XCTestCase {
         }
     }
 
+    /// The invoke target is a contract: every other address kind and every other string is
+    /// refused with the kind named, and the 64 character hex id names the contract its
+    /// "C..." strkey does.
+    func testInvokeHostFunctionOperationRefusesNonContractTargets() throws {
+        let contractId = "CA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE"
+        let refusal = "The contract to invoke must be a contract (C...) address"
+        let muxedContract = "WA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAAAAAAAAAPCIA6IG"
+        let muxedAccount = "MA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVAAAAAAAAAAAAAJLK"
+        let account = "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ"
+        let claimableBalance = "BAAD6DBUX6J22DMZOHIEZTEQ64CVCHEDRKWZONFEUL5Q26QD7R76RGR4TU"
+        let liquidityPool = "LA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUPJN"
+        // The contract id with its last character, a checksum character, mistyped.
+        let mistyped = "CA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXF"
+        let cases: [(id: String, message: String)] = [
+            (muxedContract, "\(refusal), got a muxed contract (W...) address: \(muxedContract); use its base contract (C...) address"),
+            (muxedAccount, "\(refusal), got a muxed account (M...) address: \(muxedAccount)"),
+            (account, "\(refusal), got an account (G...) address: \(account)"),
+            (claimableBalance, "\(refusal), got a claimable balance (B...) address: \(claimableBalance)"),
+            (liquidityPool, "\(refusal), got a liquidity pool (L...) address: \(liquidityPool)"),
+            (mistyped, "\(refusal): \(mistyped)"),
+            ("C\u{1b}[2J", "\(refusal): C\\x1b[2J"),
+        ]
+        for (id, message) in cases {
+            XCTAssertThrowsError(try InvokeHostFunctionOperation.forInvokingContract(contractId: id, functionName: "transfer")) { error in
+                guard case StellarSDKError.invalidArgument(let actual) = error else {
+                    return XCTFail("Expected invalidArgument for \(id), got \(error)")
+                }
+                XCTAssertEqual(actual, message)
+            }
+        }
+        let fromHex = try InvokeHostFunctionOperation.forInvokingContract(contractId: try contractId.decodeContractIdToHex(), functionName: "transfer")
+        guard case .invokeContract(let args) = fromHex.hostFunction else {
+            return XCTFail("Expected invokeContract host function")
+        }
+        XCTAssertEqual(try args.contractAddress.toStrKey(), contractId)
+    }
+
+    /// The invoke target guard sits at construction: an envelope whose invoke target is a muxed
+    /// contract, a muxed account or an account decodes and re-encodes to the same bytes and hash.
+    func testInvokeHostFunctionWithNonContractTargetRoundTrips() throws {
+        let source = try KeyPair(accountId: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ")
+        let targets = [try SCAddressXDR(muxedContractId: "WA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAAAAAAAAAPCIA6IG"),
+                       try SCAddressXDR(accountId: "MA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVAAAAAAAAAAAAAJLK"),
+                       try SCAddressXDR(accountId: source.accountId)]
+        for target in targets {
+            let op = try InvokeHostFunctionOperation(fromXDR: InvokeHostFunctionOpXDR(
+                hostFunction: .invokeContract(InvokeContractArgsXDR(contractAddress: target, functionName: "transfer", args: [])),
+                auth: []), sourceAccountId: nil)
+            let tx = try Transaction(sourceAccount: Account(keyPair: source, sequenceNumber: 1), operations: [op], memo: Memo.none)
+            let envelope = try tx.encodedEnvelope()
+            let decoded = try Transaction(envelopeXdr: envelope)
+            XCTAssertEqual(try decoded.encodedEnvelope(), envelope)
+            XCTAssertEqual(try decoded.getTransactionHash(network: Network.testnet), try tx.getTransactionHash(network: Network.testnet))
+            guard case .invokeContract(let args) = (decoded.operations.first as? InvokeHostFunctionOperation)?.hostFunction else {
+                return XCTFail("Expected invokeContract host function")
+            }
+            XCTAssertEqual(try args.contractAddress.toStrKey(), try target.toStrKey())
+        }
+    }
+
     func testExtendFootprintTTLOperationXDR() {
         do {
             // GC5SIC4E3V56VOHJ3OZAX5SJDTWY52JYI2AFK6PUGSXFVRJQYQXXZBZF

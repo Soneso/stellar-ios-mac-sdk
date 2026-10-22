@@ -592,9 +592,13 @@ public class SorobanServer: @unchecked Sendable {
     /// Stellar Asset Contract has no wasm bytecode on chain and fails with a message
     /// saying so.
     ///
-    /// - Parameter contractId: Stellar contract address (C...)
+    /// - Parameter contractId: the contract to load, a "C..." strkey or the 64 character hex id; any other
+    ///   string fails before the request with a message naming the kind of address given
     /// - Returns: Contract code entry containing the WASM bytecode
     public func getContractCodeForContractId(contractId: String) async -> GetContractCodeResponseEnum {
+        if let refusal = ContractAddressGuard.contractIdRefusal(contractId, subject: "The contract to load") {
+            return .failure(error: .requestFailed(message: refusal))
+        }
         var contractDataKey:LedgerKeyContractDataXDR? = nil
         do {
             contractDataKey = LedgerKeyContractDataXDR(contract: try SCAddressXDR.init(contractId: contractId),
@@ -687,7 +691,8 @@ public class SorobanServer: @unchecked Sendable {
     /// Loads contract source byte code for the given contractId and extracts
     /// the information (Environment Meta, Contract Spec, Contract Meta).
     ///
-    /// - Parameter contractId: Stellar contract address (C...)
+    /// - Parameter contractId: the contract to load, a "C..." strkey or the 64 character hex id; any other
+    ///   string fails before the request with a message naming the kind of address given
     /// - Returns: Parsed contract information including spec entries
     public func getContractInfoForContractId(contractId: String) async -> GetContractInfoEnum {
         let response = await getContractCodeForContractId(contractId: contractId)
@@ -764,11 +769,19 @@ public class SorobanServer: @unchecked Sendable {
     
     /// Reads the current value of contract data ledger entries directly.
     ///
-    /// - Parameter contractId: Stellar contract address (C...)
-    /// - Parameter key: Storage key as SCVal
+    /// - Parameter contractId: the contract data owner, a "C..." strkey or the 64 character hex id; any other
+    ///   string fails before the request with a message naming the kind of address given
+    /// - Parameter key: Storage key as SCVal; a key that is or holds a muxed account (M...) or
+    ///   muxed contract (W...) address at any depth fails before the request
     /// - Parameter durability: Storage durability type (persistent or temporary)
     /// - Returns: Current value of the contract data entry
     public func getContractData(contractId: String, key: SCValXDR, durability: ContractDataDurability) async -> GetContractDataResponseEnum {
+        if let refusal = ContractAddressGuard.contractIdRefusal(contractId, subject: "The contract data owner") {
+            return .failure(error: .requestFailed(message: refusal))
+        }
+        if ContractAddressGuard.containsMuxedAddress(key) {
+            return .failure(error: .requestFailed(message: "Contract data keys cannot contain muxed account (M...) or muxed contract (W...) addresses"))
+        }
         if let contractAddress = try? SCAddressXDR.init(contractId: contractId) {
             let contractDataKey = LedgerKeyContractDataXDR(contract: contractAddress, key: key, durability: durability)
             let ledgerKey = LedgerKeyXDR.contractData(contractDataKey)

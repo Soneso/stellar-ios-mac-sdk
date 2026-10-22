@@ -1072,11 +1072,67 @@ final class SorobanServerAdditionalUnitTests: XCTestCase {
             XCTFail("Expected failure for invalid contract ID")
         case .failure(let error):
             if case .requestFailed(let message) = error {
-                XCTAssertTrue(message.contains("invalid contractId"))
+                XCTAssertEqual(message, "The contract data owner must be a contract (C...) address: invalid")
             } else {
                 XCTFail("Expected requestFailed error")
             }
         }
+    }
+
+    /// A key that is or holds a muxed address at any depth is refused before the request.
+    func testGetContractDataRefusesKeysWithMuxedAddresses() async throws {
+        let requests = logLedgerEntriesRequests()
+        let muxedContract = SCValXDR.address(try SCAddressXDR(muxedContractId: "WA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAAAAAAAAAPCIA6IG"))
+        let muxedAccount = SCValXDR.address(try SCAddressXDR(accountId: "MA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVAAAAAAAAAAAAAJLK"))
+        let keys: [SCValXDR] = [
+            .vec([.symbol("Balance"), muxedContract]),
+            .map([SCMapEntryXDR(key: .symbol("owner"), val: muxedAccount)]),
+            .map([SCMapEntryXDR(key: muxedAccount, val: .u32(1))]),
+            .map([SCMapEntryXDR(key: .vec([.symbol("spender"), muxedContract]), val: .u32(1))]),
+        ]
+        for key in keys {
+            let response = await server.getContractData(contractId: "CA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE",
+                                                        key: key, durability: .persistent)
+            guard case .failure(let error) = response, case .requestFailed(let message) = error else {
+                XCTFail("Expected requestFailed for \(key), got \(response)")
+                continue
+            }
+            XCTAssertEqual(message, "Contract data keys cannot contain muxed account (M...) or muxed contract (W...) addresses")
+        }
+        XCTAssertEqual(requests.keys, [])
+    }
+
+    /// A key holding an account address goes out as the ledger key of the owner, key and durability.
+    func testGetContractDataSendsKeyWithAccountAddress() async throws {
+        let requests = logLedgerEntriesRequests()
+        let key = SCValXDR.vec([.symbol("Balance"),
+                                .address(try SCAddressXDR(accountId: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ"))])
+        let response = await server.getContractData(contractId: "CA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE",
+                                                    key: key, durability: .persistent)
+        guard case .success = response else {
+            return XCTFail("Expected success, got \(response)")
+        }
+        XCTAssertEqual(requests.keys, [["AAAABgAAAAE2Pqo4Z4QfutD07YjHeeT+ZuVqJHDcmMDsnAc9BcexAwAAABAAAAABAAAAAgAAAA8AAAAHQmFsYW5jZQAAAAASAAAAAAAAAAA/DDS/k60NmXHQTMyQ9wVRHIOKrZc0pKL7DXoD/H/omgAAAAE="]])
+    }
+
+    /// Records the ledger keys of every getLedgerEntries request.
+    private final class LedgerKeyLog: @unchecked Sendable {
+        var keys: [[String]] = []
+    }
+
+    /// Answers every getLedgerEntries request with one entry and logs the keys it carries.
+    private func logLedgerEntriesRequests() -> LedgerKeyLog {
+        let log = LedgerKeyLog()
+        let mock = RequestMock(host: testHost, path: "/", httpMethod: "POST") { _, request in
+            let body = request.httpBody ?? request.httpBodyStream?.readfully()
+            let json = body.flatMap { try? JSONSerialization.jsonObject(with: $0) as? [String: Any] }
+            log.keys.append((json?["params"] as? [String: Any])?["keys"] as? [String] ?? [])
+            return """
+            {"jsonrpc": "2.0", "id": "test-id", "result": {"entries": [{"key": "k", "xdr": "x", "lastModifiedLedgerSeq": 1}], "latestLedger": 2}}
+            """
+        }
+        ServerMock.add(mock: mock)
+        return log
     }
 
     // MARK: - HTTP Error Tests
