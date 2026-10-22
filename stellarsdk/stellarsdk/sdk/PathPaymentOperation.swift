@@ -55,6 +55,9 @@ public class PathPaymentOperation:Operation, @unchecked Sendable {
     
     /// Creates a new PathPaymentOperation object from the given PathPaymentOperationXDR object.
     ///
+    /// The asset XDR must be valid: an asset code that `Asset.fromXDR(assetXDR:)` rejects stops the
+    /// process. `Operation.fromXDR(operationXDR:)` validates the asset XDR and throws instead.
+    ///
     /// - Parameter fromXDR: the PathPaymentOperationXDR object to be used to create a new PathPaymentOperation object.
     /// - Parameter sourceAccountId: (optional) source account Id, must be valid, otherwise it will be ignored.
     ///
@@ -70,6 +73,17 @@ public class PathPaymentOperation:Operation, @unchecked Sendable {
         }
         self.path = path
         super.init(sourceAccountId: sourceAccountId)
+    }
+
+    /// Creates the operation after `Asset.fromXDR(assetXDR:)` accepted every asset of the XDR object.
+    ///
+    /// - Throws: `StellarSDKError.xdrDecodingError` for an asset code that is empty, too short for its
+    ///   type, or not UTF-8.
+    convenience init(validatingXDR fromXDR:PathPaymentOperationXDR, sourceAccountId:String?) throws {
+        for assetXDR in [fromXDR.sendAsset, fromXDR.destinationAsset] + fromXDR.path {
+            _ = try Asset.fromXDR(assetXDR: assetXDR)
+        }
+        self.init(fromXDR: fromXDR, sourceAccountId: sourceAccountId)
     }
     
     override func getOperationBodyXDR() throws -> OperationBodyXDR {

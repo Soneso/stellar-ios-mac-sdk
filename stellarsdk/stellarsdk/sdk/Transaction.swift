@@ -131,10 +131,12 @@ public class Transaction: @unchecked Sendable {
     ///
     /// - Parameter xdr: The XDR string to be parsed into a Transaction object.
     ///
+    /// - Throws: `StellarSDKError.invalidArgument` for a sequence number of `Int64.min`, and the errors of
+    ///   `Operation.fromXDR(operationXDR:)` for an operation it cannot decode.
     public convenience init(xdr:String) throws {
         let xdrDecoder = XDRDecoder.init(data: [UInt8].init(base64: xdr))
         let transactionXDR = try TransactionXDR(fromBinary: xdrDecoder)
-        let transactionSourceAccount = try MuxedAccount(accountId: transactionXDR.sourceAccount.accountId, sequenceNumber: transactionXDR.seqNum - 1, id: transactionXDR.sourceAccount.id)
+        let transactionSourceAccount = try MuxedAccount(accountId: transactionXDR.sourceAccount.accountId, sequenceNumber: Transaction.precedingSequenceNumber(transactionXDR.seqNum), id: transactionXDR.sourceAccount.id)
         var operations = [Operation]()
         for operationXDR in transactionXDR.operations {
             let operation = try Operation.fromXDR(operationXDR: operationXDR)
@@ -153,11 +155,13 @@ public class Transaction: @unchecked Sendable {
     ///
     /// - Parameter envelopeXdr: The XDR string to be parsed into a Transaction object.
     ///
+    /// - Throws: `StellarSDKError.invalidArgument` for a sequence number of `Int64.min`, and the errors of
+    ///   `Operation.fromXDR(operationXDR:)` for an operation it cannot decode.
     public convenience init(envelopeXdr:String) throws {
         let xdrDecoder = XDRDecoder.init(data: [UInt8].init(base64: envelopeXdr))
 
         let transactionEnvelopeXDR = try TransactionEnvelopeXDR(fromBinary: xdrDecoder)
-        let transactionSourceAccount = try MuxedAccount(accountId:transactionEnvelopeXDR.txSourceAccountId, sequenceNumber: transactionEnvelopeXDR.txSeqNum - 1, id: transactionEnvelopeXDR.txMuxedSourceId)
+        let transactionSourceAccount = try MuxedAccount(accountId:transactionEnvelopeXDR.txSourceAccountId, sequenceNumber: Transaction.precedingSequenceNumber(transactionEnvelopeXDR.txSeqNum), id: transactionEnvelopeXDR.txMuxedSourceId)
         var operations = [Operation]()
         for operationXDR in transactionEnvelopeXDR.txOperations {
             let operation = try Operation.fromXDR(operationXDR: operationXDR)
@@ -174,6 +178,15 @@ public class Transaction: @unchecked Sendable {
         for signature in transactionEnvelopeXDR.txSignatures {
             self._transactionXDR.addSignature(signature: signature)
         }
+    }
+
+    /// Returns the source account sequence number that `seqNum` follows, which the imported
+    /// transaction's source account carries before the transaction increments it.
+    private static func precedingSequenceNumber(_ seqNum: Int64) throws -> Int64 {
+        guard seqNum > Int64.min else {
+            throw StellarSDKError.invalidArgument(message: "Invalid transaction sequence number \(seqNum): no account sequence number precedes it")
+        }
+        return seqNum - 1
     }
 
     /// Each transaction needs to be signed before sending it to the stellar network.

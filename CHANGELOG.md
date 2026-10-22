@@ -16,6 +16,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `SorobanServer.getContractCodeForContractId`, `SorobanServer.getContractInfoForContractId` and `SorobanClient.forClientOptions` fail before any request for such a contract id, with `SorobanRpcRequestError.requestFailed` and the same text opening with "The contract to load".
 - `SorobanServer.getContractData` fails before the request with "The contract data owner must be a contract (C...) address" and the kind given for such an owner, and with "Contract data keys cannot contain muxed account (M...) or muxed contract (W...) addresses" for a key that is or holds a muxed address in a vector or map at any depth.
 
+### Fixed
+- `Transaction(xdr:)` and `Transaction(envelopeXdr:)` throw `StellarSDKError.xdrDecodingError` when the decoded transaction holds a payment, path payment, offer, clawback or set trustline flags operation whose asset code is empty, too short for its type or not UTF-8; SEP-7 signing of such an envelope returns a failure, and `postTransaction` submits it without the SEP-29 memo check.
+- `Transaction(xdr:)` and `Transaction(envelopeXdr:)` throw `StellarSDKError.invalidArgument` for the sequence number `Int64.min`.
+- `WalletUtils.createKeyPair` throws `StellarSDKError.invalidArgument` for an index outside 0 to 2147483647, the hardened BIP-32 range.
+
 ## [3.13.0] - 2026-10-16
 
 Migration guide: [docs/migration/3.13.0.md](docs/migration/3.13.0.md)

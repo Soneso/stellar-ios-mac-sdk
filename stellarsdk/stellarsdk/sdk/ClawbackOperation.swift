@@ -35,6 +35,9 @@ public class ClawbackOperation:Operation, @unchecked Sendable {
     
     /// Creates a new ClawbackOperation object from the given ClawbackOpXDR object.
     ///
+    /// The asset XDR must be valid: an asset code that `Asset.fromXDR(assetXDR:)` rejects stops the
+    /// process. `Operation.fromXDR(operationXDR:)` validates the asset XDR and throws instead.
+    ///
     /// - Parameter fromXDR: the ClawbackOpXDR object to be used to create a new ClawbackOperation object.
     /// - Parameter sourceAccountId: (optional) source account Id, must be valid, otherwise it will be ignored.
     ///
@@ -44,6 +47,15 @@ public class ClawbackOperation:Operation, @unchecked Sendable {
         self.amount = Operation.fromXDRAmount(fromXDR.amount)
         
         super.init(sourceAccountId: sourceAccountId)
+    }
+
+    /// Creates the operation after `Asset.fromXDR(assetXDR:)` accepted every asset of the XDR object.
+    ///
+    /// - Throws: `StellarSDKError.xdrDecodingError` for an asset code that is empty, too short for its
+    ///   type, or not UTF-8.
+    convenience init(validatingXDR fromXDR:ClawbackOpXDR, sourceAccountId:String?) throws {
+        _ = try Asset.fromXDR(assetXDR: fromXDR.asset)
+        self.init(fromXDR: fromXDR, sourceAccountId: sourceAccountId)
     }
     
     override func getOperationBodyXDR() throws -> OperationBodyXDR {

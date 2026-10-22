@@ -86,7 +86,8 @@ public class Operation: @unchecked Sendable {
     ///
     /// - Returns the created Operation object
     ///
-    /// - Throws StellarSDKError.invalidArgument error if the given OperationXDR object has an unknown type.
+    /// - Throws StellarSDKError.invalidArgument error if the given OperationXDR object has an unknown type,
+    ///   and StellarSDKError.xdrDecodingError if an asset of the operation has an invalid asset code.
     ///
     public static func fromXDR(operationXDR:OperationXDR) throws -> Operation {
         var mSourceAccountId: String?
@@ -97,17 +98,17 @@ public class Operation: @unchecked Sendable {
         case .createAccountOp(let account):
             return CreateAccountOperation(fromXDR: account, sourceAccountId: mSourceAccountId)
         case .paymentOp(let payment):
-            return PaymentOperation(fromXDR: payment, sourceAccountId: mSourceAccountId)
+            return try PaymentOperation(validatingXDR: payment, sourceAccountId: mSourceAccountId)
         case .pathPaymentStrictReceiveOp(let pathPaymentStrictReceive):
-            return PathPaymentStrictReceiveOperation(fromXDR: pathPaymentStrictReceive, sourceAccountId: mSourceAccountId)
+            return try PathPaymentStrictReceiveOperation(validatingXDR: pathPaymentStrictReceive, sourceAccountId: mSourceAccountId)
         case .pathPaymentStrictSendOp(let pathPaymentStrictSend):
-            return PathPaymentStrictSendOperation(fromXDR: pathPaymentStrictSend, sourceAccountId: mSourceAccountId)
+            return try PathPaymentStrictSendOperation(validatingXDR: pathPaymentStrictSend, sourceAccountId: mSourceAccountId)
         case .manageSellOfferOp(let manageOffer):
-            return ManageSellOfferOperation(fromXDR: manageOffer, sourceAccountId: mSourceAccountId)
+            return try ManageSellOfferOperation(validatingXDR: manageOffer, sourceAccountId: mSourceAccountId)
         case .manageBuyOfferOp(let manageOffer):
-            return ManageBuyOfferOperation(fromXDR: manageOffer, sourceAccountId: mSourceAccountId)
+            return try ManageBuyOfferOperation(validatingXDR: manageOffer, sourceAccountId: mSourceAccountId)
         case .createPassiveSellOfferOp(let passiveOffer):
-            return CreatePassiveSellOfferOperation(fromXDR: passiveOffer, sourceAccountId: mSourceAccountId)
+            return try CreatePassiveSellOfferOperation(validatingXDR: passiveOffer, sourceAccountId: mSourceAccountId)
         case .setOptionsOp(let setOptions):
             return SetOptionsOperation(fromXDR: setOptions, sourceAccountId: mSourceAccountId)
         case .changeTrustOp(let changeTrust):
@@ -131,11 +132,11 @@ public class Operation: @unchecked Sendable {
         case .revokeSponsorshipOp(let data):
             return try RevokeSponsorshipOperation(fromXDR: data, sourceAccountId: mSourceAccountId)
         case .clawbackOp(let data):
-            return ClawbackOperation(fromXDR: data, sourceAccountId: mSourceAccountId)
+            return try ClawbackOperation(validatingXDR: data, sourceAccountId: mSourceAccountId)
         case .clawbackClaimableBalanceOp(let data):
             return try ClawbackClaimableBalanceOperation(fromXDR: data, sourceAccountId: mSourceAccountId)
         case .setTrustLineFlagsOp(let data):
-            return SetTrustlineFlagsOperation(fromXDR: data, sourceAccountId: mSourceAccountId)
+            return try SetTrustlineFlagsOperation(validatingXDR: data, sourceAccountId: mSourceAccountId)
         case .liquidityPoolDepositOp(let data):
             return LiquidityPoolDepositOperation(fromXDR: data, sourceAccountId: mSourceAccountId)
         case .liquidityPoolWithdrawOp(let data):

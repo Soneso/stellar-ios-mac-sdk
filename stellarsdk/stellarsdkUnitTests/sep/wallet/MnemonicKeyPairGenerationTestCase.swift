@@ -96,4 +96,21 @@ class MnemonicKeyPairGenerationTestCase: XCTestCase {
         XCTAssertEqual(keyPair8.accountId, "GDS5I7L7LWFUVSYVAOHXJET2565MGGHJ4VHGVJXIKVKNO5D4JWXIZ3XU")
         XCTAssertEqual(keyPair8.secretSeed, "SAIZA26BUP55TDCJ4U7I2MSQEAJDPDSZSBKBPWQTD5OQZQSJAGNN2IQB")
     }
+
+    func testCreateKeyPairAcceptsLargestHardenedIndex() throws {
+        let mnemonic = "illness spike retreat truth genius clock brain pass fit cave bargain toe"
+        let keyPair = try WalletUtils.createKeyPair(mnemonic: mnemonic, passphrase: nil, index: 2147483647)
+        // m/44'/148'/2147483647' derived outside the SDK with the SLIP-0010 Ed25519 steps.
+        XCTAssertEqual(keyPair.accountId, "GDFBFRFJ32FAS747QDP3IQBL4JQHJNSVPUYDD2VL74GY7XIPFPX4CNS4")
+    }
+
+    func testCreateKeyPairRejectsIndexOutsideHardenedRange() {
+        let mnemonic = "illness spike retreat truth genius clock brain pass fit cave bargain toe"
+        for index in [-1, 2147483648] {
+            XCTAssertThrowsError(try WalletUtils.createKeyPair(mnemonic: mnemonic, passphrase: nil, index: index)) { error in
+                guard case StellarSDKError.invalidArgument(let message) = error else { return XCTFail("\(error)") }
+                XCTAssertEqual(message, "Account index must be between 0 and 2147483647, got: \(index)")
+            }
+        }
+    }
 }

@@ -38,6 +38,9 @@ public class SetTrustlineFlagsOperation:Operation, @unchecked Sendable {
     
     /// Creates a new SetTrustlineFlagsOperation object from the given SetTrustLineFlagsOpXDR object.
     ///
+    /// The asset XDR must be valid: an asset code that `Asset.fromXDR(assetXDR:)` rejects stops the
+    /// process. `Operation.fromXDR(operationXDR:)` validates the asset XDR and throws instead.
+    ///
     /// - Parameter fromXDR: the SetTrustLineFlagsOpXDR object to be used to create a new SetTrustlineFlagsOperation object.
     /// - Parameter sourceAccountId: (optional) source account Id, must be valid, otherwise it will be ignored.
     ///
@@ -48,6 +51,15 @@ public class SetTrustlineFlagsOperation:Operation, @unchecked Sendable {
         self.setFlags = fromXDR.setFlags
         
         super.init(sourceAccountId: sourceAccountId)
+    }
+
+    /// Creates the operation after `Asset.fromXDR(assetXDR:)` accepted every asset of the XDR object.
+    ///
+    /// - Throws: `StellarSDKError.xdrDecodingError` for an asset code that is empty, too short for its
+    ///   type, or not UTF-8.
+    convenience init(validatingXDR fromXDR:SetTrustLineFlagsOpXDR, sourceAccountId:String?) throws {
+        _ = try Asset.fromXDR(assetXDR: fromXDR.asset)
+        self.init(fromXDR: fromXDR, sourceAccountId: sourceAccountId)
     }
     
     override func getOperationBodyXDR() throws -> OperationBodyXDR {
