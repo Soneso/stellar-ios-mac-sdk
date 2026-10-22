@@ -30,6 +30,8 @@ public class InvokeHostFunctionOperation:Operation, @unchecked Sendable {
     private let lock = NSLock()
 
     /// Creates a new invoke host function operation with specified parameters.
+    ///
+    /// A host function built by hand is not validated; the string-taking builders validate the contract id.
     public init(hostFunction:HostFunctionXDR, auth:[SorobanAuthorizationEntryXDR] = [], sourceAccountId:String? = nil) {
         self.hostFunction = hostFunction;
         self._auth = auth;
@@ -37,7 +39,14 @@ public class InvokeHostFunctionOperation:Operation, @unchecked Sendable {
     }
 
     /// Creates an operation to invoke a function on a deployed smart contract.
+    ///
+    /// - Parameter contractId: the contract to invoke, a "C..." strkey contract id or the 64
+    ///   character hex of the 32 byte id
+    /// - Throws: StellarSDKError.invalidArgument naming the kind of address given for any other string
     public static func forInvokingContract(contractId:String, functionName:String, functionArguments:[SCValXDR] = [], sourceAccountId:String? = nil, auth: [SorobanAuthorizationEntryXDR]? = nil) throws -> InvokeHostFunctionOperation {
+        if let refusal = ContractAddressGuard.contractIdRefusal(contractId, subject: "The contract to invoke") {
+            throw StellarSDKError.invalidArgument(message: refusal)
+        }
         let invoekArgs = InvokeContractArgsXDR(contractAddress: try SCAddressXDR(contractId:contractId),
                                                functionName: functionName, args: functionArguments)
         let hostFunction = HostFunctionXDR.invokeContract(invoekArgs)

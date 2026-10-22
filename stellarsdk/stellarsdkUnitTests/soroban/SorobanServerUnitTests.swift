@@ -14,6 +14,8 @@ import stellarsdk
 /// Note: Network-dependent async methods are tested in integration tests.
 final class SorobanServerUnitTests: XCTestCase {
     var server: SorobanServer!
+    let muxedContract = "WA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAAAAAAAAAPCIA6IG"
+    let muxedAccount = "MA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVAAAAAAAAAAAAAJLK"
 
     override func setUp() {
         super.setUp()
@@ -422,19 +424,53 @@ final class SorobanServerUnitTests: XCTestCase {
 
     func testGetContractDataWithInvalidContractId() async {
         let key = SCValXDR.u32(123)
-        let result = await server.getContractData(
-            contractId: "invalid",
-            key: key,
-            durability: .persistent
-        )
-
-        switch result {
-        case .success:
-            XCTFail("Expected error for invalid contract ID")
-        case .failure(let error):
-            if case .requestFailed(let message) = error {
-                XCTAssertTrue(message.contains("invalid contractId"))
+        let refusal = "The contract data owner must be a contract (C...) address"
+        let cases = [
+            ("invalid", "\(refusal): invalid"),
+            (muxedContract, "\(refusal), got a muxed contract (W...) address: \(muxedContract); use its base contract (C...) address"),
+            (muxedAccount, "\(refusal), got a muxed account (M...) address: \(muxedAccount)"),
+        ]
+        for (contractId, message) in cases {
+            let result = await server.getContractData(contractId: contractId, key: key, durability: .persistent)
+            guard case .failure(let error) = result, case .requestFailed(let actual) = error else {
+                XCTFail("Expected requestFailed for \(contractId), got \(result)")
+                continue
             }
+            XCTAssertEqual(actual, message)
+        }
+    }
+
+    /// A secret seed given as the contract data owner is refused without being echoed.
+    func testGetContractDataNeverEchoesASecretSeed() async {
+        let seed = "SAPS66IJDXUSFDSDKIHR4LN6YPXIGCM5FBZ7GE66FDKFJRYJGFW7ZHYF"
+        let result = await server.getContractData(contractId: seed, key: SCValXDR.u32(123), durability: .persistent)
+        guard case .failure(let error) = result, case .requestFailed(let message) = error else {
+            return XCTFail("Expected requestFailed, got \(result)")
+        }
+        XCTAssertFalse(message.contains(seed))
+        XCTAssertEqual(message, "The contract data owner must be a contract (C...) address, got a secret seed (S...) instead of an address")
+    }
+
+    /// The contract code and info loaders refuse a muxed address before any request.
+    func testContractLoadersRefuseMuxedContractIds() async {
+        let refusal = "The contract to load must be a contract (C...) address"
+        let cases = [
+            (muxedContract, "\(refusal), got a muxed contract (W...) address: \(muxedContract); use its base contract (C...) address"),
+            (muxedAccount, "\(refusal), got a muxed account (M...) address: \(muxedAccount)"),
+        ]
+        for (contractId, message) in cases {
+            let code = await server.getContractCodeForContractId(contractId: contractId)
+            guard case .failure(let codeError) = code, case .requestFailed(let codeMessage) = codeError else {
+                XCTFail("Expected requestFailed for \(contractId), got \(code)")
+                continue
+            }
+            XCTAssertEqual(codeMessage, message)
+            let info = await server.getContractInfoForContractId(contractId: contractId)
+            guard case .rpcFailure(let infoError) = info, case .requestFailed(let infoMessage) = infoError else {
+                XCTFail("Expected rpcFailure for \(contractId), got \(info)")
+                continue
+            }
+            XCTAssertEqual(infoMessage, message)
         }
     }
 

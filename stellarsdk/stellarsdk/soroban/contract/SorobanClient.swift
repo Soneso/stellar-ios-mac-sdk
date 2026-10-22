@@ -89,7 +89,9 @@ public final class SorobanClient: Sendable {
     /// Loads the contract info for the contractId provided by the options, and the constructs a SorobanClient by using the loaded contract info.
     ///
     /// - Parameters:
-    ///   - options: Client options.
+    ///   - options: Client options; their contract id is a "C..." strkey or the 64 character hex
+    ///     of the 32 byte id, and any other string throws `SorobanRpcRequestError.requestFailed`
+    ///     before any request, naming the kind of address given.
     ///
     public static func forClientOptions(options:ClientOptions) async throws -> SorobanClient {
         let server = SorobanServer(endpoint: options.rpcUrl, urlSession: options.urlSession)
@@ -366,6 +368,7 @@ public final class SorobanClient: Sendable {
     /// Invokes a contract method. It can be used for read only calls and for read/write calls. Returns the result of the invocation.
     /// If it is read only call it will return the result from the simulation.
     /// If you want to force signing and submission even if it is a read only call set `force`to true.
+    /// The contract id must be a C... strkey or the 64 hexadecimal characters of the contract id.
     ///
     /// - Parameters:
     ///   - name: the name of the method to invoke. Will throw an exception if the method does not exist.
@@ -395,6 +398,7 @@ public final class SorobanClient: Sendable {
     
     /// Creates an AssembledTransaction for invoking the given method.
     /// This is usefully if you need to manipulate the transaction before signing and sending.
+    /// The contract id must be a C... strkey or the 64 hexadecimal characters of the contract id.
     ///
     /// - Parameters:
     ///   - name: the name of the method to invoke. Will throw an exception if the method does not exist.

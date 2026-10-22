@@ -203,6 +203,8 @@ public final class AssembledTransaction: @unchecked Sendable {
     }
 
     /// Builds an assembled transaction for invoking a contract method with automatic simulation.
+    ///
+    /// The contract id must be a C... strkey or the 64 hexadecimal characters of the contract id.
     public static func build(options:AssembledTransactionOptions) async throws -> AssembledTransaction {
 
         let invokeContractHostFunction = try InvokeHostFunctionOperation.forInvokingContract(contractId: options.clientOptions.contractId, functionName: options.method, functionArguments: options.arguments ?? [])
@@ -211,7 +213,14 @@ public final class AssembledTransaction: @unchecked Sendable {
     }
 
     /// Builds an assembled transaction from a custom invoke host function operation.
+    ///
+    /// An operation that invokes a contract names a contract (C...) as its target; any other
+    /// address kind throws `StellarSDKError.invalidArgument` before the source account is fetched.
     public static func buildWithOp(operation: InvokeHostFunctionOperation, options:AssembledTransactionOptions) async throws -> AssembledTransaction {
+        if case .invokeContract(let args) = operation.hostFunction,
+           let refusal = try ContractAddressGuard.contractIdRefusal(args.contractAddress.toStrKey(), subject: "The contract to invoke") {
+            throw StellarSDKError.invalidArgument(message: refusal)
+        }
         let aTx = AssembledTransaction(options: options)
         let sourceAccount = try await aTx.getSourceAccount()
         let timeBounds = TimeBounds(minTime: 0,

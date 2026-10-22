@@ -112,6 +112,13 @@ class HexIdBoundaryUnitTests: XCTestCase {
                        try SCAddressXDR(contractId: upperCaseCHex).contractId)
     }
 
+    /// A secret seed given where a contract is expected is named but never echoed.
+    func testContractIdRefusalNeverEchoesASecretSeed() {
+        let seed = "SAPS66IJDXUSFDSDKIHR4LN6YPXIGCM5FBZ7GE66FDKFJRYJGFW7ZHYF"
+        XCTAssertEqual(ContractAddressGuard.contractIdRefusal(seed, subject: "The contract to invoke"),
+                       "The contract to invoke must be a contract (C...) address, got a secret seed (S...) instead of an address")
+    }
+
     // MARK: - SCAddressXDR(liquidityPoolId:)
 
     func testLiquidityPoolAddressTakesTheExactWidth() throws {

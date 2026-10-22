@@ -12,6 +12,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - The deprecation message of `EventInfo.inSuccessfulContractCall` names the Stellar RPC 30 omission and the fallback to older servers.
+- `InvokeHostFunctionOperation.forInvokingContract`, and with it `AssembledTransaction.build` and `SorobanClient.buildInvokeMethodTx`, rejects a contract id that is neither a `C...` strkey nor the 64 character hex id before any decoding, throwing `StellarSDKError.invalidArgument` with "The contract to invoke must be a contract (C...) address, got a muxed contract (W...) address: <address>; use its base contract (C...) address" for a `W...` and a text naming the kind given for any other address; a mistyped `C...` strkey throws `StellarSDKError.invalidArgument` instead of `KeyUtilsError`; `AssembledTransaction.buildWithOp` refuses an operation whose invoke target is not a contract with the same text before the source account is fetched.
+- `SorobanServer.getContractCodeForContractId`, `SorobanServer.getContractInfoForContractId` and `SorobanClient.forClientOptions` fail before any request for such a contract id, with `SorobanRpcRequestError.requestFailed` and the same text opening with "The contract to load".
+- `SorobanServer.getContractData` fails before the request with "The contract data owner must be a contract (C...) address" and the kind given for such an owner, and with "Contract data keys cannot contain muxed account (M...) or muxed contract (W...) addresses" for a key that is or holds a muxed address in a vector or map at any depth.
 
 ## [3.13.0] - 2026-10-16
 

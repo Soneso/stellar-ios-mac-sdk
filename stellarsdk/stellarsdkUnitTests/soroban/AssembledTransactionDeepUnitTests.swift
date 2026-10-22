@@ -147,6 +147,69 @@ final class AssembledTransactionDeepUnitTests: XCTestCase {
         XCTAssertNil(tx.simulationResponse)
     }
 
+    /// Counts the requests the mock of `countRequests()` receives.
+    private final class RequestCounter: @unchecked Sendable {
+        var count = 0
+    }
+
+    private func countRequests() -> RequestCounter {
+        let counter = RequestCounter()
+        ServerMock.add(mock: RequestMock(host: "soroban-testnet.stellar.org", path: "*", httpMethod: "POST") { _, _ in
+            counter.count += 1
+            return nil
+        })
+        return counter
+    }
+
+    /// The SEP-23 muxed contract, muxed account and account vectors with their invoke target refusals.
+    private let invokeTargetRefusals = [
+        ("WA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAAAAAAAAAPCIA6IG",
+         "The contract to invoke must be a contract (C...) address, got a muxed contract (W...) address: WA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAAAAAAAAAPCIA6IG; use its base contract (C...) address"),
+        ("MA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVAAAAAAAAAAAAAJLK",
+         "The contract to invoke must be a contract (C...) address, got a muxed account (M...) address: MA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVAAAAAAAAAAAAAJLK"),
+        ("GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ",
+         "The contract to invoke must be a contract (C...) address, got an account (G...) address: GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ"),
+    ]
+
+    /// A muxed address or an account as the contract to invoke is refused before the source
+    /// account is fetched.
+    func testBuildRefusesMuxedContractIds() async {
+        let requests = countRequests()
+        for (contractId, message) in invokeTargetRefusals {
+            let client = ClientOptions(sourceAccountKeyPair: keyPair, contractId: contractId, network: Network.testnet, rpcUrl: mockRpcUrl)
+            let options = AssembledTransactionOptions(clientOptions: client, methodOptions: methodOptions, method: "balance")
+            do {
+                _ = try await AssembledTransaction.build(options: options)
+                XCTFail("Expected \(contractId) to be refused")
+            } catch StellarSDKError.invalidArgument(let actual) {
+                XCTAssertEqual(actual, message)
+            } catch {
+                XCTFail("Unexpected error: \(error)")
+            }
+        }
+        XCTAssertEqual(requests.count, 0)
+    }
+
+    /// A decoded operation whose invoke target is a muxed address or an account is refused before
+    /// the source account is fetched.
+    func testBuildWithOpRefusesMuxedContractTarget() async throws {
+        let requests = countRequests()
+        let options = AssembledTransactionOptions(clientOptions: clientOptions, methodOptions: methodOptions, method: "balance")
+        for (target, message) in invokeTargetRefusals {
+            let address = target.hasPrefix("W") ? try SCAddressXDR(muxedContractId: target) : try SCAddressXDR(accountId: target)
+            let operation = try InvokeHostFunctionOperation(fromXDR: InvokeHostFunctionOpXDR(
+                hostFunction: .invokeContract(InvokeContractArgsXDR(contractAddress: address, functionName: "balance", args: [])),
+                auth: []), sourceAccountId: nil)
+            do {
+                _ = try await AssembledTransaction.buildWithOp(operation: operation, options: options)
+                XCTFail("Expected \(target) to be refused")
+            } catch StellarSDKError.invalidArgument(let actual) {
+                XCTAssertEqual(actual, message)
+            }
+        }
+        XCTAssertEqual(requests.count, 0)
+    }
+
     func testBuildWithOpCustomOperation() async throws {
         setupRpcMock(simulateResponse: .success)
 
