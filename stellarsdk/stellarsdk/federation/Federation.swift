@@ -29,6 +29,7 @@ public enum FederationForDomainEnum: Sendable {
 /// This class provides human-readable address resolution for Stellar accounts. Instead of using
 /// long cryptographic addresses (G...), users can use addresses like "alice*example.com".
 /// Federation makes Stellar more user-friendly by mapping memorable names to account IDs.
+/// A federation response larger than 100 KB fails with `FederationError.horizonError`.
 ///
 /// ## Typical Usage
 ///
@@ -145,7 +146,7 @@ public final class Federation: @unchecked Sendable {
         
         let requestPath = "?q=\(address.urlQueryValueEncoded)&type=name"
         
-        let result = await serviceHelper.GETRequestWithPath(path: requestPath)
+        let result = await serviceHelper.GETRequestWithPath(path: requestPath, maxResponseSize: DiscoveryLimits.federationResponseMaxBytes)
         switch result {
         case .success(let data):
             do {
@@ -176,7 +177,7 @@ public final class Federation: @unchecked Sendable {
         
         let requestPath = "?q=\(account_id.urlQueryValueEncoded)&type=id"
         
-        let result = await serviceHelper.GETRequestWithPath(path: requestPath)
+        let result = await serviceHelper.GETRequestWithPath(path: requestPath, maxResponseSize: DiscoveryLimits.federationResponseMaxBytes)
         switch result {
         case .success(let data):
             do {
@@ -200,7 +201,7 @@ public final class Federation: @unchecked Sendable {
     public func resolve(transaction_id: String) async -> ResolveResponseEnum {
         let requestPath = "?q=\(transaction_id.urlQueryValueEncoded)&type=txid"
         
-        let result = await serviceHelper.GETRequestWithPath(path: requestPath)
+        let result = await serviceHelper.GETRequestWithPath(path: requestPath, maxResponseSize: DiscoveryLimits.federationResponseMaxBytes)
         switch result {
         case .success(let data):
             do {
@@ -231,7 +232,7 @@ public final class Federation: @unchecked Sendable {
         }
         
         //print(requestPath)
-        let result = await serviceHelper.GETRequestWithPath(path: requestPath)
+        let result = await serviceHelper.GETRequestWithPath(path: requestPath, maxResponseSize: DiscoveryLimits.federationResponseMaxBytes)
         switch result {
         case .success(let data):
             do {

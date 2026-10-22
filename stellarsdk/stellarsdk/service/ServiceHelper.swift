@@ -23,6 +23,21 @@ enum Result {
     case failure(error: HorizonRequestError)
 }
 
+/// Limits for documents that the SDK reads from hosts a domain names: stellar.toml files and
+/// federation responses.
+enum DiscoveryLimits {
+    /// Largest stellar.toml body in bytes. SEP-1: "`stellar.toml` can have a maximum file size of
+    /// 100KB." js-stellar-sdk uses the same value as `STELLAR_TOML_MAX_SIZE` (`100 * 1024`).
+    static let stellarTomlMaxBytes = 100 * 1024
+    /// Largest federation response body in bytes, `FEDERATION_RESPONSE_MAX_SIZE` (`100 * 1024`) of
+    /// js-stellar-sdk.
+    static let federationResponseMaxBytes = 100 * 1024
+    /// Seconds after which a stellar.toml load fails. js-stellar-sdk sets no default timeout; the
+    /// value is the request timeout of the federation client in the Soneso KMP SDK (`30_000` ms)
+    /// and the read timeout of the federation client in java-stellar-sdk (30 s).
+    static let stellarTomlTimeout: TimeInterval = 30
+}
+
 /// Internal helper class responsible for HTTP connections to the Horizon server.
 ///
 /// Handles all HTTP communication including GET, POST, PUT, PATCH, DELETE requests,
@@ -127,10 +142,12 @@ class ServiceHelper: @unchecked Sendable {
     ///
     /// - Parameter path: A path relative to the baseURL. URL parameters can be encoded in this parameter as you would do with regular URLs.
     /// - Parameter jwtToken: Optional token to be set in the header as "Authorization: Bearer {token}"
+    /// - Parameter maxResponseSize: Optional largest accepted response body in bytes; a larger body fails
+    ///   the request with HorizonRequestError.requestFailed
     /// - Returns: Result with response data on success or HorizonRequestError on failure
-    open func GETRequestWithPath(path: String, jwtToken:String? = nil) async -> Result {
+    open func GETRequestWithPath(path: String, jwtToken:String? = nil, maxResponseSize: Int? = nil) async -> Result {
         let requestUrl = requestUrlWithPath(path: path)
-        return await requestFromUrl(url: requestUrl, method: .get, jwtToken: jwtToken)
+        return await requestFromUrl(url: requestUrl, method: .get, jwtToken: jwtToken, maxResponseSize: maxResponseSize)
     }
 
     /// Performs a GET request to the specified URL.
@@ -272,8 +289,10 @@ class ServiceHelper: @unchecked Sendable {
     /// - Parameter contentType: Optional content type to set in the request header
     /// - Parameter jwtToken: Optional token to be set in the header as "Authorization: Bearer {token}"
     /// - Parameter body: Optional data to be contained in the request body
+    /// - Parameter maxResponseSize: Optional largest accepted response body in bytes; a larger body fails
+    ///   the request with HorizonRequestError.requestFailed
     /// - Returns: Result with response data on success or HorizonRequestError on failure
-    open func requestFromUrl(url: String, method: HTTPMethod, contentType:String? = nil, jwtToken:String? = nil, body:Data? = nil) async -> Result {
+    open func requestFromUrl(url: String, method: HTTPMethod, contentType:String? = nil, jwtToken:String? = nil, body:Data? = nil, maxResponseSize: Int? = nil) async -> Result {
         guard let url1 = URL(string: url) else {
             return .failure(error: .requestFailed(message: "Invalid URL: \(url)", horizonErrorResponse: nil))
         }
@@ -308,7 +327,13 @@ class ServiceHelper: @unchecked Sendable {
         }
 
         do {
-            let (data, response) = try await URLSession.shared.data(for: urlRequest)
+            let data: Data
+            let response: URLResponse
+            if let maxResponseSize = maxResponseSize {
+                (data, response) = try await ServiceHelper.cappedData(for: urlRequest, maxBytes: maxResponseSize)
+            } else {
+                (data, response) = try await URLSession.shared.data(for: urlRequest)
+            }
 
             guard let httpResponse = response as? HTTPURLResponse else {
                 return .failure(error: .emptyResponse)
@@ -391,8 +416,32 @@ class ServiceHelper: @unchecked Sendable {
                 }
                 return .failure(error: .requestFailed(message: message, horizonErrorResponse: nil))
             }
+        } catch let error as HorizonRequestError {
+            return .failure(error: error)
         } catch {
             return .failure(error: .requestFailed(message: error.localizedDescription, horizonErrorResponse: nil))
         }
+    }
+
+    /// Loads `request` through the shared session and stops the transfer once the body exceeds
+    /// `maxBytes`.
+    ///
+    /// - Parameter request: The request to load
+    /// - Parameter maxBytes: The largest accepted body in bytes
+    /// - Returns: The body and the response
+    /// - Throws: HorizonRequestError.requestFailed naming the URL and the cap for a larger body, and the
+    ///   session's error when the transfer fails
+    static func cappedData(for request: URLRequest, maxBytes: Int) async throws -> (Data, URLResponse) {
+        let (bytes, response) = try await URLSession.shared.bytes(for: request)
+        var data = Data()
+        for try await byte in bytes {
+            guard data.count < maxBytes else {
+                // Cancellation at the cap must not depend on the iterator's lifetime.
+                bytes.task.cancel()
+                throw HorizonRequestError.requestFailed(message: "The response from \(request.url?.absoluteString ?? "") exceeds the limit of \(maxBytes) bytes", horizonErrorResponse: nil)
+            }
+            data.append(byte)
+        }
+        return (data, response)
     }
 }
