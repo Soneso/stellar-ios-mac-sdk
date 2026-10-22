@@ -53,9 +53,14 @@ public final class WalletUtils: Sendable {
     ///
     /// - Parameter mnemonic: The mnemonic string.
     /// - Parameter passphrase: The passphrase.
-    /// - Parameter index: The index of the wallet to generate.
+    /// - Parameter index: The index of the wallet to generate, from 0 to 2147483647 (2^31-1), the range
+    ///   of hardened BIP-32 account indexes.
     ///
+    /// - Throws: `StellarSDKError.invalidArgument` for an index outside 0 to 2147483647.
     public static func createKeyPair(mnemonic: String, passphrase: String?, index: Int) throws -> KeyPair {
+        guard index >= 0, index <= Int(Int32.max) else {
+            throw StellarSDKError.invalidArgument(message: "Account index must be between 0 and \(Int32.max), got: \(index)")
+        }
         let bip39Seed: Data
 
         if let passphraseValue = passphrase, !passphraseValue.isEmpty {

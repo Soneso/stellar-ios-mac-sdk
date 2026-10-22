@@ -40,6 +40,9 @@ public class CreatePassiveOfferOperation:Operation, @unchecked Sendable {
     
     /// Creates a new CreatePassiveSellOfferOperation object from the given CreatePassiveOfferOperationXDR object.
     ///
+    /// The asset XDR must be valid: an asset code that `Asset.fromXDR(assetXDR:)` rejects stops the
+    /// process. `Operation.fromXDR(operationXDR:)` validates the asset XDR and throws instead.
+    ///
     /// - Parameter fromXDR: the CreatePassiveOfferOperationXDR object to be used to create a new CreatePassiveSellOfferOperation object.
     /// - Parameter sourceAccountId: (optional) source account Id, must be valid, otherwise it will be ignored.
     ///
@@ -49,6 +52,16 @@ public class CreatePassiveOfferOperation:Operation, @unchecked Sendable {
         self.amount = Operation.fromXDRAmount(fromXDR.amount)
         self.price = Price(numerator: fromXDR.price.n, denominator: fromXDR.price.d)
         super.init(sourceAccountId: sourceAccountId)
+    }
+
+    /// Creates the operation after `Asset.fromXDR(assetXDR:)` accepted every asset of the XDR object.
+    ///
+    /// - Throws: `StellarSDKError.xdrDecodingError` for an asset code that is empty, too short for its
+    ///   type, or not UTF-8.
+    convenience init(validatingXDR fromXDR:CreatePassiveOfferOperationXDR, sourceAccountId:String?) throws {
+        _ = try Asset.fromXDR(assetXDR: fromXDR.selling)
+        _ = try Asset.fromXDR(assetXDR: fromXDR.buying)
+        self.init(fromXDR: fromXDR, sourceAccountId: sourceAccountId)
     }
     
     override func getOperationBodyXDR() throws -> OperationBodyXDR {
