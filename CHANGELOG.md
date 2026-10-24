@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.14.0] - 2026-10-25
+
 ### Added
 - `ContractCreditedEffectResponse` carries `contractMuxed` and `contractMuxedId` when Horizon reports a transfer or mint to a muxed contract address.
 
@@ -15,11 +17,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `InvokeHostFunctionOperation.forInvokingContract`, and with it `AssembledTransaction.build` and `SorobanClient.buildInvokeMethodTx`, rejects a contract id that is neither a `C...` strkey nor the 64 character hex id before any decoding, throwing `StellarSDKError.invalidArgument` with "The contract to invoke must be a contract (C...) address, got a muxed contract (W...) address: <address>; use its base contract (C...) address" for a `W...` and a text naming the kind given for any other address; a mistyped `C...` strkey throws `StellarSDKError.invalidArgument` instead of `KeyUtilsError`; `AssembledTransaction.buildWithOp` refuses an operation whose invoke target is not a contract with the same text before the source account is fetched.
 - `SorobanServer.getContractCodeForContractId`, `SorobanServer.getContractInfoForContractId` and `SorobanClient.forClientOptions` fail before any request for such a contract id, with `SorobanRpcRequestError.requestFailed` and the same text opening with "The contract to load".
 - `SorobanServer.getContractData` fails before the request with "The contract data owner must be a contract (C...) address" and the kind given for such an owner, and with "Contract data keys cannot contain muxed account (M...) or muxed contract (W...) addresses" for a key that is or holds a muxed address in a vector or map at any depth.
+- The documentation and agent skill 1.10.0 describe where the SDK refuses a muxed contract address (`W...`), the exact byte count of a `bytesN` contract value, the SEP-5 account index range, and the stellar.toml load limits. The skill also states the `ContractSpec` integer ranges, the Horizon stream reconnect delays, and the TxRep number and array limits. Its RPC field lists name the `getEvents` indexes and the ledger entry extension, and its API reference lists the public API of 3.14.0.
+- The Horizon compatibility matrix targets Horizon v30.0.0 and the Soroban RPC compatibility matrix targets stellar-rpc v30.0.0, both at unchanged coverage; the 23 compatibility matrices are regenerated for 3.14.0.
 
 ### Fixed
 - `ContractSpec` throws `ContractSpecError.invalidType` with the value and target type for integers outside the u32, i32 or enum range.
 - `ContractSpec` throws `ContractSpecError.invalidType` for a `bytesN` value whose byte count (UTF-8 for a `String`, or `Data`) differs from the declared length, naming both lengths.
-- `Transaction(xdr:)` and `Transaction(envelopeXdr:)` throw `StellarSDKError.xdrDecodingError` when the decoded transaction holds a payment, path payment, offer, clawback or set trustline flags operation whose asset code is empty, too short for its type or not UTF-8; SEP-7 signing of such an envelope returns a failure, and `postTransaction` submits it without the SEP-29 memo check.
+- `Transaction(xdr:)` and `Transaction(envelopeXdr:)` throw `StellarSDKError.xdrDecodingError` when the decoded transaction holds a payment, path payment, offer, clawback or set trustline flags operation whose asset code is empty, too short for its type or not UTF-8; SEP-7 signing of such an envelope returns a failure, and `postTransaction` and `postTransactionAsync` submit it without the SEP-29 memo check.
 - `Transaction(xdr:)` and `Transaction(envelopeXdr:)` throw `StellarSDKError.invalidArgument` for the sequence number `Int64.min`.
 - `WalletUtils.createKeyPair` throws `StellarSDKError.invalidArgument` for an index outside 0 to 2147483647, the hardened BIP-32 range.
 - `StellarToml.from(domain:secure:)`, `StellarToml.currencyFrom(url:)` and the `forDomain` functions of `KycService`, `InteractiveService`, `TransferServerService` and `RegulatedAssetsService` load stellar.toml asynchronously and return `.invalidToml` after 30 seconds, for an HTTP status outside 200 to 299, for a file larger than 100 KB (102,400 bytes, the SEP-1 limit) and for a file that is not UTF-8.
@@ -29,7 +33,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - A closed `EventSource` stays closed when `close()` is called while a reconnect is scheduled.
 - `EventSource` applies the reconnect delay that Horizon sends with its `open` and `close` events. A stream reconnects 10 milliseconds after Horizon ends a page of records and waits at least 1 second after a failed connection, whatever `retry` value the server sent last. Both delays were 3 seconds.
 - `EventInfo` decodes `operationIndex` and `transactionIndex` from `getEvents` responses, so `opIndex` and `txIndex` carry the indexes the server sends.
-- `TxRep.fromTxRep(txRep:)` throws `TxRepError.invalidValue` for an array length that is negative or exceeds the XDR maximum, a UInt32 value above 4294967295, an Int32 hexadecimal value out of range and a doubled minus sign. An array of integers whose length exceeds the number of lines in the TxRep gets the same error. `TxRepHelper.parseInt` throws it for the hexadecimal and the sign case, `TxRepHelper.parseInt64` for a doubled minus sign.
+- `TxRep.fromTxRep(txRep:)` throws `TxRepError.invalidValue` for an array length that is negative or exceeds the XDR maximum, a UInt32 value above 4294967295, an Int32 hexadecimal value out of range and a doubled minus sign. An array of integers whose length exceeds the number of distinct keys in the TxRep gets the same error. `TxRepHelper.parseInt` throws it for the hexadecimal and the sign case, `TxRepHelper.parseInt64` for a doubled minus sign.
 - `LedgerEntry.ext` decodes the base64 entry extension from the RPC response's `extXdr` key.
 
 ## [3.13.0] - 2026-10-16
