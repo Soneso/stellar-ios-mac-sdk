@@ -294,7 +294,7 @@ print(cbXdr.paddedBalanceIdHex)
 
 ## Muxed contracts (W...)
 
-Muxed contract addresses (defined in [CAP-84](https://github.com/stellar/stellar-protocol/blob/master/core/cap-0084.md)) pair a contract with a 64-bit ID, the way a muxed account pairs an account with one. A W-address is valid for a `MuxedAddress` contract parameter and is never a Soroban authorization address.
+Muxed contract addresses (defined in [CAP-84](https://github.com/stellar/stellar-protocol/blob/master/core/cap-0084.md)) pair a contract with a 64-bit ID, the way a muxed account pairs an account with one. A W-address is valid for a `MuxedAddress` contract parameter and is never a Soroban authorization address. As the contract to invoke, it throws `StellarSDKError.invalidArgument` before any request. As a contract to load, as a contract data owner, or inside a contract data key, it fails with `SorobanRpcRequestError.requestFailed` before the request. Where the SDK takes a contract, pass the base C-address.
 
 A muxed contract address combines:
 - A contract ID (C-address), the contract on the network

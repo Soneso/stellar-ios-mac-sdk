@@ -998,6 +998,8 @@ let fixedType = SCSpecTypeDefXDR.bytesN(SCSpecTypeBytesNXDR(n: 32))
 let fixedVal = try spec.nativeToXdrSCVal(val: Data(count: 32), ty: fixedType)
 ```
 
+A `bytesN` value must hold exactly the declared number of bytes, counted in UTF-8 for a `String`; another length throws `ContractSpecError.invalidType` naming both lengths.
+
 #### User-Defined Types (Enum, Struct, Union)
 
 **Enum** -- pass the integer value:

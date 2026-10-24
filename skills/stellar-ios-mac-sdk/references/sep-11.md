@@ -487,6 +487,11 @@ do {
 | `signatures.len > 20` | `invalidValue(key: "signatures.len > 20")` |
 | `operations.len > 100` | `invalidValue(key: "operations.len > 100")` |
 | 0 operations in transaction | `StellarSDKError.invalidArgument` |
+| `.len` negative or over the XDR maximum of its array | `TxRepError.invalidValue` |
+| `.len` of an integer array over the number of distinct keys in the TxRep | `TxRepError.invalidValue` |
+| `UInt32` value over 4294967295 | `TxRepError.invalidValue` |
+| `Int32` value outside its range (decimal or hexadecimal) | `TxRepError.invalidValue` |
+| Doubled minus sign (`--1`) | `TxRepError.invalidValue` |
 
 ---
 

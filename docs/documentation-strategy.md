@@ -23,7 +23,7 @@ All documentation is written for **SDK Users** - developers who want to integrat
 
 ## Migration Guides
 
-A release gets a migration guide when it changes behavior that existing code can observe. The test: code that compiled, ran, or passed its tests on the previous release fails to compile, behaves differently, or needs a change to keep its result. This covers changed defaults, removed or retyped API, stricter validation, and a new error type or message from an existing call. It also covers changed output spelling, new network requests, changes to the wire form, and fixes that end an error a caller may have worked around. A generated XDR addition gets a note when an exhaustive match over the type stops compiling or skips the new value silently. A deprecation gets a note only when the API also changes behavior; a removal always does. Additions, refactors, performance work, documentation, and CI changes get none.
+A release gets a migration guide when it changes behavior that existing code can observe. The test: code that compiled, ran, and produced a usable result on the previous release fails to compile, behaves differently, or needs a change to keep its result. This covers changed defaults and removed or retyped API. It also covers changed output spelling, new network requests, changes to the wire form, and fixes that end an error a caller may have worked around. A generated XDR addition gets a note when an exhaustive match over the type stops compiling or skips the new value silently. A deprecation gets a note only when the API also changes behavior; a removal always does. A check gets no note when it replaces a silently wrong result, such as a wrapped value, or a request that could not succeed. The same holds for a new error type or message for an input that was never valid, and for a capability addition that changes no existing call. Additions, refactors, performance work, documentation, and CI changes get none. The CHANGELOG records every change, with or without a note.
 
 The guide is `docs/migration/X.Y.Z.md`, titled `# Migrating to X.Y.Z`, and is written during release preparation from the final CHANGELOG section of the version. Its introduction reads (the clause on earlier guides is omitted when none exists):
 
@@ -42,7 +42,7 @@ The previous-version sentence is the only history a note carries. A note stays u
 
 A note carries a fenced before-and-after pair, labeled with both versions, when the action rewrites a call, a type, an override signature, or a multi-step recipe; the after block compiles against X.Y.Z. A one-token action (add `try`, catch a type, pass a flag) stays inline.
 
-Every CHANGELOG `Breaking:` entry and every change of a kind this section names has a note, and every note traces to a CHANGELOG entry. The CHANGELOG states what the API does; the note says who is affected and what to do.
+Every CHANGELOG `Breaking:` entry has a note, and every other entry has one when it passes the test of this section. Every note traces to a CHANGELOG entry. The CHANGELOG states what the API does; the note says who is affected and what to do.
 
 The CHANGELOG section of the version opens with `Migration guide: [docs/migration/X.Y.Z.md](docs/migration/X.Y.Z.md)`. The release notes end with a "Migrating to X.Y.Z" line that links the guide at the tag `X.Y.Z`. `docs/README.md` lists all guides, newest first. A correction of a published guide also updates the release notes of the version.
 

@@ -190,6 +190,7 @@ Each service has a Change enum controlling what to stream:
 ## Lifecycle and Reconnection
 
 - The underlying `EventSource` (SSE client) automatically reconnects on transient network failures.
+- The stream waits the `retry` delay of Horizon's last `open` or `close` event before it reconnects, and 3 seconds until the first one arrives. It reconnects 1 second after an open connection fails and 10 milliseconds after Horizon ends a page of records.
 - Pass `cursor: "now"` to receive only new events, or a specific cursor string to resume from a known position.
 - You **must** hold a strong reference to the stream item. If it is deallocated, the stream closes.
 - Call `closeStream()` to terminate the connection. The stream item cannot be reused after closing -- create a new one instead.

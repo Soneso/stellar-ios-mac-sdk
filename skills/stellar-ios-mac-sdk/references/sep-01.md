@@ -361,6 +361,8 @@ for validator in stellarToml.validatorsInformation {
 - `.success(response: CurrencyDocumentation)` — currency parsed successfully
 - `.failure(error: TomlCurrencyLoadError)` — URL was invalid or TOML could not be parsed
 
+`.invalidToml` also covers a failed load, including one over 30 seconds, an HTTP status outside 200 to 299, a file over 100 KB (102,400 bytes), and a non-UTF-8 file.
+
 `StellarToml(fromString:)` is a throwing initializer — throws `TomlFileError.invalidToml` on parse failure.
 
 ### Error types

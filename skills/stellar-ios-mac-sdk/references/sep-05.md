@@ -109,6 +109,8 @@ static func createKeyPair(mnemonic: String, passphrase: String?, index: Int) thr
 - `passphrase` — optional BIP-39 passphrase; pass `nil` or `""` for no passphrase
 - `index` — account index (`0` = first account, `1` = second, etc.)
 
+The index runs from 0 to 2147483647, the hardened BIP-32 range; any other value throws `StellarSDKError.invalidArgument`.
+
 **SEP-05 Test Vectors:**
 
 ```swift
