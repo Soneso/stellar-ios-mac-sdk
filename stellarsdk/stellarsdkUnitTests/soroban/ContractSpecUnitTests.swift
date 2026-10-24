@@ -59,6 +59,13 @@ class ContractSpecUnitTests: XCTestCase {
             XCTFail("Expected u32 SCVal")
         }
         
+        for (input, expected) in [(0, UInt32(0)), (Int(UInt32.max), UInt32.max)] {
+            XCTAssertEqual(try spec.nativeToXdrSCVal(val: input, ty: .u32).u32, expected)
+        }
+        for input in [-1, Int(UInt32.max) + 1] {
+            assertInvalidType(input, .u32, "Integer value \(input) does not fit u32")
+        }
+
         // Test i32 conversion
         let i32Val = try spec.nativeToXdrSCVal(val: -42, ty: SCSpecTypeDefXDR.i32)
         if case .i32(let val) = i32Val {
@@ -67,6 +74,13 @@ class ContractSpecUnitTests: XCTestCase {
             XCTFail("Expected i32 SCVal")
         }
         
+        for expected in [Int32.min, Int32.max] {
+            XCTAssertEqual(try spec.nativeToXdrSCVal(val: Int(expected), ty: .i32).i32, expected)
+        }
+        for input in [Int(Int32.min) - 1, Int(Int32.max) + 1] {
+            assertInvalidType(input, .i32, "Integer value \(input) does not fit i32")
+        }
+
         // Test u64 conversion
         let u64Val = try spec.nativeToXdrSCVal(val: 1000, ty: SCSpecTypeDefXDR.u64)
         if case .u64(let val) = u64Val {
@@ -109,6 +123,20 @@ class ContractSpecUnitTests: XCTestCase {
             XCTAssertEqual(String(data: val, encoding: .utf8), "bytes")
         } else {
             XCTFail("Expected bytes SCVal")
+        }
+        let fixedType = SCSpecTypeDefXDR.bytesN(SCSpecTypeBytesNXDR(n: 32))
+        let multibyte = String(repeating: "é", count: 16)
+        XCTAssertEqual(multibyte.count, 16)
+        XCTAssertEqual(multibyte.utf8.count, 32)
+        for input in [String(repeating: "a", count: 31), String(repeating: "a", count: 32),
+                      String(repeating: "a", count: 33), String(repeating: "é", count: 15) + "a",
+                      multibyte, multibyte + "a"] {
+            let expected = Data(input.utf8)
+            if expected.count == 32 {
+                XCTAssertEqual(try spec.nativeToXdrSCVal(val: input, ty: fixedType).bytes, expected)
+            } else {
+                assertInvalidType(input, fixedType, "Expected bytesN length 32, got \(expected.count)")
+            }
         }
     }
     
@@ -253,6 +281,14 @@ class ContractSpecUnitTests: XCTestCase {
                 }
             } else {
                 XCTFail("Expected ContractSpecError")
+            }
+        }
+        for input in [-1, Int(UInt32.max) + 1] {
+            XCTAssertThrowsError(try spec.nativeToXdrSCVal(val: input, ty: enumTypeDefType)) { error in
+                guard case ContractSpecError.invalidType(let message) = error else {
+                    return XCTFail("Expected invalidType, got \(error)")
+                }
+                XCTAssertEqual(message, "Integer value \(input) does not fit u32 for enum MyEnum")
             }
         }
     }
@@ -542,6 +578,15 @@ class ContractSpecUnitTests: XCTestCase {
             XCTAssertEqual(data, bytesData)
         } else {
             XCTFail("Expected bytes SCVal")
+        }
+        let fixedType = SCSpecTypeDefXDR.bytesN(SCSpecTypeBytesNXDR(n: 32))
+        for count in [31, 32, 33] {
+            let input = Data(repeating: 0xA5, count: count)
+            if count == 32 {
+                XCTAssertEqual(try spec.nativeToXdrSCVal(val: input, ty: fixedType).bytes, input)
+            } else {
+                assertInvalidType(input, fixedType, "Expected bytesN length 32, got \(count)")
+            }
         }
     }
 
