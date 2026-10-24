@@ -84,9 +84,10 @@ public enum EventSourceState: Sendable {
 ///
 /// ## Automatic Reconnection
 ///
-/// The implementation automatically reconnects on connection failures using an
-/// exponential backoff strategy. The retry interval can be set by the server
-/// using the `retry:` field in the event stream, defaulting to 3000 milliseconds.
+/// Until `close()` is called, the EventSource reconnects whenever a connection ends.
+/// Before each reconnect it waits the delay that the server sent with its last `retry:`
+/// field, or 3,000 milliseconds when the server has sent none. After a failed connection,
+/// one that ended with an error or without a 2xx response, it waits at least 1 second.
 ///
 /// ## Last Event ID
 ///
@@ -110,8 +111,15 @@ open class EventSource: NSObject, URLSessionDataDelegate, @unchecked Sendable {
 
     /// Current connection state (connecting, open, or closed) of the Server-Sent Events stream.
     open internal(set) var readyState: EventSourceState
-    /// Milliseconds to wait before attempting reconnection after connection failure.
+    /// The reconnect delay in milliseconds that the server sent with its last `retry` field, 3000 before it sent one.
+    /// After a failed connection the wait is at least 1 second (`minimumRetryTimeAfterFailure`).
     open fileprivate(set) var retryTime = 3000
+    /// Shortest wait in milliseconds before the reconnect after a failed connection.
+    fileprivate static let minimumRetryTimeAfterFailure = 1000
+    // Whether the current connection received a 2xx response; connect() clears it.
+    fileprivate var connectionReceivedSuccessResponse = false
+    /// The delay in milliseconds scheduled for the last reconnect, nil before the first.
+    internal private(set) var lastScheduledReconnectDelay: Int?
     fileprivate var eventListeners = Dictionary<String, @Sendable (_ id: String?, _ event: String?, _ data: String?) -> Void>()
     fileprivate var headers: Dictionary<String, String>
     internal var urlSession: Foundation.URLSession?
@@ -193,6 +201,7 @@ open class EventSource: NSObject, URLSessionDataDelegate, @unchecked Sendable {
         configuration.httpAdditionalHeaders = additionalHeaders
         
         self.readyState = EventSourceState.connecting
+        self.connectionReceivedSuccessResponse = false
         self.urlSession = newSession(configuration)
         self.task = urlSession?.dataTask(with: self.url)
 
@@ -384,6 +393,7 @@ open class EventSource: NSObject, URLSessionDataDelegate, @unchecked Sendable {
 
     /// URLSessionDataDelegate method called when the initial response is received from the server.
     open func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive response: URLResponse, completionHandler: @escaping (URLSession.ResponseDisposition) -> Void) {
+        self.connectionReceivedSuccessResponse = (200...299).contains((response as? HTTPURLResponse)?.statusCode ?? 0)
         completionHandler(URLSession.ResponseDisposition.allow)
         
         if self.receivedMessageToClose(dataTask.response as? HTTPURLResponse) {
@@ -413,8 +423,12 @@ open class EventSource: NSObject, URLSessionDataDelegate, @unchecked Sendable {
         if let nsError = error as NSError?, nsError.code == -999 {
             // User cancelled (-999), don't reconnect
         } else {
-            // For all other errors or nil error, attempt reconnection
-            let nanoseconds = Double(self.retryTime) / 1000.0 * Double(NSEC_PER_SEC)
+            // For all other errors or nil error, attempt reconnection. A failed connection, one
+            // that ended with an error or without a 2xx response, waits at least 1 second.
+            let failed = error != nil || !self.connectionReceivedSuccessResponse
+            let delay = failed ? max(self.retryTime, EventSource.minimumRetryTimeAfterFailure) : self.retryTime
+            self.lastScheduledReconnectDelay = delay
+            let nanoseconds = Double(delay) / 1000.0 * Double(NSEC_PER_SEC)
             let delayTime = DispatchTime.now() + Double(Int64(nanoseconds)) / Double(NSEC_PER_SEC)
             DispatchQueue.main.asyncAfter(deadline: delayTime) { [weak self] in
                 // connect() checks whether close() was called during the delay.
