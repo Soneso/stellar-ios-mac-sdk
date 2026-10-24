@@ -361,6 +361,7 @@ final class SorobanServerAdditionalUnitTests: XCTestCase {
                         "key": "AAAABgAAAAFYWc3EtJkqVHFX6k7g4kJF5dKdXe8WVvWTkggQ/vHH5gAAABQAAAABAAAAAAAAAAAAAAAAAAAAAA==",
                         "xdr": "AAAABgAAAAFYWc3EtJkqVHFX6k7g4kJF5dKdXe8WVvWTkggQ/vHH5gAAABQAAAABAAAAAQAAAAYAAAABWFnNxLSZKlRxV+pO4OJCReXSnV3vFlb1k5IIEP7xx+YAAAAUAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAA=",
                         "lastModifiedLedgerSeq": 1000000,
+                        "extXdr": "AAAAAA==",
                         "liveUntilLedgerSeq": 2000000
                     }
                 ],
@@ -384,6 +385,7 @@ final class SorobanServerAdditionalUnitTests: XCTestCase {
             XCTAssertEqual(entries.entries.count, 1)
             XCTAssertEqual(entries.latestLedger, 1000100)
             XCTAssertNotNil(entries.entries[0].xdr)
+            XCTAssertEqual(entries.entries[0].ext, "AAAAAA==")
         case .failure(let error):
             XCTFail("Expected success, got error: \(error)")
         }

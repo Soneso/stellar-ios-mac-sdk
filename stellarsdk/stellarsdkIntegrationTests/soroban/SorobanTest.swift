@@ -597,6 +597,7 @@ class SorobanTest: XCTestCase {
             XCTAssert(Int(exactly:ledgerResponse.latestLedger)! > 0)
             XCTAssertNotNil(ledgerResponse.entries.first?.keyXdrValue)
             XCTAssertNotNil(ledgerResponse.entries.first?.valueXdr)
+            XCTAssertEqual(ledgerResponse.entries.first?.ext, "AAAAAA==")
         case .failure(let error):
             self.printError(error: error)
             XCTFail()
