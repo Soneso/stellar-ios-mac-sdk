@@ -373,9 +373,12 @@ public final class ContractSpec: Sendable {
     }
     
     private func nativeToEnum(val: Int, enumDef: SCSpecUDTEnumV0XDR) throws -> SCValXDR {
+        guard let value = UInt32(exactly: val) else {
+            throw ContractSpecError.invalidType(message: "Integer value \(val) does not fit u32 for enum \(enumDef.name)")
+        }
         for enumCase in enumDef.cases {
-            if enumCase.value == UInt32(val) {
-                return SCValXDR.u32(UInt32(val))
+            if enumCase.value == value {
+                return SCValXDR.u32(value)
             }
         }
         throw ContractSpecError.invalidEnumValue(message: "No such enum entry: \(val) in \(enumDef.name)")
@@ -527,13 +530,16 @@ public final class ContractSpec: Sendable {
     private func handleIntConversion(intVal: Int, ty: SCSpecTypeDefXDR) throws -> SCValXDR {
         switch ty {
         case .u32:
-            guard intVal >= 0 else {
-                throw ContractSpecError.invalidType(message: "Negative integer value provided for u32")
+            guard let value = UInt32(exactly: intVal) else {
+                throw ContractSpecError.invalidType(message: "Integer value \(intVal) does not fit u32")
             }
-            return SCValXDR.u32(UInt32(intVal))
+            return SCValXDR.u32(value)
             
         case .i32:
-            return SCValXDR.i32(Int32(intVal))
+            guard let value = Int32(exactly: intVal) else {
+                throw ContractSpecError.invalidType(message: "Integer value \(intVal) does not fit i32")
+            }
+            return SCValXDR.i32(value)
             
         case .u64:
             guard intVal >= 0 else {
@@ -572,6 +578,9 @@ public final class ContractSpec: Sendable {
         case .bytes, .bytesN(_):
             guard let data = stringVal.data(using: .utf8) else {
                 throw ContractSpecError.conversionFailed(message: "Failed to convert string to bytes")
+            }
+            if case .bytesN(let bytesN) = ty, data.count != Int(bytesN.n) {
+                throw ContractSpecError.invalidType(message: "Expected bytesN length \(bytesN.n), got \(data.count)")
             }
             return SCValXDR.bytes(data)
             
@@ -668,7 +677,13 @@ public final class ContractSpec: Sendable {
 
     private func handleDataConversion(dataVal: Data, ty: SCSpecTypeDefXDR) throws -> SCValXDR {
         switch ty {
-        case .bytes, .bytesN(_):
+        case .bytes:
+            return SCValXDR.bytes(dataVal)
+
+        case .bytesN(let bytesN):
+            if dataVal.count != Int(bytesN.n) {
+                throw ContractSpecError.invalidType(message: "Expected bytesN length \(bytesN.n), got \(dataVal.count)")
+            }
             return SCValXDR.bytes(dataVal)
             
         case .u128:

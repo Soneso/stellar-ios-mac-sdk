@@ -17,6 +17,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `SorobanServer.getContractData` fails before the request with "The contract data owner must be a contract (C...) address" and the kind given for such an owner, and with "Contract data keys cannot contain muxed account (M...) or muxed contract (W...) addresses" for a key that is or holds a muxed address in a vector or map at any depth.
 
 ### Fixed
+- `ContractSpec` throws `ContractSpecError.invalidType` with the value and target type for integers outside the u32, i32 or enum range.
+- `ContractSpec` throws `ContractSpecError.invalidType` for a `bytesN` value whose byte count (UTF-8 for a `String`, or `Data`) differs from the declared length, naming both lengths.
 - `Transaction(xdr:)` and `Transaction(envelopeXdr:)` throw `StellarSDKError.xdrDecodingError` when the decoded transaction holds a payment, path payment, offer, clawback or set trustline flags operation whose asset code is empty, too short for its type or not UTF-8; SEP-7 signing of such an envelope returns a failure, and `postTransaction` submits it without the SEP-29 memo check.
 - `Transaction(xdr:)` and `Transaction(envelopeXdr:)` throw `StellarSDKError.invalidArgument` for the sequence number `Int64.min`.
 - `WalletUtils.createKeyPair` throws `StellarSDKError.invalidArgument` for an index outside 0 to 2147483647, the hardened BIP-32 range.
