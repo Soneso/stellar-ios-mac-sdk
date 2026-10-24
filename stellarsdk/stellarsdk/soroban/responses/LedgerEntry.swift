@@ -23,7 +23,7 @@ public struct LedgerEntry: Decodable, Sendable {
     /// The ledger sequence number after which the ledger entry would expire. This field exists only for ContractCodeEntry and ContractDataEntry ledger entries (optional).
     public let liveUntilLedgerSeq:Int?
 
-    /// The entry's "Ext" field. Only available for protocol version >= 23
+    /// The entry extension from the "extXdr" response key, encoded as base64 XDR. Available for protocol version >= 23.
     public let ext:String?
 
 
@@ -32,7 +32,7 @@ public struct LedgerEntry: Decodable, Sendable {
         case xdr
         case lastModifiedLedgerSeq
         case liveUntilLedgerSeq
-        case ext
+        case ext = "extXdr"
     }
 
     public init(from decoder: Decoder) throws {
