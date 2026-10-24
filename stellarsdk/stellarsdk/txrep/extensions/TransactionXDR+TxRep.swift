@@ -42,7 +42,7 @@ extension TransactionXDR {
         lines.append("\(prefix).seqNum: \(self.seqNum)")
         // Preconditions.
         try self.cond.toTxRep(prefix: "\(prefix).cond", lines: &lines)
-        // Memo — MEMO_TEXT uses JSON-compatible legacy encoding.
+        // Memo. MEMO_TEXT is written in the SEP-0011 escape form.
         try emitMemo(self.memo, prefix: prefix, lines: &lines)
         // Operations array.
         lines.append("\(prefix).operations.len: \(self.operations.count)")
@@ -122,8 +122,8 @@ extension TransactionXDR {
 
 // MARK: - Internal helpers shared across transaction envelope types
 
-/// Emit MEMO_TEXT using JSON-compatible legacy encoding; delegate all other
-/// memo types to the generated `MemoXDR.toTxRep`.
+/// Emit MEMO_TEXT in the SEP-0011 escape form through `TxRepHelper.encodeMemoText(_:)`;
+/// every other memo type goes through the generated `MemoXDR.toTxRep`.
 internal func emitMemo(_ memo: MemoXDR, prefix: String, lines: inout [String]) throws {
     switch memo {
     case .text(let s):

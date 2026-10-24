@@ -8,21 +8,38 @@
 import XCTest
 @testable import stellarsdk
 
+/// How `SSEStubProtocol` answers one request.
+enum SSEReply {
+    /// A response with the status code, then the body chunks, 20 ms apart, then the end of the response.
+    case stream(status: Int, chunks: [String])
+    /// A 200 response, then the body chunks, 20 ms apart, then a lost connection.
+    case connectionLost(afterChunks: [String])
+    /// A connection error before any response.
+    case connectionError
+}
+
 /// Serves scripted Server-Sent Events bytes in chunks, 20 ms apart, then ends the response.
-/// Request n gets script n, the last script repeats; each request's Last-Event-Id is recorded.
+/// Request n gets reply n, the last reply repeats; each request's Last-Event-Id and start time
+/// are recorded.
 final class SSEStubProtocol: URLProtocol {
     private static let lock = NSLock()
-    nonisolated(unsafe) private static var scripts = [[Data]]()
+    nonisolated(unsafe) private static var replies = [SSEReply]()
     nonisolated(unsafe) private static var requests = 0
     nonisolated(unsafe) private static var lastEventIds = [String?]()
+    nonisolated(unsafe) private static var requestUptimes = [UInt64]()
     nonisolated(unsafe) private static var onRequest: (@Sendable (Int) -> Void)?
 
     static func serve(_ chunks: [String], then later: [[String]] = [], onRequest: (@Sendable (Int) -> Void)? = nil) {
+        serve(replies: ([chunks] + later).map { .stream(status: 200, chunks: $0) }, onRequest: onRequest)
+    }
+
+    static func serve(replies: [SSEReply], onRequest: (@Sendable (Int) -> Void)? = nil) {
         lock.lock()
         defer { lock.unlock() }
-        self.scripts = ([chunks] + later).map { $0.map { Data($0.utf8) } }
+        self.replies = replies
         self.requests = 0
         self.lastEventIds = []
+        self.requestUptimes = []
         self.onRequest = onRequest
     }
 
@@ -38,6 +55,13 @@ final class SSEStubProtocol: URLProtocol {
         return requests
     }
 
+    /// The `DispatchTime` uptime in nanoseconds at which each request started.
+    static var recordedRequestUptimes: [UInt64] {
+        lock.lock()
+        defer { lock.unlock() }
+        return requestUptimes
+    }
+
     override class func canInit(with request: URLRequest) -> Bool { true }
     override class func canonicalRequest(for request: URLRequest) -> URLRequest { request }
 
@@ -45,19 +69,32 @@ final class SSEStubProtocol: URLProtocol {
         SSEStubProtocol.lock.lock()
         SSEStubProtocol.requests += 1
         SSEStubProtocol.lastEventIds.append(request.value(forHTTPHeaderField: "Last-Event-Id"))
+        SSEStubProtocol.requestUptimes.append(DispatchTime.now().uptimeNanoseconds)
         let count = SSEStubProtocol.requests
-        let chunks = SSEStubProtocol.scripts[min(count, SSEStubProtocol.scripts.count) - 1]
+        let reply = SSEStubProtocol.replies[min(count, SSEStubProtocol.replies.count) - 1]
         let onRequest = SSEStubProtocol.onRequest
         SSEStubProtocol.lock.unlock()
         onRequest?(count)
-        let response = HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: "HTTP/1.1",
+        switch reply {
+        case let .stream(status, chunks):
+            respond(status: status, chunks: chunks)
+            client?.urlProtocolDidFinishLoading(self)
+        case let .connectionLost(chunks):
+            respond(status: 200, chunks: chunks)
+            client?.urlProtocol(self, didFailWithError: URLError(.networkConnectionLost))
+        case .connectionError:
+            client?.urlProtocol(self, didFailWithError: URLError(.cannotConnectToHost))
+        }
+    }
+
+    private func respond(status: Int, chunks: [String]) {
+        let response = HTTPURLResponse(url: request.url!, statusCode: status, httpVersion: "HTTP/1.1",
                                        headerFields: ["Content-Type": "text/event-stream"])!
         client?.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)
         for chunk in chunks {
             Thread.sleep(forTimeInterval: 0.02)
-            client?.urlProtocol(self, didLoad: chunk)
+            client?.urlProtocol(self, didLoad: Data(chunk.utf8))
         }
-        client?.urlProtocolDidFinishLoading(self)
     }
 
     override func stopLoading() {}
@@ -66,6 +103,24 @@ final class SSEStubProtocol: URLProtocol {
 /// An EventSource that loads through `SSEStubProtocol` and reports each finished connection.
 final class StubbedEventSource: EventSource, @unchecked Sendable {
     var onComplete: (() -> Void)?
+    private let completionLock = NSLock()
+    private var completionUptimes = [UInt64]()
+    private var scheduledDelays = [Int?]()
+
+    /// The `DispatchTime` uptime in nanoseconds at which each connection ended, taken before the
+    /// EventSource schedules the reconnect.
+    var recordedCompletionUptimes: [UInt64] {
+        completionLock.lock()
+        defer { completionLock.unlock() }
+        return completionUptimes
+    }
+
+    /// The reconnect delay in milliseconds that the EventSource scheduled after each connection.
+    var recordedScheduledDelays: [Int?] {
+        completionLock.lock()
+        defer { completionLock.unlock() }
+        return scheduledDelays
+    }
 
     override func newSession(_ configuration: URLSessionConfiguration) -> URLSession {
         configuration.protocolClasses = [SSEStubProtocol.self]
@@ -73,7 +128,12 @@ final class StubbedEventSource: EventSource, @unchecked Sendable {
     }
 
     override func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
+        // The lock spans `super`, so a reader that sees the next request also sees both records.
+        completionLock.lock()
+        completionUptimes.append(DispatchTime.now().uptimeNanoseconds)
         super.urlSession(session, task: task, didCompleteWithError: error)
+        scheduledDelays.append(lastScheduledReconnectDelay)
+        completionLock.unlock()
         onComplete?()
     }
 }
@@ -155,6 +215,75 @@ final class EventSourceUnitTests: XCTestCase {
         XCTAssertNil(source.urlSession)
     }
 
+    func testConnectionErrorAfterShortRetryWaitsAtLeastOneSecond() throws {
+        let reconnects = try observeReconnects([.stream(status: 200, chunks: ["retry: 10\n\n"]), .connectionError])
+        XCTAssertEqual(reconnects[1].scheduled, 1000)
+        XCTAssertGreaterThanOrEqual(reconnects[1].measured, 1.0)
+        XCTAssertEqual(source?.retryTime, 10)
+    }
+
+    func testOrderlyEndAfterSuccessResponseWaitsServerRetry() throws {
+        let reconnects = try observeReconnects([.stream(status: 200, chunks: ["retry: 10\n\n"])])
+        XCTAssertEqual(reconnects[0].scheduled, 10)
+        XCTAssertGreaterThanOrEqual(reconnects[0].measured, 0.01)
+    }
+
+    func testErrorStatusAfterShortRetryWaitsAtLeastOneSecond() throws {
+        let reconnects = try observeReconnects([.stream(status: 200, chunks: ["retry: 10\n\n"]),
+                                         .stream(status: 503, chunks: [])])
+        XCTAssertEqual(reconnects[1].scheduled, 1000)
+        XCTAssertGreaterThanOrEqual(reconnects[1].measured, 1.0)
+        XCTAssertEqual(source?.retryTime, 10)
+    }
+
+    func testServerRetryAppliesAgainAfterFailedConnection() throws {
+        let reconnects = try observeReconnects([.connectionLost(afterChunks: ["retry: 10\n\n"]),
+                                         .stream(status: 200, chunks: ["data: x\n\n"])])
+        XCTAssertEqual(reconnects[0].scheduled, 1000)
+        XCTAssertGreaterThanOrEqual(reconnects[0].measured, 1.0)
+        XCTAssertEqual(reconnects[1].scheduled, 10)
+        XCTAssertGreaterThanOrEqual(reconnects[1].measured, 0.01)
+        XCTAssertEqual(source?.retryTime, 10)
+    }
+
+    func testFailedConnectionAfterLongRetryWaitsServerRetry() {
+        let ended = expectation(description: "first connection ended")
+        ended.assertForOverFulfill = false
+        SSEStubProtocol.serve(replies: [.connectionLost(afterChunks: ["retry: 1500\n\n"])])
+        let source = StubbedEventSource(url: "https://horizon.example.com/ledgers?cursor=now")
+        self.source = source
+        source.onComplete = { ended.fulfill() }
+        wait(for: [ended], timeout: 5)
+        source.close()
+        XCTAssertEqual(source.lastScheduledReconnectDelay, 1500)
+        XCTAssertEqual(source.retryTime, 1500)
+    }
+
+    /// Serves `replies` to consecutive connections and closes the source once the request after
+    /// the last reply has started. Returns, per reply, the reconnect delay in milliseconds that
+    /// the source scheduled after that connection and the measured time in seconds from the end
+    /// of the connection to the start of the next request.
+    private func observeReconnects(_ replies: [SSEReply]) throws -> [(scheduled: Int?, measured: TimeInterval)] {
+        let measured = replies.count + 1
+        let measuredRequest = expectation(description: "request \(measured)")
+        SSEStubProtocol.serve(replies: replies) { count in
+            if count == measured { measuredRequest.fulfill() }
+        }
+        let source = StubbedEventSource(url: "https://horizon.example.com/ledgers?cursor=now")
+        self.source = source
+        wait(for: [measuredRequest], timeout: 5)
+        source.close()
+        let requests = SSEStubProtocol.recordedRequestUptimes
+        let completions = source.recordedCompletionUptimes
+        let scheduled = source.recordedScheduledDelays
+        guard requests.count > replies.count, completions.count >= replies.count, scheduled.count >= replies.count else {
+            throw MissingReconnect(requests: requests.count, endedConnections: completions.count)
+        }
+        return replies.indices.map {
+            (scheduled: scheduled[$0], measured: (Double(requests[$0 + 1]) - Double(completions[$0])) / Double(NSEC_PER_SEC))
+        }
+    }
+
     /// Streams `chunks` over one connection and returns, in order, every call of `onMessage` and of
     /// the listeners for `listeners` that the connection caused.
     private func callbacks(from chunks: [String], listeners: [String] = []) -> [Callback] {
@@ -175,6 +304,11 @@ final class EventSourceUnitTests: XCTestCase {
         wait(for: [drained], timeout: 5)
         return log.items
     }
+}
+
+private struct MissingReconnect: Error {
+    let requests: Int
+    let endedConnections: Int
 }
 
 private struct Callback: Equatable {

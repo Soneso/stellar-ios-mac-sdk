@@ -67,10 +67,8 @@ extension SorobanAuthorizationEntryXDR {
     /// carries a signature.
     ///
     /// `.void` and a vector without elements (`.vec([])` or `.vec(nil)`) are unsigned
-    /// placeholders; every other value carries a signature. js-stellar-sdk 17.2.1 writes an
-    /// empty vector with a `signatureExpirationLedger` of 0 into the unsigned entries it
-    /// builds (`src/base/auth.ts`, lines 482 to 487) and treats void and an empty vector alike
-    /// as unsigned (`signaturePresent`, lines 1108 to 1122).
+    /// placeholders; every other value carries a signature. An unsigned entry may hold an
+    /// empty vector with a `signatureExpirationLedger` of 0 in place of void.
     ///
     /// The check classifies placeholders only. It does not judge whether an empty vector
     /// authorizes a custom account contract; the contract's `__check_auth` decides that.

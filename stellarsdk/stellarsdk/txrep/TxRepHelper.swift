@@ -287,7 +287,7 @@ public final class TxRepHelper: Sendable {
                     result.append(UInt8(hiNibble << 4 | loNibble))
                     i += 4
                 case UInt8(ascii: "0")...UInt8(ascii: "7"):
-                    // Octal escape \NNN (up to three octal digits) — for Flutter compat.
+                    // Octal escape \NNN, up to three octal digits.
                     var octalValue: UInt32 = 0
                     var j = i + 1
                     var digits = 0
@@ -776,19 +776,15 @@ public final class TxRepHelper: Sendable {
         }
     }
 
-    // MARK: - Memo text legacy encoding
+    // MARK: - Memo text encoding
 
-    /// Encode a MEMO_TEXT string in SEP-0011 C-style escape format.
+    /// Encode a MEMO_TEXT string in the SEP-0011 C-style escape format.
     ///
-    /// Per SEP-0011 (and the reference `stc` implementation), non-printable
-    /// and non-ASCII bytes are escaped as `\xNN` over the raw UTF-8 byte
-    /// sequence — NOT as `\uNNNN` Unicode code points. Delegates to
-    /// ``escapeString(_:)`` which implements that format.
-    ///
-    /// `decodeMemoText(_:)` accepts both the SEP-0011 `\xNN` format and the
-    /// legacy JSON `\uNNNN` format produced by older iOS SDK builds (and
-    /// other SDKs that have the same historical bug), so previously written
-    /// TxRep data continues to parse.
+    /// ``escapeString(_:)`` writes the string in double quotes. It escapes a
+    /// backslash and a double quote with a backslash and writes LF, CR and
+    /// tab as `\n`, `\r` and `\t`. Every other non-printable or non-ASCII
+    /// byte of the UTF-8 encoding becomes `\xNN` with two lowercase hex
+    /// digits, never `\uNNNN`.
     ///
     /// - Parameter s: The raw memo text string (at most 28 bytes in UTF-8).
     /// - Returns: Quoted SEP-0011-escaped string, e.g. `"Hello"` or `"caf\xc3\xa9"`.
@@ -796,12 +792,11 @@ public final class TxRepHelper: Sendable {
         return escapeString(s)
     }
 
-    /// Decode a MEMO_TEXT value from TxRep, supporting both the legacy
-    /// JSON-encoded format and the newer `\xNN` escape format.
+    /// Decode a MEMO_TEXT value from TxRep.
     ///
-    /// Tries JSON decoding first (for interoperability with older iOS SDK
-    /// output and other SDKs that write JSON string literals). Falls back to
-    /// `unescapeString(_:)` for `\xNN`-escaped strings.
+    /// Two forms are accepted: a JSON string literal with `\uNNNN` escapes,
+    /// and the SEP-0011 form with `\xNN` escapes. The decoder tries JSON
+    /// first and falls back to `unescapeString(_:)`.
     ///
     /// - Parameter s: Raw value string from the TxRep key-value map.
     /// - Returns: The decoded memo text.
