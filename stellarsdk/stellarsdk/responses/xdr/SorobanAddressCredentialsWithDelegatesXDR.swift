@@ -37,6 +37,9 @@ extension SorobanAddressCredentialsWithDelegatesXDR {
   public static func fromTxRep(_ map: [String: String], prefix: String) throws -> SorobanAddressCredentialsWithDelegatesXDR {
     let addressCredentials: SorobanAddressCredentialsXDR = try SorobanAddressCredentialsXDR.fromTxRep(map, prefix: "\(prefix).addressCredentials")
     let delegatesLen = try TxRepHelper.parseInt(TxRepHelper.getValue(map, "\(prefix).delegates.len") ?? "0")
+    guard delegatesLen >= 0 else {
+      throw TxRepError.invalidValue(key: "\(prefix).delegates.len: \(delegatesLen)")
+    }
     var delegates = [SorobanDelegateSignatureXDR]()
     for i in 0..<Int(delegatesLen) {
       let item: SorobanDelegateSignatureXDR = try SorobanDelegateSignatureXDR.fromTxRep(map, prefix: "\(prefix).delegates[\(i)]")

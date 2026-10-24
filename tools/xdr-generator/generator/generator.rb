@@ -710,7 +710,7 @@ class Generator < Xdrgen::Generators::Base
   #                  :wrapped_type => "WrappedData32" | nil
   #   :compact       :format, :parse  (TxRepHelper call names)
   #   :named         :name => Swift type name
-  #   :array         :element => <child kind hash>, :fixed => Bool, :size => int|string
+  #   :array         :element => <child kind hash>, :fixed => Bool, :size => int|string (fixed only), :max => int|string|nil (bounded variable-length only)
   #
   # The top-level :is_optional flag covers both field-level optionality
   # (XDR `T*`) and typedef-wrapped optionals.
@@ -733,6 +733,7 @@ class Generator < Xdrgen::Generators::Base
         element: classify_scalar(element_str),
         fixed: false,
         size: nil,
+        max: txrep_array_max(decl),
         is_optional: is_optional,
       }
     end
@@ -754,6 +755,7 @@ class Generator < Xdrgen::Generators::Base
         element: classify_scalar(element_str),
         fixed: decl.fixed?,
         size: decl.fixed? ? resolve_size(decl) : nil,
+        max: txrep_array_max(decl),
         is_optional: is_optional,
       }
     end
@@ -922,6 +924,7 @@ class Generator < Xdrgen::Generators::Base
           tmp = "#{field}Tmp"
           element_type = inner_type.sub(/\A\[(.*)\]\z/, '\1')
           out.puts "let #{tmp}Len = try TxRepHelper.parseInt(TxRepHelper.getValue(map, \"\\(prefix).#{xdr_name}.len\") ?? \"0\")"
+          txrep_check_array_length(out, "#{tmp}Len", "\\(prefix).#{xdr_name}.len", kind[:max], kind[:element])
           out.puts "var #{tmp} = [#{element_type}]()"
           out.puts "for i in 0..<Int(#{tmp}Len) {"
           out.indent do
@@ -964,6 +967,29 @@ class Generator < Xdrgen::Generators::Base
     out.puts "let #{field}: #{type_str} = #{txrep_parse_expr(kind, prefix_lit, required: req)}"
   end
 
+  # XDR maximum of a variable-length array declaration, following typedefs; nil for fixed and unbounded arrays.
+  def txrep_array_max(decl)
+    if decl.is_a?(AST::Declarations::Array)
+      return decl.fixed? ? nil : resolve_size(decl)
+    end
+    type = decl.type
+    if type.is_a?(AST::Typespecs::Simple) && type.resolved_type.is_a?(AST::Definitions::Typedef)
+      txrep_array_max(type.resolved_type.declaration)
+    end
+  end
+
+  # Lengths are nonnegative, capped by the XDR maximum or, for unbounded primitives, the line count.
+  # The line count enforces SEP-11's memory rule for arrays whose omitted elements default.
+  def txrep_check_array_length(out, name, key, maximum, element)
+    limit = maximum || (element[:style] == :primitive ? "map.count" : nil)
+    bound = limit ? " && #{name} <= #{limit}" : ""
+    out.puts "guard #{name} >= 0#{bound} else {"
+    out.indent do
+      out.puts "throw TxRepError.invalidValue(key: \"#{key}: \\(#{name})\")"
+    end
+    out.puts "}"
+  end
+
   # Emit Swift code that parses a (possibly nested) array field, declaring
   # `field` as the result. Array element optionality is rejected upstream.
   def txrep_parse_array_field(out, field, kind, xdr_name, type_str)
@@ -976,6 +1002,7 @@ class Generator < Xdrgen::Generators::Base
       out.puts "for i in 0..<#{kind[:size]} {"
     else
       out.puts "let #{field}Len = try TxRepHelper.parseInt(TxRepHelper.getValue(map, \"\\(prefix).#{xdr_name}.len\") ?? \"0\")"
+      txrep_check_array_length(out, "#{field}Len", "\\(prefix).#{xdr_name}.len", kind[:max], kind[:element])
       out.puts "var #{field} = [#{element_type}]()"
       out.puts "for i in 0..<Int(#{field}Len) {"
     end
@@ -1015,7 +1042,7 @@ class Generator < Xdrgen::Generators::Base
       when "Int32"
         "try TxRepHelper.parseInt(TxRepHelper.getValue(map, #{prefix_expr}) ?? \"0\")"
       when "UInt32"
-        "UInt32(try TxRepHelper.parseUInt64(TxRepHelper.getValue(map, #{prefix_expr}) ?? \"0\"))"
+        "try TxRepHelper.parseUInt32(TxRepHelper.getValue(map, #{prefix_expr}) ?? \"0\")"
       when "Int64"
         "try TxRepHelper.parseInt64(TxRepHelper.getValue(map, #{prefix_expr}) ?? \"0\")"
       when "UInt64"
@@ -1315,6 +1342,7 @@ class Generator < Xdrgen::Generators::Base
         if entry[:decode_style] == :array
           element_type = entry[:decode_type]
           out.puts "let valLen = try TxRepHelper.parseInt(TxRepHelper.getValue(map, \"\\(prefix).#{xdr_arm}.len\") ?? \"0\")"
+          txrep_check_array_length(out, "valLen", "\\(prefix).#{xdr_arm}.len", kind[:max], kind[:element])
           out.puts "var val = [#{element_type}]()"
           out.puts "for i in 0..<Int(valLen) {"
           out.indent do
@@ -1331,6 +1359,7 @@ class Generator < Xdrgen::Generators::Base
             if kind[:style] == :array
               element_type = inner_type.sub(/\A\[(.*)\]\z/, '\1')
               out.puts "let valLen = try TxRepHelper.parseInt(TxRepHelper.getValue(map, \"\\(prefix).#{xdr_arm}.len\") ?? \"0\")"
+              txrep_check_array_length(out, "valLen", "\\(prefix).#{xdr_arm}.len", kind[:max], kind[:element])
               out.puts "var val = [#{element_type}]()"
               out.puts "for i in 0..<Int(valLen) {"
               out.indent do
@@ -1385,6 +1414,7 @@ class Generator < Xdrgen::Generators::Base
           element: classify_arm_scalar(decl, entry[:decode_type]),
           fixed: decl.is_a?(AST::Declarations::Array) && decl.fixed?,
           size: nil,
+          max: txrep_array_max(decl),
         }
       when :optional
         # Optional union arms decode via the explicit _present flag. Return
@@ -1446,6 +1476,7 @@ class Generator < Xdrgen::Generators::Base
         element: classify_scalar(element_str),
         fixed: false,
         size: nil,
+        max: txrep_array_max(decl),
       }
     end
 
@@ -1545,6 +1576,7 @@ class Generator < Xdrgen::Generators::Base
       elsif kind[:style] == :array
         element_type = type_str.sub(/\A\[(.*)\]\z/, '\1')
         out.puts "let #{field}Len = try TxRepHelper.parseInt(TxRepHelper.getValue(map, \"\\(prefix).#{xdr_arm}.#{key_suffix}.len\") ?? \"0\")"
+        txrep_check_array_length(out, "#{field}Len", "\\(prefix).#{xdr_arm}.#{key_suffix}.len", kind[:max], kind[:element])
         out.puts "var #{field} = [#{element_type}]()"
         out.puts "for i in 0..<Int(#{field}Len) {"
         out.indent do
@@ -2430,8 +2462,7 @@ class Generator < Xdrgen::Generators::Base
     "#{prefix_segments.join("_")}_"
   end
 
-  # Resolve the array/opaque size for a fixed-size declaration.
-  # Returns the integer size or the constant name string.
+  # Resolve the array/opaque size of a declaration: the size as written (a number or a constant name), nil for an unbounded <> one.
   def resolve_size(decl)
     _, size = decl.type.array_size
     size

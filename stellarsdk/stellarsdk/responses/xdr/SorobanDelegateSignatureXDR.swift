@@ -47,6 +47,9 @@ extension SorobanDelegateSignatureXDR {
     let address: SCAddressXDR = try SCAddressXDR.fromTxRep(map, prefix: "\(prefix).address")
     let signature: SCValXDR = try SCValXDR.fromTxRep(map, prefix: "\(prefix).signature")
     let nestedDelegatesLen = try TxRepHelper.parseInt(TxRepHelper.getValue(map, "\(prefix).nestedDelegates.len") ?? "0")
+    guard nestedDelegatesLen >= 0 else {
+      throw TxRepError.invalidValue(key: "\(prefix).nestedDelegates.len: \(nestedDelegatesLen)")
+    }
     var nestedDelegates = [SorobanDelegateSignatureXDR]()
     for i in 0..<Int(nestedDelegatesLen) {
       let item: SorobanDelegateSignatureXDR = try SorobanDelegateSignatureXDR.fromTxRep(map, prefix: "\(prefix).nestedDelegates[\(i)]")

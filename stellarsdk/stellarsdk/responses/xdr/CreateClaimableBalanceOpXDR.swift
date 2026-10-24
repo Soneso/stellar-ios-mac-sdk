@@ -47,6 +47,9 @@ extension CreateClaimableBalanceOpXDR {
     let asset: AssetXDR = try TxRepHelper.requireAsset(map, "\(prefix).asset")
     let amount: Int64 = try TxRepHelper.parseInt64(TxRepHelper.getValue(map, "\(prefix).amount") ?? "0")
     let claimantsLen = try TxRepHelper.parseInt(TxRepHelper.getValue(map, "\(prefix).claimants.len") ?? "0")
+    guard claimantsLen >= 0 && claimantsLen <= 10 else {
+      throw TxRepError.invalidValue(key: "\(prefix).claimants.len: \(claimantsLen)")
+    }
     var claimants = [ClaimantXDR]()
     for i in 0..<Int(claimantsLen) {
       let item: ClaimantXDR = try ClaimantXDR.fromTxRep(map, prefix: "\(prefix).claimants[\(i)]")

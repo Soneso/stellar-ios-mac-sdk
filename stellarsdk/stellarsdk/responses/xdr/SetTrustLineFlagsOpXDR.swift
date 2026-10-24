@@ -49,8 +49,8 @@ extension SetTrustLineFlagsOpXDR {
   public static func fromTxRep(_ map: [String: String], prefix: String) throws -> SetTrustLineFlagsOpXDR {
     let accountID: PublicKey = try TxRepHelper.requireAccountId(map, "\(prefix).trustor")
     let asset: AssetXDR = try TxRepHelper.requireAsset(map, "\(prefix).asset")
-    let clearFlags: UInt32 = UInt32(try TxRepHelper.parseUInt64(TxRepHelper.getValue(map, "\(prefix).clearFlags") ?? "0"))
-    let setFlags: UInt32 = UInt32(try TxRepHelper.parseUInt64(TxRepHelper.getValue(map, "\(prefix).setFlags") ?? "0"))
+    let clearFlags: UInt32 = try TxRepHelper.parseUInt32(TxRepHelper.getValue(map, "\(prefix).clearFlags") ?? "0")
+    let setFlags: UInt32 = try TxRepHelper.parseUInt32(TxRepHelper.getValue(map, "\(prefix).setFlags") ?? "0")
     return SetTrustLineFlagsOpXDR(accountID: accountID, asset: asset, setFlags: setFlags, clearFlags: clearFlags)
   }
 }

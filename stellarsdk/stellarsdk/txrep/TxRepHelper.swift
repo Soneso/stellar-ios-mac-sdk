@@ -333,10 +333,14 @@ public final class TxRepHelper: Sendable {
         var work = trimmed
         let negative = work.hasPrefix("-")
         if negative { work = String(work.dropFirst()) }
+        guard !work.hasPrefix("-") else {
+            throw TxRepError.invalidValue(key: s)
+        }
 
         let raw: Int64
         if work.hasPrefix("0x") || work.hasPrefix("0X") {
-            guard let val = UInt64(work.dropFirst(2), radix: 16) else {
+            guard let val = UInt64(work.dropFirst(2), radix: 16),
+                  val <= UInt64(Int32.max) + (negative ? 1 : 0) else {
                 throw TxRepError.invalidValue(key: s)
             }
             raw = negative ? -Int64(val) : Int64(val)
@@ -364,6 +368,9 @@ public final class TxRepHelper: Sendable {
         var work = trimmed
         let negative = work.hasPrefix("-")
         if negative { work = String(work.dropFirst()) }
+        guard !work.hasPrefix("-") else {
+            throw TxRepError.invalidValue(key: s)
+        }
 
         if work.hasPrefix("0x") || work.hasPrefix("0X") {
             guard let val = UInt64(work.dropFirst(2), radix: 16) else {
@@ -392,6 +399,19 @@ public final class TxRepHelper: Sendable {
             }
             throw TxRepError.invalidValue(key: s)
         }
+    }
+
+    /// Parse a string to `UInt32`, supporting decimal and `0x`/`0X` hex prefixes.
+    ///
+    /// - Parameter s: String to parse.
+    /// - Returns: Parsed `UInt32` value.
+    /// - Throws: `TxRepError.invalidValue(key:)` on parse failure or a value above `UInt32.max`.
+    static func parseUInt32(_ s: String) throws -> UInt32 {
+        let value = try parseUInt64(s)
+        guard let result = UInt32(exactly: value) else {
+            throw TxRepError.invalidValue(key: s)
+        }
+        return result
     }
 
     /// Parse a string to `UInt64`, supporting decimal and `0x`/`0X` hex prefixes.

@@ -43,7 +43,7 @@ extension AllowTrustOperationXDR {
   public static func fromTxRep(_ map: [String: String], prefix: String) throws -> AllowTrustOperationXDR {
     let trustor: PublicKey = try TxRepHelper.requireAccountId(map, "\(prefix).trustor")
     let asset: AllowTrustOpAssetXDR = try TxRepHelper.requireAllowTrustAsset(map, "\(prefix).asset")
-    let authorize: UInt32 = UInt32(try TxRepHelper.parseUInt64(TxRepHelper.getValue(map, "\(prefix).authorize") ?? "0"))
+    let authorize: UInt32 = try TxRepHelper.parseUInt32(TxRepHelper.getValue(map, "\(prefix).authorize") ?? "0")
     return AllowTrustOperationXDR(trustor: trustor, asset: asset, authorize: authorize)
   }
 }

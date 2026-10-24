@@ -68,6 +68,9 @@ extension PathPaymentOperationXDR {
     let destinationAsset: AssetXDR = try TxRepHelper.requireAsset(map, "\(prefix).destAsset")
     let destinationAmount: Int64 = try TxRepHelper.parseInt64(TxRepHelper.getValue(map, "\(prefix).destAmount") ?? "0")
     let pathLen = try TxRepHelper.parseInt(TxRepHelper.getValue(map, "\(prefix).path.len") ?? "0")
+    guard pathLen >= 0 && pathLen <= 5 else {
+      throw TxRepError.invalidValue(key: "\(prefix).path.len: \(pathLen)")
+    }
     var path = [AssetXDR]()
     for i in 0..<Int(pathLen) {
       let item: AssetXDR = try TxRepHelper.parseAsset(TxRepHelper.getValue(map, "\(prefix).path[\(i)]") ?? "")

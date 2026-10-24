@@ -324,7 +324,7 @@ extension SCValXDR {
       let val = try SCErrorXDR.fromTxRep(map, prefix: "\(prefix).error")
       return .error(val)
     case "SCV_U32":
-      let val = UInt32(try TxRepHelper.parseUInt64(TxRepHelper.getValue(map, "\(prefix).u32") ?? "0"))
+      let val = try TxRepHelper.parseUInt32(TxRepHelper.getValue(map, "\(prefix).u32") ?? "0")
       return .u32(val)
     case "SCV_I32":
       let val = try TxRepHelper.parseInt(TxRepHelper.getValue(map, "\(prefix).i32") ?? "0")
@@ -365,6 +365,9 @@ extension SCValXDR {
     case "SCV_VEC":
       if TxRepHelper.getValue(map, "\(prefix).vec._present") == "true" {
         let valLen = try TxRepHelper.parseInt(TxRepHelper.getValue(map, "\(prefix).vec.len") ?? "0")
+        guard valLen >= 0 else {
+          throw TxRepError.invalidValue(key: "\(prefix).vec.len: \(valLen)")
+        }
         var val = [SCValXDR]()
         for i in 0..<Int(valLen) {
           let item: SCValXDR = try SCValXDR.fromTxRep(map, prefix: "\(prefix).vec[\(i)]")
@@ -377,6 +380,9 @@ extension SCValXDR {
     case "SCV_MAP":
       if TxRepHelper.getValue(map, "\(prefix).map._present") == "true" {
         let valLen = try TxRepHelper.parseInt(TxRepHelper.getValue(map, "\(prefix).map.len") ?? "0")
+        guard valLen >= 0 else {
+          throw TxRepError.invalidValue(key: "\(prefix).map.len: \(valLen)")
+        }
         var val = [SCMapEntryXDR]()
         for i in 0..<Int(valLen) {
           let item: SCMapEntryXDR = try SCMapEntryXDR.fromTxRep(map, prefix: "\(prefix).map[\(i)]")

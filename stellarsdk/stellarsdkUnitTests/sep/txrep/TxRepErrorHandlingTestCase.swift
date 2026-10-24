@@ -1180,4 +1180,192 @@ class TxRepErrorHandlingTestCase: XCTestCase {
             // Should throw an error for empty string
         }
     }
+
+    private let numericArrayKey = "tx.sorobanData.ext.resourceExt.archivedSorobanEntries"
+
+    private func numericTxRep(_ fields: [String: String]) -> String {
+        var values = [
+            "type": "ENVELOPE_TYPE_TX",
+            "tx.sourceAccount": "GAVRMS4QIOCC4QMOSKILOOOHCSO4FEKOXZPNLKFFN6W7SD2KUB7NBPLN",
+            "tx.fee": "100", "tx.seqNum": "1", "tx.cond.type": "PRECOND_NONE",
+            "tx.memo.type": "MEMO_NONE", "tx.operations.len": "0", "tx.ext.v": "1",
+            "tx.sorobanData.ext.v": "1", "signatures.len": "0"
+        ]
+        values.merge(fields) { _, new in new }
+        return values.keys.sorted().map { "\($0): \(values[$0]!)" }.joined(separator: "\n")
+    }
+
+    private func assertInvalidNumericTxRep(_ fields: [String: String], key: String, line: UInt = #line) {
+        XCTAssertThrowsError(try TxRep.fromTxRep(txRep: numericTxRep(fields)), key, line: line) { error in
+            guard case TxRepError.invalidValue(let actual) = error else {
+                return XCTFail("Expected invalidValue, got \(error)", line: line)
+            }
+            XCTAssertEqual(actual, key, line: line)
+        }
+    }
+
+    private func priceFields(_ value: String) -> [String: String] {
+        let prefix = "tx.operations[0].body.manageSellOfferOp"
+        return ["tx.operations.len": "1", "tx.operations[0].body.type": "MANAGE_SELL_OFFER",
+                "\(prefix).selling": "native", "\(prefix).buying": "native",
+                "\(prefix).price.n": value, "\(prefix).price.d": "1"]
+    }
+
+    func testInt32FieldRejectsLargeHexMagnitude() throws {
+        for input in ["0x8000000000000000", "-0x8000000000000001"] {
+            assertInvalidNumericTxRep(priceFields(input), key: input)
+        }
+        for input in [Int32.min, Int32.max] {
+            let xdr = try TxRep.fromTxRep(txRep: numericTxRep(priceFields(String(input))))
+            let values = TxRepHelper.parse(try TxRep.toTxRep(transactionEnvelope: xdr))
+            XCTAssertEqual(values["tx.operations[0].body.manageSellOfferOp.price.n"], String(input))
+        }
+    }
+
+    func testNegativeNumericArrayLength() {
+        assertInvalidNumericTxRep(["\(numericArrayKey).len": "-1"], key: "\(numericArrayKey).len: -1")
+
+        let body = "tx.operations[0].body"
+        let hostFunction = "\(body).invokeHostFunctionOp.hostFunction"
+        let invoke = "\(hostFunction).invokeContract"
+        let argument = "\(invoke).args[0]"
+        let invokeFields = [
+            "tx.operations.len": "1", "\(body).type": "INVOKE_HOST_FUNCTION",
+            "\(hostFunction).type": "HOST_FUNCTION_TYPE_INVOKE_CONTRACT",
+            "\(invoke).contractAddress.type": "SC_ADDRESS_TYPE_CONTRACT",
+            "\(invoke).contractAddress.contractId": String(repeating: "0", count: 64),
+            "\(invoke).functionName": "\"test\"", "\(invoke).args.len": "1"
+        ]
+        for (fields, lengthKey) in [
+            (["\(argument).type": "SCV_VEC", "\(argument).vec._present": "true",
+              "\(argument).vec.len": "-1"], "\(argument).vec.len"),
+            (["\(argument).type": "SCV_CONTRACT_INSTANCE",
+              "\(argument).instance.executable.type": "CONTRACT_EXECUTABLE_STELLAR_ASSET",
+              "\(argument).instance.storage._present": "true",
+              "\(argument).instance.storage.len": "-1"], "\(argument).instance.storage.len")
+        ] {
+            assertInvalidNumericTxRep(invokeFields.merging(fields) { _, new in new }, key: "\(lengthKey): -1")
+        }
+
+        let destination = "GAVRMS4QIOCC4QMOSKILOOOHCSO4FEKOXZPNLKFFN6W7SD2KUB7NBPLN"
+        let pathPayment = "\(body).pathPaymentStrictSendOp"
+        assertInvalidNumericTxRep([
+            "tx.operations.len": "1", "\(body).type": "PATH_PAYMENT_STRICT_SEND",
+            "\(pathPayment).sendAsset": "native", "\(pathPayment).sendAmount": "1",
+            "\(pathPayment).destination": destination, "\(pathPayment).destAsset": "native",
+            "\(pathPayment).destMin": "1", "\(pathPayment).path.len": "-1"
+        ], key: "\(pathPayment).path.len: -1")
+
+        let balance = "\(body).createClaimableBalanceOp"
+        let claimant = "\(balance).claimants[0]"
+        let predicate = "\(claimant).v0.predicate"
+        assertInvalidNumericTxRep([
+            "tx.operations.len": "1", "\(body).type": "CREATE_CLAIMABLE_BALANCE",
+            "\(balance).asset": "native", "\(balance).amount": "1", "\(balance).claimants.len": "1",
+            "\(claimant).type": "CLAIMANT_TYPE_V0", "\(claimant).v0.destination": destination,
+            "\(predicate).type": "CLAIM_PREDICATE_AND", "\(predicate).andPredicates.len": "-1"
+        ], key: "\(predicate).andPredicates.len: -1")
+    }
+
+    func testBoundedArrayMaximums() throws {
+        let destination = "GAVRMS4QIOCC4QMOSKILOOOHCSO4FEKOXZPNLKFFN6W7SD2KUB7NBPLN"
+        let body = "tx.operations[0].body"
+        let balance = "\(body).createClaimableBalanceOp"
+        let predicate = "\(balance).claimants[0].v0.predicate"
+        var cases: [(key: String, maximum: Int, fields: [String: String])] = []
+        for (operation, arm, amount) in [("PATH_PAYMENT_STRICT_SEND", "pathPaymentStrictSendOp", "destMin"),
+                                         ("PATH_PAYMENT_STRICT_RECEIVE", "pathPaymentStrictReceiveOp", "destAmount")] {
+            let prefix = "\(body).\(arm)"
+            var fields = ["tx.operations.len": "1", "\(body).type": operation,
+                          "\(prefix).sendAsset": "native", "\(prefix).sendAmount": "1", "\(prefix).sendMax": "1",
+                          "\(prefix).destination": destination, "\(prefix).destAsset": "native", "\(prefix).\(amount)": "1"]
+            for i in 0..<6 { fields["\(prefix).path[\(i)]"] = "native" }
+            cases.append(("\(prefix).path", 5, fields))
+        }
+        var claimants = ["tx.operations.len": "1", "\(body).type": "CREATE_CLAIMABLE_BALANCE",
+                         "\(balance).asset": "native", "\(balance).amount": "1"]
+        for i in 0..<11 {
+            claimants["\(balance).claimants[\(i)].type"] = "CLAIMANT_TYPE_V0"
+            claimants["\(balance).claimants[\(i)].v0.destination"] = destination
+            claimants["\(balance).claimants[\(i)].v0.predicate.type"] = "CLAIM_PREDICATE_UNCONDITIONAL"
+        }
+        cases.append(("\(balance).claimants", 10, claimants))
+        for (type, arm) in [("CLAIM_PREDICATE_AND", "andPredicates"), ("CLAIM_PREDICATE_OR", "orPredicates")] {
+            var fields = claimants.merging(["\(balance).claimants.len": "1", "\(predicate).type": type]) { _, new in new }
+            for i in 0..<3 { fields["\(predicate).\(arm)[\(i)].type"] = "CLAIM_PREDICATE_UNCONDITIONAL" }
+            cases.append(("\(predicate).\(arm)", 2, fields))
+        }
+        var signers = ["tx.cond.type": "PRECOND_V2"]
+        for i in 0..<3 { signers["tx.cond.v2.extraSigners[\(i)]"] = destination }
+        cases.append(("tx.cond.v2.extraSigners", 2, signers))
+        for (key, maximum, fixture) in cases {
+            var fields = fixture
+            fields["\(key).len"] = String(maximum + 1)
+            assertInvalidNumericTxRep(fields, key: "\(key).len: \(maximum + 1)")
+            fields["\(key).len"] = String(maximum)
+            fields = fields.filter { !$0.key.hasPrefix("\(key)[\(maximum)]") }
+            let xdr = try TxRep.fromTxRep(txRep: numericTxRep(fields))
+            let values = TxRepHelper.parse(try TxRep.toTxRep(transactionEnvelope: xdr))
+            XCTAssertEqual(values["\(key).len"], String(maximum), key)
+        }
+    }
+
+    func testDirectPathPaymentArrayMaximum() throws {
+        let prefix = "tx.operations[0].body.pathPaymentStrictReceiveOp"
+        var fields = ["\(prefix).sendAsset": "native", "\(prefix).sendMax": "1",
+                      "\(prefix).destination": "GAVRMS4QIOCC4QMOSKILOOOHCSO4FEKOXZPNLKFFN6W7SD2KUB7NBPLN",
+                      "\(prefix).destAsset": "native", "\(prefix).destAmount": "1", "\(prefix).path.len": "6"]
+        for i in 0..<6 { fields["\(prefix).path[\(i)]"] = "native" }
+        XCTAssertThrowsError(try PathPaymentOperationXDR.fromTxRep(fields, prefix: prefix)) { error in
+            guard case TxRepError.invalidValue(let key) = error else {
+                return XCTFail("Expected invalidValue, got \(error)")
+            }
+            XCTAssertEqual(key, "\(prefix).path.len: 6")
+        }
+        fields["\(prefix).path.len"] = "5"
+        fields.removeValue(forKey: "\(prefix).path[5]")
+        let operation = try PathPaymentOperationXDR.fromTxRep(fields, prefix: prefix)
+        XCTAssertEqual(operation.path.count, 5)
+    }
+
+    func testUInt32ScalarOverflow() {
+        assertInvalidNumericTxRep(["tx.sorobanData.resources.instructions": "4294967296"], key: "4294967296")
+    }
+
+    func testUInt32ArrayLengthRejectsInt32Max() {
+        assertInvalidNumericTxRep(["\(numericArrayKey).len": "2147483647"],
+                                 key: "\(numericArrayKey).len: 2147483647")
+    }
+
+    func testUInt32ArrayLengthLineCountBoundary() throws {
+        let key = "\(numericArrayKey).len"
+        var fields = [key: "0"]
+        let lineCount = numericTxRep(fields).split(separator: "\n").count
+        fields[key] = String(lineCount)
+        let xdr = try TxRep.fromTxRep(txRep: numericTxRep(fields))
+        let values = TxRepHelper.parse(try TxRep.toTxRep(transactionEnvelope: xdr))
+        XCTAssertEqual(values[key], String(lineCount))
+        for i in 0..<lineCount {
+            XCTAssertEqual(values["\(numericArrayKey)[\(i)]"], "0")
+        }
+        fields[key] = String(lineCount + 1)
+        assertInvalidNumericTxRep(fields, key: "\(key): \(lineCount + 1)")
+    }
+
+    func testUInt32ArrayElementRangeAndSparseDefaults() throws {
+        assertInvalidNumericTxRep(["\(numericArrayKey).len": "1", "\(numericArrayKey)[0]": "4294967296"], key: "4294967296")
+        for count in [0, 3] {
+            var fields = ["\(numericArrayKey).len": String(count), "tx.sorobanData.resources.instructions": "4294967295"]
+            if count > 0 { fields["\(numericArrayKey)[1]"] = "4294967295" }
+            let xdr = try TxRep.fromTxRep(txRep: numericTxRep(fields))
+            let values = TxRepHelper.parse(try TxRep.toTxRep(transactionEnvelope: xdr))
+            XCTAssertEqual(values["\(numericArrayKey).len"], String(count))
+            XCTAssertEqual(values["tx.sorobanData.resources.instructions"], "4294967295")
+            if count > 0 {
+                XCTAssertEqual(values["\(numericArrayKey)[0]"], "0")
+                XCTAssertEqual(values["\(numericArrayKey)[1]"], "4294967295")
+                XCTAssertEqual(values["\(numericArrayKey)[2]"], "0")
+            }
+        }
+    }
 }

@@ -47,6 +47,9 @@ extension CreateContractV2ArgsXDR {
     let contractIDPreimage: ContractIDPreimageXDR = try ContractIDPreimageXDR.fromTxRep(map, prefix: "\(prefix).contractIDPreimage")
     let executable: ContractExecutableXDR = try ContractExecutableXDR.fromTxRep(map, prefix: "\(prefix).executable")
     let constructorArgsLen = try TxRepHelper.parseInt(TxRepHelper.getValue(map, "\(prefix).constructorArgs.len") ?? "0")
+    guard constructorArgsLen >= 0 else {
+      throw TxRepError.invalidValue(key: "\(prefix).constructorArgs.len: \(constructorArgsLen)")
+    }
     var constructorArgs = [SCValXDR]()
     for i in 0..<Int(constructorArgsLen) {
       let item: SCValXDR = try SCValXDR.fromTxRep(map, prefix: "\(prefix).constructorArgs[\(i)]")

@@ -494,10 +494,12 @@ final class TxRepHelperTestCase: XCTestCase {
 
     func testParseIntMaxValue() throws {
         XCTAssertEqual(try TxRepHelper.parseInt("2147483647"), Int32.max)
+        XCTAssertEqual(try TxRepHelper.parseInt("0x7fffffff"), Int32.max)
     }
 
     func testParseIntMinValue() throws {
         XCTAssertEqual(try TxRepHelper.parseInt("-2147483648"), Int32.min)
+        XCTAssertEqual(try TxRepHelper.parseInt("-0x80000000"), Int32.min)
     }
 
     func testParseIntOverflowThrows() {
@@ -544,6 +546,7 @@ final class TxRepHelperTestCase: XCTestCase {
 
     func testParseInt64MaxValue() throws {
         XCTAssertEqual(try TxRepHelper.parseInt64("9223372036854775807"), Int64.max)
+        XCTAssertEqual(try TxRepHelper.parseInt64("0x7fffffffffffffff"), Int64.max)
     }
 
     func testParseInt64MinValue() throws {
@@ -1442,5 +1445,38 @@ final class TxRepHelperTestCase: XCTestCase {
         XCTAssertEqual(encoded, "\"Test memo\"")
         let decoded = try TxRepHelper.decodeMemoText(encoded)
         XCTAssertEqual(decoded, "Test memo")
+    }
+
+    func testParseIntRejectsLargeHexMagnitude() {
+        for input in ["0x8000000000000000", "-0x8000000000000001"] {
+            XCTAssertThrowsError(try TxRepHelper.parseInt(input)) { error in
+                guard case TxRepError.invalidValue(let key) = error else {
+                    return XCTFail("Expected invalidValue, got \(error)")
+                }
+                XCTAssertEqual(key, input)
+            }
+        }
+    }
+
+    func testParseIntRejectsDoubleMinus() {
+        for input in ["--9223372036854775808", "--1"] {
+            XCTAssertThrowsError(try TxRepHelper.parseInt(input)) { error in
+                guard case TxRepError.invalidValue(let key) = error else {
+                    return XCTFail("Expected invalidValue, got \(error)")
+                }
+                XCTAssertEqual(key, input)
+            }
+        }
+    }
+
+    func testParseInt64RejectsDoubleMinus() {
+        for input in ["--9223372036854775808", "--1"] {
+            XCTAssertThrowsError(try TxRepHelper.parseInt64(input)) { error in
+                guard case TxRepError.invalidValue(let key) = error else {
+                    return XCTFail("Expected invalidValue, got \(error)")
+                }
+                XCTAssertEqual(key, input)
+            }
+        }
     }
 }

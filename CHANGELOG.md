@@ -29,6 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - A closed `EventSource` stays closed when `close()` is called while a reconnect is scheduled.
 - `EventSource` applies the reconnect delay that Horizon sends with its `open` and `close` events. A stream reconnects 10 milliseconds after Horizon ends a page of records and 1 second after a failed connection; both delays were 3 seconds.
 - `EventInfo` decodes `operationIndex` and `transactionIndex` from `getEvents` responses, so `opIndex` and `txIndex` carry the indexes the server sends.
+- `TxRep.fromTxRep(txRep:)` throws `TxRepError.invalidValue` for an array length that is negative or exceeds the XDR maximum, a UInt32 value above 4294967295, an Int32 hexadecimal value out of range and a doubled minus sign. An array of integers whose length exceeds the number of lines in the TxRep gets the same error. `TxRepHelper.parseInt` throws it for the hexadecimal and the sign case, `TxRepHelper.parseInt64` for a doubled minus sign.
 
 ## [3.13.0] - 2026-10-16
 
