@@ -30,9 +30,12 @@ extension SorobanResourcesExtV0 {
 
   public static func fromTxRep(_ map: [String: String], prefix: String) throws -> SorobanResourcesExtV0 {
     let archivedSorobanEntriesLen = try TxRepHelper.parseInt(TxRepHelper.getValue(map, "\(prefix).archivedSorobanEntries.len") ?? "0")
+    guard archivedSorobanEntriesLen >= 0 && archivedSorobanEntriesLen <= map.count else {
+      throw TxRepError.invalidValue(key: "\(prefix).archivedSorobanEntries.len: \(archivedSorobanEntriesLen)")
+    }
     var archivedSorobanEntries = [UInt32]()
     for i in 0..<Int(archivedSorobanEntriesLen) {
-      let item: UInt32 = UInt32(try TxRepHelper.parseUInt64(TxRepHelper.getValue(map, "\(prefix).archivedSorobanEntries[\(i)]") ?? "0"))
+      let item: UInt32 = try TxRepHelper.parseUInt32(TxRepHelper.getValue(map, "\(prefix).archivedSorobanEntries[\(i)]") ?? "0")
       archivedSorobanEntries.append(item)
     }
     return SorobanResourcesExtV0(archivedSorobanEntries: archivedSorobanEntries)

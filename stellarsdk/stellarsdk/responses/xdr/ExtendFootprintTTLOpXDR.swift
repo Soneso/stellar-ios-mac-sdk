@@ -33,7 +33,7 @@ extension ExtendFootprintTTLOpXDR {
 
   public static func fromTxRep(_ map: [String: String], prefix: String) throws -> ExtendFootprintTTLOpXDR {
     let ext: ExtensionPoint = try ExtensionPoint.fromTxRep(map, prefix: "\(prefix).ext")
-    let extendTo: UInt32 = UInt32(try TxRepHelper.parseUInt64(TxRepHelper.getValue(map, "\(prefix).extendTo") ?? "0"))
+    let extendTo: UInt32 = try TxRepHelper.parseUInt32(TxRepHelper.getValue(map, "\(prefix).extendTo") ?? "0")
     return ExtendFootprintTTLOpXDR(ext: ext, extendTo: extendTo)
   }
 }

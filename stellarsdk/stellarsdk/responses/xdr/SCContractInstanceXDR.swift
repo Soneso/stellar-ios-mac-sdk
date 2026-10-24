@@ -54,6 +54,9 @@ extension SCContractInstanceXDR {
     let storage: [SCMapEntryXDR]?
     if TxRepHelper.getValue(map, "\(prefix).storage._present") == "true" {
       let storageTmpLen = try TxRepHelper.parseInt(TxRepHelper.getValue(map, "\(prefix).storage.len") ?? "0")
+      guard storageTmpLen >= 0 else {
+        throw TxRepError.invalidValue(key: "\(prefix).storage.len: \(storageTmpLen)")
+      }
       var storageTmp = [SCMapEntryXDR]()
       for i in 0..<Int(storageTmpLen) {
         let item: SCMapEntryXDR = try SCMapEntryXDR.fromTxRep(map, prefix: "\(prefix).storage[\(i)]")

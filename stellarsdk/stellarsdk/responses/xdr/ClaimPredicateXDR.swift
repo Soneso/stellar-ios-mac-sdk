@@ -123,6 +123,9 @@ extension ClaimPredicateXDR {
       return .claimPredicateUnconditional
     case "CLAIM_PREDICATE_AND":
       let valLen = try TxRepHelper.parseInt(TxRepHelper.getValue(map, "\(prefix).andPredicates.len") ?? "0")
+      guard valLen >= 0 && valLen <= 2 else {
+        throw TxRepError.invalidValue(key: "\(prefix).andPredicates.len: \(valLen)")
+      }
       var val = [ClaimPredicateXDR]()
       for i in 0..<Int(valLen) {
         let item: ClaimPredicateXDR = try ClaimPredicateXDR.fromTxRep(map, prefix: "\(prefix).andPredicates[\(i)]")
@@ -131,6 +134,9 @@ extension ClaimPredicateXDR {
       return .claimPredicateAnd(val)
     case "CLAIM_PREDICATE_OR":
       let valLen = try TxRepHelper.parseInt(TxRepHelper.getValue(map, "\(prefix).orPredicates.len") ?? "0")
+      guard valLen >= 0 && valLen <= 2 else {
+        throw TxRepError.invalidValue(key: "\(prefix).orPredicates.len: \(valLen)")
+      }
       var val = [ClaimPredicateXDR]()
       for i in 0..<Int(valLen) {
         let item: ClaimPredicateXDR = try ClaimPredicateXDR.fromTxRep(map, prefix: "\(prefix).orPredicates[\(i)]")

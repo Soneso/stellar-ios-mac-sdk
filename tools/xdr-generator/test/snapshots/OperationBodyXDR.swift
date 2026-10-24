@@ -343,6 +343,9 @@ extension OperationBodyXDR {
       let destinationAsset: AssetXDR = try TxRepHelper.requireAsset(map, "\(prefix).pathPaymentStrictReceiveOp.destAsset")
       let destinationAmount: Int64 = try TxRepHelper.parseInt64(TxRepHelper.getValue(map, "\(prefix).pathPaymentStrictReceiveOp.destAmount") ?? "0")
       let pathLen = try TxRepHelper.parseInt(TxRepHelper.getValue(map, "\(prefix).pathPaymentStrictReceiveOp.path.len") ?? "0")
+      guard pathLen >= 0 && pathLen <= 5 else {
+        throw TxRepError.invalidValue(key: "\(prefix).pathPaymentStrictReceiveOp.path.len: \(pathLen)")
+      }
       var path = [AssetXDR]()
       for i in 0..<Int(pathLen) {
         let item: AssetXDR = try TxRepHelper.parseAsset(TxRepHelper.getValue(map, "\(prefix).pathPaymentStrictReceiveOp.path[\(i)]") ?? "")
@@ -391,6 +394,9 @@ extension OperationBodyXDR {
       let destinationAsset: AssetXDR = try TxRepHelper.requireAsset(map, "\(prefix).pathPaymentStrictSendOp.destAsset")
       let destinationAmount: Int64 = try TxRepHelper.parseInt64(TxRepHelper.getValue(map, "\(prefix).pathPaymentStrictSendOp.destMin") ?? "0")
       let pathLen = try TxRepHelper.parseInt(TxRepHelper.getValue(map, "\(prefix).pathPaymentStrictSendOp.path.len") ?? "0")
+      guard pathLen >= 0 && pathLen <= 5 else {
+        throw TxRepError.invalidValue(key: "\(prefix).pathPaymentStrictSendOp.path.len: \(pathLen)")
+      }
       var path = [AssetXDR]()
       for i in 0..<Int(pathLen) {
         let item: AssetXDR = try TxRepHelper.parseAsset(TxRepHelper.getValue(map, "\(prefix).pathPaymentStrictSendOp.path[\(i)]") ?? "")
@@ -422,8 +428,8 @@ extension OperationBodyXDR {
     case "SET_TRUST_LINE_FLAGS":
       let accountID: PublicKey = try TxRepHelper.requireAccountId(map, "\(prefix).setTrustLineFlagsOp.trustor")
       let asset: AssetXDR = try TxRepHelper.requireAsset(map, "\(prefix).setTrustLineFlagsOp.asset")
-      let clearFlags: UInt32 = UInt32(try TxRepHelper.parseUInt64(TxRepHelper.getValue(map, "\(prefix).setTrustLineFlagsOp.clearFlags") ?? "0"))
-      let setFlags: UInt32 = UInt32(try TxRepHelper.parseUInt64(TxRepHelper.getValue(map, "\(prefix).setTrustLineFlagsOp.setFlags") ?? "0"))
+      let clearFlags: UInt32 = try TxRepHelper.parseUInt32(TxRepHelper.getValue(map, "\(prefix).setTrustLineFlagsOp.clearFlags") ?? "0")
+      let setFlags: UInt32 = try TxRepHelper.parseUInt32(TxRepHelper.getValue(map, "\(prefix).setTrustLineFlagsOp.setFlags") ?? "0")
       let val = SetTrustLineFlagsOpXDR(accountID: accountID, asset: asset, setFlags: setFlags, clearFlags: clearFlags)
       return .setTrustLineFlagsOp(val)
     case "LIQUIDITY_POOL_DEPOSIT":

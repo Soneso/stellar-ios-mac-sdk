@@ -48,9 +48,9 @@ extension SorobanResourcesXDR {
 
   public static func fromTxRep(_ map: [String: String], prefix: String) throws -> SorobanResourcesXDR {
     let footprint: LedgerFootprintXDR = try LedgerFootprintXDR.fromTxRep(map, prefix: "\(prefix).footprint")
-    let instructions: UInt32 = UInt32(try TxRepHelper.parseUInt64(TxRepHelper.getValue(map, "\(prefix).instructions") ?? "0"))
-    let diskReadBytes: UInt32 = UInt32(try TxRepHelper.parseUInt64(TxRepHelper.getValue(map, "\(prefix).diskReadBytes") ?? "0"))
-    let writeBytes: UInt32 = UInt32(try TxRepHelper.parseUInt64(TxRepHelper.getValue(map, "\(prefix).writeBytes") ?? "0"))
+    let instructions: UInt32 = try TxRepHelper.parseUInt32(TxRepHelper.getValue(map, "\(prefix).instructions") ?? "0")
+    let diskReadBytes: UInt32 = try TxRepHelper.parseUInt32(TxRepHelper.getValue(map, "\(prefix).diskReadBytes") ?? "0")
+    let writeBytes: UInt32 = try TxRepHelper.parseUInt32(TxRepHelper.getValue(map, "\(prefix).writeBytes") ?? "0")
     return SorobanResourcesXDR(footprint: footprint, instructions: instructions, diskReadBytes: diskReadBytes, writeBytes: writeBytes)
   }
 }

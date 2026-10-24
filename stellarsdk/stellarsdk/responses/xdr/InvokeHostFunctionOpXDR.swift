@@ -37,6 +37,9 @@ extension InvokeHostFunctionOpXDR {
   public static func fromTxRep(_ map: [String: String], prefix: String) throws -> InvokeHostFunctionOpXDR {
     let hostFunction: HostFunctionXDR = try HostFunctionXDR.fromTxRep(map, prefix: "\(prefix).hostFunction")
     let authLen = try TxRepHelper.parseInt(TxRepHelper.getValue(map, "\(prefix).auth.len") ?? "0")
+    guard authLen >= 0 else {
+      throw TxRepError.invalidValue(key: "\(prefix).auth.len: \(authLen)")
+    }
     var auth = [SorobanAuthorizationEntryXDR]()
     for i in 0..<Int(authLen) {
       let item: SorobanAuthorizationEntryXDR = try SorobanAuthorizationEntryXDR.fromTxRep(map, prefix: "\(prefix).auth[\(i)]")

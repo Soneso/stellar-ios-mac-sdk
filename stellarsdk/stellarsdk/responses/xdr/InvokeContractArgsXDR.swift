@@ -47,6 +47,9 @@ extension InvokeContractArgsXDR {
     let contractAddress: SCAddressXDR = try SCAddressXDR.fromTxRep(map, prefix: "\(prefix).contractAddress")
     let functionName: String = try TxRepHelper.requireString(map, "\(prefix).functionName")
     let argsLen = try TxRepHelper.parseInt(TxRepHelper.getValue(map, "\(prefix).args.len") ?? "0")
+    guard argsLen >= 0 else {
+      throw TxRepError.invalidValue(key: "\(prefix).args.len: \(argsLen)")
+    }
     var args = [SCValXDR]()
     for i in 0..<Int(argsLen) {
       let item: SCValXDR = try SCValXDR.fromTxRep(map, prefix: "\(prefix).args[\(i)]")

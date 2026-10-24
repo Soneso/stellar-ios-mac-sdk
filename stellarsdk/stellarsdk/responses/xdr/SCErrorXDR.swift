@@ -142,7 +142,7 @@ extension SCErrorXDR {
     }
     switch discName {
     case "SCE_CONTRACT":
-      let val = UInt32(try TxRepHelper.parseUInt64(TxRepHelper.getValue(map, "\(prefix).contractCode") ?? "0"))
+      let val = try TxRepHelper.parseUInt32(TxRepHelper.getValue(map, "\(prefix).contractCode") ?? "0")
       return .contract(val)
     case "SCE_WASM_VM":
       let val = try SCErrorCode.fromTxRep(map, prefix: "\(prefix).code")

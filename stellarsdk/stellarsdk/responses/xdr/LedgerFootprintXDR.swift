@@ -38,12 +38,18 @@ extension LedgerFootprintXDR {
 
   public static func fromTxRep(_ map: [String: String], prefix: String) throws -> LedgerFootprintXDR {
     let readOnlyLen = try TxRepHelper.parseInt(TxRepHelper.getValue(map, "\(prefix).readOnly.len") ?? "0")
+    guard readOnlyLen >= 0 else {
+      throw TxRepError.invalidValue(key: "\(prefix).readOnly.len: \(readOnlyLen)")
+    }
     var readOnly = [LedgerKeyXDR]()
     for i in 0..<Int(readOnlyLen) {
       let item: LedgerKeyXDR = try LedgerKeyXDR.fromTxRep(map, prefix: "\(prefix).readOnly[\(i)]")
       readOnly.append(item)
     }
     let readWriteLen = try TxRepHelper.parseInt(TxRepHelper.getValue(map, "\(prefix).readWrite.len") ?? "0")
+    guard readWriteLen >= 0 else {
+      throw TxRepError.invalidValue(key: "\(prefix).readWrite.len: \(readWriteLen)")
+    }
     var readWrite = [LedgerKeyXDR]()
     for i in 0..<Int(readWriteLen) {
       let item: LedgerKeyXDR = try LedgerKeyXDR.fromTxRep(map, prefix: "\(prefix).readWrite[\(i)]")

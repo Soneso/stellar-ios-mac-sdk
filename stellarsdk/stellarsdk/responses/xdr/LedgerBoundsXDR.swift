@@ -32,8 +32,8 @@ extension LedgerBoundsXDR {
   }
 
   public static func fromTxRep(_ map: [String: String], prefix: String) throws -> LedgerBoundsXDR {
-    let minLedger: UInt32 = UInt32(try TxRepHelper.parseUInt64(TxRepHelper.getValue(map, "\(prefix).minLedger") ?? "0"))
-    let maxLedger: UInt32 = UInt32(try TxRepHelper.parseUInt64(TxRepHelper.getValue(map, "\(prefix).maxLedger") ?? "0"))
+    let minLedger: UInt32 = try TxRepHelper.parseUInt32(TxRepHelper.getValue(map, "\(prefix).minLedger") ?? "0")
+    let maxLedger: UInt32 = try TxRepHelper.parseUInt32(TxRepHelper.getValue(map, "\(prefix).maxLedger") ?? "0")
     return LedgerBoundsXDR(minLedger: minLedger, maxLedger: maxLedger)
   }
 }

@@ -37,6 +37,9 @@ extension SorobanAuthorizedInvocationXDR {
   public static func fromTxRep(_ map: [String: String], prefix: String) throws -> SorobanAuthorizedInvocationXDR {
     let function: SorobanAuthorizedFunctionXDR = try SorobanAuthorizedFunctionXDR.fromTxRep(map, prefix: "\(prefix).function")
     let subInvocationsLen = try TxRepHelper.parseInt(TxRepHelper.getValue(map, "\(prefix).subInvocations.len") ?? "0")
+    guard subInvocationsLen >= 0 else {
+      throw TxRepError.invalidValue(key: "\(prefix).subInvocations.len: \(subInvocationsLen)")
+    }
     var subInvocations = [SorobanAuthorizedInvocationXDR]()
     for i in 0..<Int(subInvocationsLen) {
       let item: SorobanAuthorizedInvocationXDR = try SorobanAuthorizedInvocationXDR.fromTxRep(map, prefix: "\(prefix).subInvocations[\(i)]")

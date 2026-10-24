@@ -220,37 +220,37 @@ extension SetOptionsOperationXDR {
     }
     let clearFlags: UInt32?
     if TxRepHelper.getValue(map, "\(prefix).clearFlags._present") == "true" {
-      clearFlags = UInt32(try TxRepHelper.parseUInt64(TxRepHelper.getValue(map, "\(prefix).clearFlags") ?? "0"))
+      clearFlags = try TxRepHelper.parseUInt32(TxRepHelper.getValue(map, "\(prefix).clearFlags") ?? "0")
     } else {
       clearFlags = nil
     }
     let setFlags: UInt32?
     if TxRepHelper.getValue(map, "\(prefix).setFlags._present") == "true" {
-      setFlags = UInt32(try TxRepHelper.parseUInt64(TxRepHelper.getValue(map, "\(prefix).setFlags") ?? "0"))
+      setFlags = try TxRepHelper.parseUInt32(TxRepHelper.getValue(map, "\(prefix).setFlags") ?? "0")
     } else {
       setFlags = nil
     }
     let masterWeight: UInt32?
     if TxRepHelper.getValue(map, "\(prefix).masterWeight._present") == "true" {
-      masterWeight = UInt32(try TxRepHelper.parseUInt64(TxRepHelper.getValue(map, "\(prefix).masterWeight") ?? "0"))
+      masterWeight = try TxRepHelper.parseUInt32(TxRepHelper.getValue(map, "\(prefix).masterWeight") ?? "0")
     } else {
       masterWeight = nil
     }
     let lowThreshold: UInt32?
     if TxRepHelper.getValue(map, "\(prefix).lowThreshold._present") == "true" {
-      lowThreshold = UInt32(try TxRepHelper.parseUInt64(TxRepHelper.getValue(map, "\(prefix).lowThreshold") ?? "0"))
+      lowThreshold = try TxRepHelper.parseUInt32(TxRepHelper.getValue(map, "\(prefix).lowThreshold") ?? "0")
     } else {
       lowThreshold = nil
     }
     let medThreshold: UInt32?
     if TxRepHelper.getValue(map, "\(prefix).medThreshold._present") == "true" {
-      medThreshold = UInt32(try TxRepHelper.parseUInt64(TxRepHelper.getValue(map, "\(prefix).medThreshold") ?? "0"))
+      medThreshold = try TxRepHelper.parseUInt32(TxRepHelper.getValue(map, "\(prefix).medThreshold") ?? "0")
     } else {
       medThreshold = nil
     }
     let highThreshold: UInt32?
     if TxRepHelper.getValue(map, "\(prefix).highThreshold._present") == "true" {
-      highThreshold = UInt32(try TxRepHelper.parseUInt64(TxRepHelper.getValue(map, "\(prefix).highThreshold") ?? "0"))
+      highThreshold = try TxRepHelper.parseUInt32(TxRepHelper.getValue(map, "\(prefix).highThreshold") ?? "0")
     } else {
       highThreshold = nil
     }

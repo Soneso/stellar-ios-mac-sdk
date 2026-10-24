@@ -126,8 +126,11 @@ extension PreconditionsV2XDR {
       sequenceNumber = nil
     }
     let minSeqAge: UInt64 = try TxRepHelper.parseUInt64(TxRepHelper.getValue(map, "\(prefix).minSeqAge") ?? "0")
-    let minSeqLedgerGap: UInt32 = UInt32(try TxRepHelper.parseUInt64(TxRepHelper.getValue(map, "\(prefix).minSeqLedgerGap") ?? "0"))
+    let minSeqLedgerGap: UInt32 = try TxRepHelper.parseUInt32(TxRepHelper.getValue(map, "\(prefix).minSeqLedgerGap") ?? "0")
     let extraSignersLen = try TxRepHelper.parseInt(TxRepHelper.getValue(map, "\(prefix).extraSigners.len") ?? "0")
+    guard extraSignersLen >= 0 && extraSignersLen <= 2 else {
+      throw TxRepError.invalidValue(key: "\(prefix).extraSigners.len: \(extraSignersLen)")
+    }
     var extraSigners = [SignerKeyXDR]()
     for i in 0..<Int(extraSignersLen) {
       let item: SignerKeyXDR = try TxRepHelper.parseSignerKey(TxRepHelper.getValue(map, "\(prefix).extraSigners[\(i)]") ?? "")
