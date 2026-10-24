@@ -26,15 +26,11 @@ enum Result {
 /// Limits for documents that the SDK reads from hosts a domain names: stellar.toml files and
 /// federation responses.
 enum DiscoveryLimits {
-    /// Largest stellar.toml body in bytes. SEP-1: "`stellar.toml` can have a maximum file size of
-    /// 100KB." js-stellar-sdk uses the same value as `STELLAR_TOML_MAX_SIZE` (`100 * 1024`).
+    /// Largest stellar.toml body in bytes. SEP-1: "`stellar.toml` can have a maximum file size of 100KB."
     static let stellarTomlMaxBytes = 100 * 1024
-    /// Largest federation response body in bytes, `FEDERATION_RESPONSE_MAX_SIZE` (`100 * 1024`) of
-    /// js-stellar-sdk.
+    /// Largest federation response body in bytes. A larger body fails the lookup.
     static let federationResponseMaxBytes = 100 * 1024
-    /// Seconds after which a stellar.toml load fails. js-stellar-sdk sets no default timeout; the
-    /// value is the request timeout of the federation client in the Soneso KMP SDK (`30_000` ms)
-    /// and the read timeout of the federation client in java-stellar-sdk (30 s).
+    /// Seconds after which a stellar.toml load fails.
     static let stellarTomlTimeout: TimeInterval = 30
 }
 
