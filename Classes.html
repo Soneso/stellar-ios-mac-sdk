@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="index.html">
-          stellarsdk 3.13.0 Docs
+          stellarsdk 3.14.0 Docs
         </a>
          (94% documented)
       </p>
@@ -2685,7 +2685,7 @@ enabling secure wallet backups and account management.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/crypto/WalletUtils.swift#L40-L76">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/crypto/WalletUtils.swift#L40-L81">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2707,7 +2707,8 @@ enabling secure wallet backups and account management.</p>
 
 <p>This class provides human-readable address resolution for Stellar accounts. Instead of using
 long cryptographic addresses (G&hellip;), users can use addresses like &ldquo;alice*example.com&rdquo;.
-Federation makes Stellar more user-friendly by mapping memorable names to account IDs.</p>
+Federation makes Stellar more user-friendly by mapping memorable names to account IDs.
+A federation response larger than 100 KB fails with <code>FederationError.horizonError</code>.</p>
 <h2 id='typical-usage' class='heading'>Typical Usage</h2>
 <pre class="highlight swift"><code><span class="c1">// Resolve a Stellar address to account ID</span>
 <span class="k">let</span> <span class="nv">result</span> <span class="o">=</span> <span class="k">await</span> <span class="kt">Federation</span><span class="o">.</span><span class="nf">resolve</span><span class="p">(</span>
@@ -2752,7 +2753,7 @@ Federation makes Stellar more user-friendly by mapping memorable names to accoun
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/federation/Federation.swift#L67-L248">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/federation/Federation.swift#L68-L249">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2975,7 +2976,7 @@ bank account details, or complete email verification.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/interactive/InteractiveService.swift#L221-L500">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/interactive/InteractiveService.swift#L221-L502">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3193,7 +3194,7 @@ to enable regulated on/off-ramp operations that require customer identity verifi
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/kyc/KycService.swift#L270-L572">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/kyc/KycService.swift#L270-L574">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3498,7 +3499,7 @@ transfers, ensuring compliance with securities regulations and KYC/AML requireme
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/regulated_assets/RegulatedAssetsService.swift#L109-L314">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/regulated_assets/RegulatedAssetsService.swift#L109-L316">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3532,7 +3533,7 @@ and includes an approval server URL where transactions must be submitted for val
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/regulated_assets/RegulatedAssetsService.swift#L320-L348">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/regulated_assets/RegulatedAssetsService.swift#L322-L350">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -4299,7 +4300,7 @@ See <a href="https://developers.stellar.org">Stellar developer docs</a></p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/responses/effects_responses/ContractCreditedEffectResponse.swift#L16-L57">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/responses/effects_responses/ContractCreditedEffectResponse.swift#L16-L70">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -7754,7 +7755,7 @@ See <a href="https://developers.stellar.org">Stellar developer docs</a>.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/ClawbackOperation.swift#L12-L56">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/ClawbackOperation.swift#L12-L68">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -7889,7 +7890,7 @@ See <a href="https://developers.stellar.org">Stellar developer docs</a></p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/CreatePassiveOfferOperation.swift#L13-L65">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/CreatePassiveOfferOperation.swift#L13-L78">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -8045,7 +8046,7 @@ See <a href="https://github.com/stellar/stellar-protocol/blob/master/core/cap-00
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/InvokeHostFunctionOperation.swift#L12-L209">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/InvokeHostFunctionOperation.swift#L12-L218">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -8233,7 +8234,7 @@ See <a href="https://developers.stellar.org">Stellar developer docs</a></p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/ManageOfferOperation.swift#L13-L69">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/ManageOfferOperation.swift#L13-L82">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -8375,7 +8376,7 @@ multi-signature transactions or channel accounts.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Operation.swift#L56-L205">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Operation.swift#L56-L206">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -8407,7 +8408,7 @@ See <a href="https://developers.stellar.org">Stellar developer docs</a></p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/PathPaymentOperation.swift#L13-L95">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/PathPaymentOperation.swift#L13-L109">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -8542,7 +8543,7 @@ must have a trustline established for that asset.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/PaymentOperation.swift#L49-L96">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/PaymentOperation.swift#L49-L108">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -8701,7 +8702,7 @@ See <a href="https://developers.stellar.org">Stellar developer docs</a></p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/SetTrustlineFlagsOperation.swift#L12-L58">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/SetTrustlineFlagsOperation.swift#L12-L70">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -8796,7 +8797,7 @@ See <a href="https://developers.stellar.org">Stellar developer docs</a></p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Transaction.swift#L13-L295">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Transaction.swift#L13-L308">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -11996,7 +11997,7 @@ or run your own RPC server. For production, always use a reliable RPC provider.<
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/SorobanServer.swift#L243-L1300">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/SorobanServer.swift#L243-L1313">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -12230,7 +12231,7 @@ transaction is invoked by yet another party, check out in the SorobanClientTest.
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/AssembledTransaction.swift#L178-L655">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/AssembledTransaction.swift#L178-L664">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -12407,7 +12408,7 @@ needed to interact with a deployed smart contract.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/ContractSpec.swift#L54-L690">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/ContractSpec.swift#L54-L705">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -12820,7 +12821,7 @@ For more control over transaction construction, use AssembledTransaction directl
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/SorobanClient.swift#L57-L429">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/SorobanClient.swift#L57-L433">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -13104,7 +13105,7 @@ to discover anchor services, validator information, and asset metadata from a do
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/toml/StellarToml.swift#L93-L200">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/toml/StellarToml.swift#L133-L243">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -13243,7 +13244,7 @@ for automated workflows and server-to-server integrations.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/transfer_server_protocol/TransferServerService.swift#L127-L666">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/transfer_server_protocol/TransferServerService.swift#L127-L668">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -13329,7 +13330,7 @@ parsing, formatting, and Stellar type conversion.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/txrep/TxRepHelper.swift#L17-L1081">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/txrep/TxRepHelper.swift#L17-L1096">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -13502,9 +13503,10 @@ Key features include:</p>
 </code></pre>
 <h2 id='automatic-reconnection' class='heading'>Automatic Reconnection</h2>
 
-<p>The implementation automatically reconnects on connection failures using an
-exponential backoff strategy. The retry interval can be set by the server
-using the <code>retry:</code> field in the event stream, defaulting to 3000 milliseconds.</p>
+<p>Until <code>close()</code> is called, the EventSource reconnects whenever a connection ends.
+Before each reconnect it waits the delay that the server sent with its last <code>retry:</code>
+field, or 3,000 milliseconds when the server has sent none. After a failed connection,
+one that ended with an error or without a 2xx response, it waits at least 1 second.</p>
 <h2 id='last-event-id' class='heading'>Last Event ID</h2>
 
 <p>To support reliable streaming, the last received event ID is persisted and
@@ -13530,7 +13532,7 @@ the server to resume streaming from where it left off.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/utils/EventSource.swift#L101-L609">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/utils/EventSource.swift#L102-L619">Show on GitHub</a>
                       </div>
                     </section>
                   </div>

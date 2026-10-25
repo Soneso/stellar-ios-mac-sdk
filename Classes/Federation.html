@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          stellarsdk 3.13.0 Docs
+          stellarsdk 3.14.0 Docs
         </a>
          (94% documented)
       </p>
@@ -2326,7 +2326,8 @@
 
 <p>This class provides human-readable address resolution for Stellar accounts. Instead of using
 long cryptographic addresses (G&hellip;), users can use addresses like &ldquo;alice*example.com&rdquo;.
-Federation makes Stellar more user-friendly by mapping memorable names to account IDs.</p>
+Federation makes Stellar more user-friendly by mapping memorable names to account IDs.
+A federation response larger than 100 KB fails with <code>FederationError.horizonError</code>.</p>
 <h2 id='typical-usage' class='heading'>Typical Usage</h2>
 <pre class="highlight swift"><code><span class="c1">// Resolve a Stellar address to account ID</span>
 <span class="k">let</span> <span class="nv">result</span> <span class="o">=</span> <span class="k">await</span> <span class="kt">Federation</span><span class="o">.</span><span class="nf">resolve</span><span class="p">(</span>
@@ -2361,7 +2362,7 @@ Federation makes Stellar more user-friendly by mapping memorable names to accoun
 </ul>
 
               <div class="slightly-smaller">
-                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/federation/Federation.swift#L67-L248">Show on GitHub</a>
+                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/federation/Federation.swift#L68-L249">Show on GitHub</a>
               </div>
           </div>
         </section>
@@ -2395,7 +2396,7 @@ Federation makes Stellar more user-friendly by mapping memorable names to accoun
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/federation/Federation.swift#L70">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/federation/Federation.swift#L71">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2444,7 +2445,7 @@ Federation makes Stellar more user-friendly by mapping memorable names to accoun
                         </table>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/federation/Federation.swift#L77-L80">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/federation/Federation.swift#L78-L81">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2515,7 +2516,7 @@ from the domain&rsquo;s stellar.toml file and performs the resolution.</p>
                         <p>ResolveResponseEnum with the account ID and optional memo, or an error</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/federation/Federation.swift#L90-L103">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/federation/Federation.swift#L91-L104">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2586,7 +2587,7 @@ and extracts the FEDERATION_SERVER URL.</p>
                         <p>FederationForDomainEnum with the Federation instance, or an error</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/federation/Federation.swift#L113-L132">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/federation/Federation.swift#L114-L133">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2645,7 +2646,7 @@ corresponding account ID and optional memo.</p>
                         <p>ResolveResponseEnum with account ID, memo, and other federation data, or an error</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/federation/Federation.swift#L141-L161">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/federation/Federation.swift#L142-L162">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2704,7 +2705,7 @@ Stellar address like &ldquo;alice*example.com&rdquo;.</p>
                         <p>ResolveResponseEnum with the Stellar address, or an error</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/federation/Federation.swift#L170-L192">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/federation/Federation.swift#L171-L193">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2762,7 +2763,7 @@ Stellar address like &ldquo;alice*example.com&rdquo;.</p>
                         <p>ResolveResponseEnum with federation data, or an error</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/federation/Federation.swift#L200-L216">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/federation/Federation.swift#L201-L217">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2822,7 +2823,7 @@ destination of the payment and what they as the forwarding anchor support.</p>
                         <p>ResolveResponseEnum with the forwarding destination, or an error</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/federation/Federation.swift#L226-L247">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/federation/Federation.swift#L227-L248">Show on GitHub</a>
                       </div>
                     </section>
                   </div>

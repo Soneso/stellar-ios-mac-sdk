@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          stellarsdk 3.13.0 Docs
+          stellarsdk 3.14.0 Docs
         </a>
          (94% documented)
       </p>
@@ -2326,7 +2326,7 @@
 See <a href="https://developers.stellar.org">Stellar developer docs</a></p>
 
               <div class="slightly-smaller">
-                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/ManageOfferOperation.swift#L13-L69">Show on GitHub</a>
+                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/ManageOfferOperation.swift#L13-L82">Show on GitHub</a>
               </div>
           </div>
         </section>
@@ -2609,6 +2609,9 @@ See <a href="https://developers.stellar.org">Stellar developer docs</a></p>
                       <div class="abstract">
                         <p>Creates a new ManageOfferOperation object from the given ManageOfferOperationXDR object.</p>
 
+<p>The asset XDR must be valid: an asset code that <code><a href="../Classes/Asset.html#/s:10stellarsdk5AssetC7fromXDR05assetD0AcA0bD0O_tKFZ">Asset.fromXDR(assetXDR:)</a></code> rejects stops the
+process. <code><a href="../Classes/Operation.html#/s:10stellarsdk9OperationC7fromXDR09operationD0AcA0bD0V_tKFZ">Operation.fromXDR(operationXDR:)</a></code> validates the asset XDR and throws instead.</p>
+
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
@@ -2650,7 +2653,7 @@ See <a href="https://developers.stellar.org">Stellar developer docs</a></p>
                         </table>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/ManageOfferOperation.swift#L48-L55">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/ManageOfferOperation.swift#L51-L58">Show on GitHub</a>
                       </div>
                     </section>
                   </div>

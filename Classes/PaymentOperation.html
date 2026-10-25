@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          stellarsdk 3.13.0 Docs
+          stellarsdk 3.14.0 Docs
         </a>
          (94% documented)
       </p>
@@ -2367,7 +2367,7 @@ must have a trustline established for that asset.</p>
 </ul>
 
               <div class="slightly-smaller">
-                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/PaymentOperation.swift#L49-L96">Show on GitHub</a>
+                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/PaymentOperation.swift#L49-L108">Show on GitHub</a>
               </div>
           </div>
         </section>
@@ -2571,6 +2571,9 @@ must have a trustline established for that asset.</p>
                       <div class="abstract">
                         <p>Creates a new PaymentOperation object from the given PaymentOperationXDR object.</p>
 
+<p>The asset XDR must be valid: an asset code that <code><a href="../Classes/Asset.html#/s:10stellarsdk5AssetC7fromXDR05assetD0AcA0bD0O_tKFZ">Asset.fromXDR(assetXDR:)</a></code> rejects stops the
+process. <code><a href="../Classes/Operation.html#/s:10stellarsdk9OperationC7fromXDR09operationD0AcA0bD0V_tKFZ">Operation.fromXDR(operationXDR:)</a></code> validates the asset XDR and throws instead.</p>
+
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
@@ -2612,7 +2615,7 @@ must have a trustline established for that asset.</p>
                         </table>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/PaymentOperation.swift#L81-L86">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/PaymentOperation.swift#L84-L89">Show on GitHub</a>
                       </div>
                     </section>
                   </div>

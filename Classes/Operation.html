@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          stellarsdk 3.13.0 Docs
+          stellarsdk 3.14.0 Docs
         </a>
          (94% documented)
       </p>
@@ -2374,7 +2374,7 @@ multi-signature transactions or channel accounts.</p>
 </ul>
 
               <div class="slightly-smaller">
-                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Operation.swift#L56-L205">Show on GitHub</a>
+                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Operation.swift#L56-L206">Show on GitHub</a>
               </div>
           </div>
         </section>
@@ -2539,7 +2539,8 @@ account ID (G-address or M-address). If nil or invalid, the transaction&rsquo;s 
                         <p>Creates a new Operation object from the given OperationXDR object.</p>
 <div class="aside aside-throws">
     <p class="aside-title">Throws</p>
-    <p>Throws StellarSDKError.invalidArgument error if the given OperationXDR object has an unknown type.</p>
+    <p>Throws StellarSDKError.invalidArgument error if the given OperationXDR object has an unknown type,
+and StellarSDKError.xdrDecodingError if an asset of the operation has an invalid asset code.</p>
 
 </div>
 
@@ -2572,7 +2573,7 @@ account ID (G-address or M-address). If nil or invalid, the transaction&rsquo;s 
                         </table>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Operation.swift#L91-L152">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Operation.swift#L92-L153">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2602,7 +2603,7 @@ account ID (G-address or M-address). If nil or invalid, the transaction&rsquo;s 
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Operation.swift#L155-L158">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Operation.swift#L156-L159">Show on GitHub</a>
                       </div>
                     </section>
                   </div>

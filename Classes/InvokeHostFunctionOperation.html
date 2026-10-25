@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          stellarsdk 3.13.0 Docs
+          stellarsdk 3.14.0 Docs
         </a>
          (94% documented)
       </p>
@@ -2325,7 +2325,7 @@
             <p>Invokes Soroban host functions for smart contract deployment, creation, and invocation operations.</p>
 
               <div class="slightly-smaller">
-                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/InvokeHostFunctionOperation.swift#L12-L209">Show on GitHub</a>
+                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/InvokeHostFunctionOperation.swift#L12-L218">Show on GitHub</a>
               </div>
           </div>
         </section>
@@ -2409,6 +2409,8 @@
                       <div class="abstract">
                         <p>Creates a new invoke host function operation with specified parameters.</p>
 
+<p>A host function built by hand is not validated; the string-taking builders validate the contract id.</p>
+
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
@@ -2419,7 +2421,7 @@
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/InvokeHostFunctionOperation.swift#L33-L37">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/InvokeHostFunctionOperation.swift#L35-L39">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2438,6 +2440,11 @@
                       <div class="pointer"></div>
                       <div class="abstract">
                         <p>Creates an operation to invoke a function on a deployed smart contract.</p>
+<div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    StellarSDKError.invalidArgument naming the kind of address given for any other string
+
+</div>
 
                       </div>
                       <div class="declaration">
@@ -2448,8 +2455,28 @@
 
                         </div>
                       </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>contractId</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>the contract to invoke, a &ldquo;C&hellip;&rdquo; strkey contract id or the 64
+character hex of the 32 byte id</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/InvokeHostFunctionOperation.swift#L40-L45">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/InvokeHostFunctionOperation.swift#L46-L54">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2479,7 +2506,7 @@
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/InvokeHostFunctionOperation.swift#L48-L51">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/InvokeHostFunctionOperation.swift#L57-L60">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2533,7 +2560,7 @@
                         </table>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/InvokeHostFunctionOperation.swift#L57-L65">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/InvokeHostFunctionOperation.swift#L66-L74">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2587,7 +2614,7 @@
                         </table>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/InvokeHostFunctionOperation.swift#L71-L79">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/InvokeHostFunctionOperation.swift#L80-L88">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2683,7 +2710,7 @@ unchanged.</p>
                         </table>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/InvokeHostFunctionOperation.swift#L94-L103">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/InvokeHostFunctionOperation.swift#L103-L112">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2775,7 +2802,7 @@ bytes of the given text; the entry is matched byte for byte against those bytes.
                         </table>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/InvokeHostFunctionOperation.swift#L114-L120">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/InvokeHostFunctionOperation.swift#L123-L129">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2879,7 +2906,7 @@ and may carry arbitrary bytes; the operation carries the given bytes unchanged.<
                         </table>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/InvokeHostFunctionOperation.swift#L132-L141">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/InvokeHostFunctionOperation.swift#L141-L150">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2984,7 +3011,7 @@ against those bytes.</p>
                         </table>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/InvokeHostFunctionOperation.swift#L154-L161">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/InvokeHostFunctionOperation.swift#L163-L170">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3014,7 +3041,7 @@ against those bytes.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/InvokeHostFunctionOperation.swift#L164-L170">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/InvokeHostFunctionOperation.swift#L173-L179">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3075,7 +3102,7 @@ against those bytes.</p>
                         </table>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/InvokeHostFunctionOperation.swift#L196-L200">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/InvokeHostFunctionOperation.swift#L205-L209">Show on GitHub</a>
                       </div>
                     </section>
                   </div>

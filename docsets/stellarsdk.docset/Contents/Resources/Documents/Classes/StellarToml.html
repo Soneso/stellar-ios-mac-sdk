@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          stellarsdk 3.13.0 Docs
+          stellarsdk 3.14.0 Docs
         </a>
          (94% documented)
       </p>
@@ -2372,7 +2372,7 @@ to discover anchor services, validator information, and asset metadata from a do
 </ul>
 
               <div class="slightly-smaller">
-                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/toml/StellarToml.swift#L93-L200">Show on GitHub</a>
+                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/toml/StellarToml.swift#L133-L243">Show on GitHub</a>
               </div>
           </div>
         </section>
@@ -2406,7 +2406,7 @@ to discover anchor services, validator information, and asset metadata from a do
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/toml/StellarToml.swift#L96">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/toml/StellarToml.swift#L136">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2436,7 +2436,7 @@ to discover anchor services, validator information, and asset metadata from a do
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/toml/StellarToml.swift#L98">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/toml/StellarToml.swift#L138">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2466,7 +2466,7 @@ to discover anchor services, validator information, and asset metadata from a do
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/toml/StellarToml.swift#L100">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/toml/StellarToml.swift#L140">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2496,7 +2496,7 @@ to discover anchor services, validator information, and asset metadata from a do
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/toml/StellarToml.swift#L102">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/toml/StellarToml.swift#L142">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2526,7 +2526,7 @@ to discover anchor services, validator information, and asset metadata from a do
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/toml/StellarToml.swift#L104">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/toml/StellarToml.swift#L144">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2580,7 +2580,7 @@ to discover anchor services, validator information, and asset metadata from a do
                         </table>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/toml/StellarToml.swift#L110-L155">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/toml/StellarToml.swift#L150-L195">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2604,7 +2604,9 @@ to discover anchor services, validator information, and asset metadata from a do
                         <p>Loads and parses stellar.toml file from a domain per SEP-0001.</p>
 
 <p>Fetches the stellar.toml file from <code>https://{domain}/.well-known/stellar.toml</code>
-(or <code>http://</code> if secure is false) and parses its contents.</p>
+(or <code>http://</code> if secure is false) and parses its contents. The load returns <code>.invalidToml</code>
+after 30 seconds, for an HTTP status outside 200 to 299, for a file larger than 100 KB (the
+SEP-1 limit) and for a file that is not UTF-8.</p>
 
                       </div>
                       <div class="declaration">
@@ -2651,7 +2653,7 @@ to discover anchor services, validator information, and asset metadata from a do
                         <p>TomlForDomainEnum with the parsed StellarToml or an error</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/toml/StellarToml.swift#L165-L177">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/toml/StellarToml.swift#L207-L219">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2675,7 +2677,8 @@ to discover anchor services, validator information, and asset metadata from a do
                         <p>Loads currency information from a linked TOML file URL.</p>
 
 <p>Per SEP-0001, a stellar.toml can link to separate TOML files for individual currencies
-by specifying <code>toml=&quot;https://DOMAIN/.well-known/CURRENCY.toml&quot;</code> as the currency&rsquo;s only field.</p>
+by specifying <code>toml=&quot;https://DOMAIN/.well-known/CURRENCY.toml&quot;</code> as the currency&rsquo;s only field.
+The load follows the rules of <code><a href="../Classes/StellarToml.html#/s:10stellarsdk11StellarTomlC4from6domain6secureAA0C13ForDomainEnumOSS_SbtYaFZ">from(domain:secure:)</a></code> and returns <code>.invalidToml</code> when it fails.</p>
 
                       </div>
                       <div class="declaration">
@@ -2710,7 +2713,7 @@ by specifying <code>toml=&quot;https://DOMAIN/.well-known/CURRENCY.toml&quot;</c
                         <p>TomlCurrencyFromUrlEnum with the parsed CurrencyDocumentation or an error</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/toml/StellarToml.swift#L186-L199">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/toml/StellarToml.swift#L229-L242">Show on GitHub</a>
                       </div>
                     </section>
                   </div>

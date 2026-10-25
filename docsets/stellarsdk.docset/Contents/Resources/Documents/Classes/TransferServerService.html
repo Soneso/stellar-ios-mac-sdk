@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          stellarsdk 3.13.0 Docs
+          stellarsdk 3.14.0 Docs
         </a>
          (94% documented)
       </p>
@@ -2382,7 +2382,7 @@ for automated workflows and server-to-server integrations.</p>
 </ul>
 
               <div class="slightly-smaller">
-                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/transfer_server_protocol/TransferServerService.swift#L127-L666">Show on GitHub</a>
+                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/transfer_server_protocol/TransferServerService.swift#L127-L668">Show on GitHub</a>
               </div>
           </div>
         </section>
@@ -2488,7 +2488,9 @@ for automated workflows and server-to-server integrations.</p>
                       <div class="abstract">
                         <p>Creates a TransferServerService instance based on information from the stellar.toml file for a given domain.</p>
 
-<p>Fetches the stellar.toml file from the domain and extracts the TRANSFER_SERVER URL.</p>
+<p>Fetches the stellar.toml file from the domain and extracts the TRANSFER_SERVER URL.
+The load follows the rules of <code><a href="../Classes/StellarToml.html#/s:10stellarsdk11StellarTomlC4from6domain6secureAA0C13ForDomainEnumOSS_SbtYaFZ">StellarToml.from(domain:secure:)</a></code> and returns <code>.invalidToml</code>
+when it fails.</p>
 
                       </div>
                       <div class="declaration">
@@ -2523,7 +2525,7 @@ for automated workflows and server-to-server integrations.</p>
                         <p>TransferServerServiceForDomainEnum with the service instance or an error</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/transfer_server_protocol/TransferServerService.swift#L155-L175">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/transfer_server_protocol/TransferServerService.swift#L157-L177">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2579,7 +2581,7 @@ for automated workflows and server-to-server integrations.</p>
                         <p>DepositResponseEnum with instructions for transferring external assets to the anchor, or an error</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/transfer_server_protocol/TransferServerService.swift#L181-L241">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/transfer_server_protocol/TransferServerService.swift#L183-L243">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2635,7 +2637,7 @@ for automated workflows and server-to-server integrations.</p>
                         <p>DepositResponseEnum with conversion details and instructions, or an error</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/transfer_server_protocol/TransferServerService.swift#L247-L307">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/transfer_server_protocol/TransferServerService.swift#L249-L309">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2691,7 +2693,7 @@ for automated workflows and server-to-server integrations.</p>
                         <p>WithdrawResponseEnum with instructions for receiving off-chain assets, or an error</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/transfer_server_protocol/TransferServerService.swift#L313-L379">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/transfer_server_protocol/TransferServerService.swift#L315-L381">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2747,7 +2749,7 @@ for automated workflows and server-to-server integrations.</p>
                         <p>WithdrawResponseEnum with conversion details and instructions, or an error</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/transfer_server_protocol/TransferServerService.swift#L385-L451">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/transfer_server_protocol/TransferServerService.swift#L387-L453">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2815,7 +2817,7 @@ for automated workflows and server-to-server integrations.</p>
                         <p>AnchorInfoResponseEnum with anchor capabilities and configuration, or an error</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/transfer_server_protocol/TransferServerService.swift#L458-L477">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/transfer_server_protocol/TransferServerService.swift#L460-L479">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2871,7 +2873,7 @@ for automated workflows and server-to-server integrations.</p>
                         <p>AnchorFeeResponseEnum with calculated fee details for the specified operation, or an error</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/transfer_server_protocol/TransferServerService.swift#L483-L503">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/transfer_server_protocol/TransferServerService.swift#L485-L505">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2927,7 +2929,7 @@ for automated workflows and server-to-server integrations.</p>
                         <p>AnchorTransactionsResponseEnum with list of deposit and withdrawal transactions, or an error</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/transfer_server_protocol/TransferServerService.swift#L509-L541">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/transfer_server_protocol/TransferServerService.swift#L511-L543">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2983,7 +2985,7 @@ for automated workflows and server-to-server integrations.</p>
                         <p>AnchorTransactionResponseEnum with detailed transaction status and processing information, or an error</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/transfer_server_protocol/TransferServerService.swift#L547-L589">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/transfer_server_protocol/TransferServerService.swift#L549-L591">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3075,7 +3077,7 @@ for automated workflows and server-to-server integrations.</p>
                         <p>AnchorTransactionResponseEnum with updated transaction details, or an error</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/transfer_server_protocol/TransferServerService.swift#L598-L614">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/transfer_server_protocol/TransferServerService.swift#L600-L616">Show on GitHub</a>
                       </div>
                     </section>
                   </div>

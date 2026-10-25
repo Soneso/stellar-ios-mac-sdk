@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          stellarsdk 3.13.0 Docs
+          stellarsdk 3.14.0 Docs
         </a>
          (94% documented)
       </p>
@@ -2353,7 +2353,7 @@ enabling secure wallet backups and account management.</p>
 </ul>
 
               <div class="slightly-smaller">
-                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/crypto/WalletUtils.swift#L40-L76">Show on GitHub</a>
+                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/crypto/WalletUtils.swift#L40-L81">Show on GitHub</a>
               </div>
           </div>
         </section>
@@ -2436,6 +2436,11 @@ enabling secure wallet backups and account management.</p>
                       <div class="pointer"></div>
                       <div class="abstract">
                         <p>Creates a new KeyPair from the given mnemonic and index.</p>
+<div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    <p><code>StellarSDKError.invalidArgument</code> for an index outside 0 to 2147483647.</p>
+
+</div>
 
                       </div>
                       <div class="declaration">
@@ -2482,7 +2487,8 @@ enabling secure wallet backups and account management.</p>
                               </td>
                               <td>
                                 <div>
-                                  <p>The index of the wallet to generate.</p>
+                                  <p>The index of the wallet to generate, from 0 to 2147483647 (2^31-1), the range
+of hardened BIP-32 account indexes.</p>
                                 </div>
                               </td>
                             </tr>
@@ -2490,7 +2496,7 @@ enabling secure wallet backups and account management.</p>
                         </table>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/crypto/WalletUtils.swift#L58-L75">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/crypto/WalletUtils.swift#L60-L80">Show on GitHub</a>
                       </div>
                     </section>
                   </div>

@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          stellarsdk 3.13.0 Docs
+          stellarsdk 3.14.0 Docs
         </a>
          (94% documented)
       </p>
@@ -2486,7 +2486,7 @@ bank account details, or complete email verification.</p>
 </ul>
 
               <div class="slightly-smaller">
-                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/interactive/InteractiveService.swift#L221-L500">Show on GitHub</a>
+                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/interactive/InteractiveService.swift#L221-L502">Show on GitHub</a>
               </div>
           </div>
         </section>
@@ -2592,7 +2592,9 @@ bank account details, or complete email verification.</p>
                       <div class="abstract">
                         <p>Creates an InteractiveService instance based on information from the stellar.toml file for a given domain.</p>
 
-<p>Fetches the stellar.toml file from <code>{domain}/.well-known/stellar.toml</code> and extracts the TRANSFER_SERVER_SEP0024 URL.</p>
+<p>Fetches the stellar.toml file from <code>{domain}/.well-known/stellar.toml</code> and extracts the TRANSFER_SERVER_SEP0024 URL.
+The load follows the rules of <code><a href="../Classes/StellarToml.html#/s:10stellarsdk11StellarTomlC4from6domain6secureAA0C13ForDomainEnumOSS_SbtYaFZ">StellarToml.from(domain:secure:)</a></code> and returns <code>.invalidToml</code>
+when it fails.</p>
 
                       </div>
                       <div class="declaration">
@@ -2627,7 +2629,7 @@ bank account details, or complete email verification.</p>
                         <p>InteractiveServiceForDomainEnum with the service instance, or an error</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/interactive/InteractiveService.swift#L243-L263">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/interactive/InteractiveService.swift#L245-L265">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2685,7 +2687,7 @@ bank account details, or complete email verification.</p>
                         <p>Sep24InfoResponseEnum with anchor capabilities, or an error</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/interactive/InteractiveService.swift#L272-L291">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/interactive/InteractiveService.swift#L274-L293">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2745,7 +2747,7 @@ then an anchor will not implement this endpoint.</p>
                         <p>Sep24FeeResponseEnum with fee amount, or an error</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/interactive/InteractiveService.swift#L301-L321">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/interactive/InteractiveService.swift#L303-L323">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2803,7 +2805,7 @@ then an anchor will not implement this endpoint.</p>
                         <p>Sep24InteractiveResponseEnum with interactive URL and transaction ID, or an error</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/interactive/InteractiveService.swift#L329-L344">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/interactive/InteractiveService.swift#L331-L346">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2861,7 +2863,7 @@ then an anchor will not implement this endpoint.</p>
                         <p>Sep24InteractiveResponseEnum with interactive URL and transaction ID, or an error</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/interactive/InteractiveService.swift#L352-L367">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/interactive/InteractiveService.swift#L354-L369">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2919,7 +2921,7 @@ then an anchor will not implement this endpoint.</p>
                         <p>Sep24TransactionsResponseEnum with list of transactions, or an error</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/interactive/InteractiveService.swift#L375-L407">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/interactive/InteractiveService.swift#L377-L409">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2977,7 +2979,7 @@ then an anchor will not implement this endpoint.</p>
                         <p>Sep24TransactionResponseEnum with transaction details and status, or an error</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/interactive/InteractiveService.swift#L415-L456">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/interactive/InteractiveService.swift#L417-L458">Show on GitHub</a>
                       </div>
                     </section>
                   </div>

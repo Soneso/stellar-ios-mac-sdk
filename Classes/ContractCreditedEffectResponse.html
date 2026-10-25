@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          stellarsdk 3.13.0 Docs
+          stellarsdk 3.14.0 Docs
         </a>
          (94% documented)
       </p>
@@ -2329,7 +2329,7 @@ Triggered by Invoke Host Function operations that transfer assets to contracts.
 See <a href="https://developers.stellar.org">Stellar developer docs</a></p>
 
               <div class="slightly-smaller">
-                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/responses/effects_responses/ContractCreditedEffectResponse.swift#L16-L57">Show on GitHub</a>
+                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/responses/effects_responses/ContractCreditedEffectResponse.swift#L16-L70">Show on GitHub</a>
               </div>
           </div>
         </section>
@@ -2491,6 +2491,69 @@ See <a href="https://developers.stellar.org">Stellar developer docs</a></p>
                 <li class="item">
                   <div>
                     <code>
+                    <a name="/s:10stellarsdk30ContractCreditedEffectResponseC13contractMuxedSSSgvp"></a>
+                    <a name="//apple_ref/swift/Property/contractMuxed" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk30ContractCreditedEffectResponseC13contractMuxedSSSgvp">contractMuxed</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>The muxed contract address (<code>W...</code> strkey) that received the credit, built from
+<code><a href="../Classes/ContractCreditedEffectResponse.html#/s:10stellarsdk30ContractCreditedEffectResponseC8contractSSvp">contract</a></code> and <code><a href="../Classes/ContractCreditedEffectResponse.html#/s:10stellarsdk30ContractCreditedEffectResponseC15contractMuxedIdSSSgvp">contractMuxedId</a></code>. Horizon sets it for a transfer or mint to a muxed
+contract address, otherwise it is nil.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">let</span> <span class="nv">contractMuxed</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/responses/effects_responses/ContractCreditedEffectResponse.swift#L36">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10stellarsdk30ContractCreditedEffectResponseC15contractMuxedIdSSSgvp"></a>
+                    <a name="//apple_ref/swift/Property/contractMuxedId" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk30ContractCreditedEffectResponseC15contractMuxedIdSSSgvp">contractMuxedId</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>The multiplexing id of the muxed contract address, as the decimal string Horizon sends.
+Horizon sets it for a transfer or mint to a muxed contract address, otherwise it is nil.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">let</span> <span class="nv">contractMuxedId</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/responses/effects_responses/ContractCreditedEffectResponse.swift#L40">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
                     <a name="/s:10stellarsdk30ContractCreditedEffectResponseC4fromACs7Decoder_p_tKcfc"></a>
                     <a name="//apple_ref/swift/Method/init(from:)" class="dashAnchor"></a>
                     <a class="token" href="#/s:10stellarsdk30ContractCreditedEffectResponseC4fromACs7Decoder_p_tKcfc">init(from:<wbr>)</a>
@@ -2532,7 +2595,7 @@ See <a href="https://developers.stellar.org">Stellar developer docs</a></p>
                         </table>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/responses/effects_responses/ContractCreditedEffectResponse.swift#L47-L56">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/responses/effects_responses/ContractCreditedEffectResponse.swift#L58-L69">Show on GitHub</a>
                       </div>
                     </section>
                   </div>

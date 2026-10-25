@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          stellarsdk 3.13.0 Docs
+          stellarsdk 3.14.0 Docs
         </a>
          (94% documented)
       </p>
@@ -2512,7 +2512,7 @@ to enable regulated on/off-ramp operations that require customer identity verifi
 </ul>
 
               <div class="slightly-smaller">
-                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/kyc/KycService.swift#L270-L572">Show on GitHub</a>
+                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/kyc/KycService.swift#L270-L574">Show on GitHub</a>
               </div>
           </div>
         </section>
@@ -2619,7 +2619,9 @@ to enable regulated on/off-ramp operations that require customer identity verifi
                         <p>Creates a KycService instance based on information from the stellar.toml file for a given domain.</p>
 
 <p>Fetches the stellar.toml file from <code>{domain}/.well-known/stellar.toml</code> and extracts the KYC_SERVER
-or TRANSFER_SERVER URL (KYC_SERVER takes precedence).</p>
+or TRANSFER_SERVER URL (KYC_SERVER takes precedence).
+The load follows the rules of <code><a href="../Classes/StellarToml.html#/s:10stellarsdk11StellarTomlC4from6domain6secureAA0C13ForDomainEnumOSS_SbtYaFZ">StellarToml.from(domain:secure:)</a></code> and returns <code>.invalidToml</code>
+when it fails.</p>
 
                       </div>
                       <div class="declaration">
@@ -2654,7 +2656,7 @@ or TRANSFER_SERVER URL (KYC_SERVER takes precedence).</p>
                         <p>KycServiceForDomainEnum with the service instance, or an error</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/kyc/KycService.swift#L293-L314">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/kyc/KycService.swift#L295-L316">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2719,7 +2721,7 @@ or TRANSFER_SERVER URL (KYC_SERVER takes precedence).</p>
                         <p>GetCustomerInfoResponseEnum with customer status and required/provided fields, or an error</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/kyc/KycService.swift#L326-L368">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/kyc/KycService.swift#L328-L370">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2777,7 +2779,7 @@ or TRANSFER_SERVER URL (KYC_SERVER takes precedence).</p>
                         <p>PutCustomerInfoResponseEnum with customer ID and status, or an error</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/kyc/KycService.swift#L376-L391">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/kyc/KycService.swift#L378-L393">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2838,7 +2840,7 @@ a previously provided field via PUT /customer, such as mobile_number or email_ad
                         <p>GetCustomerInfoResponseEnum with updated customer status, or an error</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/kyc/KycService.swift#L402-L417">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/kyc/KycService.swift#L404-L419">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2909,7 +2911,7 @@ Useful for GDPR compliance.</p>
                         <p>DeleteCustomerResponseEnum indicating success or an error</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/kyc/KycService.swift#L427-L437">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/kyc/KycService.swift#L429-L439">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2970,7 +2972,7 @@ Useful for GDPR compliance.</p>
                         <p>PutCustomerCallbackResponseEnum indicating success or an error</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/kyc/KycService.swift#L448-L458">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/kyc/KycService.swift#L450-L460">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3049,7 +3051,7 @@ photo_id_front_file_id in PUT /customer.</p>
                         <p>PostCustomerFileResponseEnum with file ID, or an error</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/kyc/KycService.swift#L476-L492">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/kyc/KycService.swift#L478-L494">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3131,7 +3133,7 @@ photo_id_front_file_id in PUT /customer.</p>
                         <p>GetCustomerFilesResponseEnum with file information, or an error</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/kyc/KycService.swift#L502-L529">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/kyc/KycService.swift#L504-L531">Show on GitHub</a>
                       </div>
                     </section>
                   </div>

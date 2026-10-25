@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          stellarsdk 3.13.0 Docs
+          stellarsdk 3.14.0 Docs
         </a>
          (94% documented)
       </p>
@@ -2534,14 +2534,14 @@ Events are used to communicate contract state changes and actions to off-chain s
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Deprecated for protocol version 23+. Indicates if the event was emitted during a successful contract invocation.</p>
+                        <p>Whether the event was emitted in a successful contract call. Stellar RPC 30 and later omit this field; the SDK still reads it from older servers.</p>
 
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">@available</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">deprecated</span><span class="p">,</span> <span class="nv">message</span><span class="p">:</span> <span class="s">"Deprecated for protocol version &gt;= 23. If true the event was emitted during a successful contract call."</span><span class="p">)</span>
+                          <pre class="highlight swift"><code><span class="kd">@available</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">deprecated</span><span class="p">,</span> <span class="nv">message</span><span class="p">:</span> <span class="s">"Stellar RPC 30 and later omit this field; the SDK still reads it from older servers."</span><span class="p">)</span>
 <span class="kd">public</span> <span class="k">var</span> <span class="nv">inSuccessfulContractCall</span><span class="p">:</span> <span class="kt">Bool</span><span class="p">?</span> <span class="p">{</span> <span class="k">get</span> <span class="p">}</span></code></pre>
 
                         </div>
@@ -2685,7 +2685,7 @@ Events are used to communicate contract state changes and actions to off-chain s
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>The operation at which an event occurred. Only available for protocol version &gt;= 23</p>
+                        <p>Index of the operation that emitted the event within its transaction, from the <code>operationIndex</code> field of the response.</p>
 
                       </div>
                       <div class="declaration">
@@ -2715,7 +2715,7 @@ Events are used to communicate contract state changes and actions to off-chain s
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>The transaction at which an event occurred. Only available for protocol version &gt;= 23</p>
+                        <p>Index of the transaction within its ledger, from the <code>transactionIndex</code> field of the response.</p>
 
                       </div>
                       <div class="declaration">
