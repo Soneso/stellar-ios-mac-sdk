@@ -320,7 +320,7 @@ for validator in validators {
 
 ## Error handling
 
-The SDK returns result enums when fetching stellar.toml files. The `StellarToml(fromString:)` initializer throws on parse errors. Always handle both success and failure cases:
+The SDK returns result enums when fetching stellar.toml files. The `StellarToml(fromString:)` initializer throws on parse errors. `.invalidToml` also covers a failed load, including one over 30 seconds, an HTTP status outside 200 to 299, a file over 100 KB (102,400 bytes), and a non-UTF-8 file. Always handle both success and failure cases:
 
 ```swift
 import stellarsdk

@@ -378,7 +378,7 @@ let address = try SCAddressXDR(contractId: contractStrKey)   // accepts C-addres
 
 ## Muxed Contracts
 
-Muxed contract addresses (W-addresses, CAP-84) pair a contract ID with a 64-bit multiplexing ID. They are valid for `MuxedAddress` contract parameters and never as Soroban authorization addresses.
+Muxed contract addresses (W-addresses, CAP-84) pair a contract ID with a 64-bit multiplexing ID. They are valid for `MuxedAddress` contract parameters and never as Soroban authorization addresses. As the contract to invoke, a W-address throws `StellarSDKError.invalidArgument` before any request. As a contract to load, as a contract data owner, or inside a contract data key, it fails with `SorobanRpcRequestError.requestFailed` before the request. Where the SDK takes a contract, pass the base C-address.
 
 ```swift
 import stellarsdk

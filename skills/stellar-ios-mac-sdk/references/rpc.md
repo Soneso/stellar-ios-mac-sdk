@@ -321,6 +321,7 @@ case .success(let result):
         // entry.xdr: String (base64 XDR of the value)
         // entry.lastModifiedLedgerSeq: Int
         // entry.liveUntilLedgerSeq: Int? (TTL for contract entries)
+        // entry.ext: String? (base64 XDR of the entry extension, from the "extXdr" key)
         if let valueXdr = entry.valueXdr {
             print("Entry data: \(valueXdr)")
         }
@@ -371,6 +372,8 @@ case .success(let result):
         // event.value: String (base64 XDR SCVal)
         // event.valueXdr: SCValXDR (decoded value)
         // event.txHash: String
+        // event.opIndex: Int? (operation index in its transaction, from "operationIndex")
+        // event.txIndex: Int? (transaction index in its ledger, from "transactionIndex")
         print("Event \(event.id) from \(event.contractId)")
     }
 case .failure(let error):

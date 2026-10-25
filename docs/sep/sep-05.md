@@ -81,7 +81,7 @@ print(spanish)
 
 ## Deriving keypairs from mnemonics
 
-All derivation follows the SEP-05 path `m/44'/148'/index'` where 44 is the BIP-44 purpose, 148 is Stellar's registered coin type, and index is the account number.
+All derivation follows the SEP-05 path `m/44'/148'/index'` where 44 is the BIP-44 purpose, 148 is Stellar's registered coin type, and index is the account number. The index runs from 0 to 2147483647, the hardened BIP-32 range; `WalletUtils.createKeyPair` throws `StellarSDKError.invalidArgument` for any other value.
 
 ### Basic derivation
 

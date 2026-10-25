@@ -1,8 +1,8 @@
 # SEP-0006 (Deposit and Withdrawal API) Compatibility Matrix
 
-**Generated:** 2026-10-16
+**Generated:** 2026-10-25
 
-**SDK Version:** 3.13.0
+**SDK Version:** 3.14.0
 
 **SEP Version:** 4.3.0
 

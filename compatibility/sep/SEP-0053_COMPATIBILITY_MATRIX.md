@@ -1,8 +1,8 @@
 # SEP-0053 (Sign and Verify Messages) Compatibility Matrix
 
-**Generated:** 2026-10-16
+**Generated:** 2026-10-25
 
-**SDK Version:** 3.13.0
+**SDK Version:** 3.14.0
 
 **SEP Version:** 1.0.0
 

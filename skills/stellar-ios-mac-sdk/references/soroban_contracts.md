@@ -256,12 +256,12 @@ let val = try spec.nativeToXdrSCVal(val: 42, ty: .u32)  // SCValXDR.u32(42)
 |-----------|-------------|-------|
 | `.address` | `String` (G... or C...) or an account or contract `SCAddressXDR` | Auto-converts to SCAddressXDR |
 | `.muxedAddress` | `String` (G..., M..., C... or W...) or the matching `SCAddressXDR` | Auto-converts to SCAddressXDR |
-| `.u32`/`.i32`/`.u64`/`.i64` | `Int` | Negative Int throws for unsigned |
+| `.u32`/`.i32`/`.u64`/`.i64` | `Int` | An `Int` outside the type's range throws `ContractSpecError.invalidType` naming the type |
 | `.u128`/`.i128`/`.u256`/`.i256` | `Int`, `String`, or `Data` | Use `String` for values > Int.max |
 | `.string` | `String` | |
 | `.symbol` | `String` | |
 | `.bool` | `Bool` | |
-| `.bytes` / `.bytesN` | `String` (UTF-8) or `Data` | |
+| `.bytes` / `.bytesN` | `String` (UTF-8) or `Data` | `.bytesN` takes exactly its declared byte count; another length throws `ContractSpecError.invalidType` naming both lengths |
 | `.vec(...)` | `[Any]` | Element type from spec |
 | `.map(...)` | `[AnyHashable: Any]` | Key/value types from spec; entries in host key order, keys equal in that order throw `StellarSDKError.invalidArgument` |
 | `.udt(name)` | dict (struct), `Int` (enum), `NativeUnionVal` (union) | See below |
