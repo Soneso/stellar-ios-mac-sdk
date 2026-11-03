@@ -333,8 +333,15 @@ public final class AssembledTransaction: @unchecked Sendable {
         signed = clonedTx
     }
     
-    /// Submits the signed transaction to the network and polls until completion.
+    /// Submits the signed transaction to the network and polls its status until completion.
     /// Returns the final transaction status including success/failure and return value.
+    ///
+    /// Polling ends when `options.methodOptions.timeoutInSeconds` has elapsed, status requests
+    /// included; one last status request at the deadline can take up to three seconds. Failed
+    /// status requests are retried until then.
+    ///
+    /// - Throws: `AssembledTransactionError.pollInterrupted` naming the last status request
+    ///   error when the transaction has not completed by the deadline.
     public func send() async throws -> GetTransactionResponse {
         guard let signedTx = signed else {
             throw AssembledTransactionError.notYetSigned(message: "The transaction has not yet been signed. Run `sign` first, or use `signAndSend` instead.")
@@ -609,30 +616,73 @@ public final class AssembledTransaction: @unchecked Sendable {
         return false
     }
     
+    /// Polls the status of `transactionId` until it leaves NOT_FOUND or
+    /// `options.methodOptions.timeoutInSeconds` has elapsed since the poll started.
+    ///
+    /// The elapsed time includes the status requests. Each request is bounded by the remaining
+    /// time; the last one, made at the deadline, by the three second wait time. A failed request
+    /// or an RPC error response is retried until the deadline, and the timeout error names the
+    /// last one.
     private func pollStatus(transactionId:String) async throws -> GetTransactionResponse {
-        var statusResponse:GetTransactionResponse? = nil
-        var status = GetTransactionResponse.STATUS_NOT_FOUND
-        let waitTime = 3.0
-        var waited = 0.0
-        while status == GetTransactionResponse.STATUS_NOT_FOUND {
-            if waited > Double(options.methodOptions.timeoutInSeconds) {
-                throw AssembledTransactionError.pollInterrupted(message: "Interrupted after waiting \(options.methodOptions.timeoutInSeconds) seconds (options->timeoutInSeconds) for the transaction \(transactionId) to complete.")
+        let timeout = TimeInterval(options.methodOptions.timeoutInSeconds)
+        let waitTime: TimeInterval = 3.0
+        // CLOCK_MONOTONIC keeps counting while the device sleeps, like the transaction's time bounds.
+        let start = clock_gettime_nsec_np(CLOCK_MONOTONIC)
+        func remainingTime() -> TimeInterval {
+            return timeout - Double(clock_gettime_nsec_np(CLOCK_MONOTONIC) - start) / Double(NSEC_PER_SEC)
+        }
+        var lastError: String? = nil
+        while true {
+            try Task.checkCancellation()
+            var remaining = remainingTime()
+            // The sleep clamped to the deadline is the last, also when it wakes before the deadline.
+            var lastRequest = remaining <= waitTime
+            if remaining > 0 {
+                try await Task.sleep(nanoseconds: UInt64((lastRequest ? remaining : waitTime) * Double(NSEC_PER_SEC)))
             }
-            try await Task.sleep(nanoseconds: UInt64(waitTime * Double(NSEC_PER_SEC)))
-            waited += waitTime
-            let statusResponseEnum =  await server.getTransaction(transactionHash: transactionId)
-            switch statusResponseEnum {
-            case .success(let response):
-                statusResponse = response
-                status = response.status
-            case .failure(let error):
-                throw error
+            remaining = remainingTime()
+            lastRequest = lastRequest || remaining <= 0
+            let bound = lastRequest ? waitTime : remaining
+            let status = await transactionStatus(transactionId: transactionId, timeout: bound)
+            // A cancelled caller ends the request race early; it gets CancellationError, not a timeout.
+            try Task.checkCancellation()
+            switch status {
+            case .success(let response)?:
+                if response.status != GetTransactionResponse.STATUS_NOT_FOUND {
+                    return response
+                }
+            case .failure(.errorResponse(let rpcError))?:
+                lastError = "RPC error code: \(rpcError.code), message: \(rpcError.message ?? "none")"
+            case .failure(let error)?:
+                lastError = "\(error)"
+            case nil:
+                lastError = "no response within \(String(format: "%.3f", bound)) seconds"
+            }
+            if lastRequest {
+                break
             }
         }
-        guard let response = statusResponse else {
-            throw AssembledTransactionError.pollInterrupted(message: "Failed to get transaction status")
+        throw AssembledTransactionError.pollInterrupted(message: "Interrupted after waiting \(options.methodOptions.timeoutInSeconds) seconds (options->timeoutInSeconds) for the transaction \(transactionId) to complete." + (lastError.map { " Last status request error: \($0)" } ?? ""))
+    }
+
+    /// Requests the status of `transactionId`, or returns nil when no response has arrived after
+    /// `timeout` seconds; the outstanding request is cancelled then.
+    private func transactionStatus(transactionId: String, timeout: TimeInterval) async -> GetTransactionResponseEnum? {
+        let server = self.server
+        // The first child to finish wins: the request, or the timer with nil.
+        return await withTaskGroup(of: GetTransactionResponseEnum?.self) { group in
+            group.addTask {
+                await server.getTransaction(transactionHash: transactionId)
+            }
+            group.addTask {
+                // Task.sleep counts UInt64 nanoseconds; the bound stops at Int64.max of them, about 292 years.
+                let nanoseconds = min(max(timeout, 0) * Double(NSEC_PER_SEC), Double(Int64.max))
+                try? await Task.sleep(nanoseconds: UInt64(nanoseconds))
+                return nil
+            }
+            defer { group.cancelAll() }
+            return await group.next() ?? nil
         }
-        return response
     }
     
     private static func buildFootprintRestoreTransaction(options:AssembledTransactionOptions, transactionData:SorobanTransactionDataXDR, fee:UInt32) async throws -> AssembledTransaction {
