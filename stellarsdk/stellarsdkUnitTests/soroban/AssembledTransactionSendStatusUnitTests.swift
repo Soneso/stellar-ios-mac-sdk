@@ -19,9 +19,10 @@ final class AssembledTransactionSendStatusUnitTests: XCTestCase {
     var keyPair: KeyPair!
     var options: AssembledTransactionOptions!
 
-    /// Counts getTransaction polls served by the mock.
+    /// Counts getTransaction polls served by the mock, and the mock's stopped loads before the first.
     private final class PollCounter: @unchecked Sendable {
         var count = 0
+        var stopsBeforeFirstPoll = 0
     }
     private var pollCounter = PollCounter()
 
@@ -56,9 +57,10 @@ final class AssembledTransactionSendStatusUnitTests: XCTestCase {
     // MARK: - Mock setup
 
     /// Serves the whole build-sign-send flow. sendTransaction answers with
-    /// [sendResult]; every getTransaction poll answers SUCCESS and counts
-    /// into pollCounter.
-    private func setupSendFlowMock(sendResult: String) {
+    /// [sendResult]; every getTransaction poll counts into pollCounter and answers
+    /// SUCCESS, or what [pollResponse] returns for the poll number and the mock.
+    @discardableResult
+    private func setupSendFlowMock(sendResult: String, pollResponse: ((Int, RequestMock) -> String?)? = nil) -> RequestMock {
         let counter = pollCounter
         let mock = RequestMock(
             host: "soroban-testnet.stellar.org",
@@ -75,6 +77,8 @@ final class AssembledTransactionSendStatusUnitTests: XCTestCase {
                 return nil
             }
             mock.statusCode = 200
+            mock.stalls = false
+            mock.bodyParts = nil
             if bodyString.contains("simulateTransaction") {
                 return """
                 {
@@ -97,6 +101,12 @@ final class AssembledTransactionSendStatusUnitTests: XCTestCase {
             }
             if bodyString.contains("getTransaction") {
                 counter.count += 1
+                if counter.count == 1 {
+                    counter.stopsBeforeFirstPoll = mock.counts.stops
+                }
+                if let pollResponse = pollResponse {
+                    return pollResponse(counter.count, mock)
+                }
                 return """
                 {
                     "jsonrpc": "2.0",
@@ -117,6 +127,7 @@ final class AssembledTransactionSendStatusUnitTests: XCTestCase {
             return nil
         }
         ServerMock.add(mock: mock)
+        return mock
     }
 
     private func accountLedgerEntriesJson() -> String {
@@ -286,6 +297,199 @@ final class AssembledTransactionSendStatusUnitTests: XCTestCase {
             XCTAssertTrue(message.contains(diagnosticEventXdr), "unexpected message: \(message)")
         }
         XCTAssertEqual(pollCounter.count, 0)
+    }
+
+    // MARK: - status poll deadline
+
+    private func statusResult(_ status: String) -> String {
+        return """
+        {"jsonrpc": "2.0", "id": 1, "result": {"status": "\(status)", "ledger": 123, "latestLedger": 12345, "latestLedgerCloseTime": "1234567890", "oldestLedger": 100}}
+        """
+    }
+
+    private func rpcErrorResult(code: Int, message: String) -> String {
+        return "{\"jsonrpc\": \"2.0\", \"id\": 1, \"error\": {\"code\": \(code), \"message\": \"\(message)\"}}"
+    }
+
+    private func pollingTransaction(timeout: UInt64, pollResponse: @escaping (Int, RequestMock) -> String?) async throws -> (AssembledTransaction, RequestMock) {
+        options = AssembledTransactionOptions(clientOptions: options.clientOptions,
+                                              methodOptions: MethodOptions(timeoutInSeconds: timeout),
+                                              method: "increment")
+        let mock = setupSendFlowMock(sendResult: sendTransactionResult(status: "PENDING"), pollResponse: pollResponse)
+        return (try await buildSignedTransaction(), mock)
+    }
+
+    /// Sends `tx`, expects `pollInterrupted` with the message for `timeout` and `lastError`,
+    /// and returns the seconds `send()` took.
+    private func sendExpectingInterrupt(_ tx: AssembledTransaction, timeout: UInt64, lastError: String?,
+                                        file: StaticString = #filePath, line: UInt = #line) async -> TimeInterval {
+        let started = Date()
+        do {
+            let response = try await tx.send()
+            XCTFail("expected pollInterrupted, got status \(response.status)", file: file, line: line)
+        } catch AssembledTransactionError.pollInterrupted(let message) {
+            let expected = "Interrupted after waiting \(timeout) seconds (options->timeoutInSeconds) for the transaction a1b2c3d4e5f6 to complete."
+                + (lastError.map { " Last status request error: \($0)" } ?? "")
+            XCTAssertEqual(message, expected, file: file, line: line)
+        } catch {
+            XCTFail("expected pollInterrupted, got \(error)", file: file, line: line)
+        }
+        return Date().timeIntervalSince(started)
+    }
+
+    /// The loads of `mock` stopped since the first poll, read once `expected` is reached or after a
+    /// second; URLSession stops a cancelled load shortly after the request returns.
+    private func stopsSinceFirstPoll(_ mock: RequestMock, expected: Int) async -> Int {
+        let deadline = Date().addingTimeInterval(1)
+        while mock.counts.stops - pollCounter.stopsBeforeFirstPoll < expected && Date() < deadline {
+            try? await Task.sleep(nanoseconds: 10_000_000)
+        }
+        return mock.counts.stops - pollCounter.stopsBeforeFirstPoll
+    }
+
+    func testPollRetriesTransportFailureAndReturnsSuccess() async throws {
+        // The first poll at 3 s has 3 s left, so it stays a round request under a late wake-up.
+        let (tx, _) = try await pollingTransaction(timeout: 6) { poll, mock in
+            if poll == 1 {
+                mock.statusCode = 503
+                return "temporary status failure"
+            }
+            return self.statusResult("SUCCESS")
+        }
+        let response = try await tx.send()
+        XCTAssertEqual(response.status, GetTransactionResponse.STATUS_SUCCESS)
+        XCTAssertEqual(response.ledger, 123)
+        XCTAssertEqual(pollCounter.count, 2)
+    }
+
+    func testPollRetriesErrorResponseAndReturnsSuccess() async throws {
+        let (tx, _) = try await pollingTransaction(timeout: 6) { poll, _ in
+            return poll == 1 ? self.rpcErrorResult(code: -32001, message: "status error") : self.statusResult("SUCCESS")
+        }
+        let response = try await tx.send()
+        XCTAssertEqual(response.status, GetTransactionResponse.STATUS_SUCCESS)
+        XCTAssertEqual(pollCounter.count, 2)
+    }
+
+    func testPollNotFoundUntilDeadlineNamesLastError() async throws {
+        let (tx, _) = try await pollingTransaction(timeout: 6) { poll, _ in
+            return poll == 1 ? self.rpcErrorResult(code: -32001, message: "status error 1") : self.statusResult("NOT_FOUND")
+        }
+        // Polls at 3 s, bounded by the 3 s left, and at the 6 s deadline.
+        let elapsed = await sendExpectingInterrupt(tx, timeout: 6, lastError: "RPC error code: -32001, message: status error 1")
+        XCTAssertEqual(pollCounter.count, 2)
+        XCTAssertGreaterThanOrEqual(elapsed, 6)
+        XCTAssertLessThan(elapsed, 8.5)
+    }
+
+    func testPollZeroTimeoutMakesOneImmediateRequest() async throws {
+        let (tx, _) = try await pollingTransaction(timeout: 0) { _, _ in self.statusResult("NOT_FOUND") }
+        let elapsed = await sendExpectingInterrupt(tx, timeout: 0, lastError: nil)
+        XCTAssertEqual(pollCounter.count, 1)
+        XCTAssertLessThan(elapsed, 2)
+    }
+
+    func testPollCancelledCallerDuringFinalRequestGetsCancellationError() async throws {
+        let finalRequestStalls = XCTestExpectation(description: "the final status request arrived and stalls")
+        let (tx, mock) = try await pollingTransaction(timeout: 1) { _, mock in
+            mock.stalls = true
+            finalRequestStalls.fulfill()
+            return nil
+        }
+        let send = Task { try await tx.send() }
+        // The only request is the final one: it starts at the 1 s deadline, stalls, and its bound ends it 3 s later.
+        // The expectation orders the mock's counter write before the read below.
+        await fulfillment(of: [finalRequestStalls], timeout: 10)
+        XCTAssertEqual(pollCounter.count, 1)
+        let cancelled = Date()
+        send.cancel()
+        let result = await send.result
+        let latency = Date().timeIntervalSince(cancelled)
+        guard case .failure(let error) = result else {
+            return XCTFail("expected CancellationError, got a response")
+        }
+        XCTAssertTrue(error is CancellationError, "expected CancellationError, got \(error)")
+        let stops = await stopsSinceFirstPoll(mock, expected: 1)
+        XCTAssertEqual(stops, 1)
+        XCTAssertLessThan(latency, 2)
+    }
+
+    func testPollReturnsFailed() async throws {
+        let (tx, _) = try await pollingTransaction(timeout: 1) { _, _ in self.statusResult("FAILED") }
+        let response = try await tx.send()
+        XCTAssertEqual(response.status, GetTransactionResponse.STATUS_FAILED)
+        XCTAssertEqual(response.ledger, 123)
+        XCTAssertEqual(pollCounter.count, 1)
+    }
+
+    func testPollUnderALargeTimeoutReturnsSuccess() async throws {
+        let (tx, _) = try await pollingTransaction(timeout: UInt64.max / 2) { _, _ in self.statusResult("SUCCESS") }
+        let response = try await tx.send()
+        XCTAssertEqual(response.status, GetTransactionResponse.STATUS_SUCCESS)
+        XCTAssertEqual(pollCounter.count, 1)
+    }
+
+    func testStatusTimerNanosecondsConvertsTimeouts() {
+        XCTAssertEqual(AssembledTransaction.statusTimerNanoseconds(for: 3), 3_000_000_000)
+        XCTAssertEqual(AssembledTransaction.statusTimerNanoseconds(for: 0.0000000019), 1)
+        XCTAssertEqual(AssembledTransaction.statusTimerNanoseconds(for: 0), 0)
+        XCTAssertEqual(AssembledTransaction.statusTimerNanoseconds(for: -1), 0)
+        XCTAssertEqual(AssembledTransaction.statusTimerNanoseconds(for: TimeInterval.nan), 0)
+        XCTAssertEqual(AssembledTransaction.statusTimerNanoseconds(for: -TimeInterval.infinity), 0)
+    }
+
+    func testStatusTimerNanosecondsStopsAtTwoToThe62() {
+        let cap: UInt64 = 1 << 62
+        for timeout in [TimeInterval(UInt64.max / 2), TimeInterval.greatestFiniteMagnitude, TimeInterval.infinity] {
+            let nanoseconds = AssembledTransaction.statusTimerNanoseconds(for: timeout)
+            XCTAssertEqual(nanoseconds, cap, "timeout \(timeout)")
+            XCTAssertLessThanOrEqual(nanoseconds, UInt64(Int64.max), "timeout \(timeout)")
+        }
+    }
+
+    func testPollCancelsStalledStatusRequestsAtTheirBounds() async throws {
+        let (tx, mock) = try await pollingTransaction(timeout: 4) { _, mock in
+            mock.stalls = true
+            return nil
+        }
+        // The round request is bounded by the one second left, the last request by the wait time.
+        let elapsed = await sendExpectingInterrupt(tx, timeout: 4, lastError: "no response within 3.000 seconds")
+        XCTAssertEqual(pollCounter.count, 2)
+        let stops = await stopsSinceFirstPoll(mock, expected: 2)
+        XCTAssertEqual(stops, 2)
+        XCTAssertGreaterThanOrEqual(elapsed, 7)
+        XCTAssertLessThan(elapsed, 9.5)
+    }
+
+    func testPollCancelsTricklingStatusResponseAtTheBound() async throws {
+        let body = Data(statusResult("NOT_FOUND").utf8)
+        let size = body.count / 20
+        let parts = stride(from: 0, to: body.count, by: size).map { body.subdata(in: $0..<min($0 + size, body.count)) }
+        let (tx, mock) = try await pollingTransaction(timeout: 1) { _, mock in
+            mock.bodyParts = parts
+            mock.partDelay = 0.5
+            return nil
+        }
+        let elapsed = await sendExpectingInterrupt(tx, timeout: 1, lastError: "no response within 3.000 seconds")
+        XCTAssertEqual(pollCounter.count, 1)
+        let stops = await stopsSinceFirstPoll(mock, expected: 1)
+        XCTAssertEqual(stops, 1)
+        XCTAssertLessThan(mock.counts.sentParts, parts.count)
+        XCTAssertGreaterThanOrEqual(elapsed, 4)
+        XCTAssertLessThan(elapsed, 7)
+    }
+
+    func testPollCountsSlowNotFoundAsOnePoll() async throws {
+        let (tx, _) = try await pollingTransaction(timeout: 6) { _, mock in
+            mock.bodyParts = [Data(self.statusResult("NOT_FOUND").utf8)]
+            mock.partDelay = 0.5
+            return nil
+        }
+        // Polls at 3 s and at the 6 s deadline, each answered after half a second.
+        let elapsed = await sendExpectingInterrupt(tx, timeout: 6, lastError: nil)
+        XCTAssertEqual(pollCounter.count, 2)
+        XCTAssertGreaterThanOrEqual(elapsed, 6.5)
+        XCTAssertLessThan(elapsed, 8.5)
     }
 
     // MARK: - transaction time bounds

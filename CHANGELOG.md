@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- `AssembledTransaction.send` and `signAndSend` end status polling when `timeoutInSeconds` has elapsed, including the time of each status request, and cancel a status request that outlasts the remaining time; a last status request at the deadline can take three seconds. They retry failed status requests and RPC error responses and name the last one in `AssembledTransactionError.pollInterrupted`.
+
 ## [3.14.0] - 2026-10-25
 
 ### Added
