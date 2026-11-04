@@ -429,6 +429,24 @@ final class AssembledTransactionSendStatusUnitTests: XCTestCase {
         XCTAssertEqual(pollCounter.count, 1)
     }
 
+    func testStatusTimerNanosecondsConvertsTimeouts() {
+        XCTAssertEqual(AssembledTransaction.statusTimerNanoseconds(for: 3), 3_000_000_000)
+        XCTAssertEqual(AssembledTransaction.statusTimerNanoseconds(for: 0.0000000019), 1)
+        XCTAssertEqual(AssembledTransaction.statusTimerNanoseconds(for: 0), 0)
+        XCTAssertEqual(AssembledTransaction.statusTimerNanoseconds(for: -1), 0)
+        XCTAssertEqual(AssembledTransaction.statusTimerNanoseconds(for: TimeInterval.nan), 0)
+        XCTAssertEqual(AssembledTransaction.statusTimerNanoseconds(for: -TimeInterval.infinity), 0)
+    }
+
+    func testStatusTimerNanosecondsStopsAtTwoToThe62() {
+        let cap: UInt64 = 1 << 62
+        for timeout in [TimeInterval(UInt64.max / 2), TimeInterval.greatestFiniteMagnitude, TimeInterval.infinity] {
+            let nanoseconds = AssembledTransaction.statusTimerNanoseconds(for: timeout)
+            XCTAssertEqual(nanoseconds, cap, "timeout \(timeout)")
+            XCTAssertLessThanOrEqual(nanoseconds, UInt64(Int64.max), "timeout \(timeout)")
+        }
+    }
+
     func testPollCancelsStalledStatusRequestsAtTheirBounds() async throws {
         let (tx, mock) = try await pollingTransaction(timeout: 4) { _, mock in
             mock.stalls = true

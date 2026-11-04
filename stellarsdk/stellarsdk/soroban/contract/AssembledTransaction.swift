@@ -637,11 +637,12 @@ public final class AssembledTransaction: @unchecked Sendable {
             var remaining = remainingTime()
             // The sleep clamped to the deadline is the last, also when it wakes before the deadline.
             var lastRequest = remaining <= waitTime
-            if remaining > 0 {
+            // The zero is typed in these two comparisons; a bare literal 0 selects the BDouble operators of this module.
+            if remaining > TimeInterval(0) {
                 try await Task.sleep(nanoseconds: UInt64((lastRequest ? remaining : waitTime) * Double(NSEC_PER_SEC)))
             }
             remaining = remainingTime()
-            lastRequest = lastRequest || remaining <= 0
+            lastRequest = lastRequest || remaining <= TimeInterval(0)
             let bound = lastRequest ? waitTime : remaining
             let status = await transactionStatus(transactionId: transactionId, timeout: bound)
             // A cancelled caller ends the request race early; it gets CancellationError, not a timeout.
@@ -675,14 +676,25 @@ public final class AssembledTransaction: @unchecked Sendable {
                 await server.getTransaction(transactionHash: transactionId)
             }
             group.addTask {
-                // Task.sleep counts UInt64 nanoseconds; the bound stops at Int64.max of them, about 292 years.
-                let nanoseconds = min(max(timeout, 0) * Double(NSEC_PER_SEC), Double(Int64.max))
-                try? await Task.sleep(nanoseconds: UInt64(nanoseconds))
+                try? await Task.sleep(nanoseconds: AssembledTransaction.statusTimerNanoseconds(for: timeout))
                 return nil
             }
             defer { group.cancelAll() }
             return await group.next() ?? nil
         }
+    }
+
+    /// The nanoseconds the status request timer sleeps for `timeout` seconds: 0 when `timeout` is not
+    /// positive, `timeout` in nanoseconds rounded down, and at most 2^62 nanoseconds, about 146 years.
+    static func statusTimerNanoseconds(for timeout: TimeInterval) -> UInt64 {
+        // Task.sleep(nanoseconds:) takes a UInt64, and the OS runtimes before macOS 26 and iOS 26 read a
+        // count of 2^63 or more as a negative delay and return at once. 2^62 is exact as a Double.
+        let cap: UInt64 = 1 << 62
+        // The zero is typed for the reason given in pollStatus.
+        guard timeout > TimeInterval(0) else {
+            return 0
+        }
+        return UInt64(min(timeout * Double(NSEC_PER_SEC), Double(cap)))
     }
     
     private static func buildFootprintRestoreTransaction(options:AssembledTransactionOptions, transactionData:SorobanTransactionDataXDR, fee:UInt32) async throws -> AssembledTransaction {
