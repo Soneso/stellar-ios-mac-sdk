@@ -97,6 +97,104 @@ class ContractSpecUnitTests: XCTestCase {
             XCTFail("Expected i64 SCVal")
         }
     }
+
+    func testFixedWidthIntegerSourcesAndStrings() throws {
+        let zero64 = "0000000000000000"
+        try checkFixedWidth(UInt32.self, .u32, "u32", tag: "00000003", minHex: "00000000", maxHex: "ffffffff",
+                            outside: ["-1", "4294967296"])
+        try checkFixedWidth(Int32.self, .i32, "i32", tag: "00000004", minHex: "80000000", maxHex: "7fffffff",
+                            outside: ["-2147483649", "2147483648"])
+        try checkFixedWidth(UInt64.self, .u64, "u64", tag: "00000005", minHex: zero64, maxHex: "ffffffffffffffff",
+                            outside: ["-1", "18446744073709551616"])
+        try checkFixedWidth(Int64.self, .i64, "i64", tag: "00000006", minHex: "8000000000000000", maxHex: "7fffffffffffffff",
+                            outside: ["-9223372036854775809", "9223372036854775808"])
+        try checkFixedWidth(UInt64.self, .timepoint, "timepoint", tag: "00000007", minHex: zero64, maxHex: "ffffffffffffffff",
+                            outside: ["-1", "18446744073709551616"])
+        try checkFixedWidth(UInt64.self, .duration, "duration", tag: "00000008", minHex: zero64, maxHex: "ffffffffffffffff",
+                            outside: ["-1", "18446744073709551616"])
+
+        // The integer initializers read a leading sign and leading zeros.
+        let spec = ContractSpec(entries: [])
+        let accepted: [(String, SCSpecTypeDefXDR, String)] = [
+            ("+1", .u64, "000000050000000000000001"), ("-0", .u64, "000000050000000000000000"),
+            ("01", .u64, "000000050000000000000001"), ("+1", .i32, "0000000400000001"),
+            ("-0", .i32, "0000000400000000"), ("01", .i32, "0000000400000001"),
+        ]
+        for (text, ty, hex) in accepted {
+            let encoded = try spec.nativeToXdrSCVal(val: text, ty: ty).xdrEncoded ?? ""
+            XCTAssertEqual(Data(base64Encoded: encoded)?.base16EncodedString(), hex, "\"\(text)\" for \(ty)")
+        }
+    }
+
+    /// Converts 0 and both bounds of `T` from every integer source type that holds them and from
+    /// decimal strings, and expects the XDR bytes `tag` followed by the value; one past each bound,
+    /// as a source value where the source type holds it and as a string, and non-numeric strings
+    /// throw `invalidType` naming the value and `name`.
+    private func checkFixedWidth<T: FixedWidthInteger>(_: T.Type, _ ty: SCSpecTypeDefXDR, _ name: String, tag: String,
+                                                       minHex: String, maxHex: String, outside: [String],
+                                                       line: UInt = #line) throws {
+        let spec = ContractSpec(entries: [])
+        let zeroHex = String(repeating: "0", count: T.bitWidth / 4)
+        func encoded(_ value: Any) throws -> String? {
+            return Data(base64Encoded: try spec.nativeToXdrSCVal(val: value, ty: ty).xdrEncoded ?? "")?.base16EncodedString()
+        }
+        func check<S: FixedWidthInteger>(_: S.Type) throws {
+            for (bound, valueHex) in [(T.zero, zeroHex), (T.min, minHex), (T.max, maxHex)] {
+                guard let input = S(exactly: bound) else { continue }
+                XCTAssertEqual(try encoded(input), tag + valueHex, "\(S.self) \(input) for \(name)", line: line)
+            }
+            var past: [S] = []
+            if let low = S(exactly: T.min), low > S.min { past.append(low - 1) }
+            if let high = S(exactly: T.max), high < S.max { past.append(high + 1) }
+            for input in past {
+                assertInvalidType(input, ty, "Integer value \(input) does not fit \(name)", line: line)
+            }
+        }
+        try check(Int.self)
+        try check(UInt.self)
+        try check(Int64.self)
+        try check(UInt64.self)
+        try check(Int32.self)
+        try check(UInt32.self)
+        for (text, valueHex) in [("0", zeroHex), ("\(T.min)", minHex), ("\(T.max)", maxHex)] {
+            XCTAssertEqual(try encoded(text), tag + valueHex, "\"\(text)\" for \(name)", line: line)
+        }
+        for text in outside + ["", "1.5", " 1", "1e2", "abc"] {
+            assertInvalidType(text, ty, "String value \"\(text)\" is not a decimal integer that fits \(name)", line: line)
+        }
+    }
+
+    func testFixedWidthHelperValuesRoundTrip() throws {
+        let spec = ContractSpec(entries: [])
+        let cases: [(SCValXDR, SCSpecTypeDefXDR, (SCValXDR) -> Any?)] = [
+            (.u32(.max), .u32, { $0.u32 }), (.i32(.min), .i32, { $0.i32 }),
+            (.u64(.max), .u64, { $0.u64 }), (.i64(.min), .i64, { $0.i64 }),
+            (.timepoint(.max), .timepoint, { $0.timepoint }), (.duration(.max), .duration, { $0.duration }),
+        ]
+        for (original, ty, helper) in cases {
+            let decoded = try SCValXDR.fromXdr(base64: original.xdrEncoded!)
+            for value in [helper(decoded), decoded.toNative()] {
+                let unwrapped = try XCTUnwrap(value, "\(ty)")
+                XCTAssertEqual(try spec.nativeToXdrSCVal(val: unwrapped, ty: ty).xdrEncoded, original.xdrEncoded, "\(ty)")
+            }
+            // An encoded SCValXDR passes through unchanged, whatever the parameter type.
+            XCTAssertEqual(try spec.nativeToXdrSCVal(val: decoded, ty: .u32).xdrEncoded, original.xdrEncoded)
+        }
+    }
+
+    /// Measures whether the fixed-width integers inside `Any` pass `as? Int` on this toolchain.
+    func testFixedWidthIntegersInsideAnyDoNotCastToInt() {
+        let values: [Any] = [UInt64(5), Int64(5), UInt32(5), Int32(5)]
+        for value in values {
+            XCTAssertNil(value as? Int, "\(type(of: value))")
+        }
+    }
+
+    func testIntegerStringErrorNeverEchoesASecretSeed() throws {
+        let seed = try KeyPair.generateRandomKeyPair().secretSeed!
+        assertInvalidType(seed, .timepoint, "String value \"[redacted seed]\" is not a decimal integer that fits timepoint")
+        assertInvalidType("amount \(seed.lowercased())", .u64, "String value \"amount [redacted seed]\" is not a decimal integer that fits u64")
+    }
     
     func testContractSpecStringTypes() throws {
         let spec = ContractSpec(entries: [])

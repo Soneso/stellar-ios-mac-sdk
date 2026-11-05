@@ -262,6 +262,10 @@ public final class ContractSpec: Sendable {
     /// - Parameters:
     ///   - val: Native Swift value
     ///   - ty: The expected type
+    ///
+    /// A u32, i32, u64, i64, timepoint or duration parameter takes an `Int`, `UInt`, `Int64`,
+    /// `UInt64`, `Int32` or `UInt32` that the type holds, or a decimal `String` that the
+    /// type's `init?(_:radix:)` reads.
     /// - Returns: The converted SCValXDR; maps and structs carry their entries in the
     ///   Soroban host's key order (see `SCValXDR.sortedMap(_:)`).
     /// - Throws: ContractSpecError if conversion fails; `StellarSDKError.invalidArgument`
@@ -317,6 +321,9 @@ public final class ContractSpec: Sendable {
         }
         
         // Handle numbers
+        if let value = val, let scVal = try handleFixedWidthIntConversion(value: value, ty: ty) {
+            return scVal
+        }
         if let intVal = val as? Int {
             return try handleIntConversion(intVal: intVal, ty: ty)
         }
@@ -527,29 +534,53 @@ public final class ContractSpec: Sendable {
         }
     }
     
+    /// Converts an integer or a decimal string for a u32, i32, u64, i64, timepoint or duration
+    /// parameter; nil for any other parameter type and for a value that is neither.
+    ///
+    /// An `Int`, `UInt`, `Int64`, `UInt64`, `Int32` or `UInt32` converts when the parameter type
+    /// holds it exactly, a `String` when the parameter type's `init?(_:radix:)` reads it.
+    private func handleFixedWidthIntConversion(value: Any, ty: SCSpecTypeDefXDR) throws -> SCValXDR? {
+        var integer: (any BinaryInteger)? = nil
+        var text: String? = nil
+        switch value {
+        case let value as Int: integer = value
+        case let value as UInt: integer = value
+        case let value as Int64: integer = value
+        case let value as UInt64: integer = value
+        case let value as Int32: integer = value
+        case let value as UInt32: integer = value
+        case let value as String: text = value
+        default: return nil
+        }
+        func convert<T: FixedWidthInteger>(_ name: String, _ scVal: (T) -> SCValXDR) throws -> SCValXDR {
+            if let integer = integer {
+                guard let converted = T(exactly: integer) else {
+                    throw ContractSpecError.invalidType(message: "Integer value \(integer) does not fit \(name)")
+                }
+                return scVal(converted)
+            }
+            let text = text ?? ""
+            guard let converted = T(text) else {
+                // A secret seed given by mistake is never echoed.
+                let shown = XdrJson.preview(text.replacingOccurrences(
+                    of: "S[A-Z2-7]{55}", with: "[redacted seed]", options: [.regularExpression, .caseInsensitive]))
+                throw ContractSpecError.invalidType(message: "String value \"\(shown)\" is not a decimal integer that fits \(name)")
+            }
+            return scVal(converted)
+        }
+        switch ty {
+        case .u32: return try convert("u32", SCValXDR.u32)
+        case .i32: return try convert("i32", SCValXDR.i32)
+        case .u64: return try convert("u64", SCValXDR.u64)
+        case .i64: return try convert("i64", SCValXDR.i64)
+        case .timepoint: return try convert("timepoint", SCValXDR.timepoint)
+        case .duration: return try convert("duration", SCValXDR.duration)
+        default: return nil
+        }
+    }
+
     private func handleIntConversion(intVal: Int, ty: SCSpecTypeDefXDR) throws -> SCValXDR {
         switch ty {
-        case .u32:
-            guard let value = UInt32(exactly: intVal) else {
-                throw ContractSpecError.invalidType(message: "Integer value \(intVal) does not fit u32")
-            }
-            return SCValXDR.u32(value)
-            
-        case .i32:
-            guard let value = Int32(exactly: intVal) else {
-                throw ContractSpecError.invalidType(message: "Integer value \(intVal) does not fit i32")
-            }
-            return SCValXDR.i32(value)
-            
-        case .u64:
-            guard intVal >= 0 else {
-                throw ContractSpecError.invalidType(message: "Negative integer value provided for u64")
-            }
-            return SCValXDR.u64(UInt64(intVal))
-            
-        case .i64:
-            return SCValXDR.i64(Int64(intVal))
-            
         case .u128:
             guard intVal >= 0 else {
                 throw ContractSpecError.invalidType(message: "Negative integer value provided for u128")
