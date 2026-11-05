@@ -44,7 +44,14 @@ public struct LedgerEntry: Decodable, Sendable {
         ext = try values.decodeIfPresent(String.self, forKey: .ext)
     }
 
-    /// Converst the key to a SCValXDR if valid.
+    /// The key decoded as a LedgerKeyXDR, or nil if decoding fails.
+    public var ledgerKeyXdr: LedgerKeyXDR? {
+        return try? LedgerKeyXDR(fromBase64: key)
+    }
+
+    /// The key bytes decoded as an `SCValXDR`. The key is a `LedgerKeyXDR`, so the result
+    /// does not represent the key; `ledgerKeyXdr` decodes it.
+    @available(*, deprecated, message: "keyXdrValue decodes the LedgerKey as an SCValXDR; use ledgerKeyXdr.")
     public var keyXdrValue: SCValXDR? {
         return try? SCValXDR.fromXdr(base64: key)
     }

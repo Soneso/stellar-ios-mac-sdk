@@ -386,6 +386,57 @@ final class SorobanServerAdditionalUnitTests: XCTestCase {
             XCTAssertEqual(entries.latestLedger, 1000100)
             XCTAssertNotNil(entries.entries[0].xdr)
             XCTAssertEqual(entries.entries[0].ext, "AAAAAA==")
+            guard case .contractData(let dataKey)? = entries.entries[0].ledgerKeyXdr else {
+                XCTFail("expected a contract data ledger key, got \(String(describing: entries.entries[0].ledgerKeyXdr))")
+                return
+            }
+            XCTAssertEqual(dataKey.contract.contractId, "5859cdc4b4992a547157ea4ee0e24245e5d29d5def1656f593920810fef1c7e6")
+            guard case .ledgerKeyContractInstance = dataKey.key else {
+                XCTFail("expected the contract instance key, got \(dataKey.key)")
+                return
+            }
+            XCTAssertEqual(dataKey.durability, .persistent)
+        case .failure(let error):
+            XCTFail("Expected success, got error: \(error)")
+        }
+    }
+
+    func testGetLedgerEntriesAccountKey() async {
+        let mockResponse = """
+        {
+            "jsonrpc": "2.0",
+            "id": "test-id",
+            "result": {
+                "entries": [
+                    {
+                        "key": "AAAAAAAAAABi/B0L0JGythwN1lY0aypo19NHxvLCyO5tBEcCVvwF9w==",
+                        "xdr": "AAAAAA==",
+                        "lastModifiedLedgerSeq": 1000000
+                    }
+                ],
+                "latestLedger": 1000100
+            }
+        }
+        """
+
+        let mock = RequestMock(
+            host: testHost,
+            path: "/",
+            httpMethod: "POST",
+            mockHandler: { _, _ in mockResponse }
+        )
+        ServerMock.add(mock: mock)
+
+        let response = await server.getLedgerEntries(base64EncodedKeys: ["test_key"])
+
+        switch response {
+        case .success(let entries):
+            XCTAssertEqual(entries.entries.count, 1)
+            guard case .account(let accountKey)? = entries.entries[0].ledgerKeyXdr else {
+                XCTFail("expected an account ledger key, got \(String(describing: entries.entries[0].ledgerKeyXdr))")
+                return
+            }
+            XCTAssertEqual(accountKey.accountID.accountId, "GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H")
         case .failure(let error):
             XCTFail("Expected success, got error: \(error)")
         }
