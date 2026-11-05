@@ -595,9 +595,14 @@ class SorobanTest: XCTestCase {
         switch ledgerEntriesResponseEnum {
         case .success(let ledgerResponse):
             XCTAssert(Int(exactly:ledgerResponse.latestLedger)! > 0)
-            XCTAssertNotNil(ledgerResponse.entries.first?.keyXdrValue)
             XCTAssertNotNil(ledgerResponse.entries.first?.valueXdr)
             XCTAssertEqual(ledgerResponse.entries.first?.ext, "AAAAAA==")
+            let ledgerKey = ledgerResponse.entries.first?.ledgerKeyXdr
+            XCTAssertEqual(ledgerKey?.xdrEncoded, contractDataKey)
+            guard case .contractData? = ledgerKey else {
+                XCTFail("expected a contract data ledger key, got \(String(describing: ledgerKey))")
+                return
+            }
         case .failure(let error):
             self.printError(error: error)
             XCTFail()

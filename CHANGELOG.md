@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- `LedgerEntry.ledgerKeyXdr` returns the entry key of a `getLedgerEntries` response decoded as a `LedgerKeyXDR`.
+
+### Deprecated
+- `LedgerEntry.keyXdrValue`, which decodes the ledger key as an `SCValXDR`; use `ledgerKeyXdr`.
+
 ### Fixed
 - `AssembledTransaction.send` and `signAndSend` end status polling when `timeoutInSeconds` has elapsed, including the time of each status request, and cancel a status request that outlasts the remaining time; a last status request at the deadline can take three seconds. They retry failed status requests and RPC error responses and name the last one in `AssembledTransactionError.pollInterrupted`.
 - `ContractSpec.nativeToXdrSCVal` converts timepoint and duration arguments and takes an `Int`, `UInt`, `Int64`, `UInt64`, `Int32`, `UInt32` or decimal `String` for u32, i32, u64, i64, timepoint and duration, so the values the `SCValXDR` helpers return convert back; a value outside the type throws `ContractSpecError.invalidType` naming the value and the type.
