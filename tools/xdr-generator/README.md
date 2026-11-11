@@ -4,7 +4,7 @@ Generates Swift XDR types from Stellar's `.x` definition files using the [xdrgen
 
 ## Prerequisites
 
-- Ruby 3.x
+- Ruby 3.2 or later
 - Bundler (`gem install bundler`)
 - Docker (for Makefile targets)
 
