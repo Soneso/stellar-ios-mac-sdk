@@ -109,7 +109,8 @@ extension SCValXDR {
         for (previous, next) in zip(sorted, sorted.dropFirst())
         where compareScValHostOrder(previous.key, next.key) == 0 {
             let key = (try? next.key.toXdrJson()) ?? String(describing: next.key)
-            throw StellarSDKError.invalidArgument(message: "Duplicate ScMap key: \(key)")
+            throw StellarSDKError.invalidArgument(
+                message: "Duplicate ScMap key: \(SecretSeedRedaction.redactingSecretSeeds(in: key))")
         }
         return .map(sorted)
     }

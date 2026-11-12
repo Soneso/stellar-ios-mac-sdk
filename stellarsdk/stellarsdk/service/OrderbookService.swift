@@ -81,6 +81,9 @@ public class OrderbookService: @unchecked Sendable {
     /// - Parameter limit: Optional maximum number of bids/asks to return. Default: 20
     /// - Returns: OrderbookResponseEnum with bids and asks or error
     open func getOrderbook(sellingAssetType:String, sellingAssetCode:String? = nil, sellingAssetIssuer:String? = nil, buyingAssetType:String, buyingAssetCode:String? = nil, buyingAssetIssuer:String? = nil, limit:Int? = nil) async -> OrderbookResponseEnum {
+        if let refusal = ServiceHelper.secretSeedRefusal(["sellingAssetIssuer": sellingAssetIssuer, "buyingAssetIssuer": buyingAssetIssuer]) {
+            return .failure(error: refusal)
+        }
         
         var requestPath = "/order_book"
         var params = Dictionary<String,String>()
@@ -134,6 +137,9 @@ public class OrderbookService: @unchecked Sendable {
                         let buyingAssetIssuer,
                         let limit,
                         let cursor):
+            if let refusal = ServiceHelper.secretSeedRefusal(["sellingAssetIssuer": sellingAssetIssuer, "buyingAssetIssuer": buyingAssetIssuer]) {
+                return OrderbookStreamItem(failure: refusal)
+            }
             
             var params = Dictionary<String,String>()
             params["selling_asset_type"] = sellingAssetType

@@ -51,6 +51,9 @@ import Foundation
 public final class AccountDataStreamItem: Sendable {
     private let streamingHelper: StreamingHelper
     private let requestUrl: String
+    /// The error every receiver is given instead of a connection. Nil on a stream that has
+    /// an endpoint to connect to.
+    private let failure: HorizonRequestError?
 
     /// Creates a new account data stream for the specified Horizon API endpoint.
     ///
@@ -58,11 +61,21 @@ public final class AccountDataStreamItem: Sendable {
     public init(requestUrl:String) {
         streamingHelper = StreamingHelper()
         self.requestUrl = requestUrl
+        self.failure = nil
     }
 
     init(requestUrl: String, streamingHelper: StreamingHelper) {
         self.streamingHelper = streamingHelper
         self.requestUrl = requestUrl
+        self.failure = nil
+    }
+
+    /// Creates a stream that opens no connection and hands `failure` to every receiver,
+    /// for a request the SDK refuses before it is sent.
+    init(failure: HorizonRequestError) {
+        self.streamingHelper = StreamingHelper()
+        self.requestUrl = ""
+        self.failure = failure
     }
 
     /// Establishes the SSE connection and delivers data entry responses as they arrive from Horizon.
@@ -74,6 +87,15 @@ public final class AccountDataStreamItem: Sendable {
     ///
     /// - Parameter response: Closure called with stream events. Called on a background thread.
     public func onReceive(response:@escaping StreamResponseEnum<DataForAccountResponse>.ResponseClosure) {
+        if let failure = failure {
+            // The SSE callbacks reach a receiver on the main queue. Handing the stored error
+            // over the same way keeps a receiver that answers an error by opening another
+            // stream from recursing into this call.
+            DispatchQueue.main.async {
+                response(.error(error: failure))
+            }
+            return
+        }
         streamingHelper.streamFrom(requestUrl:requestUrl) { [weak self] (helperResponse) -> (Void) in
             switch helperResponse {
             case .open:

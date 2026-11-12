@@ -119,6 +119,9 @@ public class ClaimableBalancesService: @unchecked Sendable {
     ///   - limit: Maximum number of records to return (default 10, max 200)
     /// - Returns: PageResponse containing claimable balances for the specified claimant or error
     open func getClaimableBalances(claimantAccountId:String, cursor:String? = nil, order:Order? = nil, limit:Int? = nil) async -> PageResponse<ClaimableBalanceResponse>.ResponseEnum {
+        if let refusal = ServiceHelper.secretSeedRefusal(["claimantAccountId": claimantAccountId]) {
+            return .failure(error: refusal)
+        }
         var requestPath = "/claimable_balances"
         
         var params = Dictionary<String,String>()
@@ -143,6 +146,9 @@ public class ClaimableBalancesService: @unchecked Sendable {
     ///   - limit: Maximum number of records to return (default 10, max 200)
     /// - Returns: PageResponse containing sponsored claimable balances or error
     open func getClaimableBalances(sponsorAccountId:String, cursor:String? = nil, order:Order? = nil, limit:Int? = nil) async -> PageResponse<ClaimableBalanceResponse>.ResponseEnum {
+        if let refusal = ServiceHelper.secretSeedRefusal(["sponsorAccountId": sponsorAccountId]) {
+            return .failure(error: refusal)
+        }
         var requestPath = "/claimable_balances"
         
         var params = Dictionary<String,String>()

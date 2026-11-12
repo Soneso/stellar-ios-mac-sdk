@@ -68,6 +68,9 @@ public class TradeAggregationsService: @unchecked Sendable {
     ///
     /// See: [Stellar developer docs](https://developers.stellar.org)
     open func getTradeAggregations(startTime:Int64? = nil, endTime:Int64? = nil, resolution:Int64? = nil, baseAssetType:String? = nil, baseAssetCode:String? = nil, baseAssetIssuer:String? = nil, counterAssetType:String? = nil, counterAssetCode:String? = nil, counterAssetIssuer:String? = nil, cursor:String? = nil, order:Order? = nil, limit:Int? = nil) async -> PageResponse<TradeAggregationResponse>.ResponseEnum {
+        if let refusal = ServiceHelper.secretSeedRefusal(["baseAssetIssuer": baseAssetIssuer, "counterAssetIssuer": counterAssetIssuer]) {
+            return .failure(error: refusal)
+        }
 
         var requestPath = "/trade_aggregations"
         var params = Dictionary<String,String>()

@@ -70,6 +70,9 @@ public class LiquidityPoolsService: @unchecked Sendable {
     /// - Parameter poolId: The liquidity pool ID (L-address or hex format)
     /// - Returns: LiquidityPoolDetailsResponseEnum with pool details or error
     open func getLiquidityPool(poolId:String) async -> LiquidityPoolDetailsResponseEnum {
+        if let refusal = ServiceHelper.secretSeedRefusal(["poolId": poolId]) {
+            return .failure(error: refusal)
+        }
         var lidHex = poolId
         if poolId.hasPrefix("L"), let idHex = try? poolId.decodeLiquidityPoolIdToHex() {
             lidHex = idHex
@@ -98,6 +101,9 @@ public class LiquidityPoolsService: @unchecked Sendable {
     /// - Parameter limit: Optional maximum number of records to return. Default: 10, max: 200
     /// - Returns: PageResponse containing liquidity pools or error
     open func getLiquidityPools(account:String? = nil, cursor:String? = nil, order:Order? = nil, limit:Int? = nil) async -> PageResponse<LiquidityPoolResponse>.ResponseEnum {
+        if let refusal = ServiceHelper.secretSeedRefusal(["account": account]) {
+            return .failure(error: refusal)
+        }
         var requestPath = "/liquidity_pools"
 
         var params = Dictionary<String,String>()
@@ -147,6 +153,9 @@ public class LiquidityPoolsService: @unchecked Sendable {
     /// - Parameter limit: Optional maximum number of records to return. Default: 10, max: 200
     /// - Returns: LiquidityPoolTradesResponseEnum with trade history or error
     open func getLiquidityPoolTrades(poolId:String, cursor:String? = nil, order:Order? = nil, limit:Int? = nil) async -> LiquidityPoolTradesResponseEnum {
+        if let refusal = ServiceHelper.secretSeedRefusal(["poolId": poolId]) {
+            return .failure(error: refusal)
+        }
         var requestPath = "/liquidity_pools/" + poolId.urlPathEncoded + "/trades"
 
         var params = Dictionary<String,String>()
@@ -203,6 +212,9 @@ public class LiquidityPoolsService: @unchecked Sendable {
     /// - Parameter poolId: The liquidity pool ID (L-address or hex format)
     /// - Returns: LiquidityPoolTradesStreamItem for receiving live trade updates
     open func streamTrades(forPoolId poolId: String) -> LiquidityPoolTradesStreamItem {
+        if let refusal = ServiceHelper.secretSeedRefusal(["poolId": poolId]) {
+            return LiquidityPoolTradesStreamItem(failure: refusal)
+        }
         var lidHex = poolId
         if poolId.hasPrefix("L"), let idHex = try? poolId.decodeLiquidityPoolIdToHex() {
             lidHex = idHex

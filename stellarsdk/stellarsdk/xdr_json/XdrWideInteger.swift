@@ -56,7 +56,8 @@ internal enum XdrWideInteger {
         let absoluteString = isNegative ? String(trimmed.dropFirst()) : trimmed
 
         guard isDecimalInteger(trimmed) else {
-            throw StellarSDKError.invalidArgument(message: "Invalid number string: \(string)")
+            throw StellarSDKError.invalidArgument(
+                message: "Invalid number string: \(SecretSeedRedaction.redactingSecretSeeds(in: string))")
         }
 
         if absoluteString == "0" {

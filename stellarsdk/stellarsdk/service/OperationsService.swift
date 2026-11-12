@@ -97,6 +97,9 @@ public class OperationsService: @unchecked Sendable {
     /// - Parameter join: Optional. Set to "transactions" to include transaction data in response
     /// - Returns: PageResponse containing operations for the account or error
     open func getOperations(forAccount accountId:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, includeFailed:Bool? = nil, join:String? = nil) async -> PageResponse<OperationResponse>.ResponseEnum {
+        if let refusal = ServiceHelper.secretSeedRefusal(["accountId": accountId]) {
+            return .failure(error: refusal)
+        }
         let path = "/accounts/" + accountId.urlPathEncoded + "/operations"
         return await getOperations(onPath: path, from:cursor, order:order, limit:limit, includeFailed:includeFailed, join:join)
     }
@@ -147,6 +150,9 @@ public class OperationsService: @unchecked Sendable {
     /// - Parameter join: Optional. Set to "transactions" to include transaction data in response
     /// - Returns: PageResponse containing operations for the transaction or error
     open func getOperations(forTransaction hash:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, includeFailed:Bool? = nil, join:String? = nil) async -> PageResponse<OperationResponse>.ResponseEnum {
+        if let refusal = ServiceHelper.secretSeedRefusal(["hash": hash]) {
+            return .failure(error: refusal)
+        }
         let path = "/transactions/" + hash.urlPathEncoded + "/operations"
         return await getOperations(onPath: path, from:cursor, order:order, limit:limit, includeFailed:includeFailed, join:join)
     }
@@ -163,6 +169,9 @@ public class OperationsService: @unchecked Sendable {
     /// - Parameter join: Optional. Set to "transactions" to include transaction data in response
     /// - Returns: PageResponse containing operations for the liquidity pool or error
     open func getOperations(forLiquidityPool liquidityPoolId:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, includeFailed:Bool? = nil, join:String? = nil) async -> PageResponse<OperationResponse>.ResponseEnum {
+        if let refusal = ServiceHelper.secretSeedRefusal(["liquidityPoolId": liquidityPoolId]) {
+            return .failure(error: refusal)
+        }
         var lidHex = liquidityPoolId
         if liquidityPoolId.hasPrefix("L"), let idHex = try? liquidityPoolId.decodeLiquidityPoolIdToHex() {
             lidHex = idHex
@@ -220,6 +229,9 @@ public class OperationsService: @unchecked Sendable {
                 subpath = subpath + "?cursor=" + cursor.urlQueryValueEncoded
             }
         case .operationsForAccount(let accountId, let cursor):
+            if let refusal = ServiceHelper.secretSeedRefusal(["account": accountId]) {
+                return OperationsStreamItem(failure: refusal)
+            }
             subpath = "/accounts/" + accountId.urlPathEncoded + "/operations"
             if let cursor = cursor {
                 subpath = subpath + "?cursor=" + cursor.urlQueryValueEncoded
@@ -241,11 +253,17 @@ public class OperationsService: @unchecked Sendable {
                 subpath = subpath + "?cursor=" + cursor.urlQueryValueEncoded
             }
         case .operationsForTransaction(let transaction, let cursor):
+            if let refusal = ServiceHelper.secretSeedRefusal(["transaction": transaction]) {
+                return OperationsStreamItem(failure: refusal)
+            }
             subpath = "/transactions/" + transaction.urlPathEncoded + "/operations"
             if let cursor = cursor {
                 subpath = subpath + "?cursor=" + cursor.urlQueryValueEncoded
             }
         case .operationsForLiquidityPool(let liquidityPool, let cursor):
+            if let refusal = ServiceHelper.secretSeedRefusal(["liquidityPoolId": liquidityPool]) {
+                return OperationsStreamItem(failure: refusal)
+            }
             var lidHex = liquidityPool
             if liquidityPool.hasPrefix("L"), let idHex = try? liquidityPool.decodeLiquidityPoolIdToHex() {
                 lidHex = idHex

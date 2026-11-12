@@ -80,6 +80,9 @@ public class OffersService: @unchecked Sendable {
     /// - Parameter limit: Optional maximum number of records to return. Default: 10, max: 200
     /// - Returns: PageResponse containing offers for the account or error
     open func getOffers(forAccount accountId:String, cursor:String? = nil, order:Order? = nil, limit:Int? = nil) async -> PageResponse<OfferResponse>.ResponseEnum {
+        if let refusal = ServiceHelper.secretSeedRefusal(["accountId": accountId]) {
+            return .failure(error: refusal)
+        }
         var requestPath = "/accounts/" + accountId.urlPathEncoded + "/offers"
         
         var params = Dictionary<String,String>()
@@ -116,6 +119,9 @@ public class OffersService: @unchecked Sendable {
     ///
     /// See: [Stellar developer docs](https://developers.stellar.org)
     open func getOffers(seller:String?, sellingAssetType:String, sellingAssetCode:String? = nil, sellingAssetIssuer:String? = nil, buyingAssetType:String, buyingAssetCode:String? = nil, buyingAssetIssuer:String? = nil, sponsor:String? = nil, cursor:String? = nil, order:Order? = nil, limit:Int? = nil) async -> PageResponse<OfferResponse>.ResponseEnum {
+        if let refusal = ServiceHelper.secretSeedRefusal(["seller": seller, "sellingAssetIssuer": sellingAssetIssuer, "buyingAssetIssuer": buyingAssetIssuer, "sponsor": sponsor]) {
+            return .failure(error: refusal)
+        }
         var requestPath = "/offers"
         
         var params = Dictionary<String,String>()
@@ -177,6 +183,9 @@ public class OffersService: @unchecked Sendable {
                         let sponsor,
                         let cursor,
                         let order):
+            if let refusal = ServiceHelper.secretSeedRefusal(["seller": seller, "sellingAssetIssuer": sellingAssetIssuer, "buyingAssetIssuer": buyingAssetIssuer, "sponsor": sponsor]) {
+                return OffersStreamItem(failure: refusal)
+            }
 
             var params = Dictionary<String,String>()
             params["seller"] = seller
@@ -199,6 +208,9 @@ public class OffersService: @unchecked Sendable {
 
         case .offersForAccount(let accountId,
                                let cursor):
+            if let refusal = ServiceHelper.secretSeedRefusal(["account": accountId]) {
+                return OffersStreamItem(failure: refusal)
+            }
             subpath = "/accounts/" + accountId.urlPathEncoded + "/offers"
             if let cursor = cursor {
                 subpath = subpath + "?cursor=" + cursor.urlQueryValueEncoded

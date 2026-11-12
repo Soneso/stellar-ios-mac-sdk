@@ -42,10 +42,11 @@ public struct MuxedContract: Equatable, Sendable {
     /// - Parameter contractId: the contract id ("C...")
     /// - Parameter id: the multiplexing id
     /// - Throws: StellarSDKError.invalidArgument naming the value if `contractId` is not a
-    ///   valid contract id
+    ///   valid contract id, or only its kind if it starts with "S" or "s"
     public init(contractId: String, id: UInt64) throws {
         guard contractId.isValidContractId() else {
-            throw StellarSDKError.invalidArgument(message: "not a contract id (C...): \(contractId)")
+            throw StellarSDKError.invalidArgument(
+                message: "not a contract id (C...): \(SecretSeedRedaction.keyPositionText(contractId))")
         }
         try self.init(scAddress: SCAddressXDR(contractId: contractId, id: id))
     }
@@ -53,7 +54,8 @@ public struct MuxedContract: Equatable, Sendable {
     /// Creates a muxed contract from a contract address ("C..."), which leaves `id` nil, or
     /// from a muxed contract address ("W...").
     ///
-    /// - Throws: StellarSDKError.invalidArgument naming the value if `address` is neither
+    /// - Throws: StellarSDKError.invalidArgument naming the value if `address` is neither,
+    ///   or only its kind if it starts with "S" or "s"
     public init(address: String) throws {
         if address.isValidContractId() {
             try self.init(scAddress: SCAddressXDR(contractId: address))
@@ -61,7 +63,7 @@ public struct MuxedContract: Equatable, Sendable {
             try self.init(scAddress: SCAddressXDR(muxedContractId: address))
         } else {
             throw StellarSDKError.invalidArgument(
-                message: "not a contract (C...) or muxed contract (W...) address: \(address)")
+                message: "not a contract (C...) or muxed contract (W...) address: \(SecretSeedRedaction.keyPositionText(address))")
         }
     }
 

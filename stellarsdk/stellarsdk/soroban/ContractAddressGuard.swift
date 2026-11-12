@@ -15,8 +15,10 @@ internal enum ContractAddressGuard {
 
     /// The text refusing `contractId` where an entry takes only a contract, opening with
     /// `subject` and naming the kind of address given; nil for a "C..." strkey and for the 64
-    /// character hex of the 32 byte id, the strings `SCAddressXDR(contractId:)` reads. A secret
-    /// seed is never echoed; any other string of no known kind is echoed through `XdrJson.preview(_:)`.
+    /// character hex of the 32 byte id, the strings `SCAddressXDR(contractId:)` reads. A string
+    /// that starts with "S" or "s" is named by the kind `SecretSeedRedaction.seedKind(of:)`
+    /// gives and never echoed; any other string of no known kind is echoed through
+    /// `XdrJson.preview(_:)`.
     internal static func contractIdRefusal(_ contractId: String, subject: String) -> String? {
         let isHexId = contractId.count == 2 * StellarProtocolConstants.SHA256_HASH_SIZE
             && contractId.allSatisfy { $0.isASCII && $0.isHexDigit }
@@ -24,8 +26,8 @@ internal enum ContractAddressGuard {
             return nil
         }
         let refusal = "\(subject) must be a contract (C...) address"
-        if contractId.isValidEd25519SecretSeed() {
-            return "\(refusal), got a secret seed (S...) instead of an address"
+        if let seedKind = SecretSeedRedaction.seedKind(of: contractId) {
+            return "\(refusal), got \(seedKind) instead of an address"
         }
         guard let kind = kindName(ofStrKey: contractId) else {
             return "\(refusal): \(XdrJson.preview(contractId))"

@@ -96,6 +96,9 @@ public class EffectsService: @unchecked Sendable {
     ///
     /// See: [Stellar developer docs](https://developers.stellar.org)
     open func getEffects(forAccount accountId:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil) async -> PageResponse<EffectResponse>.ResponseEnum {
+        if let refusal = ServiceHelper.secretSeedRefusal(["accountId": accountId]) {
+            return .failure(error: refusal)
+        }
         let path = "/accounts/" + accountId.urlPathEncoded + "/effects"
         return await getEffects(onPath: path, from:cursor, order:order, limit:limit)
     }
@@ -148,6 +151,9 @@ public class EffectsService: @unchecked Sendable {
     ///
     /// See: [Stellar developer docs](https://developers.stellar.org)
     open func getEffects(forTransaction hash:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil) async -> PageResponse<EffectResponse>.ResponseEnum {
+        if let refusal = ServiceHelper.secretSeedRefusal(["hash": hash]) {
+            return .failure(error: refusal)
+        }
         let path = "/transactions/" + hash.urlPathEncoded + "/effects"
         return await getEffects(onPath: path, from:cursor, order:order, limit:limit)
     }
@@ -160,6 +166,9 @@ public class EffectsService: @unchecked Sendable {
     /// - Parameter limit: Optional maximum number of records to return. Default: 10, max: 200
     /// - Returns: PageResponse containing effects for the liquidity pool or error
     open func getEffects(forLiquidityPool liquidityPoolId:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil) async -> PageResponse<EffectResponse>.ResponseEnum {
+        if let refusal = ServiceHelper.secretSeedRefusal(["liquidityPoolId": liquidityPoolId]) {
+            return .failure(error: refusal)
+        }
         var lidHex = liquidityPoolId
         if liquidityPoolId.hasPrefix("L"), let idHex = try? liquidityPoolId.decodeLiquidityPoolIdToHex() {
             lidHex = idHex
@@ -181,6 +190,9 @@ public class EffectsService: @unchecked Sendable {
                 subpath = subpath + "?cursor=" + cursor.urlQueryValueEncoded
             }
         case .effectsForAccount(let accountId, let cursor):
+            if let refusal = ServiceHelper.secretSeedRefusal(["account": accountId]) {
+                return EffectsStreamItem(failure: refusal)
+            }
             subpath = "/accounts/" + accountId.urlPathEncoded + "/effects"
             if let cursor = cursor {
                 subpath = subpath + "?cursor=" + cursor.urlQueryValueEncoded
@@ -196,11 +208,17 @@ public class EffectsService: @unchecked Sendable {
                 subpath = subpath + "?cursor=" + cursor.urlQueryValueEncoded
             }
         case .effectsForTransaction(let transaction, let cursor):
+            if let refusal = ServiceHelper.secretSeedRefusal(["transaction": transaction]) {
+                return EffectsStreamItem(failure: refusal)
+            }
             subpath = "/transactions/" + transaction.urlPathEncoded + "/effects"
             if let cursor = cursor {
                 subpath = subpath + "?cursor=" + cursor.urlQueryValueEncoded
             }
         case .effectsForLiquidityPool(let liquidityPool, let cursor):
+            if let refusal = ServiceHelper.secretSeedRefusal(["liquidityPool": liquidityPool]) {
+                return EffectsStreamItem(failure: refusal)
+            }
             var lidHex = liquidityPool
             if liquidityPool.hasPrefix("L"), let idHex = try? liquidityPool.decodeLiquidityPoolIdToHex() {
                 lidHex = idHex

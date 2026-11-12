@@ -133,7 +133,7 @@ public final class TxRepHelper: Sendable {
         let validHex = CharacterSet(charactersIn: "0123456789abcdefABCDEF")
         for ch in h.unicodeScalars {
             guard validHex.contains(ch) else {
-                throw TxRepError.invalidValue(key: hex)
+                throw TxRepError.invalidValue(key: SecretSeedRedaction.keyPositionText(hex))
             }
         }
         guard let data = h.data(using: .hexadecimal) else {
@@ -219,7 +219,7 @@ public final class TxRepHelper: Sendable {
         }
         let result = try unescapeQuotedBytes(s)
         guard let str = String(bytes: result, encoding: .utf8) else {
-            throw TxRepError.invalidValue(key: s)
+            throw TxRepError.invalidValue(key: SecretSeedRedaction.redactingSecretSeeds(in: s))
         }
         return str
     }
@@ -246,7 +246,7 @@ public final class TxRepHelper: Sendable {
     /// they spell. The input must start with `"`; the closing quote is required.
     private static func unescapeQuotedBytes(_ s: String) throws -> [UInt8] {
         guard s.hasSuffix("\""), s.count >= 2 else {
-            throw TxRepError.invalidValue(key: s)
+            throw TxRepError.invalidValue(key: SecretSeedRedaction.redactingSecretSeeds(in: s))
         }
         let inner = String(s.dropFirst().dropLast())
         let bytes = Array(inner.utf8)
@@ -282,7 +282,7 @@ public final class TxRepHelper: Sendable {
                     let hi = bytes[i + 2]
                     let lo = bytes[i + 3]
                     guard let hiNibble = hexNibble(hi), let loNibble = hexNibble(lo) else {
-                        throw TxRepError.invalidValue(key: s)
+                        throw TxRepError.invalidValue(key: SecretSeedRedaction.redactingSecretSeeds(in: s))
                     }
                     result.append(UInt8(hiNibble << 4 | loNibble))
                     i += 4
@@ -334,19 +334,19 @@ public final class TxRepHelper: Sendable {
         let negative = work.hasPrefix("-")
         if negative { work = String(work.dropFirst()) }
         guard !work.hasPrefix("-") else {
-            throw TxRepError.invalidValue(key: s)
+            throw TxRepError.invalidValue(key: SecretSeedRedaction.redactingSecretSeeds(in: s))
         }
 
         let raw: Int64
         if work.hasPrefix("0x") || work.hasPrefix("0X") {
             guard let val = UInt64(work.dropFirst(2), radix: 16),
                   val <= UInt64(Int32.max) + (negative ? 1 : 0) else {
-                throw TxRepError.invalidValue(key: s)
+                throw TxRepError.invalidValue(key: SecretSeedRedaction.redactingSecretSeeds(in: s))
             }
             raw = negative ? -Int64(val) : Int64(val)
         } else {
             guard let val = Int64(work) else {
-                throw TxRepError.invalidValue(key: s)
+                throw TxRepError.invalidValue(key: SecretSeedRedaction.redactingSecretSeeds(in: s))
             }
             raw = negative ? -val : val
         }
@@ -369,12 +369,12 @@ public final class TxRepHelper: Sendable {
         let negative = work.hasPrefix("-")
         if negative { work = String(work.dropFirst()) }
         guard !work.hasPrefix("-") else {
-            throw TxRepError.invalidValue(key: s)
+            throw TxRepError.invalidValue(key: SecretSeedRedaction.redactingSecretSeeds(in: s))
         }
 
         if work.hasPrefix("0x") || work.hasPrefix("0X") {
             guard let val = UInt64(work.dropFirst(2), radix: 16) else {
-                throw TxRepError.invalidValue(key: s)
+                throw TxRepError.invalidValue(key: SecretSeedRedaction.redactingSecretSeeds(in: s))
             }
             if negative {
                 // Two's complement: -val for UInt64 that fits in Int64.
@@ -397,7 +397,7 @@ public final class TxRepHelper: Sendable {
             if negative, let uval = UInt64(work), uval == UInt64(Int64.max) + 1 {
                 return Int64.min
             }
-            throw TxRepError.invalidValue(key: s)
+            throw TxRepError.invalidValue(key: SecretSeedRedaction.redactingSecretSeeds(in: s))
         }
     }
 
@@ -425,16 +425,16 @@ public final class TxRepHelper: Sendable {
     public static func parseUInt64(_ s: String) throws -> UInt64 {
         let trimmed = s.trimmingCharacters(in: .whitespaces)
         if trimmed.hasPrefix("-") {
-            throw TxRepError.invalidValue(key: s)
+            throw TxRepError.invalidValue(key: SecretSeedRedaction.redactingSecretSeeds(in: s))
         }
         if trimmed.hasPrefix("0x") || trimmed.hasPrefix("0X") {
             guard let val = UInt64(trimmed.dropFirst(2), radix: 16) else {
-                throw TxRepError.invalidValue(key: s)
+                throw TxRepError.invalidValue(key: SecretSeedRedaction.redactingSecretSeeds(in: s))
             }
             return val
         }
         guard let val = UInt64(trimmed) else {
-            throw TxRepError.invalidValue(key: s)
+            throw TxRepError.invalidValue(key: SecretSeedRedaction.redactingSecretSeeds(in: s))
         }
         return val
     }
@@ -458,7 +458,7 @@ public final class TxRepHelper: Sendable {
         do {
             return try PublicKey(accountId: strKey)
         } catch {
-            throw TxRepError.invalidValue(key: strKey)
+            throw TxRepError.invalidValue(key: SecretSeedRedaction.keyPositionText(strKey))
         }
     }
 
@@ -486,7 +486,7 @@ public final class TxRepHelper: Sendable {
         do {
             return try strKey.decodeMuxedAccount()
         } catch {
-            throw TxRepError.invalidValue(key: strKey)
+            throw TxRepError.invalidValue(key: SecretSeedRedaction.keyPositionText(strKey))
         }
     }
 
@@ -525,12 +525,12 @@ public final class TxRepHelper: Sendable {
         }
         let parts = value.split(separator: ":", maxSplits: 1).map(String.init)
         guard parts.count == 2 else {
-            throw TxRepError.invalidValue(key: value)
+            throw TxRepError.invalidValue(key: SecretSeedRedaction.redactingSecretSeeds(in: value))
         }
         let code = parts[0].trimmingCharacters(in: .whitespaces)
         let issuerStr = parts[1].trimmingCharacters(in: .whitespaces)
         guard !code.isEmpty, code.count <= 12 else {
-            throw TxRepError.invalidValue(key: value)
+            throw TxRepError.invalidValue(key: SecretSeedRedaction.redactingSecretSeeds(in: value))
         }
         let issuer = try parseAccountId(issuerStr)
         if code.count <= 4 {
@@ -580,12 +580,12 @@ public final class TxRepHelper: Sendable {
         }
         let parts = value.split(separator: ":", maxSplits: 1).map(String.init)
         guard parts.count == 2 else {
-            throw TxRepError.invalidValue(key: value)
+            throw TxRepError.invalidValue(key: SecretSeedRedaction.redactingSecretSeeds(in: value))
         }
         let code = parts[0].trimmingCharacters(in: .whitespaces)
         let issuerStr = parts[1].trimmingCharacters(in: .whitespaces)
         guard !code.isEmpty, code.count <= 12 else {
-            throw TxRepError.invalidValue(key: value)
+            throw TxRepError.invalidValue(key: SecretSeedRedaction.redactingSecretSeeds(in: value))
         }
         let issuer = try parseAccountId(issuerStr)
         if code.count <= 4 {
@@ -636,18 +636,18 @@ public final class TxRepHelper: Sendable {
         // 64-char hex without a colon → pool share.
         if value.count == 64, !value.contains(":") {
             guard let poolData = value.data(using: .hexadecimal) else {
-                throw TxRepError.invalidValue(key: value)
+                throw TxRepError.invalidValue(key: SecretSeedRedaction.redactingSecretSeeds(in: value))
             }
             return .poolShare(WrappedData32(poolData))
         }
         let parts = value.split(separator: ":", maxSplits: 1).map(String.init)
         guard parts.count == 2 else {
-            throw TxRepError.invalidValue(key: value)
+            throw TxRepError.invalidValue(key: SecretSeedRedaction.redactingSecretSeeds(in: value))
         }
         let code = parts[0].trimmingCharacters(in: .whitespaces)
         let issuerStr = parts[1].trimmingCharacters(in: .whitespaces)
         guard !code.isEmpty, code.count <= 12 else {
-            throw TxRepError.invalidValue(key: value)
+            throw TxRepError.invalidValue(key: SecretSeedRedaction.redactingSecretSeeds(in: value))
         }
         let issuer = try parseAccountId(issuerStr)
         if code.count <= 4 {
@@ -737,7 +737,7 @@ public final class TxRepHelper: Sendable {
                 throw TxRepError.invalidValue(key: value)
             }
         } else {
-            throw TxRepError.invalidValue(key: value)
+            throw TxRepError.invalidValue(key: SecretSeedRedaction.keyPositionText(value))
         }
     }
 
@@ -767,7 +767,7 @@ public final class TxRepHelper: Sendable {
     public static func parseAllowTrustAsset(_ code: String) throws -> AllowTrustOpAssetXDR {
         let trimmed = code.trimmingCharacters(in: .whitespaces)
         guard !trimmed.isEmpty, trimmed.count <= 12 else {
-            throw TxRepError.invalidValue(key: code)
+            throw TxRepError.invalidValue(key: SecretSeedRedaction.redactingSecretSeeds(in: code))
         }
         if trimmed.count <= 4 {
             return .alphanum4(assetCodeToData4(trimmed))
@@ -1069,7 +1069,7 @@ public final class TxRepHelper: Sendable {
                 throw TxRepError.invalidValue(key: value)
             }
         }
-        throw TxRepError.invalidValue(key: value)
+        throw TxRepError.invalidValue(key: SecretSeedRedaction.keyPositionText(value))
     }
 
     // MARK: - Private helpers

@@ -86,6 +86,9 @@ public class TradesService: @unchecked Sendable {
     ///
     /// See: [Stellar developer docs](https://developers.stellar.org)
     open func getTrades(baseAssetType:String? = nil, baseAssetCode:String? = nil, baseAssetIssuer:String? = nil, counterAssetType:String? = nil, counterAssetCode:String? = nil, counterAssetIssuer:String? = nil, offerId:String? = nil, forAccount:String? = nil, forLiquidityPool:String? = nil, tradeType:String? = nil, cursor:String? = nil, order:Order? = nil, limit:Int? = nil) async -> PageResponse<TradeResponse>.ResponseEnum {
+        if let refusal = ServiceHelper.secretSeedRefusal(["baseAssetIssuer": baseAssetIssuer, "counterAssetIssuer": counterAssetIssuer, "forAccount": forAccount, "forLiquidityPool": forLiquidityPool]) {
+            return .failure(error: refusal)
+        }
 
         var requestPath = "/trades"
         var params = Dictionary<String,String>()
@@ -126,6 +129,9 @@ public class TradesService: @unchecked Sendable {
     /// - Parameter limit: Optional maximum number of records to return. Default: 10, max: 200
     /// - Returns: PageResponse containing trade records for the account or error
     open func getTrades(forAccount accountId:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil) async -> PageResponse<TradeResponse>.ResponseEnum {
+        if let refusal = ServiceHelper.secretSeedRefusal(["accountId": accountId]) {
+            return .failure(error: refusal)
+        }
         var requestPath = "/accounts/" + accountId.urlPathEncoded + "/trades"
         
         var params = Dictionary<String,String>()
@@ -178,6 +184,9 @@ public class TradesService: @unchecked Sendable {
                         let cursor,
                         let order,
                         let limit):
+            if let refusal = ServiceHelper.secretSeedRefusal(["baseAssetIssuer": baseAssetIssuer, "counterAssetIssuer": counterAssetIssuer]) {
+                return TradesStreamItem(failure: refusal)
+            }
             
             var params = Dictionary<String,String>()
             params["base_asset_type"] = baseAssetType
@@ -198,6 +207,9 @@ public class TradesService: @unchecked Sendable {
             }
             
         case .tradesForAccount(let accountId, let cursor):
+            if let refusal = ServiceHelper.secretSeedRefusal(["account": accountId]) {
+                return TradesStreamItem(failure: refusal)
+            }
             subpath = "/accounts/" + accountId.urlPathEncoded + "/trades"
             if let cursor = cursor {
                 subpath = subpath + "?cursor=" + cursor.urlQueryValueEncoded

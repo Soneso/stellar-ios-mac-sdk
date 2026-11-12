@@ -102,6 +102,9 @@ open class AccountService: @unchecked Sendable {
     /// See also:
     /// - [Stellar developer docs](https://developers.stellar.org)
     open func getAccountDetails(accountId: String) async -> AccountResponseEnum {
+        if let refusal = ServiceHelper.secretSeedRefusal(["accountId": accountId]) {
+            return .failure(error: refusal)
+        }
         var requestPath = "/accounts/\(accountId.urlPathEncoded)"
         if accountId.hasPrefix("M"), let mux = try? accountId.decodeMuxedAccount() {
             requestPath = "/accounts/\(mux.ed25519AccountId.urlPathEncoded)"
@@ -154,6 +157,9 @@ open class AccountService: @unchecked Sendable {
     /// - [Stellar developer docs](https://developers.stellar.org)
     /// - ManageDataOperation for setting account data
     open func getDataForAccount(accountId: String, key: String) async -> DataForAccountResponseEnum {
+        if let refusal = ServiceHelper.secretSeedRefusal(["accountId": accountId]) {
+            return .failure(error: refusal)
+        }
         let requestPath = "/accounts/\(accountId.urlPathEncoded)/data/\(key.urlPathEncoded)"
         
         let result = await serviceHelper.GETRequestWithPath(path: requestPath)
@@ -201,6 +207,9 @@ open class AccountService: @unchecked Sendable {
     /// - createFutureNetTestAccount for creating accounts on futurenet
     /// - [Stellar developer docs](https://developers.stellar.org)
     open func createTestAccount(accountId:String) async -> CreateTestAccountResponseEnum {
+        if let refusal = ServiceHelper.secretSeedRefusal(["accountId": accountId]) {
+            return .failure(error: refusal)
+        }
         let url = URL(string: "https://horizon-testnet.stellar.org/friendbot")
         let components = NSURLComponents(url: url!, resolvingAgainstBaseURL: false)
         let item = URLQueryItem(name: "addr", value: accountId)
@@ -244,6 +253,9 @@ open class AccountService: @unchecked Sendable {
     /// See also:
     /// - createTestAccount for creating accounts on testnet
     open func createFutureNetTestAccount(accountId:String) async -> CreateTestAccountResponseEnum {
+        if let refusal = ServiceHelper.secretSeedRefusal(["accountId": accountId]) {
+            return .failure(error: refusal)
+        }
         let url = URL(string: "https://friendbot-futurenet.stellar.org")
         let components = NSURLComponents(url: url!, resolvingAgainstBaseURL: false)
         let item = URLQueryItem(name: "addr", value: accountId)
@@ -311,6 +323,9 @@ open class AccountService: @unchecked Sendable {
     /// - [Stellar developer docs](https://developers.stellar.org)
     /// - PageResponse for pagination methods
     open func getAccounts(signer:String? = nil, asset:String? = nil, sponsor:String? = nil, liquidityPoolId:String? = nil, cursor:String? = nil, order:Order? = nil, limit:Int? = nil) async -> PageResponse<AccountResponse>.ResponseEnum {
+        if let refusal = ServiceHelper.secretSeedRefusal(["signer": signer, "sponsor": sponsor, "liquidityPoolId": liquidityPoolId]) {
+            return .failure(error: refusal)
+        }
         var requestPath = "/accounts"
         
         var params = Dictionary<String,String>()
@@ -412,6 +427,9 @@ open class AccountService: @unchecked Sendable {
     /// - AccountStreamItem for stream control methods
     /// - AccountResponse for the account data structure
     open func streamAccount(accountId: String) -> AccountStreamItem {
+        if let refusal = ServiceHelper.secretSeedRefusal(["accountId": accountId]) {
+            return AccountStreamItem(failure: refusal)
+        }
         var requestPath = "/accounts/\(accountId.urlPathEncoded)"
         if accountId.hasPrefix("M"), let mux = try? accountId.decodeMuxedAccount() {
             requestPath = "/accounts/\(mux.ed25519AccountId.urlPathEncoded)"
@@ -469,6 +487,9 @@ open class AccountService: @unchecked Sendable {
     /// - DataForAccountResponse for the data entry structure
     /// - ManageDataOperation for setting account data
     open func streamAccountData(accountId: String, key: String) -> AccountDataStreamItem {
+        if let refusal = ServiceHelper.secretSeedRefusal(["accountId": accountId]) {
+            return AccountDataStreamItem(failure: refusal)
+        }
         let requestPath = "/accounts/\(accountId.urlPathEncoded)/data/\(key.urlPathEncoded)"
         let streamUrl = serviceHelper.requestUrlWithPath(path: requestPath)
         return AccountDataStreamItem(requestUrl: streamUrl)

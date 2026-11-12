@@ -110,6 +110,23 @@ class ServiceHelper: @unchecked Sendable {
         }
     }
 
+    /// The refusal of a request that would put a secret seed into its URL, checked before the
+    /// URL is built: nil unless an argument of `arguments` starts with "S" or "s" once trimmed.
+    /// Only arguments whose every valid value is a strkey or an id belong in `arguments`: none
+    /// of those starts that way, while every secret seed does. The message names the argument
+    /// and the kind of value, never the value.
+    ///
+    /// - Parameter arguments: each argument's name in the message, with its value
+    /// - Returns: HorizonRequestError.badRequest without a Horizon error response, or nil
+    static func secretSeedRefusal(_ arguments: KeyValuePairs<String, String?>) -> HorizonRequestError? {
+        for (name, value) in arguments {
+            if let value = value, let seedKind = SecretSeedRedaction.seedKind(of: value) {
+                return .badRequest(message: "\(name) is \(seedKind); the request is not sent", horizonErrorResponse: nil)
+            }
+        }
+        return nil
+    }
+
     /// Constructs a complete request URL by combining the base URL with the given path.
     ///
     /// Merges any query items from the base URL with those in the path.
