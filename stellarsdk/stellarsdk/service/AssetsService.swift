@@ -62,6 +62,9 @@ public class AssetsService: @unchecked Sendable {
     /// - Parameter limit: Optional. Maximum number of records to return. Default: 10
     ///
     open func getAssets(for assetCode:String? = nil, assetIssuer:String? = nil, cursor:String? = nil, order:Order? = nil, limit:Int? = nil) async -> PageResponse<AssetResponse>.ResponseEnum {
+        if let refusal = ServiceHelper.secretSeedRefusal(["assetIssuer": assetIssuer]) {
+            return .failure(error: refusal)
+        }
         var requestPath = "/assets"
         
         var params = Dictionary<String,String>()

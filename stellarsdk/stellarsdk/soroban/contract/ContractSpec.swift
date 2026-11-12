@@ -241,7 +241,7 @@ public final class ContractSpec: Sendable {
     /// - Throws: ContractSpecError if function not found or arguments are invalid
     public func funcArgsToXdrSCValues(name: String, args: [String: Any]) throws -> [SCValXDR] {
         guard let function = getFunc(name: name) else {
-            throw ContractSpecError.functionNotFound(name: name)
+            throw ContractSpecError.functionNotFound(name: SecretSeedRedaction.redactingSecretSeeds(in: name))
         }
         
         var result: [SCValXDR] = []
@@ -355,7 +355,7 @@ public final class ContractSpec: Sendable {
     
     private func nativeToUdt(val: Any?, name: String) throws -> SCValXDR {
         guard let entry = findEntry(name: name) else {
-            throw ContractSpecError.entryNotFound(name: name)
+            throw ContractSpecError.entryNotFound(name: SecretSeedRedaction.redactingSecretSeeds(in: name))
         }
         
         switch entry {
@@ -465,7 +465,8 @@ public final class ContractSpec: Sendable {
         }
         
         guard let foundCase = caseFound else {
-            throw ContractSpecError.invalidEnumValue(message: "No such union entry: \(entryName) in \(unionDef.name)")
+            throw ContractSpecError.invalidEnumValue(
+                message: "No such union entry: \(SecretSeedRedaction.redactingSecretSeeds(in: entryName)) in \(unionDef.name)")
         }
         
         let key = SCValXDR.symbol(entryName)
@@ -562,8 +563,7 @@ public final class ContractSpec: Sendable {
             let text = text ?? ""
             guard let converted = T(text) else {
                 // A secret seed given by mistake is never echoed.
-                let shown = XdrJson.preview(text.replacingOccurrences(
-                    of: "S[A-Z2-7]{55}", with: "[redacted seed]", options: [.regularExpression, .caseInsensitive]))
+                let shown = XdrJson.preview(SecretSeedRedaction.redactingSecretSeeds(in: text))
                 throw ContractSpecError.invalidType(message: "String value \"\(shown)\" is not a decimal integer that fits \(name)")
             }
             return scVal(converted)
@@ -661,7 +661,8 @@ public final class ContractSpec: Sendable {
             address = scAddress
         } else if let text = value as? String {
             guard let parsed = try scAddress(strKey: text) else {
-                throw ContractSpecError.invalidType(message: "Invalid address format: \(text); \(expected)")
+                throw ContractSpecError.invalidType(
+                    message: "Invalid address format: \(SecretSeedRedaction.keyPositionText(text)); \(expected)")
             }
             address = parsed
             strKey = text
@@ -737,11 +738,13 @@ public final class ContractSpec: Sendable {
 
 /// Errors that occur when parsing, validating, or converting Soroban contract specifications.
 public enum ContractSpecError: Error, Sendable {
-    /// Specified contract function name does not exist in the contract specification.
+    /// Specified contract function name does not exist in the contract specification. `name`
+    /// holds the given name with any secret seed in it replaced by "a secret seed (S...)".
     case functionNotFound(name: String)
     /// Required function argument is missing from the provided arguments.
     case argumentNotFound(name: String)
-    /// Contract specification entry for the given name was not found.
+    /// Contract specification entry for the given name was not found. `name` holds the given
+    /// name with any secret seed in it replaced by "a secret seed (S...)".
     case entryNotFound(name: String)
     /// Provided value type does not match the expected contract specification type.
     case invalidType(message: String)

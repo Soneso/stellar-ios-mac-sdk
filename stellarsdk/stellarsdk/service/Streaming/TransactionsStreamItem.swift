@@ -43,7 +43,7 @@ public final class TransactionsStreamItem: Sendable {
     }
 
     /// Creates a stream that opens no connection and hands `failure` to every receiver,
-    /// for a request that names no endpoint Horizon serves.
+    /// for a request the SDK refuses before it is sent.
     init(failure: HorizonRequestError) {
         self.streamingHelper = StreamingHelper()
         self.requestUrl = ""

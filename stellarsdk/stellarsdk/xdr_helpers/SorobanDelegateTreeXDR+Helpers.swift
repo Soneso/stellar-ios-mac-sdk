@@ -134,7 +134,7 @@ internal func scAddressXDR(fromStrkey strkey: String) throws -> SCAddressXDR {
         return try SCAddressXDR(contractId: strkey)
     }
     throw StellarSDKError.invalidArgument(
-        message: "Unsupported strkey prefix for delegate address: \(strkey)"
+        message: "Unsupported strkey prefix for delegate address: \(SecretSeedRedaction.keyPositionText(strkey))"
     )
 }
 

@@ -407,7 +407,8 @@ public final class SorobanClient: Sendable {
     ///
     public func buildInvokeMethodTx(name:String, args:[SCValXDR]? = nil, methodOptions:MethodOptions? = nil, enableServerLogging:Bool? = nil) async throws -> AssembledTransaction {
         if !methodNames.contains(name) {
-            throw SorobanClientError.methodNotFound(message: "Method '\(name)' does not exist.")
+            throw SorobanClientError.methodNotFound(
+                message: "Method '\(SecretSeedRedaction.redactingSecretSeeds(in: name))' does not exist.")
         }
 
         let options = AssembledTransactionOptions(clientOptions: clientOptions,

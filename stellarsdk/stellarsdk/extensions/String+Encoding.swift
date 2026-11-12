@@ -120,7 +120,8 @@ public extension String {
         // checked directly rather than left to the pair parser.
         guard self.allSatisfy({ $0.isASCII && $0.isHexDigit }),
               let data = self.data(using: .hexadecimal), data.count == size else {
-            throw StellarSDKError.invalidArgument(message: "invalid \(idKind), not a hex string \(self)")
+            throw StellarSDKError.invalidArgument(
+                message: "invalid \(idKind), not a hex string \(SecretSeedRedaction.keyPositionText(self))")
         }
         return WrappedData32(data)
     }

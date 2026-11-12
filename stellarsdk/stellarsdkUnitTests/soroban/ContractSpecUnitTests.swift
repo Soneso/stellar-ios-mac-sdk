@@ -192,8 +192,8 @@ class ContractSpecUnitTests: XCTestCase {
 
     func testIntegerStringErrorNeverEchoesASecretSeed() throws {
         let seed = try KeyPair.generateRandomKeyPair().secretSeed!
-        assertInvalidType(seed, .timepoint, "String value \"[redacted seed]\" is not a decimal integer that fits timepoint")
-        assertInvalidType("amount \(seed.lowercased())", .u64, "String value \"amount [redacted seed]\" is not a decimal integer that fits u64")
+        assertInvalidType(seed, .timepoint, "String value \"a secret seed (S...)\" is not a decimal integer that fits timepoint")
+        assertInvalidType("amount \(seed.lowercased())", .u64, "String value \"amount a secret seed (S...)\" is not a decimal integer that fits u64")
     }
     
     func testContractSpecStringTypes() throws {

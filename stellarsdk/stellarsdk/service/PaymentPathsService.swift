@@ -69,6 +69,9 @@ public class PaymentPathsService: @unchecked Sendable {
     /// - Parameter sourceAccount: The source account ID
     /// - Returns: PaymentPathsResponseEnum with available paths or error
     open func findPaymentPaths(destinationAccount:String, destinationAssetType:String, destinationAssetCode:String? = nil, destinationAssetIssuer:String? = nil, destinationAmount:String, sourceAccount:String) async -> PaymentPathsResponseEnum {
+        if let refusal = ServiceHelper.secretSeedRefusal(["destinationAccount": destinationAccount, "destinationAssetIssuer": destinationAssetIssuer, "sourceAccount": sourceAccount]) {
+            return .failure(error: refusal)
+        }
         
         var requestPath = "/paths"
         var params = Dictionary<String,String>()
@@ -117,6 +120,9 @@ public class PaymentPathsService: @unchecked Sendable {
     ///
     /// See: [Stellar developer docs](https://developers.stellar.org)
     open func strictReceive(sourceAccount:String? = nil, sourceAssets:String? = nil, destinationAccount:String? = nil, destinationAssetType:String? = nil, destinationAssetCode:String? = nil, destinationAssetIssuer:String? = nil, destinationAmount:String? = nil) async -> PaymentPathsResponseEnum {
+        if let refusal = ServiceHelper.secretSeedRefusal(["sourceAccount": sourceAccount, "destinationAccount": destinationAccount, "destinationAssetIssuer": destinationAssetIssuer]) {
+            return .failure(error: refusal)
+        }
         
         var requestPath = "/paths/strict-receive"
         var params = Dictionary<String,String>()
@@ -171,6 +177,9 @@ public class PaymentPathsService: @unchecked Sendable {
     ///
     /// See: [Stellar developer docs](https://developers.stellar.org)
     open func strictSend(sourceAmount:String? = nil, sourceAssetType:String? = nil, sourceAssetCode:String? = nil, sourceAssetIssuer:String? = nil, destinationAccount:String? = nil, destinationAssets:String? = nil) async -> PaymentPathsResponseEnum {
+        if let refusal = ServiceHelper.secretSeedRefusal(["sourceAssetIssuer": sourceAssetIssuer, "destinationAccount": destinationAccount]) {
+            return .failure(error: refusal)
+        }
         
         var requestPath = "/paths/strict-send"
         var params = Dictionary<String,String>()

@@ -127,6 +127,9 @@ public class TransactionsService: @unchecked Sendable {
     /// - Returns: PageResponse containing transaction records or error
     open func getTransactions(forAccount accountId:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil) async -> PageResponse<TransactionResponse>.ResponseEnum
     {
+        if let refusal = ServiceHelper.secretSeedRefusal(["accountId": accountId]) {
+            return .failure(error: refusal)
+        }
         let path = "/accounts/" + accountId.urlPathEncoded + "/transactions"
         return await getTransactions(onPath: path, from:cursor, order:order, limit:limit)
     }
@@ -159,6 +162,9 @@ public class TransactionsService: @unchecked Sendable {
     /// - Parameter limit: Optional maximum number of records to return (default 10, max 200)
     /// - Returns: PageResponse containing transaction records or error
     open func getTransactions(forLiquidityPool liquidityPoolId:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil) async -> PageResponse<TransactionResponse>.ResponseEnum {
+        if let refusal = ServiceHelper.secretSeedRefusal(["liquidityPoolId": liquidityPoolId]) {
+            return .failure(error: refusal)
+        }
         var lidHex = liquidityPoolId
         if liquidityPoolId.hasPrefix("L"), let idHex = try? liquidityPoolId.decodeLiquidityPoolIdToHex() {
             lidHex = idHex
@@ -184,6 +190,9 @@ public class TransactionsService: @unchecked Sendable {
     /// - Parameter transactionHash: The unique transaction hash identifier (hex-encoded)
     /// - Returns: TransactionDetailsResponseEnum with transaction details or error
     open func getTransactionDetails(transactionHash:String) async -> TransactionDetailsResponseEnum {
+        if let refusal = ServiceHelper.secretSeedRefusal(["transactionHash": transactionHash]) {
+            return .failure(error: refusal)
+        }
         let requestPath = "/transactions/" + transactionHash.urlPathEncoded
 
         let result = await serviceHelper.GETRequestWithPath(path: requestPath)
@@ -488,6 +497,9 @@ public class TransactionsService: @unchecked Sendable {
                 subpath = subpath + "?cursor=" + cursor.urlQueryValueEncoded
             }
         case .transactionsForAccount(let accountId, let cursor):
+            if let refusal = ServiceHelper.secretSeedRefusal(["account": accountId]) {
+                return TransactionsStreamItem(failure: refusal)
+            }
             subpath = "/accounts/" + accountId.urlPathEncoded + "/transactions"
             if let cursor = cursor {
                 subpath = subpath + "?cursor=" + cursor.urlQueryValueEncoded

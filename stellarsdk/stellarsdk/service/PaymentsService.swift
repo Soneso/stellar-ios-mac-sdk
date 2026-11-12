@@ -90,6 +90,9 @@ public class PaymentsService: @unchecked Sendable {
     ///
     /// See: [Stellar developer docs](https://developers.stellar.org)
     open func getPayments(forAccount accountId:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, includeFailed:Bool? = nil, join:String? = nil) async -> PageResponse<OperationResponse>.ResponseEnum {
+        if let refusal = ServiceHelper.secretSeedRefusal(["accountId": accountId]) {
+            return .failure(error: refusal)
+        }
         let path = "/accounts/" + accountId.urlPathEncoded + "/payments"
         return await getPayments(onPath: path, from:cursor, order:order, limit:limit, includeFailed:includeFailed, join:join)
     }
@@ -122,6 +125,9 @@ public class PaymentsService: @unchecked Sendable {
     ///
     /// See: [Stellar developer docs](https://developers.stellar.org)
     open func getPayments(forTransaction hash:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, includeFailed:Bool? = nil, join:String? = nil) async -> PageResponse<OperationResponse>.ResponseEnum {
+        if let refusal = ServiceHelper.secretSeedRefusal(["hash": hash]) {
+            return .failure(error: refusal)
+        }
         let path = "/transactions/" + hash.urlPathEncoded + "/payments"
         return await getPayments(onPath: path, from:cursor, order:order, limit:limit, includeFailed:includeFailed, join:join)
     }
@@ -187,6 +193,9 @@ public class PaymentsService: @unchecked Sendable {
                 subpath = subpath + "?cursor=" + cursor.urlQueryValueEncoded
             }
         case .paymentsForAccount(let accountId, let cursor):
+            if let refusal = ServiceHelper.secretSeedRefusal(["account": accountId]) {
+                return OperationsStreamItem(failure: refusal)
+            }
             subpath = "/accounts/" + accountId.urlPathEncoded + "/payments"
             if let cursor = cursor {
                 subpath = subpath + "?cursor=" + cursor.urlQueryValueEncoded
@@ -197,6 +206,9 @@ public class PaymentsService: @unchecked Sendable {
                 subpath = subpath + "?cursor=" + cursor.urlQueryValueEncoded
             }
         case .paymentsForTransaction(let transaction, let cursor):
+            if let refusal = ServiceHelper.secretSeedRefusal(["transaction": transaction]) {
+                return OperationsStreamItem(failure: refusal)
+            }
             subpath = "/transactions/" + transaction.urlPathEncoded + "/payments"
             if let cursor = cursor {
                 subpath = subpath + "?cursor=" + cursor.urlQueryValueEncoded
