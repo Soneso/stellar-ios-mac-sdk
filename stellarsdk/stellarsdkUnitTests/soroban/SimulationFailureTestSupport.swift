@@ -142,10 +142,14 @@ enum SyntheticDiagnosticEvent {
 /// Routes the JSON-RPC requests of an `AssembledTransaction` or `SorobanClient` call to
 /// scripted responses on the mocked host `soroban-testnet.stellar.org`.
 ///
-/// `getLedgerEntries` returns the source account, `simulateTransaction` takes the next body of
-/// `simulateBodies` (the last one repeats) with `simulateStatusCode`, `sendTransaction` answers
-/// PENDING and records the request body, `getTransaction` answers SUCCESS, `getLatestLedger`
-/// answers a fixed ledger. Every response other than the simulation has the status 200.
+/// `getLedgerEntries` returns the requested account, or `sourceAccount` when the request names
+/// none, with the next sequence number of `accountSequenceNumbers` (one list for all accounts,
+/// the last one repeats), `simulateTransaction` records the request
+/// body and takes the next body of `simulateBodies` (the last one repeats) with
+/// `simulateStatusCode`, `sendTransaction` answers PENDING and records the request body,
+/// `getTransaction` answers SUCCESS, or FAILED with `failedTransactionResultXdr` when it is set,
+/// `getLatestLedger` answers a fixed ledger. Every response other than the simulation has the
+/// status 200.
 final class SimulationRpcRouter: @unchecked Sendable {
 
     static let host = "soroban-testnet.stellar.org"
@@ -155,16 +159,21 @@ final class SimulationRpcRouter: @unchecked Sendable {
     private var simulateBodies: [String]
     private let simulateStatusCode: Int
     private var sendBodies: [String] = []
-    private var simulateCount = 0
-    private let accountJson: String
+    private var simulateRequests: [String] = []
+    private let sourceAccount: PublicKey
+    private var accountSequenceNumbers: [Int64]
+    private let failedTransactionResultXdr: String?
 
     /// Registers the router with `ServerMock`. The registered mock holds the router until the
     /// test's `tearDown` calls `ServerMock.removeAll()`. `ServerMock` answers with the first
     /// registered mock that matches, so a second router in one test needs that call first.
-    init(sourceAccount: KeyPair, simulateBodies: [String], simulateStatusCode: Int = 200) {
+    init(sourceAccount: KeyPair, simulateBodies: [String], simulateStatusCode: Int = 200,
+         accountSequenceNumbers: [Int64] = [12345], failedTransactionResultXdr: String? = nil) {
         self.simulateBodies = simulateBodies
         self.simulateStatusCode = simulateStatusCode
-        self.accountJson = SimulationRpcRouter.accountJson(for: sourceAccount)
+        self.sourceAccount = sourceAccount.publicKey
+        self.accountSequenceNumbers = accountSequenceNumbers
+        self.failedTransactionResultXdr = failedTransactionResultXdr
         let mock = RequestMock(host: SimulationRpcRouter.host, path: "*", httpMethod: "POST") { mock, request in
             let (statusCode, body) = self.respond(to: request)
             mock.statusCode = statusCode
@@ -179,10 +188,16 @@ final class SimulationRpcRouter: @unchecked Sendable {
         return sendBodies
     }
 
+    /// The bodies of the `simulateTransaction` requests, in order.
+    var simulateTransactionRequests: [String] {
+        lock.lock(); defer { lock.unlock() }
+        return simulateRequests
+    }
+
     /// The number of `simulateTransaction` requests answered.
     var simulateRequestCount: Int {
         lock.lock(); defer { lock.unlock() }
-        return simulateCount
+        return simulateRequests.count
     }
 
     private func respond(to request: URLRequest) -> (Int, String?) {
@@ -190,10 +205,17 @@ final class SimulationRpcRouter: @unchecked Sendable {
         let body = String(decoding: bodyData, as: UTF8.self)
         lock.lock(); defer { lock.unlock() }
         if body.contains("\"getLedgerEntries\"") {
-            return (200, accountJson)
+            guard let sequenceNumber = accountSequenceNumbers.first else {
+                return (200, nil)
+            }
+            if accountSequenceNumbers.count > 1 {
+                accountSequenceNumbers.removeFirst()
+            }
+            let account = SimulationRpcRouter.requestedAccount(in: body) ?? sourceAccount
+            return (200, SimulationRpcRouter.accountJson(for: account, sequenceNumber: sequenceNumber))
         }
         if body.contains("\"simulateTransaction\"") {
-            simulateCount += 1
+            simulateRequests.append(body)
             guard let next = simulateBodies.first else {
                 return (simulateStatusCode, nil)
             }
@@ -209,8 +231,10 @@ final class SimulationRpcRouter: @unchecked Sendable {
             """)
         }
         if body.contains("\"getTransaction\"") {
+            let status = failedTransactionResultXdr == nil ? "SUCCESS" : "FAILED"
+            let resultXdr = failedTransactionResultXdr ?? "AAAAAAAAAGQAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAA="
             return (200, """
-            {"jsonrpc": "2.0", "id": 1, "result": {"status": "SUCCESS", "latestLedger": 1000000, "latestLedgerCloseTime": "1234567890", "oldestLedger": 900000, "oldestLedgerCloseTime": "1234500000", "applicationOrder": 1, "ledger": 999999, "createdAt": "1234567880", "envelopeXdr": "AAAAAA==", "resultXdr": "AAAAAAAAAGQAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAA=", "resultMetaXdr": "AAAAAA=="}}
+            {"jsonrpc": "2.0", "id": 1, "result": {"status": "\(status)", "latestLedger": 1000000, "latestLedgerCloseTime": "1234567890", "oldestLedger": 900000, "oldestLedgerCloseTime": "1234500000", "applicationOrder": 1, "ledger": 999999, "createdAt": "1234567880", "envelopeXdr": "AAAAAA==", "resultXdr": "\(resultXdr)", "resultMetaXdr": "AAAAAA=="}}
             """)
         }
         if body.contains("\"getLatestLedger\"") {
@@ -222,13 +246,17 @@ final class SimulationRpcRouter: @unchecked Sendable {
     }
 
     /// A successful simulation with a read-write footprint, so the transaction is no read call,
-    /// and with `events` as its diagnostic events (absent when empty).
-    static func successBody(contractId: String, events: [String] = []) -> String {
+    /// with `resourceFee` as the resource fee of its transaction data and as its minimum resource
+    /// fee, `auth` as the base64 auth entries and `returnValue` as the value of its result, and
+    /// with `events` as its diagnostic events (absent when empty).
+    static func successBody(contractId: String, events: [String] = [], resourceFee: Int64 = 10000,
+                            auth: [String] = [], returnValue: SCValXDR = .u32(10)) -> String {
         let eventsField = events.isEmpty
             ? ""
             : ", \"events\": [" + events.map { "\"\($0)\"" }.joined(separator: ", ") + "]"
+        let authField = auth.map { "\"\($0)\"" }.joined(separator: ", ")
         return """
-        {"jsonrpc": "2.0", "id": 1, "result": {"latestLedger": 1000000, "transactionData": "\(transactionData(contractId: contractId))", "minResourceFee": "10000", "results": [{"auth": [], "xdr": "\(SCValXDR.u32(10).xdrEncoded!)"}]\(eventsField)}}
+        {"jsonrpc": "2.0", "id": 1, "result": {"latestLedger": 1000000, "transactionData": "\(transactionData(contractId: contractId, resourceFee: resourceFee))", "minResourceFee": "\(resourceFee)", "results": [{"auth": [\(authField)], "xdr": "\(returnValue.xdrEncoded!)"}]\(eventsField)}}
         """
     }
 
@@ -241,7 +269,7 @@ final class SimulationRpcRouter: @unchecked Sendable {
 
     /// Base64 transaction data whose read-write footprint holds one persistent entry of
     /// `contractId`.
-    private static func transactionData(contractId: String) -> String {
+    private static func transactionData(contractId: String, resourceFee: Int64 = 10000) -> String {
         let transactionData = SorobanTransactionDataXDR(
             resources: SorobanResourcesXDR(
                 footprint: LedgerFootprintXDR(readOnly: [], readWrite: [
@@ -253,7 +281,7 @@ final class SimulationRpcRouter: @unchecked Sendable {
                 instructions: 1000,
                 diskReadBytes: 100,
                 writeBytes: 50),
-            resourceFee: 10000)
+            resourceFee: resourceFee)
         return transactionData.xdrEncoded!
     }
 
@@ -262,11 +290,22 @@ final class SimulationRpcRouter: @unchecked Sendable {
     {"jsonrpc": "2.0", "id": 1, "result": {"latestLedger": 1000000}}
     """
 
-    private static func accountJson(for keyPair: KeyPair) -> String {
+    /// The account of the first ledger key a `getLedgerEntries` request body names.
+    private static func requestedAccount(in body: String) -> PublicKey? {
+        guard let object = try? JSONSerialization.jsonObject(with: Data(body.utf8)) as? [String: Any],
+              let keys = (object["params"] as? [String: Any])?["keys"] as? [String],
+              let key = keys.first,
+              case .account(let account)? = try? LedgerKeyXDR(fromBase64: key) else {
+            return nil
+        }
+        return account.accountID
+    }
+
+    private static func accountJson(for account: PublicKey, sequenceNumber: Int64) -> String {
         let accountEntry = AccountEntryXDR(
-            accountID: keyPair.publicKey,
+            accountID: account,
             balance: 1_000_000_000,
-            sequenceNumber: 12345,
+            sequenceNumber: sequenceNumber,
             numSubEntries: 0,
             flags: 0,
             homeDomain: "",
@@ -274,7 +313,7 @@ final class SimulationRpcRouter: @unchecked Sendable {
             signers: [],
             ext: .void)
         let entry = LedgerEntryDataXDR.account(accountEntry).xdrEncoded!
-        let key = LedgerKeyXDR.account(LedgerKeyAccountXDR(accountID: keyPair.publicKey)).xdrEncoded!
+        let key = LedgerKeyXDR.account(LedgerKeyAccountXDR(accountID: account)).xdrEncoded!
         return """
         {"jsonrpc": "2.0", "id": 1, "result": {"entries": [{"key": "\(key)", "xdr": "\(entry)", "lastModifiedLedgerSeq": 999000}], "latestLedger": 1000000}}
         """
@@ -330,7 +369,8 @@ enum SimulationTransportFailure: CaseIterable {
     }
 }
 
-/// The `transaction` parameter of a recorded `sendTransaction` request body.
+/// The `transaction` parameter of a recorded `sendTransaction` or `simulateTransaction` request
+/// body.
 func sentEnvelope(in requestBody: String) throws -> Transaction {
     let object = try JSONSerialization.jsonObject(with: Data(requestBody.utf8))
     let params = try XCTUnwrap((object as? [String: Any])?["params"] as? [String: Any])
