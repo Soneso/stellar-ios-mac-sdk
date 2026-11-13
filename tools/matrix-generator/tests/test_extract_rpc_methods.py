@@ -1,6 +1,7 @@
 """Tests for extract_rpc_methods: release lookups and failure on any missing method definition."""
 
 import contextlib
+import http.client
 import io
 import json
 import sys
@@ -17,6 +18,8 @@ with warnings.catch_warnings():
     # requests warns about its urllib3/chardet versions on import on some machines.
     warnings.simplefilter("ignore")
     import requests  # noqa: E402
+    import requests.adapters  # noqa: E402
+    import urllib3  # noqa: E402
 
 import extract_rpc_methods  # noqa: E402
 import rpc_releases  # noqa: E402
@@ -26,12 +29,34 @@ from extract_rpc_methods import (  # noqa: E402
     GoSourceParser,
     check_method_set,
     go_file_name,
+    registered_methods,
 )
 from rpc_releases import ReleaseLookupError  # noqa: E402
 
 from release_fixtures import release_list  # noqa: E402
 
 HANDLER_SOURCE = "package methods\n"
+
+# Copies of the stellar-rpc registration files at v30.0.0 and v30.0.1.
+FIXTURES = Path(__file__).resolve().parent / "fixtures"
+V30_0_0_SOURCE = (FIXTURES / "stellar-rpc-v30.0.0-jsonrpc.go").read_text(encoding="utf-8")
+V30_0_1_SOURCE = (FIXTURES / "stellar-rpc-v30.0.1-rpcv1-jsonrpc.go").read_text(encoding="utf-8")
+RPCV1_FILE = "cmd/stellar-rpc/internal/rpcv1/jsonrpc.go"
+INTERNAL_FILE = "cmd/stellar-rpc/internal/jsonrpc.go"
+# The methods that stellar-rpc v30.0.0 and v30.0.1 register, in source order.
+SERVED_METHODS_V30 = [
+    "getHealth", "getEvents", "getNetwork", "getVersionInfo", "getLatestLedger", "getLedgers",
+    "getLedgerEntries", "getTransaction", "getTransactions", "sendTransaction",
+    "simulateTransaction", "getFeeStats",
+]
+
+
+def raw_url(tag: str, file_path: str) -> str:
+    return f"https://raw.githubusercontent.com/stellar/stellar-rpc/{tag}/{file_path}"
+
+
+RPCV1_URL = raw_url("v30.0.1", RPCV1_FILE)
+INTERNAL_URL = raw_url("v30.0.1", INTERNAL_FILE)
 
 
 def pascal(method_name: str) -> str:
@@ -98,6 +123,7 @@ class FakeGitHub:
         self.refs_by_path = {}
         self.protocol_refs = []
         self.registrations = list(KNOWN_METHODS)
+        self.registration_file = INTERNAL_FILE
         self.registration_layout = registration_source
 
     def fetch_releases(self, repo, token):
@@ -110,11 +136,16 @@ class FakeGitHub:
             raise self.file_errors[file_path]
         if file_path == "go.mod":
             return self.go_mod
-        if file_path == "cmd/stellar-rpc/internal/jsonrpc.go":
-            return self.registration_layout(self.registrations)
         if file_path in {f"cmd/stellar-rpc/internal/methods/{go_file_name(name)}" for name in self.registrations}:
             return HANDLER_SOURCE
         raise RuntimeError(f"Failed to fetch {file_path} at {ref}: 404 Client Error")
+
+    def fetch_registration_source(self, ref):
+        self.fetched_files.append(self.registration_file)
+        self.refs_by_path[self.registration_file] = ref
+        if self.registration_file in self.file_errors:
+            raise self.file_errors[self.registration_file]
+        return self.registration_file, self.registration_layout(self.registrations)
 
     def fetch_protocol_file(self, method_name, ref):
         self.protocol_refs.append(ref)
@@ -133,6 +164,8 @@ class FakeGitHub:
                                                   lambda _self, path, ref: self.fetch_file(path, ref)))
             stack.enter_context(mock.patch.object(GitHubFetcher, "fetch_protocol_file",
                                                   lambda _self, method, ref: self.fetch_protocol_file(method, ref)))
+            stack.enter_context(mock.patch.object(GitHubFetcher, "fetch_registration_source",
+                                                  lambda _self, ref: self.fetch_registration_source(ref)))
             yield
 
 
@@ -283,7 +316,19 @@ class ExtractorMainTest(unittest.TestCase):
         exit_code, data, stderr = self.run_extractor(fake)
         self.assertEqual(exit_code, 1)
         self.assertIsNone(data)
-        self.assertIn("No protocol.<Name>MethodName registrations found in jsonrpc.go at v28.0.10", stderr)
+        self.assertIn("cmd/stellar-rpc/internal/jsonrpc.go at v28.0.10: unrecognized method registration entry: "
+                      '{\n\t\t\tmethodName: "getHealth",\n\t\t}', stderr)
+
+    def test_registration_file_of_either_form_writes_the_known_methods(self):
+        for file_path, source in ((RPCV1_FILE, V30_0_1_SOURCE), (INTERNAL_FILE, V30_0_0_SOURCE)):
+            with self.subTest(file=file_path):
+                fake = FakeGitHub()
+                fake.registration_file = file_path
+                fake.registration_layout = lambda _names, text=source: text
+                exit_code, data, stderr = self.run_extractor(fake)
+                self.assertEqual(exit_code, 0, stderr)
+                self.assertEqual(list(data["methods"]), KNOWN_METHODS)
+                self.assertEqual(fake.refs_by_path[file_path], "v28.0.10")
 
     def test_release_lookup_failure_exits_non_zero_and_writes_no_json(self):
         exit_code, data, stderr = self.run_extractor(FakeGitHub(rpc_releases_list=[]))
@@ -330,6 +375,97 @@ class GitHubFetcherTest(unittest.TestCase):
         with mock.patch.object(fetcher.session, "get", return_value=self.response(404)):
             with self.assertRaisesRegex(RuntimeError, "get_health.go at v28.0.1: 404 Client Error"):
                 fetcher.fetch_file("cmd/stellar-rpc/internal/methods/get_health.go", "v28.0.1")
+
+
+class FailingBody(io.RawIOBase):
+    """A response body whose read fails with the given error."""
+
+    def __init__(self, error):
+        super().__init__()
+        self.error = error
+
+    def readable(self):
+        return True
+
+    def readinto(self, buffer):
+        raise self.error
+
+
+class RawGitHub(requests.adapters.HTTPAdapter):
+    """
+    Serves raw files by URL through the requests response and body-read path.
+
+    A response is (status, body) or an exception that the transport raises; a body
+    that is an exception fails the body read. An unknown URL raises KeyError.
+    """
+
+    def __init__(self, responses):
+        super().__init__()
+        self.responses = responses
+        self.requested = []
+
+    def send(self, request, **kwargs):
+        self.requested.append(request.url)
+        response = self.responses[request.url]
+        if isinstance(response, Exception):
+            raise response
+        status, body = response
+        stream = FailingBody(body) if isinstance(body, Exception) else io.BytesIO(body)
+        return self.build_response(request, urllib3.HTTPResponse(
+            body=stream, status=status, reason=http.HTTPStatus(status).phrase, preload_content=False))
+
+
+class RegistrationFetchTest(unittest.TestCase):
+    """The registration file is read at the tag; the internal path only after HTTP 404 at that tag."""
+
+    def fetch(self, responses, tag="v30.0.1"):
+        fetcher = GitHubFetcher(token="t")
+        self.github = RawGitHub(responses)
+        fetcher.session.mount("https://", self.github)
+        return fetcher.fetch_registration_source(tag)
+
+    def test_reads_the_rpcv1_file(self):
+        result = self.fetch({RPCV1_URL: (200, V30_0_1_SOURCE.encode()), INTERNAL_URL: (200, b"internal source")})
+        self.assertEqual(result, (RPCV1_FILE, V30_0_1_SOURCE))
+        self.assertEqual(self.github.requested, [RPCV1_URL])
+
+    def test_falls_back_to_the_internal_file_of_the_same_tag_on_404(self):
+        rpcv1_url, internal_url = raw_url("v30.0.0", RPCV1_FILE), raw_url("v30.0.0", INTERNAL_FILE)
+        result = self.fetch({rpcv1_url: (404, b"404: Not Found"), internal_url: (200, V30_0_0_SOURCE.encode()),
+                             RPCV1_URL: (200, b"rpcv1 source of another tag")}, tag="v30.0.0")
+        self.assertEqual(result, (INTERNAL_FILE, V30_0_0_SOURCE))
+        self.assertEqual(self.github.requested, [rpcv1_url, internal_url])
+
+    def test_any_other_failure_on_either_path_raises_naming_the_tag_and_url(self):
+        failures = {
+            "500 Server Error: Internal Server Error": (500, b""),
+            "429 Client Error: Too Many Requests": (429, b""),
+            "403 Client Error: Forbidden": (403, b"rate limit exceeded"),
+            "connection refused": requests.ConnectionError("connection refused"),
+            "read timed out": requests.ReadTimeout("read timed out"),
+            "IncompleteRead(7 bytes read, 100 more expected)": (200, http.client.IncompleteRead(b"package", 100)),
+            "Connection reset by peer": (200, ConnectionResetError(54, "Connection reset by peer")),
+            "'utf-8' codec can't decode": (200, b"package rpcv1 \xff"),
+        }
+        for failing_url, earlier_requests in ((RPCV1_URL, []), (INTERNAL_URL, [RPCV1_URL])):
+            for cause, failure in failures.items():
+                with self.subTest(url=failing_url, failure=cause):
+                    responses = {RPCV1_URL: (404, b""), INTERNAL_URL: (200, V30_0_0_SOURCE.encode())}
+                    responses[failing_url] = failure
+                    with self.assertRaises(RuntimeError) as context:
+                        self.fetch(responses)
+                    message = str(context.exception)
+                    self.assertTrue(message.startswith(f"Failed to read {failing_url} for stellar-rpc tag v30.0.1: "),
+                                    message)
+                    self.assertIn(cause, message)
+                    self.assertEqual(self.github.requested, earlier_requests + [failing_url])
+
+    def test_both_paths_absent_names_both_urls(self):
+        with self.assertRaises(RuntimeError) as context:
+            self.fetch({RPCV1_URL: (404, b""), INTERNAL_URL: (404, b"")})
+        self.assertEqual(str(context.exception), "No JSON-RPC method registration file for stellar-rpc tag v30.0.1: "
+                                                 f"HTTP 404 for {RPCV1_URL} and {INTERNAL_URL}")
+        self.assertEqual(self.github.requested, [RPCV1_URL, INTERNAL_URL])
 
 
 class DefinitionParsingTest(unittest.TestCase):
@@ -392,6 +528,83 @@ class MethodSetTest(unittest.TestCase):
 
     def test_known_methods_has_twelve_entries(self):
         self.assertEqual(len(KNOWN_METHODS), 12)
+
+
+class RegistrationParsingTest(unittest.TestCase):
+    """registered_methods() reads the one registration block of either form and rejects anything else."""
+
+    def assert_rejected(self, source, *parts):
+        with self.assertRaises(ValueError) as context:
+            registered_methods(source, "rpcv1/jsonrpc.go at v30.0.1")
+        for part in ("rpcv1/jsonrpc.go at v30.0.1",) + parts:
+            self.assertIn(part, str(context.exception))
+
+    def edited(self, source, old, new):
+        self.assertEqual(source.count(old), 1, old)
+        return source.replace(old, new)
+
+    def test_both_forms_register_the_served_methods(self):
+        for name, source in (("v30.0.0", V30_0_0_SOURCE), ("v30.0.1", V30_0_1_SOURCE)):
+            with self.subTest(fixture=name):
+                self.assertEqual(registered_methods(source, name), SERVED_METHODS_V30)
+                check_method_set(registered_methods(source, name))
+
+    def test_comments_and_literals_in_the_block_are_neither_entries_nor_brackets(self):
+        cases = {
+            "v30.0.1": (V30_0_1_SOURCE, "\t\tprotocol.GetFeeStatsMethodName: {",
+                        "\t\t// protocol.GetFooMethodName: {},\n"
+                        "\t\t/* protocol.GetBarMethodName: {}, */ protocol.GetFeeStatsMethodName: {"),
+            "v30.0.0": (V30_0_0_SOURCE, "longName:             toSnakeCase(protocol.GetHealthMethodName),",
+                        'longName:             "get_health) // }", // ignored },'),
+        }
+        for name, (source, old, new) in cases.items():
+            with self.subTest(fixture=name):
+                self.assertEqual(registered_methods(self.edited(source, old, new), name), SERVED_METHODS_V30)
+
+    def test_unrecognized_entry_is_named(self):
+        cases = {
+            "v30.0.1": (V30_0_1_SOURCE, "protocol.GetFeeStatsMethodName: {", '"getFeeStats": {'),
+            "v30.0.0": (V30_0_0_SOURCE, "methodName:           protocol.GetFeeStatsMethodName,",
+                        'methodName: "getFeeStats",'),
+        }
+        for name, (source, old, new) in cases.items():
+            with self.subTest(fixture=name):
+                self.assert_rejected(self.edited(source, old, new), "unrecognized method registration entry", new)
+
+    def test_handler_without_exactly_one_method_name_is_named(self):
+        old = "\t\t\tmethodName: protocol.GetHealthMethodName,\n"
+        for count in (0, 2):
+            with self.subTest(method_names=count):
+                self.assert_rejected(self.edited(V30_0_0_SOURCE, old, old * count),
+                                     "unrecognized method registration entry", "methods.NewHealthCheck(")
+
+    def test_method_name_reference_outside_the_block_is_named(self):
+        reference = "protocol.GetLedgerStateMethodName"
+        cases = {
+            "v30.0.1": (V30_0_1_SOURCE, "\tspecs = jsonrpc.LimitsByMethod{\n",
+                        f"\tspecs = append(specs, jsonrpc.HandlerSpec{{MethodName: {reference}}})\n"),
+            "v30.0.0": (V30_0_0_SOURCE, "\thandlersMap := handler.Map{}\n",
+                        f"\thandlers[0].methodName = {reference}\n"),
+        }
+        for name, (source, anchor, added) in cases.items():
+            for spelling in (reference, "protocol .\n\t\tGetLedgerStateMethodName"):
+                with self.subTest(fixture=name, spelling=spelling):
+                    self.assert_rejected(self.edited(source, anchor, added.replace(reference, spelling) + anchor),
+                                         f"method name reference outside the registration block: {reference}")
+            with self.subTest(fixture=name, spelling="comments and literals"):
+                quoted = (f"\t// {reference} LimitsByMethod{{\n\t/* {reference} */\n"
+                          f'\t_ = "{reference} LimitsByMethod{{" + `[]struct {{ methodName string }}{{ {reference}`\n')
+                self.assertEqual(registered_methods(self.edited(source, anchor, quoted + anchor), name),
+                                 SERVED_METHODS_V30)
+
+    def test_empty_unclosed_or_not_exactly_one_block_raises(self):
+        for source, part in (
+                ("specs = jsonrpc.LimitsByMethod{\n}.Apply(specs)\n", "the method registration block is empty"),
+                ("specs = jsonrpc.LimitsByMethod{\n\tprotocol.GetHealthMethodName: {},\n", "block is not closed"),
+                ("package rpcv1\n", "holds 0 method registration blocks"),
+                (V30_0_1_SOURCE + V30_0_0_SOURCE, "holds 2 method registration blocks")):
+            with self.subTest(expected=part):
+                self.assert_rejected(source, part)
 
 
 if __name__ == "__main__":

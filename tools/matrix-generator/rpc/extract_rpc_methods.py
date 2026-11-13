@@ -30,9 +30,9 @@ Authentication:
 
 Failures:
     A failed release lookup, a go.mod without a go-stellar-sdk requirement (every
-    stellar-rpc release before v25.0.0), a failed fetch or parse of any handler,
-    request definition, or response definition, or a set of methods registered in
-    the release's jsonrpc.go that differs from KNOWN_METHODS raises. The script
+    stellar-rpc release before v25.0.0), a failed fetch or parse of the method
+    registration file or of any handler, request definition, or response definition,
+    or a set of registered methods that differs from KNOWN_METHODS raises. The script
     then exits non-zero and writes no JSON.
 """
 
@@ -64,7 +64,8 @@ GO_STELLAR_SDK_REPO = "stellar/go-stellar-sdk"
 
 # stellar-rpc paths from v25.0.0, the first release whose go.mod requires go-stellar-sdk.
 METHODS_DIR = "cmd/stellar-rpc/internal/methods"
-REGISTRATION_FILE = "cmd/stellar-rpc/internal/jsonrpc.go"
+# The files that register the served methods, in request order (rpcv1/jsonrpc.go from v30.0.1 on).
+REGISTRATION_FILES = ("cmd/stellar-rpc/internal/rpcv1/jsonrpc.go", "cmd/stellar-rpc/internal/jsonrpc.go")
 # The go-stellar-sdk directory that declares the request and response structs.
 PROTOCOL_DIR = "protocols/rpc"
 
@@ -141,6 +142,76 @@ def check_method_set(method_names: Iterable[str]) -> None:
         if extra:
             problems.append(f"extra: {', '.join(extra)}")
         raise ValueError(f"Registered stellar-rpc methods differ from KNOWN_METHODS ({'; '.join(problems)})")
+
+
+# Go string and rune literals; the registration parser keeps them whole and drops comments.
+_GO_LITERAL = r'"(?:\\.|[^"\\\n])*"|`[^`]*`|\'(?:\\.|[^\'\\\n])*\''
+_GO_COMMENT_OR_LITERAL = re.compile(rf'({_GO_LITERAL})|//[^\n]*|/\*.*?\*/', re.DOTALL)
+# A token of the bracket scan: a literal, which the scan skips, a bracket or a comma.
+_GO_SCAN_TOKEN = re.compile(rf'{_GO_LITERAL}|[{{}}()\[\],]')
+# Group 1: the opening brace of a LimitsByMethod map literal or a methodName handler list; a literal has no group 1.
+_REGISTRATION_BLOCK = re.compile(
+    rf'{_GO_LITERAL}|(\bLimitsByMethod\s*\{{|\[\]struct\s*\{{[^{{}}]*\bmethodName\s+string\b[^{{}}]*\}}\s*\{{)')
+# A map literal entry and a handler list field that name a method.
+_MAP_ENTRY = re.compile(r'protocol\.(\w+)MethodName\s*:\s*\{.*\}', re.DOTALL)
+_METHOD_NAME_FIELD = re.compile(r'methodName\s*:\s*protocol\.(\w+)MethodName')
+# Group 1: a method name constant in code; a literal has no group 1.
+_METHOD_NAME_REFERENCE = re.compile(rf'{_GO_LITERAL}|\bprotocol\s*\.\s*(\w+MethodName)\b')
+
+
+def _block_entries(code: str, start: int, source_name: str) -> tuple[list[str], int]:
+    """Return the top-level entries of the composite literal whose body starts at start, and the index after it."""
+    entries, depth, begin = [], 0, start
+    for token in _GO_SCAN_TOKEN.finditer(code, start):
+        text = token.group(0)
+        if text in ("{", "(", "["):
+            depth += 1
+        elif text in ("}", ")", "]") and depth > 0:
+            depth -= 1
+        elif text in ("}", ")", "]", ",") and depth == 0:
+            entries.append(code[begin:token.start()].strip())
+            if text != ",":
+                return [entry for entry in entries if entry], token.end()
+            begin = token.end()
+    raise ValueError(f"{source_name}: the method registration block is not closed")
+
+
+def registered_methods(source: str, source_name: str) -> list[str]:
+    """
+    Return the JSON-RPC methods that a stellar-rpc registration file registers, in source order.
+
+    They are the keys of the one LimitsByMethod map literal or the methodName fields of the one
+    handler list, each a protocol.<Name>MethodName constant; comments and literals do not count.
+    Raises, naming source_name and the offending text, when the file holds not exactly one block,
+    the block is empty or not closed, an entry has another form, or such a constant appears
+    outside the block.
+    """
+    code = _GO_COMMENT_OR_LITERAL.sub(lambda m: m.group(1) or " ", source)
+    blocks = [match for match in _REGISTRATION_BLOCK.finditer(code) if match.group(1)]
+    if len(blocks) != 1:
+        raise ValueError(f"{source_name} holds {len(blocks)} method registration blocks, "
+                         "expected one LimitsByMethod map literal or one methodName handler list")
+    block = blocks[0]
+    entries, end = _block_entries(code, block.end(), source_name)
+    if not entries:
+        raise ValueError(f"{source_name}: the method registration block is empty")
+    # A method registered or renamed outside the block would escape check_method_set.
+    for reference in _METHOD_NAME_REFERENCE.finditer(code):
+        if reference.group(1) and not block.start() <= reference.start() < end:
+            raise ValueError(f"{source_name}: method name reference outside the registration block: "
+                             f"protocol.{reference.group(1)}")
+    methods = []
+    for entry in entries:
+        if block.group(1).startswith("LimitsByMethod"):
+            match = _MAP_ENTRY.fullmatch(entry)
+        else:
+            fields = _block_entries(entry, 1, source_name)[0] if entry.startswith("{") else []
+            named = [field for field in fields if re.match(r"methodName\s*:", field)]
+            match = len(named) == 1 and _METHOD_NAME_FIELD.fullmatch(named[0])
+        if not match:
+            raise ValueError(f"{source_name}: unrecognized method registration entry: {entry}")
+        methods.append(match.group(1)[0].lower() + match.group(1)[1:])
+    return methods
 
 
 # One member of a Go struct body, in declaration order: an embedded struct (a line holding
@@ -314,6 +385,31 @@ class GitHubFetcher:
         return self._get(f"{GITHUB_RAW_BASE}/{GO_STELLAR_SDK_REPO}/{ref}/{file_path}",
                          f"go-stellar-sdk {file_path} at {ref}")
 
+    def fetch_registration_source(self, ref: str) -> tuple[str, str]:
+        """
+        Return the path and text of the stellar-rpc file that registers the JSON-RPC methods at ref.
+
+        REGISTRATION_FILES are requested in order at ref, the next one only after HTTP 404 for the previous
+        one. Any other failure, a failed body read or a non-UTF-8 body included, raises naming ref and the URL.
+        """
+        urls = []
+        for file_path in REGISTRATION_FILES:
+            url = f"{GITHUB_RAW_BASE}/{STELLAR_RPC_REPO}/{ref}/{file_path}"
+            urls.append(url)
+            if self.verbose:
+                print(f"Fetching: {file_path} at {ref}")
+            try:
+                # get() reads the body; a failed read raises a RequestException such as ChunkedEncodingError.
+                response = self.session.get(url, timeout=REQUEST_TIMEOUT_SECONDS)
+                if response.status_code == 404:
+                    continue
+                response.raise_for_status()
+                return file_path, response.content.decode("utf-8")
+            except (requests.RequestException, UnicodeDecodeError) as e:
+                raise RuntimeError(f"Failed to read {url} for stellar-rpc tag {ref}: {e}") from e
+        raise RuntimeError(f"No JSON-RPC method registration file for stellar-rpc tag {ref}: "
+                           f"HTTP 404 for {' and '.join(urls)}")
+
     def _get(self, url: str, description: str) -> str:
         """GET a raw file; any request error or HTTP error status raises, naming the file."""
         if self.verbose:
@@ -482,19 +578,12 @@ class RPCMethodExtractor:
 
     def _registered_methods(self, rpc_version: str) -> list[str]:
         """
-        Return the JSON-RPC method names that stellar-rpc registers in REGISTRATION_FILE at rpc_version.
+        Return the JSON-RPC method names that stellar-rpc registers at rpc_version.
 
-        Raises on a fetch failure and when the file holds no protocol.<Name>MethodName
-        registrations.
+        Raises on a fetch failure and when registered_methods() rejects the file.
         """
-        registration_source = self.fetcher.fetch_file(REGISTRATION_FILE, rpc_version)
-        registered = re.findall(
-            r"\bmethodName:\s*protocol\.([A-Za-z][A-Za-z0-9]*)MethodName\b",
-            registration_source,
-        )
-        if not registered:
-            raise RuntimeError(f"No protocol.<Name>MethodName registrations found in jsonrpc.go at {rpc_version}")
-        return [name[0].lower() + name[1:] for name in registered]
+        file_path, registration_source = self.fetcher.fetch_registration_source(rpc_version)
+        return registered_methods(registration_source, f"{file_path} at {rpc_version}")
 
 
 def main() -> int:
