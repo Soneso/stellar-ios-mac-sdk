@@ -243,6 +243,17 @@ public final class AssembledTransaction: @unchecked Sendable {
     /// " (contract error in diagnostic events: Error(Contract, #N), contract C...)";
     /// `AssembledTransactionError.reportedContractError` reads the code back. The response stays
     /// in `simulationResponse`.
+    ///
+    /// When `restore`, or `options.methodOptions.restore` if `restore` is nil, is true and the
+    /// response carries a restore preamble, a restore transaction is signed and sent with
+    /// `options.clientOptions.sourceAccountKeyPair`. After its success the transaction is rebuilt
+    /// on the current sequence number of its own source account, with its operations, memo,
+    /// preconditions, Soroban data and inclusion fee, and simulated again with the same `restore`
+    /// decision. The inclusion fee is the fee less the `resourceFee` of
+    /// the Soroban data the transaction carries, when the fee covers it, and such a transaction is
+    /// simulated again without its auth entries. `AssembledTransactionError.automaticRestoreFailed`
+    /// is thrown when the restore transaction ends with a status other than success; other errors
+    /// of the restore (transport, signing, simulation) propagate unchanged.
     public func simulate(restore: Bool? = nil) async throws {
         if tx == nil {
             if raw == nil {
@@ -272,15 +283,11 @@ public final class AssembledTransaction: @unchecked Sendable {
             }
             let result = try await restoreFootprint(restorePreamble: restorePreamble)
             if result.status == GetTransactionResponse.STATUS_SUCCESS {
-                let sourceAccount = try await getSourceAccount()
-                let timeBounds = TimeBounds(minTime: 0,
-                                            maxTime: UInt64(Date().timeIntervalSince1970) + options.methodOptions.timeoutInSeconds)
-                let preconditions = TransactionPreconditions(timeBounds:timeBounds)
-                let invokeContractHostFunction = try InvokeHostFunctionOperation.forInvokingContract(contractId: options.clientOptions.contractId, functionName: options.method, functionArguments: options.arguments ?? [])
-                
-                raw = try Transaction(sourceAccount: sourceAccount, operations: [invokeContractHostFunction], memo: nil, preconditions: preconditions, maxOperationFee: options.methodOptions.fee)
-                
-                try await simulate()
+                raw = try await rebuiltOnCurrentSequence(tx!)
+                // simulate() assembles the transaction from raw only while tx is nil.
+                tx = nil
+                try await simulate(restore: shouldRestore)
+                return
             }
             let resultXdr = result.resultXdr ?? "not available"
             throw AssembledTransactionError.automaticRestoreFailed(message: "Automatic restore failed! You set 'restore: true' but the attempted restore did not work. Status: \(result.status) , transaction result xdr: \(resultXdr)")
@@ -733,8 +740,34 @@ public final class AssembledTransaction: @unchecked Sendable {
         return restoreTx
     }
     
-    private func getSourceAccount() async throws -> Account {
-        let accountResponseEnum = await server.getAccount(accountId: options.clientOptions.sourceAccountKeyPair.accountId)
+    /// `transaction` on the current sequence number of its source account, which keeps a muxed
+    /// id, with copies of its operations and its memo, preconditions and Soroban data.
+    ///
+    /// When the transaction carries Soroban data and its fee covers the data's `resourceFee`, the
+    /// copy's fee is the fee less that `resourceFee`; otherwise it is the fee. With Soroban data,
+    /// the copy's invoke operations have no auth entries.
+    private func rebuiltOnCurrentSequence(_ transaction: Transaction) async throws -> Transaction {
+        let source = transaction.sourceAccount
+        let account = try await getSourceAccount(accountId: source.keyPair.accountId)
+        let rebuilt = try Transaction(
+            sourceAccount: MuxedAccount(keyPair: account.keyPair, sequenceNumber: account.sequenceNumber, id: (source as? MuxedAccount)?.id),
+            operations: try transaction.operations.map { try Operation.fromXDR(operationXDR: $0.toXDR()) },
+            memo: transaction.memo,
+            preconditions: transaction.preconditions)
+        var inclusionFee = transaction.fee
+        if case .sorobanTransactionData(let data) = transaction.transactionXDR.ext {
+            rebuilt.setSorobanTransactionData(data: data)
+            if let resourceFee = UInt32(exactly: data.resourceFee), inclusionFee >= resourceFee {
+                inclusionFee -= resourceFee
+            }
+            rebuilt.setSorobanAuth(auth: nil)
+        }
+        rebuilt.setFee(fee: inclusionFee)
+        return rebuilt
+    }
+
+    private func getSourceAccount(accountId: String? = nil) async throws -> Account {
+        let accountResponseEnum = await server.getAccount(accountId: accountId ?? options.clientOptions.sourceAccountKeyPair.accountId)
         switch accountResponseEnum {
         case .success(let response):
             return response
