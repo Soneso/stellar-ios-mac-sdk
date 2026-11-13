@@ -826,4 +826,90 @@ class ContractSpecUnitTests: XCTestCase {
         XCTAssertEqual(recipient.id, 123456)
         XCTAssertEqual(values[2].i128String, "100")
     }
+
+    // MARK: - User-defined type sharing its name with other entries
+
+    private let sharedName = "transfer"
+    /// The XDR of the struct {value: 1}, of the void union case A and of the enum value 1.
+    private let sharedStructXdr = "AAAAEQAAAAEAAAABAAAADwAAAAV2YWx1ZQAAAAAAAAMAAAAB"
+    private let sharedUnionXdr = "AAAAEAAAAAEAAAABAAAADwAAAAFBAAAA"
+    private let sharedEnumXdr = "AAAAAwAAAAE="
+
+    private var sharedType: SCSpecTypeDefXDR { .udt(SCSpecTypeUDTXDR(name: sharedName)) }
+
+    private var sharedFunction: SCSpecEntryXDR {
+        .functionV0(SCSpecFunctionV0XDR(doc: "", name: sharedName,
+                                        inputs: [SCSpecFunctionInputV0XDR(doc: "", name: "arg", type: sharedType)],
+                                        outputs: []))
+    }
+
+    private var sharedStruct: SCSpecEntryXDR {
+        .structV0(SCSpecUDTStructV0XDR(doc: "", lib: "", name: sharedName,
+                                       fields: [SCSpecUDTStructFieldV0XDR(doc: "", name: "value", type: .u32)]))
+    }
+
+    private var sharedUnion: SCSpecEntryXDR {
+        .unionV0(SCSpecUDTUnionV0XDR(doc: "", lib: "", name: sharedName,
+                                     cases: [.voidV0(SCSpecUDTUnionCaseVoidV0XDR(doc: "", name: "A"))]))
+    }
+
+    private var sharedEnum: SCSpecEntryXDR {
+        .enumV0(SCSpecUDTEnumV0XDR(doc: "", lib: "", name: sharedName,
+                                   cases: [SCSpecUDTEnumCaseV0XDR(doc: "", name: "A", value: 1)]))
+    }
+
+    private var sharedErrorEnum: SCSpecEntryXDR {
+        .errorEnumV0(SCSpecUDTErrorEnumV0XDR(doc: "", lib: "", name: sharedName,
+                                             cases: [SCSpecUDTErrorEnumCaseV0XDR(doc: "", name: "A", value: 2)]))
+    }
+
+    private var sharedEvent: SCSpecEntryXDR {
+        .eventV0(SCSpecEventV0XDR(doc: "", lib: "", name: sharedName, prefixTopics: [sharedName],
+                                  params: [], dataFormat: .singleValue))
+    }
+
+    private func encodeShared(_ entries: [SCSpecEntryXDR], _ val: Any) throws -> String? {
+        return try ContractSpec(entries: entries).nativeToXdrSCVal(val: val, ty: sharedType).xdrEncoded
+    }
+
+    func testStructConvertsWithAFunctionOfItsNameBeforeOrAfter() throws {
+        let val = ["value": 1]
+        XCTAssertEqual(try encodeShared([sharedFunction, sharedStruct], val), sharedStructXdr)
+        XCTAssertEqual(try encodeShared([sharedStruct, sharedFunction], val), sharedStructXdr)
+        let args = try ContractSpec(entries: [sharedFunction, sharedStruct])
+            .funcArgsToXdrSCValues(name: sharedName, args: ["arg": val])
+        XCTAssertEqual(args.map { $0.xdrEncoded }, [sharedStructXdr])
+    }
+
+    func testUnionConvertsWithAFunctionOfItsNameBeforeOrAfter() throws {
+        let val = NativeUnionVal(tag: "A")
+        XCTAssertEqual(try encodeShared([sharedFunction, sharedUnion], val), sharedUnionXdr)
+        XCTAssertEqual(try encodeShared([sharedUnion, sharedFunction], val), sharedUnionXdr)
+    }
+
+    func testEnumConvertsWithAFunctionOfItsNameBeforeOrAfter() throws {
+        XCTAssertEqual(try encodeShared([sharedFunction, sharedEnum], 1), sharedEnumXdr)
+        XCTAssertEqual(try encodeShared([sharedEnum, sharedFunction], 1), sharedEnumXdr)
+    }
+
+    func testUdtConvertsAfterAnErrorEnumOrEventOfItsName() throws {
+        XCTAssertEqual(try encodeShared([sharedErrorEnum, sharedEnum], 1), sharedEnumXdr)
+        XCTAssertEqual(try encodeShared([sharedEvent, sharedStruct], ["value": 1]), sharedStructXdr)
+    }
+
+    func testUdtNameWithoutAStructUnionOrEnumEntryKeepsItsError() {
+        XCTAssertThrowsError(try encodeShared([sharedFunction], ["value": 1])) { error in
+            guard case ContractSpecError.invalidType(let message) = error else {
+                return XCTFail("Expected invalidType, got \(error)")
+            }
+            XCTAssertEqual(message, "Failed to parse udt transfer")
+        }
+        let missing = SCSpecTypeDefXDR.udt(SCSpecTypeUDTXDR(name: "missing"))
+        XCTAssertThrowsError(try ContractSpec(entries: [sharedStruct]).nativeToXdrSCVal(val: 1, ty: missing)) { error in
+            guard case ContractSpecError.entryNotFound(let name) = error else {
+                return XCTFail("Expected entryNotFound, got \(error)")
+            }
+            XCTAssertEqual(name, "missing")
+        }
+    }
 }

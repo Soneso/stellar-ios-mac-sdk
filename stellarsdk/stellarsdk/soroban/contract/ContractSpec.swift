@@ -198,7 +198,8 @@ public final class ContractSpec: Sendable {
         return result
     }
 
-    /// Finds the XDR spec entry for the given name.
+    /// Finds the first XDR spec entry with the given name, in spec order, whatever its kind:
+    /// function, struct, union, enum, error enum or event.
     /// - Parameter name: The name to find
     /// - Returns: The entry or nil if not found
     public func findEntry(name: String) -> SCSpecEntryXDR? {
@@ -266,6 +267,9 @@ public final class ContractSpec: Sendable {
     /// A u32, i32, u64, i64, timepoint or duration parameter takes an `Int`, `UInt`, `Int64`,
     /// `UInt64`, `Int32` or `UInt32` that the type holds, or a decimal `String` that the
     /// type's `init?(_:radix:)` reads.
+    ///
+    /// A user-defined type converts with the first struct, union or enum entry of its name
+    /// and skips any function, event or error enum of that name.
     /// - Returns: The converted SCValXDR; maps and structs carry their entries in the
     ///   Soroban host's key order (see `SCValXDR.sortedMap(_:)`).
     /// - Throws: ContractSpecError if conversion fails; `StellarSDKError.invalidArgument`
@@ -353,8 +357,26 @@ public final class ContractSpec: Sendable {
     
     // MARK: - Private helper methods
     
+    /// The first struct, union or enum entry named `name`. Without one, the entry
+    /// `findEntry(name:)` finds, so the caller reports a name of another kind.
+    private func findUdtEntry(name: String) -> SCSpecEntryXDR? {
+        for entry in entries {
+            switch entry {
+            case .structV0(let structV0) where structV0.name == name:
+                return entry
+            case .unionV0(let unionV0) where unionV0.name == name:
+                return entry
+            case .enumV0(let enumV0) where enumV0.name == name:
+                return entry
+            default:
+                continue
+            }
+        }
+        return findEntry(name: name)
+    }
+
     private func nativeToUdt(val: Any?, name: String) throws -> SCValXDR {
-        guard let entry = findEntry(name: name) else {
+        guard let entry = findUdtEntry(name: name) else {
             throw ContractSpecError.entryNotFound(name: SecretSeedRedaction.redactingSecretSeeds(in: name))
         }
         
