@@ -249,11 +249,12 @@ public final class AssembledTransaction: @unchecked Sendable {
     /// `options.clientOptions.sourceAccountKeyPair`. After its success the transaction is rebuilt
     /// on the current sequence number of its own source account, with its operations, memo,
     /// preconditions, Soroban data and inclusion fee, and simulated again with the same `restore`
-    /// decision. The inclusion fee is the fee less the `resourceFee` of
-    /// the Soroban data the transaction carries, when the fee covers it, and such a transaction is
-    /// simulated again without its auth entries. `AssembledTransactionError.automaticRestoreFailed`
-    /// is thrown when the restore transaction ends with a status other than success; other errors
-    /// of the restore (transport, signing, simulation) propagate unchanged.
+    /// decision. The inclusion fee is the fee less the `resourceFee` of the Soroban data the
+    /// transaction carries, when the fee covers it. The rebuilt transaction carries that data with
+    /// the `resourceFee` 0, so every further restore keeps the inclusion fee, and it is simulated
+    /// again without its auth entries. `AssembledTransactionError.automaticRestoreFailed` is thrown
+    /// when the restore transaction ends with a status other than success; other errors of the
+    /// restore (transport, signing, simulation) propagate unchanged.
     public func simulate(restore: Bool? = nil) async throws {
         if tx == nil {
             if raw == nil {
@@ -745,7 +746,8 @@ public final class AssembledTransaction: @unchecked Sendable {
     ///
     /// When the transaction carries Soroban data and its fee covers the data's `resourceFee`, the
     /// copy's fee is the fee less that `resourceFee`; otherwise it is the fee. With Soroban data,
-    /// the copy's invoke operations have no auth entries.
+    /// the copy carries that data with the `resourceFee` 0, so its fee is its inclusion fee, and
+    /// its invoke operations have no auth entries.
     private func rebuiltOnCurrentSequence(_ transaction: Transaction) async throws -> Transaction {
         let source = transaction.sourceAccount
         let account = try await getSourceAccount(accountId: source.keyPair.accountId)
@@ -755,11 +757,13 @@ public final class AssembledTransaction: @unchecked Sendable {
             memo: transaction.memo,
             preconditions: transaction.preconditions)
         var inclusionFee = transaction.fee
-        if case .sorobanTransactionData(let data) = transaction.transactionXDR.ext {
-            rebuilt.setSorobanTransactionData(data: data)
+        if case .sorobanTransactionData(var data) = transaction.transactionXDR.ext {
             if let resourceFee = UInt32(exactly: data.resourceFee), inclusionFee >= resourceFee {
                 inclusionFee -= resourceFee
             }
+            // The simulation reads only the footprint of the carried data.
+            data.resourceFee = 0
+            rebuilt.setSorobanTransactionData(data: data)
             rebuilt.setSorobanAuth(auth: nil)
         }
         rebuilt.setFee(fee: inclusionFee)
