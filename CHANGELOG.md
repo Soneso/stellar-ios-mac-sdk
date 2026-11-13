@@ -9,11 +9,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - `LedgerEntry.ledgerKeyXdr` returns the entry key of a `getLedgerEntries` response decoded as a `LedgerKeyXDR`.
+- `ReportedContractError` and `SimulateTransactionResponse.reportedContractError()` return the contract error code a failed simulation reports. The code comes from the host error `Error(Contract, #N)`, or from the earliest diagnostic error event of a failed call, with the emitting contract, when the host error masks it as `Error(Context, ...)` or `Error(Auth, ...)`.
+- `AssembledTransactionError.reportedContractError` reads that code back from a `.simulationFailed` message.
+- `SmartAccountTransactionException.SimulationFailed.diagnosticEventsXdr` and `reportedContractError` hold the base64 diagnostic events and the reported contract error of a failed simulation response, with a matching initializer and `simulationFailed(reason:diagnosticEventsXdr:reportedContractError:cause:)` factory.
+- `OZContractErrorCodes.decodeFromSimulationFailure(_:)` decodes the reported contract error of a smart account simulation failure.
 
 ### Deprecated
 - `LedgerEntry.keyXdrValue`, which decodes the ledger key as an `SCValXDR`; use `ledgerKeyXdr`.
 
 ### Fixed
+- A failed simulation whose host error masks the contract error as `Error(Context, InvalidAction)` (a failing constructor) or `Error(Auth, InvalidAction)` (a failing `__check_auth`), the form stellar-rpc 30.0.1 returns, names the code: the `AssembledTransactionError.simulationFailed` and smart account `SimulationFailed` messages end with " (contract error in diagnostic events: Error(Contract, #N), contract C...)" when a diagnostic event reports it, so `OZContractErrorCodes.decodeFromMessage` finds the code.
 - `AssembledTransaction.send` and `signAndSend` end status polling when `timeoutInSeconds` has elapsed, including the time of each status request, and cancel a status request that outlasts the remaining time; a last status request at the deadline can take three seconds. They retry failed status requests and RPC error responses and name the last one in `AssembledTransactionError.pollInterrupted`.
 - `ContractSpec.nativeToXdrSCVal` converts timepoint and duration arguments and takes an `Int`, `UInt`, `Int64`, `UInt64`, `Int32`, `UInt32` or decimal `String` for u32, i32, u64, i64, timepoint and duration, so the values the `SCValXDR` helpers return convert back; a value outside the type throws `ContractSpecError.invalidType` naming the value and the type.
 

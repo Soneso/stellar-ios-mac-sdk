@@ -35,11 +35,12 @@ public struct OZContractError: Equatable, Hashable, Sendable {
 /// Contract-level error codes from the OpenZeppelin smart account, WebAuthn verifier, and
 /// policy contracts.
 ///
-/// When a contract rejects a call, the code appears inside the message of a
-/// `SmartAccountTransactionException` (for example `Error(Contract, #3016)`). The SDK
-/// surfaces the raw error but does not parse or map contract error codes itself; callers
-/// can extract the code from the message and compare it against these constants, or
-/// resolve it with the consumer-side ``decode(_:)`` and ``decodeFromMessage(_:)`` helpers.
+/// When a contract rejects a simulated call, the kit's
+/// `SmartAccountTransactionException.SimulationFailed` carries the contract error the
+/// simulation reports as `reportedContractError`, taken from the host error or, when the host
+/// masks it, from the diagnostic events; ``decodeFromSimulationFailure(_:)`` names it. The
+/// code also appears in the exception's message (for example `Error(Contract, #3016)`), where
+/// ``decodeFromMessage(_:)`` finds it. ``decode(_:)`` resolves a raw code.
 ///
 /// The named constants below cover the smart account contract's own error enum — the
 /// codes a caller is most likely to branch on. ``decode(_:)`` resolves any known code
@@ -105,13 +106,33 @@ public enum OZContractErrorCodes {
         return codeTable[code]
     }
 
+    /// Decodes the contract error a simulation failure reports.
+    ///
+    /// Reads only `failure.reportedContractError`; the message is not searched, so an unknown
+    /// reported code gives `nil` even when the message names a known one. The selection behind
+    /// the reported code is a heuristic, and a code of a contract outside the OpenZeppelin suite
+    /// can collide with a known code; see `ReportedContractError`.
+    ///
+    /// - Parameter failure: The simulation failure thrown by the kit.
+    /// - Returns: The decoded ``OZContractError``, or `nil` when the failure reports no code or
+    ///   an unknown one.
+    public static func decodeFromSimulationFailure(
+        _ failure: SmartAccountTransactionException.SimulationFailed
+    ) -> OZContractError? {
+        guard let reported = failure.reportedContractError else {
+            return nil
+        }
+        return decode(Int(reported.code))
+    }
+
     /// Extracts and decodes the first known contract error code from an error `message`.
     ///
-    /// Soroban RPC surfaces contract failures as `Error(Contract, #NNNN)` inside
-    /// simulation and submission error strings (typically the message of a thrown
-    /// `SmartAccountTransactionException`). This scans the message for such markers and
-    /// returns the first one whose code is a known OZ smart-account contract error, or
-    /// `nil` when the message is `nil`, carries no marker, or carries only unknown codes.
+    /// Contract failures appear as `Error(Contract, #NNNN)` inside simulation and submission
+    /// error strings (typically the message of a thrown `SmartAccountTransactionException`,
+    /// including the contract error suffix the kit appends when the host error masks the
+    /// code). This scans the message for such markers and returns the first one whose code
+    /// is a known OZ smart-account contract error, or `nil` when the message is `nil`,
+    /// carries no marker, or carries only unknown codes.
     ///
     /// - Parameter message: The error message to scan.
     /// - Returns: The decoded ``OZContractError``, or `nil` when no known code is found.

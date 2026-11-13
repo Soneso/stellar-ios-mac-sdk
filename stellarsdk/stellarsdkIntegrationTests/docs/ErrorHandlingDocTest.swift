@@ -330,6 +330,7 @@ class ErrorHandlingDocTest: XCTestCase {
         ]
 
         for error in cases {
+            XCTAssertNil(error.reportedContractError, "\(error)")
             switch error {
             case .simulationFailed(let message):
                 XCTAssertEqual(message, "test")
@@ -357,6 +358,19 @@ class ErrorHandlingDocTest: XCTestCase {
                 XCTAssertEqual(message, "test")
             }
         }
+
+        // A simulation failure reads back the contract error its message reports: from the
+        // host error, or from the suffix the SDK appends when the host error masks the code.
+        let fromHostError = AssembledTransactionError.simulationFailed(
+            message: "Simulation failed with error: HostError: Error(Contract, #8)")
+        XCTAssertEqual(fromHostError.reportedContractError,
+                       ReportedContractError(code: 8, provenance: .hostError, contractId: nil))
+        let thresholdPolicy = "CAZJ3UVRY3R3S5C5BH32GMYBRSN23N75ZEEXEOLXOUUAHDFIMVP4AXUC"
+        let fromEvents = AssembledTransactionError.simulationFailed(
+            message: "Simulation failed with error: HostError: Error(Context, InvalidAction)"
+                + " (contract error in diagnostic events: Error(Contract, #3201), contract \(thresholdPolicy))")
+        XCTAssertEqual(fromEvents.reportedContractError,
+                       ReportedContractError(code: 3201, provenance: .diagnosticEvents, contractId: thresholdPolicy))
     }
 
     func testSorobanClientErrorCases() {

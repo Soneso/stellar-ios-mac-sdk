@@ -71,6 +71,8 @@ extension OZManagerHelpers {
 
     /// Wraps the kit's RPC `simulateTransaction` and lifts transport-level and
     /// simulation-error responses into `SmartAccountTransactionException.SimulationFailed`.
+    /// A simulation-error response passes its diagnostic events and the contract error it
+    /// reports to the exception; a transport-level failure keeps the RPC error as `cause`.
     ///
     /// Every simulation the kit runs flows through here, so
     /// ``OZSmartAccountConfig/useUpgradedAuth`` decides for the whole kit whether the
@@ -90,7 +92,9 @@ extension OZManagerHelpers {
         case .success(let simulation):
             if let error = simulation.error {
                 throw SmartAccountTransactionException.simulationFailed(
-                    reason: "\(failureMessagePrefix)\(error)"
+                    reason: "\(failureMessagePrefix)\(error)",
+                    diagnosticEventsXdr: simulation.events ?? [],
+                    reportedContractError: simulation.reportedContractError()
                 )
             }
             return simulation

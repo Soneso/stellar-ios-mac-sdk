@@ -125,8 +125,9 @@ final class SorobanClientExternalRefDeployUnitTests: XCTestCase {
     /// Serves the full external-ref deploy flow: the executable tag entry for
     /// the resolution, the wasm code entry for the spec preload, the source
     /// account, simulate, send and getTransaction. When [tagEntryExists] is
-    /// false, the resolution request is answered with no entries.
-    private func setupDeployFlowMock(tagEntryExists: Bool = true, tag: Data? = nil) {
+    /// false, the resolution request is answered with no entries. A non-nil
+    /// [simulateBody] answers the simulation instead of the successful one.
+    private func setupDeployFlowMock(tagEntryExists: Bool = true, tag: Data? = nil, simulateBody: String? = nil) {
         let log = requestLog
         let tagKey = tagKeyB64(tag: tag)
         let codeKey = codeKeyB64()
@@ -149,7 +150,7 @@ final class SorobanClientExternalRefDeployUnitTests: XCTestCase {
             mock.statusCode = 200
             if bodyString.contains("simulateTransaction") {
                 log.entries.append("simulate")
-                return self.simulateResponseJson()
+                return simulateBody ?? self.simulateResponseJson()
             }
             if bodyString.contains("sendTransaction") {
                 log.entries.append("send")
@@ -446,6 +447,27 @@ final class SorobanClientExternalRefDeployUnitTests: XCTestCase {
         }
         // The failure happened before anything was submitted.
         XCTAssertEqual(requestLog.entries, ["tag"])
+    }
+
+    func testDeployReportsTheConstructorContractErrorOfAFailedSimulation() async throws {
+        setupDeployFlowMock(simulateBody: try SimulationFailureFixtures.body(SimulationFailureFixtures.caseA))
+
+        do {
+            _ = try await SorobanClient.deployFromExternalRef(deployRequest: deployRequest(constructorArgs: [SCValXDR.u32(7)]))
+            XCTFail("expected simulationFailed")
+        } catch let error as AssembledTransactionError {
+            guard case .simulationFailed(let message) = error else {
+                return XCTFail("expected simulationFailed, got \(error)")
+            }
+            XCTAssertEqual(message, "Simulation failed with error: HostError: Error(Context, InvalidAction)"
+                            + " (contract error in diagnostic events: Error(Contract, #3201), contract "
+                            + SimulationFailureFixtures.thresholdPolicy + ")")
+            XCTAssertEqual(error.reportedContractError,
+                           ReportedContractError(code: 3201, provenance: .diagnosticEvents,
+                                                 contractId: SimulationFailureFixtures.thresholdPolicy))
+        }
+        XCTAssertTrue(requestLog.entries.contains("simulate"))
+        XCTAssertFalse(requestLog.entries.contains("send"))
     }
 
     func testDeployWithBinaryTagUsesTheSameBytesForResolutionAndEnvelope() async throws {

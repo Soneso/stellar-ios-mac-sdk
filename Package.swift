@@ -40,6 +40,7 @@ let package = Package(
             path: "stellarsdk/stellarsdkUnitTests",
             resources: [
                 .copy("soroban/soroban_token_contract.wasm"),
+                .copy("soroban/simulation_failures"),
                 .copy("sep/xdr_json/corpus.json")
             ]
         ),

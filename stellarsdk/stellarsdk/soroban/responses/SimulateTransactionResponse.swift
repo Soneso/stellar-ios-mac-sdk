@@ -77,8 +77,9 @@ public struct SimulateTransactionResponse: Decodable, Sendable {
     /// Recommended minimum resource fee to add when submitting the transaction. This fee is to be added on top of the Stellar network fee. Not present in case of error.
     public let minResourceFee:UInt32?
 
-    /// Array of the events emitted during the contract invocation(s). The events are ordered by their emission time. (an array of serialized base64 strings - DiagnosticEventXdr)
-    public let events:[String]? // DiagnosticEventXdr
+    /// Array of the events emitted during the contract invocation(s). The events are ordered by their emission time. (an array of serialized base64 strings - DiagnosticEventXDR)
+    /// `reportedContractError()` selects the contract error a failed simulation reports from them.
+    public let events:[String]? // DiagnosticEventXDR
 
     ///  (optional) only present if the transaction failed. This field will include more details from stellar-core about why the invoke host function call failed.
     public let error:String?

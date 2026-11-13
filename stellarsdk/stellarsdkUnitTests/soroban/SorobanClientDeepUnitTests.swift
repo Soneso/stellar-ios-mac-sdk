@@ -835,6 +835,97 @@ final class SorobanClientDeepUnitTests: XCTestCase {
         }
     }
 
+    // MARK: - Simulation Failure Contract Error Tests
+
+    private func simulationFailure(of call: () async throws -> Void,
+                                   file: StaticString = #filePath,
+                                   line: UInt = #line) async -> (message: String, reported: ReportedContractError?)? {
+        do {
+            try await call()
+            XCTFail("expected simulationFailed", file: file, line: line)
+        } catch let error as AssembledTransactionError {
+            guard case .simulationFailed(let message) = error else {
+                XCTFail("expected simulationFailed, got \(error)", file: file, line: line)
+                return nil
+            }
+            return (message, error.reportedContractError)
+        } catch {
+            XCTFail("expected AssembledTransactionError, got \(error)", file: file, line: line)
+        }
+        return nil
+    }
+
+    private func testFunctionClient() -> SorobanClient {
+        let function = SCSpecFunctionV0XDR(doc: "Test function", name: "test", inputs: [], outputs: [])
+        return SorobanClient(specEntries: [.functionV0(function)], clientOptions: clientOptions)
+    }
+
+    func testDeployReportsTheConstructorContractError() async throws {
+        let router = SimulationRpcRouter(sourceAccount: keyPair,
+                                         simulateBodies: [try SimulationFailureFixtures.body(SimulationFailureFixtures.caseA)])
+        let deployRequest = DeployRequest(rpcUrl: mockRpcUrl,
+                                          network: Network.testnet,
+                                          sourceAccountKeyPair: keyPair,
+                                          wasmHash: "86b49fe03f7df0ad1c2a28bd8361b923ab57096e09f397f92f0c00ae3bd06d28",
+                                          constructorArgs: [.u32(2)],
+                                          enableServerLogging: false)
+        let failure = await simulationFailure { _ = try await SorobanClient.deploy(deployRequest: deployRequest) }
+        let expected = ReportedContractError(code: 3201, provenance: .diagnosticEvents,
+                                             contractId: SimulationFailureFixtures.thresholdPolicy)
+        XCTAssertEqual(failure?.message,
+                       "Simulation failed with error: HostError: Error(Context, InvalidAction)"
+                        + " (contract error in diagnostic events: Error(Contract, #3201), contract "
+                        + SimulationFailureFixtures.thresholdPolicy + ")")
+        XCTAssertEqual(failure?.reported, expected)
+        XCTAssertEqual(OZContractErrorCodes.decode(Int(expected.code))?.contract, "SimpleThresholdError")
+        XCTAssertEqual(OZContractErrorCodes.decode(Int(expected.code))?.name, "InvalidThreshold")
+        XCTAssertEqual(router.sentTransactionRequests.count, 0)
+    }
+
+    func testInstallReportsTheHostErrorCode() async throws {
+        let router = SimulationRpcRouter(sourceAccount: keyPair,
+                                         simulateBodies: [try SimulationFailureFixtures.body(SimulationFailureFixtures.caseC2)])
+        let installRequest = InstallRequest(rpcUrl: mockRpcUrl,
+                                            network: Network.testnet,
+                                            sourceAccountKeyPair: keyPair,
+                                            wasmBytes: Data([0x00, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00]),
+                                            enableServerLogging: false)
+        let failure = await simulationFailure { _ = try await SorobanClient.install(installRequest: installRequest) }
+        XCTAssertEqual(failure?.message, "Simulation failed with error: HostError: Error(Contract, #8)")
+        XCTAssertEqual(failure?.reported, ReportedContractError(code: 8, provenance: .hostError, contractId: nil))
+        XCTAssertEqual(router.sentTransactionRequests.count, 0)
+    }
+
+    func testInvokeMethodAndBuildInvokeMethodTxReportTheCheckAuthContractError() async throws {
+        let router = SimulationRpcRouter(sourceAccount: keyPair,
+                                         simulateBodies: [try SimulationFailureFixtures.body(SimulationFailureFixtures.caseB1)])
+        let client = testFunctionClient()
+        let expectedMessage = "Simulation failed with error: HostError: Error(Auth, InvalidAction)"
+            + " (contract error in diagnostic events: Error(Contract, #3114), contract "
+            + SimulationFailureFixtures.webAuthnVerifier + ")"
+        let expected = ReportedContractError(code: 3114, provenance: .diagnosticEvents,
+                                             contractId: SimulationFailureFixtures.webAuthnVerifier)
+
+        let invoked = await simulationFailure { _ = try await client.invokeMethod(name: "test") }
+        XCTAssertEqual(invoked?.message, expectedMessage)
+        XCTAssertEqual(invoked?.reported, expected)
+
+        let built = await simulationFailure { _ = try await client.buildInvokeMethodTx(name: "test") }
+        XCTAssertEqual(built?.message, expectedMessage)
+        XCTAssertEqual(built?.reported, expected)
+        XCTAssertEqual(router.sentTransactionRequests.count, 0)
+    }
+
+    func testInvokeMethodWithoutTransactionDataKeepsItsMessage() async throws {
+        let router = SimulationRpcRouter(sourceAccount: keyPair, simulateBodies: [SimulationRpcRouter.noTransactionDataBody])
+        let client = testFunctionClient()
+        let failure = await simulationFailure { _ = try await client.invokeMethod(name: "test") }
+        let unwrapped = try XCTUnwrap(failure)
+        XCTAssertEqual(unwrapped.message, "Transaction simulation failed")
+        XCTAssertNil(unwrapped.reported)
+        XCTAssertEqual(router.sentTransactionRequests.count, 0)
+    }
+
     // MARK: - Mock Helper Methods
 
     private func setupMockForGetAccount() {

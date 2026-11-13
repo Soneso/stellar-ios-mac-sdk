@@ -3756,6 +3756,263 @@ final class OZTransactionOperationsPipelineTests: XCTestCase {
     }
 
     // ========================================================================
+    // Simulation failure: diagnostic events and the reported contract error
+    // ========================================================================
+
+    private func contractErrorSuffix(_ code: UInt32, _ contractId: String) -> String {
+        return " (contract error in diagnostic events: Error(Contract, #\(code)), contract \(contractId))"
+    }
+
+    private func opHostFunction() throws -> HostFunctionXDR {
+        return HostFunctionXDR.invokeContract(
+            InvokeContractArgsXDR(
+                contractAddress: try SCAddressXDR(contractId: contractA),
+                functionName: "op",
+                args: []
+            )
+        )
+    }
+
+    /// Runs `call` and returns the `SimulationFailed` it throws.
+    private func simulationFailure(
+        file: StaticString = #filePath,
+        line: UInt = #line,
+        _ call: () async throws -> Void
+    ) async throws -> SmartAccountTransactionException.SimulationFailed {
+        do {
+            try await call()
+        } catch let error as SmartAccountTransactionException.SimulationFailed {
+            return error
+        }
+        XCTFail("expected SmartAccountTransactionException.SimulationFailed", file: file, line: line)
+        throw SmartAccountTransactionException.SimulationFailed(message: "no failure")
+    }
+
+    /// A `fetchTokenDecimals` call whose simulation answers with `payload`.
+    private func decimalsFailure(payload: [String: Any]) async throws -> SmartAccountTransactionException.SimulationFailed {
+        let h = try await buildPipelineHarness()
+        enqueueDeployerAccount(deployer: h.deployer)
+        script.ingestSimulateResponse(payload: payload)
+        return try await simulationFailure { _ = try await h.txOps.fetchTokenDecimals(tokenContract: contractB) }
+    }
+
+    func test_submit_initialSimulation_maskedCheckAuth_carriesEventsAndReportedError() async throws {
+        let h = try await buildPipelineHarness()
+        enqueueDeployerAccount(deployer: h.deployer)
+        script.ingestSimulateResponse(payload: try SimulationFailureFixtures.result(SimulationFailureFixtures.caseB2))
+
+        let failure = try await simulationFailure { _ = try await h.txOps.submit(hostFunction: try opHostFunction(), auth: []) }
+
+        XCTAssertEqual(failure.message,
+                       "Transaction simulation failed: Simulation error: HostError: Error(Auth, InvalidAction)"
+                        + contractErrorSuffix(3016, SimulationFailureFixtures.smartAccount))
+        XCTAssertEqual(failure.diagnosticEventsXdr, try SimulationFailureFixtures.events(SimulationFailureFixtures.caseB2))
+        XCTAssertEqual(failure.reportedContractError,
+                       ReportedContractError(code: 3016, provenance: .diagnosticEvents,
+                                             contractId: SimulationFailureFixtures.smartAccount))
+        XCTAssertEqual(OZContractErrorCodes.decodeFromSimulationFailure(failure)?.name, "UnauthorizedSigner")
+        XCTAssertNil(failure.cause)
+        XCTAssertEqual(script.sendCallCount, 0)
+    }
+
+    func test_submit_reSimulation_maskedCheckAuth_reportsTheAccountError() async throws {
+        let h = try await buildPipelineHarness()
+        enqueueDeployerAccount(deployer: h.deployer)
+        let entry = try OZPipelineFixtures.addressCredentialsAuthEntry(contractAddress: contractA)
+        script.enqueueSimulate(authEntries: [entry])
+        script.setGetLatestLedger(sequence: 1000)
+        h.provider.enqueueAuthenticate(
+            RecordingWebAuthnFixtures.authenticationResult(
+                credentialId: try Data(base64URLEncoded: credentialIdB64Url)
+            )
+        )
+        script.ingestSimulateResponse(payload: try SimulationFailureFixtures.result(SimulationFailureFixtures.caseB2))
+
+        let failure = try await simulationFailure { _ = try await h.txOps.submit(hostFunction: try opHostFunction(), auth: []) }
+
+        XCTAssertEqual(failure.message,
+                       "Transaction simulation failed: Re-simulation error: HostError: Error(Auth, InvalidAction)"
+                        + contractErrorSuffix(3016, SimulationFailureFixtures.smartAccount))
+        XCTAssertEqual(failure.diagnosticEventsXdr, try SimulationFailureFixtures.events(SimulationFailureFixtures.caseB2))
+        XCTAssertEqual(failure.reportedContractError,
+                       ReportedContractError(code: 3016, provenance: .diagnosticEvents,
+                                             contractId: SimulationFailureFixtures.smartAccount))
+        XCTAssertEqual(script.simulateCallCount, 2)
+        XCTAssertEqual(script.sendCallCount, 0)
+    }
+
+    /// The structured value is the earliest failed-call error (unknown code 1), while the
+    /// message search still finds the known code a 30.0.0-shaped log line names.
+    func test_submit_unknownReportedCode_isNotDecodedWhileTheMessageNamesAKnownCode() async throws {
+        let text = "HostError: Error(Auth, InvalidAction)\n\nEvent log (newest first):\n"
+            + "   0: [Failed Diagnostic Event (not emitted)] contract:\(SimulationFailureFixtures.smartAccount), "
+            + "topics:[error, Error(Contract, #3016)], data:\"escalating error to VM trap from failed host function call: __check_auth\"\n"
+        let unknownFirst = try SyntheticDiagnosticEvent.contractError(1)
+        let known = try SyntheticDiagnosticEvent.contractError(3016, contractId: SimulationFailureFixtures.smartAccount)
+
+        let h = try await buildPipelineHarness()
+        enqueueDeployerAccount(deployer: h.deployer)
+        script.ingestSimulateResponse(payload: SimulationFailureFixtures.failureResult(error: text, events: [unknownFirst, known]))
+        let failure = try await simulationFailure { _ = try await h.txOps.submit(hostFunction: try opHostFunction(), auth: []) }
+
+        XCTAssertEqual(failure.reportedContractError,
+                       ReportedContractError(code: 1, provenance: .diagnosticEvents,
+                                             contractId: SyntheticDiagnosticEvent.otherContract))
+        XCTAssertNil(OZContractErrorCodes.decodeFromSimulationFailure(failure))
+        XCTAssertEqual(failure.message,
+                       "Transaction simulation failed: Simulation error: " + text
+                        + contractErrorSuffix(1, SyntheticDiagnosticEvent.otherContract))
+        XCTAssertEqual(OZContractErrorCodes.decodeFromMessage(failure.message)?.code, 3016)
+        XCTAssertEqual(OZContractErrorCodes.decodeFromMessage(failure.message)?.name, "UnauthorizedSigner")
+
+        // The same text without a qualifying event: no structured value, the message unchanged.
+        let notQualifying = try SyntheticDiagnosticEvent.contractError(3016, inSuccessfulContractCall: true)
+        let h2 = try await buildPipelineHarness()
+        enqueueDeployerAccount(deployer: h2.deployer)
+        script.ingestSimulateResponse(payload: SimulationFailureFixtures.failureResult(error: text, events: [notQualifying]))
+        let plain = try await simulationFailure { _ = try await h2.txOps.submit(hostFunction: try opHostFunction(), auth: []) }
+
+        XCTAssertNil(plain.reportedContractError)
+        XCTAssertNil(OZContractErrorCodes.decodeFromSimulationFailure(plain))
+        XCTAssertEqual(plain.message, "Transaction simulation failed: Simulation error: " + text)
+        XCTAssertEqual(plain.message,
+                       SmartAccountTransactionException.simulationFailed(reason: "Simulation error: " + text).message)
+        XCTAssertEqual(plain.diagnosticEventsXdr, [notQualifying])
+        XCTAssertEqual(OZContractErrorCodes.decodeFromMessage(plain.message)?.code, 3016)
+    }
+
+    func test_submit_simulationFailure_keepsEveryEventInOrderAndTheEarliestWins() async throws {
+        let earliest = try SyntheticDiagnosticEvent.contractError(7)
+        let invokedContract = try SyntheticDiagnosticEvent.contractError(3016, contractId: contractA)
+        let knownCode = try SyntheticDiagnosticEvent.contractError(3201, contractId: SimulationFailureFixtures.thresholdPolicy)
+        let events = [earliest, invokedContract, earliest, knownCode]
+
+        let h = try await buildPipelineHarness()
+        enqueueDeployerAccount(deployer: h.deployer)
+        var payload = SimulationFailureFixtures.failureResult(error: "HostError: Error(Auth, InvalidAction)", events: events)
+        script.ingestSimulateResponse(payload: payload)
+        let failure = try await simulationFailure { _ = try await h.txOps.submit(hostFunction: try opHostFunction(), auth: []) }
+        payload["events"] = [String]()
+
+        XCTAssertEqual(failure.diagnosticEventsXdr, events)
+        XCTAssertEqual(failure.reportedContractError,
+                       ReportedContractError(code: 7, provenance: .diagnosticEvents,
+                                             contractId: SyntheticDiagnosticEvent.otherContract))
+        XCTAssertEqual(failure.message,
+                       "Transaction simulation failed: Simulation error: HostError: Error(Auth, InvalidAction)"
+                        + contractErrorSuffix(7, SyntheticDiagnosticEvent.otherContract))
+    }
+
+    func test_fundWallet_fundingSimulation_maskedFailure_reportsTheContractError() async throws {
+        let h = try await buildPipelineHarness()
+        installCustomURLHandler(script: script, friendbotSucceeds: true)
+        enqueueDeployerAccount(deployer: h.deployer)
+        script.enqueueSimulate(authEntries: [], resultXdr: SCValXDR.i128(Int128PartsXDR(hi: 0, lo: 200_000_000)).xdrEncoded)
+        script.setGetAccountResponse(accountId: try KeyPair.generateRandomKeyPair().accountId, sequence: 1)
+        script.ingestSimulateResponse(payload: try SimulationFailureFixtures.result(SimulationFailureFixtures.caseA))
+
+        let failure = try await simulationFailure { _ = try await h.txOps.fundWallet(nativeTokenContract: contractA) }
+
+        XCTAssertEqual(failure.message,
+                       "Transaction simulation failed: Failed to simulate funding transfer: HostError: Error(Context, InvalidAction)"
+                        + contractErrorSuffix(3201, SimulationFailureFixtures.thresholdPolicy))
+        XCTAssertEqual(failure.diagnosticEventsXdr, try SimulationFailureFixtures.events(SimulationFailureFixtures.caseA))
+        XCTAssertEqual(failure.reportedContractError,
+                       ReportedContractError(code: 3201, provenance: .diagnosticEvents,
+                                             contractId: SimulationFailureFixtures.thresholdPolicy))
+        XCTAssertEqual(script.sendCallCount, 0)
+    }
+
+    func test_fundWallet_fundingReSimulation_maskedFailure_reportsTheContractError() async throws {
+        let h = try await buildPipelineHarness()
+        installCustomURLHandler(script: script, friendbotSucceeds: true)
+        enqueueDeployerAccount(deployer: h.deployer)
+        script.enqueueSimulate(authEntries: [], resultXdr: SCValXDR.i128(Int128PartsXDR(hi: 0, lo: 200_000_000)).xdrEncoded)
+        script.setGetAccountResponse(accountId: try KeyPair.generateRandomKeyPair().accountId, sequence: 1)
+        script.enqueueSimulate(authEntries: [try OZPipelineFixtures.sourceAccountAuthEntry(targetContract: contractA)])
+        script.setGetLatestLedger(sequence: 1000)
+        script.ingestSimulateResponse(payload: try SimulationFailureFixtures.result(SimulationFailureFixtures.caseB1))
+
+        let failure = try await simulationFailure { _ = try await h.txOps.fundWallet(nativeTokenContract: contractA) }
+
+        XCTAssertEqual(failure.message,
+                       "Transaction simulation failed: Re-simulation error: HostError: Error(Auth, InvalidAction)"
+                        + contractErrorSuffix(3114, SimulationFailureFixtures.webAuthnVerifier))
+        XCTAssertEqual(failure.diagnosticEventsXdr, try SimulationFailureFixtures.events(SimulationFailureFixtures.caseB1))
+        XCTAssertEqual(failure.reportedContractError,
+                       ReportedContractError(code: 3114, provenance: .diagnosticEvents,
+                                             contractId: SimulationFailureFixtures.webAuthnVerifier))
+        XCTAssertEqual(script.simulateCallCount, 3)
+        XCTAssertEqual(script.sendCallCount, 0)
+    }
+
+    func test_fetchTokenDecimals_maskedFailure_reportsTheContractError() async throws {
+        let failure = try await decimalsFailure(payload: try SimulationFailureFixtures.result(SimulationFailureFixtures.caseB1))
+        XCTAssertEqual(failure.message,
+                       "Transaction simulation failed: Simulation error: HostError: Error(Auth, InvalidAction)"
+                        + contractErrorSuffix(3114, SimulationFailureFixtures.webAuthnVerifier))
+        XCTAssertEqual(failure.diagnosticEventsXdr, try SimulationFailureFixtures.events(SimulationFailureFixtures.caseB1))
+        XCTAssertEqual(failure.reportedContractError,
+                       ReportedContractError(code: 3114, provenance: .diagnosticEvents,
+                                             contractId: SimulationFailureFixtures.webAuthnVerifier))
+        XCTAssertEqual(OZContractErrorCodes.decodeFromSimulationFailure(failure)?.contract, "WebAuthnError")
+    }
+
+    func test_fetchTokenDecimals_contractHeader_keepsTheEventsAndReportsTheHeaderCode() async throws {
+        let failure = try await decimalsFailure(payload: try SimulationFailureFixtures.result(SimulationFailureFixtures.caseC1))
+        XCTAssertEqual(failure.message, "Transaction simulation failed: Simulation error: HostError: Error(Contract, #3200)")
+        XCTAssertEqual(failure.diagnosticEventsXdr, try SimulationFailureFixtures.events(SimulationFailureFixtures.caseC1))
+        XCTAssertEqual(failure.reportedContractError, ReportedContractError(code: 3200, provenance: .hostError, contractId: nil))
+    }
+
+    func test_fetchTokenDecimals_resultsMissing_carryNoEventsAndNoReportedError() async throws {
+        let noResults = try await decimalsFailure(payload: ["latestLedger": NSNumber(value: 1000)])
+        XCTAssertEqual(noResults.message, "Transaction simulation failed: No results returned from simulation")
+        XCTAssertEqual(noResults.diagnosticEventsXdr, [])
+        XCTAssertNil(noResults.reportedContractError)
+
+        let h = try await buildPipelineHarness()
+        enqueueDeployerAccount(deployer: h.deployer)
+        script.enqueueSimulateSuccess(resultXdr: nil)
+        let noValue = try await simulationFailure { _ = try await h.txOps.fetchTokenDecimals(tokenContract: contractB) }
+        XCTAssertEqual(noValue.message, "Transaction simulation failed: No return value in simulation result")
+        XCTAssertEqual(noValue.diagnosticEventsXdr, [])
+        XCTAssertNil(noValue.reportedContractError)
+    }
+
+    func test_simulate_transportFailures_keepTheCauseAndCarryNoEvents() async throws {
+        let expectedMessages: [SimulationTransportFailure: String] = [
+            .jsonRpcError: "Transaction simulation failed: Simulation error: -32603: Internal error",
+            .http500: "Transaction simulation failed: Simulation error: Internal Server Error",
+            .unparsable: "Transaction simulation failed: Simulation error: Parse failure: Invalid JSON",
+        ]
+        for transport in SimulationTransportFailure.allCases {
+            let h = try await buildPipelineHarness()
+            enqueueDeployerAccount(deployer: h.deployer)
+            let script = self.script!
+            MockURLProtocol.requestHandler = { request in
+                var copy = request
+                copy.httpBody = request.httpBody ?? request.httpBodyStream?.readfully()
+                let body = String(decoding: copy.httpBody ?? Data(), as: UTF8.self)
+                guard body.contains("simulateTransaction") else {
+                    return MockSorobanServer.handle(request: copy, script: script)
+                }
+                let response = HTTPURLResponse(url: request.url!, statusCode: transport.statusCode,
+                                               httpVersion: nil, headerFields: ["Content-Type": "application/json"])!
+                return .success((response, Data(transport.body.utf8)))
+            }
+
+            let failure = try await simulationFailure { _ = try await h.txOps.fetchTokenDecimals(tokenContract: contractB) }
+
+            transport.assertError(failure.cause)
+            XCTAssertEqual(failure.message, expectedMessages[transport], "\(transport)")
+            XCTAssertEqual(failure.diagnosticEventsXdr, [], "\(transport)")
+            XCTAssertNil(failure.reportedContractError, "\(transport)")
+            MockSorobanServer.activate(script: script)
+        }
+    }
+
+    // ========================================================================
     // Internal helpers
     // ========================================================================
 

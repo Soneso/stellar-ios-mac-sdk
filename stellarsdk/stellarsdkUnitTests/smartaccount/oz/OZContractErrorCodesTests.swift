@@ -188,4 +188,46 @@ final class OZContractErrorCodesTests: XCTestCase {
         XCTAssertNil(OZContractErrorCodes.decodeFromMessage("Error(Contract, #3001)"))
         XCTAssertNil(OZContractErrorCodes.decodeFromMessage("Error(WasmVm, InternalError)"))
     }
+
+    func testDecodeFromMessage_readsTheContractErrorSuffix() {
+        let message = "Transaction simulation failed: Simulation error: HostError: Error(Auth, InvalidAction)"
+            + " (contract error in diagnostic events: Error(Contract, #3016), contract "
+            + "CABAV4UNU66OZ75MXQDX3FFO35WNQLLXG2HZAHKJNZ27C2LGAX4DK253)"
+        XCTAssertEqual(
+            OZContractError(code: 3016, contract: "SmartAccountError", name: "UnauthorizedSigner"),
+            OZContractErrorCodes.decodeFromMessage(message)
+        )
+    }
+
+    // MARK: - decodeFromSimulationFailure
+
+    private func failure(_ reported: ReportedContractError?, message: String = "Transaction simulation failed: r")
+        -> SmartAccountTransactionException.SimulationFailed {
+        return SmartAccountTransactionException.SimulationFailed(
+            message: message, diagnosticEventsXdr: [], reportedContractError: reported)
+    }
+
+    func testDecodeFromSimulationFailure_decodesTheReportedCode() {
+        XCTAssertEqual(
+            OZContractError(code: 3201, contract: "SimpleThresholdError", name: "InvalidThreshold"),
+            OZContractErrorCodes.decodeFromSimulationFailure(
+                failure(ReportedContractError(code: 3201, provenance: .diagnosticEvents,
+                                              contractId: "CAZJ3UVRY3R3S5C5BH32GMYBRSN23N75ZEEXEOLXOUUAHDFIMVP4AXUC")))
+        )
+        XCTAssertEqual(
+            OZContractError(code: 3200, contract: "SimpleThresholdError", name: "SmartAccountNotInstalled"),
+            OZContractErrorCodes.decodeFromSimulationFailure(
+                failure(ReportedContractError(code: 3200, provenance: .hostError, contractId: nil)))
+        )
+    }
+
+    func testDecodeFromSimulationFailure_unknownOrMissingCodeIsNilWhateverTheMessageSays() {
+        let message = "Transaction simulation failed: Simulation error: Error(Contract, #3016)"
+        XCTAssertNil(OZContractErrorCodes.decodeFromSimulationFailure(
+            failure(ReportedContractError(code: 1, provenance: .diagnosticEvents, contractId: nil), message: message)))
+        XCTAssertNil(OZContractErrorCodes.decodeFromSimulationFailure(failure(nil, message: message)))
+        XCTAssertNil(OZContractErrorCodes.decodeFromSimulationFailure(
+            SmartAccountTransactionException.SimulationFailed(message: message)))
+        XCTAssertEqual(3016, OZContractErrorCodes.decodeFromMessage(message)?.code)
+    }
 }

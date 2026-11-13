@@ -205,6 +205,85 @@ final class SmartAccountErrorsTests: XCTestCase {
         XCTAssertEqual(error.code, .invalidInput)
     }
 
+    // MARK: - SimulationFailed diagnostic events and reported contract error
+
+    private let sampleEvents = ["AAAAAQ==", "AAAAAg==", "AAAAAQ=="]
+    private let account = "CABAV4UNU66OZ75MXQDX3FFO35WNQLLXG2HZAHKJNZ27C2LGAX4DK253"
+
+    func test_simulation_failed_existing_initializer_and_factory_carry_no_events() {
+        let direct = SmartAccountTransactionException.SimulationFailed(message: "m")
+        XCTAssertEqual(direct.message, "m")
+        XCTAssertEqual(direct.diagnosticEventsXdr, [])
+        XCTAssertNil(direct.reportedContractError)
+
+        let factory = SmartAccountTransactionException.simulationFailed(reason: "r")
+        XCTAssertEqual(factory.message, "Transaction simulation failed: r")
+        XCTAssertEqual(factory.diagnosticEventsXdr, [])
+        XCTAssertNil(factory.reportedContractError)
+    }
+
+    func test_simulation_failed_initializer_keeps_message_snapshot_and_cause() {
+        let cause = NSError(domain: "test", code: 7)
+        var events = sampleEvents
+        let reported = ReportedContractError(code: 3016, provenance: .diagnosticEvents, contractId: account)
+        let failure = SmartAccountTransactionException.SimulationFailed(
+            message: "exact message",
+            diagnosticEventsXdr: events,
+            reportedContractError: reported,
+            cause: cause
+        )
+        events.append("AAAAAw==")
+        events[0] = "changed"
+
+        XCTAssertEqual(failure.message, "exact message")
+        XCTAssertEqual(failure.code, .transactionSimulationFailed)
+        XCTAssertEqual(failure.diagnosticEventsXdr, sampleEvents)
+        XCTAssertEqual(failure.reportedContractError, reported)
+        XCTAssertEqual((failure.cause as NSError?)?.code, 7)
+
+        var retrieved = failure.diagnosticEventsXdr
+        retrieved.removeAll()
+        XCTAssertEqual(failure.diagnosticEventsXdr, sampleEvents)
+    }
+
+    func test_simulation_failed_factory_appends_the_suffix_only_for_diagnostic_events() {
+        let withContract = SmartAccountTransactionException.simulationFailed(
+            reason: "Simulation error: HostError: Error(Auth, InvalidAction)",
+            diagnosticEventsXdr: sampleEvents,
+            reportedContractError: ReportedContractError(code: 3016, provenance: .diagnosticEvents, contractId: account)
+        )
+        XCTAssertEqual(withContract.message,
+                       "Transaction simulation failed: Simulation error: HostError: Error(Auth, InvalidAction)"
+                        + " (contract error in diagnostic events: Error(Contract, #3016), contract \(account))")
+        XCTAssertEqual(withContract.diagnosticEventsXdr, sampleEvents)
+        XCTAssertNil(withContract.cause)
+
+        let withoutContract = SmartAccountTransactionException.simulationFailed(
+            reason: "r",
+            diagnosticEventsXdr: [],
+            reportedContractError: ReportedContractError(code: 0, provenance: .diagnosticEvents, contractId: nil)
+        )
+        XCTAssertEqual(withoutContract.message,
+                       "Transaction simulation failed: r (contract error in diagnostic events: Error(Contract, #0))")
+
+        let cause = NSError(domain: "test", code: 9)
+        let fromHeader = SmartAccountTransactionException.simulationFailed(
+            reason: "Simulation error: HostError: Error(Contract, #8)",
+            diagnosticEventsXdr: sampleEvents,
+            reportedContractError: ReportedContractError(code: 8, provenance: .hostError, contractId: nil),
+            cause: cause
+        )
+        XCTAssertEqual(fromHeader.message, "Transaction simulation failed: Simulation error: HostError: Error(Contract, #8)")
+        XCTAssertEqual(fromHeader.reportedContractError?.code, 8)
+        XCTAssertEqual((fromHeader.cause as NSError?)?.code, 9)
+
+        let none = SmartAccountTransactionException.simulationFailed(
+            reason: "r", diagnosticEventsXdr: sampleEvents, reportedContractError: nil)
+        XCTAssertEqual(none.message, SmartAccountTransactionException.simulationFailed(reason: "r").message)
+        XCTAssertEqual(none.diagnosticEventsXdr, sampleEvents)
+        XCTAssertNil(none.reportedContractError)
+    }
+
     // MARK: - Exhaustiveness
 
     func test_smart_account_exception_exhaustiveness_compile_time_check() {

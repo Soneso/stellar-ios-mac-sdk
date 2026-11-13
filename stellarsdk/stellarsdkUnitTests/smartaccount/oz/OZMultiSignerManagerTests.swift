@@ -3757,6 +3757,108 @@ extension OZMultiSignerManagerTests {
 }
 
 // ============================================================================
+// MARK: - Simulation failure: diagnostic events and the reported contract error
+// ============================================================================
+
+extension OZMultiSignerManagerTests {
+
+    /// A wallet-signer `submitWithMultipleSigners` call whose initial simulation answers with
+    /// `initial` and, when `initial` succeeds, whose re-simulation answers with `reSimulation`.
+    private func multiSignerSimulationFailure(
+        initial: [String: Any]?,
+        reSimulation: [String: Any]?
+    ) async throws -> (SmartAccountTransactionException.SimulationFailed, MockSorobanServerScript) {
+        let script = MockSorobanServerScript()
+        MockSorobanServer.activate(script: script)
+        defer {
+            MockSorobanServer.deactivate()
+            MockURLProtocol.reset()
+        }
+        let deployer = KeyPair(seed: try Seed(bytes: [UInt8](Data(repeating: 0x55, count: 32))))
+        let walletKeypair = try KeyPair.generateRandomKeyPair()
+        let walletSecret = try XCTUnwrap(walletKeypair.secretSeed)
+
+        let kit = MockOZSmartAccountKit(
+            config: try buildConfig(),
+            sorobanServer: MockSorobanServer.makeMockedSorobanServer()
+        )
+        kit.configuredDeployer = deployer
+        kit.setConnectedState(credentialId: "test-cred", contractId: validContractId)
+        let extMgr = OZExternalSignerManager(networkPassphrase: Network.testnet.passphrase)
+        kit.externalSignersOverride = extMgr
+        _ = try await extMgr.addFromSecret(secretKey: walletSecret)
+
+        script.setGetAccountResponse(accountId: deployer.accountId, sequence: 1)
+        if let initial = initial {
+            script.ingestSimulateResponse(payload: initial)
+        } else {
+            script.enqueueSimulate(authEntries: [
+                try walletAddressAuthEntry(accountId: walletKeypair.accountId,
+                                           targetContractId: validTargetContract,
+                                           targetFn: "pay")
+            ])
+            script.setGetLatestLedger(sequence: 1000)
+        }
+        if let reSimulation = reSimulation {
+            script.ingestSimulateResponse(payload: reSimulation)
+        }
+
+        let hostFn = HostFunctionXDR.invokeContract(
+            InvokeContractArgsXDR(
+                contractAddress: try SCAddressXDR(contractId: validTargetContract),
+                functionName: "pay",
+                args: []
+            )
+        )
+        do {
+            _ = try await OZMultiSignerManager(kit: kit).submitWithMultipleSigners(
+                hostFunction: hostFn,
+                selectedSigners: [.wallet(accountId: walletKeypair.accountId)]
+            )
+        } catch let error as SmartAccountTransactionException.SimulationFailed {
+            return (error, script)
+        }
+        XCTFail("expected SmartAccountTransactionException.SimulationFailed")
+        throw SmartAccountTransactionException.SimulationFailed(message: "no failure")
+    }
+
+    func test_submitWithMultipleSigners_initialSimulation_maskedFailure_reportsTheContractError() async throws {
+        let (failure, script) = try await multiSignerSimulationFailure(
+            initial: try SimulationFailureFixtures.result(SimulationFailureFixtures.caseB1),
+            reSimulation: nil
+        )
+        XCTAssertEqual(failure.message,
+                       "Transaction simulation failed: Simulation error: HostError: Error(Auth, InvalidAction)"
+                        + " (contract error in diagnostic events: Error(Contract, #3114), contract "
+                        + SimulationFailureFixtures.webAuthnVerifier + ")")
+        XCTAssertEqual(failure.diagnosticEventsXdr, try SimulationFailureFixtures.events(SimulationFailureFixtures.caseB1))
+        XCTAssertEqual(failure.reportedContractError,
+                       ReportedContractError(code: 3114, provenance: .diagnosticEvents,
+                                             contractId: SimulationFailureFixtures.webAuthnVerifier))
+        XCTAssertEqual(script.simulateCallCount, 1)
+        XCTAssertEqual(script.sendCallCount, 0)
+    }
+
+    func test_submitWithMultipleSigners_reSimulation_maskedFailure_reportsTheContractError() async throws {
+        let (failure, script) = try await multiSignerSimulationFailure(
+            initial: nil,
+            reSimulation: try SimulationFailureFixtures.result(SimulationFailureFixtures.caseB1)
+        )
+        XCTAssertEqual(failure.message,
+                       "Transaction simulation failed: Re-simulation error: HostError: Error(Auth, InvalidAction)"
+                        + " (contract error in diagnostic events: Error(Contract, #3114), contract "
+                        + SimulationFailureFixtures.webAuthnVerifier + ")")
+        XCTAssertEqual(failure.diagnosticEventsXdr, try SimulationFailureFixtures.events(SimulationFailureFixtures.caseB1))
+        XCTAssertEqual(failure.reportedContractError,
+                       ReportedContractError(code: 3114, provenance: .diagnosticEvents,
+                                             contractId: SimulationFailureFixtures.webAuthnVerifier))
+        XCTAssertEqual(OZContractErrorCodes.decodeFromSimulationFailure(failure)?.contract, "WebAuthnError")
+        XCTAssertEqual(script.simulateCallCount, 2)
+        XCTAssertEqual(script.sendCallCount, 0)
+    }
+}
+
+// ============================================================================
 // MARK: - Test helpers
 // ============================================================================
 

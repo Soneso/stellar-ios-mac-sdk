@@ -1018,6 +1018,205 @@ final class AssembledTransactionDeepUnitTests: XCTestCase {
         XCTAssertEqual(tx.options.methodOptions.timeoutInSeconds, longTimeout)
     }
 
+    // MARK: - Simulation Failure Contract Error Tests
+
+    private let reportedB2 = ReportedContractError(code: 3016, provenance: .diagnosticEvents,
+                                                   contractId: SimulationFailureFixtures.smartAccount)
+    private let suffixB2 = " (contract error in diagnostic events: Error(Contract, #3016), contract "
+        + SimulationFailureFixtures.smartAccount + ")"
+
+    private func simulationFailedMessage(_ error: Error, file: StaticString = #filePath, line: UInt = #line) -> String? {
+        guard let assembled = error as? AssembledTransactionError,
+              case .simulationFailed(let message) = assembled else {
+            XCTFail("expected AssembledTransactionError.simulationFailed, got \(error)", file: file, line: line)
+            return nil
+        }
+        return message
+    }
+
+    func testSimulateFailureOnAnAssembledTransactionReportsTheContractError() async throws {
+        let router = SimulationRpcRouter(sourceAccount: keyPair,
+                                         simulateBodies: [try SimulationFailureFixtures.body(SimulationFailureFixtures.caseB2)])
+        let options = AssembledTransactionOptions(clientOptions: clientOptions,
+                                                  methodOptions: MethodOptions(simulate: false),
+                                                  method: "test")
+        let tx = try await AssembledTransaction.build(options: options)
+        do {
+            try await tx.simulate()
+            XCTFail("expected simulationFailed")
+        } catch {
+            XCTAssertEqual(simulationFailedMessage(error),
+                           "Simulation failed with error: HostError: Error(Auth, InvalidAction)" + suffixB2)
+            XCTAssertEqual((error as? AssembledTransactionError)?.reportedContractError, reportedB2)
+        }
+        XCTAssertEqual(tx.simulationResponse?.events,
+                       try SimulationFailureFixtures.events(SimulationFailureFixtures.caseB2))
+        XCTAssertEqual(router.sentTransactionRequests.count, 0)
+    }
+
+    func testBuildWithOpFailsBeforeReturningAnObjectWithTheContractError() async throws {
+        let router = SimulationRpcRouter(sourceAccount: keyPair,
+                                         simulateBodies: [try SimulationFailureFixtures.body(SimulationFailureFixtures.caseB2)])
+        let operation = try InvokeHostFunctionOperation.forInvokingContract(
+            contractId: mockContractId, functionName: "test", functionArguments: [])
+        let options = AssembledTransactionOptions(clientOptions: clientOptions, methodOptions: MethodOptions(), method: "test")
+        do {
+            _ = try await AssembledTransaction.buildWithOp(operation: operation, options: options)
+            XCTFail("expected simulationFailed")
+        } catch {
+            XCTAssertEqual(simulationFailedMessage(error),
+                           "Simulation failed with error: HostError: Error(Auth, InvalidAction)" + suffixB2)
+            XCTAssertEqual((error as? AssembledTransactionError)?.reportedContractError, reportedB2)
+        }
+        XCTAssertEqual(router.sentTransactionRequests.count, 0)
+    }
+
+    func testSimulationDataReadsAfterAFailedSimulateReportTheContractError() async throws {
+        let router = SimulationRpcRouter(sourceAccount: keyPair,
+                                         simulateBodies: [try SimulationFailureFixtures.body(SimulationFailureFixtures.caseB2)])
+        let options = AssembledTransactionOptions(clientOptions: clientOptions,
+                                                  methodOptions: MethodOptions(simulate: false),
+                                                  method: "test")
+        let tx = try await AssembledTransaction.build(options: options)
+        do {
+            try await tx.simulate()
+            XCTFail("expected simulationFailed")
+        } catch {}
+        let expected = "Transaction simulation failed. Error: HostError: Error(Auth, InvalidAction)" + suffixB2
+        let reads: [(String, () throws -> Void)] = [
+            ("getSimulationData", { _ = try tx.getSimulationData() }),
+            ("isReadCall", { _ = try tx.isReadCall() }),
+            ("sign", { try tx.sign() }),
+        ]
+        for (label, read) in reads {
+            do {
+                try read()
+                XCTFail("expected simulationFailed from \(label)")
+            } catch {
+                XCTAssertEqual(simulationFailedMessage(error), expected, label)
+                XCTAssertEqual((error as? AssembledTransactionError)?.reportedContractError, reportedB2, label)
+            }
+        }
+        do {
+            _ = try await tx.signAndSend()
+            XCTFail("expected simulationFailed from signAndSend")
+        } catch {
+            XCTAssertEqual(simulationFailedMessage(error), expected)
+        }
+        XCTAssertEqual(router.sentTransactionRequests.count, 0)
+    }
+
+    func testMissingTransactionDataKeepsItsMessageAndReportsNoContractError() async throws {
+        _ = SimulationRpcRouter(sourceAccount: keyPair, simulateBodies: [SimulationRpcRouter.noTransactionDataBody])
+        let options = AssembledTransactionOptions(clientOptions: clientOptions, methodOptions: MethodOptions(), method: "test")
+        let tx = try await AssembledTransaction.build(options: options)
+        do {
+            _ = try tx.getSimulationData()
+            XCTFail("expected simulationFailed")
+        } catch {
+            XCTAssertEqual(simulationFailedMessage(error), "Transaction simulation failed")
+            XCTAssertNil((error as? AssembledTransactionError)?.reportedContractError)
+        }
+    }
+
+    /// A JSON-RPC error, an HTTP 500 and an unparsable body rethrow their
+    /// `SorobanRpcRequestError` from `build` and from `simulate()`. No response is stored, so the
+    /// next read reports no contract error.
+    func testSimulateTransportFailuresRethrowTheRpcError() async throws {
+        for transport in SimulationTransportFailure.allCases {
+            ServerMock.removeAll()
+            let router = SimulationRpcRouter(sourceAccount: keyPair, simulateBodies: [transport.body],
+                                             simulateStatusCode: transport.statusCode)
+            let buildOptions = AssembledTransactionOptions(clientOptions: clientOptions,
+                                                           methodOptions: MethodOptions(), method: "test")
+            var buildError: Error?
+            do {
+                _ = try await AssembledTransaction.build(options: buildOptions)
+                XCTFail("expected build to throw for \(transport)")
+            } catch {
+                buildError = error
+            }
+            transport.assertError(buildError)
+
+            let options = AssembledTransactionOptions(clientOptions: clientOptions,
+                                                      methodOptions: MethodOptions(simulate: false), method: "test")
+            let tx = try await AssembledTransaction.build(options: options)
+            var simulateError: Error?
+            do {
+                try await tx.simulate()
+                XCTFail("expected simulate to throw for \(transport)")
+            } catch {
+                simulateError = error
+            }
+            transport.assertError(simulateError)
+            XCTAssertNil(tx.simulationResponse, "\(transport)")
+            do {
+                _ = try tx.getSimulationData()
+                XCTFail("expected notYetSimulated for \(transport)")
+            } catch let error as AssembledTransactionError {
+                if case .notYetSimulated(let message) = error {
+                    XCTAssertEqual(message, "Transaction has not yet been simulated", "\(transport)")
+                } else {
+                    XCTFail("expected notYetSimulated for \(transport), got \(error)")
+                }
+                XCTAssertNil(error.reportedContractError, "\(transport)")
+            }
+            XCTAssertEqual(router.simulateRequestCount, 2, "\(transport)")
+            XCTAssertEqual(router.sentTransactionRequests.count, 0, "\(transport)")
+        }
+    }
+
+    func testFailingRestoreTransactionSimulationReportsItsContractError() async throws {
+        let router = SimulationRpcRouter(sourceAccount: keyPair, simulateBodies: [
+            SimulationRpcRouter.restorePreambleBody(contractId: mockContractId),
+            try SimulationFailureFixtures.body(SimulationFailureFixtures.caseB2),
+        ])
+        let options = AssembledTransactionOptions(clientOptions: clientOptions,
+                                                  methodOptions: MethodOptions(simulate: false, restore: true),
+                                                  method: "test")
+        let tx = try await AssembledTransaction.build(options: options)
+        do {
+            try await tx.simulate()
+            XCTFail("expected simulationFailed")
+        } catch {
+            XCTAssertEqual(simulationFailedMessage(error),
+                           "Simulation failed with error: HostError: Error(Auth, InvalidAction)" + suffixB2)
+            XCTAssertEqual((error as? AssembledTransactionError)?.reportedContractError, reportedB2)
+        }
+        XCTAssertEqual(router.simulateRequestCount, 2)
+        XCTAssertEqual(router.sentTransactionRequests.count, 0)
+    }
+
+    func testFailingReSimulationAfterRestoreSubmitsOnlyTheRestore() async throws {
+        let router = SimulationRpcRouter(sourceAccount: keyPair, simulateBodies: [
+            SimulationRpcRouter.restorePreambleBody(contractId: mockContractId),
+            SimulationRpcRouter.successBody(contractId: mockContractId),
+            try SimulationFailureFixtures.body(SimulationFailureFixtures.caseA),
+        ])
+        let options = AssembledTransactionOptions(clientOptions: clientOptions,
+                                                  methodOptions: MethodOptions(simulate: false, restore: true),
+                                                  method: "test")
+        let tx = try await AssembledTransaction.build(options: options)
+        do {
+            try await tx.simulate()
+            XCTFail("expected simulationFailed")
+        } catch {
+            XCTAssertEqual(simulationFailedMessage(error),
+                           "Simulation failed with error: HostError: Error(Context, InvalidAction)"
+                            + " (contract error in diagnostic events: Error(Contract, #3201), contract "
+                            + SimulationFailureFixtures.thresholdPolicy + ")")
+            XCTAssertEqual((error as? AssembledTransactionError)?.reportedContractError,
+                           ReportedContractError(code: 3201, provenance: .diagnosticEvents,
+                                                 contractId: SimulationFailureFixtures.thresholdPolicy))
+        }
+        XCTAssertEqual(router.simulateRequestCount, 3)
+        let sent = router.sentTransactionRequests
+        XCTAssertEqual(sent.count, 1, "only the restore transaction is submitted")
+        let restore = try sentEnvelope(in: try XCTUnwrap(sent.first))
+        XCTAssertEqual(restore.operations.count, 1)
+        XCTAssertTrue(restore.operations.first is RestoreFootprintOperation)
+    }
+
     // MARK: - Mock Response Type Enums
 
     enum SimulateResponseType {
