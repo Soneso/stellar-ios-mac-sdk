@@ -1286,15 +1286,19 @@ final class AssembledTransactionDeepUnitTests: XCTestCase {
         XCTAssertTrue(restore.operations.first is RestoreFootprintOperation)
         XCTAssertEqual(restore.transactionXDR.seqNum, 12346)
 
-        // The re-simulated request carries the inclusion fee and the first simulation's data, without
-        // its auth entry; tx carries only what the re-simulation returns.
+        // The re-simulated request carries the inclusion fee and the first simulation's data with the
+        // resource fee 0, without its auth entry; tx carries only what the re-simulation returns.
         let request = try sentEnvelope(in: simulated[3])
         XCTAssertEqual(request.transactionXDR.seqNum, 12347)
         XCTAssertEqual(request.fee, 100)
-        guard case .sorobanTransactionData(let carried) = request.transactionXDR.ext else {
+        guard case .sorobanTransactionData(let carried) = request.transactionXDR.ext,
+              case .contractData(let carriedKey)? = carried.resources.footprint.readWrite.first else {
             return XCTFail("expected the first simulation's data in the re-simulated request")
         }
-        XCTAssertEqual(carried.resourceFee, 11000)
+        XCTAssertEqual(carried.resourceFee, 0)
+        XCTAssertEqual(carried.resources.footprint.readWrite.count, 1)
+        XCTAssertEqual(try carriedKey.contract.toStrKey(), mockContractId)
+        XCTAssertEqual(carried.resources.instructions, 1000)
         XCTAssertEqual(try invocation(of: request).auth.count, 0)
 
         let assembled = try XCTUnwrap(tx.tx)
@@ -1382,6 +1386,11 @@ final class AssembledTransactionDeepUnitTests: XCTestCase {
         try await tx.simulate()
 
         XCTAssertEqual(router.simulateRequestCount, 3)
+        guard case .sorobanTransactionData(let callerData) = raw.transactionXDR.ext else {
+            XCTFail("expected the caller's Soroban data on the caller's transaction")
+            return (0, nil)
+        }
+        XCTAssertEqual(callerData.resourceFee, resourceFee, "the caller's transaction keeps its data")
         let request = try sentEnvelope(in: try XCTUnwrap(router.simulateTransactionRequests.last))
         return (request.fee, tx.tx?.fee)
     }
@@ -1505,6 +1514,56 @@ final class AssembledTransactionDeepUnitTests: XCTestCase {
         XCTAssertEqual(tx.tx?.transactionXDR.seqNum, 12348)
         XCTAssertEqual(tx.tx?.fee, 12100)
         XCTAssertNil(tx.simulationResponse?.restorePreamble)
+    }
+
+    /// Simulates with `restore: true` a transaction built with the fee 200000 that meets two
+    /// restore preambles in a row before a simulation with the resource fee 12000. With
+    /// `simulateFirst`, the build simulates it once before, with the resource fee 11000. Returns,
+    /// for the simulated invocation requests in order, their fees and the resource fees of the
+    /// Soroban data they carry, and the fee of the assembled transaction.
+    private func restoreTwice(simulateFirst: Bool) async throws
+        -> (requests: [UInt32], carried: [Int64?], assembled: UInt32?) {
+        let earlier = simulateFirst
+            ? [SimulationRpcRouter.successBody(contractId: mockContractId, resourceFee: 11000)]
+            : []
+        let router = SimulationRpcRouter(sourceAccount: keyPair, simulateBodies: earlier + [
+            restorePreamble,
+            restoreSimulation,
+            restorePreamble,
+            restoreSimulation,
+            SimulationRpcRouter.successBody(contractId: mockContractId, resourceFee: 12000),
+        ], accountSequenceNumbers: [12345, 12345, 12346, 12346, 12347])
+        let options = AssembledTransactionOptions(clientOptions: clientOptions,
+                                                  methodOptions: MethodOptions(fee: 200000, simulate: simulateFirst),
+                                                  method: "test")
+        let tx = try await AssembledTransaction.build(options: options)
+
+        try await tx.simulate(restore: true)
+
+        XCTAssertEqual(router.sentTransactionRequests.count, 2)
+        let invocations = try router.simulateTransactionRequests.map { try sentEnvelope(in: $0) }
+            .filter { $0.operations.first is InvokeHostFunctionOperation }
+        let carried = invocations.map { request -> Int64? in
+            guard case .sorobanTransactionData(let data) = request.transactionXDR.ext else { return nil }
+            return data.resourceFee
+        }
+        return (invocations.map { $0.fee }, carried, tx.tx?.fee)
+    }
+
+    func testRepeatedRestoresAfterAnEarlierSimulationKeepTheInclusionFee() async throws {
+        let fees = try await restoreTwice(simulateFirst: true)
+        // The earlier simulation, the simulation that meets the first preamble, the two re-simulations.
+        XCTAssertEqual(fees.requests, [200000, 211000, 200000, 200000])
+        XCTAssertEqual(fees.carried, [nil, 11000, 0, 0])
+        XCTAssertEqual(fees.assembled, 212000, "the inclusion fee 200000 plus the final resource fee 12000")
+    }
+
+    func testRepeatedRestoresOfANeverSimulatedTransactionKeepItsFee() async throws {
+        let fees = try await restoreTwice(simulateFirst: false)
+        // The simulation that meets the first preamble, the two re-simulations.
+        XCTAssertEqual(fees.requests, [200000, 200000, 200000])
+        XCTAssertEqual(fees.carried, [nil, nil, nil])
+        XCTAssertEqual(fees.assembled, 212000, "the fee 200000 plus the final resource fee 12000")
     }
 
     func testFailedRestoreThrowsAutomaticRestoreFailedWithoutReSimulation() async throws {
