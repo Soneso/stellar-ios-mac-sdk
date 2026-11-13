@@ -235,6 +235,14 @@ public final class AssembledTransaction: @unchecked Sendable {
     }
 
     /// Simulates the transaction to calculate resource requirements and validate execution.
+    ///
+    /// A simulation error response without a restore preamble throws
+    /// `AssembledTransactionError.simulationFailed` with "Simulation failed with error: " and the
+    /// RPC's error text. When that text masks a contract error as `Error(Context, ...)` or
+    /// `Error(Auth, ...)` and a diagnostic event reports the code, the message ends with
+    /// " (contract error in diagnostic events: Error(Contract, #N), contract C...)";
+    /// `AssembledTransactionError.reportedContractError` reads the code back. The response stays
+    /// in `simulationResponse`.
     public func simulate(restore: Bool? = nil) async throws {
         if tx == nil {
             if raw == nil {
@@ -250,7 +258,10 @@ public final class AssembledTransaction: @unchecked Sendable {
         case .success(let response):
             simulationResponse = response
             if let err =  response.error, response.restorePreamble == nil {
-                throw AssembledTransactionError.simulationFailed(message: "Simulation failed with error: \(err)")
+                throw AssembledTransactionError.simulationFailed(message: SimulationFailureMessage.compose(
+                    prefix: SimulationFailureMessage.simulatePrefix,
+                    hostError: err,
+                    reported: response.reportedContractError()))
             }
         case .failure(let error):
             throw error
@@ -468,6 +479,11 @@ public final class AssembledTransaction: @unchecked Sendable {
     
     /// Retrieves parsed simulation data including auth entries and return value.
     /// Throws if transaction has not been simulated or simulation failed.
+    ///
+    /// A failed simulation throws `AssembledTransactionError.simulationFailed` with
+    /// "Transaction simulation failed. Error: " and the RPC's error text, followed by the
+    /// contract error suffix `simulate()` describes, or with "Transaction simulation failed"
+    /// when the response has neither an error nor transaction data.
     public func getSimulationData() throws -> SimulateHostFunctionResult {
         if simulationResult != nil {
             return simulationResult!
@@ -478,7 +494,10 @@ public final class AssembledTransaction: @unchecked Sendable {
         
         if simResponse.error != nil || simResponse.transactionData == nil {
             if let err = simResponse.error {
-                throw AssembledTransactionError.simulationFailed(message: "Transaction simulation failed. Error: \(err)")
+                throw AssembledTransactionError.simulationFailed(message: SimulationFailureMessage.compose(
+                    prefix: SimulationFailureMessage.simulationDataPrefix,
+                    hostError: err,
+                    reported: simResponse.reportedContractError()))
             }
             throw AssembledTransactionError.simulationFailed(message: "Transaction simulation failed")
         }

@@ -451,6 +451,37 @@ final class OZConstructorPoliciesTests: XCTestCase {
         }
     }
 
+    func test_createWallet_constructorPolicyRejection_reportsThePolicyError() async throws {
+        let provider = RecordingWebAuthnProvider()
+        let deployer = try deterministicDeployer()
+        let config = try buildConfig(provider: provider, deployer: deployer)
+        let kit = pipelineKit(config: config, deployer: deployer)
+
+        provider.enqueueRegister(registrationResult(credentialId: try Data(base64URLEncoded: credentialIdB64Url)))
+        enqueueDeployerAccount(deployer: deployer)
+        script.ingestSimulateResponse(payload: try SimulationFailureFixtures.result(SimulationFailureFixtures.caseA))
+
+        let walletOps = OZWalletOperations(kit: kit)
+        do {
+            _ = try await walletOps.createWallet(autoSubmit: false, policies: try policies(1))
+            XCTFail("expected SmartAccountTransactionException.SimulationFailed")
+        } catch let failure as SmartAccountTransactionException.SimulationFailed {
+            XCTAssertEqual(failure.message,
+                           "Transaction simulation failed: Simulation error: HostError: Error(Context, InvalidAction)"
+                            + " (contract error in diagnostic events: Error(Contract, #3201), contract "
+                            + SimulationFailureFixtures.thresholdPolicy + ")")
+            XCTAssertEqual(failure.diagnosticEventsXdr, try SimulationFailureFixtures.events(SimulationFailureFixtures.caseA))
+            XCTAssertEqual(failure.reportedContractError,
+                           ReportedContractError(code: 3201, provenance: .diagnosticEvents,
+                                                 contractId: SimulationFailureFixtures.thresholdPolicy))
+            let decoded = try XCTUnwrap(OZContractErrorCodes.decodeFromSimulationFailure(failure))
+            XCTAssertEqual(decoded.contract, "SimpleThresholdError")
+            XCTAssertEqual(decoded.name, "InvalidThreshold")
+            XCTAssertNil(failure.cause)
+        }
+        XCTAssertEqual(script.sendCallCount, 0)
+    }
+
     func test_createWallet_configDefaultPolicies_usedWhenPerCallNil() async throws {
         let provider = RecordingWebAuthnProvider()
         let deployer = try deterministicDeployer()

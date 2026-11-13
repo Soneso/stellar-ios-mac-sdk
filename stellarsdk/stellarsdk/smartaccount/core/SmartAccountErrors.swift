@@ -421,9 +421,45 @@ public class WebAuthnException: SmartAccountException, @unchecked Sendable {
 public class SmartAccountTransactionException: SmartAccountException, @unchecked Sendable {
 
     /// Indicates that transaction simulation against the RPC failed.
+    ///
+    /// A failure the RPC reports in its simulation response carries the response's diagnostic
+    /// events in ``diagnosticEventsXdr`` and the contract error the response reports in
+    /// ``reportedContractError``; `OZContractErrorCodes.decodeFromSimulationFailure(_:)` names
+    /// a known code. Transport, JSON-RPC and parsing failures and the kit's own checks carry
+    /// `[]` and `nil`.
     public final class SimulationFailed: SmartAccountTransactionException, @unchecked Sendable {
 
+        /// The diagnostic events of the failed simulation response as base64
+        /// `DiagnosticEventXDR` strings in emission order; empty when the failure has no
+        /// simulation response or the response has no events.
+        public let diagnosticEventsXdr: [String]
+
+        /// The contract error the failed simulation response reports, or `nil`; see
+        /// `SimulateTransactionResponse.reportedContractError()`.
+        public let reportedContractError: ReportedContractError?
+
         public init(message: String, cause: Error? = nil) {
+            self.diagnosticEventsXdr = []
+            self.reportedContractError = nil
+            super.init(code: .transactionSimulationFailed, message: message, cause: cause)
+        }
+
+        /// Creates the failure with the simulation response's events and reported contract
+        /// error. The message is used as given.
+        ///
+        /// - Parameters:
+        ///   - message: Human-readable description of the failure.
+        ///   - diagnosticEventsXdr: The response's base64 diagnostic events, copied as given.
+        ///   - reportedContractError: The contract error the response reports, or `nil`.
+        ///   - cause: Optional underlying error that triggered this exception.
+        public init(
+            message: String,
+            diagnosticEventsXdr: [String],
+            reportedContractError: ReportedContractError?,
+            cause: Error? = nil
+        ) {
+            self.diagnosticEventsXdr = diagnosticEventsXdr
+            self.reportedContractError = reportedContractError
             super.init(code: .transactionSimulationFailed, message: message, cause: cause)
         }
     }
@@ -454,6 +490,34 @@ public class SmartAccountTransactionException: SmartAccountException, @unchecked
 
     public static func simulationFailed(reason: String, cause: Error? = nil) -> SimulationFailed {
         return SimulationFailed(message: "Transaction simulation failed: \(reason)", cause: cause)
+    }
+
+    /// Creates a ``SimulationFailed`` for a failed simulation response.
+    ///
+    /// The message is "Transaction simulation failed: " and `reason`, followed by
+    /// " (contract error in diagnostic events: Error(Contract, #N), contract C...)" when
+    /// `reportedContractError` comes from the diagnostic events; the contract part is absent
+    /// when the event has no contract ID.
+    ///
+    /// - Parameters:
+    ///   - reason: The failure description, typically a prefix and the RPC's error text.
+    ///   - diagnosticEventsXdr: The response's base64 diagnostic events.
+    ///   - reportedContractError: The contract error the response reports, or `nil`.
+    ///   - cause: Optional underlying error that triggered this exception.
+    /// - Returns: The simulation failure.
+    public static func simulationFailed(
+        reason: String,
+        diagnosticEventsXdr: [String],
+        reportedContractError: ReportedContractError?,
+        cause: Error? = nil
+    ) -> SimulationFailed {
+        return SimulationFailed(
+            message: "Transaction simulation failed: \(reason)"
+                + SimulationFailureMessage.suffix(for: reportedContractError),
+            diagnosticEventsXdr: diagnosticEventsXdr,
+            reportedContractError: reportedContractError,
+            cause: cause
+        )
     }
 
     public static func signingFailed(reason: String, cause: Error? = nil) -> SigningFailed {

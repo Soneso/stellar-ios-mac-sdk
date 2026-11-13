@@ -834,6 +834,25 @@ final class SorobanDocTest: XCTestCase {
 
         // For a valid call, error should be nil
         XCTAssertNil(tx.simulationResponse?.error)
+
+        // A failing call throws simulationFailed; the error names the contract error code.
+        // u32_fail_on_even returns NumberMustBeOdd (1) for an even input.
+        let bindingsHash = try await installContract(fileName: "soroban_bindings_spec_test_contract")
+        let bindingsClient = try await deployContract(wasmHash: bindingsHash)
+        do {
+            _ = try await bindingsClient.buildInvokeMethodTx(
+                name: "u32_fail_on_even",
+                args: [SCValXDR.u32(8)]
+            )
+            XCTFail("u32_fail_on_even should fail for an even input")
+        } catch let error as AssembledTransactionError {
+            guard case .simulationFailed(let message) = error else {
+                return XCTFail("expected simulationFailed, got \(error)")
+            }
+            XCTAssertEqual(message, "Simulation failed with error: HostError: Error(Contract, #1)")
+            XCTAssertEqual(error.reportedContractError,
+                           ReportedContractError(code: 1, provenance: .hostError, contractId: nil))
+        }
     }
 
     func testAutoRestore() async throws {
