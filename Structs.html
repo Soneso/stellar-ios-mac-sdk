@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="index.html">
-          stellarsdk 3.14.0 Docs
+          stellarsdk 3.15.0 Docs
         </a>
          (94% documented)
       </p>
@@ -2025,6 +2025,12 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Structs/Refunds.html">Refunds</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/ReportedContractError.html">ReportedContractError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/ReportedContractError/Provenance.html">– Provenance</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Structs/RequiredInfoUpdates.html">RequiredInfoUpdates</a>
@@ -6864,7 +6870,7 @@ contract address as the recipient of a transfer; it is never an authorization ad
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/MuxedContract.swift#L28-L101">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/MuxedContract.swift#L28-L103">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -9088,7 +9094,7 @@ if the transaction has been included in a ledger and whether it succeeded or fai
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/responses/LedgerEntry.swift#L12-L56">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/responses/LedgerEntry.swift#L12-L63">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -9128,9 +9134,9 @@ See: <a href="https://developers.stellar.org">Stellar developer docs</a></p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10stellarsdk23SendTransactionResponseV"></a>
-                    <a name="//apple_ref/swift/Struct/SendTransactionResponse" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10stellarsdk23SendTransactionResponseV">SendTransactionResponse</a>
+                    <a name="/s:10stellarsdk21ReportedContractErrorV"></a>
+                    <a name="//apple_ref/swift/Struct/ReportedContractError" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk21ReportedContractErrorV">ReportedContractError</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -9138,62 +9144,34 @@ See: <a href="https://developers.stellar.org">Stellar developer docs</a></p>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Response from submitting a transaction to the Stellar network.</p>
+                        <p>A contract error code that a failed Soroban simulation reports.</p>
 
-<p>After calling sendTransaction, this response indicates whether the transaction
-was accepted for processing. Note that acceptance does not mean the transaction
-has executed - you must poll with getTransaction to check final status.</p>
+<p>The host error of a failed simulation either names the contract error directly
+(<code>Error(Contract, #N)</code>) or masks it: a failing constructor surfaces as
+<code>Error(Context, ...)</code> and a failing <code>__check_auth</code> as <code>Error(Auth, ...)</code>, and the code
+then appears only in the diagnostic events of the response.</p>
 
-<p>Status values:</p>
+<p>For a masked failure the earliest diagnostic event of a failed call whose topics are
+the symbol <code>error</code> and a contract error is selected. This is a heuristic, not a proven
+cause: an earlier error that a contract caught, several failing contracts, or an
+unrelated error rolled back with the call can be selected instead of the error that
+ended the simulation, and a code from a contract outside the OpenZeppelin smart-account
+suite can collide with a code of <code><a href="Enums/OZContractErrorCodes.html">OZContractErrorCodes</a></code>. Diagnostic events are present
+only when the RPC server returns them; without them a code is available only when the
+host error names it directly.</p>
 
-<ul>
-<li>PENDING: Transaction accepted and waiting to be included in a ledger</li>
-<li>DUPLICATE: Transaction already submitted (same hash exists)</li>
-<li>TRY_AGAIN_LATER: Server is busy, retry the submission</li>
-<li>ERROR: Transaction rejected (check error field for details)</li>
-</ul>
-
-<p>After receiving a PENDING status, use getTransaction with the returned
-transactionId (hash) to poll for completion.</p>
-
-<p>Example:</p>
-<pre class="highlight swift"><code><span class="k">let</span> <span class="nv">sendResponse</span> <span class="o">=</span> <span class="k">await</span> <span class="n">server</span><span class="o">.</span><span class="nf">sendTransaction</span><span class="p">(</span><span class="nv">transaction</span><span class="p">:</span> <span class="n">signedTx</span><span class="p">)</span>
-<span class="k">switch</span> <span class="n">sendResponse</span> <span class="p">{</span>
-<span class="k">case</span> <span class="o">.</span><span class="nf">success</span><span class="p">(</span><span class="k">let</span> <span class="nv">result</span><span class="p">):</span>
-    <span class="k">switch</span> <span class="n">result</span><span class="o">.</span><span class="n">status</span> <span class="p">{</span>
-    <span class="k">case</span> <span class="kt">SendTransactionResponse</span><span class="o">.</span><span class="kt">STATUS_PENDING</span><span class="p">:</span>
-        <span class="nf">print</span><span class="p">(</span><span class="s">"Transaction submitted: </span><span class="se">\(</span><span class="n">result</span><span class="o">.</span><span class="n">transactionId</span><span class="se">)</span><span class="s">"</span><span class="p">)</span>
-        <span class="c1">// Poll for status with getTransaction</span>
-    <span class="k">case</span> <span class="kt">SendTransactionResponse</span><span class="o">.</span><span class="kt">STATUS_ERROR</span><span class="p">:</span>
-        <span class="nf">print</span><span class="p">(</span><span class="s">"Transaction rejected: </span><span class="se">\(</span><span class="n">result</span><span class="o">.</span><span class="n">error</span><span class="p">?</span><span class="o">.</span><span class="n">message</span> <span class="p">??</span> <span class="s">"unknown"</span><span class="se">)</span><span class="s">"</span><span class="p">)</span>
-    <span class="k">default</span><span class="p">:</span>
-        <span class="nf">print</span><span class="p">(</span><span class="s">"Status: </span><span class="se">\(</span><span class="n">result</span><span class="o">.</span><span class="n">status</span><span class="se">)</span><span class="s">"</span><span class="p">)</span>
-    <span class="p">}</span>
-<span class="k">case</span> <span class="o">.</span><span class="nf">failure</span><span class="p">(</span><span class="k">let</span> <span class="nv">error</span><span class="p">):</span>
-    <span class="nf">print</span><span class="p">(</span><span class="s">"RPC error: </span><span class="se">\(</span><span class="n">error</span><span class="se">)</span><span class="s">"</span><span class="p">)</span>
-<span class="p">}</span>
-</code></pre>
-
-<p>See also:</p>
-
-<ul>
-<li>[SorobanServer.sendTransaction] for submitting transactions</li>
-<li>[GetTransactionResponse] for polling transaction status</li>
-<li><a href="https://developers.stellar.org">Stellar developer docs</a></li>
-</ul>
-
-                        <a href="Structs/SendTransactionResponse.html" class="slightly-smaller">See more</a>
+                        <a href="Structs/ReportedContractError.html" class="slightly-smaller">See more</a>
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">SendTransactionResponse</span> <span class="p">:</span> <span class="kt">Decodable</span><span class="p">,</span> <span class="kt">Sendable</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">ReportedContractError</span> <span class="p">:</span> <span class="kt">Equatable</span><span class="p">,</span> <span class="kt">Hashable</span><span class="p">,</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/responses/SendTransactionResponse.swift#L49-L120">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/responses/ReportedContractError.swift#L25-L77">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -9289,7 +9267,80 @@ transactionId (hash) to poll for completion.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/responses/SimulateTransactionResponse.swift#L66-L161">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/responses/SimulateTransactionResponse.swift#L66-L162">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10stellarsdk23SendTransactionResponseV"></a>
+                    <a name="//apple_ref/swift/Struct/SendTransactionResponse" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk23SendTransactionResponseV">SendTransactionResponse</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Response from submitting a transaction to the Stellar network.</p>
+
+<p>After calling sendTransaction, this response indicates whether the transaction
+was accepted for processing. Note that acceptance does not mean the transaction
+has executed - you must poll with getTransaction to check final status.</p>
+
+<p>Status values:</p>
+
+<ul>
+<li>PENDING: Transaction accepted and waiting to be included in a ledger</li>
+<li>DUPLICATE: Transaction already submitted (same hash exists)</li>
+<li>TRY_AGAIN_LATER: Server is busy, retry the submission</li>
+<li>ERROR: Transaction rejected (check error field for details)</li>
+</ul>
+
+<p>After receiving a PENDING status, use getTransaction with the returned
+transactionId (hash) to poll for completion.</p>
+
+<p>Example:</p>
+<pre class="highlight swift"><code><span class="k">let</span> <span class="nv">sendResponse</span> <span class="o">=</span> <span class="k">await</span> <span class="n">server</span><span class="o">.</span><span class="nf">sendTransaction</span><span class="p">(</span><span class="nv">transaction</span><span class="p">:</span> <span class="n">signedTx</span><span class="p">)</span>
+<span class="k">switch</span> <span class="n">sendResponse</span> <span class="p">{</span>
+<span class="k">case</span> <span class="o">.</span><span class="nf">success</span><span class="p">(</span><span class="k">let</span> <span class="nv">result</span><span class="p">):</span>
+    <span class="k">switch</span> <span class="n">result</span><span class="o">.</span><span class="n">status</span> <span class="p">{</span>
+    <span class="k">case</span> <span class="kt">SendTransactionResponse</span><span class="o">.</span><span class="kt">STATUS_PENDING</span><span class="p">:</span>
+        <span class="nf">print</span><span class="p">(</span><span class="s">"Transaction submitted: </span><span class="se">\(</span><span class="n">result</span><span class="o">.</span><span class="n">transactionId</span><span class="se">)</span><span class="s">"</span><span class="p">)</span>
+        <span class="c1">// Poll for status with getTransaction</span>
+    <span class="k">case</span> <span class="kt">SendTransactionResponse</span><span class="o">.</span><span class="kt">STATUS_ERROR</span><span class="p">:</span>
+        <span class="nf">print</span><span class="p">(</span><span class="s">"Transaction rejected: </span><span class="se">\(</span><span class="n">result</span><span class="o">.</span><span class="n">error</span><span class="p">?</span><span class="o">.</span><span class="n">message</span> <span class="p">??</span> <span class="s">"unknown"</span><span class="se">)</span><span class="s">"</span><span class="p">)</span>
+    <span class="k">default</span><span class="p">:</span>
+        <span class="nf">print</span><span class="p">(</span><span class="s">"Status: </span><span class="se">\(</span><span class="n">result</span><span class="o">.</span><span class="n">status</span><span class="se">)</span><span class="s">"</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="k">case</span> <span class="o">.</span><span class="nf">failure</span><span class="p">(</span><span class="k">let</span> <span class="nv">error</span><span class="p">):</span>
+    <span class="nf">print</span><span class="p">(</span><span class="s">"RPC error: </span><span class="se">\(</span><span class="n">error</span><span class="se">)</span><span class="s">"</span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre>
+
+<p>See also:</p>
+
+<ul>
+<li>[SorobanServer.sendTransaction] for submitting transactions</li>
+<li>[GetTransactionResponse] for polling transaction status</li>
+<li><a href="https://developers.stellar.org">Stellar developer docs</a></li>
+</ul>
+
+                        <a href="Structs/SendTransactionResponse.html" class="slightly-smaller">See more</a>
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">SendTransactionResponse</span> <span class="p">:</span> <span class="kt">Decodable</span><span class="p">,</span> <span class="kt">Sendable</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/responses/SendTransactionResponse.swift#L49-L120">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -9323,7 +9374,7 @@ be used to construct the transaction containing the RestoreFootprint</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/responses/SimulateTransactionResponse.swift#L167-L191">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/responses/SimulateTransactionResponse.swift#L168-L192">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -9354,7 +9405,7 @@ be used to construct the transaction containing the RestoreFootprint</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/responses/SimulateTransactionResponse.swift#L194-L231">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/responses/SimulateTransactionResponse.swift#L195-L232">Show on GitHub</a>
                       </div>
                     </section>
                   </div>

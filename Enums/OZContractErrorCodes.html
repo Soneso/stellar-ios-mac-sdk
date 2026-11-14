@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          stellarsdk 3.14.0 Docs
+          stellarsdk 3.15.0 Docs
         </a>
          (94% documented)
       </p>
@@ -2029,6 +2029,12 @@
                 <a class="nav-group-task-link" href="../Structs/Refunds.html">Refunds</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/ReportedContractError.html">ReportedContractError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/ReportedContractError/Provenance.html">– Provenance</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/RequiredInfoUpdates.html">RequiredInfoUpdates</a>
               </li>
               <li class="nav-group-task">
@@ -2325,18 +2331,19 @@
             <p>Contract-level error codes from the OpenZeppelin smart account, WebAuthn verifier, and
 policy contracts.</p>
 
-<p>When a contract rejects a call, the code appears inside the message of a
-<code><a href="../Classes/SmartAccountTransactionException.html">SmartAccountTransactionException</a></code> (for example <code>Error(Contract, #3016)</code>). The SDK
-surfaces the raw error but does not parse or map contract error codes itself; callers
-can extract the code from the message and compare it against these constants, or
-resolve it with the consumer-side <code>decode(_:)</code> and <code>decodeFromMessage(_:)</code> helpers.</p>
+<p>When a contract rejects a simulated call, the kit&rsquo;s
+<code><a href="../Classes/SmartAccountTransactionException/SimulationFailed.html">SmartAccountTransactionException.SimulationFailed</a></code> carries the contract error the
+simulation reports as <code>reportedContractError</code>, taken from the host error or, when the host
+masks it, from the diagnostic events; <code>decodeFromSimulationFailure(_:)</code> names it. The
+code also appears in the exception&rsquo;s message (for example <code>Error(Contract, #3016)</code>), where
+<code>decodeFromMessage(_:)</code> finds it. <code>decode(_:)</code> resolves a raw code.</p>
 
 <p>The named constants below cover the smart account contract&rsquo;s own error enum — the
 codes a caller is most likely to branch on. <code>decode(_:)</code> resolves any known code
 (smart account, WebAuthn, or a policy contract) into its contract and variant name.</p>
 
               <div class="slightly-smaller">
-                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZContractErrorCodes.swift#L47-L193">Show on GitHub</a>
+                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZContractErrorCodes.swift#L48-L214">Show on GitHub</a>
               </div>
           </div>
         </section>
@@ -2370,7 +2377,7 @@ codes a caller is most likely to branch on. <code>decode(_:)</code> resolves any
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZContractErrorCodes.swift#L52">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZContractErrorCodes.swift#L53">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2400,7 +2407,7 @@ codes a caller is most likely to branch on. <code>decode(_:)</code> resolves any
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZContractErrorCodes.swift#L55">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZContractErrorCodes.swift#L56">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2430,7 +2437,7 @@ codes a caller is most likely to branch on. <code>decode(_:)</code> resolves any
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZContractErrorCodes.swift#L58">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZContractErrorCodes.swift#L59">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2460,7 +2467,7 @@ codes a caller is most likely to branch on. <code>decode(_:)</code> resolves any
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZContractErrorCodes.swift#L61">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZContractErrorCodes.swift#L62">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2490,7 +2497,7 @@ codes a caller is most likely to branch on. <code>decode(_:)</code> resolves any
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZContractErrorCodes.swift#L64">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZContractErrorCodes.swift#L65">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2520,7 +2527,7 @@ codes a caller is most likely to branch on. <code>decode(_:)</code> resolves any
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZContractErrorCodes.swift#L67">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZContractErrorCodes.swift#L68">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2550,7 +2557,7 @@ codes a caller is most likely to branch on. <code>decode(_:)</code> resolves any
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZContractErrorCodes.swift#L70">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZContractErrorCodes.swift#L71">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2580,7 +2587,7 @@ codes a caller is most likely to branch on. <code>decode(_:)</code> resolves any
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZContractErrorCodes.swift#L73">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZContractErrorCodes.swift#L74">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2610,7 +2617,7 @@ codes a caller is most likely to branch on. <code>decode(_:)</code> resolves any
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZContractErrorCodes.swift#L76">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZContractErrorCodes.swift#L77">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2640,7 +2647,7 @@ codes a caller is most likely to branch on. <code>decode(_:)</code> resolves any
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZContractErrorCodes.swift#L79">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZContractErrorCodes.swift#L80">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2670,7 +2677,7 @@ codes a caller is most likely to branch on. <code>decode(_:)</code> resolves any
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZContractErrorCodes.swift#L82">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZContractErrorCodes.swift#L83">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2700,7 +2707,7 @@ codes a caller is most likely to branch on. <code>decode(_:)</code> resolves any
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZContractErrorCodes.swift#L85">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZContractErrorCodes.swift#L86">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2730,7 +2737,7 @@ codes a caller is most likely to branch on. <code>decode(_:)</code> resolves any
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZContractErrorCodes.swift#L88">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZContractErrorCodes.swift#L89">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2760,7 +2767,7 @@ codes a caller is most likely to branch on. <code>decode(_:)</code> resolves any
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZContractErrorCodes.swift#L91">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZContractErrorCodes.swift#L92">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2790,7 +2797,7 @@ codes a caller is most likely to branch on. <code>decode(_:)</code> resolves any
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZContractErrorCodes.swift#L94">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZContractErrorCodes.swift#L95">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2820,7 +2827,7 @@ codes a caller is most likely to branch on. <code>decode(_:)</code> resolves any
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZContractErrorCodes.swift#L97">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZContractErrorCodes.swift#L98">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2874,7 +2881,68 @@ defined it, or <code>nil</code> if <code>code</code> is not a known OZ smart-acc
                         <p>The decoded <code><a href="../Structs/OZContractError.html">OZContractError</a></code>, or <code>nil</code> for unknown codes.</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZContractErrorCodes.swift#L104-L106">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZContractErrorCodes.swift#L105-L107">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10stellarsdk20OZContractErrorCodesO27decodeFromSimulationFailureyAA0bC0VSgAA32SmartAccountTransactionExceptionC0G6FailedCFZ"></a>
+                    <a name="//apple_ref/swift/Method/decodeFromSimulationFailure(_:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk20OZContractErrorCodesO27decodeFromSimulationFailureyAA0bC0VSgAA32SmartAccountTransactionExceptionC0G6FailedCFZ">decodeFromSimulationFailure(_:<wbr>)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Decodes the contract error a simulation failure reports.</p>
+
+<p>Reads only <code>failure.reportedContractError</code>; the message is not searched, so an unknown
+reported code gives <code>nil</code> even when the message names a known one. The selection behind
+the reported code is a heuristic, and a code of a contract outside the OpenZeppelin suite
+can collide with a known code; see <code><a href="../Structs/ReportedContractError.html">ReportedContractError</a></code>.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">static</span> <span class="kd">func</span> <span class="nf">decodeFromSimulationFailure</span><span class="p">(</span>
+    <span class="n">_</span> <span class="nv">failure</span><span class="p">:</span> <span class="kt"><a href="../Classes/SmartAccountTransactionException.html">SmartAccountTransactionException</a></span><span class="o">.</span><span class="kt">SimulationFailed</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Structs/OZContractError.html">OZContractError</a></span><span class="p">?</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>failure</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The simulation failure thrown by the kit.</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>The decoded <code><a href="../Structs/OZContractError.html">OZContractError</a></code>, or <code>nil</code> when the failure reports no code or
+an unknown one.</p>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZContractErrorCodes.swift#L119-L126">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2894,11 +2962,12 @@ defined it, or <code>nil</code> if <code>code</code> is not a known OZ smart-acc
                       <div class="abstract">
                         <p>Extracts and decodes the first known contract error code from an error <code>message</code>.</p>
 
-<p>Soroban RPC surfaces contract failures as <code>Error(Contract, #NNNN)</code> inside
-simulation and submission error strings (typically the message of a thrown
-<code><a href="../Classes/SmartAccountTransactionException.html">SmartAccountTransactionException</a></code>). This scans the message for such markers and
-returns the first one whose code is a known OZ smart-account contract error, or
-<code>nil</code> when the message is <code>nil</code>, carries no marker, or carries only unknown codes.</p>
+<p>Contract failures appear as <code>Error(Contract, #NNNN)</code> inside simulation and submission
+error strings (typically the message of a thrown <code><a href="../Classes/SmartAccountTransactionException.html">SmartAccountTransactionException</a></code>,
+including the contract error suffix the kit appends when the host error masks the
+code). This scans the message for such markers and returns the first one whose code
+is a known OZ smart-account contract error, or <code>nil</code> when the message is <code>nil</code>,
+carries no marker, or carries only unknown codes.</p>
 
                       </div>
                       <div class="declaration">
@@ -2933,7 +3002,7 @@ returns the first one whose code is a known OZ smart-account contract error, or
                         <p>The decoded <code><a href="../Structs/OZContractError.html">OZContractError</a></code>, or <code>nil</code> when no known code is found.</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZContractErrorCodes.swift#L118-L132">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZContractErrorCodes.swift#L139-L153">Show on GitHub</a>
                       </div>
                     </section>
                   </div>

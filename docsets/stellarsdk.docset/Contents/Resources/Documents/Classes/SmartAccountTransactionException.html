@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          stellarsdk 3.14.0 Docs
+          stellarsdk 3.15.0 Docs
         </a>
          (94% documented)
       </p>
@@ -2029,6 +2029,12 @@
                 <a class="nav-group-task-link" href="../Structs/Refunds.html">Refunds</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/ReportedContractError.html">ReportedContractError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/ReportedContractError/Provenance.html">– Provenance</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/RequiredInfoUpdates.html">RequiredInfoUpdates</a>
               </li>
               <li class="nav-group-task">
@@ -2325,7 +2331,7 @@
             <p>Transaction-related errors (5xxx range).</p>
 
               <div class="slightly-smaller">
-                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/core/SmartAccountErrors.swift#L421-L470">Show on GitHub</a>
+                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/core/SmartAccountErrors.swift#L421-L534">Show on GitHub</a>
               </div>
           </div>
         </section>
@@ -2349,6 +2355,12 @@
                       <div class="abstract">
                         <p>Indicates that transaction simulation against the RPC failed.</p>
 
+<p>A failure the RPC reports in its simulation response carries the response&rsquo;s diagnostic
+events in <code>diagnosticEventsXdr</code> and the contract error the response reports in
+<code>reportedContractError</code>; <code><a href="../Enums/OZContractErrorCodes.html#/s:10stellarsdk20OZContractErrorCodesO27decodeFromSimulationFailureyAA0bC0VSgAA32SmartAccountTransactionExceptionC0G6FailedCFZ">OZContractErrorCodes.decodeFromSimulationFailure(_:)</a></code> names
+a known code. Transport, JSON-RPC and parsing failures and the kit&rsquo;s own checks carry
+<code>[]</code> and <code>nil</code>.</p>
+
                         <a href="../Classes/SmartAccountTransactionException/SimulationFailed.html" class="slightly-smaller">See more</a>
                       </div>
                       <div class="declaration">
@@ -2360,7 +2372,7 @@
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/core/SmartAccountErrors.swift#L424-L429">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/core/SmartAccountErrors.swift#L430-L465">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2391,7 +2403,7 @@
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/core/SmartAccountErrors.swift#L432-L437">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/core/SmartAccountErrors.swift#L468-L473">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2422,7 +2434,7 @@
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/core/SmartAccountErrors.swift#L440-L445">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/core/SmartAccountErrors.swift#L476-L481">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2453,7 +2465,7 @@
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/core/SmartAccountErrors.swift#L448-L453">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/core/SmartAccountErrors.swift#L484-L489">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2483,7 +2495,106 @@
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/core/SmartAccountErrors.swift#L455-L457">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/core/SmartAccountErrors.swift#L491-L493">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10stellarsdk32SmartAccountTransactionExceptionC16simulationFailed6reason19diagnosticEventsXdr21reportedContractError5causeAC010SimulationG0CSS_SaySSGAA08ReportedmN0VSgs0N0_pSgtFZ"></a>
+                    <a name="//apple_ref/swift/Method/simulationFailed(reason:diagnosticEventsXdr:reportedContractError:cause:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk32SmartAccountTransactionExceptionC16simulationFailed6reason19diagnosticEventsXdr21reportedContractError5causeAC010SimulationG0CSS_SaySSGAA08ReportedmN0VSgs0N0_pSgtFZ">simulationFailed(reason:<wbr>diagnosticEventsXdr:<wbr>reportedContractError:<wbr>cause:<wbr>)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Creates a <code><a href="../Classes/SmartAccountTransactionException/SimulationFailed.html">SimulationFailed</a></code> for a failed simulation response.</p>
+
+<p>The message is &ldquo;Transaction simulation failed: &rdquo; and <code>reason</code>, followed by
+&ldquo; (contract error in diagnostic events: Error(Contract, #N), contract C&hellip;)&rdquo; when
+<code>reportedContractError</code> comes from the diagnostic events; the contract part is absent
+when the event has no contract ID.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">static</span> <span class="kd">func</span> <span class="nf">simulationFailed</span><span class="p">(</span>
+    <span class="nv">reason</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span>
+    <span class="nv">diagnosticEventsXdr</span><span class="p">:</span> <span class="p">[</span><span class="kt">String</span><span class="p">],</span>
+    <span class="nv">reportedContractError</span><span class="p">:</span> <span class="kt"><a href="../Structs/ReportedContractError.html">ReportedContractError</a></span><span class="p">?,</span>
+    <span class="nv">cause</span><span class="p">:</span> <span class="kt">Error</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Classes/SmartAccountTransactionException/SimulationFailed.html">SimulationFailed</a></span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>reason</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The failure description, typically a prefix and the RPC&rsquo;s error text.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>diagnosticEventsXdr</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The response&rsquo;s base64 diagnostic events.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>reportedContractError</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The contract error the response reports, or <code>nil</code>.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>cause</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Optional underlying error that triggered this exception.</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>The simulation failure.</p>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/core/SmartAccountErrors.swift#L508-L521">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2513,7 +2624,7 @@
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/core/SmartAccountErrors.swift#L459-L461">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/core/SmartAccountErrors.swift#L523-L525">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2543,7 +2654,7 @@
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/core/SmartAccountErrors.swift#L463-L465">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/core/SmartAccountErrors.swift#L527-L529">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2573,7 +2684,7 @@
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/core/SmartAccountErrors.swift#L467-L469">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/core/SmartAccountErrors.swift#L531-L533">Show on GitHub</a>
                       </div>
                     </section>
                   </div>

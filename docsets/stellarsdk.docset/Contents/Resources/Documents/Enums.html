@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="index.html">
-          stellarsdk 3.14.0 Docs
+          stellarsdk 3.15.0 Docs
         </a>
          (94% documented)
       </p>
@@ -2025,6 +2025,12 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Structs/Refunds.html">Refunds</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/ReportedContractError.html">ReportedContractError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/ReportedContractError/Provenance.html">– Provenance</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Structs/RequiredInfoUpdates.html">RequiredInfoUpdates</a>
@@ -5112,11 +5118,12 @@ instantiated.</p>
                         <p>Contract-level error codes from the OpenZeppelin smart account, WebAuthn verifier, and
 policy contracts.</p>
 
-<p>When a contract rejects a call, the code appears inside the message of a
-<code><a href="Classes/SmartAccountTransactionException.html">SmartAccountTransactionException</a></code> (for example <code>Error(Contract, #3016)</code>). The SDK
-surfaces the raw error but does not parse or map contract error codes itself; callers
-can extract the code from the message and compare it against these constants, or
-resolve it with the consumer-side <code>decode(_:)</code> and <code>decodeFromMessage(_:)</code> helpers.</p>
+<p>When a contract rejects a simulated call, the kit&rsquo;s
+<code><a href="Classes/SmartAccountTransactionException/SimulationFailed.html">SmartAccountTransactionException.SimulationFailed</a></code> carries the contract error the
+simulation reports as <code>reportedContractError</code>, taken from the host error or, when the host
+masks it, from the diagnostic events; <code>decodeFromSimulationFailure(_:)</code> names it. The
+code also appears in the exception&rsquo;s message (for example <code>Error(Contract, #3016)</code>), where
+<code>decodeFromMessage(_:)</code> finds it. <code>decode(_:)</code> resolves a raw code.</p>
 
 <p>The named constants below cover the smart account contract&rsquo;s own error enum — the
 codes a caller is most likely to branch on. <code>decode(_:)</code> resolves any known code
@@ -5133,7 +5140,7 @@ codes a caller is most likely to branch on. <code>decode(_:)</code> resolves any
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZContractErrorCodes.swift#L47-L193">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZContractErrorCodes.swift#L48-L214">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -6395,7 +6402,7 @@ Note that submission does not wait for completion.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/AssembledTransactionError.swift#L12-L37">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/AssembledTransactionError.swift#L12-L39">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -6457,7 +6464,7 @@ Note that submission does not wait for completion.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/ContractSpec.swift#L708-L721">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/ContractSpec.swift#L762-L777">Show on GitHub</a>
                       </div>
                     </section>
                   </div>

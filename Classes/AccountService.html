@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          stellarsdk 3.14.0 Docs
+          stellarsdk 3.15.0 Docs
         </a>
          (94% documented)
       </p>
@@ -2029,6 +2029,12 @@
                 <a class="nav-group-task-link" href="../Structs/Refunds.html">Refunds</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/ReportedContractError.html">ReportedContractError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/ReportedContractError/Provenance.html">– Provenance</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/RequiredInfoUpdates.html">RequiredInfoUpdates</a>
               </li>
               <li class="nav-group-task">
@@ -2355,7 +2361,7 @@ filter accounts by various criteria, and create test accounts on testnet and fut
 </ul>
 
               <div class="slightly-smaller">
-                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/AccountService.swift#L64-L476">Show on GitHub</a>
+                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/AccountService.swift#L64-L497">Show on GitHub</a>
               </div>
           </div>
         </section>
@@ -2440,7 +2446,7 @@ muxed accounts (M-addresses).</p>
                         <p>AccountResponseEnum with account details on success or error on failure</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/AccountService.swift#L104-L122">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/AccountService.swift#L104-L125">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2535,7 +2541,7 @@ account doesn&rsquo;t exist or the key is not found.</p>
                         <p>DataForAccountResponseEnum with the base64-encoded value on success or error on failure</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/AccountService.swift#L156-L172">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/AccountService.swift#L159-L178">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2617,7 +2623,7 @@ This is useful for testing and development. Only works on testnet, not on the pu
                         <p>CreateTestAccountResponseEnum with success or error</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/AccountService.swift#L203-L220">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/AccountService.swift#L209-L229">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2694,7 +2700,7 @@ This method creates and funds new accounts on futurenet for early testing.</p>
                         <p>CreateTestAccountResponseEnum with success or error</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/AccountService.swift#L246-L263">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/AccountService.swift#L255-L275">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2860,7 +2866,7 @@ Results are returned as a paginated list.</p>
                         <p>PageResponse containing matching accounts or error</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/AccountService.swift#L313-L336">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/AccountService.swift#L325-L351">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2933,7 +2939,7 @@ links (e.g., next, prev) to navigate paginated results.</p>
                         <p>PageResponse containing accounts or error</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/AccountService.swift#L358-L371">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/AccountService.swift#L373-L386">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3024,7 +3030,7 @@ to receive updates via the onReceive callback and close the stream when finished
                         <p>AccountStreamItem for receiving account updates and controlling the stream</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/AccountService.swift#L414-L421">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/AccountService.swift#L429-L439">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3132,7 +3138,7 @@ to receive updates via the onReceive callback and close the stream when finished
                         <p>AccountDataStreamItem for receiving data updates and controlling the stream</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/AccountService.swift#L471-L475">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/AccountService.swift#L489-L496">Show on GitHub</a>
                       </div>
                     </section>
                   </div>

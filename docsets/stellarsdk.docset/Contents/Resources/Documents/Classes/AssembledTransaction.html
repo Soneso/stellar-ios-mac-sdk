@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          stellarsdk 3.14.0 Docs
+          stellarsdk 3.15.0 Docs
         </a>
          (94% documented)
       </p>
@@ -2029,6 +2029,12 @@
                 <a class="nav-group-task-link" href="../Structs/Refunds.html">Refunds</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/ReportedContractError.html">ReportedContractError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/ReportedContractError/Provenance.html">– Provenance</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/RequiredInfoUpdates.html">RequiredInfoUpdates</a>
               </li>
               <li class="nav-group-task">
@@ -2464,7 +2470,7 @@ you can provide a callback function for signing the auth entry:</p>
 transaction is invoked by yet another party, check out in the SorobanClientTest.atomicSwapTest()</p>
 
               <div class="slightly-smaller">
-                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/AssembledTransaction.swift#L178-L664">Show on GitHub</a>
+                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/AssembledTransaction.swift#L178-L782">Show on GitHub</a>
               </div>
           </div>
         </section>
@@ -2742,6 +2748,26 @@ address kind throws <code>StellarSDKError.invalidArgument</code> before the sour
                       <div class="abstract">
                         <p>Simulates the transaction to calculate resource requirements and validate execution.</p>
 
+<p>A simulation error response without a restore preamble throws
+<code>AssembledTransactionError.simulationFailed</code> with &ldquo;Simulation failed with error: &rdquo; and the
+RPC&rsquo;s error text. When that text masks a contract error as <code>Error(Context, ...)</code> or
+<code>Error(Auth, ...)</code> and a diagnostic event reports the code, the message ends with
+&ldquo; (contract error in diagnostic events: Error(Contract, #N), contract C&hellip;)&rdquo;;
+<code><a href="../Enums/AssembledTransactionError.html#/s:10stellarsdk25AssembledTransactionErrorO016reportedContractD0AA08ReportedfD0VSgvp">AssembledTransactionError.reportedContractError</a></code> reads the code back. The response stays
+in <code><a href="../Classes/AssembledTransaction.html#/s:10stellarsdk20AssembledTransactionC18simulationResponseAA08SimulatecE0VSgvp">simulationResponse</a></code>.</p>
+
+<p>When <code>restore</code>, or <code>options.methodOptions.restore</code> if <code>restore</code> is nil, is true and the
+response carries a restore preamble, a restore transaction is signed and sent with
+<code>options.clientOptions.sourceAccountKeyPair</code>. After its success the transaction is rebuilt
+on the current sequence number of its own source account, with its operations, memo,
+preconditions, Soroban data and inclusion fee, and simulated again with the same <code>restore</code>
+decision. The inclusion fee is the fee less the <code>resourceFee</code> of the Soroban data the
+transaction carries, when the fee covers it. The rebuilt transaction carries that data with
+the <code>resourceFee</code> 0, so every further restore keeps the inclusion fee, and it is simulated
+again without its auth entries. <code>AssembledTransactionError.automaticRestoreFailed</code> is thrown
+when the restore transaction ends with a status other than success; other errors of the
+restore (transport, signing, simulation) propagate unchanged.</p>
+
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
@@ -2752,7 +2778,7 @@ address kind throws <code>StellarSDKError.invalidArgument</code> before the sour
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/AssembledTransaction.swift#L238-L286">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/AssembledTransaction.swift#L258-L305">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2785,7 +2811,7 @@ address kind throws <code>StellarSDKError.invalidArgument</code> before the sour
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/AssembledTransaction.swift#L289-L292">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/AssembledTransaction.swift#L308-L311">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2818,7 +2844,7 @@ address kind throws <code>StellarSDKError.invalidArgument</code> before the sour
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/AssembledTransaction.swift#L295-L300">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/AssembledTransaction.swift#L314-L319">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2854,7 +2880,7 @@ that <code>needsNonInvokerSigningBy()</code> reports carries no signature.
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/AssembledTransaction.swift#L306-L334">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/AssembledTransaction.swift#L325-L353">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2875,8 +2901,18 @@ that <code>needsNonInvokerSigningBy()</code> reports carries no signature.
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Submits the signed transaction to the network and polls until completion.
+                        <p>Submits the signed transaction to the network and polls its status until completion.
 Returns the final transaction status including success/failure and return value.</p>
+
+<p>Polling ends when <code>options.methodOptions.timeoutInSeconds</code> has elapsed, status requests
+included; one last status request at the deadline can take up to three seconds. Failed
+status requests are retried until then.</p>
+<div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    <code>AssembledTransactionError.pollInterrupted</code> naming the last status request
+error when the transaction has not completed by the deadline.
+
+</div>
 
                       </div>
                       <div class="declaration">
@@ -2888,7 +2924,7 @@ Returns the final transaction status including success/failure and return value.
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/AssembledTransaction.swift#L338-L370">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/AssembledTransaction.swift#L364-L396">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2950,7 +2986,7 @@ signature. Defaults to <code>false</code>.</p>
                         </table>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/AssembledTransaction.swift#L388-L391">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/AssembledTransaction.swift#L414-L417">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2981,7 +3017,7 @@ Returns true if the call has no auth entries and writes no ledger data.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/AssembledTransaction.swift#L455-L460">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/AssembledTransaction.swift#L481-L486">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3002,6 +3038,11 @@ Returns true if the call has no auth entries and writes no ledger data.</p>
                         <p>Retrieves parsed simulation data including auth entries and return value.
 Throws if transaction has not been simulated or simulation failed.</p>
 
+<p>A failed simulation throws <code>AssembledTransactionError.simulationFailed</code> with
+&ldquo;Transaction simulation failed. Error: &rdquo; and the RPC&rsquo;s error text, followed by the
+contract error suffix <code>simulate()</code> describes, or with &ldquo;Transaction simulation failed&rdquo;
+when the response has neither an error nor transaction data.</p>
+
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
@@ -3012,7 +3053,7 @@ Throws if transaction has not been simulated or simulation failed.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/AssembledTransaction.swift#L464-L490">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/AssembledTransaction.swift#L495-L524">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3074,7 +3115,7 @@ to <code>authorizeEntryCallback</code>.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/AssembledTransaction.swift#L522-L589">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/AssembledTransaction.swift#L556-L623">Show on GitHub</a>
                       </div>
                     </section>
                   </div>

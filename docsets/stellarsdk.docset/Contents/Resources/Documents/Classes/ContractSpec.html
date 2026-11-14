@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          stellarsdk 3.14.0 Docs
+          stellarsdk 3.15.0 Docs
         </a>
          (94% documented)
       </p>
@@ -2029,6 +2029,12 @@
                 <a class="nav-group-task-link" href="../Structs/Refunds.html">Refunds</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/ReportedContractError.html">ReportedContractError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/ReportedContractError/Provenance.html">– Provenance</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/RequiredInfoUpdates.html">RequiredInfoUpdates</a>
               </li>
               <li class="nav-group-task">
@@ -2378,7 +2384,7 @@
 </ul>
 
               <div class="slightly-smaller">
-                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/ContractSpec.swift#L54-L705">Show on GitHub</a>
+                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/ContractSpec.swift#L54-L759">Show on GitHub</a>
               </div>
           </div>
         </section>
@@ -2789,7 +2795,8 @@
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Finds the XDR spec entry for the given name.</p>
+                        <p>Finds the first XDR spec entry with the given name, in spec order, whatever its kind:
+function, struct, union, enum, error enum or event.</p>
 
                       </div>
                       <div class="declaration">
@@ -2824,7 +2831,7 @@
                         <p>The entry or nil if not found</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/ContractSpec.swift#L204-L234">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/ContractSpec.swift#L205-L235">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2894,7 +2901,7 @@
                         <p>Array of SCValXDR objects ordered by position</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/ContractSpec.swift#L242-L259">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/ContractSpec.swift#L243-L260">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2913,6 +2920,13 @@
                       <div class="pointer"></div>
                       <div class="abstract">
                         <p>Converts a native Swift value to an SCValXDR based on the given type.</p>
+
+<p>A u32, i32, u64, i64, timepoint or duration parameter takes an <code>Int</code>, <code>UInt</code>, <code>Int64</code>,
+<code>UInt64</code>, <code>Int32</code> or <code>UInt32</code> that the type holds, or a decimal <code>String</code> that the
+type&rsquo;s <code>init?(_:radix:)</code> reads.</p>
+
+<p>A user-defined type converts with the first struct, union or enum entry of its name
+and skips any function, event or error enum of that name.</p>
 <div class="aside aside-throws">
     <p class="aside-title">Throws</p>
     ContractSpecError if conversion fails; <code>StellarSDKError.invalidArgument</code>
@@ -2966,7 +2980,7 @@ when two map keys convert to equal values.
 Soroban host&rsquo;s key order (see <code>SCValXDR.sortedMap(_:)</code>).</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/ContractSpec.swift#L269-L345">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/ContractSpec.swift#L277-L356">Show on GitHub</a>
                       </div>
                     </section>
                   </div>

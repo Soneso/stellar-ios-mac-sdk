@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          stellarsdk 3.14.0 Docs
+          stellarsdk 3.15.0 Docs
         </a>
          (94% documented)
       </p>
@@ -2029,6 +2029,12 @@
                 <a class="nav-group-task-link" href="../Structs/Refunds.html">Refunds</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/ReportedContractError.html">ReportedContractError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/ReportedContractError/Provenance.html">– Provenance</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/RequiredInfoUpdates.html">RequiredInfoUpdates</a>
               </li>
               <li class="nav-group-task">
@@ -2339,7 +2345,7 @@ contract address as the recipient of a transfer; it is never an authorization ad
 </code></pre>
 
               <div class="slightly-smaller">
-                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/MuxedContract.swift#L28-L101">Show on GitHub</a>
+                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/MuxedContract.swift#L28-L103">Show on GitHub</a>
               </div>
           </div>
         </section>
@@ -2455,7 +2461,7 @@ contract address as the recipient of a transfer; it is never an authorization ad
 <div class="aside aside-throws">
     <p class="aside-title">Throws</p>
     StellarSDKError.invalidArgument naming the value if <code><a href="../Structs/MuxedContract.html#/s:10stellarsdk13MuxedContractV10contractIdSSvp">contractId</a></code> is not a
-valid contract id
+valid contract id, or only its kind if it starts with &ldquo;S&rdquo; or &ldquo;s&rdquo;
 
 </div>
 
@@ -2500,7 +2506,7 @@ valid contract id
                         </table>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/MuxedContract.swift#L46-L51">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/MuxedContract.swift#L46-L52">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2522,7 +2528,8 @@ valid contract id
 from a muxed contract address (&ldquo;W&hellip;&rdquo;).</p>
 <div class="aside aside-throws">
     <p class="aside-title">Throws</p>
-    StellarSDKError.invalidArgument naming the value if <code><a href="../Structs/MuxedContract.html#/s:10stellarsdk13MuxedContractV7addressSSvp">address</a></code> is neither
+    StellarSDKError.invalidArgument naming the value if <code><a href="../Structs/MuxedContract.html#/s:10stellarsdk13MuxedContractV7addressSSvp">address</a></code> is neither,
+or only its kind if it starts with &ldquo;S&rdquo; or &ldquo;s&rdquo;
 
 </div>
 
@@ -2536,7 +2543,7 @@ from a muxed contract address (&ldquo;W&hellip;&rdquo;).</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/MuxedContract.swift#L57-L66">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/MuxedContract.swift#L59-L68">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2572,7 +2579,7 @@ nil, or from its muxed contract arm.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/MuxedContract.swift#L72-L91">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/MuxedContract.swift#L74-L93">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2603,7 +2610,7 @@ set, the contract arm when it is not.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/MuxedContract.swift#L95-L100">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/MuxedContract.swift#L97-L102">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
