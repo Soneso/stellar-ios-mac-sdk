@@ -3350,7 +3350,10 @@ class SEP29Analyzer(SEPAnalyzerBase):
             if 'transaction.memo != Memo.none' in service:
                 return True, 'checkMemoRequired (memo short-circuit)'
         elif name == 'fee_bump_inner_transaction':
-            if 'Transaction(envelopeXdr: transactionEnvelope)' in service and 'tevf.tx.innerTx' in envelope:
+            # Both post methods pass the envelope to memoCheckTransaction, which decodes it; a fee bump is read through innerTx.
+            if (service.count('memoCheckTransaction(envelope: transactionEnvelope)') >= 2
+                    and 'Transaction(envelopeXdr: String(String.UnicodeScalarView(scalars)))' in service
+                    and 'tevf.tx.innerTx' in envelope):
                 return True, 'Transaction(envelopeXdr:) (fee bump inner transaction)'
         elif name == 'unknown_destination_skipped':
             if 'case .notFound(' in service and 'checkMemoRequiredForDestinations' in service:
