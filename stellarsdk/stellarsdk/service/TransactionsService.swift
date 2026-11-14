@@ -282,14 +282,16 @@ public class TransactionsService: @unchecked Sendable {
     
     /// Posts a transaction envelope directly to Horizon with optional SEP-29 memo validation.
     ///
-    /// A fee bump envelope is checked against its inner transaction. An envelope that cannot be
-    /// parsed is submitted without the check and left to Horizon's validation.
+    /// The check decodes the envelope with its line breaks (`\r` and `\n`) removed, because
+    /// Horizon's base64 decoder skips them, and the envelope is posted as passed. A fee bump
+    /// envelope is checked against its inner transaction. An envelope that the check cannot
+    /// decode is not checked and is submitted unchanged. Horizon decides the result.
     ///
     /// - Parameter transactionEnvelope: The base64-encoded transaction envelope XDR
-    /// - Parameter skipMemoRequiredCheck: Set to true to bypass SEP-29 memo requirement validation (default: false)
+    /// - Parameter skipMemoRequiredCheck: Set to true to submit the envelope string without decoding it and without SEP-29 memo requirement validation (default: false)
     /// - Returns: TransactionPostResponseEnum with submission result, memo requirement notice, or error
     open func postTransaction(transactionEnvelope:String, skipMemoRequiredCheck:Bool = false) async -> TransactionPostResponseEnum {
-        if !skipMemoRequiredCheck, let transaction = try? Transaction(envelopeXdr: transactionEnvelope) {
+        if !skipMemoRequiredCheck, let transaction = memoCheckTransaction(envelope: transactionEnvelope) {
             let checkMemoRequiredEnum = await checkMemoRequired(transaction: transaction)
             switch checkMemoRequiredEnum {
             case .noMemoRequired:
@@ -306,15 +308,17 @@ public class TransactionsService: @unchecked Sendable {
     
     /// Posts a transaction envelope asynchronously, returning immediately after validation.
     ///
-    /// A fee bump envelope is checked against its inner transaction. An envelope that cannot be
-    /// parsed is submitted without the check and left to Horizon's validation.
+    /// The check decodes the envelope with its line breaks (`\r` and `\n`) removed, because
+    /// Horizon's base64 decoder skips them, and the envelope is posted as passed. A fee bump
+    /// envelope is checked against its inner transaction. An envelope that the check cannot
+    /// decode is not checked and is submitted unchanged. Horizon decides the result.
     ///
     /// - Parameter transactionEnvelope: The base64-encoded transaction envelope XDR
-    /// - Parameter skipMemoRequiredCheck: Set to true to bypass SEP-29 memo requirement validation (default: false)
+    /// - Parameter skipMemoRequiredCheck: Set to true to submit the envelope string without decoding it and without SEP-29 memo requirement validation (default: false)
     /// - Returns: TransactionPostAsyncResponseEnum with async submission result, memo requirement notice, or error
     open func postTransactionAsync(transactionEnvelope:String, skipMemoRequiredCheck:Bool = false) async -> TransactionPostAsyncResponseEnum {
 
-        if !skipMemoRequiredCheck, let transaction = try? Transaction(envelopeXdr: transactionEnvelope) {
+        if !skipMemoRequiredCheck, let transaction = memoCheckTransaction(envelope: transactionEnvelope) {
             let checkMemoRequiredEnum = await checkMemoRequired(transaction: transaction)
             switch checkMemoRequiredEnum {
             case .noMemoRequired:
@@ -329,6 +333,13 @@ public class TransactionsService: @unchecked Sendable {
         }
     }
     
+    /// Decodes the envelope for the SEP-29 check, a fee bump as its inner transaction, with every `\r`
+    /// and `\n` removed, the only characters Horizon's base64 decoder skips. Nil if it does not decode.
+    private func memoCheckTransaction(envelope: String) -> Transaction? {
+        let scalars = envelope.unicodeScalars.filter { $0 != "\r" && $0 != "\n" }
+        return try? Transaction(envelopeXdr: String(String.UnicodeScalarView(scalars)))
+    }
+
     /// Checks if a transaction requires a memo according to SEP-29 requirements.
     ///
     /// Examines payment, path payment, and account merge operations to find destination accounts

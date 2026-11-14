@@ -2332,7 +2332,222 @@ final class TransactionsServiceUnitTests: XCTestCase {
         ServerMock.remove(mock: postMock)
     }
 
+    // MARK: - SEP-29 check on envelope strings
+
+    func testPostEnvelopeWithLineBreaksToMemoRequiredDestination() async throws {
+        for (kind, envelope) in try memoCheckEnvelopes() {
+            for (form, input) in lineBreakForms(of: envelope) {
+                for path in ["/transactions", "/transactions_async"] {
+                    let horizon = recordHorizon(memoRequired: true)
+                    let result = await postEnvelope(input, to: path)
+                    XCTAssertEqual(result, "destinationRequiresMemo GDW6AUTBXTOC7FIKUO5BOO3OGLK4SF7ZPOBLMQHMZDI45J2Z6VXRB5NR", "\(kind), \(form), \(path)")
+                    XCTAssertEqual(horizon.requests, ["GET /accounts/GDW6AUTBXTOC7FIKUO5BOO3OGLK4SF7ZPOBLMQHMZDI45J2Z6VXRB5NR"], "\(kind), \(form), \(path)")
+                    ServerMock.removeAll()
+                }
+            }
+        }
+    }
+
+    func testPostEnvelopeWithLineBreaksPostsTheEnvelopeAsPassed() async throws {
+        for (kind, envelope) in try memoCheckEnvelopes() {
+            for (form, input) in lineBreakForms(of: envelope) {
+                for path in ["/transactions", "/transactions_async"] {
+                    let horizon = recordHorizon(memoRequired: false)
+                    let result = await postEnvelope(input, to: path)
+                    XCTAssertEqual(result, "success abc123", "\(kind), \(form), \(path)")
+                    XCTAssertEqual(horizon.requests, ["GET /accounts/GDW6AUTBXTOC7FIKUO5BOO3OGLK4SF7ZPOBLMQHMZDI45J2Z6VXRB5NR", "POST \(path)"], "\(kind), \(form), \(path)")
+                    XCTAssertEqual(horizon.postedBodies, [wireBody(input)], "\(kind), \(form), \(path)")
+                    XCTAssertEqual(horizon.postedBodies.first?.removingPercentEncoding, "tx=" + input, "\(kind), \(form), \(path)")
+                    ServerMock.removeAll()
+                }
+            }
+        }
+    }
+
+    func testPostEnvelopeWithNonzeroUnusedPaddingBitsIsChecked() async throws {
+        let envelope = try XCTUnwrap(memoCheckEnvelopes().first { $0.kind == "V1" }?.envelope)
+        // 200 bytes end in one "=", so the character before it carries two unused bits. Set,
+        // they leave the decoded bytes unchanged for Horizon's decoder and for Foundation's.
+        XCTAssertEqual(envelope.count, 268)
+        XCTAssertTrue(envelope.hasSuffix("=") && !envelope.hasSuffix("=="))
+        let digits = Array("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/")
+        var characters = Array(envelope)
+        characters[266] = digits[try XCTUnwrap(digits.firstIndex(of: characters[266])) | 3]
+        let input = String(characters)
+        XCTAssertNotEqual(input, envelope)
+
+        for path in ["/transactions", "/transactions_async"] {
+            var horizon = recordHorizon(memoRequired: true)
+            let refused = await postEnvelope(input, to: path)
+            XCTAssertEqual(refused, "destinationRequiresMemo GDW6AUTBXTOC7FIKUO5BOO3OGLK4SF7ZPOBLMQHMZDI45J2Z6VXRB5NR", path)
+            XCTAssertEqual(horizon.requests, ["GET /accounts/GDW6AUTBXTOC7FIKUO5BOO3OGLK4SF7ZPOBLMQHMZDI45J2Z6VXRB5NR"], path)
+            ServerMock.removeAll()
+
+            horizon = recordHorizon(memoRequired: false)
+            let posted = await postEnvelope(input, to: path)
+            XCTAssertEqual(posted, "success abc123", path)
+            XCTAssertEqual(horizon.requests, ["GET /accounts/GDW6AUTBXTOC7FIKUO5BOO3OGLK4SF7ZPOBLMQHMZDI45J2Z6VXRB5NR", "POST \(path)"], path)
+            XCTAssertEqual(horizon.postedBodies.first?.removingPercentEncoding, "tx=" + input, path)
+            ServerMock.removeAll()
+        }
+    }
+
+    func testPostUndecodableEnvelopeIsSubmittedUnchecked() async throws {
+        let envelope = try XCTUnwrap(memoCheckEnvelopes().first { $0.kind == "V1" }?.envelope)
+        XCTAssertTrue(envelope.contains("+") || envelope.contains("/"))
+        let undecodable = [
+            ("invalid base64", "not*base64"),
+            ("an unknown envelope type", "Z2FyYmFnZQ=="),
+            ("truncated bytes", "AAAA"),
+            ("a space", String(envelope.prefix(76)) + " " + String(envelope.dropFirst(76))),
+            ("a tab", String(envelope.prefix(76)) + "\t" + String(envelope.dropFirst(76))),
+            ("missing padding", String(envelope.dropLast())),
+            ("the URL-safe alphabet", envelope.replacingOccurrences(of: "+", with: "-").replacingOccurrences(of: "/", with: "_")),
+        ]
+        for (name, input) in undecodable {
+            for path in ["/transactions", "/transactions_async"] {
+                let horizon = recordHorizon(memoRequired: true, malformed: true)
+                let result = await postEnvelope(input, to: path)
+                XCTAssertEqual(result, "badRequest 400 https://stellar.org/horizon-errors/transaction_malformed, envelope_xdr: \(input), result_xdr: none", "\(name), \(path)")
+                XCTAssertEqual(horizon.requests, ["POST \(path)"], "\(name), \(path)")
+                XCTAssertEqual(horizon.postedBodies, [wireBody(input)], "\(name), \(path)")
+                ServerMock.removeAll()
+            }
+        }
+    }
+
+    func testPostEnvelopeWithInvalidAssetCodeIsSubmittedUnchecked() async throws {
+        // A payment of an asset whose code is four NUL bytes: the SDK refuses to decode it, while
+        // Horizon's XDR decoder reads the code as plain bytes.
+        let destination = try KeyPair(accountId: "GDW6AUTBXTOC7FIKUO5BOO3OGLK4SF7ZPOBLMQHMZDI45J2Z6VXRB5NR").publicKey
+        let asset = AssetXDR.alphanum4(Alpha4XDR(assetCode: WrappedData4(Data(repeating: 0, count: 4)), issuer: destination))
+        let payment = PaymentOperationXDR(destination: .ed25519(destination.bytes), asset: asset, amount: 100_000_000)
+        let source = try KeyPair(accountId: "GAJNSTFWKUKRXAHMPWG6BM4ACWNIS57S47KQZZQGQCM6H4WTM7VQUFMN").publicKey
+        let input = try TransactionXDR(sourceAccount: source, seqNum: 42, cond: .none, memo: .none,
+                                       operations: [OperationXDR(body: .paymentOp(payment))]).encodedEnvelope()
+        XCTAssertThrowsError(try Transaction(envelopeXdr: input))
+
+        for path in ["/transactions", "/transactions_async"] {
+            // The mocked 200 is a transport stub and says nothing about how the network treats the envelope.
+            let horizon = recordHorizon(memoRequired: true)
+            let result = await postEnvelope(input, to: path)
+            XCTAssertEqual(result, "success abc123", path)
+            XCTAssertEqual(horizon.requests, ["POST \(path)"], path)
+            XCTAssertEqual(horizon.postedBodies, [wireBody(input)], path)
+            ServerMock.removeAll()
+        }
+    }
+
+    func testPostEnvelopeWithLineBreaksAndSkippedCheckPostsTheInput() async throws {
+        let envelope = try XCTUnwrap(memoCheckEnvelopes().first { $0.kind == "V1" }?.envelope)
+        let input = try XCTUnwrap(lineBreakForms(of: envelope).first { $0.form == "LF lines" }?.input)
+        for path in ["/transactions", "/transactions_async"] {
+            let horizon = recordHorizon(memoRequired: true)
+            let result = await postEnvelope(input, to: path, skipMemoRequiredCheck: true)
+            XCTAssertEqual(result, "success abc123", path)
+            XCTAssertEqual(horizon.requests, ["POST \(path)"], path)
+            XCTAssertEqual(horizon.postedBodies, [wireBody(input)], path)
+            ServerMock.removeAll()
+        }
+    }
+
     // MARK: - SEP-29 test helpers
+
+    /// Memo-less payments of 10 XLM to GDW6...B5NR as V0, V1 and fee bump envelope strings. Each
+    /// signature is 64 bytes of 0xAB with the hint 0xCDCDCDCD, so the strings are fixed.
+    private func memoCheckEnvelopes() throws -> [(kind: String, envelope: String)] {
+        let source = try KeyPair(accountId: "GAJNSTFWKUKRXAHMPWG6BM4ACWNIS57S47KQZZQGQCM6H4WTM7VQUFMN")
+        let signature = DecoratedSignatureXDR(hint: WrappedData4(Data(repeating: 0xCD, count: 4)), signature: Data(repeating: 0xAB, count: 64))
+        let payment = try PaymentOperation(sourceAccountId: nil, destinationAccountId: "GDW6AUTBXTOC7FIKUO5BOO3OGLK4SF7ZPOBLMQHMZDI45J2Z6VXRB5NR", asset: Asset(type: AssetType.ASSET_TYPE_NATIVE)!, amount: 10)
+        let v1 = try Transaction(sourceAccount: Account(keyPair: source, sequenceNumber: 41), operations: [payment], memo: Memo.none)
+        v1.addSignature(signature: signature)
+        var v0 = TransactionV0XDR(sourceAccount: source.publicKey, seqNum: 42, timeBounds: nil, memo: .none, operations: [try payment.toXDR()])
+        v0.addSignature(signature: signature)
+        let feeBump = try FeeBumpTransaction(sourceAccount: MuxedAccount(accountId: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ"), fee: 200, innerTransaction: v1)
+        feeBump.addSignature(signature: signature)
+        return [("V0", try v0.encodedEnvelope()), ("V1", try v1.encodedEnvelope()), ("fee bump", try feeBump.encodedEnvelope())]
+    }
+
+    /// The envelope in lines of 76 characters joined by LF and by CRLF, and with a trailing LF
+    /// and a trailing CRLF.
+    private func lineBreakForms(of envelope: String) -> [(form: String, input: String)] {
+        let characters = Array(envelope)
+        let lines = stride(from: 0, to: characters.count, by: 76).map { String(characters[$0..<min($0 + 76, characters.count)]) }
+        return [("LF lines", lines.joined(separator: "\n")), ("CRLF lines", lines.joined(separator: "\r\n")),
+                ("a trailing LF", envelope + "\n"), ("a trailing CRLF", envelope + "\r\n")]
+    }
+
+    /// Posts the envelope with `postTransaction` for "/transactions" and with
+    /// `postTransactionAsync` for "/transactions_async", and names the result.
+    private func postEnvelope(_ envelope: String, to path: String, skipMemoRequiredCheck: Bool = false) async -> String {
+        let failure: HorizonRequestError
+        if path == "/transactions" {
+            switch await sdk.transactions.postTransaction(transactionEnvelope: envelope, skipMemoRequiredCheck: skipMemoRequiredCheck) {
+            case .success(let details): return "success \(details.transactionHash)"
+            case .destinationRequiresMemo(let accountId): return "destinationRequiresMemo \(accountId)"
+            case .failure(let error): failure = error
+            }
+        } else {
+            switch await sdk.transactions.postTransactionAsync(transactionEnvelope: envelope, skipMemoRequiredCheck: skipMemoRequiredCheck) {
+            case .success(let details): return "success \(details.txHash)"
+            case .destinationRequiresMemo(let accountId): return "destinationRequiresMemo \(accountId)"
+            case .failure(let error): failure = error
+            }
+        }
+        guard case .badRequest(_, let problem?) = failure else { return "\(failure)" }
+        return "badRequest \(problem.httpStatusCode) \(problem.type), envelope_xdr: \(problem.extras?.envelopeXdr ?? "none"), result_xdr: \(problem.extras?.resultXdr ?? "none")"
+    }
+
+    /// The form body of a POST as it goes over the wire: these characters are percent-encoded, and
+    /// every other character of the inputs in these tests is sent as is.
+    private func wireBody(_ envelope: String) -> String {
+        let encoded: [Unicode.Scalar: String] = ["\r": "%0D", "\n": "%0A", "\t": "%09", " ": "%20", "+": "%2B", "/": "%2F", "=": "%3D"]
+        return "tx=" + envelope.unicodeScalars.map { encoded[$0] ?? String($0) }.joined()
+    }
+
+    /// Requests that reached the mocked Horizon, as "METHOD path", and the form body of each POST.
+    private final class HorizonRecorder {
+        var requests = [String]()
+        var postedBodies = [String]()
+    }
+
+    /// Answers every GET with the account GDW6...B5NR, with or without the SEP-29 data entry,
+    /// and every POST with a successful submission or, when `malformed` is true, with Horizon's
+    /// answer to an envelope it cannot decode, and records each request.
+    private func recordHorizon(memoRequired: Bool, malformed: Bool = false) -> HorizonRecorder {
+        let recorder = HorizonRecorder()
+        let account = accountResponseJson(accountId: "GDW6AUTBXTOC7FIKUO5BOO3OGLK4SF7ZPOBLMQHMZDI45J2Z6VXRB5NR", memoRequired: memoRequired)
+        let submitted = ["/transactions": submitTransactionResponseJson(), "/transactions_async": submitTransactionAsyncResponseJson()]
+        ServerMock.add(mock: RequestMock(host: "horizon-testnet.stellar.org", path: "*", httpMethod: "GET") { [weak recorder] _, request in
+            recorder?.requests.append("GET \(request.url!.path)")
+            return account
+        })
+        ServerMock.add(mock: RequestMock(host: "horizon-testnet.stellar.org", path: "*", httpMethod: "POST",
+                                         statusCode: malformed ? 400 : 200) { [weak recorder] _, request in
+            let body = String(decoding: request.httpBody ?? request.httpBodyStream?.readfully() ?? Data(), as: UTF8.self)
+            recorder?.requests.append("POST \(request.url!.path)")
+            recorder?.postedBodies.append(body)
+            guard malformed else { return submitted[request.url!.path] }
+            let raw = body.dropFirst("tx=".count).replacingOccurrences(of: "+", with: " ").removingPercentEncoding ?? ""
+            return TransactionsServiceUnitTests.transactionMalformedJson(envelope: raw, path: request.url!.path)
+        })
+        return recorder
+    }
+
+    /// Horizon's HTTP 400 problem for an envelope it cannot decode, which echoes the envelope it read
+    /// from the form. The `/transactions_async` problem also carries the decoding error, encoded as `{}`.
+    private static func transactionMalformedJson(envelope: String, path: String) -> String {
+        var extras: [String: Any] = ["envelope_xdr": envelope]
+        if path == "/transactions_async" { extras["error"] = [String: Any]() }
+        let problem: [String: Any] = [
+            "type": "https://stellar.org/horizon-errors/transaction_malformed",
+            "title": "Transaction Malformed",
+            "status": 400,
+            "detail": "Horizon could not decode the transaction envelope in this request. A transaction should be an XDR TransactionEnvelope struct encoded using base64.  The envelope read from this request is echoed in the `extras.envelope_xdr` field of this response for your convenience.",
+            "extras": extras,
+        ]
+        return String(decoding: try! JSONSerialization.data(withJSONObject: problem), as: UTF8.self)
+    }
 
     /// Builds a signed fee bump around a signed single-payment inner transaction.
     private func feeBumpPayment(destinationAccountId: String, memo: Memo) throws -> FeeBumpTransaction {
