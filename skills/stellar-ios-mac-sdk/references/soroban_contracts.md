@@ -256,7 +256,8 @@ let val = try spec.nativeToXdrSCVal(val: 42, ty: .u32)  // SCValXDR.u32(42)
 |-----------|-------------|-------|
 | `.address` | `String` (G... or C...) or an account or contract `SCAddressXDR` | Auto-converts to SCAddressXDR |
 | `.muxedAddress` | `String` (G..., M..., C... or W...) or the matching `SCAddressXDR` | Auto-converts to SCAddressXDR |
-| `.u32`/`.i32`/`.u64`/`.i64` | `Int` | An `Int` outside the type's range throws `ContractSpecError.invalidType` naming the type |
+| `.u32`/`.i32`/`.u64`/`.i64` | `Int`, `UInt`, `Int64`, `UInt64`, `Int32`, `UInt32`, or a decimal `String` | A value outside the type's range throws `ContractSpecError.invalidType` naming the type |
+| `.timepoint`/`.duration` | `Int`, `UInt`, `Int64`, `UInt64`, `Int32`, `UInt32`, or a decimal `String` | A value outside the `UInt64` range throws `ContractSpecError.invalidType` naming the type |
 | `.u128`/`.i128`/`.u256`/`.i256` | `Int`, `String`, or `Data` | Use `String` for values > Int.max |
 | `.string` | `String` | |
 | `.symbol` | `String` | |

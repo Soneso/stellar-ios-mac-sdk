@@ -1,8 +1,8 @@
 # SEP-0051 (XDR-JSON) Compatibility Matrix
 
-**Generated:** 2026-10-25
+**Generated:** 2026-11-14
 
-**SDK Version:** 3.14.0
+**SDK Version:** 3.15.0
 
 **SEP Version:** 2.0.1
 
