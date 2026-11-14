@@ -2007,7 +2007,7 @@ Every error path in the kit funnels into a `SmartAccountException` subclass so c
 > | 3002 | `.credentialAlreadyExists` | `UnvalidatedContext` |
 > | 3003 | `.credentialInvalid` | `ExternalVerificationFailed` |
 >
-> The table above shows only the two codes the SDK enum reuses. On chain, the smart-account contract's `SmartAccountError` spans `3000` and `3002`-`3016`; the WebAuthn verifier's `WebAuthnError` occupies `3110`-`3119`; and the built-in policy contracts occupy `3200`-`3227`. When inspecting an error code, first check the exception type to determine which namespace it belongs to. The full catalog of on-chain codes is available in [`OZContractErrorCodes`](#ozcontracterrorcodes), together with the consumer-side `decode(_:)` / `decodeFromMessage(_:)` helpers — the SDK surfaces the raw error message but does not parse or map contract error codes itself; see the [OpenZeppelin contracts source](https://github.com/OpenZeppelin/stellar-contracts/blob/main/packages/accounts/src/smart_account/mod.rs) for the on-chain `SmartAccountError`, `WebAuthnError`, and policy error enums.
+> The table above shows only the two codes the SDK enum reuses. On chain, the smart-account contract's `SmartAccountError` spans `3000` and `3002`-`3016`; the WebAuthn verifier's `WebAuthnError` occupies `3110`-`3119`; and the built-in policy contracts occupy `3200`-`3227`. When inspecting an error code, first check the exception type to determine which namespace it belongs to. The full catalog of on-chain codes is available in [`OZContractErrorCodes`](#ozcontracterrorcodes) with its helpers `decode(_:)`, `decodeFromSimulationFailure(_:)`, and `decodeFromMessage(_:)`; see the [OpenZeppelin contracts source](https://github.com/OpenZeppelin/stellar-contracts/blob/main/packages/accounts/src/smart_account/mod.rs) for the on-chain `SmartAccountError`, `WebAuthnError`, and policy error enums.
 
 
 ```swift
@@ -2137,12 +2137,21 @@ public class WebAuthnException: SmartAccountException {
 
 ```swift
 public class SmartAccountTransactionException: SmartAccountException {
-    public final class SimulationFailed: SmartAccountTransactionException { ... }
+    public final class SimulationFailed: SmartAccountTransactionException {
+        public let diagnosticEventsXdr: [String]
+        public let reportedContractError: ReportedContractError?
+    }
     public final class SigningFailed: SmartAccountTransactionException { ... }
     public final class SubmissionFailed: SmartAccountTransactionException { ... }
     public final class Timeout: SmartAccountTransactionException { ... }
 
     public static func simulationFailed(reason: String, cause: Error? = nil) -> SimulationFailed
+    public static func simulationFailed(
+        reason: String,
+        diagnosticEventsXdr: [String],
+        reportedContractError: ReportedContractError?,
+        cause: Error? = nil
+    ) -> SimulationFailed
     public static func signingFailed(reason: String, cause: Error? = nil) -> SigningFailed
     public static func submissionFailed(reason: String, cause: Error? = nil) -> SubmissionFailed
     public static func timeout(details: String? = nil, cause: Error? = nil) -> Timeout
@@ -2218,11 +2227,14 @@ public class SmartAccountIndexerException: SmartAccountException {
 ```swift
 public enum OZContractErrorCodes {
     public static func decode(_ code: Int) -> OZContractError?
+    public static func decodeFromSimulationFailure(
+        _ failure: SmartAccountTransactionException.SimulationFailed
+    ) -> OZContractError?
     public static func decodeFromMessage(_ message: String?) -> OZContractError?
 }
 ```
 
-Namespace exposing the on-chain error codes of the OpenZeppelin smart-account, WebAuthn verifier, and policy contracts. These integers appear as `Error(Contract, #NNNN)` inside `SmartAccountTransactionException.SimulationFailed` / `SubmissionFailed` messages when a contract refuses an operation; the SDK surfaces the raw error message but does not parse or map contract error codes itself — `decode(_:)` and `decodeFromMessage(_:)` are consumer-side helpers.
+Namespace exposing the on-chain error codes of the OpenZeppelin smart-account, WebAuthn verifier, and policy contracts. These integers appear as `Error(Contract, #NNNN)` inside `SmartAccountTransactionException.SimulationFailed` / `SubmissionFailed` messages when a contract refuses an operation. A `SimulationFailed` also holds the code the simulation reports in `reportedContractError`, taken from the diagnostic events when the host error masks it. `decodeFromSimulationFailure(_:)` names that code, `decodeFromMessage(_:)` the first known code in a message, and `decode(_:)` a raw code.
 
 Named constants cover the smart-account contract's own error enum (`SmartAccountError`, codes `3000` and `3002`-`3016`; `3001` is unused):
 

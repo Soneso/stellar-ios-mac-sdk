@@ -1256,19 +1256,24 @@ do {
 
 ### Simulation Errors
 
-Check simulation response for errors before submission.
+`buildInvokeMethodTx` simulates the call and throws `AssembledTransactionError.simulationFailed` when the simulation fails. The error's `reportedContractError` holds the contract error code, if the simulation reports one.
 
 ```swift
 import stellarsdk
 
-let tx = try await client.buildInvokeMethodTx(
-    name: "my_method",
-    args: []
-)
-
-if let simError = tx.simulationResponse?.error {
-    print("Simulation failed: \(simError)")
-    // Don't submit - fix the issue first
+let tx: AssembledTransaction
+do {
+    tx = try await client.buildInvokeMethodTx(
+        name: "my_method",
+        args: []
+    )
+} catch let error as AssembledTransactionError {
+    guard case .simulationFailed(let message) = error else { throw error }
+    print("Simulation failed: \(message)")
+    if let reported = error.reportedContractError {
+        print("Contract error code: \(reported.code)")
+    }
+    throw error
 }
 ```
 

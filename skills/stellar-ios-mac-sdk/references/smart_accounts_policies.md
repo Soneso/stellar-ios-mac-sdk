@@ -1377,23 +1377,9 @@ _ = try await kit.signerManager.removeSigner(contextRuleId: 0, signerId: rule.si
 
 ### Debugging failed `__check_auth` via contract error codes
 
-When a kit method throws `SmartAccountTransactionException.SimulationFailed`, the message wraps the RPC simulation error, which carries the host error code as `Error(Contract, #<code>)`. There is no typed contract-error exception — parse the code from the message and map it to an action. Do not switch on `e.code`: that is the SDK error kind (`transactionSimulationFailed`), not the on-chain contract code.
+When a kit method throws `SmartAccountTransactionException.SimulationFailed`, its `reportedContractError` holds the contract error code the simulation reports, and `OZContractErrorCodes.decodeFromSimulationFailure(_:)` names it. The message wraps the RPC simulation error, which carries the host error code as `Error(Contract, #<code>)`. On stellar-rpc 30.0.1 a failing constructor shows only `Error(Context, ...)` and a failing `__check_auth` only `Error(Auth, ...)`. The code then comes from the diagnostic events, and the message carries it in the suffix `(contract error in diagnostic events: Error(Contract, #<code>), contract C...)`. Do not switch on `e.code`: that is the SDK error kind (`transactionSimulationFailed`), not the on-chain contract code.
 
 ```swift
-private let contractErrorRegex = try! NSRegularExpression(
-    pattern: #"Error\s*\(\s*Contract\s*,\s*#(\d+)\s*\)"#
-)
-
-func parseContractErrorCode(_ error: Error) -> Int? {
-    let message = (error as? SmartAccountException)?.message ?? "\(error)"
-    let range = NSRange(message.startIndex..., in: message)
-    if let m = contractErrorRegex.firstMatch(in: message, range: range),
-       let r = Range(m.range(at: 1), in: message) {
-        return Int(message[r])
-    }
-    return nil
-}
-
 do {
     _ = try await kit.transactionOperations.transfer(
         tokenContract: "CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC",
@@ -1401,14 +1387,14 @@ do {
         amount: "10"
     )
 } catch let e as SmartAccountTransactionException.SimulationFailed {
-    let code = parseContractErrorCode(e)
+    let code = e.reportedContractError.map { Int($0.code) }
     let hint: String
     switch code {
     case 3004: hint = "NoSignersAndPolicies — rule would have 0 signers and 0 policies; add one first"
     case 3016: hint = "UnauthorizedSigner — signer not on the resolved rule; adjust selectedSigners or pass resolveContextRuleIds"
     case 3221: hint = "SpendingLimitExceeded for the current window; wait for reset or raise the limit"
-    case nil:  hint = "No contract code in message: \(e.message)"
-    default:   hint = "Contract error \(code!) — see Contract Error Codes below"
+    case nil:  hint = "No contract code reported: \(e.message)"
+    default:   hint = "\(OZContractErrorCodes.decodeFromSimulationFailure(e)?.name ?? "Contract error \(code!)"): see Contract Error Codes below"
     }
     print("transfer rejected: \(hint)")
     if code == OZContractErrorCodes.unauthorizedSigner {   // 3016
@@ -1417,7 +1403,7 @@ do {
 }
 ```
 
-`OZContractErrorCodes` carries named constants for the smart-account contract's own error enum (3000, 3002-3016) and a decode table covering all known codes of the five contract error enums (account, WebAuthn verification, simple threshold, weighted threshold, spending limit). `decode(_:)` and `decodeFromMessage(_:)` resolve a code — or the first known code inside a failure message — to an `OZContractError` with the defining contract enum and variant name. The SDK never parses or maps contract codes on its own; these helpers are consumer-side, for use on the message of a failed transaction (as shown above).
+`OZContractErrorCodes` carries named constants for the smart-account contract's own error enum (3000, 3002-3016) and a decode table covering all known codes of the five contract error enums (account, WebAuthn verification, simple threshold, weighted threshold, spending limit). `decode(_:)` resolves a code to an `OZContractError` with the defining contract enum and variant name. `decodeFromSimulationFailure(_:)` does the same for the code a `SimulationFailed` reports, and `decodeFromMessage(_:)` for the first known code inside a failure message.
 
 ---
 
