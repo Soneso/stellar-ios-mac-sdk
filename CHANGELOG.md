@@ -7,12 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.15.0] - 2026-11-14
+
 ### Added
 - `LedgerEntry.ledgerKeyXdr` returns the entry key of a `getLedgerEntries` response decoded as a `LedgerKeyXDR`.
 - `ReportedContractError` and `SimulateTransactionResponse.reportedContractError()` return the contract error code a failed simulation reports. The code comes from the host error `Error(Contract, #N)`, or from the earliest diagnostic error event of a failed call, with the emitting contract, when the host error masks it as `Error(Context, ...)` or `Error(Auth, ...)`.
 - `AssembledTransactionError.reportedContractError` reads that code back from a `.simulationFailed` message.
 - `SmartAccountTransactionException.SimulationFailed.diagnosticEventsXdr` and `reportedContractError` hold the base64 diagnostic events and the reported contract error of a failed simulation response, with a matching initializer and `simulationFailed(reason:diagnosticEventsXdr:reportedContractError:cause:)` factory.
 - `OZContractErrorCodes.decodeFromSimulationFailure(_:)` decodes the reported contract error of a smart account simulation failure.
+
+### Changed
+- The documentation and agent skill 1.11.0 describe the contract error a failed simulation reports: the typed value on `AssembledTransactionError` and the smart account `SimulationFailed`, the message suffix of a masked host error, and `decodeFromSimulationFailure(_:)`. The skill also names every integer input of `ContractSpec` for u32, i32, u64, i64, timepoint, and duration. Its API reference lists the public API of 3.15.0.
 
 ### Deprecated
 - `LedgerEntry.keyXdrValue`, which decodes the ledger key as an `SCValXDR`; use `ledgerKeyXdr`.
@@ -23,7 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `ContractSpec.nativeToXdrSCVal` converts timepoint and duration arguments and takes an `Int`, `UInt`, `Int64`, `UInt64`, `Int32`, `UInt32` or decimal `String` for u32, i32, u64, i64, timepoint and duration, so the values the `SCValXDR` helpers return convert back; a value outside the type throws `ContractSpecError.invalidType` naming the value and the type.
 - `ContractSpec.nativeToXdrSCVal` and `funcArgsToXdrSCValues` convert a struct, union or enum value when an earlier function, event or error enum has the same name, instead of throwing `ContractSpecError.invalidType` "Failed to parse udt <name>".
 - A successful automatic restore no longer ends with `AssembledTransactionError.automaticRestoreFailed`: `simulate` rebuilds the transaction on the current sequence number of its source account, keeps its operations, preconditions and inclusion fee in every restore, simulates it again and leaves it ready to sign and send.
-- `TransactionsService.postTransaction` and `postTransactionAsync` run the SEP-29 memo-required check on an envelope string with line breaks (`\r`, `\n`), which Horizon's base64 decoder skips, and post the string as passed.
+- `TransactionsService.postTransaction` and `postTransactionAsync` run the SEP-29 memo-required check on an envelope string with line breaks (`\r`, `\n`) and post the string as passed.
 
 ### Security
 - The Horizon request and stream methods refuse an account id, signer, sponsor, issuer, liquidity pool id or transaction hash argument that starts with `S` or `s`, as a secret seed does, before the request is built, with a `HorizonRequestError.badRequest` that names the kind of value, never the value.
