@@ -4991,6 +4991,7 @@ class SEP51Analyzer(SEPAnalyzerBase):
         node_id = self._generated_source('NodeIDXDR.swift')
         signer_key = self._generated_source('SignerKeyXDR.swift')
         signed_payload = self._generated_source('Ed25519SignedPayload.swift')
+        muxed_contract = self._generated_source('MuxedContractXDR.swift')
         account_keys = self._handwritten_source('PublicKey+XdrJson.swift')
 
         for field in section.fields:
@@ -4998,7 +4999,7 @@ class SEP51Analyzer(SEPAnalyzerBase):
                 self._mark(
                     field,
                     'extension SCAddressXDR: XdrJsonCodable' in sc_address
-                    and all(f'case "{prefix}":' in sc_address for prefix in ('G', 'C', 'M', 'B', 'L')),
+                    and all(f'case "{prefix}":' in sc_address for prefix in ('G', 'C', 'M', 'B', 'L', 'W')),
                     'SCAddressXDR')
             elif field.name == 'account_id':
                 self._mark(
@@ -5030,6 +5031,13 @@ class SEP51Analyzer(SEPAnalyzerBase):
                     field,
                     'return .muxedAccount(try MuxedAccountMed25519XDR.fromXdrJsonValue(value))' in sc_address,
                     'SCAddressXDR.muxedAccount')
+            elif field.name == 'muxed_contract':
+                self._mark(
+                    field,
+                    'extension MuxedContractXDR: XdrJsonCodable' in muxed_contract
+                    and 'encodeMuxedContractId()' in muxed_contract
+                    and 'decodeMuxedContractId()' in muxed_contract,
+                    'MuxedContractXDR')
             elif field.name == 'pool_id':
                 self._mark(
                     field,

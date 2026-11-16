@@ -4,7 +4,7 @@ Convert any XDR structure the SDK models to JSON and back, without losing a byte
 
 ## Overview
 
-> **Note:** SEP-51 is currently in Draft status (v2.0.1). The specification may evolve before reaching final status.
+> **Note:** SEP-51 is currently in Draft status (v2.1.0). The specification may evolve before reaching final status.
 
 Stellar's wire format is XDR, and base64 XDR is what you submit to the network. A base64 blob is unreadable to a person and useless to a diff tool. SEP-51 defines a canonical JSON form for the same structures, so a transaction envelope, a ledger entry, a contract value or an operation result can be written down as JSON and read back as the identical XDR bytes.
 
