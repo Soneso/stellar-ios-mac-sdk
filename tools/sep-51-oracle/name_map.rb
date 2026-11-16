@@ -288,7 +288,7 @@ class Oracle
                          stdin: encoded)
     raise UnknownType, output.strip unless status.success?
 
-    JSON.parse(output.strip, quirks_mode: true)
+    JSON.parse(output.strip)
   end
 
   # The reference CLI orders schema properties alphabetically, so a schema is
