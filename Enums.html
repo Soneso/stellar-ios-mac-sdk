@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="index.html">
-          stellarsdk 3.15.0 Docs
+          stellarsdk 3.16.0 Docs
         </a>
          (94% documented)
       </p>
@@ -1182,6 +1182,9 @@
                 <a class="nav-group-task-link" href="Enums/Network.html">Network</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/OZAuthDigestScheme.html">OZAuthDigestScheme</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Enums/OZBuilders.html">OZBuilders</a>
               </li>
               <li class="nav-group-task">
@@ -1893,6 +1896,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Structs/OZEd25519Signature.html">OZEd25519Signature</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/OZEntryAuthDigest.html">OZEntryAuthDigest</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Structs/OZEventTypeCount.html">OZEventTypeCount</a>
@@ -4997,12 +5003,14 @@ depend on any platform-specific WebAuthn API.</p>
                         <p>Type of context rule that determines which operations it applies to.</p>
 
 <p>Context rules use pattern matching to determine when signers and policies
-should be enforced. Three types of context matching are supported:</p>
+should be enforced. Four types of context matching are supported:</p>
 
 <ul>
 <li>Default: Matches any operation (fallback rule)</li>
 <li>CallContract: Matches invocations to a specific contract address</li>
 <li>CreateContract: Matches contract deployments using a specific WASM hash</li>
+<li>CreateContractExternalRef: Matches contract deployments from the executable
+reference that an owner contract stores under a tag (CAP-0085)</li>
 </ul>
 
 <p>Example:</p>
@@ -5027,7 +5035,7 @@ should be enforced. Three types of context matching are supported:</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZBuilders.swift#L33-L103">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZBuilders.swift#L35-L141">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -5066,7 +5074,7 @@ instantiated.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZBuilders.swift#L206-L310">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZBuilders.swift#L244-L379">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -5140,7 +5148,7 @@ codes a caller is most likely to branch on. <code>decode(_:)</code> resolves any
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZContractErrorCodes.swift#L48-L214">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZContractErrorCodes.swift#L48-L222">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -5176,7 +5184,7 @@ both report the same address.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZExternalSignerManager.swift#L68-L77">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZExternalSignerManager.swift#L70-L79">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -5406,6 +5414,41 @@ for programmatic error handling.</p>
                 <li class="item">
                   <div>
                     <code>
+                    <a name="/s:10stellarsdk18OZAuthDigestSchemeO"></a>
+                    <a name="//apple_ref/swift/Enum/OZAuthDigestScheme" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk18OZAuthDigestSchemeO">OZAuthDigestScheme</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>The digest that the <code>__check_auth</code> of an OpenZeppelin smart account build checks.</p>
+
+<p>Every signer of one auth entry commits to the same digest. Its form depends on the code
+the smart account runs, so the kit reads the wallet&rsquo;s WASM hash before each signing
+operation and selects the scheme through <code><a href="Structs/OZSmartAccountConfig.html#/s:10stellarsdk20OZSmartAccountConfigV17authDigestSchemesSDySSAA06OZAuthF6SchemeOGvp">authDigestSchemes</a></code>.</p>
+
+                        <a href="Enums/OZAuthDigestScheme.html" class="slightly-smaller">See more</a>
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">OZAuthDigestScheme</span> <span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="kt">Sendable</span><span class="p">,</span> <span class="kt">Hashable</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountAuth.swift#L15-L27">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
                     <a name="/s:10stellarsdk18OZSmartAccountAuthO"></a>
                     <a name="//apple_ref/swift/Enum/OZSmartAccountAuth" class="dashAnchor"></a>
                     <a class="token" href="#/s:10stellarsdk18OZSmartAccountAuthO">OZSmartAccountAuth</a>
@@ -5419,10 +5462,14 @@ for programmatic error handling.</p>
                         <p>Authentication helpers for OpenZeppelin smart-account authorization entries.</p>
 
 <p>Provides functions to attach signatures to authorisation entries and to build the
-payload hashes that signers must commit to. The helpers cover:</p>
+payload hashes and digests that signers must commit to. The helpers cover:</p>
 
 <ul>
-<li>Computing the auth digest that binds context rule IDs to a signature payload.</li>
+<li>Computing the auth digest that binds context rule IDs to a signature payload, in the
+<code><a href="Enums/OZAuthDigestScheme.html">OZAuthDigestScheme</a></code> of the code the smart account runs:
+<code>SHA-256(signaturePayload || contextRuleIds.toXDR())</code> for stellar-accounts 0.7 and
+<code>SHA-256(XDR(AuthDigestPreimage))</code> for stellar-accounts 0.8.0
+(<code>computeEntryAuthDigest(entry:expirationLedger:networkPassphrase:contextRuleIds:scheme:)</code>).</li>
 <li>Building the authorisation payload hash for both address and source-account credentials.</li>
 <li>Attaching pre-computed signatures to authorisation entries while preserving any
 existing signatures and ordering map entries deterministically.</li>
@@ -5430,17 +5477,21 @@ existing signatures and ordering map entries deterministically.</li>
 </ul>
 
 <p>Example:</p>
-<pre class="highlight swift"><code><span class="k">let</span> <span class="nv">payloadHash</span> <span class="o">=</span> <span class="k">try</span> <span class="k">await</span> <span class="kt">OZSmartAccountAuth</span><span class="o">.</span><span class="nf">buildAuthPayloadHash</span><span class="p">(</span>
+<pre class="highlight swift"><code><span class="c1">// Compute the digest the wallet's code checks (the WebAuthn challenge).</span>
+<span class="k">let</span> <span class="nv">digest</span> <span class="o">=</span> <span class="k">try</span> <span class="k">await</span> <span class="kt">OZSmartAccountAuth</span><span class="o">.</span><span class="nf">computeEntryAuthDigest</span><span class="p">(</span>
     <span class="nv">entry</span><span class="p">:</span> <span class="n">unsignedEntry</span><span class="p">,</span>
     <span class="nv">expirationLedger</span><span class="p">:</span> <span class="n">currentLedger</span> <span class="o">+</span> <span class="mi">100</span><span class="p">,</span>
-    <span class="nv">networkPassphrase</span><span class="p">:</span> <span class="kt">Network</span><span class="o">.</span><span class="n">testnet</span><span class="o">.</span><span class="n">passphrase</span>
+    <span class="nv">networkPassphrase</span><span class="p">:</span> <span class="kt">Network</span><span class="o">.</span><span class="n">testnet</span><span class="o">.</span><span class="n">passphrase</span><span class="p">,</span>
+    <span class="nv">contextRuleIds</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+    <span class="nv">scheme</span><span class="p">:</span> <span class="o">.</span><span class="n">preimageV1</span>
 <span class="p">)</span>
-<span class="c1">// ... compute the signature over `payloadHash` externally ...</span>
+<span class="c1">// ... compute the signature over `digest.authDigest` externally ...</span>
 <span class="k">let</span> <span class="nv">signedEntry</span> <span class="o">=</span> <span class="k">try</span> <span class="k">await</span> <span class="kt">OZSmartAccountAuth</span><span class="o">.</span><span class="nf">signAuthEntry</span><span class="p">(</span>
     <span class="nv">entry</span><span class="p">:</span> <span class="n">unsignedEntry</span><span class="p">,</span>
     <span class="nv">signer</span><span class="p">:</span> <span class="n">webAuthnSigner</span><span class="p">,</span>
     <span class="nv">signature</span><span class="p">:</span> <span class="n">webAuthnSignature</span><span class="p">,</span>
-    <span class="nv">expirationLedger</span><span class="p">:</span> <span class="n">currentLedger</span> <span class="o">+</span> <span class="mi">100</span>
+    <span class="nv">expirationLedger</span><span class="p">:</span> <span class="n">currentLedger</span> <span class="o">+</span> <span class="mi">100</span><span class="p">,</span>
+    <span class="nv">contextRuleIds</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 <span class="p">)</span>
 </code></pre>
 
@@ -5455,7 +5506,7 @@ existing signatures and ordering map entries deterministically.</li>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountAuth.swift#L35-L411">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountAuth.swift#L77-L582">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -5668,7 +5719,7 @@ method&rsquo;s <code>forceMethod</code> parameter to override this default for a
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountTypes.swift#L292-L295">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountTypes.swift#L297-L300">Show on GitHub</a>
                       </div>
                     </section>
                   </div>

@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="index.html">
-          stellarsdk 3.15.0 Docs
+          stellarsdk 3.16.0 Docs
         </a>
          (94% documented)
       </p>
@@ -1182,6 +1182,9 @@
                 <a class="nav-group-task-link" href="Enums/Network.html">Network</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/OZAuthDigestScheme.html">OZAuthDigestScheme</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Enums/OZBuilders.html">OZBuilders</a>
               </li>
               <li class="nav-group-task">
@@ -1893,6 +1896,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Structs/OZEd25519Signature.html">OZEd25519Signature</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/OZEntryAuthDigest.html">OZEntryAuthDigest</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Structs/OZEventTypeCount.html">OZEventTypeCount</a>
@@ -10737,8 +10743,8 @@ stable numeric <code><a href="Enums/SmartAccountErrorCode.html">SmartAccountErro
                         <p>Manages context rules for an OpenZeppelin Smart Account.</p>
 
 <p>Context rules define authorization requirements per operation category. Each
-rule specifies a context type (default, <code>callContract</code>, or <code>createContract</code>),
-a name, signers, optional policies, and an optional expiration ledger. The
+rule specifies a context type (default, <code>callContract</code>, <code>createContract</code>, or
+<code>createContractExternalRef</code>), a name, signers, optional policies, and an optional expiration ledger. The
 smart-account contract evaluates inbound transactions against the rule set to
 determine which signers must sign and which policy contracts must approve.</p>
 
@@ -10769,7 +10775,7 @@ through the kit&rsquo;s multi-signer manager.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZContextRuleManager.swift#L72-L714">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZContextRuleManager.swift#L73-L724">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -10933,8 +10939,10 @@ one external-wallet signing request. The connected passkey is NOT added
 implicitly — include it explicitly when it should sign.</p>
 
 <p>Each delegated wallet signer produces its own signed auth entry (root
-invocation <code>__check_auth(authDigest)</code>, <code>ADDRESS_V2</code> credentials by default —
-see <code><a href="Structs/OZSmartAccountConfig.html#/s:10stellarsdk20OZSmartAccountConfigV31useUpgradedAuthForWalletSignersSbvp">useUpgradedAuthForWalletSigners</a></code>) plus an
+invocation <code>__check_auth</code> with the arguments of the wallet&rsquo;s
+<code><a href="Enums/OZAuthDigestScheme.html">OZAuthDigestScheme</a></code>: <code>Bytes(authDigest)</code> for stellar-accounts 0.7, the
+<code>AuthDigestPreimage</code> for stellar-accounts 0.8.0; <code>ADDRESS_V2</code> credentials by
+default, see <code><a href="Structs/OZSmartAccountConfig.html#/s:10stellarsdk20OZSmartAccountConfigV31useUpgradedAuthForWalletSignersSbvp">useUpgradedAuthForWalletSigners</a></code>) plus an
 empty-bytes placeholder in the smart account&rsquo;s signature map. Direct wallet
 entries are signed via the external wallet adapter and written into the
 classical <code>Vec([Map({public_key, signature})])</code> shape; the smart account
@@ -10960,7 +10968,7 @@ signature map is not modified for those entries.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZMultiSignerManager.swift#L41-L1334">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZMultiSignerManager.swift#L43-L1340">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -11143,7 +11151,7 @@ the kit&rsquo;s transaction operations or the multi-signer submitter.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSignerManager.swift#L81-L656">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSignerManager.swift#L81-L662">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -11375,7 +11383,7 @@ reflect the real WebAuthn signature payload size.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZTransactionOperations.swift#L94-L1836">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZTransactionOperations.swift#L94-L1841">Show on GitHub</a>
                       </div>
                     </section>
                   </div>

@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          stellarsdk 3.15.0 Docs
+          stellarsdk 3.16.0 Docs
         </a>
          (94% documented)
       </p>
@@ -1184,6 +1184,9 @@
                 <a class="nav-group-task-link" href="../Enums/Network.html">Network</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/OZAuthDigestScheme.html">OZAuthDigestScheme</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Enums/OZBuilders.html">OZBuilders</a>
               </li>
               <li class="nav-group-task">
@@ -1897,6 +1900,9 @@
                 <a class="nav-group-task-link" href="../Structs/OZEd25519Signature.html">OZEd25519Signature</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/OZEntryAuthDigest.html">OZEntryAuthDigest</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/OZEventTypeCount.html">OZEventTypeCount</a>
               </li>
               <li class="nav-group-task">
@@ -2331,12 +2337,14 @@
             <p>Type of context rule that determines which operations it applies to.</p>
 
 <p>Context rules use pattern matching to determine when signers and policies
-should be enforced. Three types of context matching are supported:</p>
+should be enforced. Four types of context matching are supported:</p>
 
 <ul>
 <li>Default: Matches any operation (fallback rule)</li>
 <li>CallContract: Matches invocations to a specific contract address</li>
 <li>CreateContract: Matches contract deployments using a specific WASM hash</li>
+<li>CreateContractExternalRef: Matches contract deployments from the executable
+reference that an owner contract stores under a tag (CAP-0085)</li>
 </ul>
 
 <p>Example:</p>
@@ -2351,7 +2359,7 @@ should be enforced. Three types of context matching are supported:</p>
 </code></pre>
 
               <div class="slightly-smaller">
-                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZBuilders.swift#L33-L103">Show on GitHub</a>
+                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZBuilders.swift#L35-L141">Show on GitHub</a>
               </div>
           </div>
         </section>
@@ -2385,7 +2393,7 @@ should be enforced. Three types of context matching are supported:</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZBuilders.swift#L36">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZBuilders.swift#L38">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2415,7 +2423,7 @@ should be enforced. Three types of context matching are supported:</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZBuilders.swift#L39">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZBuilders.swift#L41">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2445,7 +2453,48 @@ should be enforced. Three types of context matching are supported:</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZBuilders.swift#L42">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZBuilders.swift#L44">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10stellarsdk17OZContextRuleTypeO25createContractExternalRefyACSS_SStcACmF"></a>
+                    <a name="//apple_ref/swift/Element/createContractExternalRef(owner:tag:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk17OZContextRuleTypeO25createContractExternalRefyACSS_SStcACmF">createContractExternalRef(owner:<wbr>tag:<wbr>)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Matches contract deployments from a CAP-0085 executable reference: the WASM hash that
+the contract <code>owner</code> stores under <code>tag</code>.</p>
+
+<p>The hash is resolved when the contract is deployed, so the rule trusts the owner
+contract to keep the reference pointing at acceptable code. An account build without
+this rule kind, such as stellar-accounts 0.7, rejects it during simulation.</p>
+
+<p><code>owner</code> is the address of the contract that stores the executable reference, a <code>C…</code>
+address for a rule built with
+<code><a href="../Enums/OZBuilders.html#/s:10stellarsdk10OZBuildersO42createCreateContractExternalRefContextType5owner3tagAA013OZContextRuleI0OSS_SStKFZ">createCreateContractExternalRefContextType(owner:tag:)</a></code>; a rule read from
+the chain keeps the stored address as its strkey. Two rules compare their tags by
+UTF-8 bytes, as the contract does.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="k">case</span> <span class="nf">createContractExternalRef</span><span class="p">(</span><span class="nv">owner</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">tag</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZBuilders.swift#L58">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2474,7 +2523,7 @@ should be enforced. Three types of context matching are supported:</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZBuilders.swift#L46-L57">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZBuilders.swift#L64-L77">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2503,7 +2552,7 @@ should be enforced. Three types of context matching are supported:</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZBuilders.swift#L59-L70">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZBuilders.swift#L79-L94">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2528,11 +2577,13 @@ should be enforced. Three types of context matching are supported:</p>
 <ul>
 <li>Default: <code>SCValXDR.vec([Symbol(&quot;Default&quot;)])</code></li>
 <li>CallContract: <code>SCValXDR.vec([Symbol(&quot;CallContract&quot;), Address(contractAddress)])</code></li>
-<li><p>CreateContract: <code>SCValXDR.vec([Symbol(&quot;CreateContract&quot;), Bytes(wasmHash)])</code></p></li>
+<li>CreateContract: <code>SCValXDR.vec([Symbol(&quot;CreateContract&quot;), Bytes(wasmHash)])</code></li>
+<li><p>CreateContractExternalRef:
+<code>SCValXDR.vec([Symbol(&quot;CreateContractExternalRef&quot;), Address(owner), String(tag)])</code></p></li>
 </ul><div class="aside aside-throws">
     <p class="aside-title">Throws</p>
     <p><code><a href="../Classes/SmartAccountValidationException/InvalidAddress.html">InvalidAddress</a></code> when the call-contract
-address cannot be converted to an <code>SCAddressXDR</code>.</p>
+address or the external-reference owner cannot be converted to an <code>SCAddressXDR</code>.</p>
 
 </div>
 
@@ -2550,7 +2601,7 @@ address cannot be converted to an <code>SCAddressXDR</code>.</p>
                         <p>The <code>SCValXDR</code> representation of this context rule type.</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZBuilders.swift#L82-L102">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZBuilders.swift#L108-L140">Show on GitHub</a>
                       </div>
                     </section>
                   </div>

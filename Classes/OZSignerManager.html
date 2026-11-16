@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          stellarsdk 3.15.0 Docs
+          stellarsdk 3.16.0 Docs
         </a>
          (94% documented)
       </p>
@@ -1184,6 +1184,9 @@
                 <a class="nav-group-task-link" href="../Enums/Network.html">Network</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/OZAuthDigestScheme.html">OZAuthDigestScheme</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Enums/OZBuilders.html">OZBuilders</a>
               </li>
               <li class="nav-group-task">
@@ -1897,6 +1900,9 @@
                 <a class="nav-group-task-link" href="../Structs/OZEd25519Signature.html">OZEd25519Signature</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/OZEntryAuthDigest.html">OZEntryAuthDigest</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/OZEventTypeCount.html">OZEventTypeCount</a>
               </li>
               <li class="nav-group-task">
@@ -2353,7 +2359,7 @@ the kit&rsquo;s transaction operations or the multi-signer submitter.</p>
 </code></pre>
 
               <div class="slightly-smaller">
-                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSignerManager.swift#L81-L656">Show on GitHub</a>
+                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSignerManager.swift#L81-L662">Show on GitHub</a>
               </div>
           </div>
         </section>
@@ -2665,22 +2671,26 @@ empty.</p>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Adds a delegated signer (Stellar account or contract) to a context
-rule.</p>
+                        <p>Adds a delegated signer (Stellar account) to a context rule.</p>
 
 <p>Creates an <code><a href="../Structs/OZDelegatedSigner.html">OZDelegatedSigner</a></code> that authorises through the host&rsquo;s
 built-in <code>require_auth</code> mechanism and submits an <code>add_signer</code>
 invocation against the connected smart-account contract. The supplied
-<code>address</code> may be either a <code>G…</code> Stellar account or a <code>C…</code> contract
-strkey.</p>
+<code>address</code> must be a <code>G…</code> Stellar account other than the shared default
+deployer, whose secret derives from a public string. A contract
+address, the wallet included, is refused, because a contract delegate
+can let anyone authorize the account (GHSA-jpg9-m7w4-c7wc).</p>
 
 <p>The on-chain transaction requires authorization from an existing
 signer on the specified context rule.</p>
 <div class="aside aside-throws">
     <p class="aside-title">Throws</p>
-    <code><a href="../Classes/SmartAccountValidationException/InvalidAddress.html">InvalidAddress</a></code> when the address
-strkey is malformed; <code><a href="../Classes/SmartAccountWalletException/NotConnected.html">NotConnected</a></code> when no
-wallet is connected; <code><a href="../Classes/SmartAccountTransactionException.html">SmartAccountTransactionException</a></code> for submission
+    <code><a href="../Classes/SmartAccountValidationException/InvalidInput.html">InvalidInput</a></code> when <code>address</code>
+is the shared default deployer or the wallet itself;
+<code><a href="../Classes/SmartAccountValidationException/InvalidAddress.html">InvalidAddress</a></code> when the address
+strkey is malformed or is not a <code>G…</code> address;
+<code><a href="../Classes/SmartAccountWalletException/NotConnected.html">NotConnected</a></code> when no wallet is
+connected; <code><a href="../Classes/SmartAccountTransactionException.html">SmartAccountTransactionException</a></code> for submission
 failures.
 
 </div>
@@ -2724,7 +2734,7 @@ added to.</p>
                               </td>
                               <td>
                                 <div>
-                                  <p>Stellar account (<code>G…</code>) or contract (<code>C…</code>) strkey.</p>
+                                  <p>Stellar account (<code>G…</code>) strkey of the signer.</p>
                                 </div>
                               </td>
                             </tr>
@@ -2760,7 +2770,7 @@ added to.</p>
                         <p>An <code><a href="../Structs/OZTransactionResult.html">OZTransactionResult</a></code> describing the on-chain outcome.</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSignerManager.swift#L361-L377">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSignerManager.swift#L365-L381">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2887,7 +2897,7 @@ bytes).</p>
                         <p>An <code><a href="../Structs/OZTransactionResult.html">OZTransactionResult</a></code> describing the on-chain outcome.</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSignerManager.swift#L401-L421">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSignerManager.swift#L405-L425">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3020,7 +3030,7 @@ from.</p>
                         <p>An <code><a href="../Structs/OZTransactionResult.html">OZTransactionResult</a></code> describing the on-chain outcome.</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSignerManager.swift#L449-L468">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSignerManager.swift#L453-L472">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3142,7 +3152,7 @@ from.</p>
                         <p>An <code><a href="../Structs/OZTransactionResult.html">OZTransactionResult</a></code> describing the on-chain outcome.</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSignerManager.swift#L497-L544">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSignerManager.swift#L501-L548">Show on GitHub</a>
                       </div>
                     </section>
                   </div>

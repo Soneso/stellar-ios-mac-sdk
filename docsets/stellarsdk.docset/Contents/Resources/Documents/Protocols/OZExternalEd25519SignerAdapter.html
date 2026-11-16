@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          stellarsdk 3.15.0 Docs
+          stellarsdk 3.16.0 Docs
         </a>
          (94% documented)
       </p>
@@ -1184,6 +1184,9 @@
                 <a class="nav-group-task-link" href="../Enums/Network.html">Network</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/OZAuthDigestScheme.html">OZAuthDigestScheme</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Enums/OZBuilders.html">OZBuilders</a>
               </li>
               <li class="nav-group-task">
@@ -1897,6 +1900,9 @@
                 <a class="nav-group-task-link" href="../Structs/OZEd25519Signature.html">OZEd25519Signature</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/OZEntryAuthDigest.html">OZEntryAuthDigest</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/OZEventTypeCount.html">OZEventTypeCount</a>
               </li>
               <li class="nav-group-task">
@@ -2348,7 +2354,7 @@ precedence rule).</p>
 </code></pre>
 
               <div class="slightly-smaller">
-                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZExternalSignerManager.swift#L30-L59">Show on GitHub</a>
+                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZExternalSignerManager.swift#L30-L61">Show on GitHub</a>
               </div>
           </div>
         </section>
@@ -2476,8 +2482,10 @@ signature before incorporating it into the authorization payload.</p>
                               </td>
                               <td>
                                 <div>
-                                  <p>32-byte digest to sign. Computed as
-<code>SHA-256(signaturePayload || contextRuleIds.toXDR())</code>.</p>
+                                  <p>32-byte digest to sign, of the scheme the wallet&rsquo;s code checks
+(<code><a href="../Enums/OZAuthDigestScheme.html">OZAuthDigestScheme</a></code>): <code>SHA-256(signaturePayload || contextRuleIds.toXDR())</code>
+for stellar-accounts 0.7 and <code>SHA-256(XDR(AuthDigestPreimage))</code>, which also binds
+the smart account address, for stellar-accounts 0.8.0.</p>
                                 </div>
                               </td>
                             </tr>
@@ -2501,7 +2509,7 @@ signature before incorporating it into the authorization payload.</p>
                         <p>64-byte raw Ed25519 signature over <code>authDigest</code>.</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZExternalSignerManager.swift#L58">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZExternalSignerManager.swift#L60">Show on GitHub</a>
                       </div>
                     </section>
                   </div>

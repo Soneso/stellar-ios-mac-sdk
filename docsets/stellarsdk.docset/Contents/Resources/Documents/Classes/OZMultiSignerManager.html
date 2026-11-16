@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          stellarsdk 3.15.0 Docs
+          stellarsdk 3.16.0 Docs
         </a>
          (94% documented)
       </p>
@@ -1184,6 +1184,9 @@
                 <a class="nav-group-task-link" href="../Enums/Network.html">Network</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/OZAuthDigestScheme.html">OZAuthDigestScheme</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Enums/OZBuilders.html">OZBuilders</a>
               </li>
               <li class="nav-group-task">
@@ -1897,6 +1900,9 @@
                 <a class="nav-group-task-link" href="../Structs/OZEd25519Signature.html">OZEd25519Signature</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/OZEntryAuthDigest.html">OZEntryAuthDigest</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/OZEventTypeCount.html">OZEventTypeCount</a>
               </li>
               <li class="nav-group-task">
@@ -2340,8 +2346,10 @@ one external-wallet signing request. The connected passkey is NOT added
 implicitly — include it explicitly when it should sign.</p>
 
 <p>Each delegated wallet signer produces its own signed auth entry (root
-invocation <code>__check_auth(authDigest)</code>, <code>ADDRESS_V2</code> credentials by default —
-see <code><a href="../Structs/OZSmartAccountConfig.html#/s:10stellarsdk20OZSmartAccountConfigV31useUpgradedAuthForWalletSignersSbvp">useUpgradedAuthForWalletSigners</a></code>) plus an
+invocation <code>__check_auth</code> with the arguments of the wallet&rsquo;s
+<code><a href="../Enums/OZAuthDigestScheme.html">OZAuthDigestScheme</a></code>: <code>Bytes(authDigest)</code> for stellar-accounts 0.7, the
+<code>AuthDigestPreimage</code> for stellar-accounts 0.8.0; <code>ADDRESS_V2</code> credentials by
+default, see <code><a href="../Structs/OZSmartAccountConfig.html#/s:10stellarsdk20OZSmartAccountConfigV31useUpgradedAuthForWalletSignersSbvp">useUpgradedAuthForWalletSigners</a></code>) plus an
 empty-bytes placeholder in the smart account&rsquo;s signature map. Direct wallet
 entries are signed via the external wallet adapter and written into the
 classical <code>Vec([Map({public_key, signature})])</code> shape; the smart account
@@ -2357,7 +2365,7 @@ signature map is not modified for those entries.</p>
 </code></pre>
 
               <div class="slightly-smaller">
-                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZMultiSignerManager.swift#L41-L1334">Show on GitHub</a>
+                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZMultiSignerManager.swift#L43-L1340">Show on GitHub</a>
               </div>
           </div>
         </section>
@@ -2548,7 +2556,7 @@ active context rules.</p>
                         <p>An <code><a href="../Structs/OZTransactionResult.html">OZTransactionResult</a></code> describing the on-chain outcome.</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZMultiSignerManager.swift#L104-L160">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZMultiSignerManager.swift#L106-L162">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2701,7 +2709,7 @@ Must be non-empty.</p>
                         <p>An <code><a href="../Structs/OZTransactionResult.html">OZTransactionResult</a></code> describing the on-chain outcome.</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZMultiSignerManager.swift#L187-L215">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZMultiSignerManager.swift#L189-L217">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2855,7 +2863,7 @@ Must be non-empty.</p>
                         <p>An <code><a href="../Structs/OZTransactionResult.html">OZTransactionResult</a></code> describing the on-chain outcome.</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZMultiSignerManager.swift#L243-L278">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZMultiSignerManager.swift#L245-L280">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2905,6 +2913,18 @@ build the host function and delegate to this method. Sibling managers
 <code>OZSmartAccountKitProtocol/multiSignerManager</code> when a non-empty
 <code>selectedSigners</code> list is supplied to one of their state-changing
 methods.</p>
+
+<p>Before the first signer is asked, foreign entries included, it
+validates the signers that the smart account entries add to the wallet
+through <code>add_signer</code>, <code>batch_add_signer</code> or <code>add_context_rule</code>, and
+reads the wallet&rsquo;s WASM hash once to select its <code><a href="../Enums/OZAuthDigestScheme.html">OZAuthDigestScheme</a></code>
+(<code><a href="../Structs/OZSmartAccountConfig.html#/s:10stellarsdk20OZSmartAccountConfigV17authDigestSchemesSDySSAA06OZAuthF6SchemeOGvp">authDigestSchemes</a></code>); the same response sets the
+signature expiration. Passkey and Ed25519 signers sign the scheme&rsquo;s
+digest and wallet signers authorize its <code>__check_auth</code> arguments. A
+Delegated signer that <code>OZSignerManager.addDelegated</code> or
+<code>OZContextRuleManager.addContextRule</code> refuses, and a muxed contract
+address (<code>W…</code>) as a Delegated address or an External verifier, throw a
+<code><a href="../Classes/SmartAccountValidationException.html">SmartAccountValidationException</a></code> before any signer is asked.</p>
 
 <p>Validation order (each step is exercised by a dedicated unit test):</p>
 
@@ -3001,7 +3021,7 @@ Must be non-empty; an empty list is a routing bug at the call site.</p>
                         <p>An <code><a href="../Structs/OZTransactionResult.html">OZTransactionResult</a></code> describing the on-chain outcome.</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZMultiSignerManager.swift#L355-L535">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZMultiSignerManager.swift#L369-L555">Show on GitHub</a>
                       </div>
                     </section>
                   </div>

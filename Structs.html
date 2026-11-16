@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="index.html">
-          stellarsdk 3.15.0 Docs
+          stellarsdk 3.16.0 Docs
         </a>
          (94% documented)
       </p>
@@ -1182,6 +1182,9 @@
                 <a class="nav-group-task-link" href="Enums/Network.html">Network</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/OZAuthDigestScheme.html">OZAuthDigestScheme</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Enums/OZBuilders.html">OZBuilders</a>
               </li>
               <li class="nav-group-task">
@@ -1893,6 +1896,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Structs/OZEd25519Signature.html">OZEd25519Signature</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/OZEntryAuthDigest.html">OZEntryAuthDigest</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Structs/OZEventTypeCount.html">OZEventTypeCount</a>
@@ -7059,7 +7065,7 @@ operation.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZBuilders.swift#L116-L191">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZBuilders.swift#L154-L229">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -7175,7 +7181,7 @@ to report signer details.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZExternalSignerManager.swift#L97-L129">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZExternalSignerManager.swift#L99-L131">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -7716,6 +7722,39 @@ field. See the property documentation below for the exact mapping.</li>
                 <li class="item">
                   <div>
                     <code>
+                    <a name="/s:10stellarsdk17OZEntryAuthDigestV"></a>
+                    <a name="//apple_ref/swift/Struct/OZEntryAuthDigest" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk17OZEntryAuthDigestV">OZEntryAuthDigest</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>The digest material every signer of one smart account auth entry commits to, as
+<code><a href="Enums/OZSmartAccountAuth.html#/s:10stellarsdk18OZSmartAccountAuthO012computeEntryD6Digest5entry16expirationLedger17networkPassphrase14contextRuleIds6schemeAA07OZEntrydG0VAA020SorobanAuthorizationF3XDRV_s6UInt32VSSSayAOGAA06OZAuthG6SchemeOtYaKFZ">computeEntryAuthDigest(entry:expirationLedger:networkPassphrase:contextRuleIds:scheme:)</a></code>
+returns it.</p>
+
+                        <a href="Structs/OZEntryAuthDigest.html" class="slightly-smaller">See more</a>
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">OZEntryAuthDigest</span> <span class="p">:</span> <span class="kt">Sendable</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountAuth.swift#L32-L42">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
                     <a name="/s:10stellarsdk20OZSmartAccountConfigV"></a>
                     <a name="//apple_ref/swift/Struct/OZSmartAccountConfig" class="dashAnchor"></a>
                     <a class="token" href="#/s:10stellarsdk20OZSmartAccountConfigV">OZSmartAccountConfig</a>
@@ -7753,7 +7792,8 @@ Stellar/Soroban: network connectivity, contract addresses, and operational defau
 </code></pre>
 
 <p>Throws <code><a href="Classes/SmartAccountConfigurationException.html">SmartAccountConfigurationException</a></code> if required parameters are blank or invalid (for
-example, <code>accountWasmHash</code> is not a 64-character hex string, or
+example, <code>accountWasmHash</code> or an <code>authDigestSchemes</code> key is not a 64-character hex string,
+two <code>authDigestSchemes</code> keys that differ only in case map to different schemes, or
 <code>webauthnVerifierAddress</code> is not a valid C-address).</p>
 
                         <a href="Structs/OZSmartAccountConfig.html" class="slightly-smaller">See more</a>
@@ -7769,7 +7809,7 @@ example, <code>accountWasmHash</code> is not a 64-character hex string, or
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountConfig.swift#L44-L613">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountConfig.swift#L45-L701">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -7911,14 +7951,19 @@ via <code><a href="Structs/OZPolicySignature.html#/s:10stellarsdk17OZPolicySigna
                       <div class="abstract">
                         <p>A signer authorized through a Soroban address using the host&rsquo;s <code>require_auth</code> mechanism.</p>
 
-<p>Delegated signers are Stellar accounts (<code>G…</code> strkey) or smart contracts (<code>C…</code> strkey) that
-use the native Soroban authorization mechanism. The wallet contract calls
+<p>Delegated signers use the native Soroban authorization mechanism. The wallet contract calls
 <code>require_auth_for_args()</code> on the address to verify authorization, so no custom
 signature-verification logic is required.</p>
 
+<p>The type holds a Stellar account (<code>G…</code> strkey) or a contract (<code>C…</code> strkey), so signers
+already on a wallet are read as stored. The kit adds only <code>G…</code> addresses:
+<code>OZSignerManager.addDelegated</code>, <code>OZContextRuleManager.addContextRule</code> and the signing
+pipelines refuse a contract, the wallet itself and the shared default deployer, because a
+contract delegate can let anyone authorize the account without a key
+(GHSA-jpg9-m7w4-c7wc) and the default deployer&rsquo;s secret derives from a public string.</p>
+
 <p>Example:</p>
 <pre class="highlight swift"><code><span class="k">let</span> <span class="nv">accountSigner</span> <span class="o">=</span> <span class="k">try</span> <span class="kt">OZDelegatedSigner</span><span class="p">(</span><span class="nv">address</span><span class="p">:</span> <span class="s">"GA7QYNF7SOWQ..."</span><span class="p">)</span>
-<span class="k">let</span> <span class="nv">contractSigner</span> <span class="o">=</span> <span class="k">try</span> <span class="kt">OZDelegatedSigner</span><span class="p">(</span><span class="nv">address</span><span class="p">:</span> <span class="s">"CBCD1234..."</span><span class="p">)</span>
 </code></pre>
 
                         <a href="Structs/OZDelegatedSigner.html" class="slightly-smaller">See more</a>
@@ -7932,7 +7977,7 @@ signature-verification logic is required.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountTypes.swift#L55-L104">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountTypes.swift#L60-L109">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -7983,7 +8028,7 @@ raw initializer is available when integrating with a custom verifier.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountTypes.swift#L128-L275">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZSmartAccountTypes.swift#L133-L280">Show on GitHub</a>
                       </div>
                     </section>
                   </div>

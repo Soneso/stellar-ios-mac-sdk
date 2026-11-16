@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          stellarsdk 3.15.0 Docs
+          stellarsdk 3.16.0 Docs
         </a>
          (94% documented)
       </p>
@@ -1184,6 +1184,9 @@
                 <a class="nav-group-task-link" href="../Enums/Network.html">Network</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/OZAuthDigestScheme.html">OZAuthDigestScheme</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Enums/OZBuilders.html">OZBuilders</a>
               </li>
               <li class="nav-group-task">
@@ -1897,6 +1900,9 @@
                 <a class="nav-group-task-link" href="../Structs/OZEd25519Signature.html">OZEd25519Signature</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/OZEntryAuthDigest.html">OZEntryAuthDigest</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/OZEventTypeCount.html">OZEventTypeCount</a>
               </li>
               <li class="nav-group-task">
@@ -2339,7 +2345,7 @@ types.</p>
 instantiated.</p>
 
               <div class="slightly-smaller">
-                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZBuilders.swift#L206-L310">Show on GitHub</a>
+                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZBuilders.swift#L244-L379">Show on GitHub</a>
               </div>
           </div>
         </section>
@@ -2372,8 +2378,7 @@ instantiated.</p>
                       <div class="abstract">
                         <p>Creates a default context rule type.</p>
 
-<p>Default rules apply to any operation that does not match a more specific
-<code>callContract</code> or <code>createContract</code> rule.</p>
+<p>Default rules match any operation.</p>
 
                       </div>
                       <div class="declaration">
@@ -2389,7 +2394,7 @@ instantiated.</p>
                         <p><code><a href="../Enums/OZContextRuleType.html#/s:10stellarsdk17OZContextRuleTypeO07defaultC0yA2CmF">defaultRule</a></code> for default authorization.</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZBuilders.swift#L216-L218">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZBuilders.swift#L253-L255">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2452,7 +2457,7 @@ format is invalid.
 for the supplied contract.</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZBuilders.swift#L230-L233">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZBuilders.swift#L267-L270">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2517,7 +2522,7 @@ optional <code>0x</code> prefix is accepted and stripped).</p>
 supplied hash.</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZBuilders.swift#L247-L271">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZBuilders.swift#L284-L308">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2580,7 +2585,96 @@ exactly 32 bytes.
 supplied hash.</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZBuilders.swift#L283-L291">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZBuilders.swift#L320-L328">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10stellarsdk10OZBuildersO42createCreateContractExternalRefContextType5owner3tagAA013OZContextRuleI0OSS_SStKFZ"></a>
+                    <a name="//apple_ref/swift/Method/createCreateContractExternalRefContextType(owner:tag:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk10OZBuildersO42createCreateContractExternalRefContextType5owner3tagAA013OZContextRuleI0OSS_SStKFZ">createCreateContractExternalRefContextType(owner:<wbr>tag:<wbr>)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Creates a create-contract context rule type for deployments from a CAP-0085
+executable reference.</p>
+
+<p>The rule applies only when deploying contracts from the WASM hash that the <code>owner</code>
+contract stores under <code>tag</code>. The hash is resolved at deployment time, so the rule
+trusts the owner contract to keep the reference pointing at acceptable code. An
+account build without this rule kind, such as stellar-accounts 0.7, rejects it during
+simulation.</p>
+
+<p>Example:</p>
+<pre class="highlight swift"><code><span class="k">let</span> <span class="nv">contextType</span> <span class="o">=</span> <span class="k">try</span> <span class="kt">OZBuilders</span><span class="o">.</span><span class="nf">createCreateContractExternalRefContextType</span><span class="p">(</span>
+    <span class="nv">owner</span><span class="p">:</span> <span class="s">"CDEF5678..."</span><span class="p">,</span>
+    <span class="nv">tag</span><span class="p">:</span> <span class="s">"account-v1"</span>
+<span class="p">)</span>
+</code></pre>
+<div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    <code><a href="../Classes/SmartAccountValidationException/InvalidAddress.html">InvalidAddress</a></code> when <code>owner</code> is not a valid
+contract address.
+
+</div>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">static</span> <span class="kd">func</span> <span class="nf">createCreateContractExternalRefContextType</span><span class="p">(</span>
+    <span class="nv">owner</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span>
+    <span class="nv">tag</span><span class="p">:</span> <span class="kt">String</span>
+<span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Enums/OZContextRuleType.html">OZContextRuleType</a></span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>owner</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Contract address (<code>C…</code>) that stores the executable reference.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>tag</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The tag the reference is stored under.</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>An <code><a href="../Enums/OZContextRuleType.html#/s:10stellarsdk17OZContextRuleTypeO25createContractExternalRefyACSS_SStcACmF">createContractExternalRef(owner:tag:)</a></code> for the
+supplied owner and tag.</p>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZBuilders.swift#L354-L360">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2653,7 +2747,7 @@ the implementation with <code><a href="../Enums/OZSmartAccountBuilders.html#/s:1
                         <p>Unique signers across all rules, in first-occurrence order.</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZBuilders.swift#L304-L309">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZBuilders.swift#L373-L378">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
