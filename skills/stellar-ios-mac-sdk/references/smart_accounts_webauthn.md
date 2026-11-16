@@ -102,7 +102,7 @@ public protocol WebAuthnProvider: Sendable {
 //   or:     provider.authenticate(challenge: data, allowCredentials: WebAuthnAllowCredential.fromIds([idData]))
 ```
 
-The `challenge` MUST be passed to the authenticator as-is in both methods. For `register` it binds the credential to the deployment; for `authenticate` it is the authorization-payload hash that authorizes the transaction.
+The `challenge` MUST be passed to the authenticator as-is in both methods. For `register` it is a random challenge; for transaction signing it carries the auth digest in the wallet's `OZAuthDigestScheme`.
 
 ### `WebAuthnRegistrationResult`
 
