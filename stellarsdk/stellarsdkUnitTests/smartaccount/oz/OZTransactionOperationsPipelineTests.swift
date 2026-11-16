@@ -174,8 +174,8 @@ final class OZTransactionOperationsPipelineTests: XCTestCase {
             authEntries: [entry],
             resultXdr: nil
         )
-        // Latest ledger for expiration computation.
-        script.setGetLatestLedger(sequence: 1000)
+        // The wallet's instance read, whose latest ledger sets the expiration.
+        try script.setWalletInstanceResponse(contractId: contractA, latestLedger: 1000)
         // WebAuthn returns a deterministic DER signature.
         h.provider.enqueueAuthenticate(
             RecordingWebAuthnFixtures.authenticationResult(
@@ -277,7 +277,7 @@ final class OZTransactionOperationsPipelineTests: XCTestCase {
             contractAddress: contractA
         )
         script.enqueueSimulate(authEntries: [entry])
-        script.setGetLatestLedger(sequence: 2000)
+        try script.setWalletInstanceResponse(contractId: contractA, latestLedger: 2000)
         h.provider.enqueueAuthenticate(
             RecordingWebAuthnFixtures.authenticationResult(
                 credentialId: try Data(base64URLEncoded: credentialIdB64Url)
@@ -338,7 +338,7 @@ final class OZTransactionOperationsPipelineTests: XCTestCase {
             nonce: suppliedNonce
         )
         script.enqueueSimulate(authEntries: [entry])
-        script.setGetLatestLedger(sequence: 5000)
+        try script.setWalletInstanceResponse(contractId: contractA, latestLedger: 5000)
         h.provider.enqueueAuthenticate(
             RecordingWebAuthnFixtures.authenticationResult(
                 credentialId: try Data(base64URLEncoded: credentialIdB64Url)
@@ -389,7 +389,7 @@ final class OZTransactionOperationsPipelineTests: XCTestCase {
             contractAddress: contractA
         )
         script.enqueueSimulate(authEntries: [entry], minResourceFee: 100_000)
-        script.setGetLatestLedger(sequence: 1000)
+        try script.setWalletInstanceResponse(contractId: contractA, latestLedger: 1000)
         h.provider.enqueueAuthenticate(
             RecordingWebAuthnFixtures.authenticationResult(
                 credentialId: try Data(base64URLEncoded: credentialIdB64Url)
@@ -436,7 +436,7 @@ final class OZTransactionOperationsPipelineTests: XCTestCase {
             contractAddress: contractA
         )
         script.enqueueSimulate(authEntries: [entry])
-        script.setGetLatestLedger(sequence: 1000)
+        try script.setWalletInstanceResponse(contractId: contractA, latestLedger: 1000)
         h.provider.enqueueAuthenticate(
             RecordingWebAuthnFixtures.authenticationResult(
                 credentialId: try Data(base64URLEncoded: credentialIdB64Url)
@@ -1437,7 +1437,7 @@ final class OZTransactionOperationsPipelineTests: XCTestCase {
             contractAddress: contractA
         )
         script.enqueueSimulate(authEntries: [entry])
-        script.setGetLatestLedger(sequence: 1000)
+        try script.setWalletInstanceResponse(contractId: contractA, latestLedger: 1000)
         h.provider.enqueueAuthenticateError(
             WebAuthnException.authenticationFailed(reason: "user cancelled")
         )
@@ -1611,7 +1611,7 @@ final class OZTransactionOperationsPipelineTests: XCTestCase {
             contractAddress: contractA
         )
         script.enqueueSimulate(authEntries: [entry])
-        script.setGetLatestLedger(sequence: 1000)
+        try script.setWalletInstanceResponse(contractId: contractA, latestLedger: 1000)
 
         let hostFn = HostFunctionXDR.invokeContract(
             InvokeContractArgsXDR(
@@ -2455,7 +2455,7 @@ final class OZTransactionOperationsPipelineTests: XCTestCase {
             targetContract: contractB
         )
         script.enqueueSimulate(authEntries: [authEntry])
-        script.setGetLatestLedger(sequence: 1000)
+        try script.setWalletInstanceResponse(contractId: contractA, latestLedger: 1000)
 
         let hostFn = HostFunctionXDR.invokeContract(
             InvokeContractArgsXDR(
@@ -2470,10 +2470,6 @@ final class OZTransactionOperationsPipelineTests: XCTestCase {
             XCTFail("expected SmartAccountCredentialException.NotFound when context rules are empty and no stored credential")
         } catch is SmartAccountCredentialException.NotFound {
             // Expected: findKeyDataFromContextRules returned not-found.
-        } catch {
-            // Also acceptable: any error after the storage-miss + context-rule
-            // scan path was traversed confirms the body lines were hit.
-            // The credential-not-found is the expected nominal outcome.
         }
         // The signing pass was reached (at least one simulate call was made).
         XCTAssertGreaterThanOrEqual(script.simulateCallCount, 1,
@@ -2522,10 +2518,10 @@ final class OZTransactionOperationsPipelineTests: XCTestCase {
         )
         // Simulate with an auth entry so signAuthEntriesPass is engaged.
         script.enqueueSimulate(authEntries: [authEntry])
-        // Script getLatestLedger to return a sequence near UInt32.max so the
-        // expiration sum overflows.
+        // Script the wallet's instance read to report a ledger near UInt32.max
+        // so the expiration sum overflows.
         let overflowSequence = Int(UInt32.max) - 1
-        script.setGetLatestLedger(sequence: overflowSequence)
+        try script.setWalletInstanceResponse(contractId: contractA, latestLedger: overflowSequence)
 
         let hostFn = HostFunctionXDR.invokeContract(
             InvokeContractArgsXDR(
@@ -2537,12 +2533,10 @@ final class OZTransactionOperationsPipelineTests: XCTestCase {
         do {
             _ = try await txOps.submit(hostFunction: hostFn, auth: [])
             XCTFail("expected SmartAccountTransactionException.SimulationFailed on expiration overflow")
-        } catch is SmartAccountTransactionException.SimulationFailed {
-            // Expected: overflow guard fired.
-        } catch {
-            // Also acceptable if the overflow causes a different failure mode
-            // on this platform; the important thing is no success result.
+        } catch let error as SmartAccountTransactionException.SimulationFailed {
+            XCTAssertTrue(error.message.contains("overflows UInt32"), "unexpected message: \(error.message)")
         }
+        XCTAssertEqual(provider.authenticateCalls.count, 0)
     }
 
     // ========================================================================
@@ -2581,7 +2575,7 @@ final class OZTransactionOperationsPipelineTests: XCTestCase {
             targetContract: contractB
         )
         script.enqueueSimulate(authEntries: [entry])
-        script.setGetLatestLedger(sequence: 1000)
+        try script.setWalletInstanceResponse(contractId: contractA, latestLedger: 1000)
 
         let hostFn = HostFunctionXDR.invokeContract(
             InvokeContractArgsXDR(
@@ -2676,7 +2670,7 @@ final class OZTransactionOperationsPipelineTests: XCTestCase {
             targetContract: contractB
         )
         script.enqueueSimulate(authEntries: [entry])
-        script.setGetLatestLedger(sequence: 1000)
+        try script.setWalletInstanceResponse(contractId: contractA, latestLedger: 1000)
         provider.enqueueAuthenticate(
             RecordingWebAuthnFixtures.authenticationResult(credentialId: credIdBytes)
         )
@@ -2718,7 +2712,7 @@ final class OZTransactionOperationsPipelineTests: XCTestCase {
             contractAddress: contractA
         )
         script.enqueueSimulate(authEntries: [entry])
-        script.setGetLatestLedger(sequence: 1000)
+        try script.setWalletInstanceResponse(contractId: contractA, latestLedger: 1000)
         h.provider.enqueueAuthenticate(
             RecordingWebAuthnFixtures.authenticationResult(
                 credentialId: try Data(base64URLEncoded: credentialIdB64Url)
@@ -2785,7 +2779,7 @@ final class OZTransactionOperationsPipelineTests: XCTestCase {
             contractAddress: contractA
         )
         script.enqueueSimulate(authEntries: [entry])
-        script.setGetLatestLedger(sequence: 1000)
+        try script.setWalletInstanceResponse(contractId: contractA, latestLedger: 1000)
         // Generic NSError, NOT a WebAuthnException.
         h.provider.enqueueAuthenticateError(
             NSError(domain: "test.provider", code: 13,
@@ -2846,7 +2840,7 @@ final class OZTransactionOperationsPipelineTests: XCTestCase {
             contractAddress: contractA
         )
         script.enqueueSimulate(authEntries: [entry])
-        script.setGetLatestLedger(sequence: 1000)
+        try script.setWalletInstanceResponse(contractId: contractA, latestLedger: 1000)
         provider.enqueueAuthenticate(
             RecordingWebAuthnFixtures.authenticationResult(
                 credentialId: try Data(base64URLEncoded: credentialIdB64Url)
@@ -3820,7 +3814,7 @@ final class OZTransactionOperationsPipelineTests: XCTestCase {
         enqueueDeployerAccount(deployer: h.deployer)
         let entry = try OZPipelineFixtures.addressCredentialsAuthEntry(contractAddress: contractA)
         script.enqueueSimulate(authEntries: [entry])
-        script.setGetLatestLedger(sequence: 1000)
+        try script.setWalletInstanceResponse(contractId: contractA, latestLedger: 1000)
         h.provider.enqueueAuthenticate(
             RecordingWebAuthnFixtures.authenticationResult(
                 credentialId: try Data(base64URLEncoded: credentialIdB64Url)
@@ -4382,5 +4376,143 @@ final class OZTransactionOperationsPipelineTests: XCTestCase {
         ]
         let data = try? JSONSerialization.data(withJSONObject: body)
         return String(data: data ?? Data(), encoding: .utf8) ?? ""
+    }
+}
+
+// ============================================================================
+// MARK: - Auth digest scheme through the single-signer pipeline
+// ============================================================================
+
+/// The digest scheme through `submit`: the WebAuthn challenge for both schemes, compared
+/// with ``OZIndependentAuthDigest``, and the wallet's instance read before any passkey.
+extension OZTransactionOperationsPipelineTests {
+
+    private var digestRuleIds: [UInt32] { [0, 7] }
+
+    private var digestExpiration: UInt32 { UInt32(1000 + StellarProtocolConstants.ledgersPerHour) }
+
+    private func digestHostFunction() throws -> HostFunctionXDR {
+        return .invokeContract(
+            InvokeContractArgsXDR(
+                contractAddress: try SCAddressXDR(contractId: contractB),
+                functionName: "noop",
+                args: []
+            )
+        )
+    }
+
+    /// Scripts the operation up to the signing read and returns the smart account entry.
+    private func scriptUntilSigning(_ h: PipelineHarness) throws -> SorobanAuthorizationEntryXDR {
+        enqueueDeployerAccount(deployer: h.deployer)
+        let entry = try OZPipelineFixtures.addressCredentialsAuthEntry(contractAddress: contractA, targetContract: contractB)
+        script.enqueueSimulate(authEntries: [entry])
+        return entry
+    }
+
+    private func challenge(executable: ContractExecutableXDR) async throws -> (Data, Data) {
+        let h = try await buildPipelineHarness()
+        let entry = try scriptUntilSigning(h)
+        try script.setWalletInstanceResponse(contractId: contractA, executable: executable, latestLedger: 1000)
+        h.provider.enqueueAuthenticate(
+            RecordingWebAuthnFixtures.authenticationResult(credentialId: try Data(base64URLEncoded: credentialIdB64Url))
+        )
+        script.enqueueSimulateError("stop after signing")
+
+        do {
+            _ = try await h.txOps.submit(
+                hostFunction: try digestHostFunction(),
+                auth: [],
+                resolveContextRuleIds: { [digestRuleIds] _, _ in digestRuleIds }
+            )
+            XCTFail("expected the scripted re-simulation failure")
+        } catch let error as SmartAccountTransactionException.SimulationFailed {
+            XCTAssertTrue(error.message.contains("stop after signing"), "unexpected message: \(error.message)")
+        }
+
+        XCTAssertEqual(h.provider.authenticateCalls.count, 1)
+        XCTAssertEqual(try script.walletInstanceReadCount(contractId: contractA), 1)
+        XCTAssertEqual(script.getLatestLedgerCallCount, 0)
+        let payload = try await OZSmartAccountAuth.buildAuthPayloadHash(
+            entry: entry,
+            expirationLedger: digestExpiration,
+            networkPassphrase: Network.testnet.passphrase
+        )
+        return (try XCTUnwrap(h.provider.authenticateCalls.first).challenge, payload)
+    }
+
+    func test_submit_v08Wallet_challengeIsThePreimageDigest() async throws {
+        let (challenge, payload) = try await challenge(executable: OZAuthDigestWasm.v080)
+        XCTAssertEqual(
+            challenge,
+            try OZIndependentAuthDigest.preimageDigest(account: contractA, signaturePayload: payload, contextRuleIds: digestRuleIds)
+        )
+    }
+
+    func test_submit_legacyWallet_challengeIsTheLegacyDigest() async throws {
+        let (challenge, payload) = try await challenge(executable: OZAuthDigestWasm.unmapped)
+        XCTAssertEqual(
+            challenge,
+            try OZIndependentAuthDigest.legacyDigest(signaturePayload: payload, contextRuleIds: digestRuleIds)
+        )
+    }
+
+    func test_submit_instanceReadFails_asksNoPasskey() async throws {
+        let h = try await buildPipelineHarness()
+        _ = try scriptUntilSigning(h)
+        try script.setWalletInstanceRpcError(contractId: contractA)
+
+        do {
+            _ = try await h.txOps.submit(hostFunction: try digestHostFunction(), auth: [])
+            XCTFail("expected SubmissionFailed")
+        } catch let error as SmartAccountTransactionException.SubmissionFailed {
+            XCTAssertTrue(
+                error.message.contains("Failed to read the instance of \(contractA) to select its auth digest scheme"),
+                "unexpected message: \(error.message)"
+            )
+        }
+        XCTAssertEqual(h.provider.authenticateCalls.count, 0)
+        XCTAssertEqual(script.simulateCallCount, 1)
+        XCTAssertEqual(script.getLatestLedgerCallCount, 0)
+    }
+
+    func test_submit_latestLedgerOutsideUInt32OrOverflowing_asksNoPasskey() async throws {
+        let cases: [(Int, String)] = [
+            (-1, "Latest ledger -1 of the instance read of \(contractA) is not a UInt32 ledger sequence"),
+            (Int(UInt32.max) + 1, "Latest ledger \(Int(UInt32.max) + 1) of the instance read of \(contractA) is not a UInt32 ledger sequence"),
+            (Int(UInt32.max) - 1, "Computed expirationLedger \(UInt64(UInt32.max) - 1 + UInt64(StellarProtocolConstants.ledgersPerHour)) overflows UInt32")
+        ]
+        for (latestLedger, expected) in cases {
+            let h = try await buildPipelineHarness()
+            _ = try scriptUntilSigning(h)
+            try script.setWalletInstanceResponse(contractId: contractA, latestLedger: latestLedger)
+
+            do {
+                _ = try await h.txOps.submit(hostFunction: try digestHostFunction(), auth: [])
+                XCTFail("expected SimulationFailed for latestLedger \(latestLedger)")
+            } catch let error as SmartAccountTransactionException.SimulationFailed {
+                XCTAssertTrue(error.message.contains(expected), "unexpected message: \(error.message)")
+            }
+            XCTAssertEqual(h.provider.authenticateCalls.count, 0, "no passkey before the read for latestLedger \(latestLedger)")
+        }
+    }
+
+    func test_submit_noWalletEntry_readsNoInstance() async throws {
+        let h = try await buildPipelineHarness()
+        enqueueDeployerAccount(deployer: h.deployer)
+        script.enqueueSimulate(authEntries: [
+            try OZPipelineFixtures.addressCredentialsAuthEntry(contractAddress: contractB)
+        ])
+        script.setGetLatestLedger(sequence: 1000)
+        script.enqueueSimulateError("stop after signing")
+
+        do {
+            _ = try await h.txOps.submit(hostFunction: try digestHostFunction(), auth: [])
+            XCTFail("expected the scripted re-simulation failure")
+        } catch let error as SmartAccountTransactionException.SimulationFailed {
+            XCTAssertTrue(error.message.contains("stop after signing"), "unexpected message: \(error.message)")
+        }
+        XCTAssertEqual(try script.walletInstanceReadCount(contractId: contractA), 0)
+        XCTAssertEqual(script.getLatestLedgerCallCount, 1)
+        XCTAssertEqual(h.provider.authenticateCalls.count, 0)
     }
 }

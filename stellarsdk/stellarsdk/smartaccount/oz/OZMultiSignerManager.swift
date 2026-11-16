@@ -21,8 +21,10 @@ import Security
 /// implicitly — include it explicitly when it should sign.
 ///
 /// Each delegated wallet signer produces its own signed auth entry (root
-/// invocation `__check_auth(authDigest)`, `ADDRESS_V2` credentials by default —
-/// see ``OZSmartAccountConfig/useUpgradedAuthForWalletSigners``) plus an
+/// invocation `__check_auth` with the arguments of the wallet's
+/// ``OZAuthDigestScheme``: `Bytes(authDigest)` for stellar-accounts 0.7, the
+/// `AuthDigestPreimage` for stellar-accounts 0.8.0; `ADDRESS_V2` credentials by
+/// default, see ``OZSmartAccountConfig/useUpgradedAuthForWalletSigners``) plus an
 /// empty-bytes placeholder in the smart account's signature map. Direct wallet
 /// entries are signed via the external wallet adapter and written into the
 /// classical `Vec([Map({public_key, signature})])` shape; the smart account
@@ -332,6 +334,18 @@ public class OZMultiSignerManager: OZManagerHelpers, @unchecked Sendable {
     /// `selectedSigners` list is supplied to one of their state-changing
     /// methods.
     ///
+    /// Before the first signer is asked, foreign entries included, it
+    /// validates the signers that the smart account entries add to the wallet
+    /// through `add_signer`, `batch_add_signer` or `add_context_rule`, and
+    /// reads the wallet's WASM hash once to select its ``OZAuthDigestScheme``
+    /// (``OZSmartAccountConfig/authDigestSchemes``); the same response sets the
+    /// signature expiration. Passkey and Ed25519 signers sign the scheme's
+    /// digest and wallet signers authorize its `__check_auth` arguments. A
+    /// Delegated signer that `OZSignerManager.addDelegated` or
+    /// `OZContextRuleManager.addContextRule` refuses, and a muxed contract
+    /// address (`W…`) as a Delegated address or an External verifier, throw a
+    /// ``SmartAccountValidationException`` before any signer is asked.
+    ///
     /// Validation order (each step is exercised by a dedicated unit test):
     /// 1. ``OZSmartAccountKitProtocol/requireConnected()``.
     /// 2. Per-wallet-signer reachability check via
@@ -373,9 +387,14 @@ public class OZMultiSignerManager: OZManagerHelpers, @unchecked Sendable {
             deployerAccountId: deployer.accountId
         )
 
-        // Step 2: compute the expiration ledger from the latest network
-        // ledger and the configured signature-expiration window.
-        let expirationLedger = try await computeExpirationLedger()
+        // Step 2: validate the signers the smart account entries add, select
+        // the digest scheme and set the expiration once, before any signer is
+        // asked, wallet signers of foreign entries included.
+        let signingState = try await prepareSigningOperation(
+            contractId: connected.contractId,
+            authEntries: simulationResult.authEntries
+        )
+        let expirationLedger = signingState.expirationLedger
 
         // Step 3a: pre-fetch the active context rules ONCE so the auth-entry
         // loop does not perform N additional RPC calls.
@@ -464,19 +483,20 @@ public class OZMultiSignerManager: OZManagerHelpers, @unchecked Sendable {
                 )
             }
 
-            // Step 4c: compute the payload hash and the bound auth digest
-            // ONCE per entry. Both the passkey and the delegated paths sign
-            // the same digest so the on-chain verifier can bind the rule
-            // identifiers without ambiguity.
-            let payloadHash = try await OZSmartAccountAuth.buildAuthPayloadHash(
+            // Step 4c: compute the auth digest of the wallet's scheme ONCE per
+            // entry. The passkey and Ed25519 signers sign it and the delegated
+            // signers authorize its `__check_auth` arguments, so the on-chain
+            // verifier binds the rule identifiers without ambiguity.
+            // prepareSigningOperation reads the scheme whenever an entry
+            // belongs to the wallet.
+            let entryDigest = try await OZSmartAccountAuth.computeEntryAuthDigest(
                 entry: workingEntry,
                 expirationLedger: expirationLedger,
-                networkPassphrase: kit.config.networkPassphrase
+                networkPassphrase: kit.config.networkPassphrase,
+                contextRuleIds: resolvedContextRuleIds,
+                scheme: signingState.authDigestScheme!
             )
-            let authDigest = try await OZSmartAccountAuth.buildAuthDigest(
-                signaturePayload: payloadHash,
-                contextRuleIds: resolvedContextRuleIds
-            )
+            let authDigest = entryDigest.authDigest
 
             // Sign with every passkey signer in declaration order.
             workingEntry = try await signEntryWithPasskeys(
@@ -500,7 +520,7 @@ public class OZMultiSignerManager: OZManagerHelpers, @unchecked Sendable {
             // matching signature-map placeholders.
             workingEntry = try await appendDelegatedAuthEntries(
                 workingEntry: workingEntry,
-                authDigest: authDigest,
+                delegatedAuthArgs: entryDigest.delegatedAuthArgs,
                 expirationLedger: expirationLedger,
                 resolvedContextRuleIds: resolvedContextRuleIds,
                 selectedSigners: selectedSigners,
@@ -687,21 +707,6 @@ public class OZMultiSignerManager: OZManagerHelpers, @unchecked Sendable {
             failureMessagePrefix: "Simulation error: "
         )
         return InitialSimulationResult(authEntries: simulation.sorobanAuth ?? [])
-    }
-
-    /// Computes the signature expiration ledger using the latest ledger plus
-    /// the configured expiration window. Clamps via `UInt32(exactly:)` so a
-    /// near-`UInt32.max` ledger sequence cannot wrap silently.
-    private func computeExpirationLedger() async throws -> UInt32 {
-        let latestLedger = try await fetchLatestLedger()
-        let expirationU64 = UInt64(latestLedger.sequence)
-            + UInt64(kit.config.signatureExpirationLedgers)
-        guard let expirationLedger = UInt32(exactly: expirationU64) else {
-            throw SmartAccountTransactionException.simulationFailed(
-                reason: "Computed expirationLedger \(expirationU64) overflows UInt32"
-            )
-        }
-        return expirationLedger
     }
 
     /// Materialises one ``OZSmartAccountSigner`` instance per selected
@@ -998,13 +1003,14 @@ public class OZMultiSignerManager: OZManagerHelpers, @unchecked Sendable {
     /// the kit's external-signer manager and contributes a signature-map entry
     /// keyed by the delegated signer with an empty-bytes signature value, so
     /// the rule engine counts the delegated signer when evaluating the active
-    /// context rule.
+    /// context rule. The delegated entry authorizes `__check_auth` with
+    /// `delegatedAuthArgs`, the arguments of the wallet's digest scheme.
     ///
     /// - Returns: The updated `workingEntry` after every delegated-signer
     ///   placeholder has been merged into its signature map.
     private func appendDelegatedAuthEntries(
         workingEntry: SorobanAuthorizationEntryXDR,
-        authDigest: Data,
+        delegatedAuthArgs: [SCValXDR],
         expirationLedger: UInt32,
         resolvedContextRuleIds: [UInt32],
         selectedSigners: [OZSelectedSigner],
@@ -1020,7 +1026,7 @@ public class OZMultiSignerManager: OZManagerHelpers, @unchecked Sendable {
                     InvokeContractArgsXDR(
                         contractAddress: try SCAddressXDR(contractId: connectedContractId),
                         functionName: "__check_auth",
-                        args: [.bytes(authDigest)]
+                        args: delegatedAuthArgs
                     )
                 ),
                 subInvocations: []

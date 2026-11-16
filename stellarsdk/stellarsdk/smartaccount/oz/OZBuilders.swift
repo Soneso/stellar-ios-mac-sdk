@@ -14,10 +14,12 @@ import Foundation
 /// Type of context rule that determines which operations it applies to.
 ///
 /// Context rules use pattern matching to determine when signers and policies
-/// should be enforced. Three types of context matching are supported:
+/// should be enforced. Four types of context matching are supported:
 /// - Default: Matches any operation (fallback rule)
 /// - CallContract: Matches invocations to a specific contract address
 /// - CreateContract: Matches contract deployments using a specific WASM hash
+/// - CreateContractExternalRef: Matches contract deployments from the executable
+///   reference that an owner contract stores under a tag (CAP-0085)
 ///
 /// Example:
 /// ```swift
@@ -41,8 +43,24 @@ public enum OZContextRuleType: Sendable, Hashable {
     /// Matches contract deployments using a specific 32-byte WASM hash.
     case createContract(wasmHash: Data)
 
+    /// Matches contract deployments from a CAP-0085 executable reference: the WASM hash that
+    /// the contract `owner` stores under `tag`.
+    ///
+    /// The hash is resolved when the contract is deployed, so the rule trusts the owner
+    /// contract to keep the reference pointing at acceptable code. An account build without
+    /// this rule kind, such as stellar-accounts 0.7, rejects it during simulation.
+    ///
+    /// `owner` is the address of the contract that stores the executable reference, a `C…`
+    /// address for a rule built with
+    /// ``OZBuilders/createCreateContractExternalRefContextType(owner:tag:)``; a rule read from
+    /// the chain keeps the stored address as its strkey. Two rules compare their tags by
+    /// UTF-8 bytes, as the contract does.
+    case createContractExternalRef(owner: String, tag: String)
+
     // why: `wasmHash` uses constant-time comparison via `Data.constantTimeEquals`;
-    // see that extension for the timing-attack rationale.
+    // see that extension for the timing-attack rationale. Tags compare by UTF-8
+    // bytes: Swift `String` equality is canonical equivalence and would match a
+    // rule whose tag bytes differ from the deployment's.
     public static func == (lhs: OZContextRuleType, rhs: OZContextRuleType) -> Bool {
         switch (lhs, rhs) {
         case (.defaultRule, .defaultRule):
@@ -51,6 +69,8 @@ public enum OZContextRuleType: Sendable, Hashable {
             return a == b
         case let (.createContract(a), .createContract(b)):
             return a.constantTimeEquals(b)
+        case let (.createContractExternalRef(ownerA, tagA), .createContractExternalRef(ownerB, tagB)):
+            return ownerA == ownerB && tagA.utf8.elementsEqual(tagB.utf8)
         default:
             return false
         }
@@ -66,6 +86,10 @@ public enum OZContextRuleType: Sendable, Hashable {
         case .createContract(let wasmHash):
             hasher.combine(2)
             hasher.combine(wasmHash)
+        case .createContractExternalRef(let owner, let tag):
+            hasher.combine(3)
+            hasher.combine(owner)
+            hasher.combine(Data(tag.utf8))
         }
     }
 
@@ -75,10 +99,12 @@ public enum OZContextRuleType: Sendable, Hashable {
     /// - Default: `SCValXDR.vec([Symbol("Default")])`
     /// - CallContract: `SCValXDR.vec([Symbol("CallContract"), Address(contractAddress)])`
     /// - CreateContract: `SCValXDR.vec([Symbol("CreateContract"), Bytes(wasmHash)])`
+    /// - CreateContractExternalRef:
+    ///   `SCValXDR.vec([Symbol("CreateContractExternalRef"), Address(owner), String(tag)])`
     ///
     /// - Returns: The `SCValXDR` representation of this context rule type.
     /// - Throws: ``SmartAccountValidationException/InvalidAddress`` when the call-contract
-    ///   address cannot be converted to an `SCAddressXDR`.
+    ///   address or the external-reference owner cannot be converted to an `SCAddressXDR`.
     public func toScVal() throws -> SCValXDR {
         switch self {
         case .defaultRule:
@@ -97,6 +123,18 @@ public enum OZContextRuleType: Sendable, Hashable {
             return .vec([
                 .symbol("CreateContract"),
                 .bytes(wasmHash)
+            ])
+        case .createContractExternalRef(let owner, let tag):
+            let ownerAddress: SCAddressXDR
+            do {
+                ownerAddress = try SCAddressXDR.fromXdrJsonValue(.string(owner))
+            } catch {
+                throw SmartAccountValidationException.invalidAddress(address: owner, cause: error)
+            }
+            return .vec([
+                .symbol("CreateContractExternalRef"),
+                .address(ownerAddress),
+                .string(tag)
             ])
         }
     }
@@ -209,8 +247,7 @@ public enum OZBuilders {
 
     /// Creates a default context rule type.
     ///
-    /// Default rules apply to any operation that does not match a more specific
-    /// `callContract` or `createContract` rule.
+    /// Default rules match any operation.
     ///
     /// - Returns: ``OZContextRuleType/defaultRule`` for default authorization.
     public static func createDefaultContextType() -> OZContextRuleType {
@@ -288,6 +325,38 @@ public enum OZBuilders {
             )
         }
         return .createContract(wasmHash: wasmHash)
+    }
+
+    /// Creates a create-contract context rule type for deployments from a CAP-0085
+    /// executable reference.
+    ///
+    /// The rule applies only when deploying contracts from the WASM hash that the `owner`
+    /// contract stores under `tag`. The hash is resolved at deployment time, so the rule
+    /// trusts the owner contract to keep the reference pointing at acceptable code. An
+    /// account build without this rule kind, such as stellar-accounts 0.7, rejects it during
+    /// simulation.
+    ///
+    /// Example:
+    /// ```swift
+    /// let contextType = try OZBuilders.createCreateContractExternalRefContextType(
+    ///     owner: "CDEF5678...",
+    ///     tag: "account-v1"
+    /// )
+    /// ```
+    ///
+    /// - Parameters:
+    ///   - owner: Contract address (`C…`) that stores the executable reference.
+    ///   - tag: The tag the reference is stored under.
+    /// - Returns: An ``OZContextRuleType/createContractExternalRef(owner:tag:)`` for the
+    ///   supplied owner and tag.
+    /// - Throws: ``SmartAccountValidationException/InvalidAddress`` when `owner` is not a valid
+    ///   contract address.
+    public static func createCreateContractExternalRefContextType(
+        owner: String,
+        tag: String
+    ) throws -> OZContextRuleType {
+        try requireContractAddress(owner, fieldName: "owner")
+        return .createContractExternalRef(owner: owner, tag: tag)
     }
 
     // MARK: - Signer Inspection Utilities

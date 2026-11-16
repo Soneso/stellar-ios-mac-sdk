@@ -119,20 +119,221 @@ internal func requireValidContextRuleName(_ name: String) throws {
     }
 }
 
-/// Validates that no external signer's key data exceeds the OpenZeppelin contract's
-/// ``OZConstants/maxExternalKeySize``-byte limit. Delegated signers carry no key data
-/// and are skipped.
+/// Validates signers that are about to be added to the smart account `walletContractId`.
 ///
-/// - Parameter signers: The signers to validate.
-/// - Throws: ``SmartAccountValidationException/InvalidInput`` when any external
-///   signer's key data is too large.
-internal func requireValidSigners(_ signers: [any OZSmartAccountSigner]) throws {
+/// A Delegated signer must be a Stellar account (`G…`) other than the shared default
+/// deployer (``OZSmartAccountConfig/createDefaultDeployer()``). A contract delegate can let
+/// anyone authorize the account without a key (GHSA-jpg9-m7w4-c7wc), the wallet itself
+/// included, and the default deployer's secret derives from a public string. An External
+/// signer's key data must not exceed the OpenZeppelin contract's
+/// ``OZConstants/maxExternalKeySize``-byte limit.
+///
+/// Signers already on a wallet are not checked here; reading them never fails on these
+/// rules.
+///
+/// - Parameters:
+///   - signers: The signers to validate.
+///   - walletContractId: The smart account the signers are added to (`C…`).
+/// - Throws: ``SmartAccountValidationException/InvalidInput`` when a Delegated signer is the
+///   default deployer or the wallet itself, or when an External signer's key data is too
+///   large; ``SmartAccountValidationException/InvalidAddress`` when a Delegated signer is not
+///   a `G…` address; ``SmartAccountConfigurationException/InvalidConfig`` when the default
+///   deployer cannot be derived.
+internal func requireValidSigners(
+    _ signers: [any OZSmartAccountSigner],
+    walletContractId: String
+) async throws {
+    var rules = OZAddedSignerRules(walletContractId: walletContractId)
     for signer in signers {
-        if let external = signer as? OZExternalSigner,
-           external.keyData.count > OZConstants.maxExternalKeySize {
+        if let delegated = signer as? OZDelegatedSigner {
+            try await rules.requireValidDelegate(delegated.address)
+        } else if let external = signer as? OZExternalSigner {
+            try requireExternalKeySize(external.keyData)
+        }
+    }
+}
+
+/// Validates, with the rules of ``requireValidSigners(_:walletContractId:)``, every signer
+/// that an `add_signer`, `batch_add_signer` or `add_context_rule` call on the smart account
+/// `walletContractId` adds, anywhere in the invocation tree of `entry`.
+///
+/// The signing pipelines run this over each smart account entry before they ask any signer,
+/// so a transaction built from raw contract calls cannot add a Delegated signer that
+/// `OZSignerManager.addDelegated` or `OZContextRuleManager.addContextRule` refuses. The rules
+/// apply to the fields of each signer value as the contract stores them, without the checks
+/// of ``OZDelegatedSigner`` and ``OZExternalSigner``: an External signer with empty key data
+/// or with a verifier that is no contract passes, as the contract and the smart-account-kit
+/// accept it, while a muxed contract address (`W…`) as a Delegated address or an External
+/// verifier fails, as the kit refuses it. A call without the signer argument is left to the
+/// contract, which rejects it.
+///
+/// - Parameters:
+///   - entry: The smart account authorization entry whose invocation tree is checked.
+///   - walletContractId: The smart account (`C…`) whose signer-adding calls are checked.
+/// - Throws: ``SmartAccountValidationException`` when an added signer fails the rules, or
+///   when the signer list argument of `batch_add_signer` or `add_context_rule` is not a
+///   `Vec`; `SmartAccountTransactionException.SigningFailed` when an added signer is not a
+///   signer value.
+internal func requireValidAddedSigners(
+    entry: SorobanAuthorizationEntryXDR,
+    walletContractId: String
+) async throws {
+    var rules = OZAddedSignerRules(walletContractId: walletContractId)
+    var pending: [SorobanAuthorizedInvocationXDR] = [entry.rootInvocation]
+    var nextIndex = 0
+    while nextIndex < pending.count {
+        let invocation = pending[nextIndex]
+        nextIndex += 1
+        pending.append(contentsOf: invocation.subInvocations)
+
+        guard case .contractFn(let call) = invocation.function,
+              let position = signerArgumentPosition(functionName: call.functionName),
+              OZAddressStrKey.fromXdr(call.contractAddress) == walletContractId,
+              call.args.count > position.index else {
+            continue
+        }
+
+        let argument = call.args[position.index]
+        let signerValues: [SCValXDR]
+        if !position.isList {
+            signerValues = [argument]
+        } else if case .vec(let values) = argument {
+            signerValues = values ?? []
+        } else {
+            let argumentType = SCValType(rawValue: argument.type())?.enumName() ?? String(argument.type())
             throw SmartAccountValidationException.invalidInput(
-                field: "keyData",
-                reason: "External signer key data cannot exceed \(OZConstants.maxExternalKeySize) bytes, got: \(external.keyData.count)"
+                field: "signers",
+                reason: "\(call.functionName) on \(walletContractId) carries \(argumentType) at argument \(position.index), where a Vec of signers is expected"
+            )
+        }
+        for value in signerValues {
+            try await requireValidAddedSignerValue(value, rules: &rules)
+        }
+    }
+}
+
+/// The argument of a wallet function that adds signers, and whether it is a `Vec` of
+/// signers, by the stellar-accounts 0.8.0 signatures: `add_signer(context_rule_id, signer)`,
+/// `batch_add_signer(context_rule_id, signers)` and
+/// `add_context_rule(context_type, name, valid_until, signers, policies)`. `nil` for every
+/// other function.
+private func signerArgumentPosition(functionName: String) -> (index: Int, isList: Bool)? {
+    switch functionName {
+    case "add_signer":
+        return (index: 1, isList: false)
+    case "batch_add_signer":
+        return (index: 1, isList: true)
+    case "add_context_rule":
+        return (index: 3, isList: true)
+    default:
+        return nil
+    }
+}
+
+/// Applies the rules of ``requireValidSigners(_:walletContractId:)`` to one raw signer
+/// `value`, read field by field as the contract stores it.
+private func requireValidAddedSignerValue(
+    _ value: SCValXDR,
+    rules: inout OZAddedSignerRules
+) async throws {
+    guard case .vec(let vecElements) = value, let elements = vecElements, !elements.isEmpty else {
+        throw SmartAccountTransactionException.signingFailed(
+            reason: "Signer ScVal is not a non-empty Vec, got: \(value)"
+        )
+    }
+    guard case .symbol(let tag) = elements[0] else {
+        throw SmartAccountTransactionException.signingFailed(
+            reason: "First element of signer Vec is not a Symbol, got: \(elements[0])"
+        )
+    }
+    switch tag {
+    case SignerDiscriminant.delegated:
+        guard elements.count >= 2, case .address(let address) = elements[1] else {
+            throw SmartAccountTransactionException.signingFailed(
+                reason: "Delegated signer second element is not an Address, got: \(value)"
+            )
+        }
+        try refuseMuxedContract(address, field: "Delegated signer address")
+        let strKey = try address.toStrKey()
+        try await rules.requireValidDelegate(strKey)
+    case SignerDiscriminant.external:
+        guard elements.count >= 3,
+              case .address(let verifier) = elements[1],
+              case .bytes(let keyData) = elements[2] else {
+            throw SmartAccountTransactionException.signingFailed(
+                reason: "External signer Vec must hold an Address and Bytes, got: \(value)"
+            )
+        }
+        try refuseMuxedContract(verifier, field: "External signer verifier address")
+        try requireExternalKeySize(keyData)
+    default:
+        throw SmartAccountTransactionException.signingFailed(
+            reason: "Unknown signer type tag: '\(tag)'"
+        )
+    }
+}
+
+/// Refuses a signer `address` of the muxed contract type (`W…`), which the
+/// smart-account-kit cannot convert to a strkey and refuses; every other address type
+/// passes.
+private func refuseMuxedContract(_ address: SCAddressXDR, field: String) throws {
+    if case .muxedContract = address {
+        let strKey = try address.toStrKey()
+        throw SmartAccountValidationException.invalidInput(
+            field: "signer",
+            reason: "\(field) has an unsupported address type: \(SCAddressType.muxedContract.enumName()), got: \(strKey)"
+        )
+    }
+}
+
+/// Refuses External signer key data above ``OZConstants/maxExternalKeySize`` bytes.
+private func requireExternalKeySize(_ keyData: Data) throws {
+    if keyData.count > OZConstants.maxExternalKeySize {
+        throw SmartAccountValidationException.invalidInput(
+            field: "keyData",
+            reason: "External signer key data cannot exceed \(OZConstants.maxExternalKeySize) bytes, got: \(keyData.count)"
+        )
+    }
+}
+
+/// The Delegated signer rules for one validation pass over signers added to the smart
+/// account `walletContractId`; the shared default deployer's address is derived once per
+/// pass, at the first Delegated signer.
+private struct OZAddedSignerRules {
+
+    let walletContractId: String
+
+    private var defaultDeployerAddress: String?
+
+    init(walletContractId: String) {
+        self.walletContractId = walletContractId
+    }
+
+    /// Refuses the shared default deployer, the wallet itself and every address that is not
+    /// a `G…` account, in that order.
+    mutating func requireValidDelegate(_ address: String) async throws {
+        let defaultDeployer: String
+        if let derived = defaultDeployerAddress {
+            defaultDeployer = derived
+        } else {
+            defaultDeployer = try await OZSmartAccountConfig.createDefaultDeployer().accountId
+            defaultDeployerAddress = defaultDeployer
+        }
+        if address == defaultDeployer {
+            throw SmartAccountValidationException.invalidInput(
+                field: "signer",
+                reason: "The shared default deployer \(address) cannot be a delegated signer: its secret derives from a public string, so anyone could authorize the account through it"
+            )
+        }
+        if address == walletContractId {
+            throw SmartAccountValidationException.invalidInput(
+                field: "signer",
+                reason: "The smart account \(walletContractId) cannot be its own delegated signer"
+            )
+        }
+        if !address.isValidEd25519PublicKey() {
+            throw SmartAccountValidationException.InvalidAddress(
+                message: "A delegated signer must be a Stellar account (G-address), got: \(address). Delegating to a contract can let anyone authorize the account."
             )
         }
     }

@@ -25,6 +25,15 @@ final class OZContractErrorCodesTests: XCTestCase {
             OZContractError(code: 3016, contract: "SmartAccountError", name: "UnauthorizedSigner"),
             OZContractErrorCodes.decode(3016)
         )
+        XCTAssertEqual(
+            OZContractError(code: 3017, contract: "SmartAccountError", name: "DelegatedSignerIsContextContract"),
+            OZContractErrorCodes.decode(3017)
+        )
+        XCTAssertEqual(
+            OZContractError(code: 3018, contract: "SmartAccountError", name: "SelfDelegatedSigner"),
+            OZContractErrorCodes.decode(3018)
+        )
+        XCTAssertNil(OZContractErrorCodes.decode(3019))
     }
 
     func testDecode_webAuthnCode() {
@@ -89,6 +98,13 @@ final class OZContractErrorCodesTests: XCTestCase {
         XCTAssertEqual(3015, OZContractErrorCodes.nameTooLong)
         XCTAssertEqual(3016, OZContractErrorCodes.unauthorizedSigner)
         XCTAssertEqual("NameTooLong", OZContractErrorCodes.decode(OZContractErrorCodes.nameTooLong)?.name)
+        XCTAssertEqual(3017, OZContractErrorCodes.delegatedSignerIsContextContract)
+        XCTAssertEqual(3018, OZContractErrorCodes.selfDelegatedSigner)
+        XCTAssertEqual(
+            "DelegatedSignerIsContextContract",
+            OZContractErrorCodes.decode(OZContractErrorCodes.delegatedSignerIsContextContract)?.name
+        )
+        XCTAssertEqual("SelfDelegatedSigner", OZContractErrorCodes.decode(OZContractErrorCodes.selfDelegatedSigner)?.name)
     }
 
     func testConstants_preexistingValuesUnchanged() {
@@ -119,6 +135,8 @@ final class OZContractErrorCodesTests: XCTestCase {
             3014: ("SmartAccountError", "ContextRuleIdsLengthMismatch"),
             3015: ("SmartAccountError", "NameTooLong"),
             3016: ("SmartAccountError", "UnauthorizedSigner"),
+            3017: ("SmartAccountError", "DelegatedSignerIsContextContract"),
+            3018: ("SmartAccountError", "SelfDelegatedSigner"),
             3110: ("WebAuthnError", "SignaturePayloadInvalid"),
             3111: ("WebAuthnError", "ClientDataTooLong"),
             3112: ("WebAuthnError", "JsonParseError"),
@@ -147,7 +165,7 @@ final class OZContractErrorCodesTests: XCTestCase {
             3226: ("SpendingLimitError", "LessThanZero"),
             3227: ("SpendingLimitError", "OnlyCallContractAllowed"),
         ]
-        XCTAssertEqual(43, expected.count)
+        XCTAssertEqual(45, expected.count)
         for (code, contractAndName) in expected {
             XCTAssertEqual(
                 OZContractError(code: code, contract: contractAndName.contract, name: contractAndName.name),

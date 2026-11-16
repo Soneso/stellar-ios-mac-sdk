@@ -1550,7 +1550,7 @@ final class OZMultiSignerManagerTests: XCTestCase {
         script.enqueueSimulate(authEntries: [authEntry])
 
         // Script: getLatestLedger for expiration computation.
-        script.setGetLatestLedger(sequence: 1000)
+        try script.setWalletInstanceResponse(contractId: validContractId, latestLedger: 1000)
 
         let signers: [OZSelectedSigner] = [
             .ed25519(verifierAddress: validContractId, publicKey: pubKey)
@@ -2101,7 +2101,7 @@ extension OZMultiSignerManagerTests {
             targetFn: "noop"
         )
         script.enqueueSimulate(authEntries: [smartAccountAuthEntry])
-        script.setGetLatestLedger(sequence: 1000)
+        try script.setWalletInstanceResponse(contractId: validContractId, latestLedger: 1000)
 
         // Script re-simulation to fail so the test does not proceed to submission.
         script.enqueueSimulateError("re-simulation aborted for delegated wallet path test")
@@ -2122,13 +2122,13 @@ extension OZMultiSignerManagerTests {
                 hostFunction: hostFn,
                 selectedSigners: signers
             )
-        } catch is SmartAccountTransactionException.SimulationFailed {
+        } catch let error as SmartAccountTransactionException.SimulationFailed {
             // Expected: re-simulation was scripted to fail after the delegated
             // signing path completed successfully.
-        } catch is SmartAccountValidationException.InvalidInput {
-            XCTFail("wallet signer with a registered in-memory keypair must pass validation")
-        } catch {
-            // Acceptable: any other non-validation failure after the signing phase.
+            XCTAssertTrue(
+                error.message.contains("re-simulation aborted for delegated wallet path test"),
+                "unexpected message: \(error.message)"
+            )
         }
     }
 
@@ -2345,7 +2345,7 @@ extension OZMultiSignerManagerTests {
             targetFn: "noop"
         )
         script.enqueueSimulate(authEntries: [authEntry])
-        script.setGetLatestLedger(sequence: 1000)
+        try script.setWalletInstanceResponse(contractId: pipelineContractId, latestLedger: 1000)
         provider.enqueueAuthenticate(
             RecordingWebAuthnFixtures.authenticationResult(
                 credentialId: Data([0xAB, 0xCD])
@@ -2422,7 +2422,7 @@ extension OZMultiSignerManagerTests {
             targetFn: "noop"
         )
         script.enqueueSimulate(authEntries: [authEntry])
-        script.setGetLatestLedger(sequence: 1000)
+        try script.setWalletInstanceResponse(contractId: pipelineContractId, latestLedger: 1000)
         provider.enqueueAuthenticate(
             RecordingWebAuthnFixtures.authenticationResult(credentialId: Data())
         )
@@ -2487,7 +2487,7 @@ extension OZMultiSignerManagerTests {
             targetFn: "noop"
         )
         script.enqueueSimulate(authEntries: [authEntry])
-        script.setGetLatestLedger(sequence: 1000)
+        try script.setWalletInstanceResponse(contractId: pipelineContractId, latestLedger: 1000)
         provider.enqueueAuthenticateError(
             WebAuthnException.authenticationFailed(reason: "user cancelled the prompt")
         )
@@ -2547,7 +2547,7 @@ extension OZMultiSignerManagerTests {
             targetFn: "noop"
         )
         script.enqueueSimulate(authEntries: [authEntry])
-        script.setGetLatestLedger(sequence: 1000)
+        try script.setWalletInstanceResponse(contractId: pipelineContractId, latestLedger: 1000)
 
         let signers: [OZSelectedSigner] = [
             .passkey(
@@ -2629,7 +2629,7 @@ extension OZMultiSignerManagerTests {
             targetFn: "transfer"
         )
         script.enqueueSimulate(authEntries: [authEntry])
-        script.setGetLatestLedger(sequence: 1000)
+        try script.setWalletInstanceResponse(contractId: pipelineContractId, latestLedger: 1000)
         provider.enqueueAuthenticate(
             RecordingWebAuthnFixtures.authenticationResult(credentialId: Data([0x01]))
         )
@@ -2716,7 +2716,7 @@ extension OZMultiSignerManagerTests {
             targetFn: "noop"
         )
         script.enqueueSimulate(authEntries: [authEntry])
-        script.setGetLatestLedger(sequence: 1000)
+        try script.setWalletInstanceResponse(contractId: pipelineContractId, latestLedger: 1000)
         provider.enqueueAuthenticate(
             RecordingWebAuthnFixtures.authenticationResult(credentialId: Data([0x01]))
         )
@@ -2846,7 +2846,7 @@ extension OZMultiSignerManagerTests {
             targetFn: "noop"
         )
         script.enqueueSimulate(authEntries: [authEntry])
-        script.setGetLatestLedger(sequence: 1000)
+        try script.setWalletInstanceResponse(contractId: pipelineContractId, latestLedger: 1000)
         provider.enqueueAuthenticate(
             RecordingWebAuthnFixtures.authenticationResult(credentialId: Data([0x01]))
         )
@@ -2924,7 +2924,7 @@ extension OZMultiSignerManagerTests {
         )
         script.enqueueSimulate(authEntries: [authEntry])
         // Latest ledger near UInt32.max so the sum overflows.
-        script.setGetLatestLedger(sequence: Int(UInt32.max) - 10)
+        try script.setWalletInstanceResponse(contractId: pipelineContractId, latestLedger: Int(UInt32.max) - 10)
 
         let signers: [OZSelectedSigner] = [
             .passkey(
@@ -2990,7 +2990,7 @@ extension OZMultiSignerManagerTests {
             targetFn: "noop"
         )
         script.enqueueSimulate(authEntries: [authEntry])
-        script.setGetLatestLedger(sequence: 1000)
+        try script.setWalletInstanceResponse(contractId: pipelineContractId, latestLedger: 1000)
         script.enqueueSimulateError("re-simulation aborted after ed25519 signing")
 
         let signers: [OZSelectedSigner] = [
@@ -3049,7 +3049,7 @@ extension OZMultiSignerManagerTests {
             targetFn: "noop"
         )
         script.enqueueSimulate(authEntries: [authEntry])
-        script.setGetLatestLedger(sequence: 1000)
+        try script.setWalletInstanceResponse(contractId: pipelineContractId, latestLedger: 1000)
 
         let signers: [OZSelectedSigner] = [
             .ed25519(verifierAddress: pipelineContractId, publicKey: pubKey)
@@ -3376,7 +3376,7 @@ extension OZMultiSignerManagerTests {
             targetFn: "noop"
         )
         script.enqueueSimulate(authEntries: [authEntry])
-        script.setGetLatestLedger(sequence: 1000)
+        try script.setWalletInstanceResponse(contractId: pipelineContractId, latestLedger: 1000)
         script.enqueueSimulate(authEntries: [], minResourceFee: 200)
         script.setSendSuccess(status: SendTransactionResponse.STATUS_PENDING, hash: hash)
         script.enqueueGetTransactionResponse(
@@ -3484,7 +3484,7 @@ extension OZMultiSignerManagerTests {
             targetFn: "transfer"
         )
         script.enqueueSimulate(authEntries: [authEntry])
-        script.setGetLatestLedger(sequence: 1000)
+        try script.setWalletInstanceResponse(contractId: pipelineContractId, latestLedger: 1000)
         provider.enqueueAuthenticate(
             RecordingWebAuthnFixtures.authenticationResult(credentialId: Data([0x02]))
         )
@@ -3567,7 +3567,7 @@ extension OZMultiSignerManagerTests {
             targetFn: "transfer"
         )
         script.enqueueSimulate(authEntries: [authEntry])
-        script.setGetLatestLedger(sequence: 1000)
+        try script.setWalletInstanceResponse(contractId: pipelineContractId, latestLedger: 1000)
         provider.enqueueAuthenticate(
             RecordingWebAuthnFixtures.authenticationResult(credentialId: Data([0x03]))
         )
@@ -4140,3 +4140,273 @@ private final class FixedKeyEd25519Adapter: OZExternalEd25519SignerAdapter, @unc
     }
 }
 
+
+// ============================================================================
+// MARK: - Auth digest scheme through the multi-signer pipeline
+// ============================================================================
+
+/// The digest scheme through `submitWithMultipleSigners`: the Ed25519 digest and the
+/// delegated `__check_auth` argument for both schemes, compared with
+/// ``OZIndependentAuthDigest``, and the order of the wallet's instance read relative to every
+/// signer, foreign wallet entries included.
+extension OZMultiSignerManagerTests {
+
+    private var digestRuleIds: [UInt32] { [0, 7] }
+
+    private var digestLedger: Int { 1000 }
+
+    private var digestExpiration: UInt32 { UInt32(digestLedger + StellarProtocolConstants.ledgersPerHour) }
+
+    /// A kit whose external signers are `ed25519Adapter` and `walletAdapter`.
+    private func digestKit(
+        script: MockSorobanServerScript,
+        ed25519Adapter: OZRecordingEd25519Adapter? = nil,
+        walletAdapter: OZRecordingWalletAdapter? = nil
+    ) throws -> (MockOZSmartAccountKit, OZMultiSignerManager, KeyPair) {
+        let deployer = try KeyPair.generateRandomKeyPair()
+        let (kit, manager) = try scriptedKit(script: script, deployer: deployer, externalWallet: walletAdapter)
+        kit.externalSignersOverride = OZExternalSignerManager(
+            networkPassphrase: Network.testnet.passphrase,
+            walletAdapter: walletAdapter,
+            ed25519Adapter: ed25519Adapter
+        )
+        script.setGetAccountResponse(accountId: deployer.accountId, sequence: 5)
+        return (kit, manager, deployer)
+    }
+
+    private func digestHostFunction() throws -> HostFunctionXDR {
+        return .invokeContract(
+            InvokeContractArgsXDR(
+                contractAddress: try SCAddressXDR(contractId: pipelineTargetContract),
+                functionName: "noop",
+                args: []
+            )
+        )
+    }
+
+    private func smartAccountEntry() throws -> SorobanAuthorizationEntryXDR {
+        return try OZPipelineFixtures.addressCredentialsAuthEntry(
+            contractAddress: pipelineContractId,
+            targetContract: pipelineTargetContract,
+            targetFn: "noop"
+        )
+    }
+
+    /// Runs one operation whose re-simulation is scripted to fail after signing.
+    private func submitUntilReSimulation(
+        _ manager: OZMultiSignerManager,
+        signers: [OZSelectedSigner]
+    ) async throws {
+        do {
+            _ = try await manager.submitWithMultipleSigners(
+                hostFunction: try digestHostFunction(),
+                selectedSigners: signers,
+                resolveContextRuleIds: { [digestRuleIds] _, _ in digestRuleIds }
+            )
+            XCTFail("expected the scripted re-simulation failure")
+        } catch let error as SmartAccountTransactionException.SimulationFailed {
+            XCTAssertTrue(error.message.contains("stop after signing"), "unexpected message: \(error.message)")
+        }
+    }
+
+    private func signaturePayload(_ entry: SorobanAuthorizationEntryXDR) async throws -> Data {
+        return try await OZSmartAccountAuth.buildAuthPayloadHash(
+            entry: entry,
+            expirationLedger: digestExpiration,
+            networkPassphrase: Network.testnet.passphrase
+        )
+    }
+
+    private func ed25519Digest(executable: ContractExecutableXDR) async throws -> (Data, Data, MockSorobanServerScript) {
+        let script = MockSorobanServerScript()
+        MockSorobanServer.activate(script: script)
+        defer {
+            MockSorobanServer.deactivate()
+            MockURLProtocol.reset()
+        }
+        let adapter = try OZRecordingEd25519Adapter()
+        let (_, manager, _) = try digestKit(script: script, ed25519Adapter: adapter)
+        let entry = try smartAccountEntry()
+        script.enqueueSimulate(authEntries: [entry])
+        try script.setWalletInstanceResponse(contractId: pipelineContractId, executable: executable, latestLedger: digestLedger)
+        script.enqueueSimulateError("stop after signing")
+
+        try await submitUntilReSimulation(
+            manager,
+            signers: [.ed25519(verifierAddress: pipelineTargetContract, publicKey: adapter.publicKey)]
+        )
+
+        XCTAssertEqual(adapter.digests.count, 1)
+        return (try XCTUnwrap(adapter.digests.first), try await signaturePayload(entry), script)
+    }
+
+    func test_submitWithMultipleSigners_ed25519Signer_v08Wallet_signsThePreimageDigest() async throws {
+        let (digest, payload, script) = try await ed25519Digest(executable: OZAuthDigestWasm.v080)
+
+        XCTAssertEqual(
+            digest,
+            try OZIndependentAuthDigest.preimageDigest(
+                account: pipelineContractId,
+                signaturePayload: payload,
+                contextRuleIds: digestRuleIds
+            )
+        )
+        XCTAssertEqual(try script.walletInstanceReadCount(contractId: pipelineContractId), 1)
+        XCTAssertEqual(script.getLatestLedgerCallCount, 0)
+    }
+
+    func test_submitWithMultipleSigners_ed25519Signer_legacyWallet_signsTheLegacyDigest() async throws {
+        let (digest, payload, script) = try await ed25519Digest(executable: OZAuthDigestWasm.unmapped)
+
+        XCTAssertEqual(
+            digest,
+            try OZIndependentAuthDigest.legacyDigest(signaturePayload: payload, contextRuleIds: digestRuleIds)
+        )
+        XCTAssertEqual(try script.walletInstanceReadCount(contractId: pipelineContractId), 1)
+        XCTAssertEqual(script.getLatestLedgerCallCount, 0)
+    }
+
+    private func delegatedCheckAuthArgs(executable: ContractExecutableXDR) async throws -> ([SCValXDR], Data) {
+        let script = MockSorobanServerScript()
+        MockSorobanServer.activate(script: script)
+        defer {
+            MockSorobanServer.deactivate()
+            MockURLProtocol.reset()
+        }
+        let adapter = try OZRecordingWalletAdapter()
+        let (_, manager, _) = try digestKit(script: script, walletAdapter: adapter)
+        let entry = try smartAccountEntry()
+        script.enqueueSimulate(authEntries: [entry])
+        try script.setWalletInstanceResponse(contractId: pipelineContractId, executable: executable, latestLedger: digestLedger)
+        script.enqueueSimulateError("stop after signing")
+
+        try await submitUntilReSimulation(manager, signers: [.wallet(accountId: adapter.address)])
+
+        XCTAssertEqual(adapter.preimages.count, 1)
+        let args = try OZPipelineFixtures.checkAuthArgs(try XCTUnwrap(adapter.preimages.first), wallet: pipelineContractId)
+        return (args, try await signaturePayload(entry))
+    }
+
+    func test_submitWithMultipleSigners_delegatedSigner_v08Wallet_authorizesThePreimage() async throws {
+        let (args, payload) = try await delegatedCheckAuthArgs(executable: OZAuthDigestWasm.v080)
+
+        XCTAssertEqual(
+            try args.map { try OZIndependentAuthDigest.xdr($0) },
+            [try OZIndependentAuthDigest.xdr(
+                try OZIndependentAuthDigest.preimage(
+                    account: pipelineContractId,
+                    signaturePayload: payload,
+                    contextRuleIds: digestRuleIds
+                )
+            )]
+        )
+    }
+
+    func test_submitWithMultipleSigners_delegatedSigner_legacyWallet_authorizesTheDigestBytes() async throws {
+        let (args, payload) = try await delegatedCheckAuthArgs(executable: OZAuthDigestWasm.unmapped)
+
+        XCTAssertEqual(
+            try args.map { try OZIndependentAuthDigest.xdr($0) },
+            [try OZIndependentAuthDigest.xdr(
+                .bytes(try OZIndependentAuthDigest.legacyDigest(signaturePayload: payload, contextRuleIds: digestRuleIds))
+            )]
+        )
+    }
+
+    func test_submitWithMultipleSigners_foreignEntryFirst_instanceReadFails_noSignerIsAsked() async throws {
+        let script = MockSorobanServerScript()
+        MockSorobanServer.activate(script: script)
+        defer {
+            MockSorobanServer.deactivate()
+            MockURLProtocol.reset()
+        }
+        let ed25519Adapter = try OZRecordingEd25519Adapter()
+        let walletAdapter = try OZRecordingWalletAdapter()
+        let (_, manager, _) = try digestKit(script: script, ed25519Adapter: ed25519Adapter, walletAdapter: walletAdapter)
+        script.enqueueSimulate(authEntries: [
+            try OZPipelineFixtures.accountAuthEntry(accountId: walletAdapter.address, target: pipelineTargetContract),
+            try smartAccountEntry()
+        ])
+        try script.setWalletInstanceRpcError(contractId: pipelineContractId)
+
+        do {
+            _ = try await manager.submitWithMultipleSigners(
+                hostFunction: try digestHostFunction(),
+                selectedSigners: [
+                    .wallet(accountId: walletAdapter.address),
+                    .ed25519(verifierAddress: pipelineTargetContract, publicKey: ed25519Adapter.publicKey)
+                ]
+            )
+            XCTFail("expected SubmissionFailed")
+        } catch let error as SmartAccountTransactionException.SubmissionFailed {
+            XCTAssertTrue(
+                error.message.contains("Failed to read the instance of \(pipelineContractId) to select its auth digest scheme"),
+                "unexpected message: \(error.message)"
+            )
+        }
+        XCTAssertEqual(walletAdapter.preimages.count, 0)
+        XCTAssertEqual(ed25519Adapter.digests.count, 0)
+        XCTAssertEqual(script.simulateCallCount, 1)
+    }
+
+    func test_submitWithMultipleSigners_latestLedgerOutsideUInt32OrOverflowing_noSignerIsAsked() async throws {
+        let cases: [(Int, String)] = [
+            (-1, "Latest ledger -1 of the instance read of \(pipelineContractId) is not a UInt32 ledger sequence"),
+            (Int(UInt32.max) + 1, "Latest ledger \(Int(UInt32.max) + 1) of the instance read of \(pipelineContractId) is not a UInt32 ledger sequence"),
+            (Int(UInt32.max) - 1, "Computed expirationLedger \(UInt64(UInt32.max) - 1 + UInt64(StellarProtocolConstants.ledgersPerHour)) overflows UInt32")
+        ]
+        for (latestLedger, expected) in cases {
+            let script = MockSorobanServerScript()
+            MockSorobanServer.activate(script: script)
+            defer {
+                MockSorobanServer.deactivate()
+                MockURLProtocol.reset()
+            }
+            let adapter = try OZRecordingEd25519Adapter()
+            let (_, manager, _) = try digestKit(script: script, ed25519Adapter: adapter)
+            script.enqueueSimulate(authEntries: [try smartAccountEntry()])
+            try script.setWalletInstanceResponse(contractId: pipelineContractId, latestLedger: latestLedger)
+
+            do {
+                _ = try await manager.submitWithMultipleSigners(
+                    hostFunction: try digestHostFunction(),
+                    selectedSigners: [.ed25519(verifierAddress: pipelineTargetContract, publicKey: adapter.publicKey)]
+                )
+                XCTFail("expected SimulationFailed for latestLedger \(latestLedger)")
+            } catch let error as SmartAccountTransactionException.SimulationFailed {
+                XCTAssertTrue(error.message.contains(expected), "unexpected message: \(error.message)")
+            }
+            XCTAssertEqual(adapter.digests.count, 0, "no signer before the read for latestLedger \(latestLedger)")
+        }
+    }
+
+    func test_submitWithMultipleSigners_noSmartAccountEntry_readsNoInstance() async throws {
+        let script = MockSorobanServerScript()
+        MockSorobanServer.activate(script: script)
+        defer {
+            MockSorobanServer.deactivate()
+            MockURLProtocol.reset()
+        }
+        let adapter = try OZRecordingWalletAdapter()
+        let (_, manager, _) = try digestKit(script: script, walletAdapter: adapter)
+        script.enqueueSimulate(authEntries: [
+            try OZPipelineFixtures.accountAuthEntry(accountId: adapter.address, target: pipelineTargetContract)
+        ])
+        script.setGetLatestLedger(sequence: digestLedger)
+        script.enqueueSimulateError("stop after signing")
+
+        try await submitUntilReSimulation(manager, signers: [.wallet(accountId: adapter.address)])
+
+        XCTAssertEqual(adapter.preimages.count, 1)
+        switch adapter.preimages.first {
+        case .sorobanAuthorizationWithAddress(let body)?:
+            XCTAssertEqual(body.signatureExpirationLedger, digestExpiration)
+        case .sorobanAuthorization(let body)?:
+            XCTAssertEqual(body.signatureExpirationLedger, digestExpiration)
+        default:
+            XCTFail("the account entry must be signed with an authorization preimage")
+        }
+        XCTAssertEqual(try script.walletInstanceReadCount(contractId: pipelineContractId), 0)
+        XCTAssertEqual(script.getLatestLedgerCallCount, 1)
+    }
+}

@@ -335,14 +335,15 @@ public final class OZSignerManager: OZManagerHelpers, @unchecked Sendable {
         )
     }
 
-    /// Adds a delegated signer (Stellar account or contract) to a context
-    /// rule.
+    /// Adds a delegated signer (Stellar account) to a context rule.
     ///
     /// Creates an ``OZDelegatedSigner`` that authorises through the host's
     /// built-in `require_auth` mechanism and submits an `add_signer`
     /// invocation against the connected smart-account contract. The supplied
-    /// `address` may be either a `G…` Stellar account or a `C…` contract
-    /// strkey.
+    /// `address` must be a `G…` Stellar account other than the shared default
+    /// deployer, whose secret derives from a public string. A contract
+    /// address, the wallet included, is refused, because a contract delegate
+    /// can let anyone authorize the account (GHSA-jpg9-m7w4-c7wc).
     ///
     /// The on-chain transaction requires authorization from an existing
     /// signer on the specified context rule.
@@ -350,13 +351,16 @@ public final class OZSignerManager: OZManagerHelpers, @unchecked Sendable {
     /// - Parameters:
     ///   - contextRuleId: Context-rule identifier the new signer is being
     ///     added to.
-    ///   - address: Stellar account (`G…`) or contract (`C…`) strkey.
+    ///   - address: Stellar account (`G…`) strkey of the signer.
     ///   - selectedSigners: Optional multi-signer participants list.
     ///   - forceMethod: Optional submission-method override.
     /// - Returns: An ``OZTransactionResult`` describing the on-chain outcome.
-    /// - Throws: ``SmartAccountValidationException/InvalidAddress`` when the address
-    ///   strkey is malformed; ``SmartAccountWalletException/NotConnected`` when no
-    ///   wallet is connected; ``SmartAccountTransactionException`` for submission
+    /// - Throws: ``SmartAccountValidationException/InvalidInput`` when `address`
+    ///   is the shared default deployer or the wallet itself;
+    ///   ``SmartAccountValidationException/InvalidAddress`` when the address
+    ///   strkey is malformed or is not a `G…` address;
+    ///   ``SmartAccountWalletException/NotConnected`` when no wallet is
+    ///   connected; ``SmartAccountTransactionException`` for submission
     ///   failures.
     public func addDelegated(
         contextRuleId: UInt32,
@@ -564,8 +568,10 @@ public final class OZSignerManager: OZManagerHelpers, @unchecked Sendable {
     /// - Returns: An ``OZTransactionResult`` describing the on-chain outcome.
     /// - Throws: ``SmartAccountWalletException/NotConnected`` when no wallet is
     ///   connected; ``SmartAccountValidationException`` when the signer's key data
-    ///   exceeds ``OZConstants/maxExternalKeySize`` bytes or the signer cannot be
-    ///   encoded; ``SmartAccountTransactionException`` for submission failures.
+    ///   exceeds ``OZConstants/maxExternalKeySize`` bytes, when a Delegated signer
+    ///   is refused by ``requireValidSigners(_:walletContractId:)``, or when the
+    ///   signer cannot be encoded; ``SmartAccountTransactionException`` for
+    ///   submission failures.
     private func addSigner(
         contextRuleId: UInt32,
         signer: any OZSmartAccountSigner,
@@ -574,7 +580,7 @@ public final class OZSignerManager: OZManagerHelpers, @unchecked Sendable {
     ) async throws -> OZTransactionResult {
         let connected = try kit.requireConnected()
 
-        try requireValidSigners([signer])
+        try await requireValidSigners([signer], walletContractId: connected.contractId)
 
         let hostFunction = try OZSignerManager.buildAddSignerFunction(
             contractId: connected.contractId,

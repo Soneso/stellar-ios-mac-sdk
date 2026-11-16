@@ -47,7 +47,7 @@ public struct OZContractError: Equatable, Hashable, Sendable {
 /// (smart account, WebAuthn, or a policy contract) into its contract and variant name.
 public enum OZContractErrorCodes {
 
-    // Smart account contract (SmartAccountError, codes 3000-3016; 3001 is unused).
+    // Smart account contract (SmartAccountError, codes 3000-3018; 3001 is unused).
 
     /// The referenced context rule does not exist on the account.
     public static let contextRuleNotFound: Int = 3000
@@ -96,6 +96,12 @@ public enum OZContractErrorCodes {
 
     /// The signer is not authorized to sign the given context rule.
     public static let unauthorizedSigner: Int = 3016
+
+    /// A Delegated signer's address is the contract of a context being authorized.
+    public static let delegatedSignerIsContextContract: Int = 3017
+
+    /// A Delegated signer's address is the smart account itself.
+    public static let selfDelegatedSigner: Int = 3018
 
     /// Decodes a raw contract error `code` into the OZ contract and variant name that
     /// defined it, or `nil` if `code` is not a known OZ smart-account contract error.
@@ -160,7 +166,7 @@ public enum OZContractErrorCodes {
     /// Every known contract error, keyed by its globally unique code.
     private static let codeTable: [Int: OZContractError] = {
         let allErrors: [OZContractError] = [
-            // SmartAccountError (3000-3016; 3001 unused)
+            // SmartAccountError (3000-3018; 3001 unused)
             OZContractError(code: 3000, contract: "SmartAccountError", name: "ContextRuleNotFound"),
             OZContractError(code: 3002, contract: "SmartAccountError", name: "UnvalidatedContext"),
             OZContractError(code: 3003, contract: "SmartAccountError", name: "ExternalVerificationFailed"),
@@ -177,6 +183,8 @@ public enum OZContractErrorCodes {
             OZContractError(code: 3014, contract: "SmartAccountError", name: "ContextRuleIdsLengthMismatch"),
             OZContractError(code: 3015, contract: "SmartAccountError", name: "NameTooLong"),
             OZContractError(code: 3016, contract: "SmartAccountError", name: "UnauthorizedSigner"),
+            OZContractError(code: 3017, contract: "SmartAccountError", name: "DelegatedSignerIsContextContract"),
+            OZContractError(code: 3018, contract: "SmartAccountError", name: "SelfDelegatedSigner"),
             // WebAuthnError (3110-3119)
             OZContractError(code: 3110, contract: "WebAuthnError", name: "SignaturePayloadInvalid"),
             OZContractError(code: 3111, contract: "WebAuthnError", name: "ClientDataTooLong"),
