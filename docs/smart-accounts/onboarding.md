@@ -22,7 +22,7 @@ The contract can enforce rules that traditional accounts cannot: requiring multi
 
 This SDK uses the OpenZeppelin Soroban contract implementation for smart accounts. OpenZeppelin is a provider of audited, open-source smart contract libraries.
 
-Recovery works through multiple signers. If a passkey is lost, other signers on the account (a backup passkey, a delegated Stellar account, or an Ed25519 key) can still authorize transactions. Passkeys on modern Apple devices also sync across the user's iCloud Keychain, so a new device automatically inherits the credential when the user is signed into iCloud.
+Recovery works through multiple signers. If a passkey is lost, other signers on the account (a backup passkey, a delegated Stellar account, or an Ed25519 key) can still authorize transactions when a rule lets them: a backup rule that holds only them, or a threshold policy they meet. On a rule without policies, every signer of the rule must sign. Passkeys on modern Apple devices also sync across the user's iCloud Keychain, so a new device automatically inherits the credential when the user is signed into iCloud.
 
 Important: if a passkey is lost and no other signers are configured, the smart account becomes inaccessible, similar to losing a traditional secret key. Adding backup signers is recommended for production use.
 
@@ -52,7 +52,7 @@ You do not need to construct on-chain data structures manually; the SDK handles 
 
 A signer is an entity authorized to approve transactions on a smart account. The contract stores signers per context rule (explained below). There are three types:
 
-**Delegated**: A Stellar address (G-address for accounts, C-address for contracts) that authorizes using Soroban's built-in verification. For accounts, this means signing the authorization entries with the account's secret key, which Soroban verifies automatically. For contracts, Soroban invokes the contract's own `__check_auth`. No external verifier contract is needed.
+**Delegated**: A Stellar address (G-address for accounts, C-address for contracts) that authorizes using Soroban's built-in verification. For accounts, this means signing the authorization entries with the account's secret key, which Soroban verifies automatically. For contracts, Soroban invokes the contract's own `__check_auth`. No external verifier contract is needed. The SDK adds only account delegates, because a contract delegate can let anyone authorize the account (GHSA-jpg9-m7w4-c7wc).
 
 On-chain representation: `Vec([Symbol("Delegated"), Address(address)])`
 
@@ -70,14 +70,16 @@ On-chain representation: `Vec([Symbol("External"), Address(verifier), Bytes(publ
 
 SDK methods:
 ```swift
+// ruleSigners: an OZSelectedSigner for each signer rule 0 holds at that call (see Multi-Signer Operations in the README)
 // Convenience: registers a new passkey and adds it as a signer in one step
-try await kit.signerManager.addNewPasskeySigner(contextRuleId: 0, userName: "Alice")
+try await kit.signerManager.addNewPasskeySigner(contextRuleId: 0, userName: "Alice", selectedSigners: ruleSigners)
 
 // Low-level: adds a pre-registered passkey signer with raw cryptographic materials
 try await kit.signerManager.addPasskey(
     contextRuleId: 0,
     publicKey: secp256r1PublicKey,      // public key from passkey registration
-    credentialId: webAuthnCredentialId  // raw credential ID bytes
+    credentialId: webAuthnCredentialId, // raw credential ID bytes
+    selectedSigners: ruleSigners
 )
 ```
 
@@ -91,10 +93,12 @@ import stellarsdk
 
 // ed25519PublicKey: the signer's raw 32-byte Ed25519 public key (Data)
 // kit: an OZSmartAccountKit from OZSmartAccountKit.create(config:) (see setup)
+// ruleSigners: an OZSelectedSigner for each signer rule 0 holds at that call (see Multi-Signer Operations in the README)
 try await kit.signerManager.addEd25519(
     contextRuleId: 0,
     verifierAddress: "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM",  // the Ed25519 verifier contract
-    publicKey: ed25519PublicKey  // 32 bytes
+    publicKey: ed25519PublicKey,  // 32 bytes
+    selectedSigners: ruleSigners
 )
 ```
 
@@ -108,21 +112,22 @@ You can add rules that apply only to specific scenarios. For example, a rule tha
 
 Each context rule stores:
 - An ID (`UInt32`)
-- A type: `.defaultRule`, `.callContract(contractAddress: String)`, or `.createContract(wasmHash: Data)`. `wasmHash` is a 32-byte `Data` value containing the SHA-256 hash of a compiled smart contract binary. `.createContract` matches contract creation operations targeting that specific binary.
+- A type: `.defaultRule`, `.callContract(contractAddress: String)`, `.createContract(wasmHash: Data)`, or `.createContractExternalRef(owner: String, tag: String)`. `wasmHash` is a 32-byte `Data` value containing the SHA-256 hash of a compiled smart contract binary. `.createContract` matches contract creation operations targeting that specific binary. `.createContractExternalRef` matches deployments from the executable reference that the `owner` contract stores under `tag` (CAP-85).
 - A name (human-readable string)
 - A list of signers (up to 15)
 - A list of policies (up to 5)
-- An optional expiration ledger number. Rules with an expiration are automatically skipped after that ledger is reached, useful for temporary authorization grants.
+- An optional expiration ledger number, useful for temporary authorization grants. After that ledger the contract rejects the rule; automatic resolution ignores the expiration, so choose or create a rule that has not expired.
 
 Each context rule supports up to 15 signers and 5 policies.
 
-When a transaction requires authorization, the contract collects all non-expired rules that match the operation's context type, plus any Default rules, and evaluates them in order until one satisfies the requirements. Rules for a specific context type (e.g. `.callContract(contractAddress: "CBCD1234...")`) are evaluated before Default rules, so Default acts as a fallback when no specific rule is satisfied.
+When a transaction requires authorization, the contract checks one rule per authorization context, the rule the client names. The SDK resolves the rule ids automatically or takes them from your `resolveContextRuleIds` callback, and signs them with the payload. A Default rule matches any context.
 
 SDK methods:
 ```swift
 import stellarsdk
 
 // delegatedSigner, passkeySigner: the signers added as shown above
+// ruleSigners: an OZSelectedSigner for each signer rule 0 holds at that call (see Multi-Signer Operations in the README)
 // kit is the OZSmartAccountKit built in the smart-accounts README Quick Start.
 // Add a rule for a specific contract.
 // Signer objects are created using OZDelegatedSigner(address: "GA7Q...") or
@@ -132,7 +137,8 @@ let tokenContractId = "CAQFZ2FHCOA3QLPDVU3XO44TM5TSTLRA7Q47FQADE53UUCJDODNTQIWP"
 try await kit.contextRuleManager.addContextRule(
     contextType: .callContract(contractAddress: tokenContractId),
     name: "TokenTransfers",
-    signers: [delegatedSigner, passkeySigner]
+    signers: [delegatedSigner, passkeySigner],
+    selectedSigners: ruleSigners
 )
 
 // Get count of active rules
@@ -159,14 +165,16 @@ SDK method:
 import stellarsdk
 
 // kit: an OZSmartAccountKit from OZSmartAccountKit.create(config:) (see setup)
+// ruleSigners: an OZSelectedSigner for each signer rule 0 holds at that call (see Multi-Signer Operations in the README)
 try await kit.policyManager.addSimpleThreshold(
     contextRuleId: 0,
     policyAddress: "CDKR4A7VTCLGCBXK6T2B5HPYQKZXOWURVIL7GZGPY7PZJMYEFOCJPQXY",  // the simple-threshold policy contract
-    threshold: 2
+    threshold: 2,
+    selectedSigners: ruleSigners
 )
 ```
 
-**Spending Limit**: Limits the total token amount spent within a rolling window of ledgers. For example, 1000 tokens per day (approximately 17,280 ledgers at 5 seconds per ledger). The spending limit policy intercepts any contract call where the function name is `transfer` and extracts the amount from the third argument. In practice this is almost always a token contract's `transfer` function. If a non-token contract has a function named `transfer`, the policy will attempt to apply the limit to it as well, so scope spending limit policies to specific token contracts using context rules when this is a concern. Other function names are not subject to spending limits.
+**Spending Limit**: Limits the total token amount spent within a rolling window of ledgers. For example, 1000 tokens per day (approximately 17,280 ledgers at 5 seconds per ledger). The policy installs only on a rule of type callContract, which scopes it to one token contract. It reads the amount from the third argument of `transfer`. Every other call through that rule is rejected (3223 NotAllowed).
 
 On-chain: stores `spending_limit: i128, period_ledgers: u32`
 
@@ -175,15 +183,18 @@ SDK method:
 import stellarsdk
 
 // kit: an OZSmartAccountKit from OZSmartAccountKit.create(config:) (see setup)
+// tokenRuleId: the id of the callContract rule for the token (the TokenTransfers rule above)
+// ruleSigners: an OZSelectedSigner for each signer rule 0 holds at that call (see Multi-Signer Operations in the README)
 try await kit.policyManager.addSpendingLimit(
-    contextRuleId: 0,
+    contextRuleId: tokenRuleId,
     policyAddress: "CCRGXYAIXQDRGEAEO6E4FYDNEPDU5SEFHNAIJWY6LEWFT6ID5TWU76EW",  // the spending-limit policy contract
     spendingLimit: "1000",
-    periodLedgers: 17_280  // approximately one day
+    periodLedgers: 17_280,  // approximately one day
+    selectedSigners: ruleSigners
 )
 ```
 
-**Weighted Threshold**: Each signer has a weight (vote power). The sum of weights from valid signatures must meet or exceed a threshold. For example, signer A has weight 50, signer B has weight 30, signer C has weight 20, and the threshold is 80. A+B or A+C would pass; B+C would not.
+**Weighted Threshold**: Each signer has a weight (vote power). The sum of weights from valid signatures must meet or exceed a threshold. For example, signer A has weight 50, signer B has weight 30, signer C has weight 20, and the threshold is 80. A+B would pass; A+C and B+C would not.
 
 On-chain: stores `signer_weights: Map<Signer, u32>, threshold: u32`
 
@@ -192,6 +203,7 @@ SDK method:
 import stellarsdk
 
 // signerA, signerB, signerC: signers created as shown above
+// ruleSigners: an OZSelectedSigner for each signer rule 0 holds at that call (see Multi-Signer Operations in the README)
 // kit is the OZSmartAccountKit built in the smart-accounts README Quick Start
 try await kit.policyManager.addWeightedThreshold(
     contextRuleId: 0,
@@ -201,7 +213,8 @@ try await kit.policyManager.addWeightedThreshold(
         OZSignerWeightEntry(signer: signerB, weight: 30),
         OZSignerWeightEntry(signer: signerC, weight: 20)
     ],
-    threshold: 80
+    threshold: 80,
+    selectedSigners: ruleSigners
 )
 ```
 
@@ -211,6 +224,7 @@ The policy interface is generic: any Soroban contract that implements the requir
 import stellarsdk
 
 // kit is the OZSmartAccountKit built in the smart-accounts README Quick Start
+// ruleSigners: an OZSelectedSigner for each signer rule 0 holds at that call (see Multi-Signer Operations in the README)
 let installParams = SCValXDR.map([
     SCMapEntryXDR(
         key: SCValXDR.symbol("my_param"),
@@ -221,7 +235,8 @@ let installParams = SCValXDR.map([
 try await kit.policyManager.addPolicy(
     contextRuleId: 0,
     policyAddress: "CCATOZNDWIMSQAOWAGYP365ZANK6K5R542QR2UO6JVVAHAMKZLQHWYXF",  // your custom policy contract
-    installParams: installParams
+    installParams: installParams,
+    selectedSigners: ruleSigners
 )
 ```
 

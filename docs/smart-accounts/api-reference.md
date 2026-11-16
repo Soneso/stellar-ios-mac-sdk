@@ -260,6 +260,7 @@ Immutable configuration value type passed to `OZSmartAccountKit.create(config:)`
 - `defaultPolicies`: Policies installed on a new wallet's default context rule at deploy time, keyed by policy contract address (`C…` strkey) with the policy's install parameters as the value (see `OZPolicyInstallParams.toScVal()`). Applied through the contract constructor by `createWallet` and `deployPendingCredential`; a per-call `policies` argument overrides it. Defaults to no policies. Maximum `OZConstants.maxPolicies` (5). See the `createWallet` `policies` parameter for the built-in policies' install constraints at deploy time.
 - `useUpgradedAuth`: Governs the credential arm of the kit's internal simulations and of the `fundWallet` source-account conversion. Defaults to `true`: the kit requests `ADDRESS_V2` entries from simulation, and the `fundWallet` conversion replaces source-account credentials with the `ADDRESS_V2` arm, signing the address-bound `ENVELOPE_TYPE_SOROBAN_AUTHORIZATION_WITH_ADDRESS` preimage. When `false`, simulation is asked for legacy entries and the conversion emits the legacy `ADDRESS` arm over the `ENVELOPE_TYPE_SOROBAN_AUTHORIZATION` preimage — the opt-out for relayer services that parse submitted auth XDR with pre-protocol-27 schemas and reject the V2 credential discriminant. Separate from `useUpgradedAuthForWalletSigners`, which governs only the delegated external-wallet entries the kit hands to wallet software to sign.
 - `useUpgradedAuthForWalletSigners`: Governs the credential arm of delegated external-wallet auth entries. Defaults to `true`: delegated entries built for `OZSelectedSigner.wallet(accountId:)` signers carry upgraded `ADDRESS_V2` credentials, whose signed preimage (`ENVELOPE_TYPE_SOROBAN_AUTHORIZATION_WITH_ADDRESS`: `networkID`, `nonce`, `signatureExpirationLedger`, `address`, `invocation`) carries the wallet address. When `false`, they carry the legacy `ADDRESS` arm with its non-address-bound preimage — the opt-out for wallet software that cannot sign the address-bound preimage type.
+- `authDigestSchemes`: Maps account WASM hashes (64 hex characters, any case) to the `OZAuthDigestScheme` their `__check_auth` checks. Before it asks the first signer, the kit reads the WASM hash the wallet runs and signs the digest this map gives for it. Built in, the stellar-accounts 0.8.0 build `c514d35e...` maps to `.preimageV1`; an entry here takes precedence, and the kit signs `.legacyConcat` for every other hash. Map each own build that implements `.preimageV1`; without the entry the contract rejects every authorization after the signers have signed. Defaults to `[:]`.
 
 ### Platform-specific provider integration
 
@@ -286,13 +287,14 @@ public init(
     maxContextRuleScanId: UInt32 = 50,
     defaultPolicies: [String: SCValXDR] = [:],
     useUpgradedAuth: Bool = true,
-    useUpgradedAuthForWalletSigners: Bool = true
+    useUpgradedAuthForWalletSigners: Bool = true,
+    authDigestSchemes: [String: OZAuthDigestScheme] = [:]
 ) throws
 ```
 
 Parameters match the fields documented above.
 
-**Throws**: `SmartAccountConfigurationException.MissingConfig` (blank `rpcUrl`, `networkPassphrase`, or `accountWasmHash`); `SmartAccountConfigurationException.InvalidConfig` (invalid `accountWasmHash` format, invalid `webauthnVerifierAddress` strkey, `signatureExpirationLedgers` less than 1, `timeoutInSeconds` negative).
+**Throws**: `SmartAccountConfigurationException.MissingConfig` (blank `rpcUrl`, `networkPassphrase`, or `accountWasmHash`); `SmartAccountConfigurationException.InvalidConfig` (invalid `accountWasmHash` format, invalid `webauthnVerifierAddress` strkey, `signatureExpirationLedgers` less than 1, `timeoutInSeconds` negative, an `authDigestSchemes` key that is not 64 hex characters, two `authDigestSchemes` keys that differ only in case and map to different schemes).
 
 ### Static Factories
 
@@ -376,6 +378,7 @@ One setter per optional field, each `@discardableResult` and returning `Builder`
 - `defaultPolicies(_:)` — `[String: SCValXDR]`
 - `useUpgradedAuth(_:)` — `Bool`
 - `useUpgradedAuthForWalletSigners(_:)` — `Bool`
+- `authDigestSchemes(_:)`: `[String: OZAuthDigestScheme]`
 
 #### build()
 
@@ -710,6 +713,8 @@ public func submit(
 
 Low-level escape hatch. Submits a manually constructed host function through the full simulate / sign / re-simulate / submit pipeline. `transfer`, `contractCall`, and `executeAndSubmit` all delegate here. Use it directly to submit a host function whose shape is not covered by the higher-level entry points. When `auth` is empty, simulation discovers the authorization entries; the transaction is re-simulated after signing so resource fees reflect the real signature size.
 
+Before it asks any signer, it checks the signers that `add_signer`, `batch_add_signer` and `add_context_rule` calls on the wallet add. It refuses a Delegated signer that `OZSignerManager.addDelegated` refuses, and a muxed contract address (`W...`) as a Delegated address or External verifier, with a `SmartAccountValidationException`.
+
 **Throws**: `SmartAccountWalletException.NotConnected`, `SmartAccountValidationException`, `SmartAccountTransactionException`, `WebAuthnException`, `SmartAccountCredentialException`.
 
 #### fundWallet(...)
@@ -978,7 +983,7 @@ public final class OZSignerManager: @unchecked Sendable { ... }
 Accessed via `kit.signerManager`. Adds and removes signers bound to a context rule. Supported signer kinds:
 
 - WebAuthn passkeys (secp256r1 verified through a verifier contract).
-- Delegated signers (Stellar `G…` accounts or `C…` contract addresses authorising through the host's built-in `require_auth`).
+- Delegated signers (Stellar `G…` accounts authorizing through the host's built-in `require_auth`).
 - Ed25519 signers (32-byte Ed25519 keys verified by a verifier contract).
 
 Every state-changing method accepts an optional `selectedSigners: [OZSelectedSigner]` parameter. When empty (default), the operation uses single-signer authorization through the connected passkey credential. When non-empty, the operation routes through the multi-signer ceremony coordinator that collects signatures from every listed signer and assembles the final authorization payload.
@@ -1027,9 +1032,9 @@ public func addDelegated(
 ) async throws -> OZTransactionResult
 ```
 
-Adds a delegated signer (Stellar `G…` account or `C…` contract) to a context rule. The signer authorises through the host's built-in `require_auth` mechanism; no verifier contract is required.
+Adds a Stellar account (`G…`) as a delegated signer to a context rule. It refuses a contract address, because a contract delegate can let anyone authorize the account (GHSA-jpg9-m7w4-c7wc). The signer authorizes through the host's built-in `require_auth` mechanism; no verifier contract is required.
 
-**Throws**: `SmartAccountWalletException.NotConnected`, `SmartAccountValidationException.InvalidAddress`, `SmartAccountTransactionException`.
+**Throws**: `SmartAccountWalletException.NotConnected`; `SmartAccountValidationException.InvalidInput` when `address` is the shared default deployer or the wallet itself; `SmartAccountValidationException.InvalidAddress` for any other address that is not a `G…` address; `SmartAccountTransactionException`.
 
 #### addEd25519(...)
 
@@ -1130,7 +1135,7 @@ public func addContextRule(
 ) async throws -> OZTransactionResult
 ```
 
-Adds a new context rule. `contextType` selects the matching policy (default rule, call-contract, or create-contract). `name` is the human-readable rule name (non-empty, at most `OZConstants.maxNameSize` UTF-8 bytes). `validUntil` is the optional ledger number at which the rule expires (`nil` for non-expiring). `signers` lists the signers authorised by the rule; each external signer's key data is limited to `OZConstants.maxExternalKeySize` bytes. `policies` maps policy contract addresses (`C…` strkey) to their installation parameters encoded as `SCValXDR`; map keys are sorted into the Soroban host's `ScMap` key order before submission.
+Adds a new context rule. `contextType` selects the matching policy (default rule, call-contract, create-contract, or create-contract from an executable reference). `name` is the human-readable rule name (non-empty, at most `OZConstants.maxNameSize` UTF-8 bytes). `validUntil` is the optional ledger number at which the rule expires (`nil` for non-expiring). `signers` lists the signers authorized by the rule; each external signer's key data is limited to `OZConstants.maxExternalKeySize` bytes, and a delegated signer must be a `G…` account other than the shared default deployer. `policies` maps policy contract addresses (`C…` strkey) to their installation parameters encoded as `SCValXDR`; map keys are sorted into the Soroban host's `ScMap` key order before submission.
 
 **Throws**: `SmartAccountWalletException.NotConnected`, `SmartAccountValidationException.InvalidInput`, `SmartAccountValidationException.InvalidAddress`, `SmartAccountTransactionException`.
 
@@ -1227,17 +1232,21 @@ public enum OZContextRuleType: Sendable, Hashable {
     case defaultRule
     case callContract(contractAddress: String)
     case createContract(wasmHash: Data)
+    case createContractExternalRef(owner: String, tag: String)
 
     public func toScVal() throws -> SCValXDR
 }
 ```
 
-Three operation-matching types:
-- `defaultRule` — matches any operation (fallback / default rule).
+Four operation-matching types:
+- `defaultRule`: matches any operation.
 - `callContract(contractAddress:)` — matches invocations to a specific contract address (`C…`, 56 characters).
-- `createContract(wasmHash:)` — matches contract deployments using a specific 32-byte WASM hash. CreateContract rules identify a deployment by its WASM hash only, matching the on-chain rule schema; a create-contract invocation whose executable is a CAP-85 external reference or a Stellar Asset Contract carries no WASM hash, so rule resolution rejects it with a validation error during signing.
+- `createContract(wasmHash:)`: matches contract deployments using a specific 32-byte WASM hash.
+- `createContractExternalRef(owner:tag:)`: matches deployments from the executable reference that the `owner` contract stores under `tag` (CAP-85). A stellar-accounts 0.7 build rejects this rule kind during simulation.
 
-Equality and hashing use constant-time comparison on the `wasmHash` field to avoid leaking information about the byte content through timing side channels. `toScVal()` produces the on-chain encoding: `Default` is `vec([Symbol("Default")])`; `CallContract` is `vec([Symbol("CallContract"), Address(contractAddress)])`; `CreateContract` is `vec([Symbol("CreateContract"), Bytes(wasmHash)])`.
+Automatic rule resolution matches a create-contract invocation whose executable is a CAP-85 external reference to a `createContractExternalRef` rule with the same owner and tag, or to a Default rule. For a Stellar Asset Contract executable, which carries neither a WASM hash nor a reference, it throws `SmartAccountValidationException.InvalidInput` during signing.
+
+Equality uses constant-time comparison on the `wasmHash` field to avoid leaking information about the byte content through timing side channels; tags compare by UTF-8 bytes. `toScVal()` produces the on-chain encoding: `Default` is `vec([Symbol("Default")])`; `CallContract` is `vec([Symbol("CallContract"), Address(contractAddress)])`; `CreateContract` is `vec([Symbol("CreateContract"), Bytes(wasmHash)])`; `CreateContractExternalRef` is `vec([Symbol("CreateContractExternalRef"), Address(owner), String(tag)])`.
 
 #### OZParsedContextRule
 
@@ -1497,7 +1506,7 @@ public func submitWithMultipleSigners(
 
 Shared low-level multi-signer signing pipeline. Validates the complete signer set, simulates the host function to discover authorization entries, signs every matching entry with every supplied signer, re-simulates so the resource fees reflect the real signature payload size, and submits the final envelope. Entries with legacy `ADDRESS` or protocol-27 `ADDRESS_V2` credentials are signed with the arm preserved; entries carrying `ADDRESS_WITH_DELEGATES` credentials are rejected with `SigningFailed` — delegated entries must be signed per delegate node via `SorobanAuthorizationEntryXDR.sign(forAddress:)` before submission. The three higher-level entry points delegate here; the signer, policy, and context-rule managers also reach this method internally when a non-empty `selectedSigners` list is supplied to one of their state-changing methods.
 
-Validation order: connection check, per-wallet-signer reachability via `kit.externalSigners.canSignFor(address:)` (covers both in-memory keypairs and the configured wallet adapter), per-passkey-signer `keyData` precondition (every passkey entry must carry pre-fetched `keyData` so context-rule resolution and signature binding can run without an extra on-chain lookup), per-Ed25519-signer registration check via `kit.externalSigners.canSignEd25519For(verifierAddress:publicKey:)` and public-key length enforcement (must be 32 bytes), initial simulation surface error, re-simulation surface error.
+Validation order: connection check, per-wallet-signer reachability via `kit.externalSigners.canSignFor(address:)` (covers both in-memory keypairs and the configured wallet adapter), per-passkey-signer `keyData` precondition (every passkey entry must carry pre-fetched `keyData` so context-rule resolution and signature binding can run without an extra on-chain lookup), per-Ed25519-signer registration check via `kit.externalSigners.canSignEd25519For(verifierAddress:publicKey:)` and public-key length enforcement (must be 32 bytes), initial simulation surface error, the check of added signers that `submit` describes, re-simulation surface error.
 
 **Throws**: `SmartAccountWalletException`, `SmartAccountValidationException`, `SmartAccountTransactionException`, `WebAuthnException`, `SmartAccountConfigurationException`.
 
@@ -1735,7 +1744,7 @@ The multi-signer pipeline calls this method automatically for each `OZSelectedSi
 **Parameters**:
 - `verifierAddress`: C-strkey of the Ed25519 verifier contract.
 - `publicKey`: 32-byte Ed25519 public key identifying the signer slot.
-- `authDigest`: 32-byte auth digest to sign, computed as `SHA-256(signaturePayload || contextRuleIds.toXDR())`.
+- `authDigest`: 32-byte auth digest to sign, in the wallet's `OZAuthDigestScheme`: `SHA-256(signaturePayload || contextRuleIds.toXDR())` for stellar-accounts 0.7, `SHA-256(XDR(AuthDigestPreimage))` for 0.8.0.
 
 **Returns**: 64-byte raw Ed25519 signature over `authDigest`.
 
@@ -1780,7 +1789,7 @@ Adapter protocol for out-of-process Ed25519 signing sources such as hardware wal
 
 `signAuthDigest(authDigest:publicKey:)`:
 - Called only when `canSignFor` returned `true` for the same `publicKey`.
-- `authDigest` — 32-byte digest computed as `SHA-256(signaturePayload || contextRuleIds.toXDR())`.
+- `authDigest`: 32-byte digest in the wallet's `OZAuthDigestScheme`: `SHA-256(signaturePayload || contextRuleIds.toXDR())` for stellar-accounts 0.7, `SHA-256(XDR(AuthDigestPreimage))` for 0.8.0.
 - `publicKey` — the same 32-byte Ed25519 public key passed to `canSignFor`.
 - Returns a 64-byte raw Ed25519 signature over `authDigest`. The pipeline locally verifies the returned signature via `KeyPair.verify(signature:message:)` before incorporating it into the authorization payload; a wrong signature throws `SmartAccountTransactionException.SigningFailed`.
 - Throws any error that prevents signing (hardware unavailable, user cancelled, etc.).
@@ -2006,8 +2015,9 @@ Every error path in the kit funnels into a `SmartAccountException` subclass so c
 > |---|---|---|
 > | 3002 | `.credentialAlreadyExists` | `UnvalidatedContext` |
 > | 3003 | `.credentialInvalid` | `ExternalVerificationFailed` |
+> | 3004 | `.credentialDeploymentFailed` | `NoSignersAndPolicies` |
 >
-> The table above shows only the two codes the SDK enum reuses. On chain, the smart-account contract's `SmartAccountError` spans `3000` and `3002`-`3016`; the WebAuthn verifier's `WebAuthnError` occupies `3110`-`3119`; and the built-in policy contracts occupy `3200`-`3227`. When inspecting an error code, first check the exception type to determine which namespace it belongs to. The full catalog of on-chain codes is available in [`OZContractErrorCodes`](#ozcontracterrorcodes) with its helpers `decode(_:)`, `decodeFromSimulationFailure(_:)`, and `decodeFromMessage(_:)`; see the [OpenZeppelin contracts source](https://github.com/OpenZeppelin/stellar-contracts/blob/main/packages/accounts/src/smart_account/mod.rs) for the on-chain `SmartAccountError`, `WebAuthnError`, and policy error enums.
+> The table above shows only the three codes the SDK enum reuses. On chain, the smart-account contract's `SmartAccountError` spans `3000` and `3002`-`3018`; the WebAuthn verifier's `WebAuthnError` occupies `3110`-`3119`; and the built-in policy contracts occupy `3200`-`3227`. When inspecting an error code, first check the exception type to determine which namespace it belongs to. The full catalog of on-chain codes is available in [`OZContractErrorCodes`](#ozcontracterrorcodes) with its helpers `decode(_:)`, `decodeFromSimulationFailure(_:)`, and `decodeFromMessage(_:)`; see the [OpenZeppelin contracts source](https://github.com/OpenZeppelin/stellar-contracts/blob/main/packages/accounts/src/smart_account/mod.rs) for the on-chain `SmartAccountError`, `WebAuthnError`, and policy error enums.
 
 
 ```swift
@@ -2236,7 +2246,7 @@ public enum OZContractErrorCodes {
 
 Namespace exposing the on-chain error codes of the OpenZeppelin smart-account, WebAuthn verifier, and policy contracts. These integers appear as `Error(Contract, #NNNN)` inside `SmartAccountTransactionException.SimulationFailed` / `SubmissionFailed` messages when a contract refuses an operation. A `SimulationFailed` also holds the code the simulation reports in `reportedContractError`, taken from the diagnostic events when the host error masks it. `decodeFromSimulationFailure(_:)` names that code, `decodeFromMessage(_:)` the first known code in a message, and `decode(_:)` a raw code.
 
-Named constants cover the smart-account contract's own error enum (`SmartAccountError`, codes `3000` and `3002`-`3016`; `3001` is unused):
+Named constants cover the smart-account contract's own error enum (`SmartAccountError`, codes `3000` and `3002`-`3018`; `3001` is unused):
 
 | Code | Name |
 |---|---|
@@ -2256,6 +2266,8 @@ Named constants cover the smart-account contract's own error enum (`SmartAccount
 | 3014 | `contextRuleIdsLengthMismatch` |
 | 3015 | `nameTooLong` |
 | 3016 | `unauthorizedSigner` |
+| 3017 | `delegatedSignerIsContextContract` |
+| 3018 | `selfDelegatedSigner` |
 
 `decode(_:)` resolves any known code — the constants above plus the WebAuthn verifier's `WebAuthnError` (`3110`-`3119`) and the built-in policy contracts' `SimpleThresholdError` (`3200`-`3203`), `WeightedThresholdError` (`3210`-`3214`), and `SpendingLimitError` (`3220`-`3227`) — into an `OZContractError`, or returns `nil` for unknown codes.
 
@@ -2995,7 +3007,27 @@ These helpers are the lower-level building blocks the kit uses internally to con
 ### OZSmartAccountAuth
 
 ```swift
+public enum OZAuthDigestScheme: String, Sendable, Hashable {
+    case legacyConcat
+    case preimageV1
+}
+
+public struct OZEntryAuthDigest: Sendable {
+    public let signaturePayload: Data
+    public let authDigest: Data
+    public let delegatedAuthArgs: [SCValXDR]
+}
+
 public enum OZSmartAccountAuth {
+    public static func computeEntryAuthDigest(
+        entry: SorobanAuthorizationEntryXDR,
+        expirationLedger: UInt32,
+        networkPassphrase: String,
+        contextRuleIds: [UInt32],
+        scheme: OZAuthDigestScheme
+    ) async throws -> OZEntryAuthDigest
+
+    @available(*, deprecated, message: "Computes the stellar-accounts 0.7 digest only. Use computeEntryAuthDigest with the OZAuthDigestScheme of the code the wallet runs.")
     public static func buildAuthDigest(
         signaturePayload: Data,
         contextRuleIds: [UInt32]
@@ -3033,8 +3065,9 @@ public enum OZSmartAccountAuth {
 }
 ```
 
-- `buildAuthDigest(signaturePayload:contextRuleIds:)` — computes `SHA-256(signaturePayload || contextRuleIds.toXDR())`.
-- `buildAuthPayloadHash(entry:expirationLedger:networkPassphrase:)`: computes the auth-payload hash that must be signed to authorize an entry with address credentials. The preimage envelope type follows the entry's credential arm: `HashIDPreimage::SorobanAuthorization` for the legacy `ADDRESS` arm; `HashIDPreimage::SorobanAuthorizationWithAddress` (protocol 27) for the `ADDRESS_V2` and `ADDRESS_WITH_DELEGATES` arms. An entry whose credential address is a muxed account (`M...`) or muxed contract (`W...`) address throws `SmartAccountTransactionException.SigningFailed`.
+- `computeEntryAuthDigest(entry:expirationLedger:networkPassphrase:contextRuleIds:scheme:)`: returns the entry's signature payload, the auth digest that External signers sign, and the `__check_auth` arguments that Delegated signers authorize. The digest is `SHA-256(signaturePayload || contextRuleIds.toXDR())` for `.legacyConcat` (stellar-accounts 0.7) and `SHA-256(XDR(AuthDigestPreimage))` for `.preimageV1` (0.8.0). Pass the scheme of the wallet's code; the contract rejects a signature over the other digest. Throws `SmartAccountTransactionException.SigningFailed` for credentials without an address or with a muxed (`M...` or `W...`) address.
+- `buildAuthDigest(signaturePayload:contextRuleIds:)`: deprecated. Computes the `.legacyConcat` digest only; use `computeEntryAuthDigest` with the wallet's scheme.
+- `buildAuthPayloadHash(entry:expirationLedger:networkPassphrase:)`: computes the signature payload that `computeEntryAuthDigest` binds into the auth digest for an entry with address credentials. The preimage envelope type follows the entry's credential arm: `HashIDPreimage::SorobanAuthorization` for the legacy `ADDRESS` arm; `HashIDPreimage::SorobanAuthorizationWithAddress` (protocol 27) for the `ADDRESS_V2` and `ADDRESS_WITH_DELEGATES` arms. An entry whose credential address is a muxed account (`M...`) or muxed contract (`W...`) address throws `SmartAccountTransactionException.SigningFailed`.
 - `buildSourceAccountAuthPayloadHash(entry:address:nonce:expirationLedger:networkPassphrase:useUpgradedAuth:)`: variant for source-account credentials, typically used when converting them to address credentials for relayer fee sponsoring. `address:` is required and must be the address carried by the credentials the resulting signature is attached to; the host reconstructs the preimage from the submitted credentials. A muxed account (`M...`) or muxed contract (`W...`) `address:` throws `SmartAccountTransactionException.SigningFailed`. `useUpgradedAuth:` selects the credential arm of the replacement credentials and with it the preimage envelope type: `true` (the default) builds `ADDRESS_V2` credentials and hashes the `HashIDPreimage::SorobanAuthorizationWithAddress` preimage; `false` builds the legacy `ADDRESS` arm and hashes the `HashIDPreimage::SorobanAuthorization` preimage, which carries no address.
 - `signAuthEntry(entry:signer:signature:expirationLedger:contextRuleIds:)` — attaches a pre-computed signature to an authorization entry. Does NOT perform cryptographic signing. Returns a fresh entry; when `contextRuleIds` is non-empty it overrides any existing identifiers in the payload.
 - `addRawSignatureMapEntry(entry:signerKey:signatureValue:contextRuleIds:)` — adds a raw key/value entry to the auth entry's signature map. Used for delegated-signer placeholders where the value is `Bytes` rather than a signature.
@@ -3093,6 +3126,7 @@ public enum OZBuilders {
     public static func createCallContractContextType(contractAddress: String) throws -> OZContextRuleType
     public static func createCreateContractContextType(wasmHashHex: String) throws -> OZContextRuleType
     public static func createCreateContractContextType(wasmHash: Data) throws -> OZContextRuleType
+    public static func createCreateContractExternalRefContextType(owner: String, tag: String) throws -> OZContextRuleType
 
     public static func collectUniqueSignersFromRules(
         rules: [OZParsedContextRule]
@@ -3106,6 +3140,7 @@ Type-safe constructors for `OZContextRuleType` plus a deduplication helper acros
 - `createCallContractContextType(contractAddress:)` — validates the supplied contract address (throws `SmartAccountValidationException.InvalidAddress` for malformed values) and returns `OZContextRuleType.callContract(contractAddress:)`.
 - `createCreateContractContextType(wasmHashHex:)` — validates a 64-character hex WASM hash (an optional `0x` prefix is accepted and stripped) and returns `OZContextRuleType.createContract(wasmHash:)`. Throws `SmartAccountValidationException.InvalidInput` for malformed input.
 - `createCreateContractContextType(wasmHash:)` — validates a 32-byte WASM hash and returns the matching enum case.
+- `createCreateContractExternalRefContextType(owner:tag:)`: returns `OZContextRuleType.createContractExternalRef(owner:tag:)` for deployments from the executable reference that the `owner` contract stores under `tag` (CAP-85). Throws `SmartAccountValidationException.InvalidAddress` when `owner` is not a contract address.
 - `collectUniqueSignersFromRules(rules:)` — flattens the supplied rules' signers and returns a deduplicated list preserving the first occurrence of each signer (via `OZSmartAccountSigner.uniqueKey`).
 
 ### OZSmartAccountBuilders
@@ -3219,7 +3254,7 @@ public struct OZDelegatedSigner: OZSmartAccountSigner, Equatable, Hashable {
 }
 ```
 
-A signer authorized through a Soroban address using the host's `require_auth` mechanism. `address` may be a `G…` Stellar account or a `C…` contract strkey. The initializer throws `SmartAccountValidationException.InvalidAddress` for any other shape.
+A signer authorized through a Soroban address using the host's `require_auth` mechanism. `address` may be a `G…` Stellar account or a `C…` contract strkey. The initializer throws `SmartAccountValidationException.InvalidAddress` for any other shape. A contract delegate already on a wallet is read as stored. The kit adds only `G…` addresses: `addDelegated`, `addContextRule` and the signing pipelines refuse a contract, because a contract delegate can let anyone authorize the account (GHSA-jpg9-m7w4-c7wc).
 
 `toScVal()` returns `SCValXDR.vec([Symbol("Delegated"), Address(address)])`.
 
@@ -3253,7 +3288,7 @@ A signer that delegates signature verification to a custom verifier contract. `v
 
 `toScVal()` returns `SCValXDR.vec([Symbol("External"), Address(verifierAddress), Bytes(keyData)])`.
 
-Equality and hashing use constant-time comparison on `keyData` to avoid leaking information about the byte content through timing side channels.
+Equality uses constant-time comparison on `keyData` to avoid leaking information about the byte content through timing side channels.
 
 ---
 

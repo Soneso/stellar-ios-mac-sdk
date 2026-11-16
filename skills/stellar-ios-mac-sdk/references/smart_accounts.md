@@ -46,7 +46,7 @@ A smart account is a Soroban contract whose authorization logic lives on-chain. 
 Supported signer types:
 
 - **WebAuthn passkey** (secp256r1) verified by an on-chain verifier contract.
-- **Delegated** Stellar account (`G…`) or contract (`C…`) using Soroban's native `require_auth`.
+- **Delegated** Stellar account (`G…`) using Soroban's native `require_auth` (see [OZDelegatedSigner](#ozdelegatedsigner)).
 - **Ed25519** external signer verified by a verifier contract.
 
 Architecture. `OZSmartAccountKit.create(config:)` is the single entry point. The kit exposes the operations modules and per-domain managers as properties:
@@ -117,6 +117,7 @@ Public types live under two source areas: a protocol-agnostic `core` layer (sign
 | `maxContextRuleScanId` | `UInt32` | `50` | Highest context-rule ID to scan when listing |
 | `useUpgradedAuth` | `Bool` | `true` | Credential arm for the kit's internal simulations and the `fundWallet` source-account conversion (`true` = protocol-27 `ADDRESS_V2`). `false` is the legacy opt-out for relayers that parse auth XDR with pre-protocol-27 schemas. Does NOT affect delegated wallet entries |
 | `useUpgradedAuthForWalletSigners` | `Bool` | `true` | Credential arm for delegated external-wallet auth entries (`OZSelectedSigner.wallet`). `false` is the legacy opt-out for wallet software that cannot sign the address-bound preimage. Independent of `useUpgradedAuth` |
+| `authDigestSchemes` | `[String: OZAuthDigestScheme]` | `[:]` | Account WASM hash (64 hex chars, any case) to the digest its `__check_auth` checks. Built in: `c514d35e...` (stellar-accounts 0.8.0) to `.preimageV1`, which an entry overrides; other hashes sign `.legacyConcat` (0.7). Map each own 0.8 build, or the contract rejects every authorization after the signers have signed. Throws `SmartAccountConfigurationException.InvalidConfig` for a key that is not 64 hex chars, or for two case variants of one key with different schemes |
 
 > **The default `OZInMemoryStorageAdapter` is tests-only.** It holds credentials in process memory; they are lost when the process exits, and the on-chain smart account becomes unreachable. Production apps pass a persistent adapter (`OZKeychainStorageAdapter` on Apple platforms). See [smart_accounts_webauthn.md](./smart_accounts_webauthn.md).
 
@@ -588,7 +589,7 @@ Two concrete types implement it. Using them in context rules and multi-signer ce
 
 ### OZDelegatedSigner
 
-A Stellar address (`G…` or `C…`) that authorizes via Soroban's native `require_auth`. No verifier contract.
+A Stellar address that authorizes through Soroban's native `require_auth`. No verifier contract. The type holds a `G…` or `C…` address, so a contract delegate already on a wallet is read as stored. The kit adds only `G…` addresses: `addDelegated`, `addContextRule` and the signing pipelines refuse a contract, because a contract delegate can let anyone authorize the account (GHSA-jpg9-m7w4-c7wc).
 
 ```swift
 public struct OZDelegatedSigner: OZSmartAccountSigner, Equatable, Hashable {
@@ -599,7 +600,6 @@ public struct OZDelegatedSigner: OZSmartAccountSigner, Equatable, Hashable {
 
 ```swift
 let accountSigner  = try OZDelegatedSigner(address: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ")
-let contractSigner = try OZDelegatedSigner(address: "CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC")
 ```
 
 On-chain SCVal: `Vec([Symbol("Delegated"), Address(address)])`.
@@ -830,6 +830,8 @@ public func submit(
 ```
 
 The SDK simulates the host function, signs auth entries whose address matches the connected smart account, re-simulates (WebAuthn signatures are larger than the simulation placeholders), and submits. Pass an empty `auth` array in most cases — simulation discovers the entries. Pre-supplied entries are forwarded unchanged. The pipeline signs legacy `ADDRESS` and protocol-27 `ADDRESS_V2` entries (arm preserved); entries carrying `ADDRESS_WITH_DELEGATES` credentials are rejected with `SigningFailed` — sign delegated entries per node via `SorobanAuthorizationEntryXDR.sign(forAddress:)` before submission.
+
+Before it asks any signer, the pipeline checks the signers that `add_signer`, `batch_add_signer` and `add_context_rule` calls on the wallet add. A Delegated signer that `addDelegated` refuses, or a muxed contract address (`W…`) as a Delegated address or External verifier, throws `SmartAccountValidationException`.
 
 ```swift
 // WRONG: kit.transactionOperations.submit(hostFunction: hf) — auth is a required parameter

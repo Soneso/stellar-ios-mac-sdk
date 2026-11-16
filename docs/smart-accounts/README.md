@@ -237,9 +237,10 @@ print("Deployed: \(result.contractId), tx: \(String(describing: result.transacti
 
 ### Managing Signers
 
-Add additional signers to a context rule so multiple parties can authorize transactions:
+Add additional signers to a context rule so multiple parties can authorize transactions. On a rule without policies, every rule signer must sign. Later calls that this rule authorizes pass all its signers in `selectedSigners`, or the rule gets a threshold policy:
 
 ```swift
+// ruleSigners: an OZSelectedSigner for each signer rule 0 holds at that call (see Multi-Signer Operations)
 // Add a delegated Stellar account as a signer on the Default context rule (ID 0)
 let addResult = try await kit.signerManager.addDelegated(
     contextRuleId: 0,
@@ -250,7 +251,8 @@ let addResult = try await kit.signerManager.addDelegated(
 // and on-chain signer addition in one step)
 let passkeyResult = try await kit.signerManager.addNewPasskeySigner(
     contextRuleId: 0,
-    userName: "Alice backup device"
+    userName: "Alice backup device",
+    selectedSigners: ruleSigners
 )
 // passkeyResult.credentialId      -- Base64URL-encoded credential ID (no padding)
 // passkeyResult.publicKey         -- 65-byte uncompressed secp256r1 public key
@@ -260,13 +262,15 @@ let passkeyResult = try await kit.signerManager.addNewPasskeySigner(
 let lowLevelResult = try await kit.signerManager.addPasskey(
     contextRuleId: 0,
     publicKey: otherPublicKey,       // 65-byte uncompressed secp256r1 key
-    credentialId: otherCredentialId  // raw credential ID bytes
+    credentialId: otherCredentialId, // raw credential ID bytes
+    selectedSigners: ruleSigners
 )
 
 // Remove a signer by its on-chain signer ID
 let removeResult = try await kit.signerManager.removeSigner(
     contextRuleId: 0,
-    signerId: 1
+    signerId: 1,
+    selectedSigners: ruleSigners
 )
 ```
 
@@ -279,15 +283,18 @@ Policies enforce constraints on context rules. Each context rule supports up to 
 let thresholdResult = try await kit.policyManager.addSimpleThreshold(
     contextRuleId: 0,
     policyAddress: "<C-address of the simple-threshold policy>",
-    threshold: 2
+    threshold: 2,
+    selectedSigners: ruleSigners
 )
 
-// Limit spending to 1000 XLM per day
+// Limit spending to 1000 XLM per day. The policy installs only on a callContract rule;
+// xlmRuleId is the id of the callContract rule for the native XLM token contract.
 let limitResult = try await kit.policyManager.addSpendingLimit(
-    contextRuleId: 0,
+    contextRuleId: xlmRuleId,
     policyAddress: "<C-address of the spending-limit policy>",
     spendingLimit: "1000",
-    periodLedgers: UInt32(StellarProtocolConstants.ledgersPerDay)
+    periodLedgers: UInt32(StellarProtocolConstants.ledgersPerDay),
+    selectedSigners: ruleSigners
 )
 ```
 
@@ -305,7 +312,8 @@ let result = try await kit.policyManager.addPolicy(
             key: SCValXDR.symbol("my_param"),
             val: SCValXDR.u32(42)
         )
-    ])
+    ]),
+    selectedSigners: ruleSigners
 )
 ```
 
@@ -372,6 +380,7 @@ do {
 | `maxContextRuleScanId` | `UInt32` | `50` | Upper bound on the context-rule IDs scanned when listing rules without an explicit scan limit. |
 | `useUpgradedAuth` | `Bool` | `true` | Credential arm for the kit's internal simulations and the `fundWallet` source-account conversion. `true` uses Protocol 27 `ADDRESS_V2` credentials; set `false` only when a relayer service parses submitted auth XDR with pre-protocol-27 schemas and rejects the V2 credential discriminant. Does not affect delegated external-wallet entries — see `useUpgradedAuthForWalletSigners`. |
 | `useUpgradedAuthForWalletSigners` | `Bool` | `true` | Credential arm for delegated external-wallet auth entries (`OZSelectedSigner.wallet` signers). `true` builds `ADDRESS_V2` credentials whose signed preimage carries the wallet address; set `false` only when the wallet software cannot sign the address-bound preimage type. Independent of `useUpgradedAuth`. |
+| `authDigestSchemes` | `[String: OZAuthDigestScheme]` | `[:]` | Account WASM hashes (64 hex characters) mapped to the digest their `__check_auth` checks. Built in, the stellar-accounts 0.8.0 build `c514d35e...` maps to `.preimageV1`; an entry here takes precedence, and every other hash signs `.legacyConcat`. See [Uploading your own WASM](#uploading-your-own-wasm). |
 
 ### Builder Pattern
 
@@ -426,7 +435,7 @@ stellar contract upload \
   --wasm target/wasm32v1-none/release/multisig_account_example.wasm
 ```
 
-The command prints a hex string. Use it as `accountWasmHash` in your `OZSmartAccountConfig`.
+The command prints a hex string. Use it as `accountWasmHash` in your `OZSmartAccountConfig`. A stellar-accounts 0.8 build whose hash is not `c514d35e...` also needs that hash mapped to `.preimageV1` in `authDigestSchemes`, or the contract rejects every authorization after the signers have signed.
 
 ## How wallet deployment works
 
