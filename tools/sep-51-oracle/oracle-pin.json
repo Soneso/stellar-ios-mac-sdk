@@ -6,7 +6,7 @@
   "install": "cargo install stellar-xdr --features cli --version 30.0.0 --locked",
   "sdk_xdr_commit": "579a90b2654e3811e8b672e128a5e094c7325b27",
   "sep_spec": {
-    "version": "2.0.1",
+    "version": "2.1.0",
     "status": "Draft",
     "source": "https://raw.githubusercontent.com/stellar/stellar-protocol/master/ecosystem/sep-0051.md"
   },

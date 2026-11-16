@@ -6,8 +6,8 @@
     "author": "Leigh McCulloch",
     "status": "Draft",
     "created": "2025-04-16",
-    "updated": "2025-05-13",
-    "version": "2.0.1"
+    "updated": "2026-11-16",
+    "version": "2.1.0"
   },
   "summary": "A standard mapping between Stellar's XDR structures and a JSON representation.",
   "sections": [
@@ -134,7 +134,7 @@
       "xdr_json_features": [
         {
           "name": "sc_address",
-          "description": "ScAddress maps to a G, C, M, B or L strkey according to its arm",
+          "description": "ScAddress maps to a G, C, M, B, L or W strkey according to its arm",
           "required": true,
           "category": "Address Types"
         },
@@ -165,6 +165,12 @@
         {
           "name": "muxed_ed25519_account",
           "description": "MuxedEd25519Account maps to an M strkey",
+          "required": true,
+          "category": "Address Types"
+        },
+        {
+          "name": "muxed_contract",
+          "description": "MuxedContract maps to a W strkey",
           "required": true,
           "category": "Address Types"
         },
@@ -205,7 +211,7 @@
           "category": "Address Types"
         }
       ],
-      "feature_count": 12
+      "feature_count": 13
     },
     {
       "title": "Asset Code Types",
@@ -352,7 +358,7 @@
   ],
   "metadata": {
     "source_url": "https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0051.md",
-    "spec_version": "2.0.1",
-    "content_length": 23222
+    "spec_version": "2.1.0",
+    "content_length": 23571
   }
 }

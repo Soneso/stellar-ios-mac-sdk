@@ -1,10 +1,10 @@
 # SEP-0051 (XDR-JSON) Compatibility Matrix
 
-**Generated:** 2026-11-14
+**Generated:** 2026-11-16
 
 **SDK Version:** 3.15.0
 
-**SEP Version:** 2.0.1
+**SEP Version:** 2.1.0
 
 **SEP Status:** Draft
 
@@ -16,12 +16,12 @@ This proposal defines XDR-JSON, a standard mapping between Stellar's XDR (Extern
 
 ## Overall Coverage
 
-**Total Coverage:** 100.0% (47/47 fields)
+**Total Coverage:** 100.0% (48/48 fields)
 
-- ✅ **Implemented:** 47/47
-- ❌ **Not Implemented:** 0/47
+- ✅ **Implemented:** 48/48
+- ❌ **Not Implemented:** 0/48
 
-**Required Fields:** 100.0% (44/44)
+**Required Fields:** 100.0% (45/45)
 
 **Optional Fields:** 100.0% (3/3)
 
@@ -60,7 +60,7 @@ This proposal defines XDR-JSON, a standard mapping between Stellar's XDR (Extern
 | Section | Coverage | Required Coverage | Implemented | Total |
 |---------|----------|-------------------|-------------|-------|
 | XDR Data Types | 100.0% | 100.0% | 18 | 18 |
-| Address Types | 100.0% | 100.0% | 12 | 12 |
+| Address Types | 100.0% | 100.0% | 13 | 13 |
 | Asset Code Types | 100.0% | 100.0% | 3 | 3 |
 | Integer Types | 100.0% | 100.0% | 4 | 4 |
 | JSON Schema | 100.0% | 100.0% | 1 | 1 |
@@ -96,12 +96,13 @@ This proposal defines XDR-JSON, a standard mapping between Stellar's XDR (Extern
 
 | Field | Required | Status | SDK Property | Description |
 |-------|----------|--------|--------------|-------------|
-| `sc_address` | ✓ | ✅ | `SCAddressXDR` | ScAddress maps to a G, C, M, B or L strkey according to its arm |
+| `sc_address` | ✓ | ✅ | `SCAddressXDR` | ScAddress maps to a G, C, M, B, L or W strkey according to its arm |
 | `account_id` | ✓ | ✅ | `AccountIDXDRJsonCodec` | AccountID maps to a G strkey |
 | `contract_id` | ✓ | ✅ | `ContractIDXDRJsonCodec` | ContractID maps to a C strkey |
 | `muxed_account` | ✓ | ✅ | `MuxedAccountXDR` | MuxedAccount maps to a G strkey for ed25519 and an M strkey for muxed ed25519 |
 | `muxed_account_med25519` | ✓ | ✅ | `MuxedAccountMed25519XDR` | MuxedAccountMed25519 maps to an M strkey |
 | `muxed_ed25519_account` | ✓ | ✅ | `SCAddressXDR.muxedAccount` | MuxedEd25519Account maps to an M strkey |
+| `muxed_contract` | ✓ | ✅ | `MuxedContractXDR` | MuxedContract maps to a W strkey |
 | `pool_id` | ✓ | ✅ | `PoolIDXDRJsonCodec` | PoolID maps to an L strkey |
 | `claimable_balance_id` | ✓ | ✅ | `ClaimableBalanceIDXDR` | ClaimableBalanceID maps to a B strkey |
 | `public_key` | ✓ | ✅ | `PublicKey` | PublicKey maps to a G strkey |
