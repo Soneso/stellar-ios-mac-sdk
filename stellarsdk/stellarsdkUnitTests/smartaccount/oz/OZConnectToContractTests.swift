@@ -513,7 +513,7 @@ final class OZConnectToContractTests: XCTestCase {
             targetFn: "noop"
         )
         script.enqueueSimulate(authEntries: [authEntry])
-        script.setGetLatestLedger(sequence: 1000)
+        try script.setWalletInstanceResponse(contractId: contractA, latestLedger: 1000)
         script.enqueueSimulate(authEntries: [], minResourceFee: 200)
         script.setSendSuccess(
             status: SendTransactionResponse.STATUS_PENDING,

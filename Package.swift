@@ -41,7 +41,8 @@ let package = Package(
             resources: [
                 .copy("soroban/soroban_token_contract.wasm"),
                 .copy("soroban/simulation_failures"),
-                .copy("sep/xdr_json/corpus.json")
+                .copy("sep/xdr_json/corpus.json"),
+                .copy("smartaccount/oz/fixtures/auth_digest_cross_sdk_fixture.json")
             ]
         ),
         .testTarget(

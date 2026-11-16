@@ -7,11 +7,49 @@
 
 import Foundation
 
+/// The digest that the `__check_auth` of an OpenZeppelin smart account build checks.
+///
+/// Every signer of one auth entry commits to the same digest. Its form depends on the code
+/// the smart account runs, so the kit reads the wallet's WASM hash before each signing
+/// operation and selects the scheme through ``OZSmartAccountConfig/authDigestSchemes``.
+public enum OZAuthDigestScheme: String, Sendable, Hashable {
+
+    /// The digest of stellar-accounts 0.7:
+    /// `auth_digest = SHA-256(signature_payload || XDR(ScVal::Vec([ScVal::U32(id), ...])))`.
+    /// Delegated signers authorize `__check_auth(Bytes(auth_digest))`.
+    case legacyConcat
+
+    /// The digest of stellar-accounts 0.8.0: `auth_digest = SHA-256(XDR(AuthDigestPreimage))`,
+    /// where `AuthDigestPreimage` is the `ScVal::Map` with the Symbol keys `account` (the smart
+    /// account address), `context_rule_ids` (`Vec` of `U32`) and `signature_payload`
+    /// (32 `Bytes`). Delegated signers authorize `__check_auth(AuthDigestPreimage)`.
+    case preimageV1
+}
+
+/// The digest material every signer of one smart account auth entry commits to, as
+/// ``OZSmartAccountAuth/computeEntryAuthDigest(entry:expirationLedger:networkPassphrase:contextRuleIds:scheme:)``
+/// returns it.
+public struct OZEntryAuthDigest: Sendable {
+
+    /// The 32-byte payload the host passes to `__check_auth`.
+    public let signaturePayload: Data
+
+    /// The 32-byte digest that External signers (passkeys, Ed25519 keys) sign.
+    public let authDigest: Data
+
+    /// The `__check_auth` arguments that Delegated signers authorize.
+    public let delegatedAuthArgs: [SCValXDR]
+}
+
 /// Authentication helpers for OpenZeppelin smart-account authorization entries.
 ///
 /// Provides functions to attach signatures to authorisation entries and to build the
-/// payload hashes that signers must commit to. The helpers cover:
-/// - Computing the auth digest that binds context rule IDs to a signature payload.
+/// payload hashes and digests that signers must commit to. The helpers cover:
+/// - Computing the auth digest that binds context rule IDs to a signature payload, in the
+///   ``OZAuthDigestScheme`` of the code the smart account runs:
+///   `SHA-256(signaturePayload || contextRuleIds.toXDR())` for stellar-accounts 0.7 and
+///   `SHA-256(XDR(AuthDigestPreimage))` for stellar-accounts 0.8.0
+///   (``computeEntryAuthDigest(entry:expirationLedger:networkPassphrase:contextRuleIds:scheme:)``).
 /// - Building the authorisation payload hash for both address and source-account credentials.
 /// - Attaching pre-computed signatures to authorisation entries while preserving any
 ///   existing signatures and ordering map entries deterministically.
@@ -19,58 +57,189 @@ import Foundation
 ///
 /// Example:
 /// ```swift
-/// let payloadHash = try await OZSmartAccountAuth.buildAuthPayloadHash(
+/// // Compute the digest the wallet's code checks (the WebAuthn challenge).
+/// let digest = try await OZSmartAccountAuth.computeEntryAuthDigest(
 ///     entry: unsignedEntry,
 ///     expirationLedger: currentLedger + 100,
-///     networkPassphrase: Network.testnet.passphrase
+///     networkPassphrase: Network.testnet.passphrase,
+///     contextRuleIds: [0],
+///     scheme: .preimageV1
 /// )
-/// // ... compute the signature over `payloadHash` externally ...
+/// // ... compute the signature over `digest.authDigest` externally ...
 /// let signedEntry = try await OZSmartAccountAuth.signAuthEntry(
 ///     entry: unsignedEntry,
 ///     signer: webAuthnSigner,
 ///     signature: webAuthnSignature,
-///     expirationLedger: currentLedger + 100
+///     expirationLedger: currentLedger + 100,
+///     contextRuleIds: [0]
 /// )
 /// ```
 public enum OZSmartAccountAuth {
+
+    /// Size in bytes of the signature payload the host passes to `__check_auth`.
+    private static let signaturePayloadSize = 32
 
     // ========================================================================
     // Payload hash building
     // ========================================================================
 
-    /// Computes the auth digest that binds context rule IDs to the signature payload.
+    /// Computes the stellar-accounts 0.7 auth digest, ``OZAuthDigestScheme/legacyConcat`` only.
     ///
     /// The digest is `SHA-256(signaturePayload || contextRuleIds.toXDR())` where
     /// `contextRuleIds.toXDR()` is the XDR encoding of `ScVal::Vec([ScVal::U32(id), ...])`.
     /// Binding the rule IDs into the digest prevents replay of a signed payload against a
-    /// different rule set.
+    /// different rule set. A wallet on stellar-accounts 0.8.0 checks the
+    /// ``OZAuthDigestScheme/preimageV1`` digest instead, which this function cannot produce.
     ///
     /// - Parameters:
     ///   - signaturePayload: 32-byte signature payload hash from `buildAuthPayloadHash`.
     ///   - contextRuleIds: Context rule IDs to bind into the digest.
     /// - Returns: 32-byte SHA-256 auth digest.
     /// - Throws: `SmartAccountTransactionException.SigningFailed` when XDR encoding fails.
+    @available(*, deprecated, message: "Computes the stellar-accounts 0.7 digest only. Use computeEntryAuthDigest with the OZAuthDigestScheme of the code the wallet runs.")
     public static func buildAuthDigest(
         signaturePayload: Data,
         contextRuleIds: [UInt32]
     ) async throws -> Data {
-        let ruleIdsScVal: SCValXDR = .vec(contextRuleIds.map { SCValXDR.u32($0) })
+        return try legacyAuthDigest(signaturePayload: signaturePayload, contextRuleIds: contextRuleIds)
+    }
 
-        let ruleIdsXdr: Data
-        do {
-            let encoded = try XDREncoder.encode(ruleIdsScVal)
-            ruleIdsXdr = Data(encoded)
-        } catch {
-            throw SmartAccountTransactionException.signingFailed(
-                reason: "Failed to XDR encode context rule IDs ScVal",
-                cause: error
+    /// Computes the signature payload, the auth digest and the delegated `__check_auth`
+    /// arguments of a smart account auth entry for `scheme`.
+    ///
+    /// The signature payload is
+    /// ``buildAuthPayloadHash(entry:expirationLedger:networkPassphrase:)`` of the entry. With
+    /// ``OZAuthDigestScheme/legacyConcat`` the digest is
+    /// `SHA-256(signature_payload || XDR(ScVal::Vec([ScVal::U32(id), ...])))` and Delegated
+    /// signers authorize `Bytes(auth_digest)`. With ``OZAuthDigestScheme/preimageV1`` the digest
+    /// is `SHA-256(XDR(AuthDigestPreimage))`, the preimage binding the entry's credential address
+    /// as the smart account, and Delegated signers authorize the preimage itself.
+    ///
+    /// The scheme must be the one the wallet's `__check_auth` checks. A signature over the
+    /// other digest is rejected by the contract when the transaction is simulated or submitted,
+    /// after every signer has signed, and nothing executes.
+    ///
+    /// Example:
+    /// ```swift
+    /// let digest = try await OZSmartAccountAuth.computeEntryAuthDigest(
+    ///     entry: authEntry,
+    ///     expirationLedger: currentLedger + 100,
+    ///     networkPassphrase: Network.testnet.passphrase,
+    ///     contextRuleIds: [0],
+    ///     scheme: .preimageV1
+    /// )
+    /// // digest.authDigest is the WebAuthn challenge and the message an Ed25519 signer signs.
+    /// ```
+    ///
+    /// - Parameters:
+    ///   - entry: The smart account authorization entry. Must carry address credentials
+    ///     (`ADDRESS`, `ADDRESS_V2` or `ADDRESS_WITH_DELEGATES`).
+    ///   - expirationLedger: Ledger number at which the signatures expire.
+    ///   - networkPassphrase: Network passphrase.
+    ///   - contextRuleIds: Context rule IDs the signatures satisfy, one per auth context.
+    ///   - scheme: Digest scheme of the code the smart account runs.
+    /// - Returns: The signature payload, the auth digest and the delegated `__check_auth`
+    ///   arguments.
+    /// - Throws: `SmartAccountTransactionException.SigningFailed` when the credentials are not
+    ///   an address type, when their address is a muxed account (M...) or muxed contract (W...)
+    ///   address, or when XDR encoding fails.
+    public static func computeEntryAuthDigest(
+        entry: SorobanAuthorizationEntryXDR,
+        expirationLedger: UInt32,
+        networkPassphrase: String,
+        contextRuleIds: [UInt32],
+        scheme: OZAuthDigestScheme
+    ) async throws -> OZEntryAuthDigest {
+        let signaturePayload = try await buildAuthPayloadHash(
+            entry: entry,
+            expirationLedger: expirationLedger,
+            networkPassphrase: networkPassphrase
+        )
+        switch scheme {
+        case .legacyConcat:
+            let authDigest = try legacyAuthDigest(
+                signaturePayload: signaturePayload,
+                contextRuleIds: contextRuleIds
+            )
+            return OZEntryAuthDigest(
+                signaturePayload: signaturePayload,
+                authDigest: authDigest,
+                delegatedAuthArgs: [.bytes(authDigest)]
+            )
+        case .preimageV1:
+            // buildAuthPayloadHash has already refused credentials without an address.
+            let account = entry.credentials.addressCredentials!.address
+            let preimage = try buildAuthDigestPreimage(
+                account: account,
+                signaturePayload: signaturePayload,
+                contextRuleIds: contextRuleIds
+            )
+            return OZEntryAuthDigest(
+                signaturePayload: signaturePayload,
+                authDigest: try encodeScVal(preimage, description: "AuthDigestPreimage").sha256Hash,
+                delegatedAuthArgs: [preimage]
             )
         }
+    }
+
+    /// Encodes the `AuthDigestPreimage` contract struct of stellar-accounts 0.8.0: an
+    /// `ScVal::Map` with the Symbol keys in name order, `account`, `context_rule_ids` and
+    /// `signature_payload`.
+    ///
+    /// - Parameters:
+    ///   - account: The smart account performing the authorization check.
+    ///   - signaturePayload: The 32-byte payload the host passes to `__check_auth`.
+    ///   - contextRuleIds: The context rule IDs, one per auth context.
+    /// - Returns: The preimage as an `ScVal::Map`.
+    /// - Throws: `SmartAccountValidationException.InvalidInput` when `signaturePayload` is not
+    ///   32 bytes.
+    internal static func buildAuthDigestPreimage(
+        account: SCAddressXDR,
+        signaturePayload: Data,
+        contextRuleIds: [UInt32]
+    ) throws -> SCValXDR {
+        guard signaturePayload.count == signaturePayloadSize else {
+            throw SmartAccountValidationException.invalidInput(
+                field: "signaturePayload",
+                reason: "Signature payload must be \(signaturePayloadSize) bytes, got \(signaturePayload.count)"
+            )
+        }
+        return .map([
+            SCMapEntryXDR(key: .symbol("account"), val: .address(account)),
+            SCMapEntryXDR(key: .symbol("context_rule_ids"), val: .vec(contextRuleIds.map { SCValXDR.u32($0) })),
+            SCMapEntryXDR(key: .symbol("signature_payload"), val: .bytes(signaturePayload))
+        ])
+    }
+
+    /// Computes `SHA-256(signaturePayload || XDR(ScVal::Vec([ScVal::U32(id), ...])))`.
+    ///
+    /// - Throws: `SmartAccountTransactionException.SigningFailed` when XDR encoding fails.
+    private static func legacyAuthDigest(
+        signaturePayload: Data,
+        contextRuleIds: [UInt32]
+    ) throws -> Data {
+        let ruleIdsScVal: SCValXDR = .vec(contextRuleIds.map { SCValXDR.u32($0) })
+        let ruleIdsXdr = try encodeScVal(ruleIdsScVal, description: "context rule IDs ScVal")
 
         var concatenated = Data(capacity: signaturePayload.count + ruleIdsXdr.count)
         concatenated.append(signaturePayload)
         concatenated.append(ruleIdsXdr)
         return concatenated.sha256Hash
+    }
+
+    /// XDR-encodes `value`.
+    ///
+    /// - Throws: `SmartAccountTransactionException.SigningFailed` naming `description` when XDR
+    ///   encoding fails.
+    private static func encodeScVal(_ value: SCValXDR, description: String) throws -> Data {
+        do {
+            return Data(try XDREncoder.encode(value))
+        } catch {
+            throw SmartAccountTransactionException.signingFailed(
+                reason: "Failed to XDR encode \(description)",
+                cause: error
+            )
+        }
     }
 
     /// Builds the authorisation payload hash for signing.
@@ -193,7 +362,9 @@ public enum OZSmartAccountAuth {
     /// Attaches a pre-computed signature to an authorisation entry without mutating the input.
     ///
     /// Does not perform cryptographic signing; the caller must compute the signature over
-    /// the hash returned by `buildAuthPayloadHash` using the same `expirationLedger`.
+    /// the `authDigest` that
+    /// ``computeEntryAuthDigest(entry:expirationLedger:networkPassphrase:contextRuleIds:scheme:)``
+    /// returns for the same `expirationLedger` and `contextRuleIds`.
     /// When `contextRuleIds` is non-empty it overrides any existing context-rule IDs in the
     /// payload; otherwise the existing value is preserved.
     ///
@@ -202,7 +373,7 @@ public enum OZSmartAccountAuth {
     ///   - signer: Smart-account signer (delegated or external).
     ///   - signature: Pre-computed signature object (WebAuthn, Ed25519, or Policy).
     ///   - expirationLedger: Ledger number at which the signature expires (must match the
-    ///                       value used when computing the payload hash).
+    ///                       value used when computing the auth digest).
     ///   - contextRuleIds: Optional override for the bound context rule IDs.
     /// - Returns: A new authorisation entry with the signature attached.
     /// - Throws: `SmartAccountTransactionException.SigningFailed` when credentials are not address type,

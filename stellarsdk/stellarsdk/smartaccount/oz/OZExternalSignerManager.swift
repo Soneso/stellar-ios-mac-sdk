@@ -50,8 +50,10 @@ public protocol OZExternalEd25519SignerAdapter: Sendable {
     /// signature before incorporating it into the authorization payload.
     ///
     /// - Parameters:
-    ///   - authDigest: 32-byte digest to sign. Computed as
-    ///     `SHA-256(signaturePayload || contextRuleIds.toXDR())`.
+    ///   - authDigest: 32-byte digest to sign, of the scheme the wallet's code checks
+    ///     (``OZAuthDigestScheme``): `SHA-256(signaturePayload || contextRuleIds.toXDR())`
+    ///     for stellar-accounts 0.7 and `SHA-256(XDR(AuthDigestPreimage))`, which also binds
+    ///     the smart account address, for stellar-accounts 0.8.0.
     ///   - publicKey: 32-byte Ed25519 public key that identifies which key to sign with.
     /// - Returns: 64-byte raw Ed25519 signature over `authDigest`.
     /// - Throws: Any error that prevents signing (hardware unavailable, user cancelled, etc.).

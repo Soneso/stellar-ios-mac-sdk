@@ -59,6 +59,12 @@ final class MockSorobanServerScript: @unchecked Sendable {
     /// per-call responses (used by tests that need different ledger-entry
     /// payloads on successive calls).
     private var getLedgerEntriesQueue: [[String: Any]] = []
+    /// Responses keyed by the first Base64 `LedgerKeyXDR` of a request,
+    /// consulted before the queue and the default, so a test can answer one
+    /// ledger read without depending on the order of the other reads.
+    private var getLedgerEntriesByKey: [String: [String: Any]] = [:]
+    /// First keys whose `getLedgerEntries` request gets a JSON-RPC error.
+    private var getLedgerEntriesErrorKeys: Set<String> = []
 
     // MARK: - Recorded invocations
 
@@ -321,6 +327,14 @@ final class MockSorobanServerScript: @unchecked Sendable {
     fileprivate func consumeGetLedgerEntries(requestBody: Data) -> [String: Any]? {
         scriptLock.lock(); defer { scriptLock.unlock() }
         _getLedgerEntriesCalls.append(requestBody)
+        if let key = Self.firstLedgerKey(requestBody: requestBody) {
+            if getLedgerEntriesErrorKeys.contains(key) {
+                return nil
+            }
+            if let keyed = getLedgerEntriesByKey[key] {
+                return keyed
+            }
+        }
         if !getLedgerEntriesQueue.isEmpty {
             return getLedgerEntriesQueue.removeFirst()
         }
@@ -334,6 +348,37 @@ final class MockSorobanServerScript: @unchecked Sendable {
     func enqueueGetLedgerEntriesResponse(_ payload: [String: Any]) {
         scriptLock.lock(); defer { scriptLock.unlock() }
         getLedgerEntriesQueue.append(payload)
+    }
+
+    /// Answers every `getLedgerEntries` request whose first key is `key` (a
+    /// Base64 `LedgerKeyXDR`) with `payload`, before the queue and the default.
+    func setGetLedgerEntriesResponse(forKey key: String, payload: [String: Any]) {
+        scriptLock.lock(); defer { scriptLock.unlock() }
+        getLedgerEntriesErrorKeys.remove(key)
+        getLedgerEntriesByKey[key] = payload
+    }
+
+    /// Answers every `getLedgerEntries` request whose first key is `key` with a
+    /// JSON-RPC error.
+    func setGetLedgerEntriesError(forKey key: String) {
+        scriptLock.lock(); defer { scriptLock.unlock() }
+        getLedgerEntriesByKey[key] = nil
+        getLedgerEntriesErrorKeys.insert(key)
+    }
+
+    /// The number of `getLedgerEntries` requests whose first key was `key`.
+    func getLedgerEntriesCallCount(forKey key: String) -> Int {
+        scriptLock.lock(); defer { scriptLock.unlock() }
+        return _getLedgerEntriesCalls.filter { Self.firstLedgerKey(requestBody: $0) == key }.count
+    }
+
+    private static func firstLedgerKey(requestBody: Data) -> String? {
+        guard let json = try? JSONSerialization.jsonObject(with: requestBody) as? [String: Any],
+              let params = json["params"] as? [String: Any],
+              let keys = params["keys"] as? [String] else {
+            return nil
+        }
+        return keys.first
     }
 }
 

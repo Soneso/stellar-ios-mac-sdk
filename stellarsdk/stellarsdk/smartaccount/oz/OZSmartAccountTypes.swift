@@ -11,8 +11,8 @@ import Foundation
 ///
 /// Smart account signers describe who can authorize transactions on the wallet contract.
 /// Two concrete signer types exist:
-/// - `OZDelegatedSigner`: A Soroban address (`G…` for accounts or `C…` for contracts) using
-///   the host's built-in `require_auth` verification.
+/// - `OZDelegatedSigner`: A Soroban address using the host's built-in `require_auth`
+///   verification.
 /// - `OZExternalSigner`: A verifier-contract address combined with public-key bytes that
 ///   describe a custom signature scheme (e.g. WebAuthn / secp256r1, Ed25519).
 ///
@@ -42,15 +42,20 @@ public protocol OZSmartAccountSigner: Sendable {
 
 /// A signer authorized through a Soroban address using the host's `require_auth` mechanism.
 ///
-/// Delegated signers are Stellar accounts (`G…` strkey) or smart contracts (`C…` strkey) that
-/// use the native Soroban authorization mechanism. The wallet contract calls
+/// Delegated signers use the native Soroban authorization mechanism. The wallet contract calls
 /// `require_auth_for_args()` on the address to verify authorization, so no custom
 /// signature-verification logic is required.
+///
+/// The type holds a Stellar account (`G…` strkey) or a contract (`C…` strkey), so signers
+/// already on a wallet are read as stored. The kit adds only `G…` addresses:
+/// `OZSignerManager.addDelegated`, `OZContextRuleManager.addContextRule` and the signing
+/// pipelines refuse a contract, the wallet itself and the shared default deployer, because a
+/// contract delegate can let anyone authorize the account without a key
+/// (GHSA-jpg9-m7w4-c7wc) and the default deployer's secret derives from a public string.
 ///
 /// Example:
 /// ```swift
 /// let accountSigner = try OZDelegatedSigner(address: "GA7QYNF7SOWQ...")
-/// let contractSigner = try OZDelegatedSigner(address: "CBCD1234...")
 /// ```
 public struct OZDelegatedSigner: OZSmartAccountSigner, Equatable, Hashable {
 

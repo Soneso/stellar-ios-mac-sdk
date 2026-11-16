@@ -18,6 +18,7 @@
 //
 
 import Foundation
+import XCTest
 @testable import stellarsdk
 
 // ============================================================================
@@ -500,5 +501,279 @@ extension MockSorobanServerScript {
             latestLedger: latestLedger
         )
         ingestGetLedgerEntriesResponse(payload: payload)
+    }
+
+    /// Answers the read of the wallet's code that a signing operation makes
+    /// before it asks any signer: the persistent instance entry of
+    /// `contractId`, running `executable`, reported at `latestLedger`. The
+    /// all-zero default WASM hash is mapped by no table, so the wallet signs
+    /// the legacy digest. Other `getLedgerEntries` reads keep their scripted
+    /// responses.
+    func setWalletInstanceResponse(
+        contractId: String,
+        executable: ContractExecutableXDR = .wasm(WrappedData32(Data(count: 32))),
+        latestLedger: Int = 1000
+    ) throws {
+        guard let payload = try OZPipelineFixtures.validGetContractDataResponse(
+            contractId: contractId,
+            valueXdr: .contractInstance(SCContractInstanceXDR(executable: executable)),
+            latestLedger: latestLedger
+        ) else {
+            throw StellarSDKError.encodingError(message: "contract instance entry did not encode")
+        }
+        setGetLedgerEntriesResponse(
+            forKey: try OZTransactionOperations.contractInstanceLedgerKey(contractId: contractId),
+            payload: payload
+        )
+    }
+
+    /// Answers the wallet code read of `contractId` with `payload`, for
+    /// responses other than a contract instance (no entry, another entry type,
+    /// an out-of-range `latestLedger`).
+    func setWalletInstanceRead(contractId: String, payload: [String: Any]) throws {
+        setGetLedgerEntriesResponse(
+            forKey: try OZTransactionOperations.contractInstanceLedgerKey(contractId: contractId),
+            payload: payload
+        )
+    }
+
+    /// Answers the wallet code read of `contractId` with a JSON-RPC error.
+    func setWalletInstanceRpcError(contractId: String) throws {
+        setGetLedgerEntriesError(
+            forKey: try OZTransactionOperations.contractInstanceLedgerKey(contractId: contractId)
+        )
+    }
+
+    /// The number of wallet code reads of `contractId`.
+    func walletInstanceReadCount(contractId: String) throws -> Int {
+        return getLedgerEntriesCallCount(
+            forKey: try OZTransactionOperations.contractInstanceLedgerKey(contractId: contractId)
+        )
+    }
+}
+
+// ============================================================================
+// Auth digest test support
+// ============================================================================
+
+/// The two stellar-accounts auth digests built from their definitions with raw
+/// XDR types, so a pipeline test compares the digest a signer receives with a
+/// value the SDK's digest code did not produce. The signature payload comes
+/// from the caller.
+enum OZIndependentAuthDigest {
+
+    /// `AuthDigestPreimage` of stellar-accounts 0.8.0: a Map with the Symbol
+    /// keys in name order.
+    static func preimage(account: String, signaturePayload: Data, contextRuleIds: [UInt32]) throws -> SCValXDR {
+        return .map([
+            SCMapEntryXDR(key: .symbol("account"), val: .address(try SCAddressXDR(contractId: account))),
+            SCMapEntryXDR(key: .symbol("context_rule_ids"), val: ruleIdsVec(contextRuleIds)),
+            SCMapEntryXDR(key: .symbol("signature_payload"), val: .bytes(signaturePayload))
+        ])
+    }
+
+    /// `SHA-256(XDR(AuthDigestPreimage))`, the stellar-accounts 0.8.0 digest.
+    static func preimageDigest(account: String, signaturePayload: Data, contextRuleIds: [UInt32]) throws -> Data {
+        return try xdr(preimage(account: account, signaturePayload: signaturePayload, contextRuleIds: contextRuleIds))
+            .sha256Hash
+    }
+
+    /// `SHA-256(signature_payload ++ XDR(Vec<U32>))`, the stellar-accounts 0.7 digest.
+    static func legacyDigest(signaturePayload: Data, contextRuleIds: [UInt32]) throws -> Data {
+        return (signaturePayload + (try xdr(ruleIdsVec(contextRuleIds)))).sha256Hash
+    }
+
+    /// The XDR encoding of `value`.
+    static func xdr(_ value: SCValXDR) throws -> Data {
+        return Data(try XDREncoder.encode(value))
+    }
+
+    private static func ruleIdsVec(_ contextRuleIds: [UInt32]) -> SCValXDR {
+        return .vec(contextRuleIds.map { SCValXDR.u32($0) })
+    }
+}
+
+/// The WASM hashes the scheme tests script as the code a wallet runs.
+enum OZAuthDigestWasm {
+
+    /// The stellar-accounts 0.8.0 build the built-in table maps to `preimageV1`.
+    static let v080Hex = "c514d35ea67eaea9bfc1fb3327854c0c06111bc1ddebd4fe217c504c1004b9e1"
+
+    /// The stellar-accounts 0.8.0 build as an executable.
+    static var v080: ContractExecutableXDR {
+        return .wasm(WrappedData32(try! Data(base16Encoded: v080Hex)))
+    }
+
+    /// An all-zero hash that no table maps, so the wallet signs the legacy digest.
+    static let unmapped: ContractExecutableXDR = .wasm(WrappedData32(Data(count: 32)))
+}
+
+/// An Ed25519 adapter over a run-time key that records the digests it signs.
+final class OZRecordingEd25519Adapter: OZExternalEd25519SignerAdapter, @unchecked Sendable {
+
+    private let keyPair: KeyPair
+    private let lock = NSLock()
+    private var _digests: [Data] = []
+
+    /// The raw 32-byte public key of the adapter's key.
+    let publicKey: Data
+
+    init() throws {
+        keyPair = try KeyPair.generateRandomKeyPair()
+        publicKey = Data(keyPair.publicKey.bytes)
+    }
+
+    /// Every digest the adapter signed, in call order.
+    var digests: [Data] {
+        lock.lock(); defer { lock.unlock() }
+        return _digests
+    }
+
+    func canSignFor(verifierAddress: String, publicKey: Data) -> Bool {
+        return publicKey == self.publicKey
+    }
+
+    func signAuthDigest(authDigest: Data, publicKey: Data) async throws -> Data {
+        record(authDigest)
+        return Data(keyPair.sign([UInt8](authDigest)))
+    }
+
+    private func record(_ digest: Data) {
+        lock.lock(); defer { lock.unlock() }
+        _digests.append(digest)
+    }
+}
+
+/// A wallet adapter over a run-time key that records the preimages it signs.
+final class OZRecordingWalletAdapter: OZExternalWalletAdapter, @unchecked Sendable {
+
+    private let keyPair: KeyPair
+    private let lock = NSLock()
+    private var _preimages: [HashIDPreimageXDR] = []
+
+    /// The `G…` address of the adapter's key.
+    let address: String
+
+    init() throws {
+        keyPair = try KeyPair.generateRandomKeyPair()
+        address = keyPair.accountId
+    }
+
+    /// Every preimage the adapter signed, in call order.
+    var preimages: [HashIDPreimageXDR] {
+        lock.lock(); defer { lock.unlock() }
+        return _preimages
+    }
+
+    func canSignFor(address: String) -> Bool { return address == self.address }
+    func connect() async throws -> OZConnectedWallet? { return nil }
+    func disconnect() async throws {}
+    func getConnectedWallets() -> [OZConnectedWallet] { return [] }
+
+    func signAuthEntry(
+        preimageXdr: String,
+        options: OZSignAuthEntryOptions?
+    ) async throws -> OZSignAuthEntryResult {
+        guard let preimageBytes = Data(base64Encoded: preimageXdr) else {
+            throw SmartAccountTransactionException.signingFailed(reason: "adapter received non-base64 preimage")
+        }
+        record(try XDRDecoder.decode(HashIDPreimageXDR.self, data: [UInt8](preimageBytes)))
+        let signature = Data(keyPair.sign([UInt8](preimageBytes.sha256Hash)))
+        return OZSignAuthEntryResult(signedAuthEntry: signature.base64EncodedString(), signerAddress: address)
+    }
+
+    private func record(_ preimage: HashIDPreimageXDR) {
+        lock.lock(); defer { lock.unlock() }
+        _preimages.append(preimage)
+    }
+}
+
+extension OZPipelineFixtures {
+
+    /// An auth entry of the smart account `wallet` whose root invocation calls
+    /// `functionName` with `args` on `target` (the wallet itself by default).
+    static func walletCallAuthEntry(
+        wallet: String,
+        target: String? = nil,
+        functionName: String,
+        args: [SCValXDR],
+        subInvocations: [SorobanAuthorizedInvocationXDR] = []
+    ) throws -> SorobanAuthorizationEntryXDR {
+        let invocation = SorobanAuthorizedInvocationXDR(
+            function: .contractFn(
+                InvokeContractArgsXDR(
+                    contractAddress: try SCAddressXDR(contractId: target ?? wallet),
+                    functionName: functionName,
+                    args: args
+                )
+            ),
+            subInvocations: subInvocations
+        )
+        let credentials = SorobanAddressCredentialsXDR(
+            address: try SCAddressXDR(contractId: wallet),
+            nonce: 1,
+            signatureExpirationLedger: 0,
+            signature: .void
+        )
+        return SorobanAuthorizationEntryXDR(credentials: .address(credentials), rootInvocation: invocation)
+    }
+
+    /// An auth entry of the `G…` account `accountId` that a wallet adapter
+    /// signs directly, calling `noop` on `target`.
+    static func accountAuthEntry(accountId: String, target: String) throws -> SorobanAuthorizationEntryXDR {
+        let invocation = SorobanAuthorizedInvocationXDR(
+            function: .contractFn(
+                InvokeContractArgsXDR(
+                    contractAddress: try SCAddressXDR(contractId: target),
+                    functionName: "noop",
+                    args: []
+                )
+            ),
+            subInvocations: []
+        )
+        let credentials = SorobanAddressCredentialsXDR(
+            address: try SCAddressXDR(accountId: accountId),
+            nonce: 2,
+            signatureExpirationLedger: 0,
+            signature: .void
+        )
+        return SorobanAuthorizationEntryXDR(credentials: .address(credentials), rootInvocation: invocation)
+    }
+
+    /// The raw `Signer::Delegated(address)` value as the contract stores it.
+    static func rawDelegatedSigner(_ address: SCAddressXDR) -> SCValXDR {
+        return .vec([.symbol("Delegated"), .address(address)])
+    }
+
+    /// The raw `Signer::External(verifier, key_data)` value as the contract stores it.
+    static func rawExternalSigner(_ verifier: SCAddressXDR, keyData: Data) -> SCValXDR {
+        return .vec([.symbol("External"), .address(verifier), .bytes(keyData)])
+    }
+
+    /// The `__check_auth` arguments of the root invocation of `preimage`, after
+    /// asserting the call targets `wallet`.
+    static func checkAuthArgs(
+        _ preimage: HashIDPreimageXDR,
+        wallet: String,
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) throws -> [SCValXDR] {
+        let invocation: SorobanAuthorizedInvocationXDR
+        switch preimage {
+        case .sorobanAuthorizationWithAddress(let body):
+            invocation = body.invocation
+        case .sorobanAuthorization(let body):
+            invocation = body.invocation
+        default:
+            XCTFail("unexpected preimage \(preimage)", file: file, line: line)
+            return []
+        }
+        guard case .contractFn(let call) = invocation.function else {
+            XCTFail("the delegated entry must call a contract function", file: file, line: line)
+            return []
+        }
+        XCTAssertEqual(call.functionName, "__check_auth", file: file, line: line)
+        XCTAssertEqual(OZAddressStrKey.fromXdr(call.contractAddress), wallet, file: file, line: line)
+        return call.args
     }
 }

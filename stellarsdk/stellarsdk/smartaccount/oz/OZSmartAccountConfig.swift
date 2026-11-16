@@ -39,7 +39,8 @@ import Foundation
 /// ```
 ///
 /// Throws `SmartAccountConfigurationException` if required parameters are blank or invalid (for
-/// example, `accountWasmHash` is not a 64-character hex string, or
+/// example, `accountWasmHash` or an `authDigestSchemes` key is not a 64-character hex string,
+/// two `authDigestSchemes` keys that differ only in case map to different schemes, or
 /// `webauthnVerifierAddress` is not a valid C-address).
 public struct OZSmartAccountConfig: @unchecked Sendable {
 
@@ -177,13 +178,46 @@ public struct OZSmartAccountConfig: @unchecked Sendable {
     /// preimage, for wallet software that cannot sign the address-bound preimage type.
     public let useUpgradedAuthForWalletSigners: Bool
 
+    /// Maps account WASM hashes (64-character hex, any case) to the digest their
+    /// `__check_auth` checks.
+    ///
+    /// Before it asks the first signer of an operation, the kit reads the WASM hash the
+    /// wallet runs with one `getLedgerEntries` request, whose latest ledger also sets the
+    /// signature expiration, and signs the digest this map gives for it. The built-in table
+    /// maps the stellar-accounts 0.8.0 build `c514d35e...` to
+    /// ``OZAuthDigestScheme/preimageV1``. An entry here takes precedence over it, so it can
+    /// also map that build to ``OZAuthDigestScheme/legacyConcat``. Every other hash signs
+    /// with ``OZAuthDigestScheme/legacyConcat``, as do a wallet whose executable is not a
+    /// WASM hash, an external reference included, and a wallet whose instance entry the RPC
+    /// does not return.
+    ///
+    /// Map each own build that implements ``OZAuthDigestScheme/preimageV1`` to it. Without
+    /// the entry, or with an entry that names the wrong scheme, the contract rejects the
+    /// authorization after the signers have signed, the passkey prompt included, and nothing
+    /// executes. A wallet whose executable is an external reference cannot be mapped,
+    /// because this map keys on WASM hashes. Defaults to an empty map.
+    public let authDigestSchemes: [String: OZAuthDigestScheme]
+
+    /// ``authDigestSchemes`` with lowercase keys, merged over the built-in table.
+    private let authDigestSchemeTable: [String: OZAuthDigestScheme]
+
+    /// Account WASM hashes (lowercase hex) whose digest scheme needs no configuration: the
+    /// stellar-accounts 0.8.0 build of `multisig-account-example` (Stellar CLI 28.1.0).
+    /// ``authDigestSchemes`` entries take precedence; every other hash signs with
+    /// ``OZAuthDigestScheme/legacyConcat``.
+    private static let knownAuthDigestSchemes: [String: OZAuthDigestScheme] = [
+        "c514d35ea67eaea9bfc1fb3327854c0c06111bc1ddebd4fe217c504c1004b9e1": .preimageV1
+    ]
+
     // MARK: - Initialization
 
     /// Initializes a new `OZSmartAccountConfig`.
     ///
     /// - Throws: `SmartAccountConfigurationException.MissingConfig` for blank required strings;
     ///           `SmartAccountConfigurationException.InvalidConfig` for malformed `accountWasmHash`
-    ///           or `webauthnVerifierAddress`.
+    ///           or `webauthnVerifierAddress`, for an `authDigestSchemes` key that is not a
+    ///           64-character hex string, and for two `authDigestSchemes` keys that differ only
+    ///           in case and map to different schemes.
     public init(
         rpcUrl: String,
         networkPassphrase: String,
@@ -202,7 +236,8 @@ public struct OZSmartAccountConfig: @unchecked Sendable {
         maxContextRuleScanId: UInt32 = 50,
         defaultPolicies: [String: SCValXDR] = [:],
         useUpgradedAuth: Bool = true,
-        useUpgradedAuthForWalletSigners: Bool = true
+        useUpgradedAuthForWalletSigners: Bool = true,
+        authDigestSchemes: [String: OZAuthDigestScheme] = [:]
     ) throws {
         if rpcUrl.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             throw SmartAccountConfigurationException.missingConfig(param: "rpcUrl")
@@ -246,6 +281,8 @@ public struct OZSmartAccountConfig: @unchecked Sendable {
             )
         }
 
+        let authDigestSchemeTable = try OZSmartAccountConfig.mergeAuthDigestSchemes(authDigestSchemes)
+
         self.rpcUrl = rpcUrl
         self.networkPassphrase = networkPassphrase
         self.accountWasmHash = accountWasmHash
@@ -264,6 +301,8 @@ public struct OZSmartAccountConfig: @unchecked Sendable {
         self.defaultPolicies = defaultPolicies
         self.useUpgradedAuth = useUpgradedAuth
         self.useUpgradedAuthForWalletSigners = useUpgradedAuthForWalletSigners
+        self.authDigestSchemes = authDigestSchemes
+        self.authDigestSchemeTable = authDigestSchemeTable
     }
 
     // MARK: - Static factories
@@ -349,7 +388,43 @@ public struct OZSmartAccountConfig: @unchecked Sendable {
         return OZIndexerClient.getDefaultUrl(networkPassphrase: networkPassphrase)
     }
 
+    /// Returns the digest scheme of the account build with the WASM hash `wasmHashHex`: the
+    /// ``authDigestSchemes`` entry, else the built-in entry, else
+    /// ``OZAuthDigestScheme/legacyConcat``.
+    internal func authDigestScheme(forWasmHashHex wasmHashHex: String) -> OZAuthDigestScheme {
+        return authDigestSchemeTable[wasmHashHex.lowercased()] ?? .legacyConcat
+    }
+
     // MARK: - Private helpers
+
+    /// Merges `configured` with lowercase keys over the built-in table.
+    ///
+    /// - Throws: `SmartAccountConfigurationException.InvalidConfig` when a key is not a
+    ///   64-character hex string, or when two keys that differ only in case map to different
+    ///   schemes.
+    private static func mergeAuthDigestSchemes(
+        _ configured: [String: OZAuthDigestScheme]
+    ) throws -> [String: OZAuthDigestScheme] {
+        var table = knownAuthDigestSchemes
+        var normalizedEntries: [String: OZAuthDigestScheme] = [:]
+        // why: sorted keys make the conflict message name the same pair on every run.
+        for (wasmHash, scheme) in configured.sorted(by: { $0.key < $1.key }) {
+            if !isValidWasmHashHex(wasmHash) {
+                throw SmartAccountConfigurationException.invalidConfig(
+                    details: "authDigestSchemes key must be a 64-character hex string (SHA-256 of WASM), got: \(wasmHash)"
+                )
+            }
+            let normalizedHash = wasmHash.lowercased()
+            if let previous = normalizedEntries[normalizedHash], previous != scheme {
+                throw SmartAccountConfigurationException.invalidConfig(
+                    details: "authDigestSchemes maps \(normalizedHash) to both \(previous.rawValue) and \(scheme.rawValue)"
+                )
+            }
+            normalizedEntries[normalizedHash] = scheme
+            table[normalizedHash] = scheme
+        }
+        return table
+    }
 
     /// Validates that the supplied string is exactly 64 hex characters.
     private static func isValidWasmHashHex(_ candidate: String) -> Bool {
@@ -407,6 +482,7 @@ public struct OZSmartAccountConfig: @unchecked Sendable {
         private var _defaultPolicies: [String: SCValXDR] = [:]
         private var _useUpgradedAuth: Bool = true
         private var _useUpgradedAuthForWalletSigners: Bool = true
+        private var _authDigestSchemes: [String: OZAuthDigestScheme] = [:]
 
         /// Initializes a new `Builder` with the four required configuration fields.
         ///
@@ -583,6 +659,17 @@ public struct OZSmartAccountConfig: @unchecked Sendable {
             return self
         }
 
+        /// Sets the digest scheme of account builds by WASM hash.
+        ///
+        /// - Parameter value: Account WASM hashes (64-character hex, any case) mapped to the
+        ///   digest their `__check_auth` checks; see ``OZSmartAccountConfig/authDigestSchemes``.
+        /// - Returns: `self` for chaining.
+        @discardableResult
+        public func authDigestSchemes(_ value: [String: OZAuthDigestScheme]) -> Builder {
+            _authDigestSchemes = value
+            return self
+        }
+
         /// Builds the `OZSmartAccountConfig`.
         ///
         /// - Returns: A new `OZSmartAccountConfig` instance.
@@ -606,7 +693,8 @@ public struct OZSmartAccountConfig: @unchecked Sendable {
                 maxContextRuleScanId: _maxContextRuleScanId,
                 defaultPolicies: _defaultPolicies,
                 useUpgradedAuth: _useUpgradedAuth,
-                useUpgradedAuthForWalletSigners: _useUpgradedAuthForWalletSigners
+                useUpgradedAuthForWalletSigners: _useUpgradedAuthForWalletSigners,
+                authDigestSchemes: _authDigestSchemes
             )
         }
     }
@@ -623,7 +711,7 @@ extension OZSmartAccountConfig: Equatable {
     /// `OZInMemoryStorageAdapter` overrides equality so all instances of that class
     /// compare equal, which lets two default-constructed configs round-trip through
     /// equality without surprises. `defaultPolicies` values compare by their
-    /// canonical XDR encoding.
+    /// canonical XDR encoding; `authDigestSchemes` compares as passed.
     public static func == (lhs: OZSmartAccountConfig, rhs: OZSmartAccountConfig) -> Bool {
         guard lhs.rpcUrl == rhs.rpcUrl,
               lhs.networkPassphrase == rhs.networkPassphrase,
@@ -636,7 +724,8 @@ extension OZSmartAccountConfig: Equatable {
               lhs.indexerUrl == rhs.indexerUrl,
               lhs.maxContextRuleScanId == rhs.maxContextRuleScanId,
               lhs.useUpgradedAuth == rhs.useUpgradedAuth,
-              lhs.useUpgradedAuthForWalletSigners == rhs.useUpgradedAuthForWalletSigners
+              lhs.useUpgradedAuthForWalletSigners == rhs.useUpgradedAuthForWalletSigners,
+              lhs.authDigestSchemes == rhs.authDigestSchemes
         else {
             return false
         }
@@ -674,6 +763,7 @@ extension OZSmartAccountConfig: Equatable {
         hasher.combine(maxContextRuleScanId)
         hasher.combine(useUpgradedAuth)
         hasher.combine(useUpgradedAuthForWalletSigners)
+        hasher.combine(authDigestSchemes)
         hasher.combine(deployerKeypair?.accountId)
         if storage is OZInMemoryStorageAdapter {
             hasher.combine(OZInMemoryStorageAdapter.sharedTypeHashTag)

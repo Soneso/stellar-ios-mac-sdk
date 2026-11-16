@@ -26,6 +26,7 @@ internal enum ContextTypeDiscriminant {
     static let defaultRule = "Default"
     static let callContract = "CallContract"
     static let createContract = "CreateContract"
+    static let createContractExternalRef = "CreateContractExternalRef"
 }
 
 /// Contract-ABI discriminant strings for the on-chain `Signer` enum arms.
@@ -48,8 +49,8 @@ private enum ContextRuleMethod {
 /// Manages context rules for an OpenZeppelin Smart Account.
 ///
 /// Context rules define authorization requirements per operation category. Each
-/// rule specifies a context type (default, `callContract`, or `createContract`),
-/// a name, signers, optional policies, and an optional expiration ledger. The
+/// rule specifies a context type (default, `callContract`, `createContract`, or
+/// `createContractExternalRef`), a name, signers, optional policies, and an optional expiration ledger. The
 /// smart-account contract evaluates inbound transactions against the rule set to
 /// determine which signers must sign and which policy contracts must approve.
 ///
@@ -104,7 +105,10 @@ public final class OZContextRuleManager: OZContextRuleManagerProtocol, OZManager
     ///   - validUntil: Optional ledger number when this rule expires; `nil`
     ///     means the rule never expires.
     ///   - signers: Signers authorized by this rule. Either `signers` or
-    ///     `policies` must be non-empty.
+    ///     `policies` must be non-empty. A Delegated signer must be a Stellar
+    ///     account (`G…`) other than the shared default deployer; a contract
+    ///     address, the wallet included, is refused, because a contract
+    ///     delegate can let anyone authorize the account (GHSA-jpg9-m7w4-c7wc).
     ///   - policies: Map of policy contract addresses (`C…` strkey) to their
     ///     installation parameters encoded as `SCValXDR`. Keys are sorted into
     ///     the host's `SCMap` key order before submission.
@@ -115,9 +119,11 @@ public final class OZContextRuleManager: OZContextRuleManagerProtocol, OZManager
     /// - Returns: An ``OZTransactionResult`` describing the on-chain outcome.
     /// - Throws:
     ///   - ``SmartAccountWalletException/NotConnected`` when no wallet is connected.
-    ///   - ``SmartAccountValidationException/InvalidInput`` when validation fails.
+    ///   - ``SmartAccountValidationException/InvalidInput`` when validation fails,
+    ///     including a Delegated signer that is the shared default deployer or the
+    ///     wallet itself.
     ///   - ``SmartAccountValidationException/InvalidAddress`` when a policy address is
-    ///     malformed.
+    ///     malformed or a Delegated signer is not a `G…` address.
     ///   - ``SmartAccountTransactionException`` for simulation, signing, or submission
     ///     failures.
     public func addContextRule(
@@ -148,7 +154,7 @@ public final class OZContextRuleManager: OZContextRuleManagerProtocol, OZManager
             )
         }
 
-        try requireValidSigners(signers)
+        try await requireValidSigners(signers, walletContractId: connected.contractId)
 
         try requireValidPolicies(policies)
 
@@ -487,8 +493,9 @@ public final class OZContextRuleManager: OZContextRuleManagerProtocol, OZManager
     ///   with the invocation's contract address.
     /// - `createContractHostFn` / `createContractV2HostFn` produce
     ///   ``OZContextRuleType/createContract(wasmHash:)`` with the executable's
-    ///   WASM hash. Stellar Asset Contract executables throw because they have
-    ///   no WASM hash.
+    ///   WASM hash, or ``OZContextRuleType/createContractExternalRef(owner:tag:)``
+    ///   with the owner and tag of an executable reference. Stellar Asset
+    ///   Contract executables throw because they have no WASM hash.
     private func buildInvocationContextTypes(
         entry: SorobanAuthorizationEntryXDR
     ) throws -> [OZContextRuleType] {
@@ -523,12 +530,10 @@ public final class OZContextRuleManager: OZContextRuleManagerProtocol, OZManager
             result.append(.callContract(contractAddress: address))
 
         case .createContractHostFn(let args):
-            let wasmHash = try extractWasmHash(executable: args.executable)
-            result.append(.createContract(wasmHash: wasmHash))
+            result.append(try createContractContextType(executable: args.executable))
 
         case .createContractV2HostFn(let args):
-            let wasmHash = try extractWasmHash(executable: args.executable)
-            result.append(.createContract(wasmHash: wasmHash))
+            result.append(try createContractContextType(executable: args.executable))
         }
     }
 
@@ -548,23 +553,28 @@ public final class OZContextRuleManager: OZContextRuleManagerProtocol, OZManager
         }
     }
 
-    /// Extracts a WASM hash from a ``ContractExecutableXDR``. Stellar Asset
-    /// Contract executables (the `.token` arm) and external executable
-    /// references (the `.externalRef` arm) carry no WASM hash; attempting
-    /// to use them as a `CreateContract` context-rule target throws.
-    private func extractWasmHash(executable: ContractExecutableXDR) throws -> Data {
+    /// Maps the executable of a create-contract invocation to the context type
+    /// the deployment matches: ``OZContextRuleType/createContract(wasmHash:)``
+    /// for a WASM hash, ``OZContextRuleType/createContractExternalRef(owner:tag:)``
+    /// for an executable reference. The reference's owner is kept as the strkey
+    /// of its address and its tag bytes are read as UTF-8, with malformed
+    /// sequences replaced by U+FFFD. Stellar Asset Contract executables (the
+    /// `.token` arm) carry no WASM hash and throw.
+    private func createContractContextType(
+        executable: ContractExecutableXDR
+    ) throws -> OZContextRuleType {
         switch executable {
         case .wasm(let hash):
-            return Data(hash.wrapped)
+            return .createContract(wasmHash: Data(hash.wrapped))
         case .token:
             throw SmartAccountValidationException.invalidInput(
                 field: "executable",
                 reason: "CreateContract invocation references a Stellar Asset Contract, not a WASM contract"
             )
-        case .externalRef:
-            throw SmartAccountValidationException.invalidInput(
-                field: "executable",
-                reason: "CreateContract invocation references an external executable, not a WASM contract"
+        case .externalRef(let reference):
+            return .createContractExternalRef(
+                owner: try reference.executableOwner.toStrKey(),
+                tag: String(decoding: reference.tag, as: UTF8.self)
             )
         }
     }

@@ -310,6 +310,16 @@ public final class OZTransactionOperations: OZManagerHelpers, @unchecked Sendabl
     /// re-simulated after signing because WebAuthn signatures are larger than the
     /// placeholders the initial simulation used.
     ///
+    /// Before the first ceremony it validates the signers that the smart account
+    /// entries add to the wallet through `add_signer`, `batch_add_signer` or
+    /// `add_context_rule`, and reads the wallet's WASM hash once to select its
+    /// ``OZAuthDigestScheme`` (``OZSmartAccountConfig/authDigestSchemes``); the
+    /// same response sets the signature expiration. A Delegated signer that
+    /// `OZSignerManager.addDelegated` or `OZContextRuleManager.addContextRule`
+    /// refuses, and a muxed contract address (`W…`) as a Delegated address or an
+    /// External verifier, throw a ``SmartAccountValidationException`` before any
+    /// passkey is asked.
+    ///
     /// - Parameters:
     ///   - hostFunction: Host function to execute.
     ///   - auth: Authorization entries supplied as input to the simulation
@@ -403,8 +413,11 @@ public final class OZTransactionOperations: OZManagerHelpers, @unchecked Sendabl
     /// connected smart account contract. Entries pointing at other addresses
     /// and entries with `sourceAccount` credentials are returned unchanged.
     ///
-    /// Pre-fetches the latest ledger and the active context-rule set once so
-    /// the per-entry signing pass does not perform N redundant RPC round trips.
+    /// Validates the signers the smart account entries add, reads the wallet's
+    /// code and the latest ledger, and fetches the active context-rule set once
+    /// before the loop, so no passkey is asked before a refusal or a failed read
+    /// and the per-entry signing pass does not perform N redundant RPC round
+    /// trips.
     ///
     /// - Parameters:
     ///   - simulatedAuthEntries: Entries returned from the initial simulation.
@@ -427,22 +440,15 @@ public final class OZTransactionOperations: OZManagerHelpers, @unchecked Sendabl
             return []
         }
 
-        // why: fetch latest ledger ONCE before the signing loop so the
-        // expiration value is constant across all auth entries; a per-entry
-        // fetch would add N redundant RPC round trips on long entry lists.
-        let latestLedger = try await fetchLatestLedger()
-        // why: compute expiration ledger in 64-bit arithmetic and clamp via
-        // `UInt32(exactly:)` so a near-`UInt32.max` ledger sequence cannot
-        // wrap silently. Config validation guarantees the addend is >= 1;
-        // overflow is unlikely in practice but we still refuse to ship a
-        // wrapped value.
-        let expirationU64 = UInt64(latestLedger.sequence)
-            + UInt64(kit.config.signatureExpirationLedgers)
-        guard let expiration = UInt32(exactly: expirationU64) else {
-            throw SmartAccountTransactionException.simulationFailed(
-                reason: "Computed expirationLedger \(expirationU64) overflows UInt32"
-            )
-        }
+        // why: validate the added signers, select the digest scheme and set the
+        // expiration ONCE before the signing loop, so no passkey is asked before a
+        // refusal or a failed read and the expiration is constant across all auth
+        // entries.
+        let signingState = try await prepareSigningOperation(
+            contractId: connected.contractId,
+            authEntries: simulatedAuthEntries
+        )
+        let expiration = signingState.expirationLedger
 
         // why: pre-fetch the active context rules ONCE so the signer pass
         // does not perform N additional RPC calls; the rule set is stable
@@ -482,12 +488,6 @@ public final class OZTransactionOperations: OZManagerHelpers, @unchecked Sendabl
                 signedAuthEntries.append(entry)
                 continue
             }
-
-            let payloadHash = try await OZSmartAccountAuth.buildAuthPayloadHash(
-                entry: entry,
-                expirationLedger: expiration,
-                networkPassphrase: kit.config.networkPassphrase
-            )
 
             guard let webauthnProvider = kit.config.webauthnProvider else {
                 throw SmartAccountValidationException.invalidInput(
@@ -540,10 +540,15 @@ public final class OZTransactionOperations: OZManagerHelpers, @unchecked Sendabl
                 )
             }
 
-            let authDigest = try await OZSmartAccountAuth.buildAuthDigest(
-                signaturePayload: payloadHash,
-                contextRuleIds: resolvedContextRuleIds
-            )
+            // prepareSigningOperation reads the scheme whenever an entry belongs to
+            // the wallet.
+            let authDigest = try await OZSmartAccountAuth.computeEntryAuthDigest(
+                entry: entry,
+                expirationLedger: expiration,
+                networkPassphrase: kit.config.networkPassphrase,
+                contextRuleIds: resolvedContextRuleIds,
+                scheme: signingState.authDigestScheme!
+            ).authDigest
 
             let allowCredential = WebAuthnAllowCredential(
                 id: credIdBytes,

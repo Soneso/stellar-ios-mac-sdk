@@ -219,6 +219,10 @@ extension OZContextRuleManager {
     /// - Default: `Vec([Symbol("Default")])`
     /// - CallContract: `Vec([Symbol("CallContract"), Address])`
     /// - CreateContract: `Vec([Symbol("CreateContract"), Bytes])`
+    /// - CreateContractExternalRef: `Vec([Symbol("CreateContractExternalRef"), Address, String])`
+    ///
+    /// The owner of an external-reference rule is kept as the strkey of the stored address,
+    /// of any address kind.
     fileprivate func parseContextRuleType(scVal: SCValXDR) throws -> OZContextRuleType {
         guard case .vec(let vec) = scVal, let vec = vec else {
             throw SmartAccountValidationException.invalidInput(
@@ -276,6 +280,27 @@ extension OZContextRuleManager {
                 )
             }
             return .createContract(wasmHash: wasmHash)
+
+        case ContextTypeDiscriminant.createContractExternalRef:
+            if vec.count < 3 {
+                throw SmartAccountValidationException.invalidInput(
+                    field: ContextRuleField.contextType,
+                    reason: "\(ContextTypeDiscriminant.createContractExternalRef) context_type needs an owner and a tag element, got \(vec.count - 1) element(s)"
+                )
+            }
+            guard case .address(let owner) = vec[1] else {
+                throw SmartAccountValidationException.invalidInput(
+                    field: ContextRuleField.contextType,
+                    reason: "Expected Address for \(ContextTypeDiscriminant.createContractExternalRef) owner, got: \(vec[1])"
+                )
+            }
+            guard case .string(let tag) = vec[2] else {
+                throw SmartAccountValidationException.invalidInput(
+                    field: ContextRuleField.contextType,
+                    reason: "Expected String for \(ContextTypeDiscriminant.createContractExternalRef) tag, got: \(vec[2])"
+                )
+            }
+            return .createContractExternalRef(owner: try owner.toStrKey(), tag: tag)
 
         default:
             throw SmartAccountValidationException.invalidInput(

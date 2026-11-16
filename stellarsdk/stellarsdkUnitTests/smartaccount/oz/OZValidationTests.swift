@@ -188,21 +188,21 @@ final class OZValidationTests: XCTestCase {
 
     // MARK: - requireValidSigners
 
-    func test_requireValidSigners_externalAt256Bytes_noThrow() throws {
+    func test_requireValidSigners_externalAt256Bytes_noThrow() async throws {
         let signer = try OZExternalSigner(
             verifierAddress: validContractC,
             keyData: Data(repeating: 0x01, count: OZConstants.maxExternalKeySize)
         )
-        XCTAssertNoThrow(try requireValidSigners([signer]))
+        try await requireValidSigners([signer], walletContractId: validContractC)
     }
 
-    func test_requireValidSigners_external257Bytes_throws() throws {
+    func test_requireValidSigners_external257Bytes_throws() async throws {
         let signer = try OZExternalSigner(
             verifierAddress: validContractC,
             keyData: Data(repeating: 0x01, count: OZConstants.maxExternalKeySize + 1)
         )
         do {
-            try requireValidSigners([signer])
+            try await requireValidSigners([signer], walletContractId: validContractC)
             XCTFail("expected SmartAccountValidationException.InvalidInput")
         } catch let error as SmartAccountValidationException.InvalidInput {
             XCTAssertTrue(
@@ -214,22 +214,25 @@ final class OZValidationTests: XCTestCase {
         }
     }
 
-    func test_requireValidSigners_delegatedHasNoKeyData_skipped() throws {
+    func test_requireValidSigners_delegatedHasNoKeyData_skipped() async throws {
         // Delegated signers carry no key data and must never trip the external-key check.
         let validG = try KeyPair.generateRandomKeyPair().accountId
         let delegated = try OZDelegatedSigner(address: validG)
-        XCTAssertNoThrow(try requireValidSigners([delegated]))
+        try await requireValidSigners([delegated], walletContractId: validContractC)
     }
 
-    func test_requireValidSigners_mixedSigners_oversizedExternal_throws() throws {
+    func test_requireValidSigners_mixedSigners_oversizedExternal_throws() async throws {
         let validG = try KeyPair.generateRandomKeyPair().accountId
         let delegated = try OZDelegatedSigner(address: validG)
         let oversized = try OZExternalSigner(
             verifierAddress: validContractC,
             keyData: Data(repeating: 0x02, count: OZConstants.maxExternalKeySize + 1)
         )
-        XCTAssertThrowsError(try requireValidSigners([delegated, oversized])) { error in
-            XCTAssertTrue(error is SmartAccountValidationException.InvalidInput)
+        do {
+            try await requireValidSigners([delegated, oversized], walletContractId: validContractC)
+            XCTFail("expected SmartAccountValidationException.InvalidInput")
+        } catch let error as SmartAccountValidationException.InvalidInput {
+            XCTAssertTrue(error.message.contains("got: 257"), "unexpected message: \(error.message)")
         }
     }
 }

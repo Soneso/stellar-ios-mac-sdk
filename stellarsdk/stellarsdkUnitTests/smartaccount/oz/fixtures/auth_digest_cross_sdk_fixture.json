@@ -1,0 +1,76 @@
+{
+  "description": "OpenZeppelin smart account auth digests: the stellar-accounts 0.8.0 AuthDigestPreimage digest (PREIMAGE_V1) and the 0.7 concatenation (LEGACY_CONCAT). Values computed outside the SDK: XDR with the Stellar CLI 28.1.0 `stellar xdr encode`, SHA-256 with hashlib, Ed25519 with the cryptography package.",
+  "preimageVectors": [
+    {
+      "name": "a single rule",
+      "source": "smart-account-kit src/signers.test.ts, generated with AuthDigestPreimage.to_xdr() and digest() of OpenZeppelin/stellar-contracts@6eb047d5",
+      "account": "CC7EKIHQP3TN4CARQDND6CEOY2UXLWWC2X5GHTD5NLAT7BG5GPZIOM3F",
+      "signaturePayloadHex": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+      "contextRuleIds": [
+        0
+      ],
+      "preimageXdrHex": "0000001100000001000000030000000f000000076163636f756e74000000001200000001be4520f07ee6de081180da3f088ec6a975dac2d5fa63cc7d6ac13f84dd33f2870000000f00000010636f6e746578745f72756c655f69647300000010000000010000000100000003000000000000000f000000117369676e61747572655f7061796c6f61640000000000000d00000020000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+      "authDigestHex": "482afc1a8fe963383f72e4cad3b2c5c346cf19e1039eaa25e0afcabc7202e9e5"
+    },
+    {
+      "name": "multiple rules up to u32::MAX",
+      "source": "smart-account-kit src/signers.test.ts, generated with AuthDigestPreimage.to_xdr() and digest() of OpenZeppelin/stellar-contracts@6eb047d5",
+      "account": "CC7EKIHQP3TN4CARQDND6CEOY2UXLWWC2X5GHTD5NLAT7BG5GPZIOM3F",
+      "signaturePayloadHex": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+      "contextRuleIds": [
+        0,
+        7,
+        4294967295
+      ],
+      "preimageXdrHex": "0000001100000001000000030000000f000000076163636f756e74000000001200000001be4520f07ee6de081180da3f088ec6a975dac2d5fa63cc7d6ac13f84dd33f2870000000f00000010636f6e746578745f72756c655f6964730000001000000001000000030000000300000000000000030000000700000003ffffffff0000000f000000117369676e61747572655f7061796c6f61640000000000000d00000020000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+      "authDigestHex": "5d759d6f69ffa32ca159f5675759d1cf9d64d35fa88cd2c17ce63d93a242eaaf"
+    },
+    {
+      "name": "no rules",
+      "source": "smart-account-kit src/signers.test.ts, generated with AuthDigestPreimage.to_xdr() and digest() of OpenZeppelin/stellar-contracts@6eb047d5",
+      "account": "CC7EKIHQP3TN4CARQDND6CEOY2UXLWWC2X5GHTD5NLAT7BG5GPZIOM3F",
+      "signaturePayloadHex": "abababababababababababababababababababababababababababababababab",
+      "contextRuleIds": [],
+      "preimageXdrHex": "0000001100000001000000030000000f000000076163636f756e74000000001200000001be4520f07ee6de081180da3f088ec6a975dac2d5fa63cc7d6ac13f84dd33f2870000000f00000010636f6e746578745f72756c655f6964730000001000000001000000000000000f000000117369676e61747572655f7061796c6f61640000000000000d00000020abababababababababababababababababababababababababababababababab",
+      "authDigestHex": "6c91c8b7e1fd05d933f47fec210e6965cb96d7f7a5cff42a7a4365b1479a24aa"
+    },
+    {
+      "name": "auth_digest view of a testnet wallet",
+      "source": "auth_digest simulated on testnet 2026-11-15 for the entry a 0.8.0 wallet (WASM c514d35e) signed in transaction 0e44ea55db6405d20d62d0ba997364d2a2a43e0e05ee3095aea071987099110f",
+      "account": "CCSYU3BGLA2IHVFAU7K4U5Q5OAN7Q5477YUPUL4KUYHPU43R27WFBM7B",
+      "signaturePayloadHex": "a7a83607e6b2fa450079db74c73ab47390dec6a06c35277656adb2ea62e6b8cc",
+      "contextRuleIds": [
+        0
+      ],
+      "preimageXdrHex": "0000001100000001000000030000000f000000076163636f756e74000000001200000001a58a6c26583483d4a0a7d5ca761d701bf8779ffe28fa2f8aa60efa7371d7ec500000000f00000010636f6e746578745f72756c655f69647300000010000000010000000100000003000000000000000f000000117369676e61747572655f7061796c6f61640000000000000d00000020a7a83607e6b2fa450079db74c73ab47390dec6a06c35277656adb2ea62e6b8cc",
+      "authDigestHex": "ead546f6c97399389f032c72d1c1711e63a746069ac9b2a2c79a8edee0e857de"
+    }
+  ],
+  "entry": {
+    "description": "A transfer of 1,000,000 stroops of the testnet native asset contract from the kit account to a G-address, authorized with ADDRESS_V2 credentials and nonce 1234567890123.",
+    "entryXdrBase64": "AAAAAgAAAAG+RSDwfubeCBGA2j8IjsapddrC1fpjzH1qwT+E3TPyhwAAAR9x+wTLAAAAAAAAAAEAAAAAAAAAAdeSi3LCcDzP6vfrn/TvTVBKVai5efybRQ6iyEK00c5hAAAACHRyYW5zZmVyAAAAAwAAABIAAAABvkUg8H7m3ggRgNo/CI7GqXXawtX6Y8x9asE/hN0z8ocAAAASAAAAAAAAAAA/DDS/k60NmXHQTMyQ9wVRHIOKrZc0pKL7DXoD/H/omgAAAAoAAAAAAAAAAAAAAAAAD0JAAAAAAA==",
+    "networkPassphrase": "Test SDF Network ; September 2015",
+    "signatureExpirationLedger": 123456,
+    "contextRuleIds": [
+      0,
+      7
+    ],
+    "signaturePayloadHex": "06985c9d7f7cf0a1d6b15f5236061b06aed93fbcff637594b54d260be03f47c9",
+    "ed25519PublicKeyHex": "03a107bff3ce10be1d70dd18e74bc09967e4d6309ba50d5f1ddc8664125531b8",
+    "ed25519SignerDescription": "the fixture key of ed25519_cross_sdk_fixture.json; Ed25519 signatures are deterministic, so the signatures below reproduce",
+    "preimageV1": {
+      "authDigestHex": "0d69bcc372549ca2895758603b5eff8845acbb414a97c894641c74669ba2eb91",
+      "delegatedAuthArgsXdrBase64": [
+        "AAAAEQAAAAEAAAADAAAADwAAAAdhY2NvdW50AAAAABIAAAABvkUg8H7m3ggRgNo/CI7GqXXawtX6Y8x9asE/hN0z8ocAAAAPAAAAEGNvbnRleHRfcnVsZV9pZHMAAAAQAAAAAQAAAAIAAAADAAAAAAAAAAMAAAAHAAAADwAAABFzaWduYXR1cmVfcGF5bG9hZAAAAAAAAA0AAAAgBphcnX988KHWsV9SNgYbBq7ZP7z/Y3WUtU0mC+A/R8k="
+      ],
+      "ed25519SignatureHex": "077b63e6596a16a9ae5db6c9e60d6fb9b8b1d0e1193dacfeb88b211e607818fdb019a47dc1611bf39dfe776ba4c8999e7f5cc134d76ac51901c9304240ea2d08"
+    },
+    "legacyConcat": {
+      "authDigestHex": "937a38f8d656cb7baa44083e169ba1bc82b4a649111830a65ac2bffa3901be00",
+      "delegatedAuthArgsXdrBase64": [
+        "AAAADQAAACCTejj41lbLe6pECD4Wm6G8grSmSREYMKZawr/6OQG+AA=="
+      ],
+      "ed25519SignatureHex": "584e86b761dd074ec83c63e6287736fca62cff5b64f733ff10d244a5380741dfb09032fabd8bcdd9e0b843041350f4e1bb9cfde7354a8768f85227cc750e580a"
+    }
+  }
+}

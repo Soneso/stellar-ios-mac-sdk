@@ -947,11 +947,9 @@ final class OZContextRuleManagerTests: XCTestCase {
         }
     }
 
-    /// A `createContractHostFn` / `createContractV2HostFn` whose executable
-    /// is `.externalRef` must throw `SmartAccountValidationException.InvalidInput`
-    /// when the rule-resolution pipeline tries to extract the WASM hash, since
-    /// an external executable reference carries no WASM hash.
-    func test_extractWasmHash_externalRef_throwsValidationException() async throws {
+    /// A `createContractV2HostFn` whose executable is `.externalRef` resolves to the
+    /// `CreateContractExternalRef` rule with the same owner and tag.
+    func test_resolveContextRuleIds_externalRefExecutable_matchesTheExternalRefRule() async throws {
         let owner = try SCAddressXDR(contractId: validContractAddress)
         let executable = ContractExecutableXDR.externalRef(
             ContractExecutableExternalRefXDR(executableOwner: owner, tag: "my-tag")
@@ -981,16 +979,33 @@ final class OZContextRuleManagerTests: XCTestCase {
         )
 
         let (_, manager) = try connectedKit()
-        do {
-            _ = try await manager.resolveContextRuleIdsForEntry(
-                entry: entry,
-                signers: [],
-                contextRules: []
-            )
-            XCTFail("expected SmartAccountValidationException.InvalidInput for external reference executable")
-        } catch is SmartAccountValidationException.InvalidInput {
-            // expected
-        }
+        let ids = try await manager.resolveContextRuleIdsForEntry(
+            entry: entry,
+            signers: [],
+            contextRules: [
+                OZParsedContextRule(
+                    id: 41,
+                    contextType: .createContractExternalRef(owner: validContractAddress, tag: "other-tag"),
+                    name: "OtherTag",
+                    signers: [],
+                    signerIds: [],
+                    policies: [],
+                    policyIds: [],
+                    validUntil: nil
+                ),
+                OZParsedContextRule(
+                    id: 42,
+                    contextType: .createContractExternalRef(owner: validContractAddress, tag: "my-tag"),
+                    name: "ExternalRefRule",
+                    signers: [],
+                    signerIds: [],
+                    policies: [],
+                    policyIds: [],
+                    validUntil: nil
+                )
+            ]
+        )
+        XCTAssertEqual([UInt32(42)], ids, "an external reference create must resolve to the rule with its owner and tag")
     }
 
     // ========================================================================
