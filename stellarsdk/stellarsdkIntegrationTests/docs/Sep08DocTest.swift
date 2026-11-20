@@ -155,7 +155,7 @@ class Sep08DocTest: XCTestCase {
 
     // MARK: - Test: Post transaction success (Snippet 1, 8)
 
-    func testPostTransactionSuccess() async {
+    func testPostTransactionSuccess() async throws {
         let goatAsset = service.regulatedAssets.first!
         let responseEnum = await service.postTransaction(
             txB64Xdr: self.txB64Xdr,
@@ -171,6 +171,41 @@ class Sep08DocTest: XCTestCase {
         default:
             XCTFail("Expected .success response")
         }
+
+        // An approved signed Soroban fee bump parses to its inner transaction with the same hash.
+        let invokeOp = try InvokeHostFunctionOperation.forInvokingContract(
+            contractId: "CBGSBKYMYO6OMGHQXXNOBRGVUDFUDVC2XLC3SXON5R2SNXILR7XCKKY3",
+            functionName: "harvest"
+        )
+        // Synthetic test budget: 100,000 instructions; fees are 1,000 resource + 100 inclusion, plus 100 for the fee bump.
+        let resources = SorobanResourcesXDR(
+            footprint: LedgerFootprintXDR(readOnly: [], readWrite: []),
+            instructions: 100000, diskReadBytes: 0, writeBytes: 0
+        )
+        let innerTx = try Transaction(
+            sourceAccount: Account(keyPair: accountAKp, sequenceNumber: 0),
+            operations: [invokeOp],
+            memo: Memo.none,
+            maxOperationFee: 1100,
+            sorobanTransactionData: SorobanTransactionDataXDR(resources: resources, resourceFee: 1000)
+        )
+        try innerTx.sign(keyPair: accountAKp, network: network)
+        let feeBump = try FeeBumpTransaction(
+            sourceAccount: MuxedAccount(keyPair: issuerKp, sequenceNumber: 0),
+            fee: 1200,
+            innerTransaction: innerTx
+        )
+        try feeBump.sign(keyPair: issuerKp, network: network)
+
+        let feeBumpResponse = await service.postTransaction(
+            txB64Xdr: try feeBump.encodedEnvelope(),
+            apporvalServer: goatAsset.approvalServer + "/success"
+        )
+        guard case .success(let successResponse) = feeBumpResponse else {
+            return XCTFail("Expected .success response for the fee bump, got \(feeBumpResponse)")
+        }
+        let approvedTx = try Transaction(envelopeXdr: successResponse.tx)
+        XCTAssertEqual(try innerTx.getTransactionHash(network: network), try approvedTx.getTransactionHash(network: network))
     }
 
     // MARK: - Test: Handling approval responses - all types (Snippet 9)

@@ -148,7 +148,12 @@ public class Transaction: @unchecked Sendable {
         let txFee = transactionXDR.fee;
         let maxOperationFee = operations.count > 1 ? txFee /  UInt32(operations.count) : txFee
 
-        try self.init(sourceAccount: transactionSourceAccount, operations: operations, memo: Memo(memoXDR:transactionXDR.memo), preconditions: preconditions, maxOperationFee: maxOperationFee)
+        var sorobanTransactionData: SorobanTransactionDataXDR? = nil
+        if case .sorobanTransactionData(let data) = transactionXDR.ext {
+            sorobanTransactionData = data
+        }
+
+        try self.init(sourceAccount: transactionSourceAccount, operations: operations, memo: Memo(memoXDR:transactionXDR.memo), preconditions: preconditions, maxOperationFee: maxOperationFee, sorobanTransactionData: sorobanTransactionData)
     }
 
     /// Creates a new Transaction object from an Transaction Envelope XDR string.

@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - `Transaction(envelopeXdr:)` keeps a `PRECOND_V2` precondition as V2 when its fields other than the time bounds have their default values, also for the inner transaction of a fee bump. Before this change, it wrote such a precondition back as `PRECOND_TIME` or `PRECOND_NONE`, so the transaction had a different hash.
+- Reading a transaction from XDR keeps its Soroban data, both with `Transaction(xdr:)` and for the inner transaction of a fee bump with `Transaction(envelopeXdr:)`; `TransactionEnvelopeXDR.sorobanTransactionData` returns the inner transaction's data for a fee bump. Before this change, the Soroban data was lost, so the transaction had a different hash and its signatures did not match.
 
 ## [3.16.0] - 2026-11-16
 
