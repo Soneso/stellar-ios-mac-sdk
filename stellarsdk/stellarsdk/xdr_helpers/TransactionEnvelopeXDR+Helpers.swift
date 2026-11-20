@@ -103,19 +103,14 @@ extension TransactionEnvelopeXDR {
         }
     }
 
+    /// The Soroban data of the transaction; for a fee bump envelope, the Soroban data of its inner
+    /// transaction. `nil` for a V0 envelope and for a transaction without Soroban data.
     public var sorobanTransactionData: SorobanTransactionDataXDR? {
         get {
-            switch self {
-            case .v1(let tev1):
-                switch tev1.tx.ext {
-                case.sorobanTransactionData(let data):
-                    return data
-                default:
-                    return nil
-                }
-            default:
+            guard case .sorobanTransactionData(let data)? = txExt else {
                 return nil
             }
+            return data
         }
     }
 
