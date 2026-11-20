@@ -30,6 +30,9 @@ final public class TransactionPreconditions: Sendable {
     public let minSeqLedgerGap: UInt32
     /// Additional signers required to authorize this transaction.
     public let extraSigners:[SignerKeyXDR]
+    /// True when these preconditions were decoded from a `PRECOND_V2` arm. The arm is part of the
+    /// signed transaction, so `toXdr()` keeps it even when every V2 field has its default value.
+    private let decodedV2: Bool
 
     /// Creates transaction preconditions with individual constraint parameters per CAP-21.
     public init(ledgerBounds:LedgerBounds? = nil, timeBounds:TimeBounds? = nil, minSeqNumber: Int64? = nil, minSeqAge: UInt64 = 0, minSeqLedgerGap: UInt32 = 0, extraSigners:[SignerKeyXDR] = []) {
@@ -39,9 +42,21 @@ final public class TransactionPreconditions: Sendable {
         self.minSeqAge = minSeqAge
         self.minSeqLedgerGap = minSeqLedgerGap
         self.extraSigners = extraSigners
+        self.decodedV2 = false
     }
 
-    /// Creates transaction preconditions from an XDR preconditions object.
+    private init(preconditionsV2XDR: PreconditionsV2XDR) {
+        self.ledgerBounds = preconditionsV2XDR.ledgerBounds.map { LedgerBounds(lederbounds: $0) }
+        self.timeBounds = preconditionsV2XDR.timeBounds.map { TimeBounds(timebounds: $0) }
+        self.minSeqNumber = preconditionsV2XDR.sequenceNumber
+        self.minSeqAge = preconditionsV2XDR.minSeqAge
+        self.minSeqLedgerGap = preconditionsV2XDR.minSeqLedgerGap
+        self.extraSigners = preconditionsV2XDR.extraSigners
+        self.decodedV2 = true
+    }
+
+    /// Creates transaction preconditions from an XDR preconditions object. Preconditions decoded
+    /// from a `PRECOND_V2` arm encode as `PRECOND_V2` again, whatever their field values.
     public convenience init(preconditions:PreconditionsXDR) {
         switch preconditions {
         case .none:
@@ -51,20 +66,7 @@ final public class TransactionPreconditions: Sendable {
             self.init(timeBounds:TimeBounds(timebounds: timeBoundsXDR))
             return
         case .v2(let preconditionsV2XDR):
-            var lb:LedgerBounds? = nil
-            if let lbxdr = preconditionsV2XDR.ledgerBounds {
-                lb = LedgerBounds(lederbounds: lbxdr)
-            }
-            var tb:TimeBounds? = nil
-            if let tbxdr = preconditionsV2XDR.timeBounds {
-                tb = TimeBounds(timebounds: tbxdr)
-            }
-            self.init(ledgerBounds:lb,
-                      timeBounds: tb,
-                      minSeqNumber: preconditionsV2XDR.sequenceNumber,
-                      minSeqAge: preconditionsV2XDR.minSeqAge,
-                      minSeqLedgerGap: preconditionsV2XDR.minSeqLedgerGap,
-                      extraSigners: preconditionsV2XDR.extraSigners)
+            self.init(preconditionsV2XDR: preconditionsV2XDR)
         }
     }
 
@@ -90,9 +92,10 @@ final public class TransactionPreconditions: Sendable {
         }
     }
 
-    /// Returns true if this precondition requires the V2 format (CAP-21).
+    /// Returns true if these preconditions encode as `PRECOND_V2` (CAP-21): when they were decoded
+    /// from a `PRECOND_V2` arm, or when they set a field that only `PRECOND_V2` carries.
     public func hasV2() -> Bool {
-        if ledgerBounds != nil || minSeqNumber != nil {
+        if decodedV2 || ledgerBounds != nil || minSeqNumber != nil {
             return true
         }
         if minSeqLedgerGap > 0 {

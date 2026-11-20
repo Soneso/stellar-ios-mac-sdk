@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- `Transaction(envelopeXdr:)` keeps a `PRECOND_V2` precondition as V2 when its fields other than the time bounds have their default values, also for the inner transaction of a fee bump. Before this change, it wrote such a precondition back as `PRECOND_TIME` or `PRECOND_NONE`, so the transaction had a different hash.
+
 ## [3.16.0] - 2026-11-16
 
 Migration guide: [docs/migration/3.16.0.md](docs/migration/3.16.0.md)
