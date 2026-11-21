@@ -11,139 +11,169 @@ import Foundation
 /// Parses a soroban contract byte code to get Environment Meta, Contract Spec and Contract Meta.
 /// see: [Stellar developer docs](https://developers.stellar.org)
 public final class SorobanContractParser: Sendable {
-    
+
+    private static let envMetaSectionName = "contractenvmetav0"
+    private static let specSectionName = "contractspecv0"
+    private static let metaSectionName = "contractmetav0"
+    // The wasm binary header, `\0asm` followed by version 1, and the id of a custom section.
+    private static let wasmMagic: [UInt8] = [0x00, 0x61, 0x73, 0x6d]
+    private static let wasmVersion: [UInt8] = [0x01, 0x00, 0x00, 0x00]
+    private static let customSectionId: UInt8 = 0
+
     /// Parses a soroban contract byteCode to get Environment Meta, Contract Spec and Contract Meta.
+    ///
+    /// The byte code is read as a wasm module: after the header, every section is walked by its id
+    /// and its size. The content of the first `contractenvmetav0` and `contractspecv0` custom
+    /// section is decoded as a stream of `SCEnvMetaEntryXDR` and `SCSpecEntryXDR` entries up to the
+    /// end of the section; later sections with one of these names do not change the result. The
+    /// interface version comes from the first environment meta entry. Every `contractmetav0`
+    /// section is decoded on its own as a stream of `SCMetaEntryXDR` entries, and the entries of all
+    /// of them are read in module order, as SEP-46 defines. Values with the same metadata key are
+    /// joined with a comma. For the `sep` key, this implements SEP-47.
     /// see: [Stellar developer docs](https://developers.stellar.org)
-    /// Returns SorobanContractInfo containing the parsed data.
-    /// Throws SorobanContractParserError if any exception occurred during the byte code parsing. E.g. invalid byte code.
+    ///
+    /// - Parameter byteCode: The contract wasm.
+    /// - Returns: SorobanContractInfo containing the parsed data.
+    /// - Throws: `SorobanContractParserError.malformedModule` when the header or the framing of any
+    ///   section does not fit the input, `.invalidSectionEntry` when an entry of one of the three
+    ///   sections does not decode, has an unknown kind or is cut by the end of its section,
+    ///   `.environmentMetaNotFound` when the first `contractenvmetav0` section is absent or empty, and
+    ///   `.specEntriesNotFound` when the module has no `contractspecv0` section.
     public static func parseContractByteCode(byteCode:Data) throws -> SorobanContractInfo {
-        do {
-            if let bytesString = String(data: byteCode, encoding: .isoLatin1) {
-                if let xdrEnvMeta = parseEnvironmentMeta(bytesString: bytesString) {
-                    switch xdrEnvMeta {
-                    case .interfaceVersion(let iv):
-                        if let specEntries = parseContractSpec(bytesString: bytesString) {
-                            let metaEntries = parseMeta(bytesString: bytesString)
-                            return SorobanContractInfo(interfaceVersion: iv,
-                                                       specEntries: specEntries,
-                                                       metaEntries: metaEntries)
-                        } else {
-                            throw SorobanContractParserError.specEntriesNotFound
-                        }
-                    }
-                } else {
-                    throw SorobanContractParserError.environmentMetaNotFound
-                }
+        let bytes = [UInt8](byteCode)
+        let sections = try readCustomSections(bytes)
+        let envMetaEntries = try sections[envMetaSectionName]?.first.map {
+            try decodeEntries(SCEnvMetaEntryXDR.self, section: envMetaSectionName, bytes: bytes, content: $0)
+        } ?? []
+        guard case .interfaceVersion(let interfaceVersion)? = envMetaEntries.first else {
+            throw SorobanContractParserError.environmentMetaNotFound
+        }
+        guard let specContent = sections[specSectionName]?.first else {
+            throw SorobanContractParserError.specEntriesNotFound
+        }
+        let specEntries = try decodeEntries(SCSpecEntryXDR.self, section: specSectionName, bytes: bytes, content: specContent)
+        let metaList = try (sections[metaSectionName] ?? []).flatMap {
+            try decodeEntries(SCMetaEntryXDR.self, section: metaSectionName, bytes: bytes, content: $0)
+        }
+        var metaEntries: [String: String] = [:]
+        for case .v0(let meta) in metaList {
+            // Values with the same metadata key are joined with a comma. For the `sep` key, this implements SEP-47.
+            if let existingValue = metaEntries[meta.key] {
+                metaEntries[meta.key] = existingValue + "," + meta.value
             } else {
-                throw SorobanContractParserError.invalidByteCode
-            }
-        } catch let error {
-            if error is SorobanContractParserError {
-                throw error
-            } else {
-                throw SorobanContractParserError.invalidByteCode
+                metaEntries[meta.key] = meta.value
             }
         }
-        
+        return SorobanContractInfo(interfaceVersion: interfaceVersion,
+                                   specEntries: specEntries,
+                                   metaEntries: metaEntries)
     }
-    
-    private static func parseEnvironmentMeta(bytesString:String) -> SCEnvMetaEntryXDR? {
-        var envMetaBytesStr = slice(input: bytesString, from: "contractenvmetav0", to: "contractenvmetav0")
-        if (envMetaBytesStr == nil) {
-            envMetaBytesStr = slice(input: bytesString, from: "contractenvmetav0", to: "contractspecv0")
-        }
-        if (envMetaBytesStr == nil) {
-            envMetaBytesStr = end(input: bytesString, from: "contractenvmetav0")
-        }
-        if let envMetaBytes = envMetaBytesStr?.data(using: .isoLatin1) {
-            let xdrDecoder = XDRDecoder.init(data: [UInt8](envMetaBytes))
-            return try? SCEnvMetaEntryXDR(from: xdrDecoder)
-            
-        }
-        return nil
-    }
-    
-    private static func parseContractSpec(bytesString:String) -> [SCSpecEntryXDR]? {
-        var specBytesStr = slice(input: bytesString, from: "contractspecv0", to: "contractenvmetav0")
-        if (specBytesStr == nil) {
-            specBytesStr = slice(input: bytesString, from: "contractspecv0", to: "contractspecv0")
-        }
-        if (specBytesStr == nil) {
-            specBytesStr = end(input: bytesString, from: "contractspecv0")
-        }
-        guard var spec = specBytesStr else {
-            return nil
-        }
 
-        var specEntries:[SCSpecEntryXDR] = []
-        while !spec.isEmpty {
-            if let specBytes = spec.data(using: .isoLatin1) {
-                let xdrDecoder = XDRDecoder.init(data: [UInt8](specBytes))
-                if let entry = try? SCSpecEntryXDR(from: xdrDecoder) {
-                    specEntries.append(entry)
-                    if let enc = try? XDREncoder.encode(entry),
-                       let entryBytesString = String(data: Data(enc), encoding: .isoLatin1),
-                       let remaining = end(input: spec, from: entryBytesString) {
-                        spec = remaining
-                        continue
-                    }
+    /// Walks every section of a wasm module and returns, for each section name the parser reads, the
+    /// content ranges of the custom sections with that name in module order. The content of a custom
+    /// section starts after its name. Sections of the other kinds are skipped by their size, so bytes
+    /// inside them never start a section.
+    ///
+    /// - Throws: `SorobanContractParserError.malformedModule` naming the offset of the malformed field.
+    private static func readCustomSections(_ bytes: [UInt8]) throws -> [String: [Range<Int>]] {
+        let headerLength = wasmMagic.count + wasmVersion.count
+        guard bytes.count >= headerLength else {
+            throw malformed(0, "the module has \(bytes.count) bytes, fewer than the \(headerLength) bytes of the wasm header")
+        }
+        guard bytes[0..<wasmMagic.count].elementsEqual(wasmMagic) else {
+            throw malformed(0, "the module does not start with the wasm magic 00 61 73 6d")
+        }
+        guard bytes[wasmMagic.count..<headerLength].elementsEqual(wasmVersion) else {
+            throw malformed(wasmMagic.count, "the wasm version is not 01 00 00 00")
+        }
+        var sections: [String: [Range<Int>]] = [:]
+        var position = headerLength
+        while position < bytes.count {
+            let sectionStart = position
+            position += 1
+            let sizeOffset = position
+            let size = Int(try readLEB128U32(bytes, at: &position, end: bytes.count, field: "section size"))
+            guard size <= bytes.count - position else {
+                throw malformed(sizeOffset, "the section at offset \(sectionStart) declares \(size) bytes, but \(bytes.count - position) bytes follow its size")
+            }
+            let sectionEnd = position + size
+            if bytes[sectionStart] == customSectionId {
+                let nameLengthOffset = position
+                let nameLength = Int(try readLEB128U32(bytes, at: &position, end: sectionEnd, field: "custom section name length"))
+                guard nameLength <= sectionEnd - position else {
+                    throw malformed(nameLengthOffset, "the custom section at offset \(sectionStart) declares a name of \(nameLength) bytes, but \(sectionEnd - position) bytes of the section follow its name length")
+                }
+                let name = bytes[position..<position + nameLength]
+                if let known = [envMetaSectionName, specSectionName, metaSectionName].first(where: { name.elementsEqual($0.utf8) }) {
+                    sections[known, default: []].append(position + nameLength..<sectionEnd)
                 }
             }
-            break
+            position = sectionEnd
         }
-
-        return specEntries
+        return sections
     }
-    
-    private static func parseMeta(bytesString:String) -> [String: String] {
-        var metaBytesStr = slice(input: bytesString, from: "contractmetav0", to: "contractenvmetav0")
-        if (metaBytesStr == nil) {
-            metaBytesStr = slice(input: bytesString, from: "contractmetav0", to: "contractspecv0")
-        }
-        if (metaBytesStr == nil) {
-            metaBytesStr = end(input: bytesString, from: "contractmetav0")
-        }
-        var result: [String: String] = [:]
-        guard var meta = metaBytesStr else {
-            return result
-        }
 
-        while !meta.isEmpty {
-            if let metaBytes = meta.data(using: .isoLatin1) {
-                let xdrDecoder = XDRDecoder.init(data: [UInt8](metaBytes))
-                if let entry = try? SCMetaEntryXDR(from: xdrDecoder) {
-                    switch entry {
-                    case .v0(let sCMetaV0XDR):
-                        // According to SEP-47, multiple entries with the same key should be concatenated with comma separator
-                        if let existingValue = result[sCMetaV0XDR.key] {
-                            result[sCMetaV0XDR.key] = existingValue + "," + sCMetaV0XDR.value
-                        } else {
-                            result[sCMetaV0XDR.key] = sCMetaV0XDR.value
-                        }
-                        if let enc = try? XDREncoder.encode(entry),
-                           let entryBytesString = String(data: Data(enc), encoding: .isoLatin1),
-                           let remaining = end(input: meta, from: entryBytesString) {
-                            meta = remaining
-                            continue
-                        }
-                    }
+    /// Reads an unsigned LEB128 value of at most 32 bits, as wasm encodes sizes and lengths: at most
+    /// 5 bytes, all before `end`, and the fifth byte holds only the 4 highest bits of the value.
+    ///
+    /// - Throws: `SorobanContractParserError.malformedModule` naming the offset of the value.
+    private static func readLEB128U32(_ bytes: [UInt8], at position: inout Int, end: Int, field: String) throws -> UInt32 {
+        let start = position
+        var value: UInt32 = 0
+        var shift: UInt32 = 0
+        var byte: UInt8
+        repeat {
+            guard position < end else {
+                throw malformed(start, "the \(field) at offset \(start) runs past offset \(end)")
+            }
+            byte = bytes[position]
+            position += 1
+            if shift == 28 { // the fifth byte
+                guard byte & 0x80 == 0 else {
+                    throw malformed(start, "the \(field) at offset \(start) is longer than 5 bytes")
+                }
+                guard byte & 0x70 == 0 else {
+                    throw malformed(start, "the \(field) at offset \(start) exceeds 32 bits")
                 }
             }
-            break
-        }
+            value |= UInt32(byte & 0x7f) << shift
+            shift += 7
+        } while byte & 0x80 != 0
+        return value
+    }
 
-        return result
+    /// Decodes the content of a custom section as a stream of entries, one after the other, until the
+    /// content is consumed. The reader position measures what each entry consumed.
+    ///
+    /// - Throws: `SorobanContractParserError.invalidSectionEntry` naming the section and the module
+    ///   offset of the entry that does not decode.
+    private static func decodeEntries<Entry: XDRDecodable>(_ type: Entry.Type, section: String, bytes: [UInt8], content: Range<Int>) throws -> [Entry] {
+        let decoder = XDRDecoder(data: Array(bytes[content]))
+        var entries: [Entry] = []
+        while decoder.remainingBytes > 0 {
+            let offset = content.upperBound - decoder.remainingBytes
+            do {
+                entries.append(try decoder.decode(Entry.self))
+            } catch {
+                throw SorobanContractParserError.invalidSectionEntry(section: section, offset: offset, message: describe(error))
+            }
+        }
+        return entries
     }
-    
-    private static func slice(input: String, from: String, to: String) -> String? {
-        guard let rangeFrom = input.range(of: from)?.upperBound else { return nil }
-        guard let rangeTo = input[rangeFrom...].range(of: to)?.lowerBound else { return nil }
-        return String(input[rangeFrom..<rangeTo])
+
+    private static func describe(_ error: Error) -> String {
+        switch error {
+        case StellarSDKError.xdrDecodingError(let message):
+            return message
+        case XDRDecoder.Error.invalidUTF8(let bytes):
+            return "a string of length \(bytes.count) is not valid UTF-8"
+        default:
+            return "\(error)"
+        }
     }
-    
-    private static func end(input: String, from: String) -> String? {
-        guard let rangeFrom = input.range(of: from)?.upperBound else { return nil }
-        return String(input[rangeFrom...])
+
+    private static func malformed(_ offset: Int, _ message: String) -> SorobanContractParserError {
+        return .malformedModule(offset: offset, message: message)
     }
 }
 
@@ -161,7 +191,7 @@ public final class SorobanContractInfo: Sendable {
     /// Raw contract specification entries defining types, functions, and events.
     public let specEntries:[SCSpecEntryXDR]
 
-    /// Key-value metadata entries from the contract's custom section.
+    /// Key-value metadata entries from the contract's `contractmetav0` custom sections.
     public let metaEntries: [String: String]
 
     /// List of SEPs (Stellar Ecosystem Proposals) supported by the contract.
@@ -289,8 +319,17 @@ public final class SorobanContractInfo: Sendable {
 public enum SorobanContractParserError: Error, Sendable {
     /// The provided byte code is invalid or corrupted.
     case invalidByteCode
-    /// The contract environment metadata section could not be found in the byte code.
+    /// The first `contractenvmetav0` section of the byte code is absent or empty.
     case environmentMetaNotFound
     /// The contract specification entries section could not be found in the byte code.
     case specEntriesNotFound
+    /// The byte code is not a well-formed wasm module: the header, the size of a section or the
+    /// name of a custom section does not fit the input. `offset` is the module offset of the
+    /// malformed field and `message` names the values involved.
+    case malformedModule(offset: Int, message: String)
+    /// An entry of a `contractenvmetav0`, `contractspecv0` or `contractmetav0` section does not
+    /// decode: its kind is unknown, a value in it is invalid, or the end of the section cuts it.
+    /// `section` names the section, `offset` is the module offset where the entry starts and
+    /// `message` names the decoding failure.
+    case invalidSectionEntry(section: String, offset: Int, message: String)
 }

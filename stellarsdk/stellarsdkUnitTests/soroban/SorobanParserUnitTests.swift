@@ -509,4 +509,331 @@ final class SorobanParserUnitTests: XCTestCase {
                      "ContractSpec findEntry() should return nil for non-existent entry")
     }
 
+    // MARK: - Wasm section bounds
+
+    // The modules below are built from the sections of the token contract wasm, indexed
+    // 0 to 7 (type to data), 8 contractspecv0, 9 contractenvmetav0 and 10 contractmetav0.
+    // Expected entries come from decoding the original sections with the XDR types directly.
+
+    private static let wasmHeader: [UInt8] = [0x00, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00]
+    private let spec = "contractspecv0", envMeta = "contractenvmetav0", meta = "contractmetav0"
+
+    func testSectionsParseToTheEntriesTheirContentHolds() throws {
+        let sections = try tokenSections()
+        XCTAssertEqual(sections.compactMap { custom($0)?.name }, [spec, envMeta, meta])
+        let info = try parse(sections)
+        XCTAssertEqual(try info.specEntries.map(XDREncoder.encode), try entryStream(SCSpecEntryXDR.self, content(spec, sections)))
+        XCTAssertEqual(info.specEntries.count, 25)
+        let envMetaEntries = try decodedStream(SCEnvMetaEntryXDR.self, content(envMeta, sections))
+        guard envMetaEntries.count == 1, case .interfaceVersion(let version) = envMetaEntries[0] else {
+            return XCTFail("expected one interface version entry, got \(envMetaEntries)")
+        }
+        XCTAssertEqual(info.envProtocolVersion, version.protocol)
+        XCTAssertEqual(info.envPreReleaseVersion, version.preRelease)
+        let metaPairs = try decodedStream(SCMetaEntryXDR.self, content(meta, sections)).map { entry -> String in
+            guard case .v0(let pair) = entry else { return "" }
+            return "\(pair.key)=\(pair.value)"
+        }
+        XCTAssertEqual(info.metaEntries.map { "\($0.key)=\($0.value)" }.sorted(), metaPairs.sorted())
+        XCTAssertEqual(metaPairs.count, 2)
+
+        // Values with the same metadata key are joined with a comma; for the `sep` key, this
+        // implements SEP-47.
+        var seps = sections
+        let sepEntries = try ["1", "10"].map { try XDREncoder.encode(SCMetaEntryXDR.v0(SCMetaV0XDR(key: "sep", value: $0))) }
+        seps[10] = customSection(meta, try content(meta, sections) + sepEntries.joined())
+        let sepInfo = try parse(seps)
+        XCTAssertEqual(sepInfo.metaEntries["sep"], "1,10")
+        XCTAssertEqual(sepInfo.supportedSeps, ["1", "10"])
+        XCTAssertEqual(sepInfo.metaEntries.count, 3)
+
+        // A spec section followed by another custom section parses to the full entry list.
+        var followed = sections
+        followed.insert(customSection("other", [1, 2, 3, 4, 5]), at: 9)
+        XCTAssertEqual(try parse(followed).specEntries.map(XDREncoder.encode), try entryStream(SCSpecEntryXDR.self, content(spec, sections)))
+
+        // An environment meta section is read to its end; the first entry gives the version.
+        var twoVersions = sections
+        twoVersions[9] = customSection(envMeta, try content(envMeta, sections) + XDREncoder.encode(SCEnvMetaEntryXDR.interfaceVersion(SCEnvMetaEntryXDRInterfaceVersionXDR(protocol: 99, preRelease: 7))))
+        XCTAssertEqual(try parse(twoVersions).envProtocolVersion, version.protocol)
+        var cutVersion = sections
+        cutVersion[9] = customSection(envMeta, try content(envMeta, sections) + [0x00, 0x00, 0x00])
+        assertInvalidEntry(cutVersion, envMeta, at: try contentOffset(9, cutVersion) + content(envMeta, sections).count, "prematureEndOfData")
+    }
+
+    func testMissingSectionsKeepTheirResults() throws {
+        let sections = try tokenSections()
+        assertParse(Array(sections[0...7]) + [sections[9], sections[10]], throws: .specEntriesNotFound)
+        assertParse(Array(sections[0...8]) + [sections[10]], throws: .environmentMetaNotFound)
+        assertParse(Array(sections[0...8]) + [customSection(envMeta, []), sections[10]], throws: .environmentMetaNotFound)
+        let withoutMeta = try parse(Array(sections[0...9]))
+        XCTAssertTrue(withoutMeta.metaEntries.isEmpty)
+        XCTAssertEqual(withoutMeta.specEntries.count, 25)
+        XCTAssertEqual(try parse(Array(sections[0...7]) + [customSection(spec, []), sections[9]]).specEntries.count, 0)
+    }
+
+    func testAnEntryThatDoesNotDecodeFailsWithItsOffset() throws {
+        let sections = try tokenSections()
+        let specEntries = try entryStream(SCSpecEntryXDR.self, content(spec, sections))
+
+        // A doc holding the byte ff.
+        var badDoc = try XDREncoder.encode(SCSpecEntryXDR.functionV0(SCSpecFunctionV0XDR(doc: "a", name: "f", inputs: [], outputs: [])))
+        XCTAssertEqual(badDoc[4...8], [0x00, 0x00, 0x00, 0x01, 0x61])
+        badDoc[8] = 0xff
+        var docModule = sections
+        docModule[8] = customSection(spec, Array(specEntries[0..<3].joined()) + badDoc + Array(specEntries[3...].joined()))
+        assertInvalidEntry(docModule, spec, at: try contentOffset(8, docModule) + specEntries[0..<3].joined().count, "a string of length 1 is not valid UTF-8")
+
+        // A meta value holding the byte ff.
+        let metaEntries = try entryStream(SCMetaEntryXDR.self, content(meta, sections))
+        var badValue = try XDREncoder.encode(SCMetaEntryXDR.v0(SCMetaV0XDR(key: "k", value: "v")))
+        XCTAssertEqual(badValue[12...16], [0x00, 0x00, 0x00, 0x01, 0x76])
+        badValue[16] = 0xff
+        var metaModule = sections
+        metaModule[10] = customSection(meta, metaEntries[0] + badValue + metaEntries[1])
+        assertInvalidEntry(metaModule, meta, at: try contentOffset(10, metaModule) + metaEntries[0].count, "a string of length 1 is not valid UTF-8")
+
+        // An unknown spec entry kind.
+        var unknownKind = sections
+        unknownKind[8] = customSection(spec, specEntries[0] + [0x00, 0x00, 0x00, 0x63] + Array(specEntries[1...].joined()))
+        assertInvalidEntry(unknownKind, spec, at: try contentOffset(8, unknownKind) + specEntries[0].count, "Unknown SCSpecEntryXDR discriminant: 99")
+
+        // Trailing bytes that do not form an entry.
+        var trailing = sections
+        trailing[8] = customSection(spec, try content(spec, sections) + [0x00, 0x00, 0x00])
+        assertInvalidEntry(trailing, spec, at: try contentOffset(8, trailing) + specEntries.joined().count, "prematureEndOfData")
+    }
+
+    func testMalformedFramingFailsWithItsOffset() throws {
+        let sections = try tokenSections()
+        let specOffset = offset(8, sections)
+        func module(_ parts: [[UInt8]]) -> [UInt8] { Self.wasmHeader + parts.joined() }
+        let total = module(sections).count
+
+        // A size that runs past the end of the input, before the spec section and after it.
+        let pastEnd = module(Array(sections[0...7]) + [[0x00, 0xa0, 0x8d, 0x06]] + Array(sections[8...]))
+        assertMalformed(pastEnd, at: specOffset + 1, "the section at offset \(specOffset) declares 100000 bytes, but \(total - specOffset) bytes follow its size")
+        assertMalformed(module(sections + [[0x00, 0xa0, 0x8d, 0x06]]), at: total + 1, "the section at offset \(total) declares 100000 bytes, but 0 bytes follow its size")
+
+        // A custom section name length cut by the end of its section, before the spec section.
+        let cutName = module(Array(sections[0...7]) + [[0x00, 0x01, 0x80]] + Array(sections[8...]))
+        assertMalformed(cutName, at: specOffset + 2, "the custom section name length at offset \(specOffset + 2) runs past offset \(specOffset + 3)")
+
+        // The spec section itself with a size past the end, and with its size cut by the end.
+        let specPayload = Array(sections[8][3...])
+        XCTAssertEqual(Array(sections[8][1...2]), leb128(specPayload.count))
+        let lastSpec = Array(sections[0...7]) + [sections[9], sections[10]]
+        let lastOffset = module(lastSpec).count
+        assertMalformed(module(lastSpec + [[0x00] + leb128(specPayload.count + 1) + specPayload]), at: lastOffset + 1,
+                        "the section at offset \(lastOffset) declares \(specPayload.count + 1) bytes, but \(specPayload.count) bytes follow its size")
+        assertMalformed(module(lastSpec + [[0x00, sections[8][1]]]), at: lastOffset + 1,
+                        "the section size at offset \(lastOffset + 1) runs past offset \(lastOffset + 2)")
+
+        // A name longer than its section.
+        let longName = module(Array(sections[0...7]) + [[0x00, 0x03, 0x05, 0x61, 0x62]] + Array(sections[8...]))
+        assertMalformed(longName, at: specOffset + 2, "the custom section at offset \(specOffset) declares a name of 5 bytes, but 2 bytes of the section follow its name length")
+
+        // LEB128 sizes: the largest 32-bit value is read, a fifth byte above 4 bits and a sixth byte fail.
+        let largest = module(Array(sections[0...7]) + [[0x00, 0xff, 0xff, 0xff, 0xff, 0x0f]] + Array(sections[8...]))
+        assertMalformed(largest, at: specOffset + 1, "the section at offset \(specOffset) declares 4294967295 bytes, but \(total - specOffset) bytes follow its size")
+        let overflow = module(Array(sections[0...7]) + [[0x00, 0xff, 0xff, 0xff, 0xff, 0x1f]] + Array(sections[8...]))
+        assertMalformed(overflow, at: specOffset + 1, "the section size at offset \(specOffset + 1) exceeds 32 bits")
+        let sixBytes = module(Array(sections[0...7]) + [[0x00, 0x80, 0x80, 0x80, 0x80, 0x80, 0x00]] + Array(sections[8...]))
+        assertMalformed(sixBytes, at: specOffset + 1, "the section size at offset \(specOffset + 1) is longer than 5 bytes")
+
+        // The header: fewer than 8 bytes, a wrong magic and a wrong version.
+        assertMalformed([], at: 0, "the module has 0 bytes, fewer than the 8 bytes of the wasm header")
+        assertMalformed(Array(Self.wasmHeader[0..<7]), at: 0, "the module has 7 bytes, fewer than the 8 bytes of the wasm header")
+        var wrongMagic = module(sections)
+        wrongMagic[1] = 0x62
+        assertMalformed(wrongMagic, at: 0, "the module does not start with the wasm magic 00 61 73 6d")
+        var wrongVersion = module(sections)
+        wrongVersion[4] = 0x02
+        assertMalformed(wrongVersion, at: 4, "the wasm version is not 01 00 00 00")
+    }
+
+    func testPaddedLEB128SizesAreRead() throws {
+        let sections = try tokenSections()
+        let specContent = try content(spec, sections)
+        let padded = padded5(14) + Array(spec.utf8) + specContent
+        var module = sections
+        module[8] = [0x00] + padded5(padded.count) + padded
+        module.insert([0x00, 0x05, 0x80, 0x80, 0x80, 0x80, 0x00], at: 8)
+        XCTAssertEqual(try parse(module).specEntries.map(XDREncoder.encode), try entryStream(SCSpecEntryXDR.self, specContent))
+    }
+
+    func testEveryMetaSectionIsReadAndTheFirstSpecAndEnvMetaSection() throws {
+        let sections = try tokenSections()
+        let specEntries = try entryStream(SCSpecEntryXDR.self, content(spec, sections))
+        let original = try parse(sections)
+        let rsver = try XCTUnwrap(original.metaEntries["rsver"])
+        let secondMeta = try [("rsver", "x"), ("extra", "y")].map {
+            try XDREncoder.encode(SCMetaEntryXDR.v0(SCMetaV0XDR(key: $0.0, value: $0.1)))
+        }
+        let repeated = sections + [
+            customSection(spec, Array(specEntries[0..<2].joined())),
+            customSection(envMeta, try XDREncoder.encode(SCEnvMetaEntryXDR.interfaceVersion(SCEnvMetaEntryXDRInterfaceVersionXDR(protocol: 99, preRelease: 7)))),
+            customSection(meta, Array(secondMeta.joined())),
+        ]
+        let info = try parse(repeated)
+        XCTAssertEqual(try info.specEntries.map(XDREncoder.encode), specEntries)
+        XCTAssertEqual(info.envProtocolVersion, original.envProtocolVersion)
+        XCTAssertEqual(info.envPreReleaseVersion, original.envPreReleaseVersion)
+        // An empty first environment meta section counts, also when a later one holds the version.
+        assertParse(Array(sections[0...8]) + [customSection(envMeta, []), sections[9], sections[10]], throws: .environmentMetaNotFound)
+
+        // The entries of both meta sections are read in module order.
+        var expectedMeta = original.metaEntries
+        expectedMeta["rsver"] = rsver + ",x"
+        expectedMeta["extra"] = "y"
+        XCTAssertEqual(info.metaEntries, expectedMeta)
+
+        // An entry cut by the end of the second meta section fails with its offset, also when the
+        // next meta section holds the rest of its bytes.
+        var cut = repeated
+        cut[13] = customSection(meta, secondMeta[0] + secondMeta[1][0..<5])
+        cut.append(customSection(meta, Array(secondMeta[1][5...])))
+        assertInvalidEntry(cut, meta, at: try contentOffset(13, cut) + secondMeta[0].count, "prematureEndOfData")
+    }
+
+    func testSectionNameBytesInsideADataSegmentDoNotStartASection() throws {
+        var sections = try tokenSections()
+        XCTAssertEqual(sections[7][0], 11)
+        var position = 1
+        let size = readLEB128(sections[7], &position)
+        XCTAssertEqual(position + size, sections[7].count)
+        let segmentCount = readLEB128(sections[7], &position)
+        let bytes = Array(spec.utf8) + [0x00, 0x00, 0x00, 0x63] + Array(envMeta.utf8) + [0x00, 0x00, 0x00, 0x63]
+        let segment: [UInt8] = [0x00, 0x41, 0x00, 0x0b] + leb128(bytes.count) + bytes
+        let payload = leb128(segmentCount + 1) + segment + Array(sections[7][position...])
+        let original = try parse(sections)
+        sections[7] = [11] + leb128(payload.count) + payload
+        let info = try parse(sections)
+        XCTAssertEqual(try info.specEntries.map(XDREncoder.encode), try original.specEntries.map(XDREncoder.encode))
+        XCTAssertEqual(info.specEntries.count, 25)
+        XCTAssertEqual(info.envProtocolVersion, original.envProtocolVersion)
+    }
+
+    /// The token contract wasm split into its sections, each from its id byte to its end.
+    private func tokenSections() throws -> [[UInt8]] {
+        let path = try XCTUnwrap(Bundle.module.path(forResource: "soroban_token_contract", ofType: "wasm"))
+        let bytes = [UInt8](try XCTUnwrap(FileManager.default.contents(atPath: path)))
+        XCTAssertEqual(Array(bytes[0..<8]), Self.wasmHeader)
+        var sections: [[UInt8]] = []
+        var position = 8
+        while position < bytes.count {
+            var cursor = position + 1
+            let end = readLEB128(bytes, &cursor) + cursor
+            sections.append(Array(bytes[position..<end]))
+            position = end
+        }
+        return sections
+    }
+
+    private func readLEB128(_ bytes: [UInt8], _ position: inout Int) -> Int {
+        var value = 0
+        var shift = 0
+        while true {
+            let byte = bytes[position]
+            position += 1
+            value |= Int(byte & 0x7f) << shift
+            if byte & 0x80 == 0 { return value }
+            shift += 7
+        }
+    }
+
+    private func leb128(_ value: Int) -> [UInt8] {
+        var rest = value
+        var bytes: [UInt8] = []
+        repeat {
+            let low = UInt8(rest & 0x7f)
+            rest >>= 7
+            bytes.append(rest == 0 ? low : low | 0x80)
+        } while rest != 0
+        return bytes
+    }
+
+    private func padded5(_ value: Int) -> [UInt8] {
+        return (0..<4).map { UInt8((value >> (7 * $0)) & 0x7f) | 0x80 } + [UInt8(value >> 28)]
+    }
+
+    /// The name and the content after the name of a custom section, nil for another section.
+    private func custom(_ section: [UInt8]) -> (name: String, content: [UInt8])? {
+        guard section[0] == 0 else { return nil }
+        var position = 1
+        _ = readLEB128(section, &position)
+        let nameLength = readLEB128(section, &position)
+        let name = String(decoding: section[position..<position + nameLength], as: UTF8.self)
+        return (name, Array(section[(position + nameLength)...]))
+    }
+
+    private func customSection(_ name: String, _ content: [UInt8]) -> [UInt8] {
+        let payload = leb128(name.utf8.count) + Array(name.utf8) + content
+        return [0x00] + leb128(payload.count) + payload
+    }
+
+    private func content(_ name: String, _ sections: [[UInt8]]) throws -> [UInt8] {
+        return try XCTUnwrap(sections.compactMap(custom).first { $0.name == name }?.content)
+    }
+
+    /// The module offset of the section at the index.
+    private func offset(_ index: Int, _ sections: [[UInt8]]) -> Int {
+        return Self.wasmHeader.count + sections[..<index].joined().count
+    }
+
+    /// The module offset of the content of the custom section at the index.
+    private func contentOffset(_ index: Int, _ sections: [[UInt8]]) throws -> Int {
+        let section = sections[index]
+        return offset(index, sections) + section.count - (try XCTUnwrap(custom(section))).content.count
+    }
+
+    /// Decodes section content entry by entry, independent of the parser.
+    private func decodedStream<Entry: XDRCodable>(_ type: Entry.Type, _ content: [UInt8]) throws -> [Entry] {
+        var entries: [Entry] = []
+        var position = 0
+        while position < content.count {
+            let entry = try XDRDecoder.decode(Entry.self, data: Array(content[position...]))
+            let encoded = try XDREncoder.encode(entry)
+            XCTAssertEqual(encoded[...], content[position..<min(position + encoded.count, content.count)])
+            entries.append(entry)
+            position += encoded.count
+        }
+        return entries
+    }
+
+    /// The encoded entries of section content, each verified against the bytes it was decoded from.
+    private func entryStream<Entry: XDRCodable>(_ type: Entry.Type, _ content: [UInt8]) throws -> [[UInt8]] {
+        return try decodedStream(type, content).map(XDREncoder.encode)
+    }
+
+    private func parse(_ sections: [[UInt8]]) throws -> SorobanContractInfo {
+        return try SorobanContractParser.parseContractByteCode(byteCode: Data(Self.wasmHeader + sections.joined()))
+    }
+
+    private func assertParse(_ sections: [[UInt8]], throws expected: SorobanContractParserError, line: UInt = #line) {
+        XCTAssertThrowsError(try parse(sections), line: line) { error in
+            XCTAssertEqual("\(error)", "\(expected)", line: line)
+        }
+    }
+
+    private func assertMalformed(_ module: [UInt8], at offset: Int, _ message: String, line: UInt = #line) {
+        XCTAssertThrowsError(try SorobanContractParser.parseContractByteCode(byteCode: Data(module)), line: line) { error in
+            guard case SorobanContractParserError.malformedModule(let actualOffset, let actualMessage) = error else {
+                return XCTFail("expected malformedModule, got \(error)", line: line)
+            }
+            XCTAssertEqual(actualOffset, offset, line: line)
+            XCTAssertEqual(actualMessage, message, line: line)
+        }
+    }
+
+    private func assertInvalidEntry(_ sections: [[UInt8]], _ section: String, at offset: Int, _ message: String, line: UInt = #line) {
+        XCTAssertThrowsError(try parse(sections), line: line) { error in
+            guard case SorobanContractParserError.invalidSectionEntry(let actualSection, let actualOffset, let actualMessage) = error else {
+                return XCTFail("expected invalidSectionEntry, got \(error)", line: line)
+            }
+            XCTAssertEqual(actualSection, section, line: line)
+            XCTAssertEqual(actualOffset, offset, line: line)
+            XCTAssertEqual(actualMessage, message, line: line)
+        }
+    }
 }
