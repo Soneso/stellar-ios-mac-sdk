@@ -262,6 +262,91 @@ class TransactionV0XDRUnitTests: XCTestCase {
         XCTAssertEqual(hash.count, 32)
     }
 
+    // MARK: - TransactionV0XDR hash vectors
+
+    // Testnet vectors computed outside the SDK. Core hashes a V0 transaction as
+    // sha256(network id || ENVELOPE_TYPE_TX || 0 || tx), which equals the hash of its V1 form with
+    // the same fields and the fee as written. Each V0 envelope carries one placeholder signature.
+    private struct V0HashVector {
+        let envelope: String
+        let signaturePayload: String
+        let v1EquivalentEnvelope: String
+        let hash: String
+    }
+
+    private let twoPaymentVectors = [
+        // Fee 200, no time bounds, memo none.
+        V0HashVector(
+            envelope: "AAAAAAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gAAAAyAAAAAEAAAABAAAAAAAAAAAAAAACAAAAAAAAAAEAAAAAISIjJCUmJygpKissLS4vMDEyMzQ1Njc4OTo7PD0+P0AAAAAAAAAAAACYloAAAAAAAAAAAQAAAAAhIiMkJSYnKCkqKywtLi8wMTIzNDU2Nzg5Ojs8PT4/QAAAAAAAAAAAATEtAAAAAAAAAAABAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+            signaturePayload: "zuAwLVmETTK9ypFcggPdRLM/u37cGQUeo3q+3yjs1HIAAAACAAAAAAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gAAAAyAAAAAEAAAABAAAAAAAAAAAAAAACAAAAAAAAAAEAAAAAISIjJCUmJygpKissLS4vMDEyMzQ1Njc4OTo7PD0+P0AAAAAAAAAAAACYloAAAAAAAAAAAQAAAAAhIiMkJSYnKCkqKywtLi8wMTIzNDU2Nzg5Ojs8PT4/QAAAAAAAAAAAATEtAAAAAAA=",
+            v1EquivalentEnvelope: "AAAAAgAAAAABAgMEBQYHCAkKCwwNDg8QERITFBUWFxgZGhscHR4fIAAAAMgAAAABAAAAAQAAAAAAAAAAAAAAAgAAAAAAAAABAAAAACEiIyQlJicoKSorLC0uLzAxMjM0NTY3ODk6Ozw9Pj9AAAAAAAAAAAAAmJaAAAAAAAAAAAEAAAAAISIjJCUmJygpKissLS4vMDEyMzQ1Njc4OTo7PD0+P0AAAAAAAAAAAAExLQAAAAAAAAAAAQAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+            hash: "a8da8515801f02678a926092014c2cdc5210aa5907da2dfcda6c0e69bb4542c9"),
+        // Fee 200, time bounds, text memo.
+        V0HashVector(
+            envelope: "AAAAAAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gAAAAyAAAAAEAAAABAAAAAQAAAAAAAAAAAAAAAGlVuQAAAAABAAAAA8OpMQAAAAACAAAAAAAAAAEAAAAAISIjJCUmJygpKissLS4vMDEyMzQ1Njc4OTo7PD0+P0AAAAAAAAAAAACYloAAAAAAAAAAAQAAAAAhIiMkJSYnKCkqKywtLi8wMTIzNDU2Nzg5Ojs8PT4/QAAAAAAAAAAAATEtAAAAAAAAAAABAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+            signaturePayload: "zuAwLVmETTK9ypFcggPdRLM/u37cGQUeo3q+3yjs1HIAAAACAAAAAAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gAAAAyAAAAAEAAAABAAAAAQAAAAAAAAAAAAAAAGlVuQAAAAABAAAAA8OpMQAAAAACAAAAAAAAAAEAAAAAISIjJCUmJygpKissLS4vMDEyMzQ1Njc4OTo7PD0+P0AAAAAAAAAAAACYloAAAAAAAAAAAQAAAAAhIiMkJSYnKCkqKywtLi8wMTIzNDU2Nzg5Ojs8PT4/QAAAAAAAAAAAATEtAAAAAAA=",
+            v1EquivalentEnvelope: "AAAAAgAAAAABAgMEBQYHCAkKCwwNDg8QERITFBUWFxgZGhscHR4fIAAAAMgAAAABAAAAAQAAAAEAAAAAAAAAAAAAAABpVbkAAAAAAQAAAAPDqTEAAAAAAgAAAAAAAAABAAAAACEiIyQlJicoKSorLC0uLzAxMjM0NTY3ODk6Ozw9Pj9AAAAAAAAAAAAAmJaAAAAAAAAAAAEAAAAAISIjJCUmJygpKissLS4vMDEyMzQ1Njc4OTo7PD0+P0AAAAAAAAAAAAExLQAAAAAAAAAAAQAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+            hash: "6e3638fb3c7cb6581e1d8cf6169ce03f4c238d535d0b9cea44984e43fe5a1201"),
+    ]
+
+    private func v0Transaction(_ envelope: TransactionEnvelopeXDR) throws -> TransactionV0XDR {
+        guard case .v0(let v0Envelope) = envelope else {
+            throw StellarSDKError.invalidArgument(message: "Expected a V0 envelope, got type \(envelope.type())")
+        }
+        return v0Envelope.tx
+    }
+
+    func testTransactionV0XDRHashUsesFeeAsWritten() throws {
+        for vector in twoPaymentVectors {
+            let envelope = try TransactionEnvelopeXDR(fromBase64: vector.envelope)
+            let tx = try v0Transaction(envelope)
+            XCTAssertEqual(tx.fee, 200)
+            XCTAssertEqual(tx.operations.count, 2)
+
+            XCTAssertEqual(try tx.hash(network: .testnet).base16EncodedString(), vector.hash)
+            XCTAssertEqual(try envelope.txHash(network: .testnet).base16EncodedString(), vector.hash)
+            let v1Envelope = try TransactionEnvelopeXDR(fromBase64: vector.v1EquivalentEnvelope)
+            XCTAssertEqual(try v1Envelope.txHash(network: .testnet).base16EncodedString(), vector.hash)
+            XCTAssertEqual(envelope.xdrEncoded, vector.envelope)
+        }
+    }
+
+    func testTransactionV0XDRSignCoversCoreSignaturePayload() throws {
+        for vector in twoPaymentVectors {
+            var tx = try v0Transaction(TransactionEnvelopeXDR(fromBase64: vector.envelope))
+            let keyPair = try KeyPair.generateRandomKeyPair()
+            try tx.sign(keyPair: keyPair, network: .testnet)
+
+            let signatures = try tx.toEnvelopeV0XDR().signatures
+            XCTAssertEqual(signatures.count, 1)
+            let signature = try XCTUnwrap(signatures.first)
+            let payloadHash = try XCTUnwrap(Data(base64Encoded: vector.signaturePayload)).sha256Hash
+            XCTAssertEqual(payloadHash.base16EncodedString(), vector.hash)
+            XCTAssertTrue(try keyPair.verify(signature: [UInt8](signature.signature), message: [UInt8](payloadHash)))
+        }
+    }
+
+    func testTransactionV0XDRHashOfOneOperationTransaction() throws {
+        // The first payment of the fee 200 vector alone, fee 100, built and hashed outside the SDK.
+        let envelope = try TransactionEnvelopeXDR(fromBase64: "AAAAAAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gAAAAZAAAAAEAAAABAAAAAAAAAAAAAAABAAAAAAAAAAEAAAAAISIjJCUmJygpKissLS4vMDEyMzQ1Njc4OTo7PD0+P0AAAAAAAAAAAACYloAAAAAAAAAAAQAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==")
+        let tx = try v0Transaction(envelope)
+        XCTAssertEqual(tx.fee, 100)
+        XCTAssertEqual(tx.operations.count, 1)
+
+        let expectedHash = "8e41cbb44b6a7aa4509f02e04ffe0fc36181ceed9cace9ba8767efd3acb06f4e"
+        XCTAssertEqual(try tx.hash(network: .testnet).base16EncodedString(), expectedHash)
+        XCTAssertEqual(try envelope.txHash(network: .testnet).base16EncodedString(), expectedHash)
+    }
+
+    func testTransactionV0XDRHashWithMaximumFee() throws {
+        // The two payments of the fee 200 vector with fee UInt32.max, built and hashed outside the SDK.
+        let envelope = try TransactionEnvelopeXDR(fromBase64: "AAAAAAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8g/////wAAAAEAAAABAAAAAAAAAAAAAAACAAAAAAAAAAEAAAAAISIjJCUmJygpKissLS4vMDEyMzQ1Njc4OTo7PD0+P0AAAAAAAAAAAACYloAAAAAAAAAAAQAAAAAhIiMkJSYnKCkqKywtLi8wMTIzNDU2Nzg5Ojs8PT4/QAAAAAAAAAAAATEtAAAAAAAAAAABAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+        XCTAssertEqual(envelope.txFee, UInt32.max)
+        XCTAssertEqual(envelope.txOperations.count, 2)
+        XCTAssertEqual(try envelope.txHash(network: .testnet).base16EncodedString(),
+                       "26fda0c932d5b823a2507a8c1b5b136791e87a8474db0e9fd3cd12cdd30aebdc")
+    }
+
     // MARK: - TransactionV0EnvelopeXDR Tests
 
     func testTransactionV0EnvelopeXDRInit() throws {

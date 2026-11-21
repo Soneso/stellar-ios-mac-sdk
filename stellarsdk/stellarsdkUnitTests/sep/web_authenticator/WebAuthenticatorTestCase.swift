@@ -720,4 +720,39 @@ class WebAuthenticatorTestCase: XCTestCase {
             XCTAssertEqual(error, .invalidTimeBounds)
         }
     }
+
+    // MARK: - V0 challenge
+
+    func testV0TwoOperationChallengeValidatesAndSignsCorePayload() throws {
+        let serverKeyPair = try KeyPair.generateRandomKeyPair()
+        let userKeyPair = try KeyPair.generateRandomKeyPair()
+        let webAuthDomain = try XCTUnwrap(URLComponents(string: authServer)?.host)
+        let operations = [
+            try ManageDataOperation(sourceAccountId: userKeyPair.accountId, name: "\(domain) auth", data: challengeNonce()).toXDR(),
+            try ManageDataOperation(sourceAccountId: serverKeyPair.accountId, name: "web_auth_domain", data: Data(webAuthDomain.utf8)).toXDR(),
+        ]
+        let now = UInt64(Date().timeIntervalSince1970)
+        let tx = TransactionV0XDR(sourceAccount: serverKeyPair.publicKey, seqNum: 0, timeBounds: TimeBoundsXDR(minTime: now, maxTime: now + 300), memo: MemoXDR.none, operations: operations, maxOperationFee: 100)
+        XCTAssertEqual(tx.fee, 200)
+
+        // The payload core signs for a V0 transaction, sha256(network id || ENVELOPE_TYPE_TX || 0 || tx),
+        // built here without the SDK's transaction hash.
+        let networkId = Data("Test SDF Network ; September 2015".utf8).sha256Hash
+        let payloadHash = [UInt8]((networkId + Data([0, 0, 0, 2, 0, 0, 0, 0]) + Data(try XDREncoder.encode(tx))).sha256Hash)
+        let envelope = TransactionEnvelopeXDR.v0(TransactionV0EnvelopeXDR(tx: tx, signatures: [serverKeyPair.signDecorated(payloadHash)]))
+
+        let webAuthenticator = WebAuthenticator(authEndpoint: authServer, network: .testnet, serverSigningKey: serverKeyPair.accountId, serverHomeDomain: domain)
+        switch webAuthenticator.isValidChallenge(transactionEnvelopeXDR: envelope, userAccountId: userKeyPair.accountId, serverSigningKey: serverKeyPair.accountId, timeBoundsGracePeriod: webAuthenticator.gracePeriod) {
+        case .success:
+            break
+        case .failure(let error):
+            XCTFail("a V0 challenge signed over the core payload must pass, got \(error)")
+        }
+
+        let signedEnvelope = try XCTUnwrap(webAuthenticator.signTransaction(transactionEnvelopeXDR: envelope, keyPairs: [userKeyPair]))
+        let signatures = try TransactionEnvelopeXDR(fromBase64: signedEnvelope).txSignatures
+        XCTAssertEqual(signatures.count, 2)
+        let clientSignature = try XCTUnwrap(signatures.last)
+        XCTAssertTrue(try userKeyPair.verify(signature: [UInt8](clientSignature.signature), message: payloadHash))
+    }
 }
