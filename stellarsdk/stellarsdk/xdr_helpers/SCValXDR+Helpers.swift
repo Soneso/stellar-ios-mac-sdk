@@ -297,14 +297,10 @@ extension SCValXDR {
         return type() == SCValType.executableTag.rawValue
     }
 
+    /// The text the executable_tag arm spells; the same value as `executableTagString`.
     @available(*, deprecated, renamed: "executableTagString")
     public var executableTag: String? {
-        switch self {
-        case .executableTag(let val):
-            return String(data: val, encoding: .utf8)
-        default:
-            return nil
-        }
+        return executableTagString
     }
 }
 

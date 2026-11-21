@@ -122,13 +122,14 @@ extension TransactionXDR {
 
 // MARK: - Internal helpers shared across transaction envelope types
 
-/// Emit MEMO_TEXT in the SEP-0011 escape form through `TxRepHelper.encodeMemoText(_:)`;
-/// every other memo type goes through the generated `MemoXDR.toTxRep`.
+/// Emit MEMO_TEXT in the SEP-0011 escape form of its bytes through
+/// `TxRepHelper.escapeBytes(_:)`; every other memo type goes through the generated
+/// `MemoXDR.toTxRep`.
 internal func emitMemo(_ memo: MemoXDR, prefix: String, lines: inout [String]) throws {
     switch memo {
-    case .text(let s):
+    case .text(let bytes):
         lines.append("\(prefix).memo.type: MEMO_TEXT")
-        lines.append("\(prefix).memo.text: \(TxRepHelper.encodeMemoText(s))")
+        lines.append("\(prefix).memo.text: \(TxRepHelper.escapeBytes(bytes))")
     default:
         try memo.toTxRep(prefix: "\(prefix).memo", lines: &lines)
     }
@@ -152,8 +153,7 @@ internal func parseMemo(_ map: [String: String], prefix: String) throws -> MemoX
         guard let raw = TxRepHelper.getValue(map, textKey) else {
             throw TxRepError.missingValue(key: textKey)
         }
-        let decoded = try TxRepHelper.decodeMemoText(raw)
-        return .text(decoded)
+        return .text(try TxRepHelper.decodeMemoTextBytes(raw))
     case "MEMO_ID":
         return .id(try TxRepHelper.requireUInt64(map, "\(prefix).memo.id"))
     case "MEMO_HASH":

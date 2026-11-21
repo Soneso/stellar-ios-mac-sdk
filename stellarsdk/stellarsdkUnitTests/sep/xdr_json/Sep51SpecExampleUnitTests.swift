@@ -119,11 +119,11 @@ final class Sep51SpecExampleUnitTests: XCTestCase {
     // MARK: - String
 
     /// The specification's string example carries the byte `0xc3` followed by `w`, which is
-    /// not valid UTF-8. This SDK stores every XDR `string<>` as a Swift `String`, which is
-    /// guaranteed well-formed Unicode, so those bytes reach the escape ladder through an
-    /// opaque field instead: an `AssetCode12` holds them exactly, and SEP-0051 §Asset Code
-    /// Types routes it through the same §String ladder. The rendered text is the
-    /// specification's, character for character.
+    /// not valid UTF-8. The memo text, the external reference `tag` and the SCVal
+    /// `executable_tag` store such bytes as `Data`; the other XDR `string<>` positions are Swift
+    /// `String` values, which are well-formed Unicode. An `AssetCode12` holds the bytes
+    /// exactly, and SEP-0051 §Asset Code Types routes it through the same §String ladder. The
+    /// rendered text is the specification's, character for character.
     func testStringEscapesBytesOutsidePrintableAscii() throws {
         let bytes = Data("hello".utf8) + Data([0xc3]) + Data("world".utf8) + Data([0x00])
         let code = AssetCode12XDR(bytes)

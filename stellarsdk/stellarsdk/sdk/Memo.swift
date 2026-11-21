@@ -84,13 +84,20 @@ extension Memo: MemoProtocol {
     
     /// Creates a memo from a MemoXDR instance
     ///
+    /// A text memo carries the text its bytes spell. Bytes that are not valid UTF-8 read as
+    /// U+FFFD replacement characters, so such a memo is display text: its `toXDR()` writes
+    /// other bytes than the input, its UTF-8 count can exceed 28 bytes, and two inputs with
+    /// different bytes can give equal memos. The exact bytes stay in the `MemoXDR`, which
+    /// `Transaction(sourceAccount:operations:memoXDR:)` and `Transaction.setMemo(memoXDR:)`
+    /// take as they are.
+    ///
     /// - Parameter memoXDR: The MemoXDR instance.
     public init?(memoXDR:MemoXDR) {
         switch memoXDR {
         case .none:
             self = .none
-        case .text(let text):
-            self = .text(text)
+        case .text(let bytes):
+            self = .text(String(decoding: bytes, as: UTF8.self))
         case .id(let id):
             self = .id(id)
         case .hash(let hash):

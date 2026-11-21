@@ -5,7 +5,7 @@ import Foundation
 
 public enum MemoXDR: XDRCodable, Sendable {
   case none
-  case text(String)
+  case text(Data)
   case id(UInt64)
   case hash(HashXDR)
   case returnHash(HashXDR)
@@ -18,7 +18,7 @@ public enum MemoXDR: XDRCodable, Sendable {
     case MemoType.MEMO_TYPE_NONE.rawValue:
       self = .none
     case MemoType.MEMO_TYPE_TEXT.rawValue:
-      let val = try container.decode(String.self)
+      let val = try container.decode(Data.self)
       self = .text(val)
     case MemoType.MEMO_TYPE_ID.rawValue:
       let val = try container.decode(UInt64.self)
@@ -64,13 +64,27 @@ public enum MemoXDR: XDRCodable, Sendable {
 }
 
 extension MemoXDR {
+  /// Builds the text arm carrying the UTF-8 bytes of the given text.
+  public static func text(_ string: String) -> MemoXDR {
+    return .text(Data(string.utf8))
+  }
+
+  /// The text the text arm spells as UTF-8, every byte kept, a leading byte order mark
+  /// included; nil when the value is another arm or the bytes are not valid UTF-8.
+  public var textString: String? {
+    guard case .text(let bytes) = self else { return nil }
+    return String(xdrUTF8: bytes)
+  }
+}
+
+extension MemoXDR {
   public func toTxRep(prefix: String, lines: inout [String]) throws {
     switch self {
     case .none:
       lines.append("\(prefix).type: MEMO_NONE")
     case .text(let val):
       lines.append("\(prefix).type: MEMO_TEXT")
-      lines.append("\(prefix).text: \(TxRepHelper.escapeString(val))")
+      lines.append("\(prefix).text: \(TxRepHelper.escapeBytes(val))")
     case .id(let val):
       lines.append("\(prefix).type: MEMO_ID")
       lines.append("\(prefix).id: \(val)")
@@ -92,7 +106,7 @@ extension MemoXDR {
     case "MEMO_NONE":
       return .none
     case "MEMO_TEXT":
-      let val = try TxRepHelper.requireString(map, "\(prefix).text")
+      let val = try TxRepHelper.requireStringBytes(map, "\(prefix).text")
       return .text(val)
     case "MEMO_ID":
       let val = try TxRepHelper.parseUInt64(TxRepHelper.getValue(map, "\(prefix).id") ?? "0")
@@ -152,7 +166,7 @@ extension MemoXDR: XdrJsonCodable {
       throw XdrJsonError.invalidValue(type: "MemoXDR", key: "none",
                                       message: "this arm carries no value, so it is written as a bare string")
     case "text":
-      let text: String = try XdrJson.unescapedText(member.value, type: "MemoXDR", key: "text")
+      let text: Data = try XdrJson.unescapeString(member.value, type: "MemoXDR", key: "text")
       return .text(text)
     case "id":
       let id: UInt64 = try Uint64XDRJsonCodec.fromXdrJsonValue(member.value, type: "MemoXDR", key: "id")

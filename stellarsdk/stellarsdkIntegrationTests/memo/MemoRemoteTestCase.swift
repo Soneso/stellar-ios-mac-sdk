@@ -39,6 +39,59 @@ class MemoRemoteTestCase: XCTestCase, @unchecked Sendable {
         maxLengthMemoText()
     }
     
+    func testTextMemoBytesThatAreNotUTF8() async throws {
+        let memoBytes = Data([0xff, 0xfe, 0x20, 0x61, 0x62, 0x63])
+
+        let accountEnum = await sdk.accounts.getAccountDetails(accountId: sourceKeyPair.accountId)
+        guard case .success(let accountResponse) = accountEnum else {
+            XCTFail("could not load account details")
+            return
+        }
+        let paymentOperation = try PaymentOperation(sourceAccountId: sourceKeyPair.accountId,
+                                                    destinationAccountId: destinationKeyPair.accountId,
+                                                    asset: Asset(type: AssetType.ASSET_TYPE_NATIVE)!,
+                                                    amount: 1.5)
+        let transaction = try Transaction(sourceAccount: accountResponse,
+                                          operations: [paymentOperation],
+                                          memoXDR: .text(memoBytes))
+        try transaction.sign(keyPair: sourceKeyPair, network: network)
+        let envelope = try transaction.encodedEnvelope()
+        let hash = try transaction.getTransactionHash(network: network)
+
+        let submitEnum = await sdk.transactions.submitTransaction(transaction: transaction)
+        switch submitEnum {
+        case .success(let details):
+            XCTAssertEqual(details.transactionHash, hash)
+        case .destinationRequiresMemo(let destinationAccountId):
+            XCTFail("destination account \(destinationAccountId) requires memo")
+            return
+        case .failure(let error):
+            StellarSDKLog.printHorizonRequestErrorMessage(tag: "testTextMemoBytesThatAreNotUTF8", horizonRequestError: error)
+            XCTFail("submit transaction error")
+            return
+        }
+
+        let detailsEnum = await sdk.transactions.getTransactionDetails(transactionHash: hash)
+        guard case .success(let details) = detailsEnum else {
+            XCTFail("could not load transaction details")
+            return
+        }
+        XCTAssertEqual(details.transactionHash, hash)
+        XCTAssertEqual(details.memoType, "text")
+        XCTAssertEqual(details.memoBytes, memoBytes)
+        XCTAssertEqual(details.memo, Memo.text("\u{FFFD}\u{FFFD} abc"))
+        XCTAssertEqual(details.transactionEnvelope.xdrEncoded, envelope)
+
+        let imported = try Transaction(envelopeXdr: try XCTUnwrap(details.transactionEnvelope.xdrEncoded))
+        XCTAssertEqual(try imported.encodedEnvelope(), envelope)
+        XCTAssertEqual(try imported.getTransactionHash(network: network), hash)
+        guard case .text(let importedBytes) = imported.transactionXDR.memo else {
+            XCTFail("imported memo is not a text memo")
+            return
+        }
+        XCTAssertEqual(importedBytes, memoBytes)
+    }
+
     func memoWithPaymentTransaction(memo: Memo) async {
         let sourceAccountKeyPair = sourceKeyPair
         let destinationAccountKeyPair = destinationKeyPair

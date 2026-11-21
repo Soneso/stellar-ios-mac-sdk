@@ -190,12 +190,12 @@ internal struct XdrJsonParser {
                 throw malformed(String(format: "unescaped control byte 0x%02x in a string", Int(byte)))
             }
 
-            // Multi-byte UTF-8 sequences pass through untouched; the input came from a
-            // Swift String and is therefore already well-formed.
+            // A multi-byte UTF-8 sequence passes through as its scalar, U+FEFF included; the
+            // input came from a Swift String and is therefore already well-formed.
             let start = index
             index += 1
             while let continuation = peek(), continuation & 0xC0 == 0x80 { index += 1 }
-            guard let text = String(bytes: bytes[start..<index], encoding: .utf8) else {
+            guard let text = String(xdrUTF8: bytes[start..<index]) else {
                 throw malformed("invalid UTF-8 in a string")
             }
             scalars.append(contentsOf: text.unicodeScalars)

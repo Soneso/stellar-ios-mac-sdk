@@ -212,11 +212,11 @@ extension SCValXDR {
     return .executableTag(Data(string.utf8))
   }
 
-  /// The text the executable_tag arm spells, read as UTF-8; nil when the
-  /// value is another arm or the bytes are not valid UTF-8.
+  /// The text the executable_tag arm spells as UTF-8, every byte kept, a leading byte order mark
+  /// included; nil when the value is another arm or the bytes are not valid UTF-8.
   public var executableTagString: String? {
     guard case .executableTag(let bytes) = self else { return nil }
-    return String(data: bytes, encoding: .utf8)
+    return String(xdrUTF8: bytes)
   }
 }
 

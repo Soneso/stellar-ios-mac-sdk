@@ -7,9 +7,10 @@ public struct ContractExecutableExternalRefXDR: XDRCodable, Sendable {
   public var executableOwner: SCAddressXDR
   public var tag: Data
 
-  /// The text `tag` spells, read as UTF-8; nil when the bytes are not valid UTF-8.
+  /// The text `tag` spells as UTF-8, every byte kept, a leading byte order mark
+  /// included; nil when the bytes are not valid UTF-8.
   public var tagString: String? {
-    return String(data: tag, encoding: .utf8)
+    return String(xdrUTF8: tag)
   }
 
   public init(executableOwner: SCAddressXDR, tag: Data) {

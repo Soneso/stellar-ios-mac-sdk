@@ -99,7 +99,15 @@ public struct TransactionResponse: Decodable, Sendable {
     public let memoType:String
 
     /// Parsed memo object. Nil for memo type "none".
+    ///
+    /// A text memo is read from `memoBytes` when Horizon sends them, as display text: bytes that
+    /// are not valid UTF-8 read as U+FFFD replacement characters. `memoBytes` and the memo of
+    /// `transactionEnvelope` hold the exact bytes.
     public let memo:Memo?
+
+    /// The bytes of a text memo, from Horizon's `memo_bytes`. Nil for the other memo types and when
+    /// Horizon does not send the field.
+    public let memoBytes:Data?
 
     /// Array of base64-encoded signatures (decorated signatures) for this transaction.
     public let signatures:[String]
@@ -144,6 +152,7 @@ public struct TransactionResponse: Decodable, Sendable {
         case operationCount = "operation_count"
         case memoType = "memo_type"
         case memo = "memo"
+        case memoBytes = "memo_bytes"
         case signatures
         case envelopeXDR = "envelope_xdr"
         case transactionResult = "result_xdr"
@@ -186,12 +195,27 @@ public struct TransactionResponse: Decodable, Sendable {
         operationCount = try values.decode(Int.self, forKey: .operationCount)
         memoType = try values.decode(String.self, forKey: .memoType)
 
+        if memoType == "text", let encodedMemoBytes = try values.decodeIfPresent(String.self, forKey: .memoBytes) {
+            guard let memoBytesData = Data(base64Encoded: encodedMemoBytes) else {
+                throw HorizonRequestError.parsingResponseFailed(message: "Invalid base64 in memo_bytes")
+            }
+            memoBytes = memoBytesData
+        } else {
+            memoBytes = nil
+        }
+
         if memoType == "none" {
             memo = Memo.none
         } else {
             let memo = try values.decodeIfPresent(String.self, forKey: .memo)
             if memoType == "text" {
-                try self.memo = Memo(text: memo ?? "")
+                // Horizon writes `memo` with replacement characters for bytes that are not valid
+                // UTF-8, which can make it longer than 28 bytes; `memo_bytes` carries the bytes.
+                if let bytes = memoBytes {
+                    self.memo = Memo(memoXDR: MemoXDR.text(bytes))
+                } else {
+                    try self.memo = Memo(text: memo ?? "")
+                }
             } else if memoType == "id" {
                 if let m = memo, let memoId = UInt64(m) {
                     self.memo = .id(memoId)

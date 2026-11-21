@@ -254,17 +254,41 @@ extension String: XDRCodable {
         try data.xdrEncode(to: encoder)
     }
     
+    /// Decodes a string from XDR format.
+    ///
+    /// The bytes must be valid UTF-8 and are kept as they are, a leading byte order mark
+    /// included, so encoding the result writes the decoded bytes again.
+    ///
+    /// - Throws: XDRDecoder.Error.invalidUTF8 with the bytes read when they are not valid UTF-8
     public init(fromBinary decoder: XDRDecoder) throws {
         let utf8: [UInt8] = try Array(fromBinary: decoder)
-        if let str = String(bytes: utf8, encoding: .utf8) {
+        if let str = String(xdrUTF8: utf8) {
             self = str
         } else {
             throw XDRDecoder.Error.invalidUTF8(utf8)
         }
-        
+
         if utf8.count % 4 != 0 {
             _ = try (0..<(4 - utf8.count % 4)).forEach { _ in try _ = UInt8(fromBinary: decoder) }
         }
+    }
+}
+
+extension String {
+    /// Reads bytes as UTF-8 text and keeps every byte.
+    ///
+    /// The UTF-8 encoding of the result equals the given bytes, a leading byte order mark
+    /// included. Foundation's `String(data:encoding:)` and `String(bytes:encoding:)` drop that
+    /// mark, so the XDR layer reads its strings through this initializer.
+    ///
+    /// - Parameter bytes: The bytes to read
+    /// - Returns: The text, or nil when the bytes are not valid UTF-8
+    init?<Bytes: Collection>(xdrUTF8 bytes: Bytes) where Bytes.Element == UInt8 {
+        let text = String(decoding: bytes, as: UTF8.self)
+        guard text.utf8.elementsEqual(bytes) else {
+            return nil
+        }
+        self = text
     }
 }
 

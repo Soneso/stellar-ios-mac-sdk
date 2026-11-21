@@ -497,7 +497,7 @@ static func parseTxRepLines(_ lines: [String]) -> [String: String] {
     }
 
     func test_MemoXDR_text() throws {
-        let original: MemoXDR = .text("test_string")
+        let original: MemoXDR = .text(Data([0x74, 0x61, 0x67, 0x00, 0xff, 0x10]))
         var lines: [String] = []
         try original.toTxRep(prefix: "k", lines: &lines)
         let map = Self.parseTxRepLines(lines)

@@ -28,7 +28,11 @@ public class Transaction: @unchecked Sendable {
         defer { lock.unlock() }
         return _operations
     }
-    /// Optional extra information attached to the transaction.
+    /// Optional extra information attached to the transaction, for display.
+    ///
+    /// A text memo whose bytes are not valid UTF-8 reads with U+FFFD replacement characters, so
+    /// this value cannot give the original bytes, their length or byte equality. The exact memo,
+    /// which the hash and the signatures cover, is `transactionXDR.memo`.
     public var memo:Memo {
         lock.lock()
         defer { lock.unlock() }
@@ -120,6 +124,25 @@ public class Transaction: @unchecked Sendable {
 
     }
 
+    /// Creates a new Transaction object whose memo is the given XDR memo, byte for byte.
+    ///
+    /// Use it to carry a decoded memo, such as `transactionXDR.memo` of another transaction, into a
+    /// new transaction: a text memo keeps bytes that are not valid UTF-8, which a `Memo` cannot hold.
+    ///
+    /// - Parameter sourceAccount: Account that originates the transaction.
+    /// - Parameter operations: The operations of the transaction, executed in order; at least one.
+    /// - Parameter memoXDR: The memo as it is written into the transaction.
+    /// - Parameter preconditions: Optional. Transaction preconditions as defined in CAP-21
+    /// - Parameter maxOperationFee: Optional. The maximum fee in stroops per operation; the transaction fee is this value times the number of operations.
+    /// - Parameter sorobanTransactionData: Optional. Soroban Transaction Data
+    ///
+    /// - Throws: `StellarSDKError.invalidArgument` when `operations` is empty, and the errors of `Operation.toXDR()`.
+    public convenience init(sourceAccount:TransactionAccount, operations:[Operation], memoXDR:MemoXDR, preconditions:TransactionPreconditions? = nil, maxOperationFee:UInt32 = Transaction.minBaseFee, sorobanTransactionData:SorobanTransactionDataXDR? = nil) throws {
+        try self.init(sourceAccount: sourceAccount, operations: operations, memo: nil, preconditions: preconditions, maxOperationFee: maxOperationFee, sorobanTransactionData: sorobanTransactionData)
+        self._memo = Memo(memoXDR: memoXDR) ?? Memo.none
+        self._transactionXDR.memo = memoXDR
+    }
+
     /// Deprecated initializer that uses TimeBounds instead of TransactionPreconditions.
     @available(*, deprecated, message: "use init with preconditions instead")
     public convenience init(sourceAccount:TransactionAccount, operations:[Operation], memo:Memo?, timeBounds:TimeBounds?, maxOperationFee:UInt32 = Transaction.minBaseFee) throws {
@@ -129,60 +152,79 @@ public class Transaction: @unchecked Sendable {
 
     /// Creates a new Transaction object from an XDR string.
     ///
+    /// The transaction keeps the decoded XDR as it is: `transactionXDR`, the hash, new signatures
+    /// and `encodedEnvelope()` give the input bytes, and `fee` is the decoded total fee.
+    ///
     /// - Parameter xdr: The XDR string to be parsed into a Transaction object.
     ///
-    /// - Throws: `StellarSDKError.invalidArgument` for a sequence number of `Int64.min`, and the errors of
-    ///   `Operation.fromXDR(operationXDR:)` for an operation it cannot decode.
+    /// - Throws: `StellarSDKError.invalidArgument` for a sequence number of `Int64.min` and for a
+    ///   transaction without operations, and the errors of `Operation.fromXDR(operationXDR:)` for an
+    ///   operation it cannot decode.
     public convenience init(xdr:String) throws {
         let xdrDecoder = XDRDecoder.init(data: [UInt8].init(base64: xdr))
         let transactionXDR = try TransactionXDR(fromBinary: xdrDecoder)
+        try self.init(importing: transactionXDR, signatures: [])
+    }
+
+    /// Creates a new Transaction object from an Transaction Envelope XDR string.
+    ///
+    /// The transaction keeps the decoded XDR as it is, with the envelope's signatures: the hash, new
+    /// signatures and `transactionXDR` give the input bytes, and `fee` is the decoded total fee. A V0
+    /// envelope gives its V1 form, which has the same hash; `encodedEnvelope()` writes that V1 form.
+    /// A fee bump envelope gives its inner transaction with the inner signatures.
+    ///
+    /// - Parameter envelopeXdr: The XDR string to be parsed into a Transaction object.
+    ///
+    /// - Throws: `StellarSDKError.invalidArgument` for a sequence number of `Int64.min` and for a
+    ///   transaction without operations, and the errors of `Operation.fromXDR(operationXDR:)` for an
+    ///   operation it cannot decode.
+    public convenience init(envelopeXdr:String) throws {
+        let xdrDecoder = XDRDecoder.init(data: [UInt8].init(base64: envelopeXdr))
+        let transactionEnvelopeXDR = try TransactionEnvelopeXDR(fromBinary: xdrDecoder)
+        let transactionXDR: TransactionXDR
+        switch transactionEnvelopeXDR {
+        case .v0(let envelopeV0):
+            transactionXDR = envelopeV0.tx.v1Equivalent
+        case .v1(let envelopeV1):
+            transactionXDR = envelopeV1.tx
+        case .feeBump(let envelopeFeeBump):
+            switch envelopeFeeBump.tx.innerTx {
+            case .v1(let innerEnvelope):
+                transactionXDR = innerEnvelope.tx
+            }
+        }
+        try self.init(importing: transactionXDR, signatures: transactionEnvelopeXDR.txSignatures)
+    }
+
+    /// Creates a transaction that keeps `transactionXDR` as decoded, with `signatures` appended.
+    ///
+    /// The high-level properties are derived from it: the source account at the sequence number
+    /// before `seqNum`, incremented once to `seqNum`, the operations, the preconditions, the fee and
+    /// the display memo.
+    private init(importing transactionXDR: TransactionXDR, signatures: [DecoratedSignatureXDR]) throws {
         let transactionSourceAccount = try MuxedAccount(accountId: transactionXDR.sourceAccount.accountId, sequenceNumber: Transaction.precedingSequenceNumber(transactionXDR.seqNum), id: transactionXDR.sourceAccount.id)
         var operations = [Operation]()
         for operationXDR in transactionXDR.operations {
             let operation = try Operation.fromXDR(operationXDR: operationXDR)
             operations.append(operation)
         }
-
-        let preconditions = TransactionPreconditions(preconditions: transactionXDR.cond)
-
-        let txFee = transactionXDR.fee;
-        let maxOperationFee = operations.count > 1 ? txFee /  UInt32(operations.count) : txFee
-
-        var sorobanTransactionData: SorobanTransactionDataXDR? = nil
-        if case .sorobanTransactionData(let data) = transactionXDR.ext {
-            sorobanTransactionData = data
+        if operations.count == 0 {
+            throw StellarSDKError.invalidArgument(message: "At least one operation required")
         }
 
-        try self.init(sourceAccount: transactionSourceAccount, operations: operations, memo: Memo(memoXDR:transactionXDR.memo), preconditions: preconditions, maxOperationFee: maxOperationFee, sorobanTransactionData: sorobanTransactionData)
-    }
+        self.sourceAccount = transactionSourceAccount
+        self._operations = operations
+        self._preconditions = TransactionPreconditions(preconditions: transactionXDR.cond)
+        self._fee = transactionXDR.fee
+        self._memo = Memo(memoXDR: transactionXDR.memo) ?? Memo.none
 
-    /// Creates a new Transaction object from an Transaction Envelope XDR string.
-    ///
-    /// - Parameter envelopeXdr: The XDR string to be parsed into a Transaction object.
-    ///
-    /// - Throws: `StellarSDKError.invalidArgument` for a sequence number of `Int64.min`, and the errors of
-    ///   `Operation.fromXDR(operationXDR:)` for an operation it cannot decode.
-    public convenience init(envelopeXdr:String) throws {
-        let xdrDecoder = XDRDecoder.init(data: [UInt8].init(base64: envelopeXdr))
-
-        let transactionEnvelopeXDR = try TransactionEnvelopeXDR(fromBinary: xdrDecoder)
-        let transactionSourceAccount = try MuxedAccount(accountId:transactionEnvelopeXDR.txSourceAccountId, sequenceNumber: Transaction.precedingSequenceNumber(transactionEnvelopeXDR.txSeqNum), id: transactionEnvelopeXDR.txMuxedSourceId)
-        var operations = [Operation]()
-        for operationXDR in transactionEnvelopeXDR.txOperations {
-            let operation = try Operation.fromXDR(operationXDR: operationXDR)
-            operations.append(operation)
+        var keptTransactionXDR = transactionXDR
+        for signature in signatures {
+            keptTransactionXDR.addSignature(signature: signature)
         }
+        self._transactionXDR = keptTransactionXDR
 
-        let preconditions = TransactionPreconditions(preconditions: transactionEnvelopeXDR.cond)
-
-        let txFee = transactionEnvelopeXDR.txFee;
-        let maxOperationFee = operations.count > 1 ? txFee /  UInt32(operations.count) : txFee
-
-        try self.init(sourceAccount: transactionSourceAccount, operations: operations, memo: Memo(memoXDR:transactionEnvelopeXDR.txMemo), preconditions: preconditions, maxOperationFee: maxOperationFee, sorobanTransactionData: transactionEnvelopeXDR.sorobanTransactionData)
-
-        for signature in transactionEnvelopeXDR.txSignatures {
-            self._transactionXDR.addSignature(signature: signature)
-        }
+        self.sourceAccount.incrementSequenceNumber()
     }
 
     /// Returns the source account sequence number that `seqNum` follows, which the imported
@@ -276,11 +318,27 @@ public class Transaction: @unchecked Sendable {
     }
 
     /// Updates the transaction memo. If nil, sets memo to none.
+    ///
+    /// The memo is written from its value: a text memo read from `memo` of a transaction whose memo
+    /// bytes are not valid UTF-8 writes its replacement characters, not the original bytes. Use
+    /// `setMemo(memoXDR:)` to keep the bytes.
     public func setMemo(memo:Memo? = nil) {
         lock.lock()
         defer { lock.unlock() }
         self._memo = memo ?? Memo.none
         _transactionXDR.memo = self._memo.toXDR()
+    }
+
+    /// Updates the transaction memo to the given XDR memo, byte for byte.
+    ///
+    /// Use it to carry a decoded memo, such as `transactionXDR.memo` of another transaction, into
+    /// this transaction: a text memo keeps bytes that are not valid UTF-8. `memo` then reads its
+    /// display value.
+    public func setMemo(memoXDR:MemoXDR) {
+        lock.lock()
+        defer { lock.unlock() }
+        self._memo = Memo(memoXDR: memoXDR) ?? Memo.none
+        _transactionXDR.memo = memoXDR
     }
 
     /// Updates the transaction preconditions. If nil, removes all preconditions.
