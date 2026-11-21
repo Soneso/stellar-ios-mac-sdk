@@ -73,13 +73,17 @@ public struct TransactionV0XDR: XDRCodable, Sendable {
         signatures.append(signature)
     }
     
+    /// Returns the hash that the signatures of this transaction cover on `network`, which is the
+    /// hash of the V1 transaction with the same fields and the same fee.
     public func hash(network:Network) throws -> Data {
         let sourcePublicKey = PublicKey(unchecked: self.sourceAccountEd25519)
         var cond = PreconditionsXDR.none
         if let tb = self.timeBounds {
             cond = PreconditionsXDR.time(tb)
         }
-        let txXdr = TransactionXDR(sourceAccount: sourcePublicKey, seqNum: self.seqNum, cond: cond, memo: self.memo, operations: self.operations,maxOperationFee: self.fee)
+        // The initializer multiplies a per-operation fee; `self.fee` is already the total.
+        var txXdr = TransactionXDR(sourceAccount: sourcePublicKey, seqNum: self.seqNum, cond: cond, memo: self.memo, operations: self.operations, maxOperationFee: 0)
+        txXdr.fee = self.fee
         return try txXdr.hash(network: network)
     }
     
