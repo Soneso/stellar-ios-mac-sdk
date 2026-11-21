@@ -14,8 +14,9 @@ import XCTest
 /// The spec of the returned client is loaded from the wasm code entry before
 /// the deploy transaction is submitted, because the code entry is already
 /// settled while the freshly created contract instance may not be visible to
-/// the RPC yet. Loading by contract id remains the fallback when the code
-/// entry cannot be read or parsed up front.
+/// the RPC yet. Code that does not parse fails the deploy before anything is
+/// submitted; loading by contract id remains the fallback when the code entry
+/// cannot be read up front.
 ///
 /// All RPC calls are served by ServerMock through an injected URLSession whose
 /// configuration pins `protocolClasses` to it, so interception is structural
@@ -70,8 +71,8 @@ final class SorobanClientDeploySpecUnitTests: XCTestCase {
 
     /// Serves the full deploy flow. The wasm code entry answer per request is
     /// taken from [codeEntryAnswers] in order (its last element repeats), so
-    /// tests can serve a missing (nil) or unparseable entry to the pre-deploy
-    /// load and the real one to the fallback.
+    /// tests can serve a missing (nil) entry to the pre-deploy load and the
+    /// real one to the fallback.
     private func setupDeployFlowMock(codeEntryAnswers: [Data?]) {
         let log = requestLog
         let mock = RequestMock(
@@ -342,13 +343,18 @@ final class SorobanClientDeploySpecUnitTests: XCTestCase {
         XCTAssertTrue(requestLog.entries.contains("contractData"))
     }
 
-    func testDeployFallsBackWhenCodeHasNoParseableSpec() async throws {
-        setupDeployFlowMock(codeEntryAnswers: [Data([1, 2, 3, 4]), tokenWasm])
+    func testDeployFailsBeforeSubmittingWhenTheCodeDoesNotParse() async throws {
+        // The token module followed by a section whose size runs past the end.
+        setupDeployFlowMock(codeEntryAnswers: [tokenWasm + Data([0x00, 0xa0, 0x8d, 0x06])])
 
-        let client = try await SorobanClient.deploy(deployRequest: deployRequest())
-
-        XCTAssertEqual(client.contractId, mockContractId)
-        XCTAssertTrue(client.methodNames.contains("transfer"))
-        XCTAssertTrue(requestLog.entries.contains("contractData"))
+        do {
+            _ = try await SorobanClient.deploy(deployRequest: deployRequest())
+            XCTFail("expected the parser error")
+        } catch SorobanContractParserError.malformedModule(let offset, let message) {
+            XCTAssertEqual(offset, tokenWasm.count + 1)
+            XCTAssertEqual(message, "the section at offset \(tokenWasm.count) declares 100000 bytes, but 0 bytes follow its size")
+        }
+        // Only the code entry was read: nothing was simulated or submitted.
+        XCTAssertEqual(requestLog.entries, ["code"])
     }
 }

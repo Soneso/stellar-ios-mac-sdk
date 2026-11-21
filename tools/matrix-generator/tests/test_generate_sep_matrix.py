@@ -1,6 +1,8 @@
 """Tests for generate_sep_matrix: a run that cannot read the SDK version or a found SDK file writes nothing,
-the SEP-29 analyzer marks the fee bump check only where the memo check decodes the posted envelope, and the
-SEP-51 analyzer marks the ScAddress and MuxedContract rows only where the SDK source converts the W strkey."""
+the SEP-29 analyzer marks the fee bump check only where the memo check decodes the posted envelope, the
+SEP-51 analyzer marks the ScAddress and MuxedContract rows only where the SDK source converts the W strkey,
+and the SEP-46 analyzer marks every row on the SDK's contract parser and the multiple sections row only
+where the parser reads every contractmetav0 section."""
 
 import contextlib
 import io
@@ -99,6 +101,10 @@ SEP51_MUXED_CONTRACT = """extension MuxedContractXDR: XdrJsonCodable {
   }
 }
 """
+
+# The contract parser of the SDK in this repository, and its line that reads every contractmetav0 section.
+SEP46_PARSER = Path(__file__).resolve().parents[3] / "stellarsdk" / "stellarsdk" / "soroban" / "SorobanContractParser.swift"
+SEP46_EVERY_META_SECTION = "(sections[metaSectionName] ?? []).flatMap {"
 
 
 def write_sdk_root(root: Path, sdk_version, swift_files: dict) -> None:
@@ -217,6 +223,43 @@ class SEP51AddressDetectionTest(unittest.TestCase):
         self.assertFalse(fields["muxed_contract"].implemented)
         self.assertIsNone(fields["muxed_contract"].sdk_property)
         self.assertTrue(fields["sc_address"].implemented)
+
+
+class SEP46ContractMetaDetectionTest(unittest.TestCase):
+
+    def meta_fields(self, parser: str):
+        """The SEP-46 fields by name after the analyzer read this SorobanContractParser.swift text."""
+        with tempfile.TemporaryDirectory() as tmp:
+            sdk_root = Path(tmp) / "sdk"
+            write_sdk_root(sdk_root, "3.16.0", {"soroban/SorobanContractParser.swift": parser.encode("utf-8")})
+            info = generate_sep_matrix.SEPInfo("46", "Contract Meta", "", raw_content=SEP_TEXT)
+            analyzer = generate_sep_matrix.SEP46Analyzer(generate_sep_matrix.SDKAnalyzer(sdk_root))
+            with self.assertLogs(generate_sep_matrix.logger, logging.INFO):
+                matrix = analyzer.analyze(info)
+        return {field.name: field for section in matrix.sections for field in section.fields}
+
+    def test_the_sdk_parser_marks_every_row(self):
+        fields = self.meta_fields(SEP46_PARSER.read_text(encoding="utf-8"))
+        self.assertEqual({name: field.sdk_property for name, field in fields.items()}, {
+            "contractmetav0_section": "readCustomSections",
+            "multiple_entries_single_section": "decodeEntries",
+            "multiple_sections": "parseContractByteCode",
+            "scmetaentry_xdr": "SCMetaEntryXDR",
+            "binary_stream_encoding": "decodeEntries",
+            "key_value_pairs": "metaEntries",
+            "parse_contract_meta": "parseContractByteCode",
+            "extract_meta_entries": "metaEntries",
+            "decode_scmetaentry": "decodeEntries",
+        })
+        self.assertTrue(all(field.implemented for field in fields.values()))
+
+    def test_a_parser_reading_only_the_first_meta_section_leaves_multiple_sections_unmarked(self):
+        parser = SEP46_PARSER.read_text(encoding="utf-8")
+        self.assertIn(SEP46_EVERY_META_SECTION, parser)
+        fields = self.meta_fields(parser.replace(SEP46_EVERY_META_SECTION, "sections[metaSectionName]?.first.map {"))
+        self.assertFalse(fields["multiple_sections"].implemented)
+        self.assertIsNone(fields["multiple_sections"].sdk_property)
+        self.assertTrue(fields["contractmetav0_section"].implemented)
 
 
 if __name__ == "__main__":

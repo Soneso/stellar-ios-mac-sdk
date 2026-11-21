@@ -4186,15 +4186,17 @@ class SEP46Analyzer(SEPAnalyzerBase):
 
         for field in section.fields:
             if field.name == 'contractmetav0_section':
-                if 'from: "contractmetav0"' in content:
-                    field.mark('parseMeta')
+                # readCustomSections collects the content of the custom sections by name
+                if 'metaSectionName = "contractmetav0"' in content and 'sections[metaSectionName]' in content:
+                    field.mark('readCustomSections')
             elif field.name == 'multiple_entries_single_section':
-                if 'while !meta.isEmpty' in content:
-                    field.mark('parseMeta')
+                # decodeEntries reads entries until the content of the section is consumed
+                if 'while decoder.remainingBytes > 0' in content:
+                    field.mark('decodeEntries')
             elif field.name == 'multiple_sections':
-                # Multiple sections supported via slice and end functions supporting multiple contractmetav0 sections
-                if 'slice(input: bytesString, from: "contractmetav0"' in content:
-                    field.mark('parseMeta')
+                # The entries of every contractmetav0 section are read in module order
+                if '(sections[metaSectionName] ?? []).flatMap' in content:
+                    field.mark('parseContractByteCode')
 
     def _analyze_encoding_format(self, section: SEPSection, parser_file: Optional[Path]) -> None:
         """Analyze encoding format features"""
@@ -4206,12 +4208,13 @@ class SEP46Analyzer(SEPAnalyzerBase):
         for field in section.fields:
             if field.name == 'scmetaentry_xdr':
                 if 'SCMetaEntryXDR' in content:
-                    field.mark('parseMeta')
+                    field.mark('SCMetaEntryXDR')
             elif field.name == 'binary_stream_encoding':
-                if 'XDRDecoder' in content and 'data(using: .isoLatin1)' in content:
-                    field.mark('parseMeta')
+                # One decoder reads the entries from the bytes of the section content
+                if 'XDRDecoder(data: Array(bytes[content]))' in content:
+                    field.mark('decodeEntries')
             elif field.name == 'key_value_pairs':
-                if 'result[' in content and '.key]' in content and '.value' in content:
+                if 'metaEntries[meta.key]' in content and 'meta.value' in content:
                     field.mark('metaEntries')
 
     def _analyze_implementation_support(self, section: SEPSection, parser_file: Optional[Path]) -> None:
@@ -4226,11 +4229,11 @@ class SEP46Analyzer(SEPAnalyzerBase):
                 if 'parseContractByteCode' in content:
                     field.mark('parseContractByteCode')
             elif field.name == 'extract_meta_entries':
-                if 'parseMeta' in content and 'metaEntries' in content:
-                    field.mark('parseMeta')
+                if 'for case .v0(let meta) in metaList' in content and 'metaEntries: metaEntries' in content:
+                    field.mark('metaEntries')
             elif field.name == 'decode_scmetaentry':
-                if 'SCMetaEntryXDR(from:' in content:
-                    field.mark('parseMeta')
+                if 'decodeEntries(SCMetaEntryXDR.self' in content:
+                    field.mark('decodeEntries')
 
 
 class SEP47Analyzer(SEPAnalyzerBase):
@@ -4323,7 +4326,7 @@ class SEP48Analyzer(SEPAnalyzerBase):
     KEY_CLASSES = {
         'SorobanContractParser': 'Parses Soroban contract bytecode to extract Environment Meta, Contract Spec, and Contract Meta from Wasm custom sections',
         'SorobanContractInfo': 'Stores parsed contract information including envInterfaceVersion, specEntries, metaEntries, and categorized access via funcs, udtStructs, udtUnions, udtEnums, udtErrorEnums, events properties',
-        'SorobanContractParserError': 'Error enum for contract parsing failures (invalidByteCode, environmentMetaNotFound, specEntriesNotFound)',
+        'SorobanContractParserError': 'Error enum for contract parsing failures (invalidByteCode, environmentMetaNotFound, specEntriesNotFound, malformedModule, invalidSectionEntry)',
         'ContractSpec': 'Utility class for working with contract specifications (funcs(), udtStructs(), udtUnions(), udtEnums(), udtErrorEnums(), events(), getFunc(), getEvent(), findEntry(), nativeToXdrSCVal())',
         'ContractSpecError': 'Error enum for contract spec operations',
         'SCSpecEntryXDR': 'XDR type for contract specification entries (functionV0, structV0, unionV0, enumV0, errorEnumV0, eventV0)',
@@ -4339,9 +4342,9 @@ class SEP48Analyzer(SEPAnalyzerBase):
     # The generated XDR declares every SEP-48 spec type and SorobanContractParser reads them, so no field needs a source check.
     SDK_NAMES = {
         # Wasm Custom Sections
-        'contractspecv0_section': 'parseContractSpec',
-        'contractenvmetav0_section': 'parseEnvironmentMeta',
-        'contractmetav0_section': 'parseMeta',
+        'contractspecv0_section': 'readCustomSections',
+        'contractenvmetav0_section': 'readCustomSections',
+        'contractmetav0_section': 'readCustomSections',
         'xdr_binary_encoding': 'XDRDecoder',
         # Entry Types
         'function_specs': 'SCSpecFunctionV0XDR',
@@ -4367,9 +4370,9 @@ class SEP48Analyzer(SEPAnalyzerBase):
         'user_defined_type': 'SCSpecTypeUDTXDR',
         # Parsing Support
         'parse_contract_bytecode': 'parseContractByteCode',
-        'parse_environment_meta': 'parseEnvironmentMeta',
-        'parse_contract_meta': 'parseMeta',
-        'extract_spec_entries': 'parseContractSpec',
+        'parse_environment_meta': 'parseContractByteCode',
+        'parse_contract_meta': 'parseContractByteCode',
+        'extract_spec_entries': 'decodeEntries',
         # XDR Support
         'decode_scspecentry': 'SCSpecEntryXDR',
         'decode_scspectypedef': 'SCSpecTypeDefXDR',

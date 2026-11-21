@@ -7,10 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Breaking: `SorobanContractParserError` has the cases `malformedModule(offset:message:)` and `invalidSectionEntry(section:offset:message:)`, so a `switch` over it without `default` needs both.
+
 ### Fixed
 - `Transaction(envelopeXdr:)` keeps a `PRECOND_V2` precondition as V2 when its fields other than the time bounds have their default values, also for the inner transaction of a fee bump. Before this change, it wrote such a precondition back as `PRECOND_TIME` or `PRECOND_NONE`, so the transaction had a different hash.
 - Reading a transaction from XDR keeps its Soroban data, both with `Transaction(xdr:)` and for the inner transaction of a fee bump with `Transaction(envelopeXdr:)`; `TransactionEnvelopeXDR.sorobanTransactionData` returns the inner transaction's data for a fee bump. Before this change, the Soroban data was lost, so the transaction had a different hash and its signatures did not match.
 - Hashing and signing a V0 transaction envelope from XDR use its fee as written, in `TransactionV0XDR.hash(network:)`, `TransactionEnvelopeXDR.txHash(network:)` and the SEP-10 challenge check. Before this change, the hash multiplied the fee by the number of operations, so a V0 envelope with more than one operation got a wrong hash and an invalid signature. A fee times operation count beyond the `UInt32` range stopped the app.
+- Parsing contract byte code reads the spec, environment meta and meta sections by their wasm section bounds. `SorobanContractParser.parseContractByteCode(byteCode:)` throws `SorobanContractParserError` with the byte offset for an entry that does not decode, an unknown entry kind or a malformed section. Entries from every `contractmetav0` section are read, in module order. Before this change, parsing stopped at the first entry it could not decode and returned the entries before it without an error.
+- Deploying a contract whose code cannot be parsed fails before the transaction is submitted, with the `SorobanContractParserError`: `SorobanClient.deploy(deployRequest:)` and `SorobanClient.deployFromExternalRef(deployRequest:)`. This applies when the RPC returns the code entry before the deployment. When it does not, the contract is deployed, and the error is thrown when the contract is loaded by its id. Before this change, the contract was deployed and the call then threw.
 
 ## [3.16.0] - 2026-11-16
 

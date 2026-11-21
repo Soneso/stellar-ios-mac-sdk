@@ -120,17 +120,29 @@ final class SorobanClientExternalRefDeployUnitTests: XCTestCase {
         ))
     }
 
+    /// The instance of the deployed contract, running the wasm the tag names.
+    private func contractInstanceEntry() -> LedgerEntryDataXDR {
+        let instance = SCContractInstanceXDR(executable: .wasm(WrappedData32(wasmHashBytes)), storage: nil)
+        return LedgerEntryDataXDR.contractData(ContractDataEntryXDR(
+            ext: .void, contract: try! SCAddressXDR(contractId: mockContractId), key: SCValXDR.ledgerKeyContractInstance,
+            durability: .persistent, val: SCValXDR.contractInstance(instance)))
+    }
+
     // MARK: - Mock setup
 
     /// Serves the full external-ref deploy flow: the executable tag entry for
     /// the resolution, the wasm code entry for the spec preload, the source
     /// account, simulate, send and getTransaction. When [tagEntryExists] is
     /// false, the resolution request is answered with no entries. A non-nil
-    /// [simulateBody] answers the simulation instead of the successful one.
-    private func setupDeployFlowMock(tagEntryExists: Bool = true, tag: Data? = nil, simulateBody: String? = nil) {
+    /// [simulateBody] answers the simulation instead of the successful one, and
+    /// a non-nil [code] is served as the wasm code instead of the token
+    /// contract. When [firstCodeMissing] is true, the first code read gets no
+    /// entry and the contract instance read gets the deployed instance.
+    private func setupDeployFlowMock(tagEntryExists: Bool = true, tag: Data? = nil, simulateBody: String? = nil, code: Data? = nil, firstCodeMissing: Bool = false) {
         let log = requestLog
         let tagKey = tagKeyB64(tag: tag)
         let codeKey = codeKeyB64()
+        let servedCode = code ?? tokenWasm!
         let mock = RequestMock(
             host: "soroban-testnet.stellar.org",
             path: "*",
@@ -189,12 +201,15 @@ final class SorobanClientExternalRefDeployUnitTests: XCTestCase {
                 // no entry. CONTRACT_DATA keys encode with discriminant 6
                 // ("AAAABg"); anything else is the account fetch.
                 if bodyString.contains(codeKey) {
+                    let firstRead = !log.entries.contains("code")
                     log.entries.append("code")
-                    return self.ledgerEntryResponseJson(entryData: self.contractCodeEntry(code: self.tokenWasm))
+                    if firstCodeMissing && firstRead { return self.emptyEntriesJson() }
+                    return self.ledgerEntryResponseJson(entryData: self.contractCodeEntry(code: servedCode))
                 }
                 if bodyString.contains("AAAABg") {
                     log.entries.append("contractData")
-                    return self.emptyEntriesJson()
+                    guard firstCodeMissing else { return self.emptyEntriesJson() }
+                    return self.ledgerEntryResponseJson(entryData: self.contractInstanceEntry())
                 }
                 log.entries.append("account")
                 return self.ledgerEntryResponseJson(entryData: self.accountEntry())
@@ -447,6 +462,32 @@ final class SorobanClientExternalRefDeployUnitTests: XCTestCase {
         }
         // The failure happened before anything was submitted.
         XCTAssertEqual(requestLog.entries, ["tag"])
+    }
+
+    func testDeployFailsBeforeSubmittingWhenTheResolvedCodeDoesNotParse() async throws {
+        // The token module followed by a section whose size runs past the end.
+        setupDeployFlowMock(code: tokenWasm + Data([0x00, 0xa0, 0x8d, 0x06]))
+
+        do {
+            _ = try await SorobanClient.deployFromExternalRef(deployRequest: deployRequest())
+            XCTFail("expected the parser error")
+        } catch SorobanContractParserError.malformedModule(let offset, let message) {
+            XCTAssertEqual(offset, tokenWasm.count + 1)
+            XCTAssertEqual(message, "the section at offset \(tokenWasm.count) declares 100000 bytes, but 0 bytes follow its size")
+        }
+        // Only the reference and the code entry were read: nothing was simulated or submitted.
+        XCTAssertEqual(requestLog.entries, ["tag", "code"])
+    }
+
+    func testDeployLoadsTheSpecByContractIdWhenTheCodeEntryIsMissing() async throws {
+        setupDeployFlowMock(firstCodeMissing: true)
+
+        let client = try await SorobanClient.deployFromExternalRef(deployRequest: deployRequest())
+
+        XCTAssertEqual(client.contractId, mockContractId)
+        XCTAssertTrue(client.methodNames.contains("transfer"))
+        // The deployment was submitted; the instance and its code were read after it.
+        XCTAssertEqual(requestLog.entries, ["tag", "code", "account", "simulate", "send", "getTx", "contractData", "code"])
     }
 
     func testDeployReportsTheConstructorContractErrorOfAFailedSimulation() async throws {

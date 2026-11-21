@@ -851,6 +851,10 @@ class SorobanTest: XCTestCase {
             print("Parsing faild: env meta not found ")
         case .specEntriesNotFound:
             print("Parsing faild: spec entries not found ")
+        case .malformedModule(let offset, let message):
+            print("Parsing failed: malformed module at offset \(offset): \(message)")
+        case .invalidSectionEntry(let section, let offset, let message):
+            print("Parsing failed: invalid \(section) entry at offset \(offset): \(message)")
         }
     }
     

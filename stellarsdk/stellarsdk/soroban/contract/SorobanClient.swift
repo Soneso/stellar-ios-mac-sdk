@@ -117,9 +117,17 @@ public final class SorobanClient: Sendable {
     /// The contract must be installed before deployment. Use SorobanClient.install to
     /// upload the contract code and obtain a wasm hash, then use that hash in the deploy request.
     ///
+    /// Code that the parser rejects, including code without a `contractspecv0` section, cannot be
+    /// deployed with this function when the code entry can be read: the parser's error is then
+    /// thrown before anything is submitted. An operation built with
+    /// `InvokeHostFunctionOperation.forCreatingContractWithConstructor` and submitted directly
+    /// deploys it.
+    ///
     /// - Parameter deployRequest: Deployment parameters including wasm hash, constructor arguments, and network settings
     /// - Returns: SorobanClient instance connected to the newly deployed contract
-    /// - Throws: SorobanClientError if deployment fails
+    /// - Throws: `SorobanContractParserError` when the code under the wasm hash does not parse:
+    ///   before anything is submitted when the code entry can be read, and after the deployment
+    ///   when the contract is loaded by its id instead; SorobanClientError if deployment fails
     ///
     /// Example:
     /// ```swift
@@ -152,8 +160,10 @@ public final class SorobanClient: Sendable {
         // entry was settled by the install transaction, while reading the
         // contract instance right after deployment races the RPC's
         // ledger-entry ingestion, so a successful deployment could surface
-        // as a load failure. Loading by contract id below remains the
-        // fallback when the code entry cannot be read or parsed up front.
+        // as a load failure. The code under a wasm hash never changes, so a
+        // parsing failure is thrown here, before anything is submitted.
+        // Loading by contract id below remains the fallback when the code
+        // entry cannot be read up front.
         let server = SorobanServer(endpoint: deployRequest.rpcUrl, urlSession: deployRequest.urlSession)
         server.enableLogging = deployRequest.enableServerLogging
         var contractInfo:SorobanContractInfo? = nil
@@ -161,7 +171,9 @@ public final class SorobanClient: Sendable {
         switch infoEnum {
         case .success(let info):
             contractInfo = info
-        case .parsingFailure, .rpcFailure:
+        case .parsingFailure(let error):
+            throw error
+        case .rpcFailure:
             contractInfo = nil
         }
 
@@ -216,9 +228,18 @@ public final class SorobanClient: Sendable {
     /// time. Re-pointing the tag later changes the code the instance runs, not the
     /// spec this client loaded.
     ///
+    /// Code that the parser rejects, including code without a `contractspecv0` section, cannot be
+    /// deployed with this function when the code entry can be read: the parser's error is then
+    /// thrown before anything is submitted. An operation built with
+    /// `InvokeHostFunctionOperation.forCreatingContractFromExternalRefWithConstructor` and
+    /// submitted directly deploys it.
+    ///
     /// - Parameter deployRequest: Deployment parameters including the executable owner, the tag, constructor args, and salt
     /// - Returns: The client for the newly deployed contract
-    /// - Throws: SorobanClientError if the reference does not resolve or deployment fails
+    /// - Throws: `SorobanContractParserError` when the code the tag names does not parse: before
+    ///   anything is submitted when the code entry can be read, and after the deployment when the
+    ///   contract is loaded by its id instead; SorobanClientError if the reference does not
+    ///   resolve or deployment fails
     public static func deployFromExternalRef(deployRequest:DeployFromExternalRefRequest) async throws -> SorobanClient {
         let server = SorobanServer(endpoint: deployRequest.rpcUrl, urlSession: deployRequest.urlSession)
         server.enableLogging = deployRequest.enableServerLogging
@@ -248,15 +269,18 @@ public final class SorobanClient: Sendable {
         // Load the spec from the resolved wasm code entry before deploying: the
         // code entry is already settled, while reading the contract instance
         // right after deployment races the RPC's ledger-entry ingestion, so a
-        // successful deployment could surface as a load failure. Loading by
-        // contract id below remains the fallback when the code entry cannot be
-        // read or parsed up front.
+        // successful deployment could surface as a load failure. The code
+        // under a wasm hash never changes, so a parsing failure is thrown
+        // here, before anything is submitted. Loading by contract id below
+        // remains the fallback when the code entry cannot be read up front.
         var contractInfo:SorobanContractInfo? = nil
         let infoEnum = await server.getContractInfoForWasmId(wasmId: wasmHash.base16EncodedString())
         switch infoEnum {
         case .success(let info):
             contractInfo = info
-        case .parsingFailure, .rpcFailure:
+        case .parsingFailure(let error):
+            throw error
+        case .rpcFailure:
             contractInfo = nil
         }
 
