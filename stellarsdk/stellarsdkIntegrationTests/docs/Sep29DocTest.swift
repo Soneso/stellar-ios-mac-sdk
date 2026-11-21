@@ -329,6 +329,6 @@ class Sep29DocTest: XCTestCase {
         guard case .text(let memoText) = envelope.txMemo else {
             return XCTFail("expected a text memo on the inner transaction")
         }
-        XCTAssertEqual(memoText, "customer 42")
+        XCTAssertEqual(memoText, Data("customer 42".utf8))
     }
 }

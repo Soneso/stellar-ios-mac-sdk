@@ -85,7 +85,7 @@ class TransactionEnvelopeXDRUnitTests: XCTestCase {
         XCTAssertEqual(envelope.txOperations.count, 1)
 
         if case .text(let text) = envelope.txMemo {
-            XCTAssertEqual(text, "v1 test memo")
+            XCTAssertEqual(text, Data("v1 test memo".utf8))
         } else {
             XCTFail("Expected text memo")
         }
@@ -537,7 +537,7 @@ class TransactionEnvelopeXDRUnitTests: XCTestCase {
 
         // Verify memo
         if case .text(let memoText) = decodedInnerV1.tx.memo {
-            XCTAssertEqual(memoText, "inner memo")
+            XCTAssertEqual(memoText, Data("inner memo".utf8))
         } else {
             XCTFail("Expected text memo in inner transaction")
         }
@@ -837,7 +837,7 @@ class TransactionEnvelopeXDRUnitTests: XCTestCase {
 
         // Verify memo
         if case .text(let memoText) = extractedV1.tx.memo {
-            XCTAssertEqual(memoText, "v1 inner")
+            XCTAssertEqual(memoText, Data("v1 inner".utf8))
         } else {
             XCTFail("Expected text memo")
         }
@@ -912,7 +912,7 @@ class TransactionEnvelopeXDRUnitTests: XCTestCase {
         XCTAssertEqual(decoded.signatures.count, 0)
 
         if case .text(let memoText) = decoded.tx.memo {
-            XCTAssertEqual(memoText, "v0 encode test")
+            XCTAssertEqual(memoText, Data("v0 encode test".utf8))
         } else {
             XCTFail("Expected text memo")
         }
@@ -1031,7 +1031,7 @@ class TransactionEnvelopeXDRUnitTests: XCTestCase {
         }
 
         if case .text(let memoText) = decoded.tx.memo {
-            XCTAssertEqual(memoText, "v1 encode test")
+            XCTAssertEqual(memoText, Data("v1 encode test".utf8))
         } else {
             XCTFail("Expected text memo")
         }
@@ -1153,7 +1153,7 @@ class TransactionEnvelopeXDRUnitTests: XCTestCase {
         XCTAssertEqual(txV0.timeBounds?.maxTime, 5000000)
 
         if case .text(let memoText) = txV0.memo {
-            XCTAssertEqual(memoText, "field test")
+            XCTAssertEqual(memoText, Data("field test".utf8))
         } else {
             XCTFail("Expected text memo")
         }

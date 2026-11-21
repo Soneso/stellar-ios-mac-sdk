@@ -125,7 +125,7 @@ class XDRTransactionMiscUnitTests: XCTestCase {
         let decoded = try XDRDecoder.decode(MemoXDR.self, data: encoded)
         XCTAssertEqual(decoded.type(), MemoType.MEMO_TYPE_TEXT.rawValue)
         if case .text(let text) = decoded {
-            XCTAssertEqual(text, "Hello Stellar")
+            XCTAssertEqual(text, Data("Hello Stellar".utf8))
         } else {
             XCTFail("Expected .text")
         }
@@ -138,7 +138,7 @@ class XDRTransactionMiscUnitTests: XCTestCase {
         let encoded = try XDREncoder.encode(original)
         let decoded = try XDRDecoder.decode(MemoXDR.self, data: encoded)
         if case .text(let text) = decoded {
-            XCTAssertEqual(text, maxText)
+            XCTAssertEqual(text, Data(maxText.utf8))
             XCTAssertEqual(text.count, 28)
         } else {
             XCTFail("Expected .text")

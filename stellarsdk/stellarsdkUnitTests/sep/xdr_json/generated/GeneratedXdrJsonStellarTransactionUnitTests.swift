@@ -6263,7 +6263,7 @@ final class GeneratedXdrJsonStellarTransactionUnitTests: XCTestCase {
     }
 
     func test_MemoXDR_text_roundTrip() throws {
-        let original: MemoXDR = .text("test_string")
+        let original: MemoXDR = .text(Data([0x74, 0x61, 0x67, 0x00, 0xff, 0x10]))
         let tree = try original.toXdrJsonValue()
         let json = try original.toXdrJson()
         let decoded = try MemoXDR.fromXdrJson(json)

@@ -207,18 +207,20 @@ public final class TxRepHelper: Sendable {
     /// If the input is enclosed in double quotes they are stripped first. Handles
     /// `\"`, `\\`, `\n`, `\r`, `\t`, `\xNN` (hex), and `\NNN` (octal) escape sequences.
     /// If the input is not quoted it is returned as-is (no unescaping is attempted).
+    /// The unescaped bytes are kept as they are, a leading byte order mark included.
     ///
     /// - Parameter s: The possibly-quoted string to unescape.
     /// - Returns: Unescaped string.
     /// - Throws: `TxRepError.invalidValue(key:)` if the string is quoted but unterminated,
-    ///           or if a `\xNN` sequence contains invalid hex digits.
+    ///           if a `\xNN` sequence contains invalid hex digits, or if the unescaped bytes
+    ///           are not valid UTF-8.
     public static func unescapeString(_ s: String) throws -> String {
         guard s.hasPrefix("\"") else {
             // Not quoted — return as-is per SEP-0011.
             return s
         }
         let result = try unescapeQuotedBytes(s)
-        guard let str = String(bytes: result, encoding: .utf8) else {
+        guard let str = String(xdrUTF8: result) else {
             throw TxRepError.invalidValue(key: SecretSeedRedaction.redactingSecretSeeds(in: s))
         }
         return str
@@ -802,20 +804,40 @@ public final class TxRepHelper: Sendable {
     /// - Returns: The decoded memo text.
     /// - Throws: `TxRepError.invalidValue(key:)` if neither decoder succeeds.
     public static func decodeMemoText(_ s: String) throws -> String {
-        // Attempt JSON decode if the value looks like a JSON string literal.
-        // `.fragmentsAllowed` is required because a bare quoted string is a
-        // top-level JSON scalar, not an object or array.
-        if s.hasPrefix("\""), s.hasSuffix("\""), s.count >= 2 {
-            if let data = s.data(using: .utf8),
-               let decoded = try? JSONSerialization.jsonObject(
-                   with: data,
-                   options: [.fragmentsAllowed]
-               ) as? String {
-                return decoded
-            }
+        if let decoded = jsonStringLiteral(s) {
+            return decoded
         }
         // Fallback to TxRep \xNN escape format.
         return try unescapeString(s)
+    }
+
+    /// Decode a MEMO_TEXT value from TxRep to the bytes it spells.
+    ///
+    /// Accepts the two forms ``decodeMemoText(_:)`` accepts and returns the bytes behind
+    /// them, so a memo whose bytes are not valid UTF-8 survives the round trip through
+    /// ``escapeBytes(_:)``.
+    ///
+    /// - Parameter s: Raw value string from the TxRep key-value map.
+    /// - Returns: The memo bytes.
+    /// - Throws: `TxRepError.invalidValue(key:)` if neither decoder succeeds.
+    public static func decodeMemoTextBytes(_ s: String) throws -> Data {
+        if let decoded = jsonStringLiteral(s) {
+            return Data(decoded.utf8)
+        }
+        // Fallback to TxRep \xNN escape format.
+        return try unescapeBytes(s)
+    }
+
+    /// The text of a JSON string literal, or nil when `s` is not one.
+    ///
+    /// `.fragmentsAllowed` is required because a bare quoted string is a top-level JSON
+    /// scalar, not an object or array.
+    private static func jsonStringLiteral(_ s: String) -> String? {
+        guard s.hasPrefix("\""), s.hasSuffix("\""), s.count >= 2,
+              let data = s.data(using: .utf8) else {
+            return nil
+        }
+        return try? JSONSerialization.jsonObject(with: data, options: [.fragmentsAllowed]) as? String
     }
 
     // MARK: - Private helpers

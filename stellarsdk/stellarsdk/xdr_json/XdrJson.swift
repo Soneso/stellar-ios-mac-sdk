@@ -527,11 +527,12 @@ internal enum XdrJson {
 
     /// Reverses the escape ladder and requires the result to be valid UTF-8.
     ///
-    /// This is the form the SDK's `string<>` fields need, since it stores them as Swift
-    /// strings. Byte-exact fields are opaque and go through ``unescapeString(_:type:key:)``.
+    /// This is the form the `string<>` fields need that the SDK stores as Swift strings; the
+    /// bytes are kept as they are, a leading byte order mark included. Opaque fields and the
+    /// `string<>` fields stored as `Data` go through ``unescapeString(_:type:key:)``.
     static func unescapedText(_ value: XdrJsonValue, type: String, key: String? = nil) throws -> String {
         let data = try unescapeString(value, type: type, key: key)
-        guard let text = String(data: data, encoding: .utf8) else {
+        guard let text = String(xdrUTF8: data) else {
             throw XdrJsonError.invalidValue(
                 type: type, key: key, message: "string is not valid UTF-8")
         }

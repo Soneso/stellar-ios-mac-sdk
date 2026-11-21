@@ -1257,7 +1257,7 @@ final class TxRepCoverageTestCase: XCTestCase {
         ]
         let memo = try MemoXDR.fromTxRep(map, prefix: "tx.memo")
         if case .text(let s) = memo {
-            XCTAssertEqual(s, "hello")
+            XCTAssertEqual(s, Data("hello".utf8))
         } else {
             XCTFail("Expected .text")
         }

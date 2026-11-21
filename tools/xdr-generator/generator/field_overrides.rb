@@ -206,10 +206,14 @@ FIELD_OVERRIDES = {
 # is emitted as `Data` and keeps the `string` wire form -- a length prefix, the
 # bytes, and padding to a multiple of four -- so its encoding is unchanged.
 # Beside it the generator emits the named accessor, which reads the bytes as
-# UTF-8 for a caller that wants text, plus a String-taking convenience (an
-# initializer on a struct, a static factory on a union) that encodes UTF-8 once.
-# TxRep and XDR-JSON apply their escape ladders to the bytes directly, so a
-# value that spells text keeps the rendering its String form would produce.
+# UTF-8 for a caller that wants text and keeps every byte, a leading byte order
+# mark included, plus a String-taking convenience (an initializer on a struct, a
+# static factory on a union) that encodes UTF-8 once. TxRep and XDR-JSON apply
+# their escape ladders to the bytes directly, so a value that spells text keeps
+# the rendering its String form would produce.
+#
+# The memo text is listed because a transaction source can fill it with bytes
+# that are not UTF-8 and the transaction hash covers them.
 #
 # Format:
 #   "SwiftTypeName" => { "xdrFieldName" => "utf8AccessorName" }
@@ -219,5 +223,6 @@ FIELD_OVERRIDES = {
 
 BYTES_BACKED_STRING_FIELDS = {
   "ContractExecutableExternalRefXDR" => { "tag" => "tagString" },
+  "MemoXDR" => { "text" => "textString" },
   "SCValXDR" => { "executable_tag" => "executableTagString" },
 }.freeze

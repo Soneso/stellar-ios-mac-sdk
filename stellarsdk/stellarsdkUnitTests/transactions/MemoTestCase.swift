@@ -55,7 +55,7 @@ class MemoTestCase: XCTestCase {
         let xdr = memo.toXDR()
         switch xdr {
         case .text(let value):
-            XCTAssertEqual(value, text)
+            XCTAssertEqual(value, Data(text.utf8))
         default:
             XCTFail("Expected MemoXDR.text")
         }

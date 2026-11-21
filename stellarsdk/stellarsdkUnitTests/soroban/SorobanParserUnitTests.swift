@@ -572,6 +572,22 @@ final class SorobanParserUnitTests: XCTestCase {
         XCTAssertEqual(try parse(Array(sections[0...7]) + [customSection(spec, []), sections[9]]).specEntries.count, 0)
     }
 
+    func testADocAndAMetaValueKeepALeadingByteOrderMark() throws {
+        var sections = try tokenSections()
+        let specIndex = try XCTUnwrap(sections.firstIndex { custom($0)?.name == spec })
+        let metaIndex = try XCTUnwrap(sections.firstIndex { custom($0)?.name == meta })
+        let function = SCSpecEntryXDR.functionV0(SCSpecFunctionV0XDR(doc: "\u{FEFF}doc", name: "f", inputs: [], outputs: []))
+        sections[specIndex] = customSection(spec, try XDREncoder.encode(function))
+        sections[metaIndex] = customSection(meta, try XDREncoder.encode(SCMetaEntryXDR.v0(SCMetaV0XDR(key: "k", value: "\u{FEFF}\u{FEFF}v"))))
+
+        let info = try parse(sections)
+        guard case .functionV0(let parsed)? = info.specEntries.first else {
+            return XCTFail("expected the function entry")
+        }
+        XCTAssertEqual(Array(parsed.doc.utf8), [0xef, 0xbb, 0xbf, 0x64, 0x6f, 0x63])
+        XCTAssertEqual(info.metaEntries["k"].map { Array($0.utf8) }, [0xef, 0xbb, 0xbf, 0xef, 0xbb, 0xbf, 0x76])
+    }
+
     func testAnEntryThatDoesNotDecodeFailsWithItsOffset() throws {
         let sections = try tokenSections()
         let specEntries = try entryStream(SCSpecEntryXDR.self, content(spec, sections))

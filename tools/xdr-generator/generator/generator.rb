@@ -1180,12 +1180,12 @@ class Generator < Xdrgen::Generators::Base
         end
         out.puts "}"
         out.break
-        out.puts "/// The text the #{entry[:xdr_arm_name]} arm spells, read as UTF-8; nil when the"
-        out.puts "/// value is another arm or the bytes are not valid UTF-8."
+        out.puts "/// The text the #{entry[:xdr_arm_name]} arm spells as UTF-8, every byte kept, a leading byte order mark"
+        out.puts "/// included; nil when the value is another arm or the bytes are not valid UTF-8."
         out.puts "public var #{entry[:bytes_backed]}: String? {"
         out.indent do
           out.puts "guard case .#{case_name}(let bytes) = self else { return nil }"
-          out.puts "return String(data: bytes, encoding: .utf8)"
+          out.puts "return String(xdrUTF8: bytes)"
         end
         out.puts "}"
       end
@@ -2586,11 +2586,14 @@ class Generator < Xdrgen::Generators::Base
   end
 
   # Emits the accessor that reads a bytes-backed `string` position as text.
+  # The view keeps every byte, a leading byte order mark included, through
+  # `String(xdrUTF8:)`; Foundation's `String(data:encoding:)` drops that mark.
   def render_bytes_backed_string_getter(out, getter, field)
-    out.puts "/// The text `#{field}` spells, read as UTF-8; nil when the bytes are not valid UTF-8."
+    out.puts "/// The text `#{field}` spells as UTF-8, every byte kept, a leading byte order mark"
+    out.puts "/// included; nil when the bytes are not valid UTF-8."
     out.puts "public var #{getter}: String? {"
     out.indent do
-      out.puts "return String(data: #{field}, encoding: .utf8)"
+      out.puts "return String(xdrUTF8: #{field})"
     end
     out.puts "}"
   end
