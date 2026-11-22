@@ -669,6 +669,103 @@ let result = try await client.invokeMethod(
 
 Simulation requests `ADDRESS_V2` credential arms by default (`useUpgradedAuth` is `true` and the key is always sent in the request); pass `false` for legacy `ADDRESS` entries. Legacy `ADDRESS` stays fully valid; emitting V2 arms on a pre-protocol-27 network invalidates the transaction, so opt out there. A supporting RPC records V2 arms; RPC servers without support silently ignore the flag and return legacy `ADDRESS` entries -- detect support by inspecting the credential arm of the returned entries, never by expecting an error.
 
+### Stellar Asset Contracts: SACClient
+
+Every classic asset, XLM included, has a Stellar Asset Contract (SAC), and `asset.contractId(network:)` derives its id ("C...") without a request. `SACClient` opens it without an RPC request: `forAsset` and `forContractId` take the source account's `KeyPair`, `readOnlyForAsset` and `readOnlyForContractId` take none. Amounts are base units (7 decimals, so 1 token is 10000000) as decimal `String` values, because the contract counts them as i128. `SorobanClient.forClientOptions` also opens a SAC.
+
+```swift
+import stellarsdk
+
+let sourceKeyPair = try KeyPair(secretSeed: secretSeed) // secretSeed: your funded account's secret seed ("S...")
+// receiverId: the id ("G...") of an existing account that receives the transfers
+let rpcUrl = "https://soroban-testnet.stellar.org"
+let xlm = Asset(type: AssetType.ASSET_TYPE_NATIVE)!
+
+// Read-only client: no keypair, no funded account. Reads only simulate.
+let reader = try SACClient.readOnlyForAsset(asset: xlm, network: Network.testnet, rpcUrl: rpcUrl)
+let decimals = try await reader.decimals() // UInt32, 7 for every SAC
+let name = try await reader.name()         // "native"; "CODE:ISSUER" for an issued asset
+let symbol = try await reader.symbol()     // "native"; the asset code for an issued asset
+let balance = try await reader.balance(holder: try SCAddressXDR(accountId: sourceKeyPair.accountId))
+print("\(name) (\(symbol)), \(decimals) decimals, balance: \(balance) base units")
+
+// Keyed client: the source account signs and submits
+let client = try SACClient.forAsset(
+    asset: xlm,
+    sourceAccountKeyPair: sourceKeyPair,
+    network: Network.testnet,
+    rpcUrl: rpcUrl
+)
+
+// Decimal amount to base units: at most 7 fractional digits
+let amount = try SACClient.toBaseUnits("12.5") // "125000000"
+
+// transferAndSend: from the source account; builds, signs, sends, and waits. Returns on SUCCESS only.
+let response = try await client.transferAndSend(
+    to: try SCAddressXDR(accountId: receiverId),
+    amount: amount
+)
+print("Transfer status: \(response.status)")
+
+// transfer: returns the simulated AssembledTransaction. A muxed account (M...) receiver is
+// credited at its base account, and the transfer event data carries to_muxed_id.
+let muxedReceiverId = try MuxedAccount(accountId: receiverId, id: 4242).accountId
+let tx = try await client.transfer(
+    from: try SCAddressXDR(accountId: sourceKeyPair.accountId),
+    to: try SCAddressXDR(accountId: muxedReceiverId),
+    amount: "25000000"
+)
+let muxedResponse = try await tx.signAndSend()
+print("Muxed transfer status: \(muxedResponse.status)")
+```
+
+Common mistakes:
+
+```swift
+import stellarsdk
+
+// client: a keyed SACClient, and sourceKeyPair: its source account's KeyPair (see above)
+// receiverId: the id ("G...") of an existing account that receives the transfer
+// muxedAccountId: a muxed account id ("M...")
+// issuedAssetReader: a read-only SACClient of an issued asset whose SAC is deployed
+// accountId: the id ("G...") of a funded account without a trustline for that asset
+
+// WRONG: a whole token count as the amount -- transfer takes base units, so "5" moves 0.0000005 tokens
+// let tx = try await client.transfer(from: from, to: to, amount: "5")
+// CORRECT: convert the decimal amount to base units first
+let tx = try await client.transfer(
+    from: try SCAddressXDR(accountId: sourceKeyPair.accountId),
+    to: try SCAddressXDR(accountId: receiverId),
+    amount: try SACClient.toBaseUnits("5") // "50000000"
+)
+print(try tx.isReadCall()) // false: sign and send it with tx.signAndSend()
+
+// WRONG: a muxed account (M...) as the holder -- balance throws StellarSDKError.invalidArgument
+// let balance = try await client.balance(holder: try SCAddressXDR(accountId: muxedAccountId))
+// CORRECT: query the base account; the contract keeps balances per base address
+let baseAccountId = try MuxedAccount(accountId: muxedAccountId).ed25519AccountId
+let balance = try await client.balance(holder: try SCAddressXDR(accountId: baseAccountId))
+print(balance)
+
+// WRONG: reading a missing trustline as zero -- the read throws, it never returns "0"
+// let issued = (try? await issuedAssetReader.balance(holder: holder)) ?? "0"
+// CORRECT: catch the contract error; code 13 is a missing trustline, 6 a missing account
+do {
+    let issued = try await issuedAssetReader.balance(holder: try SCAddressXDR(accountId: accountId))
+    print(issued)
+} catch let error as AssembledTransactionError {
+    if error.reportedContractError?.code == 13 {
+        print("no trustline for the asset")
+    } else {
+        throw error
+    }
+}
+```
+
+Transactions built by a read-only client allow `signAuthEntries(signerKeyPair:)` with an authorizing account's keypair, but refuse envelope signing, submission, and restoration. The refusal is `AssembledTransactionError.missingPrivateKey`, and a read-only `transferAndSend` throws it before any request. Reads never restore archived state; a read that needs archived ledger entries throws `AssembledTransactionError.restoreNeeded`.
+
+`transfer(from:to:amount:methodOptions:)` and `transferAndSend(to:amount:methodOptions:)` take `MethodOptions` for the fee and the timeout; with `simulate: false`, `transfer` returns an unsimulated transaction and `transferAndSend` throws. An account (`G...`) sender (`from`) other than the source account authorizes with `signAuthEntries(signerKeyPair:)` before `signAndSend()` (see Multi-Party Authorization). A contract (`C...`) sender authorizes through its own `__check_auth`, and `signAuthEntries` does not sign for it. The other functions of the contract, such as `approve` or `mint`, go through `client.sorobanClient.buildInvokeMethodTx`.
+
 ## Low-Level API: InvokeHostFunctionOperation
 
 For full control over transaction construction, use `InvokeHostFunctionOperation` factory methods directly.
@@ -776,6 +873,8 @@ let usdcIssuer = try KeyPair(accountId: "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJF
 let usdcAsset = Asset(type: AssetType.ASSET_TYPE_CREDIT_ALPHANUM4, code: "USDC", issuer: usdcIssuer)!
 let sacOp = try InvokeHostFunctionOperation.forDeploySACWithAsset(asset: usdcAsset)
 ```
+
+The deployed SAC opens with `SACClient.forAsset`, and `asset.contractId(network:)` gives its id.
 
 ## AssembledTransaction for Mid-Level Control
 
