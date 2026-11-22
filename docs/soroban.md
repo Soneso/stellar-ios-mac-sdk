@@ -361,6 +361,241 @@ let result2 = try await client.invokeMethod(
 )
 ```
 
+## Stellar Asset Contracts (SAC)
+
+Every classic asset, XLM included, has a Stellar Asset Contract: the token contract built into the network for that asset. Its contract id derives from the asset and the network. `SACClient` opens that contract without an RPC request and adds typed calls that take and return amounts in base units. `SorobanClient.forClientOptions` opens a SAC too, with the generic `invokeMethod` and `buildInvokeMethodTx` calls.
+
+### Opening a SAC Client
+
+Derive the contract id from the asset, then open a client from the asset or from the id.
+
+```swift
+import stellarsdk
+
+// The id depends on the asset and the network only; deriving it sends no request
+let contractId = try Asset(type: AssetType.ASSET_TYPE_NATIVE)!.contractId(network: Network.testnet)
+print(contractId) // CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC
+
+// The source account signs what the client submits. Opening sends no request,
+// but the account must exist on the network before the client's first call.
+let keyPair = try KeyPair.generateRandomKeyPair()
+
+// From an asset
+let client = try SACClient.forAsset(
+    asset: Asset(type: AssetType.ASSET_TYPE_NATIVE)!,
+    sourceAccountKeyPair: keyPair,
+    network: Network.testnet,
+    rpcUrl: "https://soroban-testnet.stellar.org"
+)
+
+// From a contract id: the "C..." strkey or the 64 character hex of the id
+let clientFromId = try SACClient.forContractId(
+    contractId: contractId,
+    sourceAccountKeyPair: keyPair,
+    network: Network.testnet,
+    rpcUrl: "https://soroban-testnet.stellar.org"
+)
+print(client.contractId == clientFromId.contractId) // true
+```
+
+### Read-Only Client
+
+A read-only client needs no keypair and no funded account. Use it to show token details and balances.
+
+```swift
+import stellarsdk
+
+// An account to read, funded with testnet XLM by Friendbot
+let holder = try KeyPair.generateRandomKeyPair()
+guard case .success = await StellarSDK.testNet().accounts.createTestAccount(accountId: holder.accountId) else {
+    throw StellarSDKError.invalidArgument(message: "Friendbot could not fund \(holder.accountId)")
+}
+
+let reader = try SACClient.readOnlyForAsset(
+    asset: Asset(type: AssetType.ASSET_TYPE_NATIVE)!,
+    network: Network.testnet,
+    rpcUrl: "https://soroban-testnet.stellar.org"
+)
+
+let decimals = try await reader.decimals() // 7 for every SAC
+let name = try await reader.name()         // "native"; "CODE:ISSUER" for an issued asset
+let symbol = try await reader.symbol()     // "native"; the asset code for an issued asset
+let balance = try await reader.balance(holder: try SCAddressXDR(accountId: holder.accountId))
+print("\(name) (\(symbol)), \(decimals) decimals, balance: \(balance) base units")
+
+// Reads only simulate, and they never restore archived state: a read that needs
+// archived ledger entries throws AssembledTransactionError.restoreNeeded.
+// A transaction this client builds allows signAuthEntries(signerKeyPair:) with an
+// authorizing account's keypair, but refuses envelope signing, submission, and restoration.
+// transferAndSend throws AssembledTransactionError.missingPrivateKey before any request.
+```
+
+Transactions built by a read-only client allow `signAuthEntries(signerKeyPair:)` with an authorizing account's keypair, but refuse envelope signing, submission, and restoration. The refusal is `AssembledTransactionError.missingPrivateKey`. The reads behave the same on a client opened with a keypair: they simulate and never sign, submit, or restore.
+
+### Reading a Balance
+
+`balance(holder:)` returns base units as a decimal string, because the contract counts amounts as signed 128-bit integers. A SAC has 7 decimals, so one token is 10,000,000 base units. The holder is an account (`G...`) or a contract (`C...`).
+
+```swift
+import stellarsdk
+import Foundation
+
+// reader: the read-only XLM client from "Read-Only Client" above
+// holder: the funded account's KeyPair from the same example
+
+// An account holder
+let accountBalance = try await reader.balance(holder: try SCAddressXDR(accountId: holder.accountId))
+print(accountBalance) // base units: "100000000000" is 10,000 XLM
+
+// A contract holder that never received the asset reads "0"
+let contractId = try Data(KeyPair.generateRandomKeyPair().publicKey.bytes).encodeContractId()
+let contractBalance = try await reader.balance(holder: try SCAddressXDR(contractId: contractId))
+print(contractBalance) // 0
+```
+
+An account is different: an account without a trustline for an issued asset, or an account that does not exist, fails the simulation with the contract's error. The read throws `AssembledTransactionError.simulationFailed`, and `reportedContractError?.code` is 13 for a missing trustline and 6 for a missing account.
+
+```swift
+import stellarsdk
+
+// asset: an issued Asset whose SAC is deployed on testnet, see "Deploy Stellar Asset Contract (SAC)"
+let reader = try SACClient.readOnlyForAsset(
+    asset: asset,
+    network: Network.testnet,
+    rpcUrl: "https://soroban-testnet.stellar.org"
+)
+
+// A funded account that has no trustline for the asset
+let account = try KeyPair.generateRandomKeyPair()
+guard case .success = await StellarSDK.testNet().accounts.createTestAccount(accountId: account.accountId) else {
+    throw StellarSDKError.invalidArgument(message: "Friendbot could not fund \(account.accountId)")
+}
+
+do {
+    let balance = try await reader.balance(holder: try SCAddressXDR(accountId: account.accountId))
+    print(balance)
+} catch let error as AssembledTransactionError {
+    switch error.reportedContractError?.code {
+    case 13:
+        print("The account has no trustline for the asset")
+    case 6:
+        print("The account does not exist")
+    default:
+        throw error
+    }
+}
+```
+
+The contract keeps balances per base address. A muxed account (`M...`) holder throws `StellarSDKError.invalidArgument` before any request, and the message names the base account to query. A muxed contract (`W...`) holder throws it too, so query its base `C...` address.
+
+### Sending a Transfer
+
+`transfer` and `transferAndSend` take the amount in base units. `SACClient.toBaseUnits(_:)` converts a decimal amount with up to 7 fractional digits; the largest amount is `17014118346046923173168730371588.4105727`. `transferAndSend` transfers from the client's source account: it builds the transfer, signs it, sends it, and waits for the result. `transfer` returns the simulated transaction for you to sign and send.
+
+```swift
+import stellarsdk
+
+// Two accounts funded with testnet XLM by Friendbot
+let sender = try KeyPair.generateRandomKeyPair()
+let receiver = try KeyPair.generateRandomKeyPair()
+for keyPair in [sender, receiver] {
+    guard case .success = await StellarSDK.testNet().accounts.createTestAccount(accountId: keyPair.accountId) else {
+        throw StellarSDKError.invalidArgument(message: "Friendbot could not fund \(keyPair.accountId)")
+    }
+}
+
+let client = try SACClient.forAsset(
+    asset: Asset(type: AssetType.ASSET_TYPE_NATIVE)!,
+    sourceAccountKeyPair: sender,
+    network: Network.testnet,
+    rpcUrl: "https://soroban-testnet.stellar.org"
+)
+
+// 12.5 XLM in base units
+let amount = try SACClient.toBaseUnits("12.5")
+print(amount) // 125000000
+
+// The source account is the sender
+let response = try await client.transferAndSend(
+    to: try SCAddressXDR(accountId: receiver.accountId),
+    amount: amount
+)
+print(response.status) // SUCCESS
+
+// A muxed account (M...) receiver is credited at its base account,
+// and the transfer event carries the muxed id
+let muxedReceiver = try MuxedAccount(accountId: receiver.accountId, id: 4242)
+let tx = try await client.transfer(
+    from: try SCAddressXDR(accountId: sender.accountId),
+    to: try SCAddressXDR(accountId: muxedReceiver.accountId),
+    amount: "25000000" // 2.5 XLM
+)
+let muxedResponse = try await tx.signAndSend()
+print(muxedResponse.status) // SUCCESS
+
+for encodedEvent in (muxedResponse.events?.contractEventsXdr ?? []).flatMap({ $0 }) {
+    let event = try ContractEventXDR(xdr: encodedEvent)
+    if case .v0(let body) = event.body, body.topics.first?.symbol == "transfer" {
+        let muxedId = body.data.map?.first(where: { $0.key.symbol == "to_muxed_id" })?.val.u64
+        print(muxedId ?? 0) // 4242
+    }
+}
+```
+
+Both calls take `methodOptions`, which set the fee and the timeout (with `simulate: false`, `transfer` returns an unsimulated transaction and `transferAndSend` throws), and the other functions of the contract, such as `approve` or `mint`, go through `client.sorobanClient.buildInvokeMethodTx`. Only `FAILED` is a failure: `transferAndSend` throws `SorobanClientError.invokeFailed` for it. A transaction that is not confirmed within the timeout throws `AssembledTransactionError.pollInterrupted` with its hash. It may still succeed, so poll that hash again with `SorobanServer.pollTransaction(hash:)` before you send another transfer; a returned `NOT_FOUND` status means the transaction is still not confirmed.
+
+### Transfers Authorized by Another Account
+
+A transfer needs the authorization of `from`. When `from` is the client's source account, the envelope signature covers it. Any other sender authorizes with its own entry. The steps below apply to a transaction a client opened with a keypair has simulated; with `simulate: false`, call `simulate()` before inspecting or completing authorization entries.
+
+An account (`G...`) sender appears in `needsNonInvokerSigningBy()` and signs its entry with `signAuthEntries(signerKeyPair:)`:
+
+```swift
+import stellarsdk
+
+// submitter pays the fee and submits; sender owns the funds and authorizes the transfer
+let submitter = try KeyPair.generateRandomKeyPair()
+let sender = try KeyPair.generateRandomKeyPair()
+let receiver = try KeyPair.generateRandomKeyPair()
+for keyPair in [submitter, sender, receiver] {
+    guard case .success = await StellarSDK.testNet().accounts.createTestAccount(accountId: keyPair.accountId) else {
+        throw StellarSDKError.invalidArgument(message: "Friendbot could not fund \(keyPair.accountId)")
+    }
+}
+
+let client = try SACClient.forAsset(
+    asset: Asset(type: AssetType.ASSET_TYPE_NATIVE)!,
+    sourceAccountKeyPair: submitter,
+    network: Network.testnet,
+    rpcUrl: "https://soroban-testnet.stellar.org"
+)
+
+let tx = try await client.transfer(
+    from: try SCAddressXDR(accountId: sender.accountId),
+    to: try SCAddressXDR(accountId: receiver.accountId),
+    amount: try SACClient.toBaseUnits("10")
+)
+
+// The sender is not the source account, so its authorization entry is still unsigned
+print(try tx.needsNonInvokerSigningBy() == [sender.accountId]) // true
+
+// The sender signs its entry, then the submitter signs the envelope and sends
+try await tx.signAuthEntries(signerKeyPair: sender)
+let response = try await tx.signAndSend()
+print(response.status) // SUCCESS
+```
+
+A contract (`C...`) sender, such as a smart wallet, authorizes through its own `__check_auth`. `needsNonInvokerSigningBy()` reports it as the 64 character hex of its contract id, and `signAuthEntries` does not sign for it. Read the entries from `try tx.getSimulationData().auth` and complete the contract's entry yourself:
+
+1. Set `signatureExpirationLedger` before computing the payload: set the field of the entry's `SorobanAddressCredentialsXDR` in its arm (`.address`, `.addressV2`, or `.addressWithDelegates`) and assign the arm back to `entry.credentials`. Signatures commit to it.
+2. Produce the value the wallet's `__check_auth` verifies. `entry.buildPreimage(network:)` returns a `HashIDPreimageXDR`; the wallet's signers sign `Data(try XDREncoder.encode(preimage)).sha256Hash`, the hash of its XDR bytes. `entry.sign(signer:network:signatureExpirationLedger:forAddress:)` writes the account format, a vector of public key and signature maps; other formats go into the credentials' `signature`.
+3. Attach the entries with `tx.tx!.setSorobanAuth(auth: entries)` on the returned `AssembledTransaction`. Do not call `simulate()` on it again: it replaces the entries with the simulation's and adds a second resource fee.
+4. Re-simulate with `SorobanServer(endpoint:).simulateTransaction(simulateTxRequest: SimulateTransactionRequest(transaction: tx.tx!, authMode: "enforce"))`. It returns `SimulateTransactionResponseEnum`: switch on it, throw the `.failure` error, throw on the `.success` response's `error`, and require its `transactionData` and `minResourceFee`.
+5. Assign that `transactionData` with `tx.tx!.setSorobanTransactionData(data:)`, and set `tx.tx!.setFee(fee:)` to the inclusion fee (`MethodOptions.fee`, 100 by default) plus that `minResourceFee`. `addResourceFee` adds to a fee that already holds the first simulation's resource fee. The signed entries stay.
+6. Sign and submit with `tx.signAndSend()`; `sign()` clones the current transaction and blocks only on unsigned account nodes. For entries that delegate signers co-sign, see [Delegated Authorization](#delegated-authorization).
+
+An issued asset's SAC is deployed once per network, and its id equals `asset.contractId(network:)`, so the id is known before the deployment. See [Deploy Stellar Asset Contract (SAC)](#deploy-stellar-asset-contract-sac) for the deployment.
+
 ## Installing and Deploying
 
 Put your contract on the network. Install uploads the WASM bytecode once; deploy creates contract instances from that code.
