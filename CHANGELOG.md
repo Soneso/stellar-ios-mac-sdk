@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- `FeeBumpTransaction(envelopeXdr:)` reads a fee bump envelope as a fee bump transaction. It keeps the decoded bytes and the outer signatures, so the hash and `encodedEnvelope()` match the input. A V0 or V1 envelope throws `StellarSDKError.invalidArgument`.
 - `Transaction(sourceAccount:operations:memoXDR:preconditions:maxOperationFee:sorobanTransactionData:)` and `Transaction.setMemo(memoXDR:)` write a `MemoXDR` as it is. A memo taken from `transactionXDR.memo` of another transaction keeps bytes that are not valid UTF-8. `Transaction.memo` and `Memo(memoXDR:)` give display text, with U+FFFD replacement characters for such bytes.
 - `TransactionResponse.memoBytes` holds the bytes of a text memo from Horizon's `memo_bytes`.
 - `TxRepHelper.decodeMemoTextBytes(_:)` reads a TxRep memo text as bytes.

@@ -171,7 +171,8 @@ public class Transaction: @unchecked Sendable {
     /// The transaction keeps the decoded XDR as it is, with the envelope's signatures: the hash, new
     /// signatures and `transactionXDR` give the input bytes, and `fee` is the decoded total fee. A V0
     /// envelope gives its V1 form, which has the same hash; `encodedEnvelope()` writes that V1 form.
-    /// A fee bump envelope gives its inner transaction with the inner signatures.
+    /// A fee bump envelope gives its inner transaction with the inner signatures. Use
+    /// `FeeBumpTransaction(envelopeXdr:)` to read a fee bump envelope as a fee bump transaction.
     ///
     /// - Parameter envelopeXdr: The XDR string to be parsed into a Transaction object.
     ///
