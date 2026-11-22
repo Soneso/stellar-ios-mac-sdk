@@ -1079,7 +1079,8 @@ final class SACClientUnitTests: XCTestCase {
         rpc.serveTransaction([.rpcError(code: -32603, message: "busy"), .status("SUCCESS")])
         let client = try keyedClient()
 
-        let response = try await client.transferAndSend(to: try address(otherAccountG), amount: "5", methodOptions: MethodOptions(timeoutInSeconds: 4))
+        // The first poll at 3 s has 3 s left, so it stays a round request under a late wake-up.
+        let response = try await client.transferAndSend(to: try address(otherAccountG), amount: "5", methodOptions: MethodOptions(timeoutInSeconds: 6))
 
         XCTAssertEqual(response.status, "SUCCESS")
         XCTAssertEqual(rpc.requestNames, ["account", "simulate", "send", "getTx", "getTx"])
