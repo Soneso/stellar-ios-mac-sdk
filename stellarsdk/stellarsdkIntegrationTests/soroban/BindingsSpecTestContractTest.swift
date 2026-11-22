@@ -223,6 +223,60 @@ final class BindingsSpecTestContractTest: XCTestCase {
         print("=== testBindingsSpecTestContractBindings completed successfully ===")
     }
 
+    /// A string argument whose bytes are not valid UTF-8 reaches the contract and comes back
+    /// with every byte: in the simulation, in the transaction that getTransaction returns and
+    /// in the transaction that Horizon returns.
+    func testStringArgumentThatIsNotUTF8KeepsItsBytes() async throws {
+        let wasmHash = try await installContract(fileName: specTestContractFileName)
+        let client = try await deployContract(wasmHash: wasmHash)
+        let bytes = Data([0xFF, 0xFE, 0x20, 0x61, 0x62, 0x63])
+
+        let simulated = try await client.invokeMethod(name: "string", args: [.string(bytes)])
+        XCTAssertEqual(stringBytes(simulated), bytes)
+
+        let transaction = try await client.buildInvokeMethodTx(name: "string", args: [.string(bytes)])
+        let response = try await transaction.signAndSend(force: true)
+        XCTAssertEqual(response.status, GetTransactionResponse.STATUS_SUCCESS)
+        XCTAssertEqual(response.resultValue.flatMap(stringBytes), bytes)
+        let envelope = try XCTUnwrap(response.transactionEnvelope)
+        XCTAssertEqual(stringArgumentBytes(envelope), bytes)
+        let hash = try XCTUnwrap(response.txHash)
+        XCTAssertEqual(try envelope.txHash(network: network).base16EncodedString(), hash)
+
+        let record = try await horizonTransaction(hash: hash)
+        XCTAssertEqual(stringArgumentBytes(record.transactionEnvelope), bytes)
+        XCTAssertEqual(try record.transactionEnvelope.txHash(network: network).base16EncodedString(), hash)
+    }
+
+    private func stringBytes(_ value: SCValXDR) -> Data? {
+        guard case .string(let bytes) = value else {
+            return nil
+        }
+        return bytes
+    }
+
+    /// The bytes of the first argument of the contract call in the envelope, when it is a string.
+    private func stringArgumentBytes(_ envelope: TransactionEnvelopeXDR) -> Data? {
+        guard case .invokeHostFunctionOp(let operation)? = envelope.txOperations.first?.body,
+              case .invokeContract(let call) = operation.hostFunction,
+              let argument = call.args.first else {
+            return nil
+        }
+        return stringBytes(argument)
+    }
+
+    /// The transaction with the given hash from Horizon, once Horizon has ingested it.
+    private func horizonTransaction(hash: String) async throws -> TransactionResponse {
+        let sdk = network.passphrase == Network.testnet.passphrase ? StellarSDK.testNet() : StellarSDK.futureNet()
+        for _ in 0..<20 {
+            if case .success(let details) = await sdk.transactions.getTransactionDetails(transactionHash: hash) {
+                return details
+            }
+            try await Task.sleep(nanoseconds: 3 * NSEC_PER_SEC)
+        }
+        throw StellarSDKError.invalidArgument(message: "Horizon did not return transaction \(hash)")
+    }
+
     func installContract(fileName: String) async throws -> String {
         guard let path = Bundle.module.path(forResource: fileName, ofType: "wasm") else {
             XCTFail("File \(fileName).wasm not found.")

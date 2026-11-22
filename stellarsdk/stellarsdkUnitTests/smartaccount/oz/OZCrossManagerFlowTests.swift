@@ -116,7 +116,7 @@ final class OZCrossManagerFlowTests: XCTestCase {
         guard case .invokeContract(let addInvoke) = recordingSubmitter.invocations[0].hostFunction else {
             return XCTFail("first invocation must be invokeContract")
         }
-        XCTAssertEqual(addInvoke.functionName, "add_signer")
+        XCTAssertEqual(addInvoke.functionNameString, "add_signer")
         XCTAssertEqual(addInvoke.args.count, 2)
         guard case .u32(let addRuleId) = addInvoke.args[0] else {
             return XCTFail("first arg of add_signer must be u32")
@@ -127,7 +127,7 @@ final class OZCrossManagerFlowTests: XCTestCase {
         guard case .invokeContract(let removeInvoke) = recordingSubmitter.invocations[1].hostFunction else {
             return XCTFail("second invocation must be invokeContract")
         }
-        XCTAssertEqual(removeInvoke.functionName, "remove_signer")
+        XCTAssertEqual(removeInvoke.functionNameString, "remove_signer")
         XCTAssertEqual(removeInvoke.args.count, 2)
         guard case .u32(let removeRuleId) = removeInvoke.args[0],
               case .u32(let signerId) = removeInvoke.args[1] else {
@@ -174,13 +174,13 @@ final class OZCrossManagerFlowTests: XCTestCase {
         guard case .invokeContract(let addInvoke) = recordingSubmitter.invocations[0].hostFunction else {
             return XCTFail("first invocation must be invokeContract")
         }
-        XCTAssertEqual(addInvoke.functionName, "add_policy")
+        XCTAssertEqual(addInvoke.functionNameString, "add_policy")
         XCTAssertEqual(addInvoke.args.count, 3)
 
         guard case .invokeContract(let removeInvoke) = recordingSubmitter.invocations[1].hostFunction else {
             return XCTFail("second invocation must be invokeContract")
         }
-        XCTAssertEqual(removeInvoke.functionName, "remove_policy")
+        XCTAssertEqual(removeInvoke.functionNameString, "remove_policy")
         XCTAssertEqual(removeInvoke.args.count, 2)
         guard case .u32(let policyId) = removeInvoke.args[1] else {
             return XCTFail("second arg of remove_policy must be u32")
@@ -235,7 +235,7 @@ final class OZCrossManagerFlowTests: XCTestCase {
         guard case .invokeContract(let invokeArgs) = hostFunction else {
             return XCTFail("expected invokeContract host function")
         }
-        XCTAssertEqual(invokeArgs.functionName, "add_signer")
+        XCTAssertEqual(invokeArgs.functionNameString, "add_signer")
         XCTAssertEqual(invokeArgs.args.count, 2)
 
         guard case .u32(let ruleId) = invokeArgs.args[0] else {

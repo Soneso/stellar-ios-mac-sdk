@@ -8,10 +8,11 @@
 import XCTest
 @testable import stellarsdk
 
-/// Envelopes whose memo holds bytes that are not valid UTF-8 or starts with a byte order mark,
-/// and envelopes whose `SCVal` strings or function name start with a byte order mark. The XDR
-/// layer and the transaction import keep those bytes, so the envelope, the hash and every new
-/// signature are those of the input. The hashes are testnet hashes computed outside the SDK.
+/// Envelopes whose memo, `SCVal` strings or function name hold bytes that are not valid UTF-8
+/// or start with a byte order mark, and envelopes whose `SCVal` symbols start with a byte order
+/// mark. The XDR layer and the transaction import keep those bytes, so the envelope, the hash
+/// and every new signature are those of the input. The hashes are testnet hashes computed
+/// outside the SDK.
 final class TransactionStringBytesUnitTests: XCTestCase {
 
     private struct EnvelopeVector {
@@ -65,6 +66,12 @@ final class TransactionStringBytesUnitTests: XCTestCase {
         // function name ef bb bf 61
         EnvelopeVector(envelope: "AAAAAgAAAAABAgMEBQYHCAkKCwwNDg8QERITFBUWFxgZGhscHR4fIAAAAGQAAAABAAAAAQAAAAAAAAAAAAAAAQAAAAAAAAAYAAAAAAAAAAFBQkNERUZHSElKS0xNTk9QUVJTVFVWV1hZWltcXV5fYAAAAATvu79hAAAAAAAAAAAAAAAAAAAAAQAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
                        hash: "785e5a36182816ff9a2131446efd3b85e16cce555918d53a1d009ad00735d778"),
+        // SCV_STRING argument ff fe 20 61 62 63
+        EnvelopeVector(envelope: "AAAAAgAAAAABAgMEBQYHCAkKCwwNDg8QERITFBUWFxgZGhscHR4fIAAAAGQAAAABAAAAAQAAAAAAAAAAAAAAAQAAAAAAAAAYAAAAAAAAAAFBQkNERUZHSElKS0xNTk9QUVJTVFVWV1hZWltcXV5fYAAAAAFmAAAAAAAAAQAAAA4AAAAG//4gYWJjAAAAAAAAAAAAAAAAAAEAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+                       hash: "d2271e8683ce85e52efbd45c6a2dbb1dac3ca61b16f4f36d8823b56486621b8c"),
+        // function name ff fe 20 61 62 63
+        EnvelopeVector(envelope: "AAAAAgAAAAABAgMEBQYHCAkKCwwNDg8QERITFBUWFxgZGhscHR4fIAAAAGQAAAABAAAAAQAAAAAAAAAAAAAAAQAAAAAAAAAYAAAAAAAAAAFBQkNERUZHSElKS0xNTk9QUVJTVFVWV1hZWltcXV5fYAAAAAb//iBhYmMAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+                       hash: "649e93a7e8a22e665be43f4850951f53ea8104949f60f121889d77a206976a4b"),
         // testnet transaction b7fb286b, memo ff fe 20 61 62 63
         EnvelopeVector(envelope: "AAAAAgAAAAB9dKGOpM7ReVg9puIJUE41Q4ixcNzQmY1RuqqEPX5PMAAAA+gAWPV9AAAAAQAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAb//iBhYmMAAAAAAAEAAAAAAAAAAQAAAACkQeBd9iE/juL6rqj0VVFw2v8aYlIFPrDcDVEpm7RX1AAAAAAAAAAAAJiWgAAAAAAAAAABPX5PMAAAAEAqERgvj65qzoHGjnHgWnfheLjxKwOqWTLzvu/v3OwwOi2Qkejhk2V7ODCcq9/yVZ0M6rvDcOIIUrlecenAIGYP",
                        hash: "b7fb286bcb380d0f3b9ace77c8b513cc348e89805ddf16a076f2085ee8dc0816"),
@@ -134,6 +141,14 @@ final class TransactionStringBytesUnitTests: XCTestCase {
         AuthVector(entry: "AAAAAQAAAAAAAAAAgYKDhIWGh4iJiouMjY6PkJGSk5SVlpeYmZqbnJ2en6AAAAAAABLWhwAAA+gAAAABAAAAAAAAAAFBQkNERUZHSElKS0xNTk9QUVJTVFVWV1hZWltcXV5fYAAAAAh0cmFuc2ZlcgAAAAEAAAAOAAAABO+7v2EAAAAA",
                    preimage: "AAAACc7gMC1ZhE0yvcqRXIID3USzP7t+3BkFHqN6vt8o7NRyAAAAAAAS1ocAAAPoAAAAAAAAAAFBQkNERUZHSElKS0xNTk9QUVJTVFVWV1hZWltcXV5fYAAAAAh0cmFuc2ZlcgAAAAEAAAAOAAAABO+7v2EAAAAA",
                    payloadHash: "f2319301b2ced3a8dcf2dc6d044ad8f1949e5ee3233aa5417b8d2e646636c3a5"),
+        // function name ff fe 20 61 62 63
+        AuthVector(entry: "AAAAAQAAAAAAAAAAgYKDhIWGh4iJiouMjY6PkJGSk5SVlpeYmZqbnJ2en6AAAAAAABLWhwAAA+gAAAABAAAAAAAAAAFBQkNERUZHSElKS0xNTk9QUVJTVFVWV1hZWltcXV5fYAAAAAb//iBhYmMAAAAAAAAAAAAA",
+                   preimage: "AAAACc7gMC1ZhE0yvcqRXIID3USzP7t+3BkFHqN6vt8o7NRyAAAAAAAS1ocAAAPoAAAAAAAAAAFBQkNERUZHSElKS0xNTk9QUVJTVFVWV1hZWltcXV5fYAAAAAb//iBhYmMAAAAAAAAAAAAA",
+                   payloadHash: "d0a19f113ebb858c5459673806b3ec674fe893f60b0cb0fa731fc497c6d24d99"),
+        // transfer with SCV_STRING ff fe 20 61 62 63
+        AuthVector(entry: "AAAAAQAAAAAAAAAAgYKDhIWGh4iJiouMjY6PkJGSk5SVlpeYmZqbnJ2en6AAAAAAABLWhwAAA+gAAAABAAAAAAAAAAFBQkNERUZHSElKS0xNTk9QUVJTVFVWV1hZWltcXV5fYAAAAAh0cmFuc2ZlcgAAAAEAAAAOAAAABv/+IGFiYwAAAAAAAA==",
+                   preimage: "AAAACc7gMC1ZhE0yvcqRXIID3USzP7t+3BkFHqN6vt8o7NRyAAAAAAAS1ocAAAPoAAAAAAAAAAFBQkNERUZHSElKS0xNTk9QUVJTVFVWV1hZWltcXV5fYAAAAAh0cmFuc2ZlcgAAAAEAAAAOAAAABv/+IGFiYwAAAAAAAA==",
+                   payloadHash: "85a9809802da0bc78328f29b3a6671f7b67732ae79f4e3697b0b56bdc4690c33"),
     ]
 
     // MARK: - XDR layer
@@ -238,6 +253,10 @@ final class TransactionStringBytesUnitTests: XCTestCase {
         let memoEnvelope = try XCTUnwrap(v1Vectors.first).envelope
         let txRep = try TxRep.toTxRep(transactionEnvelope: memoEnvelope)
         XCTAssertTrue(txRep.contains(#"tx.memo.text: "\xff\xfe abc""#), txRep)
+        let stringTxRep = try TxRep.toTxRep(transactionEnvelope: try XCTUnwrap(v1Vector(hash: "d2271e8683ce85e52efbd45c6a2dbb1dac3ca61b16f4f36d8823b56486621b8c")).envelope)
+        XCTAssertTrue(stringTxRep.contains(#".args[0].str: "\xff\xfe abc""#), stringTxRep)
+        let nameTxRep = try TxRep.toTxRep(transactionEnvelope: try XCTUnwrap(v1Vector(hash: "649e93a7e8a22e665be43f4850951f53ea8104949f60f121889d77a206976a4b")).envelope)
+        XCTAssertTrue(nameTxRep.contains(#".invokeContract.functionName: "\xff\xfe abc""#), nameTxRep)
         for vector in v1Vectors {
             XCTAssertEqual(try TxRep.fromTxRep(txRep: try TxRep.toTxRep(transactionEnvelope: vector.envelope)), vector.envelope)
         }
@@ -370,6 +389,10 @@ final class TransactionStringBytesUnitTests: XCTestCase {
     }
 
     // MARK: - Helpers
+
+    private func v1Vector(hash: String) -> EnvelopeVector? {
+        return v1Vectors.first { $0.hash == hash }
+    }
 
     private struct OperationCorpus: Decodable {
         let entries: [Entry]

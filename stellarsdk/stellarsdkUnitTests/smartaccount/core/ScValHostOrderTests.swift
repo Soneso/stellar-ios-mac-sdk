@@ -200,6 +200,15 @@ final class ScValHostOrderTests: XCTestCase {
         XCTAssertEqual(compareScValHostOrder(a, SCValXDR.string("apple")), 0)
     }
 
+    /// String comparands whose bytes are not valid UTF-8 compare by their unsigned bytes.
+    func testStringComparands_bytesThatAreNotUTF8() {
+        let low = SCValXDR.string(Data([0xC0]))
+        let high = SCValXDR.string(Data([0xFF]))
+        XCTAssertLessThan(compareScValHostOrder(low, high), 0)
+        XCTAssertGreaterThan(compareScValHostOrder(high, low), 0)
+        XCTAssertLessThan(compareScValHostOrder(SCValXDR.string("a"), low), 0)
+    }
+
     /// ExecutableTag comparands carry an SCString and compare by content, byte for byte,
     /// with the shorter value first on a prefix tie.
     func testExecutableTagComparands_contentOrder() {

@@ -8,8 +8,9 @@
 import XCTest
 @testable import stellarsdk
 
-/// SEP-7, SEP-10 and Horizon paths that decode a transaction whose text memo holds bytes that
-/// are not valid UTF-8.
+/// SEP-7, SEP-10, SEP-45, Horizon and Soroban RPC paths that decode a transaction, an
+/// authorization entry, an event or a ledger entry whose text memo, `SCVal` string or function
+/// name holds bytes that are not valid UTF-8.
 final class StringBytesPathsUnitTests: XCTestCase {
 
     /// A V1 testnet envelope with the text memo ff fe 20 61 62 63 and its hash.
@@ -75,6 +76,38 @@ final class StringBytesPathsUnitTests: XCTestCase {
         XCTAssertEqual(validationError, .invalidMemoType)
     }
 
+    // MARK: - SEP-45
+
+    func testSep45ChallengeWithAFunctionNameThatIsNotUTF8FailsTheFunctionNameCheck() throws {
+        let server = try KeyPair.generateRandomKeyPair()
+        let webAuth = try webAuthForContracts(server: server)
+        let challenge = try sep45Challenge(functionName: invalid, account: .string(sep45Client), server: server)
+
+        let entries = try webAuth.decodeAuthorizationEntries(base64Xdr: challenge)
+        XCTAssertThrowsError(try webAuth.validateChallenge(authEntries: entries, clientAccountId: sep45Client)) { error in
+            guard case ContractChallengeValidationError.invalidFunctionName(let expected, let received) = error else {
+                return XCTFail("expected invalidFunctionName, got \(error)")
+            }
+            XCTAssertEqual(expected, "web_auth_verify")
+            XCTAssertEqual(received, #""\xff\xfe abc""#)
+        }
+    }
+
+    func testSep45ChallengeWithAnAccountThatIsNotUTF8FailsTheAccountCheck() throws {
+        let server = try KeyPair.generateRandomKeyPair()
+        let webAuth = try webAuthForContracts(server: server)
+        let challenge = try sep45Challenge(functionName: Data("web_auth_verify".utf8), account: .string(invalid), server: server)
+
+        let entries = try webAuth.decodeAuthorizationEntries(base64Xdr: challenge)
+        XCTAssertThrowsError(try webAuth.validateChallenge(authEntries: entries, clientAccountId: sep45Client)) { error in
+            guard case ContractChallengeValidationError.invalidAccount(let expected, let received) = error else {
+                return XCTFail("expected invalidAccount, got \(error)")
+            }
+            XCTAssertEqual(expected, sep45Client)
+            XCTAssertEqual(received, "nil")
+        }
+    }
+
     // MARK: - Horizon
 
     func testHorizonTextMemoComesFromMemoBytes() throws {
@@ -117,12 +150,113 @@ final class StringBytesPathsUnitTests: XCTestCase {
         XCTAssertEqual(page.records.last?.memoBytes, invalid)
     }
 
+    func testHorizonPageWithAStringArgumentThatIsNotUTF8Decodes() throws {
+        let page = try decodeHorizon(PageResponse<TransactionResponse>.self,
+                                     #"{"_links":{"self":{"href":"https://horizon-testnet.stellar.org/transactions?cursor=&limit=10&order=asc"}},"_embedded":{"records":[\#(invokeRecord)]}}"#)
+        let record = try XCTUnwrap(page.records.first)
+        XCTAssertEqual(record.transactionEnvelope.xdrEncoded, stringEnvelope)
+        XCTAssertEqual(try record.transactionEnvelope.txHash(network: .testnet).base16EncodedString(), stringHash)
+        XCTAssertEqual(record.transactionHash, stringHash)
+    }
+
+    // MARK: - Soroban RPC
+
+    func testGetTransactionKeepsTheEnvelopeAndTheReturnValue() throws {
+        let success = try JSONDecoder().decode(GetTransactionResponse.self, from: Data(#"""
+            {"status":"SUCCESS","latestLedger":2,"latestLedgerCloseTime":"1795651200","oldestLedger":1,"envelopeXdr":"\#(stringEnvelope)","resultMetaXdr":"AAAABAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAEAAAAOAAAABv/+IGFiYwAAAAAAAAAAAAA=","txHash":"\#(stringHash)"}
+            """#.utf8))
+        XCTAssertEqual(success.transactionEnvelope?.xdrEncoded, stringEnvelope)
+        XCTAssertEqual(try success.transactionEnvelope?.txHash(network: .testnet).base16EncodedString(), stringHash)
+        guard case .string(let returned)? = success.resultValue else {
+            return XCTFail("expected a string return value, got \(String(describing: success.resultValue))")
+        }
+        XCTAssertEqual(returned, invalid)
+
+        let failed = try JSONDecoder().decode(GetTransactionResponse.self, from: Data(#"""
+            {"status":"FAILED","latestLedger":2,"latestLedgerCloseTime":"1795651200","oldestLedger":1,"envelopeXdr":"\#(nameEnvelope)","txHash":"\#(nameHash)"}
+            """#.utf8))
+        XCTAssertEqual(failed.transactionEnvelope?.xdrEncoded, nameEnvelope)
+        XCTAssertEqual(try failed.transactionEnvelope?.txHash(network: .testnet).base16EncodedString(), nameHash)
+    }
+
+    func testGetEventsKeepsAnEventWhoseValueIsAStringThatIsNotUTF8() throws {
+        let events = try JSONDecoder().decode(GetEventsResponse.self, from: Data(#"""
+            {"events":[\#(event(id: "0000000004294967297-0000000001", value: "AAAADgAAAAb//iBhYmMAAA==")),\#(event(id: "0000000004294967297-0000000002", value: "AAAAAwAAAAc="))],"latestLedger":2}
+            """#.utf8))
+        XCTAssertEqual(events.events.map(\.id), ["0000000004294967297-0000000001", "0000000004294967297-0000000002"])
+        guard case .string(let bytes) = try XCTUnwrap(events.events.first).valueXdr else {
+            return XCTFail("expected a string event value")
+        }
+        XCTAssertEqual(bytes, invalid)
+        XCTAssertEqual(events.events.last?.valueXdr.u32, 7)
+    }
+
+    func testLedgerEntryKeepsAContractDataValueThatIsNotUTF8() throws {
+        let entry = try JSONDecoder().decode(LedgerEntry.self, from: Data(#"""
+            {"key":"AAAABgAAAAEHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwAAAA8AAAABawAAAAAAAAE=","xdr":"AAAABgAAAAAAAAABBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcAAAAPAAAAAWsAAAAAAAABAAAADgAAAAb//iBhYmMAAA==","lastModifiedLedgerSeq":1}
+            """#.utf8))
+        guard case .contractData(let data)? = entry.valueXdr, case .string(let bytes) = data.val else {
+            return XCTFail("expected contract data with a string value, got \(String(describing: entry.valueXdr))")
+        }
+        XCTAssertEqual(bytes, invalid)
+        XCTAssertEqual(entry.valueXdr?.xdrEncoded, "AAAABgAAAAAAAAABBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcAAAAPAAAAAWsAAAAAAAABAAAADgAAAAb//iBhYmMAAA==")
+    }
+
     // MARK: - Helpers
 
     private func decodeHorizon<T: Decodable>(_ type: T.Type, _ json: String) throws -> T {
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .formatted(DateFormatter.iso8601)
         return try decoder.decode(type, from: Data(json.utf8))
+    }
+
+    /// A V1 testnet envelope that invokes `f` with the `SCVal` string ff fe 20 61 62 63, and its hash.
+    private let stringEnvelope = "AAAAAgAAAAABAgMEBQYHCAkKCwwNDg8QERITFBUWFxgZGhscHR4fIAAAAGQAAAABAAAAAQAAAAAAAAAAAAAAAQAAAAAAAAAYAAAAAAAAAAFBQkNERUZHSElKS0xNTk9QUVJTVFVWV1hZWltcXV5fYAAAAAFmAAAAAAAAAQAAAA4AAAAG//4gYWJjAAAAAAAAAAAAAAAAAAEAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
+    private let stringHash = "d2271e8683ce85e52efbd45c6a2dbb1dac3ca61b16f4f36d8823b56486621b8c"
+
+    /// A V1 testnet envelope that invokes the function named ff fe 20 61 62 63, and its hash.
+    private let nameEnvelope = "AAAAAgAAAAABAgMEBQYHCAkKCwwNDg8QERITFBUWFxgZGhscHR4fIAAAAGQAAAABAAAAAQAAAAAAAAAAAAAAAQAAAAAAAAAYAAAAAAAAAAFBQkNERUZHSElKS0xNTk9QUVJTVFVWV1hZWltcXV5fYAAAAAb//iBhYmMAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
+    private let nameHash = "649e93a7e8a22e665be43f4850951f53ea8104949f60f121889d77a206976a4b"
+
+    /// The web auth contract and the client contract of the SEP-45 challenges.
+    private let sep45Contract = "CDZJIDQW5WTPAZ64PGIJGVEIDNK72LL3LKUZWG3G6GWXYQKI2JNIVFNV"
+    private let sep45Client = "CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC"
+
+    private func webAuthForContracts(server: KeyPair) throws -> WebAuthForContracts {
+        return try WebAuthForContracts(authEndpoint: "https://\(authHost)/auth", webAuthContractId: sep45Contract,
+                                       serverSigningKey: server.accountId, serverHomeDomain: authHost, network: .testnet)
+    }
+
+    /// A SEP-45 challenge with one server entry that calls `functionName` on the web auth
+    /// contract with the given `account` argument, encoded as the server sends it.
+    private func sep45Challenge(functionName: Data, account: SCValXDR, server: KeyPair) throws -> String {
+        let arguments = SCValXDR.map([
+            SCMapEntryXDR(key: .symbol("account"), val: account),
+            SCMapEntryXDR(key: .symbol("home_domain"), val: .string(authHost)),
+            SCMapEntryXDR(key: .symbol("nonce"), val: .string("1")),
+            SCMapEntryXDR(key: .symbol("web_auth_domain"), val: .string(authHost)),
+            SCMapEntryXDR(key: .symbol("web_auth_domain_account"), val: .string(server.accountId)),
+        ])
+        let call = InvokeContractArgsXDR(contractAddress: try SCAddressXDR(contractId: sep45Contract),
+                                         functionName: functionName, args: [arguments])
+        let credentials = SorobanAddressCredentialsXDR(address: try SCAddressXDR(accountId: server.accountId), nonce: 1,
+                                                       signatureExpirationLedger: 1000, signature: .vec([]))
+        let entry = SorobanAuthorizationEntryXDR(credentials: .address(credentials),
+                                                 rootInvocation: SorobanAuthorizedInvocationXDR(function: .contractFn(call), subInvocations: []))
+        return Data(try XDREncoder.encode([entry])).base64EncodedString()
+    }
+
+    /// A getEvents entry of a contract event with the topic `transfer` and the given value.
+    private func event(id: String, value: String) -> String {
+        return #"{"type":"contract","ledger":1,"ledgerClosedAt":"2026-11-20T00:00:00Z","contractId":"CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM","id":"\#(id)","topic":["AAAADwAAAAh0cmFuc2Zlcg=="],"value":"\#(value)","txHash":"\#(stringHash)"}"#
+    }
+
+    /// A Horizon record of the successful `stringEnvelope` transaction.
+    private var invokeRecord: String {
+        let links = ["self", "account", "ledger", "operations", "effects", "precedes", "succeeds", "transaction"]
+            .map { #""\#($0)":{"href":"https://horizon-testnet.stellar.org/transactions/\#(stringHash)"}"# }
+            .joined(separator: ",")
+        return #"{"_links":{\#(links)},"id":"\#(stringHash)","paging_token":"4294971392","successful":true,"hash":"\#(stringHash)","ledger":1,"created_at":"2026-11-20T00:00:00Z","source_account":"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV","source_account_sequence":"1","fee_account":"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV","fee_charged":"100","max_fee":"100","operation_count":1,"envelope_xdr":"\#(stringEnvelope)","result_xdr":"AAAAAAAAAGQAAAAAAAAAAQAAAAAAAAAYAAAAAMWY7wDS0QL1hghBFyMjOWiIK0e2q3tYL7i1B90ewq0lAAAAAA==","memo_type":"none","signatures":[]}"#
     }
 
     /// The `memo` field Horizon writes for ff fe 20 61 62 63, as JSON text.

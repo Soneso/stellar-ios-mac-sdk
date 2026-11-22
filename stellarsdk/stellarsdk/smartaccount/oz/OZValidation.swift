@@ -187,7 +187,8 @@ internal func requireValidAddedSigners(
         pending.append(contentsOf: invocation.subInvocations)
 
         guard case .contractFn(let call) = invocation.function,
-              let position = signerArgumentPosition(functionName: call.functionName),
+              let functionName = call.functionNameString,
+              let position = signerArgumentPosition(functionName: functionName),
               OZAddressStrKey.fromXdr(call.contractAddress) == walletContractId,
               call.args.count > position.index else {
             continue
@@ -203,7 +204,7 @@ internal func requireValidAddedSigners(
             let argumentType = SCValType(rawValue: argument.type())?.enumName() ?? String(argument.type())
             throw SmartAccountValidationException.invalidInput(
                 field: "signers",
-                reason: "\(call.functionName) on \(walletContractId) carries \(argumentType) at argument \(position.index), where a Vec of signers is expected"
+                reason: "\(functionName) on \(walletContractId) carries \(argumentType) at argument \(position.index), where a Vec of signers is expected"
             )
         }
         for value in signerValues {
@@ -238,19 +239,19 @@ private func requireValidAddedSignerValue(
 ) async throws {
     guard case .vec(let vecElements) = value, let elements = vecElements, !elements.isEmpty else {
         throw SmartAccountTransactionException.signingFailed(
-            reason: "Signer ScVal is not a non-empty Vec, got: \(value)"
+            reason: "Signer ScVal is not a non-empty Vec, got: \(value.messageText)"
         )
     }
     guard case .symbol(let tag) = elements[0] else {
         throw SmartAccountTransactionException.signingFailed(
-            reason: "First element of signer Vec is not a Symbol, got: \(elements[0])"
+            reason: "First element of signer Vec is not a Symbol, got: \(elements[0].messageText)"
         )
     }
     switch tag {
     case SignerDiscriminant.delegated:
         guard elements.count >= 2, case .address(let address) = elements[1] else {
             throw SmartAccountTransactionException.signingFailed(
-                reason: "Delegated signer second element is not an Address, got: \(value)"
+                reason: "Delegated signer second element is not an Address, got: \(value.messageText)"
             )
         }
         try refuseMuxedContract(address, field: "Delegated signer address")
@@ -261,7 +262,7 @@ private func requireValidAddedSignerValue(
               case .address(let verifier) = elements[1],
               case .bytes(let keyData) = elements[2] else {
             throw SmartAccountTransactionException.signingFailed(
-                reason: "External signer Vec must hold an Address and Bytes, got: \(value)"
+                reason: "External signer Vec must hold an Address and Bytes, got: \(value.messageText)"
             )
         }
         try refuseMuxedContract(verifier, field: "External signer verifier address")

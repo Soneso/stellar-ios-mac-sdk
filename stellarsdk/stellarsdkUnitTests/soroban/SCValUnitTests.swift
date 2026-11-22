@@ -381,7 +381,7 @@ class SCValUnitTests: XCTestCase {
 
         let emptyDecoded = try SCValXDR.fromXdr(base64: emptyVal.xdrEncoded!)
         if case .string(let str) = emptyDecoded {
-            XCTAssertEqual(str, "")
+            XCTAssertEqual(str, Data())
         } else {
             XCTFail("Expected string type")
         }
@@ -390,7 +390,7 @@ class SCValUnitTests: XCTestCase {
         let simpleVal = SCValXDR.string("hello")
         let simpleDecoded = try SCValXDR.fromXdr(base64: simpleVal.xdrEncoded!)
         if case .string(let str) = simpleDecoded {
-            XCTAssertEqual(str, "hello")
+            XCTAssertEqual(str, Data("hello".utf8))
         } else {
             XCTFail("Expected string type")
         }
@@ -399,7 +399,7 @@ class SCValUnitTests: XCTestCase {
         let complexVal = SCValXDR.string("Hello World! @#$%")
         let complexDecoded = try SCValXDR.fromXdr(base64: complexVal.xdrEncoded!)
         if case .string(let str) = complexDecoded {
-            XCTAssertEqual(str, "Hello World! @#$%")
+            XCTAssertEqual(str, Data("Hello World! @#$%".utf8))
         } else {
             XCTFail("Expected string type")
         }
@@ -409,7 +409,7 @@ class SCValUnitTests: XCTestCase {
         let longVal = SCValXDR.string(longString)
         let longDecoded = try SCValXDR.fromXdr(base64: longVal.xdrEncoded!)
         if case .string(let str) = longDecoded {
-            XCTAssertEqual(str, longString)
+            XCTAssertEqual(str, Data(longString.utf8))
         } else {
             XCTFail("Expected string type")
         }

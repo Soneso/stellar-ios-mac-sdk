@@ -209,7 +209,7 @@ final class OZContractMethodSignatureTests: XCTestCase {
         guard case .string(let value) = nameScVal else {
             return XCTFail("name must use .string variant")
         }
-        XCTAssertEqual(value, testName)
+        XCTAssertEqual(value, Data(testName.utf8))
     }
 
     /// `Symbol` and `String` are distinct `SCValType` discriminants. The two
@@ -347,7 +347,7 @@ final class OZContractMethodSignatureTests: XCTestCase {
         guard case .invokeContract(let invokeArgs) = hostFunction else {
             return XCTFail("expected invokeContract host function")
         }
-        XCTAssertEqual(invokeArgs.functionName, OZContractAbi.Functions.removeSigner)
+        XCTAssertEqual(invokeArgs.functionNameString, OZContractAbi.Functions.removeSigner)
         XCTAssertEqual(invokeArgs.args.count, 2)
         XCTAssertEqual(invokeArgs.args[0].type(), SCValType.u32.rawValue)
         XCTAssertEqual(invokeArgs.args[1].type(), SCValType.u32.rawValue)
@@ -382,7 +382,7 @@ final class OZContractMethodSignatureTests: XCTestCase {
         guard case .invokeContract(let invokeArgs) = hostFunction else {
             return XCTFail("expected invokeContract host function")
         }
-        XCTAssertEqual(invokeArgs.functionName, OZContractAbi.Functions.removePolicy)
+        XCTAssertEqual(invokeArgs.functionNameString, OZContractAbi.Functions.removePolicy)
         XCTAssertEqual(invokeArgs.args.count, 2)
         XCTAssertEqual(invokeArgs.args[0].type(), SCValType.u32.rawValue)
         XCTAssertEqual(invokeArgs.args[1].type(), SCValType.u32.rawValue)

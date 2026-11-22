@@ -8,8 +8,9 @@
 import XCTest
 @testable import stellarsdk
 
-/// The memo text keeps the bytes it was decoded from; every other XDR string reads as strict
-/// UTF-8 that keeps a leading byte order mark.
+/// The memo text, the `SCVal` string and the invoked function name keep the bytes they were
+/// decoded from; every other XDR string reads as strict UTF-8 that keeps a leading byte order
+/// mark. A message shows an `SCVal` string as its text or as escaped bytes.
 final class XdrStringBytesUnitTests: XCTestCase {
 
     private let invalid = Data([0xff, 0xfe, 0x20, 0x61, 0x62, 0x63])
@@ -62,6 +63,62 @@ final class XdrStringBytesUnitTests: XCTestCase {
         XCTAssertEqual(text, bom)
     }
 
+    // MARK: - SCVal string and function name bytes
+
+    func testSCValStringRoundTripsItsBytes() throws {
+        let cases: [(base64: String, bytes: Data)] = [
+            ("AAAADgAAAAb//iBhYmMAAA==", invalid),
+            ("AAAADgAAAATvu79h", bom),
+            ("AAAADgAAAAPDqTEA", valid),
+        ]
+        for testCase in cases {
+            let value = try SCValXDR.fromXdr(base64: testCase.base64)
+            guard case .string(let bytes) = value else {
+                return XCTFail("\(testCase.base64) decoded to \(value)")
+            }
+            XCTAssertEqual(bytes, testCase.bytes)
+            XCTAssertEqual(value.xdrEncoded, testCase.base64)
+        }
+    }
+
+    func testFunctionNameRoundTripsItsBytes() throws {
+        let base64 = "AAAAAQcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHAAAABv/+IGFiYwAAAAAAAA=="
+        let call = try XDRDecoder.decode(InvokeContractArgsXDR.self, data: [UInt8](try XCTUnwrap(Data(base64Encoded: base64))))
+        XCTAssertEqual(call.functionName, invalid)
+        XCTAssertNil(call.functionNameString)
+        XCTAssertEqual(call.xdrEncoded, base64)
+    }
+
+    func testSCValStringAndFunctionNameXdrJsonAndTxRepCarryTheBytesBothWays() throws {
+        let value = SCValXDR.string(invalid)
+        let json = #"{"string":"\\xff\\xfe abc"}"#
+        XCTAssertEqual(try value.toXdrJson(), json)
+        XCTAssertEqual(try SCValXDR.fromXdrJson(json).xdrEncoded, value.xdrEncoded)
+        var lines: [String] = []
+        try value.toTxRep(prefix: "v", lines: &lines)
+        XCTAssertEqual(lines.last, #"v.str: "\xff\xfe abc""#)
+        XCTAssertEqual(try SCValXDR.fromTxRep(TxRepHelper.parse(lines.joined(separator: "\n")), prefix: "v").xdrEncoded,
+                       value.xdrEncoded)
+
+        let call = InvokeContractArgsXDR(contractAddress: contract, functionName: invalid, args: [])
+        let callJson = #"{"contract_address":"CADQOBYHA4DQOBYHA4DQOBYHA4DQOBYHA4DQOBYHA4DQOBYHA4DQP5KR","function_name":"\\xff\\xfe abc","args":[]}"#
+        XCTAssertEqual(try call.toXdrJson(), callJson)
+        XCTAssertEqual(try InvokeContractArgsXDR.fromXdrJson(callJson).xdrEncoded, call.xdrEncoded)
+        var callLines: [String] = []
+        try call.toTxRep(prefix: "c", lines: &callLines)
+        XCTAssertTrue(callLines.contains(#"c.functionName: "\xff\xfe abc""#), callLines.joined(separator: "\n"))
+        XCTAssertEqual(try InvokeContractArgsXDR.fromTxRep(TxRepHelper.parse(callLines.joined(separator: "\n")), prefix: "c").xdrEncoded,
+                       call.xdrEncoded)
+    }
+
+    func testSCValStringAndFunctionNameFactoriesStoreTheUTF8Bytes() {
+        guard case .string(let bytes) = SCValXDR.string("\u{FEFF}a") else {
+            return XCTFail("the factory must build the string arm")
+        }
+        XCTAssertEqual(bytes, bom)
+        XCTAssertEqual(InvokeContractArgsXDR(contractAddress: contract, functionName: "\u{FEFF}a", args: []).functionName, bom)
+    }
+
     // MARK: - Text views
 
     func testTextViewsKeepEveryByteAndRefuseInvalidUTF8() {
@@ -80,8 +137,12 @@ final class XdrStringBytesUnitTests: XCTestCase {
             XCTAssertEqual(SCValXDR.executableTag(testCase.bytes).executableTagString.map { Array($0.utf8) }, expected, label)
             let reference = ContractExecutableExternalRefXDR(executableOwner: contract, tag: testCase.bytes)
             XCTAssertEqual(reference.tagString.map { Array($0.utf8) }, expected, label)
+            XCTAssertEqual(SCValXDR.string(testCase.bytes).string.map { Array($0.utf8) }, expected, label)
+            let call = InvokeContractArgsXDR(contractAddress: contract, functionName: testCase.bytes, args: [])
+            XCTAssertEqual(call.functionNameString.map { Array($0.utf8) }, expected, label)
         }
         XCTAssertNil(MemoXDR.id(1).textString)
+        XCTAssertNil(SCValXDR.symbol("a").string)
     }
 
     @available(*, deprecated)
@@ -92,25 +153,15 @@ final class XdrStringBytesUnitTests: XCTestCase {
         XCTAssertNil(SCValXDR.executableTag(Data([0xff, 0xfe, 0x61])).executableTag)
     }
 
-    // MARK: - Strict text positions keep a leading byte order mark
+    // MARK: - Text positions keep a leading byte order mark
 
-    func testStringAndSymbolKeepALeadingByteOrderMark() throws {
-        let cases: [(base64: String, symbol: Bool)] = [
-            ("AAAADgAAAATvu79h", false),
-            ("AAAADwAAAATvu79h", true),
-        ]
-        for testCase in cases {
-            let value = try SCValXDR.fromXdr(base64: testCase.base64)
-            switch value {
-            case .string(let text) where !testCase.symbol:
-                XCTAssertEqual(Array(text.utf8), [UInt8](bom))
-            case .symbol(let text) where testCase.symbol:
-                XCTAssertEqual(Array(text.utf8), [UInt8](bom))
-            default:
-                XCTFail("\(testCase.base64) decoded to \(value)")
-            }
-            XCTAssertEqual(value.xdrEncoded, testCase.base64)
+    func testSymbolKeepsALeadingByteOrderMark() throws {
+        let value = try SCValXDR.fromXdr(base64: "AAAADwAAAATvu79h")
+        guard case .symbol(let text) = value else {
+            return XCTFail("AAAADwAAAATvu79h decoded to \(value)")
         }
+        XCTAssertEqual(Array(text.utf8), [UInt8](bom))
+        XCTAssertEqual(value.xdrEncoded, "AAAADwAAAATvu79h")
     }
 
     func testStringSymbolAndFunctionNameXdrJsonAndTxRepKeepALeadingByteOrderMark() throws {
@@ -130,9 +181,12 @@ final class XdrStringBytesUnitTests: XCTestCase {
         }
 
         let call = InvokeContractArgsXDR(contractAddress: contract, functionName: "\u{FEFF}a", args: [])
-        XCTAssertEqual(try InvokeContractArgsXDR.fromXdrJson(try call.toXdrJson()).xdrEncoded, call.xdrEncoded)
+        let callJson = #"{"contract_address":"CADQOBYHA4DQOBYHA4DQOBYHA4DQOBYHA4DQOBYHA4DQOBYHA4DQP5KR","function_name":"\\xef\\xbb\\xbfa","args":[]}"#
+        XCTAssertEqual(try call.toXdrJson(), callJson)
+        XCTAssertEqual(try InvokeContractArgsXDR.fromXdrJson(callJson).xdrEncoded, call.xdrEncoded)
         var lines: [String] = []
         try call.toTxRep(prefix: "c", lines: &lines)
+        XCTAssertTrue(lines.contains(#"c.functionName: "\xef\xbb\xbfa""#), lines.joined(separator: "\n"))
         let map = TxRepHelper.parse(lines.joined(separator: "\n"))
         XCTAssertEqual(try InvokeContractArgsXDR.fromTxRep(map, prefix: "c").xdrEncoded, call.xdrEncoded)
     }
@@ -155,6 +209,44 @@ final class XdrStringBytesUnitTests: XCTestCase {
     func testXdrJsonUnescapedTextKeepsALeadingByteOrderMark() throws {
         let text = try XdrJson.unescapedText(.string(#"\xef\xbb\xbfa"#), type: "SCMetaV0XDR", key: "key")
         XCTAssertEqual(Array(text.utf8), [UInt8](bom))
+    }
+
+    // MARK: - Message text
+
+    func testMessageTextEscapesTheStringText() {
+        XCTAssertEqual(SCValXDR.string("a\\b\"c\nd").messageText, #"string("a\\b\"c\nd")"#)
+        XCTAssertEqual(SCValXDR.string(Data([0xff, 0x5c, 0x22, 0x0a, 0x00])).messageText, #"string("\xff\\\"\n\x00")"#)
+    }
+
+    func testMessageTextIsTheDefaultDescriptionWithTheStringsAtAnyDepth() {
+        let instance = { (storage: [SCMapEntryXDR]?) in
+            SCValXDR.contractInstance(SCContractInstanceXDR(executable: .token, storage: storage))
+        }
+        let cases: [(value: SCValXDR, text: String)] = [
+            (.vec([.string("a")]), #"vec(Optional([stellarsdk.SCValXDR.string("a")]))"#),
+            (.map([SCMapEntryXDR(key: .string("k"), val: .string("v"))]),
+             #"map(Optional([stellarsdk.SCMapEntryXDR(key: stellarsdk.SCValXDR.string("k"), val: stellarsdk.SCValXDR.string("v"))]))"#),
+            (.vec([.vec([.string("a")]), .u32(1)]),
+             #"vec(Optional([stellarsdk.SCValXDR.vec(Optional([stellarsdk.SCValXDR.string("a")])), stellarsdk.SCValXDR.u32(1)]))"#),
+            (.vec([.map([SCMapEntryXDR(key: .u32(1), val: .string("x"))])]),
+             #"vec(Optional([stellarsdk.SCValXDR.map(Optional([stellarsdk.SCMapEntryXDR(key: stellarsdk.SCValXDR.u32(1), val: stellarsdk.SCValXDR.string("x"))]))]))"#),
+            (.vec([.symbol("s"), .u32(7)]), #"vec(Optional([stellarsdk.SCValXDR.symbol("s"), stellarsdk.SCValXDR.u32(7)]))"#),
+            (.vec([]), "vec(Optional([]))"),
+            (.vec(nil), "vec(nil)"),
+            (.map(nil), "map(nil)"),
+            (instance([SCMapEntryXDR(key: .symbol("k"), val: .string("v"))]),
+             #"contractInstance(stellarsdk.SCContractInstanceXDR(executable: stellarsdk.ContractExecutableXDR.token, storage: Optional([stellarsdk.SCMapEntryXDR(key: stellarsdk.SCValXDR.symbol("k"), val: stellarsdk.SCValXDR.string("v"))])))"#),
+            (instance(nil), "contractInstance(stellarsdk.SCContractInstanceXDR(executable: stellarsdk.ContractExecutableXDR.token, storage: nil))"),
+            (.u32(7), "u32(7)"),
+            (.vec([.string(Data([0xff]))]), #"vec(Optional([stellarsdk.SCValXDR.string("\xff")]))"#),
+            (.map([SCMapEntryXDR(key: .string(Data([0xff])), val: .vec([.string(Data([0xfe]))]))]),
+             #"map(Optional([stellarsdk.SCMapEntryXDR(key: stellarsdk.SCValXDR.string("\xff"), val: stellarsdk.SCValXDR.vec(Optional([stellarsdk.SCValXDR.string("\xfe")])))]))"#),
+            (instance([SCMapEntryXDR(key: .symbol("k"), val: .string(Data([0xff])))]),
+             #"contractInstance(stellarsdk.SCContractInstanceXDR(executable: stellarsdk.ContractExecutableXDR.token, storage: Optional([stellarsdk.SCMapEntryXDR(key: stellarsdk.SCValXDR.symbol("k"), val: stellarsdk.SCValXDR.string("\xff"))])))"#),
+        ]
+        for testCase in cases {
+            XCTAssertEqual(testCase.value.messageText, testCase.text)
+        }
     }
 
     // MARK: - A raw U+FEFF in XDR-JSON input

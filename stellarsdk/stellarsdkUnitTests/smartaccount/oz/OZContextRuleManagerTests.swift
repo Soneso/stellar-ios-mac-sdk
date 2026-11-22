@@ -516,6 +516,36 @@ final class OZContextRuleManagerTests: XCTestCase {
         XCTAssertEqual(count, 42)
     }
 
+    /// A `getContextRulesCount()` result that is a string, not a `U32`, is refused with a
+    /// message that shows the string.
+    func test_getContextRulesCount_stringResult_messageShowsTheString() async throws {
+        let cases: [(SCValXDR, String)] = [
+            (.string("say \"42\"\né"), #"string("say \"42\"\né")"#),
+            (.string(Data([0xFF, 0xFE]) + Data(" abc".utf8)), #"string("\xff\xfe abc")"#),
+        ]
+        for (result, shown) in cases {
+            let script = MockSorobanServerScript()
+            MockSorobanServer.activate(script: script)
+            defer {
+                MockSorobanServer.deactivate()
+                MockURLProtocol.reset()
+            }
+            let (kit, manager) = try connectedKitWithScriptedServer()
+            let deployer = try await kit.getDeployer()
+            script.setGetAccountResponse(accountId: deployer.accountId, sequence: 1)
+            script.enqueueSimulate(resultXdr: result.xdrEncoded ?? "")
+            do {
+                _ = try await manager.getContextRulesCount()
+                XCTFail("expected SmartAccountValidationException.InvalidInput for \(shown)")
+            } catch let error as SmartAccountValidationException.InvalidInput {
+                XCTAssertEqual(
+                    error.message,
+                    "Invalid input for result: Expected U32 result from get_context_rules_count, got: \(shown)"
+                )
+            }
+        }
+    }
+
     /// `getContextRulesCount()` must surface `SmartAccountWalletException.NotConnected`
     /// before any RPC traffic when the kit is disconnected.
     func test_getContextRulesCount_notConnected_throws() async throws {

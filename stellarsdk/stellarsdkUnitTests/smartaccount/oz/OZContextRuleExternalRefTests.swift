@@ -185,7 +185,7 @@ final class OZContextRuleExternalRefTests: XCTestCase {
             guard case .vec(let elements)? = Optional(encoded), case .string(let encodedTag) = elements?[2] else {
                 return XCTFail("the tag must be encoded as a String element")
             }
-            XCTAssertEqual(Array(encodedTag.utf8), Array(tag.utf8))
+            XCTAssertEqual(Array(encodedTag), Array(tag.utf8))
 
             let parsed = try manager.parseContextRule(scVal: ruleScVal(id: 1, contextType: encoded))
             guard case .createContractExternalRef(_, let parsedTag) = parsed.contextType else {
@@ -234,6 +234,23 @@ final class OZContextRuleExternalRefTests: XCTestCase {
             XCTAssertTrue(
                 invalid.message.contains("Expected String for CreateContractExternalRef tag"),
                 "unexpected message: \(invalid.message)"
+            )
+        }
+    }
+
+    func test_parseContextRule_externalRefTagNotUTF8_throws() throws {
+        let contextType: SCValXDR = .vec([
+            .symbol("CreateContractExternalRef"),
+            .address(try SCAddressXDR(contractId: owner)),
+            .string(Data([0xFF]))
+        ])
+        XCTAssertThrowsError(try manager().parseContextRule(scVal: ruleScVal(id: 1, contextType: contextType))) { error in
+            guard let invalid = error as? SmartAccountValidationException.InvalidInput else {
+                return XCTFail("expected InvalidInput, got \(error)")
+            }
+            XCTAssertEqual(
+                invalid.message,
+                #"Invalid input for context_type: Expected String for CreateContractExternalRef tag, got: string("\xff")"#
             )
         }
     }

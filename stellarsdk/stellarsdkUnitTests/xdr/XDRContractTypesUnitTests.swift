@@ -695,7 +695,7 @@ class XDRContractTypesUnitTests: XCTestCase {
 
         // Verify third entry value
         if case .string(let s) = decoded.storage?[2].val {
-            XCTAssertEqual(s, "TestToken")
+            XCTAssertEqual(s, Data("TestToken".utf8))
         } else {
             XCTFail("Expected string value for third entry")
         }
@@ -873,7 +873,7 @@ class XDRContractTypesUnitTests: XCTestCase {
         if case .i64(let v) = elems[2] { XCTAssertEqual(v, -777) }
         else { XCTFail("Expected i64 at index 2") }
 
-        if case .string(let s) = elems[3] { XCTAssertEqual(s, "test") }
+        if case .string(let s) = elems[3] { XCTAssertEqual(s, Data("test".utf8)) }
         else { XCTFail("Expected string at index 3") }
 
         if case .symbol(let s) = elems[4] { XCTAssertEqual(s, "SYM") }
@@ -913,7 +913,7 @@ class XDRContractTypesUnitTests: XCTestCase {
         if case .u32(let v) = mapEntries[0].val { XCTAssertEqual(v, 42) }
         else { XCTFail("Expected u32 value at index 0") }
 
-        if case .string(let s) = mapEntries[1].val { XCTAssertEqual(s, "Hello") }
+        if case .string(let s) = mapEntries[1].val { XCTAssertEqual(s, Data("Hello".utf8)) }
         else { XCTFail("Expected string value at index 1") }
 
         if case .bool(let b) = mapEntries[2].val { XCTAssertTrue(b) }
@@ -940,7 +940,7 @@ class XDRContractTypesUnitTests: XCTestCase {
         }
         XCTAssertEqual(outer.count, 3)
 
-        if case .string(let s) = outer[0] { XCTAssertEqual(s, "outer") }
+        if case .string(let s) = outer[0] { XCTAssertEqual(s, Data("outer".utf8)) }
         else { XCTFail("Expected string at outer[0]") }
 
         guard case .vec(let innerElems) = outer[1], let inner = innerElems else {
@@ -1029,7 +1029,7 @@ class XDRContractTypesUnitTests: XCTestCase {
         XCTAssertEqual(inner.count, 2)
         if case .u32(let k) = inner[0].key { XCTAssertEqual(k, 1) }
         else { XCTFail("Expected u32 key 1") }
-        if case .string(let v) = inner[0].val { XCTAssertEqual(v, "one") }
+        if case .string(let v) = inner[0].val { XCTAssertEqual(v, Data("one".utf8)) }
         else { XCTFail("Expected string 'one'") }
 
         // Check flat entry

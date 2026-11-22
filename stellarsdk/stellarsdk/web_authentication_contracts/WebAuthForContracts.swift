@@ -504,11 +504,11 @@ public final class WebAuthForContracts: @unchecked Sendable {
                 )
             }
 
-            // Check 4: Function name is "web_auth_verify"
-            guard contractFn.functionName == "web_auth_verify" else {
+            // Check 4: Function name is "web_auth_verify", compared byte for byte
+            guard contractFn.functionName == Data("web_auth_verify".utf8) else {
                 throw ContractChallengeValidationError.invalidFunctionName(
                     expected: "web_auth_verify",
-                    received: contractFn.functionName
+                    received: contractFn.functionNameString ?? TxRepHelper.escapeBytes(contractFn.functionName)
                 )
             }
 
@@ -830,8 +830,8 @@ public final class WebAuthForContracts: @unchecked Sendable {
                 continue
             }
 
-            // Value should be a string
-            guard case .string(let value) = mapEntry.val else {
+            // Value should be a string of valid UTF-8
+            guard let value = mapEntry.val.string else {
                 continue
             }
 

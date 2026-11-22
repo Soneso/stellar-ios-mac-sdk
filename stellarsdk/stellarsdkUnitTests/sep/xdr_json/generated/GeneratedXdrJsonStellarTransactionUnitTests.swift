@@ -3621,7 +3621,7 @@ final class GeneratedXdrJsonStellarTransactionUnitTests: XCTestCase {
     }
 
     func test_HostFunctionXDR_invokeContract_roundTrip() throws {
-        let original: HostFunctionXDR = .invokeContract(InvokeContractArgsXDR(contractAddress: .account(try PublicKey([UInt8](repeating: 0xAB, count: 32))), functionName: "test_string", args: [.void]))
+        let original: HostFunctionXDR = .invokeContract(InvokeContractArgsXDR(contractAddress: .account(try PublicKey([UInt8](repeating: 0xAB, count: 32))), functionName: Data([0x74, 0x61, 0x67, 0x00, 0xff, 0x10]), args: [.void]))
         let tree = try original.toXdrJsonValue()
         let json = try original.toXdrJson()
         let decoded = try HostFunctionXDR.fromXdrJson(json)
@@ -4309,7 +4309,7 @@ final class GeneratedXdrJsonStellarTransactionUnitTests: XCTestCase {
     }
 
     func test_InvokeContractArgsXDR_roundTrip() throws {
-        let original: InvokeContractArgsXDR = InvokeContractArgsXDR(contractAddress: .account(try PublicKey([UInt8](repeating: 0xAB, count: 32))), functionName: "test_string", args: [.void])
+        let original: InvokeContractArgsXDR = InvokeContractArgsXDR(contractAddress: .account(try PublicKey([UInt8](repeating: 0xAB, count: 32))), functionName: Data([0x74, 0x61, 0x67, 0x00, 0xff, 0x10]), args: [.void])
         let tree = try original.toXdrJsonValue()
         let json = try original.toXdrJson()
         let decoded = try InvokeContractArgsXDR.fromXdrJson(json)
@@ -4337,7 +4337,7 @@ final class GeneratedXdrJsonStellarTransactionUnitTests: XCTestCase {
     }
 
     func test_InvokeHostFunctionOpXDR_roundTrip() throws {
-        let original: InvokeHostFunctionOpXDR = InvokeHostFunctionOpXDR(hostFunction: .invokeContract(InvokeContractArgsXDR(contractAddress: .account(try PublicKey([UInt8](repeating: 0xAB, count: 32))), functionName: "test_string", args: [.void])), auth: [SorobanAuthorizationEntryXDR(credentials: .sourceAccount, rootInvocation: SorobanAuthorizedInvocationXDR(function: .contractFn(InvokeContractArgsXDR(contractAddress: .contract(WrappedData32(Data(repeating: 0xAB, count: 32))), functionName: "fn", args: [])), subInvocations: []))])
+        let original: InvokeHostFunctionOpXDR = InvokeHostFunctionOpXDR(hostFunction: .invokeContract(InvokeContractArgsXDR(contractAddress: .account(try PublicKey([UInt8](repeating: 0xAB, count: 32))), functionName: Data([0x74, 0x61, 0x67, 0x00, 0xff, 0x10]), args: [.void])), auth: [SorobanAuthorizationEntryXDR(credentials: .sourceAccount, rootInvocation: SorobanAuthorizedInvocationXDR(function: .contractFn(InvokeContractArgsXDR(contractAddress: .contract(WrappedData32(Data(repeating: 0xAB, count: 32))), functionName: "fn", args: [])), subInvocations: []))])
         let tree = try original.toXdrJsonValue()
         let json = try original.toXdrJson()
         let decoded = try InvokeHostFunctionOpXDR.fromXdrJson(json)
@@ -6777,7 +6777,7 @@ final class GeneratedXdrJsonStellarTransactionUnitTests: XCTestCase {
     }
 
     func test_OperationBodyXDR_invokeHostFunctionOp_roundTrip() throws {
-        let original: OperationBodyXDR = .invokeHostFunctionOp(InvokeHostFunctionOpXDR(hostFunction: .invokeContract(InvokeContractArgsXDR(contractAddress: .account(try PublicKey([UInt8](repeating: 0xAB, count: 32))), functionName: "test_string", args: [.void])), auth: [SorobanAuthorizationEntryXDR(credentials: .sourceAccount, rootInvocation: SorobanAuthorizedInvocationXDR(function: .contractFn(InvokeContractArgsXDR(contractAddress: .contract(WrappedData32(Data(repeating: 0xAB, count: 32))), functionName: "fn", args: [])), subInvocations: []))]))
+        let original: OperationBodyXDR = .invokeHostFunctionOp(InvokeHostFunctionOpXDR(hostFunction: .invokeContract(InvokeContractArgsXDR(contractAddress: .account(try PublicKey([UInt8](repeating: 0xAB, count: 32))), functionName: Data([0x74, 0x61, 0x67, 0x00, 0xff, 0x10]), args: [.void])), auth: [SorobanAuthorizationEntryXDR(credentials: .sourceAccount, rootInvocation: SorobanAuthorizedInvocationXDR(function: .contractFn(InvokeContractArgsXDR(contractAddress: .contract(WrappedData32(Data(repeating: 0xAB, count: 32))), functionName: "fn", args: [])), subInvocations: []))]))
         let tree = try original.toXdrJsonValue()
         let json = try original.toXdrJson()
         let decoded = try OperationBodyXDR.fromXdrJson(json)
@@ -10551,7 +10551,7 @@ final class GeneratedXdrJsonStellarTransactionUnitTests: XCTestCase {
     }
 
     func test_SorobanAuthorizedFunctionXDR_contractFn_roundTrip() throws {
-        let original: SorobanAuthorizedFunctionXDR = .contractFn(InvokeContractArgsXDR(contractAddress: .account(try PublicKey([UInt8](repeating: 0xAB, count: 32))), functionName: "test_string", args: [.void]))
+        let original: SorobanAuthorizedFunctionXDR = .contractFn(InvokeContractArgsXDR(contractAddress: .account(try PublicKey([UInt8](repeating: 0xAB, count: 32))), functionName: Data([0x74, 0x61, 0x67, 0x00, 0xff, 0x10]), args: [.void]))
         let tree = try original.toXdrJsonValue()
         let json = try original.toXdrJson()
         let decoded = try SorobanAuthorizedFunctionXDR.fromXdrJson(json)

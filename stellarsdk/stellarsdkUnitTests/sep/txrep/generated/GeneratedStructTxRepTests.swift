@@ -277,7 +277,7 @@ static func parseTxRepLines(_ lines: [String]) -> [String: String] {
     }
 
     func test_InvokeContractArgsXDR_roundtrip() throws {
-        let original: InvokeContractArgsXDR = InvokeContractArgsXDR(contractAddress: .account(try PublicKey([UInt8](repeating: 0xAB, count: 32))), functionName: "test_string", args: [])
+        let original: InvokeContractArgsXDR = InvokeContractArgsXDR(contractAddress: .account(try PublicKey([UInt8](repeating: 0xAB, count: 32))), functionName: Data([0x74, 0x61, 0x67, 0x00, 0xff, 0x10]), args: [])
         var lines: [String] = []
         try original.toTxRep(prefix: "k", lines: &lines)
         let map = Self.parseTxRepLines(lines)
@@ -288,7 +288,7 @@ static func parseTxRepLines(_ lines: [String]) -> [String: String] {
     }
 
     func test_InvokeHostFunctionOpXDR_roundtrip() throws {
-        let original: InvokeHostFunctionOpXDR = InvokeHostFunctionOpXDR(hostFunction: .invokeContract(InvokeContractArgsXDR(contractAddress: .account(try PublicKey([UInt8](repeating: 0xAB, count: 32))), functionName: "test_string", args: [])), auth: [])
+        let original: InvokeHostFunctionOpXDR = InvokeHostFunctionOpXDR(hostFunction: .invokeContract(InvokeContractArgsXDR(contractAddress: .account(try PublicKey([UInt8](repeating: 0xAB, count: 32))), functionName: Data([0x74, 0x61, 0x67, 0x00, 0xff, 0x10]), args: [])), auth: [])
         var lines: [String] = []
         try original.toTxRep(prefix: "k", lines: &lines)
         let map = Self.parseTxRepLines(lines)

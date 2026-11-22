@@ -202,7 +202,7 @@ class ContractSpecUnitTests: XCTestCase {
         // Test string conversion
         let stringVal = try spec.nativeToXdrSCVal(val: "hello", ty: SCSpecTypeDefXDR.string)
         if case .string(let val) = stringVal {
-            XCTAssertEqual(val, "hello")
+            XCTAssertEqual(val, Data("hello".utf8))
         } else {
             XCTFail("Expected string SCVal")
         }
@@ -249,12 +249,12 @@ class ContractSpecUnitTests: XCTestCase {
         if case .vec(let vec) = vectorVal {
             XCTAssertEqual(vec?.count, 2)
             if let firstVal = vec?[0], case .string(let str1) = firstVal {
-                XCTAssertEqual(str1, "hello")
+                XCTAssertEqual(str1, Data("hello".utf8))
             } else {
                 XCTFail("Expected first element to be 'hello'")
             }
             if let secondVal = vec?[1], case .string(let str2) = secondVal {
-                XCTAssertEqual(str2, "world")
+                XCTAssertEqual(str2, Data("world".utf8))
             } else {
                 XCTFail("Expected second element to be 'world'")
             }
@@ -275,7 +275,7 @@ class ContractSpecUnitTests: XCTestCase {
             XCTAssertEqual(map?.count, 2)
             // Note: Order is not guaranteed in maps, so we check for presence
             let keys:[String?] = map?.compactMap { entry in
-                if case .string(let key) = entry.key {
+                if let key = entry.key.string {
                     return key
                 } else {
                     return nil
@@ -297,7 +297,7 @@ class ContractSpecUnitTests: XCTestCase {
         
         let optionWithVal = try spec.nativeToXdrSCVal(val: "some_value", ty: optionTypeDefType)
         if case .string(let val) = optionWithVal {
-            XCTAssertEqual(val, "some_value")
+            XCTAssertEqual(val, Data("some_value".utf8))
         } else {
             XCTFail("Expected string SCVal for Some case")
         }
@@ -322,7 +322,7 @@ class ContractSpecUnitTests: XCTestCase {
         if case .vec(let vec) = tupleVal {
             XCTAssertEqual(vec?.count, 2)
             if let firstVal = vec?[0], case .string(let str) = firstVal {
-                XCTAssertEqual(str, "hello")
+                XCTAssertEqual(str, Data("hello".utf8))
             } else {
                 XCTFail("Expected first element to be 'hello'")
             }

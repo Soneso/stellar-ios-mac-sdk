@@ -180,6 +180,12 @@ class SCValXDRToNativeUnitTests: XCTestCase {
         XCTAssertEqual(SCValXDR.string(unicode).toNative() as? String, unicode)
     }
 
+    func testStringOfBytesThatAreNotUTF8IsTheValueItself() {
+        let value = SCValXDR.string(Data([0xFF, 0x61]))
+        assertIsValueItself(value.toNative(), value)
+        XCTAssertEqual(SCValXDR.string(Data([0xC3, 0xA9])).toNative() as? String, "\u{00E9}")
+    }
+
     func testSymbol() {
         let result = SCValXDR.symbol("transfer").toNative()
         XCTAssertTrue(result is String)
@@ -398,6 +404,11 @@ class SCValXDRToNativeUnitTests: XCTestCase {
 
     func testMapWithExecutableTagKey() {
         let value = SCValXDR.map([entry(.executableTag(Data([0xFF])), .u32(1))])
+        assertIsValueItself(value.toNative(), value)
+    }
+
+    func testMapWithStringKeyOfBytesThatAreNotUTF8() {
+        let value = SCValXDR.map([entry(.string(Data([0xFF, 0x61])), .u32(1))])
         assertIsValueItself(value.toNative(), value)
     }
 

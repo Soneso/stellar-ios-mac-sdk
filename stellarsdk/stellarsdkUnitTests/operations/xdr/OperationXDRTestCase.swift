@@ -971,7 +971,7 @@ class OperationXDRTestCase: XCTestCase {
 
             switch parsedOperation.hostFunction {
             case .invokeContract(let invokeArgs):
-                XCTAssertEqual(functionName, invokeArgs.functionName)
+                XCTAssertEqual(functionName, invokeArgs.functionNameString)
                 XCTAssertEqual(2, invokeArgs.args.count)
                 if case .u32(let value) = invokeArgs.args[0] {
                     XCTAssertEqual(100, value)
@@ -979,7 +979,7 @@ class OperationXDRTestCase: XCTestCase {
                     XCTFail("Expected u32 argument")
                 }
                 if case .string(let value) = invokeArgs.args[1] {
-                    XCTAssertEqual("test", value)
+                    XCTAssertEqual(Data("test".utf8), value)
                 } else {
                     XCTFail("Expected string argument")
                 }

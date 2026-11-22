@@ -772,7 +772,7 @@ extension OZPipelineFixtures {
             XCTFail("the delegated entry must call a contract function", file: file, line: line)
             return []
         }
-        XCTAssertEqual(call.functionName, "__check_auth", file: file, line: line)
+        XCTAssertEqual(call.functionNameString, "__check_auth", file: file, line: line)
         XCTAssertEqual(OZAddressStrKey.fromXdr(call.contractAddress), wallet, file: file, line: line)
         return call.args
     }
