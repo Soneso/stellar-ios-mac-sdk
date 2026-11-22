@@ -202,15 +202,6 @@ extension SCValXDR {
         return type() == SCValType.string.rawValue
     }
 
-    public var string:String? {
-        switch self {
-        case .string(let val):
-            return val
-        default:
-            return nil
-        }
-    }
-
     public var isSymbol:Bool {
         return type() == SCValType.symbol.rawValue
     }
@@ -451,17 +442,19 @@ extension SCValXDR {
     ///   exact width Swift counterpart, `void` becomes nil
     /// - `u128`, `i128`, `u256` and `i256` become their decimal `String`
     /// - `address` becomes its strkey `String`
-    /// - `bytes` becomes `Data`, `string` and `symbol` become `String`
+    /// - `bytes` becomes `Data`, `symbol` becomes `String`, and `string` becomes the
+    ///   `String` its bytes spell as UTF-8
     /// - `vec` becomes `[Any?]` in element order, `map` becomes `[AnyHashable: Any?]`
     ///
     /// A value with no native counterpart comes back as the `SCValXDR` itself, which a
     /// caller tells apart with `is SCValXDR`: the `error`, `contractInstance`,
-    /// `ledgerKeyContractInstance`, `ledgerKeyNonce` and `executableTag` arms, an address
-    /// whose bytes have no strkey encoding, and a map that no Swift dictionary holds.
+    /// `ledgerKeyContractInstance`, `ledgerKeyNonce` and `executableTag` arms, a `string`
+    /// whose bytes are not valid UTF-8, an address whose bytes have no strkey encoding, and
+    /// a map that no Swift dictionary holds.
     ///
     /// A map converts as a whole or not at all. It falls back when a key has no `Hashable`
-    /// counterpart (a `void`, `vec` or `map` key, a key of one of the arms listed above,
-    /// or an address key with no strkey), and when two of its keys turn out equal. Keys
+    /// counterpart (a `void`, `vec` or `map` key, a key of one of the arms or values listed
+    /// above, or an address key with no strkey), and when two of its keys turn out equal. Keys
     /// compare as `AnyHashable`, which reads the fixed width integers as one number, so a
     /// `u32` key and a `u64` key of the same value are equal and collide. A 128 or 256 bit
     /// key and the `symbol` of the same digits collide too, since the wide key is its
@@ -500,8 +493,9 @@ extension SCValXDR {
             return i256String
         case .bytes(let value):
             return value
-        case .string(let value):
-            return value
+        case .string:
+            guard let text = string else { return self }
+            return text
         case .symbol(let value):
             return value
         case .vec(let values):
@@ -575,8 +569,9 @@ extension SCValXDR {
             return key.i256String
         case .bytes(let value):
             return value
-        case .string(let value):
-            return value
+        case .string:
+            guard let text = key.string else { return nil }
+            return text
         case .symbol(let value):
             return value
         case .address(let address):
@@ -589,5 +584,56 @@ extension SCValXDR {
              .ledgerKeyNonce, .executableTag:
             return nil
         }
+    }
+}
+
+// MARK: - Message Text
+
+extension SCValXDR {
+
+    /// The value as error and validation messages show it.
+    ///
+    /// The text is the default description of the value, in which every string arm, also one
+    /// inside a vec, a map or a contract instance, shows its text as a quoted Swift string
+    /// literal, such as `string("abc")`, and bytes that are not valid UTF-8 as `\xNN` escapes,
+    /// such as `string("\xff\xfe abc")`.
+    var messageText: String {
+        return messageText(nested: false)
+    }
+
+    /// The message text of this value. A `nested` value starts with its type name, as the
+    /// default description writes a value inside another one.
+    private func messageText(nested: Bool) -> String {
+        func arm(_ name: String, _ payload: String) -> String {
+            let caseName = nested ? "\(String(reflecting: SCValXDR.self)).\(name)" : name
+            return "\(caseName)(\(payload))"
+        }
+        switch self {
+        case .string(let bytes):
+            return arm("string", string.map { String(reflecting: $0) } ?? TxRepHelper.escapeBytes(bytes))
+        case .vec(let elements?):
+            return arm("vec", Self.optionalListText(elements.map { $0.messageText(nested: true) }))
+        case .map(let entries?):
+            return arm("map", Self.optionalListText(entries.map(Self.entryMessageText)))
+        case .contractInstance(let instance):
+            let storage = instance.storage.map { Self.optionalListText($0.map(Self.entryMessageText)) } ?? "nil"
+            let executable = String(reflecting: instance.executable)
+            return arm("contractInstance",
+                       "\(String(reflecting: SCContractInstanceXDR.self))(executable: \(executable), storage: \(storage))")
+        default:
+            return nested ? String(reflecting: self) : String(describing: self)
+        }
+    }
+
+    /// A map entry as the default description writes it inside a map.
+    private static func entryMessageText(_ entry: SCMapEntryXDR) -> String {
+        let key = entry.key.messageText(nested: true)
+        let val = entry.val.messageText(nested: true)
+        return "\(String(reflecting: SCMapEntryXDR.self))(key: \(key), val: \(val))"
+    }
+
+    /// Element texts as the default description writes an optional array that holds a value.
+    private static func optionalListText(_ elements: [String]) -> String {
+        return "Optional([\(elements.joined(separator: ", "))])"
     }
 }

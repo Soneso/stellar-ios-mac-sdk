@@ -323,7 +323,7 @@ class XDRTransactionOpsUnitTests: XCTestCase {
         )
         let encoded = try XDREncoder.encode(original)
         let decoded = try XDRDecoder.decode(InvokeContractArgsXDR.self, data: encoded)
-        XCTAssertEqual(decoded.functionName, "transfer")
+        XCTAssertEqual(decoded.functionNameString, "transfer")
         XCTAssertEqual(decoded.args.count, 2)
     }
 
@@ -445,13 +445,13 @@ class XDRTransactionOpsUnitTests: XCTestCase {
         let decoded = try XDRDecoder.decode(SorobanAuthorizedInvocationXDR.self, data: encoded)
 
         if case .contractFn(let fn) = decoded.function {
-            XCTAssertEqual(fn.functionName, "swap")
+            XCTAssertEqual(fn.functionNameString, "swap")
         } else {
             XCTFail("Expected .contractFn for parent")
         }
         XCTAssertEqual(decoded.subInvocations.count, 1)
         if case .contractFn(let subFn) = decoded.subInvocations[0].function {
-            XCTAssertEqual(subFn.functionName, "approve")
+            XCTAssertEqual(subFn.functionNameString, "approve")
         } else {
             XCTFail("Expected .contractFn for child")
         }
@@ -494,7 +494,7 @@ class XDRTransactionOpsUnitTests: XCTestCase {
             XCTFail("Expected .address credentials")
         }
         if case .contractFn(let fn) = decoded.rootInvocation.function {
-            XCTAssertEqual(fn.functionName, "mint")
+            XCTAssertEqual(fn.functionNameString, "mint")
         } else {
             XCTFail("Expected .contractFn root invocation")
         }

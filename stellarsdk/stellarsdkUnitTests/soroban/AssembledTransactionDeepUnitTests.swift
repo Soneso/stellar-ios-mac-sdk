@@ -1256,7 +1256,7 @@ final class AssembledTransactionDeepUnitTests: XCTestCase {
             invoked = args
         }
         let args = try XCTUnwrap(invoked, "expected a contract invocation")
-        return (args.functionName, args.args, operation.auth)
+        return (try XCTUnwrap(args.functionNameString), args.args, operation.auth)
     }
 
     /// The transaction was simulated once, so it carries the Soroban data, the auth entry and the
@@ -1317,7 +1317,7 @@ final class AssembledTransactionDeepUnitTests: XCTestCase {
         guard case .contractFn(let authorized)? = auth.first?.rootInvocation.function else {
             return XCTFail("expected a contract function in the auth entry")
         }
-        XCTAssertEqual(authorized.functionName, "second_auth")
+        XCTAssertEqual(authorized.functionNameString, "second_auth")
         XCTAssertEqual(tx.simulationResponse?.minResourceFee, 12000)
         XCTAssertNil(tx.simulationResponse?.restorePreamble)
         XCTAssertEqual(try tx.getSimulationData().returnedValue.u32, 2)

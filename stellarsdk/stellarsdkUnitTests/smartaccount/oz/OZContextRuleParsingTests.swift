@@ -378,6 +378,21 @@ final class OZContextRuleParsingTests: XCTestCase {
         }
     }
 
+    func testParseContextRule_nameNotUTF8_throwsValidationException() throws {
+        let manager = try disconnectedManager()
+        let ruleMap = buildMapScVal([
+            ("id", .u32(1)),
+            ("name", .string(Data([0xFF]))),
+            ("context_type", defaultContextTypeScVal())
+        ])
+        XCTAssertThrowsError(try manager.parseContextRule(scVal: ruleMap)) { error in
+            guard let validation = error as? SmartAccountValidationException else {
+                return XCTFail("expected SmartAccountValidationException")
+            }
+            XCTAssertEqual(validation.message, #"Invalid input for name: Expected String for name, got: string("\xff")"#)
+        }
+    }
+
     func testParseContextRule_contextTypeNotVec_throwsValidationException() throws {
         let manager = try disconnectedManager()
         let ruleMap = buildMapScVal([
@@ -390,6 +405,27 @@ final class OZContextRuleParsingTests: XCTestCase {
                 return XCTFail("expected SmartAccountValidationException")
             }
             XCTAssertTrue(validation.message.contains("context_type"))
+        }
+    }
+
+    func testParseContextRule_contextTypeString_messageShowsTheString() throws {
+        let manager = try disconnectedManager()
+        let cases: [(SCValXDR, String)] = [
+            (.string("say \"Default\"\né"), #"string("say \"Default\"\né")"#),
+            (.string(Data([0xFF, 0xFE]) + Data(" abc".utf8)), #"string("\xff\xfe abc")"#),
+        ]
+        for (contextType, shown) in cases {
+            let ruleMap = buildMapScVal([
+                ("id", .u32(1)),
+                ("name", .string("TestRule")),
+                ("context_type", contextType)
+            ])
+            XCTAssertThrowsError(try manager.parseContextRule(scVal: ruleMap)) { error in
+                guard let validation = error as? SmartAccountValidationException else {
+                    return XCTFail("expected SmartAccountValidationException")
+                }
+                XCTAssertEqual(validation.message, "Invalid input for context_type: Expected Vec for context_type, got: \(shown)")
+            }
         }
     }
 

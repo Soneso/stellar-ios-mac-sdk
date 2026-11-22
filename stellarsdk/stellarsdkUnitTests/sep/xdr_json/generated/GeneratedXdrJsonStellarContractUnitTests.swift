@@ -1927,7 +1927,7 @@ final class GeneratedXdrJsonStellarContractUnitTests: XCTestCase {
     }
 
     func test_SCValXDR_string_roundTrip() throws {
-        let original: SCValXDR = .string("test_string")
+        let original: SCValXDR = .string(Data([0x74, 0x61, 0x67, 0x00, 0xff, 0x10]))
         let tree = try original.toXdrJsonValue()
         let json = try original.toXdrJson()
         let decoded = try SCValXDR.fromXdrJson(json)

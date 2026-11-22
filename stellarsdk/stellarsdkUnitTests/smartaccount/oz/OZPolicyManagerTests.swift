@@ -699,7 +699,7 @@ final class OZPolicyManagerTests: XCTestCase {
         guard case .invokeContract(let invokeArgs) = hostFunction else {
             return XCTFail("expected invokeContract host function")
         }
-        XCTAssertEqual(invokeArgs.functionName, "add_policy")
+        XCTAssertEqual(invokeArgs.functionNameString, "add_policy")
         XCTAssertEqual(invokeArgs.args.count, 3)
 
         guard case .u32(let ruleId) = invokeArgs.args[0] else {
@@ -734,7 +734,7 @@ final class OZPolicyManagerTests: XCTestCase {
         guard case .invokeContract(let invokeArgs) = hostFunction else {
             return XCTFail("expected invokeContract host function")
         }
-        XCTAssertEqual(invokeArgs.functionName, "remove_policy")
+        XCTAssertEqual(invokeArgs.functionNameString, "remove_policy")
         XCTAssertEqual(invokeArgs.args.count, 2)
 
         guard case .u32(let ruleId) = invokeArgs.args[0],

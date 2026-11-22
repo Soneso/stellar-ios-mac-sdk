@@ -399,7 +399,7 @@ class XDRTransactionMiscUnitTests: XCTestCase {
         XCTAssertEqual(decoded.nonce, 42)
         XCTAssertEqual(decoded.signatureExpirationLedger, 500000)
         if case .contractFn(let fn) = decoded.invocation.function {
-            XCTAssertEqual(fn.functionName, "transfer")
+            XCTAssertEqual(fn.functionNameString, "transfer")
         } else {
             XCTFail("Expected .contractFn")
         }
@@ -455,7 +455,7 @@ class XDRTransactionMiscUnitTests: XCTestCase {
             XCTAssertEqual(decodedAuth.signatureExpirationLedger, 750000)
             XCTAssertEqual(decodedAuth.networkID.wrapped, networkId.wrapped)
             if case .contractFn(let fn) = decodedAuth.invocation.function {
-                XCTAssertEqual(fn.functionName, "transfer")
+                XCTAssertEqual(fn.functionNameString, "transfer")
             } else {
                 XCTFail("Expected .contractFn invocation")
             }
@@ -748,7 +748,7 @@ class XDRTransactionMiscUnitTests: XCTestCase {
             XCTAssertEqual(decodedAuth.signatureExpirationLedger, 400000)
             // Check parent invocation
             if case .contractFn(let parentFn) = decodedAuth.invocation.function {
-                XCTAssertEqual(parentFn.functionName, "swap")
+                XCTAssertEqual(parentFn.functionNameString, "swap")
                 XCTAssertEqual(parentFn.args.count, 2)
             } else {
                 XCTFail("Expected .contractFn for parent")
@@ -756,7 +756,7 @@ class XDRTransactionMiscUnitTests: XCTestCase {
             // Check child invocation
             XCTAssertEqual(decodedAuth.invocation.subInvocations.count, 1)
             if case .contractFn(let childFn) = decodedAuth.invocation.subInvocations[0].function {
-                XCTAssertEqual(childFn.functionName, "approve")
+                XCTAssertEqual(childFn.functionNameString, "approve")
             } else {
                 XCTFail("Expected .contractFn for child")
             }

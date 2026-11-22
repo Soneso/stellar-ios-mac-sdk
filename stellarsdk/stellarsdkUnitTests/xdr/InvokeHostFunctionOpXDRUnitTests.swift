@@ -56,7 +56,7 @@ class InvokeHostFunctionOpXDRUnitTests: XCTestCase {
 
         XCTAssertEqual(decoded.type(), HostFunctionType.invokeContract.rawValue)
         XCTAssertNotNil(decoded.invokeContract)
-        XCTAssertEqual(decoded.invokeContract?.functionName, functionName)
+        XCTAssertEqual(decoded.invokeContract?.functionNameString, functionName)
         XCTAssertEqual(decoded.invokeContract?.args.count, 2)
     }
 
@@ -120,7 +120,7 @@ class InvokeHostFunctionOpXDRUnitTests: XCTestCase {
         let decoded = try XDRDecoder.decode(InvokeHostFunctionOpXDR.self, data: encoded)
 
         XCTAssertNotNil(decoded.hostFunction.invokeContract)
-        XCTAssertEqual(decoded.hostFunction.invokeContract?.functionName, "initialize")
+        XCTAssertEqual(decoded.hostFunction.invokeContract?.functionNameString, "initialize")
         XCTAssertEqual(decoded.auth.count, 0)
     }
 
@@ -224,7 +224,7 @@ class InvokeHostFunctionOpXDRUnitTests: XCTestCase {
         let decoded = try InvokeHostFunctionOpXDR(xdr: base64)
 
         XCTAssertEqual(decoded.hostFunction.type(), HostFunctionType.invokeContract.rawValue)
-        XCTAssertEqual(decoded.hostFunction.invokeContract?.functionName, "balance")
+        XCTAssertEqual(decoded.hostFunction.invokeContract?.functionNameString, "balance")
     }
 
     // MARK: - SorobanAuthorizationEntry Tests
@@ -253,7 +253,7 @@ class InvokeHostFunctionOpXDRUnitTests: XCTestCase {
 
         XCTAssertEqual(decoded.credentials.type(), SorobanCredentialsType.sourceAccount.rawValue)
         XCTAssertNotNil(decoded.rootInvocation.function.contractFn)
-        XCTAssertEqual(decoded.rootInvocation.function.contractFn?.functionName, "approve")
+        XCTAssertEqual(decoded.rootInvocation.function.contractFn?.functionNameString, "approve")
     }
 
     func testSorobanAuthorizedFunctionXDRContractFn() throws {
@@ -271,7 +271,7 @@ class InvokeHostFunctionOpXDRUnitTests: XCTestCase {
 
         XCTAssertEqual(decoded.type(), SorobanAuthorizedFunctionType.contractFn.rawValue)
         XCTAssertNotNil(decoded.contractFn)
-        XCTAssertEqual(decoded.contractFn?.functionName, "deposit")
+        XCTAssertEqual(decoded.contractFn?.functionNameString, "deposit")
         XCTAssertEqual(decoded.contractFn?.args.count, 1)
     }
 

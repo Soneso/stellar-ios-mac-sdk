@@ -213,7 +213,11 @@ FIELD_OVERRIDES = {
 # the rendering its String form would produce.
 #
 # The memo text is listed because a transaction source can fill it with bytes
-# that are not UTF-8 and the transaction hash covers them.
+# that are not UTF-8 and the transaction hash covers them. The SCVal string is
+# listed because neither the host nor core checks its encoding, so a contract
+# can store, emit and return any bytes there. The invoked function name is the
+# one symbol position listed: a transaction source can fill it with any bytes,
+# the network keeps such a transaction as failed, and its hash covers them.
 #
 # Format:
 #   "SwiftTypeName" => { "xdrFieldName" => "utf8AccessorName" }
@@ -223,6 +227,7 @@ FIELD_OVERRIDES = {
 
 BYTES_BACKED_STRING_FIELDS = {
   "ContractExecutableExternalRefXDR" => { "tag" => "tagString" },
+  "InvokeContractArgsXDR" => { "functionName" => "functionNameString" },
   "MemoXDR" => { "text" => "textString" },
-  "SCValXDR" => { "executable_tag" => "executableTagString" },
+  "SCValXDR" => { "executable_tag" => "executableTagString", "str" => "string" },
 }.freeze

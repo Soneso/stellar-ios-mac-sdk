@@ -4110,7 +4110,7 @@ final class OZTransactionOperationsPipelineTests: XCTestCase {
             XCTFail("host function is not an invokeContract call", file: file, line: line)
             return nil
         }
-        XCTAssertEqual(invokeArgs.functionName, "transfer",
+        XCTAssertEqual(invokeArgs.functionNameString, "transfer",
                        "expected the transfer host function", file: file, line: line)
         guard invokeArgs.args.count == 3 else {
             XCTFail("transfer must carry exactly 3 args (from, to, amount), got \(invokeArgs.args.count)",

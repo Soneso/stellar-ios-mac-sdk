@@ -18,7 +18,7 @@ public indirect enum SCValXDR: XDRCodable, Sendable {
   case u256(UInt256PartsXDR)
   case i256(Int256PartsXDR)
   case bytes(SCBytesXDR)
-  case string(String)
+  case string(Data)
   case symbol(String)
   case vec([SCValXDR]?)
   case map([SCMapEntryXDR]?)
@@ -75,7 +75,7 @@ public indirect enum SCValXDR: XDRCodable, Sendable {
       let val = try container.decode(SCBytesXDR.self)
       self = .bytes(val)
     case SCValType.string.rawValue:
-      let val = try container.decode(String.self)
+      let val = try container.decode(Data.self)
       self = .string(val)
     case SCValType.symbol.rawValue:
       let val = try container.decode(String.self)
@@ -207,6 +207,18 @@ public indirect enum SCValXDR: XDRCodable, Sendable {
 }
 
 extension SCValXDR {
+  /// Builds the str arm carrying the UTF-8 bytes of the given text.
+  public static func string(_ string: String) -> SCValXDR {
+    return .string(Data(string.utf8))
+  }
+
+  /// The text the str arm spells as UTF-8, every byte kept, a leading byte order mark
+  /// included; nil when the value is another arm or the bytes are not valid UTF-8.
+  public var string: String? {
+    guard case .string(let bytes) = self else { return nil }
+    return String(xdrUTF8: bytes)
+  }
+
   /// Builds the executable_tag arm carrying the UTF-8 bytes of the given text.
   public static func executableTag(_ string: String) -> SCValXDR {
     return .executableTag(Data(string.utf8))
@@ -266,7 +278,7 @@ extension SCValXDR {
       lines.append("\(prefix).bytes: \(TxRepHelper.bytesToHex(val))")
     case .string(let val):
       lines.append("\(prefix).type: SCV_STRING")
-      lines.append("\(prefix).str: \(TxRepHelper.escapeString(val))")
+      lines.append("\(prefix).str: \(TxRepHelper.escapeBytes(val))")
     case .symbol(let val):
       lines.append("\(prefix).type: SCV_SYMBOL")
       lines.append("\(prefix).sym: \(TxRepHelper.escapeString(val))")
@@ -357,7 +369,7 @@ extension SCValXDR {
       let val = try TxRepHelper.requireHex(map, "\(prefix).bytes")
       return .bytes(val)
     case "SCV_STRING":
-      let val = try TxRepHelper.requireString(map, "\(prefix).str")
+      let val = try TxRepHelper.requireStringBytes(map, "\(prefix).str")
       return .string(val)
     case "SCV_SYMBOL":
       let val = try TxRepHelper.requireString(map, "\(prefix).sym")
@@ -443,7 +455,7 @@ extension SCValXDR: XdrJsonCodable {
     case .bytes(let payload):
       return .object([XdrJsonMember(key: "bytes", value: try SCBytesXDRJsonCodec.toXdrJsonValue(payload, type: "SCValXDR", key: "bytes"))])
     case .string(let payload):
-      return .object([XdrJsonMember(key: "string", value: try SCStringXDRJsonCodec.toXdrJsonValue(payload, type: "SCValXDR", key: "string"))])
+      return .object([XdrJsonMember(key: "string", value: XdrJson.escapedString(payload))])
     case .symbol(let payload):
       return .object([XdrJsonMember(key: "symbol", value: try SCSymbolXDRJsonCodec.toXdrJsonValue(payload, type: "SCValXDR", key: "symbol"))])
     case .vec(let payload):
@@ -582,7 +594,7 @@ extension SCValXDR: XdrJsonCodable {
       let bytes: SCBytesXDR = try SCBytesXDRJsonCodec.fromXdrJsonValue(member.value, type: "SCValXDR", key: "bytes")
       return .bytes(bytes)
     case "string":
-      let string: String = try SCStringXDRJsonCodec.fromXdrJsonValue(member.value, type: "SCValXDR", key: "string")
+      let string: Data = try XdrJson.unescapeString(member.value, type: "SCValXDR", key: "string")
       return .string(string)
     case "symbol":
       let symbol: String = try SCSymbolXDRJsonCodec.fromXdrJsonValue(member.value, type: "SCValXDR", key: "symbol")

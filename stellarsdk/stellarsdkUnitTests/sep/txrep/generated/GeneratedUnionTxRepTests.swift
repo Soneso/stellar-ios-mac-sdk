@@ -310,7 +310,7 @@ static func parseTxRepLines(_ lines: [String]) -> [String: String] {
     }
 
     func test_HostFunctionXDR_invokeContract() throws {
-        let original: HostFunctionXDR = .invokeContract(InvokeContractArgsXDR(contractAddress: .account(try PublicKey([UInt8](repeating: 0xAB, count: 32))), functionName: "test_string", args: []))
+        let original: HostFunctionXDR = .invokeContract(InvokeContractArgsXDR(contractAddress: .account(try PublicKey([UInt8](repeating: 0xAB, count: 32))), functionName: Data([0x74, 0x61, 0x67, 0x00, 0xff, 0x10]), args: []))
         var lines: [String] = []
         try original.toTxRep(prefix: "k", lines: &lines)
         let map = Self.parseTxRepLines(lines)
@@ -1179,7 +1179,7 @@ static func parseTxRepLines(_ lines: [String]) -> [String: String] {
     }
 
     func test_SCValXDR_string() throws {
-        let original: SCValXDR = .string("test_string")
+        let original: SCValXDR = .string(Data([0x74, 0x61, 0x67, 0x00, 0xff, 0x10]))
         var lines: [String] = []
         try original.toTxRep(prefix: "k", lines: &lines)
         let map = Self.parseTxRepLines(lines)
@@ -1322,7 +1322,7 @@ static func parseTxRepLines(_ lines: [String]) -> [String: String] {
     }
 
     func test_SorobanAuthorizedFunctionXDR_contractFn() throws {
-        let original: SorobanAuthorizedFunctionXDR = .contractFn(InvokeContractArgsXDR(contractAddress: .account(try PublicKey([UInt8](repeating: 0xAB, count: 32))), functionName: "test_string", args: []))
+        let original: SorobanAuthorizedFunctionXDR = .contractFn(InvokeContractArgsXDR(contractAddress: .account(try PublicKey([UInt8](repeating: 0xAB, count: 32))), functionName: Data([0x74, 0x61, 0x67, 0x00, 0xff, 0x10]), args: []))
         var lines: [String] = []
         try original.toTxRep(prefix: "k", lines: &lines)
         let map = Self.parseTxRepLines(lines)

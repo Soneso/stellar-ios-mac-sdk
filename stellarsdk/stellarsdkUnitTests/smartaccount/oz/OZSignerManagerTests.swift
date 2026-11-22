@@ -135,7 +135,7 @@ final class OZSignerManagerTests: XCTestCase {
         guard case .invokeContract(let invokeArgs) = hostFunction else {
             return XCTFail("expected invokeContract host function")
         }
-        XCTAssertEqual(invokeArgs.functionName, "add_signer")
+        XCTAssertEqual(invokeArgs.functionNameString, "add_signer")
         XCTAssertEqual(invokeArgs.args.count, 2)
 
         guard case .u32(let ruleId) = invokeArgs.args[0] else {
@@ -167,7 +167,7 @@ final class OZSignerManagerTests: XCTestCase {
         guard case .invokeContract(let invokeArgs) = hostFunction else {
             return XCTFail("expected invokeContract host function")
         }
-        XCTAssertEqual(invokeArgs.functionName, "add_signer")
+        XCTAssertEqual(invokeArgs.functionNameString, "add_signer")
         XCTAssertEqual(invokeArgs.args.count, 2)
 
         guard case .u32(let ruleId) = invokeArgs.args[0] else {
@@ -203,7 +203,7 @@ final class OZSignerManagerTests: XCTestCase {
         guard case .invokeContract(let invokeArgs) = hostFunction else {
             return XCTFail("expected invokeContract host function")
         }
-        XCTAssertEqual(invokeArgs.functionName, "add_signer")
+        XCTAssertEqual(invokeArgs.functionNameString, "add_signer")
 
         guard case .vec(let elements) = invokeArgs.args[1], let elements = elements else {
             return XCTFail("external signer must encode as vec")
@@ -240,7 +240,7 @@ final class OZSignerManagerTests: XCTestCase {
         guard case .invokeContract(let invokeArgs) = hostFunction else {
             return XCTFail("expected invokeContract host function")
         }
-        XCTAssertEqual(invokeArgs.functionName, "remove_signer")
+        XCTAssertEqual(invokeArgs.functionNameString, "remove_signer")
         XCTAssertEqual(invokeArgs.args.count, 2)
 
         guard case .u32(let ruleId) = invokeArgs.args[0],

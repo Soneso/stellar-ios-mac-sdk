@@ -253,7 +253,7 @@ public final class OZContextRuleManager: OZContextRuleManagerProtocol, OZManager
         guard case .u32(let count) = resultScVal else {
             throw SmartAccountValidationException.invalidInput(
                 field: "result",
-                reason: "Expected U32 result from \(ContextRuleMethod.getContextRulesCount), got: \(resultScVal)"
+                reason: "Expected U32 result from \(ContextRuleMethod.getContextRulesCount), got: \(resultScVal.messageText)"
             )
         }
         return count

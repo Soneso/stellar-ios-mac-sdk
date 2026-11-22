@@ -275,7 +275,7 @@ final class TxRepSCValDirectTestCase: XCTestCase {
 
         let restored = try roundtrip(.string("hello world"))
         if case .string(let s) = restored {
-            XCTAssertEqual(s, "hello world")
+            XCTAssertEqual(s, Data("hello world".utf8))
         } else {
             XCTFail("Expected .string")
         }
@@ -285,7 +285,7 @@ final class TxRepSCValDirectTestCase: XCTestCase {
         let s = "line1\nline2\ttabbed"
         let restored = try roundtrip(.string(s))
         if case .string(let r) = restored {
-            XCTAssertEqual(r, s)
+            XCTAssertEqual(r, Data(s.utf8))
         } else {
             XCTFail("Expected .string with special chars")
         }

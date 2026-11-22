@@ -263,6 +263,17 @@ final class OZDelegatedSignerGuardTests: XCTestCase {
         try await check(try call(wallet, "remove_signer", [.u32(0), try delegated(otherContract)]))
     }
 
+    func test_rawCallWithAFunctionNameThatIsNotUTF8_isIgnored() async throws {
+        let args: [SCValXDR] = [.u32(0), try delegated(otherContract)]
+        await assertThrows(SmartAccountValidationException.InvalidAddress.self, containing: contractDelegateMessage(otherContract)) {
+            try await self.check(try self.call(self.wallet, "add_signer", args))
+        }
+        let name = Data("add_signer".utf8) + Data([0xFF])
+        try await check(.contractFn(
+            InvokeContractArgsXDR(contractAddress: try SCAddressXDR(contractId: wallet), functionName: name, args: args)
+        ))
+    }
+
     func test_rawListArgumentThatIsNoVec_isRefusedNamingTheCall() async throws {
         await assertThrows(
             SmartAccountValidationException.InvalidInput.self,
@@ -308,6 +319,45 @@ final class OZDelegatedSignerGuardTests: XCTestCase {
         }
         await assertThrows(SmartAccountTransactionException.SigningFailed.self, containing: "Unknown signer type tag: 'Native'") {
             try await self.check(try self.addSigner(.vec([.symbol("Native")])))
+        }
+    }
+
+    func test_rawSignerThatIsNoVec_isRefusedShowingTheValue() async throws {
+        let cases: [(SCValXDR, String)] = [
+            (.string("say \"hi\"\né"), #"string("say \"hi\"\né")"#),
+            (.string(Data([0xFF, 0xFE]) + Data(" abc".utf8)), #"string("\xff\xfe abc")"#),
+            (.u32(7), "u32(7)"),
+        ]
+        for (signer, shown) in cases {
+            do {
+                try await check(try addSigner(signer))
+                XCTFail("expected SigningFailed for \(shown)")
+            } catch let error as SmartAccountTransactionException.SigningFailed {
+                XCTAssertEqual(error.message, "Transaction signing failed: Signer ScVal is not a non-empty Vec, got: \(shown)")
+            }
+        }
+    }
+
+    func test_rawSignerWithANestedString_isRefusedShowingTheString() async throws {
+        let delegatedReason = "Transaction signing failed: Delegated signer second element is not an Address, got: "
+        let externalReason = "Transaction signing failed: External signer Vec must hold an Address and Bytes, got: "
+        let cases: [(signer: SCValXDR, message: String)] = [
+            (.vec([.symbol("Delegated"), .string("x")]),
+             delegatedReason + #"vec(Optional([stellarsdk.SCValXDR.symbol("Delegated"), stellarsdk.SCValXDR.string("x")]))"#),
+            (.vec([.symbol("Delegated"), .string(Data([0xff]))]),
+             delegatedReason + #"vec(Optional([stellarsdk.SCValXDR.symbol("Delegated"), stellarsdk.SCValXDR.string("\xff")]))"#),
+            (.vec([.symbol("External"), .string("x")]),
+             externalReason + #"vec(Optional([stellarsdk.SCValXDR.symbol("External"), stellarsdk.SCValXDR.string("x")]))"#),
+            (.vec([.symbol("External"), .string(Data([0xff]))]),
+             externalReason + #"vec(Optional([stellarsdk.SCValXDR.symbol("External"), stellarsdk.SCValXDR.string("\xff")]))"#),
+        ]
+        for testCase in cases {
+            do {
+                try await check(try addSigner(testCase.signer))
+                XCTFail("expected SigningFailed for \(testCase.message)")
+            } catch let error as SmartAccountTransactionException.SigningFailed {
+                XCTAssertEqual(error.message, testCase.message)
+            }
         }
     }
 

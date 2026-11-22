@@ -711,7 +711,7 @@ final class OZMultiSignerManagerTests: XCTestCase {
         guard case .contractFn(let observedNestedArgs) = observedNested else {
             return XCTFail("nested sub-invocation must round-trip as contractFn")
         }
-        XCTAssertEqual(observedNestedArgs.functionName, "nested_call")
+        XCTAssertEqual(observedNestedArgs.functionNameString, "nested_call")
     }
 
     // ========================================================================
@@ -3663,7 +3663,7 @@ extension OZMultiSignerManagerTests {
             XCTFail("host function is not an invokeContract call", file: file, line: line)
             return nil
         }
-        XCTAssertEqual(invokeArgs.functionName, "transfer",
+        XCTAssertEqual(invokeArgs.functionNameString, "transfer",
                        "expected the transfer host function", file: file, line: line)
         guard invokeArgs.args.count == 3 else {
             XCTFail("transfer must carry exactly 3 args (from, to, amount), got \(invokeArgs.args.count)",
