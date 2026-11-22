@@ -195,9 +195,16 @@ public final class AssembledTransaction: @unchecked Sendable {
     /// Configuration options for transaction assembly including network, contract, and method parameters.
     public let options:AssembledTransactionOptions
 
+    /// Whether this transaction is built for reading only, as `options.readOnly` states.
+    private let readOnly:Bool
+
     /// Creates a new assembled transaction with specified configuration options.
+    ///
+    /// With `options.readOnly`, the transaction builds without loading the source account,
+    /// on sequence number 0, and refuses to sign its envelope, to submit, and to restore.
     public init(options: AssembledTransactionOptions) {
         self.options = options
+        self.readOnly = options.readOnly
         self.server = SorobanServer(endpoint: options.clientOptions.rpcUrl, urlSession: options.clientOptions.urlSession)
         self.server.enableLogging = options.enableServerLogging
     }
@@ -255,6 +262,10 @@ public final class AssembledTransaction: @unchecked Sendable {
     /// again without its auth entries. `AssembledTransactionError.automaticRestoreFailed` is thrown
     /// when the restore transaction ends with a status other than success; other errors of the
     /// restore (transport, signing, simulation) propagate unchanged.
+    ///
+    /// A transaction built with `options.readOnly` never restores: where a restore would
+    /// run, it throws `AssembledTransactionError.missingPrivateKey` naming the source account,
+    /// before any further request.
     public func simulate(restore: Bool? = nil) async throws {
         if tx == nil {
             if raw == nil {
@@ -279,6 +290,9 @@ public final class AssembledTransaction: @unchecked Sendable {
             throw error
         }
         if shouldRestore, let restorePreamble = simulationResponse?.restorePreamble {
+            if readOnly {
+                throw readOnlyRefusal()
+            }
             if options.clientOptions.sourceAccountKeyPair.privateKey == nil {
                 throw AssembledTransactionError.missingPrivateKey(message: "Source account keypair has no private key, but needed for automatic restore.")
             }
@@ -305,12 +319,25 @@ public final class AssembledTransaction: @unchecked Sendable {
     }
 
     /// Restores expired contract state using the restore preamble from simulation.
+    ///
+    /// - Throws: `AssembledTransactionError.missingPrivateKey` naming the source account,
+    ///   before any request, when the transaction was built with `options.readOnly`: a
+    ///   restore is signed and submitted by the source account.
     public func restoreFootprint(restorePreamble:RestorePreamble) async throws -> GetTransactionResponse {
+        if readOnly {
+            throw readOnlyRefusal()
+        }
         let restoreTx = try await AssembledTransaction.buildFootprintRestoreTransaction(options: options, transactionData: restorePreamble.transactionData, fee: restorePreamble.minResourceFee)
         return try await restoreTx.signAndSend()
     }
 
     /// Signs the transaction with source account and submits it to the network.
+    ///
+    /// - Throws: `AssembledTransactionError.missingPrivateKey` naming the source account,
+    ///   before any request, when the transaction was built with `options.readOnly`, also
+    ///   with `force` set, with a keypair given, and with `signed` set by hand. While `signed`
+    ///   is nil, an unsimulated transaction and a read call without `force` throw their own
+    ///   errors first, as in `sign(sourceAccountKeyPair:force:)`.
     public func signAndSend(sourceAccountKeyPair:KeyPair? = nil, force:Bool = false) async throws -> GetTransactionResponse {
         if signed == nil {
             try sign(sourceAccountKeyPair: sourceAccountKeyPair, force: force)
@@ -322,6 +349,11 @@ public final class AssembledTransaction: @unchecked Sendable {
     ///
     /// - Throws: `AssembledTransactionError.multipleSignersRequired` while an account address
     ///   that `needsNonInvokerSigningBy()` reports carries no signature.
+    ///   `AssembledTransactionError.missingPrivateKey` naming the source account when the
+    ///   transaction was built with `options.readOnly`, also with `force` set and with a
+    ///   keypair given: such a transaction is never submitted, so its envelope is never
+    ///   signed. An unsimulated transaction and a read call without `force` throw their own
+    ///   errors first.
     public func sign(sourceAccountKeyPair:KeyPair? = nil, force:Bool = false) throws {
         if tx == nil {
             throw AssembledTransactionError.notYetSimulated(message: "Transaction has not yet been simulated")
@@ -330,6 +362,9 @@ public final class AssembledTransaction: @unchecked Sendable {
         let isReadCall = try isReadCall()
         if !force && isReadCall {
             throw AssembledTransactionError.isReadCall(message: "This is a read call. It requires no signature or sending. Use `force: true` to sign and send anyway.")
+        }
+        if readOnly {
+            throw readOnlyRefusal()
         }
         let signerKp = sourceAccountKeyPair ?? options.clientOptions.sourceAccountKeyPair
         if signerKp.privateKey == nil {
@@ -361,7 +396,13 @@ public final class AssembledTransaction: @unchecked Sendable {
     ///
     /// - Throws: `AssembledTransactionError.pollInterrupted` naming the last status request
     ///   error when the transaction has not completed by the deadline.
+    ///   `AssembledTransactionError.missingPrivateKey` naming the source account, before any
+    ///   request and before `signed` is read, when the transaction was built with
+    ///   `options.readOnly`.
     public func send() async throws -> GetTransactionResponse {
+        if readOnly {
+            throw readOnlyRefusal()
+        }
         guard let signedTx = signed else {
             throw AssembledTransactionError.notYetSigned(message: "The transaction has not yet been signed. Run `sign` first, or use `signAndSend` instead.")
         }
@@ -770,7 +811,19 @@ public final class AssembledTransaction: @unchecked Sendable {
         return rebuilt
     }
 
+    /// The error refusing to sign the envelope of, submit, or restore for a transaction built
+    /// with `options.readOnly`.
+    private func readOnlyRefusal() -> AssembledTransactionError {
+        return .missingPrivateKey(message: "This transaction was built by a read-only client for source account \(options.clientOptions.sourceAccountKeyPair.accountId), which has no keypair to sign with; build it from a client opened with the submitting account's keypair")
+    }
+
+    /// The account the transaction is built on: loaded from the RPC server, or, for a
+    /// transaction built with `options.readOnly`, the source account of the options on
+    /// sequence number 0 without a request, because a simulation needs no account entry.
     private func getSourceAccount(accountId: String? = nil) async throws -> Account {
+        if readOnly {
+            return Account(keyPair: options.clientOptions.sourceAccountKeyPair, sequenceNumber: 0)
+        }
         let accountResponseEnum = await server.getAccount(accountId: accountId ?? options.clientOptions.sourceAccountKeyPair.accountId)
         switch accountResponseEnum {
         case .success(let response):

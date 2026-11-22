@@ -11,12 +11,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `Transaction(sourceAccount:operations:memoXDR:preconditions:maxOperationFee:sorobanTransactionData:)` and `Transaction.setMemo(memoXDR:)` write a `MemoXDR` as it is. A memo taken from `transactionXDR.memo` of another transaction keeps bytes that are not valid UTF-8. `Transaction.memo` and `Memo(memoXDR:)` give display text, with U+FFFD replacement characters for such bytes.
 - `TransactionResponse.memoBytes` holds the bytes of a text memo from Horizon's `memo_bytes`.
 - `TxRepHelper.decodeMemoTextBytes(_:)` reads a TxRep memo text as bytes.
+- `SACClient` opens a Stellar Asset Contract from an `Asset` or a contract id without an RPC request. It has typed `balance`, `transfer`, `transferAndSend`, `decimals`, `name`, and `symbol`, `toBaseUnits(_:)` for decimal amounts, and a read-only mode without a keypair.
+- `Asset.contractId(network:)` derives the id of the asset's Stellar Asset Contract.
+- `SACSpec` embeds the Stellar Asset Contract spec at upstream commit 4f08d14.
+- `SorobanClient.forSpecEntries` builds a client from spec entries without an RPC request. With `readOnly: true`, carried in `AssembledTransactionOptions.readOnly`, its transactions simulate without loading the source account, allow authorization signing, and refuse envelope signing, submission, and restoration.
 
 ### Changed
 - Breaking: `SorobanContractParserError` has the cases `malformedModule(offset:message:)` and `invalidSectionEntry(section:offset:message:)`, so a `switch` over it without `default` needs both.
 - Breaking: `MemoXDR.text` carries `Data`, the bytes of the memo as the XDR holds them, so `case .text(let text)` binds `Data`. Read the text with `MemoXDR.textString`, which gives nil for bytes that are not valid UTF-8. `MemoXDR.text(_:)` with a `String` argument compiles unchanged and stores the UTF-8 bytes of the text.
 - Breaking: `SCValXDR.string` carries `Data`, the bytes of the string as the XDR holds them, so `case .string(let value)` binds `Data`. Read the text with the `string` property, which gives nil for another arm and for bytes that are not valid UTF-8; `toNative()` gives the value itself for such bytes. `SCValXDR.string(_:)` with a `String` argument compiles unchanged and stores the UTF-8 bytes of the text.
 - Breaking: `InvokeContractArgsXDR.functionName` carries `Data`, the bytes of the name as the XDR holds them. Read the name with `functionNameString`, which gives nil for bytes that are not valid UTF-8. `InvokeContractArgsXDR(contractAddress:functionName:args:)` with a `String` name compiles unchanged and stores the UTF-8 bytes of the name.
+- `SorobanClient.forClientOptions` opens Stellar Asset Contracts with the embedded spec.
 
 ### Fixed
 - XDR decoding and encoding keep every byte of a text memo, so the transaction keeps its hash. This includes bytes that are not valid UTF-8 and a leading byte order mark. XDR-JSON and TxRep write and read these bytes as well. Before this change, decoding such a memo threw `XDRDecoder.Error.invalidUTF8`, and the decoder dropped a leading byte order mark, which changed the hash.

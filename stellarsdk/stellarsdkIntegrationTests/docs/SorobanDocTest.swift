@@ -274,6 +274,293 @@ final class SorobanDocTest: XCTestCase {
         XCTAssertEqual("Options", vec[1].symbol)
     }
 
+    // MARK: - Stellar Asset Contracts (SAC)
+
+    func testSACOpeningAClient() async throws {
+        // Opening a SAC Client
+        let contractId = try Asset(type: AssetType.ASSET_TYPE_NATIVE)!.contractId(network: Network.testnet)
+        XCTAssertEqual(contractId, "CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC")
+
+        // The page generates the keypair; the funded account of setUp lets both clients run a call.
+        let keyPair: KeyPair = sourceAccountKeyPair
+
+        let client = try SACClient.forAsset(
+            asset: Asset(type: AssetType.ASSET_TYPE_NATIVE)!,
+            sourceAccountKeyPair: keyPair,
+            network: Network.testnet,
+            rpcUrl: "https://soroban-testnet.stellar.org"
+        )
+
+        let clientFromId = try SACClient.forContractId(
+            contractId: contractId,
+            sourceAccountKeyPair: keyPair,
+            network: Network.testnet,
+            rpcUrl: "https://soroban-testnet.stellar.org"
+        )
+        XCTAssertEqual(client.contractId, contractId)
+        XCTAssertEqual(clientFromId.contractId, contractId)
+
+        // Both clients reach the contract.
+        let decimals = try await client.decimals()
+        XCTAssertEqual(decimals, 7)
+        let decimalsFromId = try await clientFromId.decimals()
+        XCTAssertEqual(decimalsFromId, 7)
+    }
+
+    func testSACReadOnlyClient() async throws {
+        // Read-Only Client
+        // The page funds a random account; the funded account of setUp is the holder here.
+        let holder: KeyPair = sourceAccountKeyPair
+
+        let reader = try SACClient.readOnlyForAsset(
+            asset: Asset(type: AssetType.ASSET_TYPE_NATIVE)!,
+            network: Network.testnet,
+            rpcUrl: "https://soroban-testnet.stellar.org"
+        )
+
+        let decimals = try await reader.decimals()
+        XCTAssertEqual(decimals, 7)
+        let name = try await reader.name()
+        XCTAssertEqual(name, "native")
+        let symbol = try await reader.symbol()
+        XCTAssertEqual(symbol, "native")
+        let balance = try await reader.balance(holder: try SCAddressXDR(accountId: holder.accountId))
+        XCTAssertGreaterThan(try sacWholeNumber(balance), 0)
+
+        // The comments of the example: transferAndSend fails before any request.
+        do {
+            _ = try await reader.transferAndSend(to: try SCAddressXDR(accountId: holder.accountId), amount: "1")
+            XCTFail("expected transferAndSend to throw on a read-only client")
+        } catch AssembledTransactionError.missingPrivateKey(let message) {
+            XCTAssertEqual(message, "transferAndSend needs the sending account's keypair, and this SACClient is read-only; open the client with SACClient.forAsset or SACClient.forContractId")
+        }
+
+        // A transaction of the read-only client allows signAuthEntries with the authorizing
+        // account's keypair and refuses envelope signing and submission.
+        let receiverContractId = try Data(KeyPair.generateRandomKeyPair().publicKey.bytes).encodeContractId()
+        let tx = try await reader.transfer(
+            from: try SCAddressXDR(accountId: holder.accountId),
+            to: try SCAddressXDR(contractId: receiverContractId),
+            amount: "1"
+        )
+        XCTAssertEqual(try tx.needsNonInvokerSigningBy(), [holder.accountId])
+        try await tx.signAuthEntries(signerKeyPair: holder)
+        XCTAssertEqual(try tx.needsNonInvokerSigningBy(), [])
+        let refusal = "This transaction was built by a read-only client for source account \(SACClient.READ_ONLY_SOURCE_ACCOUNT_ID), which has no keypair to sign with; build it from a client opened with the submitting account's keypair"
+        do {
+            try tx.sign()
+            XCTFail("expected sign to throw on a transaction of a read-only client")
+        } catch AssembledTransactionError.missingPrivateKey(let message) {
+            XCTAssertEqual(message, refusal)
+        }
+        do {
+            _ = try await tx.signAndSend()
+            XCTFail("expected signAndSend to throw on a transaction of a read-only client")
+        } catch AssembledTransactionError.missingPrivateKey(let message) {
+            XCTAssertEqual(message, refusal)
+        }
+        XCTAssertNil(tx.signed)
+    }
+
+    func testSACReadingABalance() async throws {
+        // Reading a Balance: an account holder and a contract holder without a balance
+        let reader = try SACClient.readOnlyForAsset(
+            asset: Asset(type: AssetType.ASSET_TYPE_NATIVE)!,
+            network: Network.testnet,
+            rpcUrl: "https://soroban-testnet.stellar.org"
+        )
+        let holder: KeyPair = sourceAccountKeyPair
+
+        let accountBalance = try await reader.balance(holder: try SCAddressXDR(accountId: holder.accountId))
+        XCTAssertGreaterThan(try sacWholeNumber(accountBalance), 0)
+
+        let contractId = try Data(KeyPair.generateRandomKeyPair().publicKey.bytes).encodeContractId()
+        let contractBalance = try await reader.balance(holder: try SCAddressXDR(contractId: contractId))
+        XCTAssertEqual(contractBalance, "0")
+    }
+
+    func testSACBalanceWithoutTrustline() async throws {
+        // Reading a Balance: the contract's error for a missing trustline and a missing account
+        // The page takes a deployed issued asset as its input; this test deploys one, issued
+        // by the funded account of setUp.
+        let issuer: KeyPair = sourceAccountKeyPair
+        let asset = try XCTUnwrap(Asset(type: AssetType.ASSET_TYPE_CREDIT_ALPHANUM4, code: "DOCS", issuer: issuer))
+        let sacId = try asset.contractId(network: Network.testnet)
+        let deployment = try await AssembledTransaction.buildWithOp(
+            operation: try InvokeHostFunctionOperation.forDeploySACWithAsset(asset: asset),
+            options: AssembledTransactionOptions(
+                clientOptions: ClientOptions(sourceAccountKeyPair: issuer, contractId: sacId, network: network, rpcUrl: rpcUrl),
+                methodOptions: MethodOptions(),
+                method: "deploy"))
+        let deployed = try await deployment.signAndSend()
+        XCTAssertEqual(deployed.status, GetTransactionResponse.STATUS_SUCCESS)
+        XCTAssertEqual(try XCTUnwrap(deployed.createdContractId).encodeContractIdHex(), sacId)
+
+        let reader = try SACClient.readOnlyForAsset(
+            asset: asset,
+            network: Network.testnet,
+            rpcUrl: "https://soroban-testnet.stellar.org"
+        )
+        XCTAssertEqual(reader.contractId, sacId)
+
+        // A funded account that has no trustline for the asset
+        let account = try KeyPair.generateRandomKeyPair()
+        try await fundSACAccounts([account])
+
+        var reportedCode: UInt32?
+        do {
+            let balance = try await reader.balance(holder: try SCAddressXDR(accountId: account.accountId))
+            XCTFail("expected the read to throw, got the balance \(balance)")
+        } catch let error as AssembledTransactionError {
+            guard case .simulationFailed = error else {
+                return XCTFail("expected simulationFailed, got \(error)")
+            }
+            reportedCode = error.reportedContractError?.code
+        }
+        XCTAssertEqual(reportedCode, 13)
+
+        // An account that does not exist, read from the native asset's contract
+        let nativeReader = try SACClient.readOnlyForAsset(
+            asset: Asset(type: AssetType.ASSET_TYPE_NATIVE)!,
+            network: Network.testnet,
+            rpcUrl: "https://soroban-testnet.stellar.org"
+        )
+        let missingAccount = try KeyPair.generateRandomKeyPair()
+        var missingAccountCode: UInt32?
+        do {
+            let balance = try await nativeReader.balance(holder: try SCAddressXDR(accountId: missingAccount.accountId))
+            XCTFail("expected the read to throw, got the balance \(balance)")
+        } catch let error as AssembledTransactionError {
+            guard case .simulationFailed = error else {
+                return XCTFail("expected simulationFailed, got \(error)")
+            }
+            missingAccountCode = error.reportedContractError?.code
+        }
+        XCTAssertEqual(missingAccountCode, 6)
+    }
+
+    func testSACSendingATransfer() async throws {
+        // Sending a Transfer
+        // The funded account of setUp is the sender; the receiver is funded here.
+        let sender: KeyPair = sourceAccountKeyPair
+        let receiver = try KeyPair.generateRandomKeyPair()
+        try await fundSACAccounts([receiver])
+
+        let client = try SACClient.forAsset(
+            asset: Asset(type: AssetType.ASSET_TYPE_NATIVE)!,
+            sourceAccountKeyPair: sender,
+            network: Network.testnet,
+            rpcUrl: "https://soroban-testnet.stellar.org"
+        )
+
+        let amount = try SACClient.toBaseUnits("12.5")
+        XCTAssertEqual(amount, "125000000")
+
+        let receiverAddress = try SCAddressXDR(accountId: receiver.accountId)
+        let balanceBeforeSend = try sacWholeNumber(try await client.balance(holder: receiverAddress))
+
+        let response = try await client.transferAndSend(
+            to: try SCAddressXDR(accountId: receiver.accountId),
+            amount: amount
+        )
+        XCTAssertEqual(response.status, GetTransactionResponse.STATUS_SUCCESS)
+        let balanceAfterSend = try sacWholeNumber(try await client.balance(holder: receiverAddress))
+        XCTAssertEqual(balanceAfterSend, balanceBeforeSend + 125_000_000)
+
+        let muxedReceiver = try MuxedAccount(accountId: receiver.accountId, id: 4242)
+        let tx = try await client.transfer(
+            from: try SCAddressXDR(accountId: sender.accountId),
+            to: try SCAddressXDR(accountId: muxedReceiver.accountId),
+            amount: "25000000"
+        )
+        let muxedResponse = try await tx.signAndSend()
+        XCTAssertEqual(muxedResponse.status, GetTransactionResponse.STATUS_SUCCESS)
+
+        // The page's loop over the contract events
+        var muxedIds: [UInt64?] = []
+        for encodedEvent in (muxedResponse.events?.contractEventsXdr ?? []).flatMap({ $0 }) {
+            let event = try ContractEventXDR(xdr: encodedEvent)
+            if case .v0(let body) = event.body, body.topics.first?.symbol == "transfer" {
+                let muxedId = body.data.map?.first(where: { $0.key.symbol == "to_muxed_id" })?.val.u64
+                muxedIds.append(muxedId)
+            }
+        }
+        XCTAssertEqual(muxedIds, [4242])
+
+        let muxedData = try eventDataMap(try transferEvent(in: muxedResponse))
+        XCTAssertEqual(muxedData["amount"]?.i128String, "25000000")
+        XCTAssertEqual(muxedData["to_muxed_id"]?.u64, 4242)
+
+        // The base account of the muxed receiver is credited.
+        let balanceAfterMuxed = try sacWholeNumber(try await client.balance(holder: receiverAddress))
+        XCTAssertEqual(balanceAfterMuxed, balanceAfterSend + 25_000_000)
+    }
+
+    func testSACTransferAuthorizedByAnotherAccount() async throws {
+        // Transfers Authorized by Another Account
+        // The funded account of setUp is the submitter; the sender and the receiver are funded here.
+        let submitter: KeyPair = sourceAccountKeyPair
+        let sender = try KeyPair.generateRandomKeyPair()
+        let receiver = try KeyPair.generateRandomKeyPair()
+        try await fundSACAccounts([sender, receiver])
+
+        let client = try SACClient.forAsset(
+            asset: Asset(type: AssetType.ASSET_TYPE_NATIVE)!,
+            sourceAccountKeyPair: submitter,
+            network: Network.testnet,
+            rpcUrl: "https://soroban-testnet.stellar.org"
+        )
+        let receiverAddress = try SCAddressXDR(accountId: receiver.accountId)
+        let balanceBefore = try sacWholeNumber(try await client.balance(holder: receiverAddress))
+
+        let tx = try await client.transfer(
+            from: try SCAddressXDR(accountId: sender.accountId),
+            to: try SCAddressXDR(accountId: receiver.accountId),
+            amount: try SACClient.toBaseUnits("10")
+        )
+
+        XCTAssertEqual(try tx.needsNonInvokerSigningBy(), [sender.accountId])
+
+        try await tx.signAuthEntries(signerKeyPair: sender)
+        let response = try await tx.signAndSend()
+        XCTAssertEqual(response.status, GetTransactionResponse.STATUS_SUCCESS)
+
+        let balanceAfter = try sacWholeNumber(try await client.balance(holder: receiverAddress))
+        XCTAssertEqual(balanceAfter, balanceBefore + 100_000_000)
+    }
+
+    /// Funds each account with `fundAccount(accountId:)` and waits until the RPC server
+    /// serves it in three consecutive reads, so a client that builds on the account right
+    /// after finds it.
+    ///
+    /// - Throws: `TestAccountFundingError.notConsistentlyVisible` naming the account when
+    ///   the RPC server does not serve it within 90 seconds of its funding.
+    private func fundSACAccounts(_ keyPairs: [KeyPair]) async throws {
+        let server = SorobanServer(endpoint: rpcUrl)
+        for keyPair in keyPairs {
+            await fundAccount(accountId: keyPair.accountId)
+            let deadline = Date().addingTimeInterval(90)
+            var consecutiveReads = 0
+            while consecutiveReads < 3 {
+                if case .success = await server.getAccount(accountId: keyPair.accountId) {
+                    consecutiveReads += 1
+                } else {
+                    consecutiveReads = 0
+                    if Date() > deadline {
+                        throw TestAccountFundingError.notConsistentlyVisible(
+                            message: "The RPC server does not serve the account \(keyPair.accountId) after a wait of 90 seconds since its funding")
+                    }
+                }
+                try await Task.sleep(nanoseconds: 1_000_000_000)
+            }
+        }
+    }
+
+    /// The number a balance in base units spells.
+    private func sacWholeNumber(_ baseUnits: String) throws -> Int64 {
+        return try XCTUnwrap(Int64(baseUnits), "not a whole number: \(baseUnits)")
+    }
+
     // MARK: - Installing and Deploying (Snippets 14-15)
 
     func testInstallation() async throws {

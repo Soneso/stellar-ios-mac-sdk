@@ -30,12 +30,19 @@ public enum ContractIdUtils {
             throw StellarSDKError.invalidArgument(message: "salt must be exactly 32 bytes, got \(salt.count)")
         }
         let fromAddress = ContractIDPreimageFromAddressXDR(address: deployer, salt: Uint256XDR(salt))
-        let contractIdPreimage = ContractIDPreimageXDR.fromAddress(fromAddress)
+        return try contractId(preimage: ContractIDPreimageXDR.fromAddress(fromAddress), network: network)
+    }
+
+    /// The id of the contract the given preimage creates on the given network: the "C..."
+    /// strkey of the sha256 hash of the contract id hash preimage, which pairs the network id
+    /// with `preimage`. A deployment from an address and the Stellar Asset Contract of an
+    /// asset differ only in the preimage.
+    internal static func contractId(preimage: ContractIDPreimageXDR, network: Network) throws -> String {
         let hashIdPreimageContractId = HashIDPreimageContractIDXDR(
             networkID: HashXDR(network.networkId),
-            contractIDPreimage: contractIdPreimage)
-        let preimage = HashIDPreimageXDR.contractID(hashIdPreimageContractId)
-        let encodedPreimage = Data(try XDREncoder.encode(preimage))
+            contractIDPreimage: preimage)
+        let hashIdPreimage = HashIDPreimageXDR.contractID(hashIdPreimageContractId)
+        let encodedPreimage = Data(try XDREncoder.encode(hashIdPreimage))
         return try encodedPreimage.sha256Hash.encodeContractId()
     }
 }

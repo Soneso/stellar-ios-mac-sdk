@@ -103,6 +103,25 @@ public class Asset: @unchecked Sendable
         }
     }
     
+    /// Derives the id of this asset's Stellar Asset Contract (SAC) on the given network.
+    ///
+    /// Every classic asset has one SAC per network, the native asset (XLM) included, and its
+    /// id depends only on the asset and the network. The id is the one the contract gets when
+    /// ``InvokeHostFunctionOperation/forDeploySACWithAsset(asset:sourceAccountId:)`` deploys
+    /// it, so it is known before the deployment. The derivation hashes locally and sends no
+    /// request; it does not tell whether the contract is deployed.
+    ///
+    /// - Parameter network: The network the contract lives on.
+    /// - Returns: The contract id as its "C..." strkey.
+    /// - Throws: `StellarSDKError.xdrEncodingError` for a liquidity pool share, which has no
+    ///   Stellar Asset Contract, and when the asset does not encode as XDR.
+    public func contractId(network: Network) throws -> String {
+        if type == AssetType.ASSET_TYPE_POOL_SHARE {
+            throw StellarSDKError.xdrEncodingError(message: "A liquidity pool share has no Stellar Asset Contract; contractId(network:) takes the native asset or an issued asset")
+        }
+        return try ContractIdUtils.contractId(preimage: ContractIDPreimageXDR.fromAsset(try toXDR()), network: network)
+    }
+
     /// Generates TrustlineAssetXDR object for trustline operations.
     public func toTrustlineAssetXDR() throws -> TrustlineAssetXDR {
 
