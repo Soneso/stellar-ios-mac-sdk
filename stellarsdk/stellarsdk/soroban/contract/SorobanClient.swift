@@ -67,10 +67,14 @@ public final class SorobanClient: Sendable {
     /// method names of the represented contract.
     public let methodNames:[String]
 
-    /// Internal constructor. Use `SorobanClient.forClientOptions` or `SorobanClient.deploy` to construct a SorobanClient.
-    internal init(specEntries: [SCSpecEntryXDR] = [], clientOptions: ClientOptions) {
+    /// whether the transactions this client builds are built for reading only.
+    private let readOnly:Bool
+
+    /// Internal constructor. Use `SorobanClient.forClientOptions`, `SorobanClient.forSpecEntries` or `SorobanClient.deploy` to construct a SorobanClient.
+    internal init(specEntries: [SCSpecEntryXDR] = [], clientOptions: ClientOptions, readOnly: Bool = false) {
         self.specEntries = specEntries
         self.clientOptions = clientOptions
+        self.readOnly = readOnly
 
         var names:[String] = []
         for entry in specEntries {
@@ -88,6 +92,11 @@ public final class SorobanClient: Sendable {
     
     /// Loads the contract info for the contractId provided by the options, and the constructs a SorobanClient by using the loaded contract info.
     ///
+    /// A Stellar Asset Contract has no wasm on chain to load a spec from. When the load fails
+    /// and the contract's instance names the built-in token executable, the client opens with
+    /// the embedded spec that ``SACClient/specEntries()`` decodes; every other failed load
+    /// throws its own error.
+    ///
     /// - Parameters:
     ///   - options: Client options; their contract id is a "C..." strkey or the 64 character hex
     ///     of the 32 byte id, and any other string throws `SorobanRpcRequestError.requestFailed`
@@ -103,10 +112,47 @@ public final class SorobanClient: Sendable {
         case .parsingFailure(let error):
             throw error
         case .rpcFailure(let error):
+            // The load fails for a Stellar Asset Contract, which has no wasm on chain. Its
+            // instance names the built-in token executable; every other failure is the load's.
+            let instanceEnum = await server.getContractData(contractId: options.contractId,
+                                                            key: SCValXDR.ledgerKeyContractInstance,
+                                                            durability: .persistent)
+            if case .success(let entry) = instanceEnum,
+               let entryData = try? LedgerEntryDataXDR(fromBase64: entry.xdr),
+               case .token? = entryData.contractData?.val.contractInstance?.executable {
+                return SorobanClient(specEntries: try SACClient.specEntries(), clientOptions: options)
+            }
             throw error
         }
     }
     
+    /// Constructs a SorobanClient from spec entries the caller already holds, without an RPC
+    /// request.
+    ///
+    /// Use it for a contract whose spec is known up front, such as the Stellar Asset
+    /// Contract, whose spec ``SACClient/specEntries()`` returns. The entries are kept as
+    /// given, and they are not compared with the contract on chain.
+    ///
+    /// With `readOnly`, every transaction the client builds carries
+    /// ``AssembledTransactionOptions/readOnly``: it simulates without loading the source
+    /// account, allows authorization entry signing, and refuses to sign its envelope, to
+    /// submit, and to restore archived entries.
+    ///
+    /// - Parameters:
+    ///   - specEntries: The spec entries of the contract.
+    ///   - options: Client options; their contract id is a "C..." strkey or the 64 character
+    ///     hex of the 32 byte id.
+    ///   - readOnly: Whether the client's transactions are built for reading only. Default false.
+    /// - Returns: The client for the contract.
+    /// - Throws: `StellarSDKError.invalidArgument` naming the kind of address given when the
+    ///   contract id of the options is any other string.
+    public static func forSpecEntries(specEntries: [SCSpecEntryXDR], options: ClientOptions, readOnly: Bool = false) throws -> SorobanClient {
+        if let refusal = ContractAddressGuard.contractIdRefusal(options.contractId, subject: "The contract to invoke") {
+            throw StellarSDKError.invalidArgument(message: refusal)
+        }
+        return SorobanClient(specEntries: specEntries, clientOptions: options, readOnly: readOnly)
+    }
+
     /// Deploys a smart contract to the Stellar network.
     ///
     /// Contract deployment involves:
@@ -439,7 +485,8 @@ public final class SorobanClient: Sendable {
                                                   methodOptions: methodOptions ?? MethodOptions(),
                                                   method: name,
                                                   arguments: args,
-                                                  enableServerLogging: enableServerLogging ?? clientOptions.enableServerLogging)
+                                                  enableServerLogging: enableServerLogging ?? clientOptions.enableServerLogging,
+                                                  readOnly: readOnly)
         return try await AssembledTransaction.build(options: options)
     }
     

@@ -1,0 +1,8 @@
+{
+  "repository": "stellar/stellar-asset-contract-spec",
+  "commit": "4f08d14f8b3e09e195f2cc4aab51c7f8a34f52ea",
+  "file": "stellar-asset-spec.xdr",
+  "sha256": "a88030febc66645d40b96deba8be16a6eb13c213768b4c1f9cd6278080d74669",
+  "template": "tools/sac-spec/SACSpec.swift.template",
+  "output": "stellarsdk/stellarsdk/soroban/contract/SACSpec.swift"
+}
