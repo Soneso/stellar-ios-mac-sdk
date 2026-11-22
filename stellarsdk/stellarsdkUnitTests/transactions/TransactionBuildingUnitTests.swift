@@ -1337,4 +1337,206 @@ class TransactionBuildingUnitTests: XCTestCase {
             XCTFail("Failed to decode: \(error)")
         }
     }
+
+    // MARK: - FeeBumpTransaction Envelope Import Tests
+
+    // Import a signed fee bump envelope and a low-fee envelope built directly from XDR.
+    func testFeeBumpTransactionInitFromEnvelopeXdr() throws {
+        let innerSource = try KeyPair(secretSeed: "SC4CGETADVYTCR5HEAVZRB3DZQY5Y4J7RFNJTRA6ESMHIPEZUSTE2QDK")
+        let feeSource = try KeyPair(secretSeed: "SBGWSG6BTNCKCOB3DIFBGCVMUPQFYPA2G4O34RMTB343OYPXU5DJDVMN")
+        let destinationId = "GDW6AUTBXTOC7FIKUO5BOO3OGLK4SF7ZPOBLMQHMZDI45J2Z6VXRB5NR"
+
+        let innerAccount = Account(keyPair: innerSource, sequenceNumber: 123456)
+        let payment = try PaymentOperation(
+            sourceAccountId: nil,
+            destinationAccountId: destinationId,
+            asset: Asset(type: AssetType.ASSET_TYPE_NATIVE)!,
+            amount: Decimal(25)
+        )
+        let innerTx = try Transaction(sourceAccount: innerAccount, operations: [payment], memo: Memo.text("inner-memo"))
+        try innerTx.sign(keyPair: innerSource, network: .testnet)
+
+        let feeSourceAccount = MuxedAccount(keyPair: feeSource, sequenceNumber: 0)
+        let feeBump = try FeeBumpTransaction(sourceAccount: feeSourceAccount, fee: 300, innerTransaction: innerTx)
+        try feeBump.sign(keyPair: feeSource, network: .testnet)
+
+        let inputEnvelope = try feeBump.encodedEnvelope()
+        let expectedHash = try feeBump.getTransactionHash(network: .testnet)
+        let expectedHashData = try feeBump.getTransactionHashData(network: .testnet)
+        let expectedOuterSignatures = try feeBump.feeBumpTransactionXDR.toFBEnvelopeXDR().signatures
+
+        let imported = try FeeBumpTransaction(envelopeXdr: inputEnvelope)
+
+        XCTAssertEqual(try imported.encodedEnvelope(), inputEnvelope)
+        XCTAssertEqual(try imported.getTransactionHash(network: .testnet), expectedHash)
+        XCTAssertEqual(try imported.getTransactionHashData(network: .testnet), expectedHashData)
+        XCTAssertEqual(imported.fee, 300)
+        XCTAssertEqual(imported.sourceAccountId, feeSource.accountId)
+        XCTAssertEqual(imported.sourceAccount.keyPair.accountId, feeSource.accountId)
+        XCTAssertEqual(imported.sourceAccount.sequenceNumber, 0)
+        XCTAssertEqual(imported.innerTransaction.sourceAccount.keyPair.accountId, innerSource.accountId)
+        XCTAssertEqual(imported.innerTransaction.operations.count, 1)
+        let importedPayment = try XCTUnwrap(imported.innerTransaction.operations.first as? PaymentOperation)
+        XCTAssertEqual(importedPayment.destinationAccountId, destinationId)
+        XCTAssertEqual(importedPayment.amount, Decimal(25))
+        XCTAssertEqual(try imported.innerTransaction.encodedEnvelope(), try innerTx.encodedEnvelope())
+        XCTAssertEqual(imported.innerTransaction.transactionXDR.signatures.count, 1)
+        XCTAssertEqual(
+            try XDREncoder.encode(imported.innerTransaction.transactionXDR.signatures),
+            try XDREncoder.encode(innerTx.transactionXDR.signatures)
+        )
+
+        let importedOuterSignatures = try imported.feeBumpTransactionXDR.toFBEnvelopeXDR().signatures
+        XCTAssertEqual(importedOuterSignatures.count, expectedOuterSignatures.count)
+        XCTAssertEqual(try XDREncoder.encode(importedOuterSignatures), try XDREncoder.encode(expectedOuterSignatures))
+
+        // Low-fee envelope below the builder's minimum imports with its decoded fee intact.
+        let lowFeeXdr = FeeBumpTransactionXDR(
+            sourceAccount: .ed25519(feeSource.publicKey.bytes),
+            innerTx: .v1(try innerTx.transactionXDR.toEnvelopeV1XDR()),
+            fee: 50
+        )
+        let lowFeeEnvelope = try lowFeeXdr.encodedEnvelope()
+        let lowFeeImported = try FeeBumpTransaction(envelopeXdr: lowFeeEnvelope)
+        XCTAssertEqual(lowFeeImported.fee, 50)
+        XCTAssertEqual(try lowFeeImported.encodedEnvelope(), lowFeeEnvelope)
+        XCTAssertEqual(lowFeeImported.sourceAccount.sequenceNumber, 0)
+    }
+
+    // Importing a fee bump with a muxed fee source preserves the muxed account and its ID.
+    func testFeeBumpTransactionInitFromEnvelopeXdrMuxedFeeSource() throws {
+        let innerSource = try KeyPair(secretSeed: "SC4CGETADVYTCR5HEAVZRB3DZQY5Y4J7RFNJTRA6ESMHIPEZUSTE2QDK")
+        let feeSource = try KeyPair(secretSeed: "SBGWSG6BTNCKCOB3DIFBGCVMUPQFYPA2G4O34RMTB343OYPXU5DJDVMN")
+        let destinationId = "GDW6AUTBXTOC7FIKUO5BOO3OGLK4SF7ZPOBLMQHMZDI45J2Z6VXRB5NR"
+
+        let innerAccount = Account(keyPair: innerSource, sequenceNumber: 42)
+        let payment = try PaymentOperation(
+            sourceAccountId: nil,
+            destinationAccountId: destinationId,
+            asset: Asset(type: AssetType.ASSET_TYPE_NATIVE)!,
+            amount: Decimal(5)
+        )
+        let innerTx = try Transaction(sourceAccount: innerAccount, operations: [payment], memo: Memo.none)
+        try innerTx.sign(keyPair: innerSource, network: .testnet)
+
+        for muxedId: UInt64 in [9876543210, 0] {
+            let muxedFeeSource = MuxedAccount(keyPair: feeSource, sequenceNumber: 0, id: muxedId)
+            let feeBump = try FeeBumpTransaction(sourceAccount: muxedFeeSource, fee: 200, innerTransaction: innerTx)
+            try feeBump.sign(keyPair: feeSource, network: .testnet)
+
+            let inputEnvelope = try feeBump.encodedEnvelope()
+            let imported = try FeeBumpTransaction(envelopeXdr: inputEnvelope)
+
+            XCTAssertEqual(imported.sourceAccountId, muxedFeeSource.accountId)
+            let importedMuxed = try XCTUnwrap(imported.sourceAccount as? MuxedAccount)
+            XCTAssertEqual(importedMuxed.id, muxedId)
+            XCTAssertEqual(importedMuxed.ed25519AccountId, feeSource.accountId)
+            XCTAssertEqual(importedMuxed.sequenceNumber, 0)
+            XCTAssertEqual(try imported.encodedEnvelope(), inputEnvelope)
+        }
+    }
+
+    // V1, V0, non-base64, and non-envelope inputs throw the expected errors.
+    func testFeeBumpTransactionInitFromEnvelopeXdrRejectsInvalidEnvelopes() throws {
+        let source = try KeyPair(secretSeed: "SC4CGETADVYTCR5HEAVZRB3DZQY5Y4J7RFNJTRA6ESMHIPEZUSTE2QDK")
+        let destinationId = "GDW6AUTBXTOC7FIKUO5BOO3OGLK4SF7ZPOBLMQHMZDI45J2Z6VXRB5NR"
+        let payment = try PaymentOperation(
+            sourceAccountId: nil,
+            destinationAccountId: destinationId,
+            asset: Asset(type: AssetType.ASSET_TYPE_NATIVE)!,
+            amount: Decimal(10)
+        )
+
+        // V1 envelope
+        let v1Tx = try Transaction(sourceAccount: Account(keyPair: source, sequenceNumber: 1), operations: [payment], memo: Memo.none)
+        let v1Envelope = try v1Tx.encodedEnvelope()
+        XCTAssertThrowsError(try FeeBumpTransaction(envelopeXdr: v1Envelope)) { error in
+            guard case StellarSDKError.invalidArgument(let message) = error else {
+                return XCTFail("Expected StellarSDKError.invalidArgument for V1 envelope, got \(error)")
+            }
+            XCTAssertTrue(message.contains("V1") && message.contains("ENVELOPE_TYPE_TX"), "Unexpected message: \(message)")
+        }
+
+        // V0 envelope
+        let v0Tx = TransactionV0XDR(
+            sourceAccount: source.publicKey,
+            seqNum: 2,
+            timeBounds: nil,
+            memo: .none,
+            operations: [try payment.toXDR()]
+        )
+        let v0Envelope = try v0Tx.encodedEnvelope()
+        XCTAssertThrowsError(try FeeBumpTransaction(envelopeXdr: v0Envelope)) { error in
+            guard case StellarSDKError.invalidArgument(let message) = error else {
+                return XCTFail("Expected StellarSDKError.invalidArgument for V0 envelope, got \(error)")
+            }
+            XCTAssertTrue(message.contains("V0") && message.contains("ENVELOPE_TYPE_TX_V0"), "Unexpected message: \(message)")
+        }
+
+        // Non-base64 and base64-but-not-envelope throw as Transaction(envelopeXdr:) does.
+        let invalidInputs = [
+            "!!!not-base64!!!",
+            Data([0x00, 0x00, 0x00, 0x63]).base64EncodedString(),
+            Data([0x00, 0x01]).base64EncodedString()
+        ]
+        for input in invalidInputs {
+            var expectedError: Error?
+            XCTAssertThrowsError(try Transaction(envelopeXdr: input)) { expectedError = $0 }
+            let txError = try XCTUnwrap(expectedError)
+
+            XCTAssertThrowsError(try FeeBumpTransaction(envelopeXdr: input)) { fbError in
+                XCTAssertEqual(String(describing: fbError), String(describing: txError))
+            }
+        }
+    }
+
+    // Signing an imported fee bump adds one outer signature verifying against the fee bump hash, leaving inner signatures unchanged.
+    func testFeeBumpTransactionInitFromEnvelopeXdrSignAddsOuterSignature() throws {
+        let innerSource = try KeyPair(secretSeed: "SC4CGETADVYTCR5HEAVZRB3DZQY5Y4J7RFNJTRA6ESMHIPEZUSTE2QDK")
+        let feeSource = try KeyPair(secretSeed: "SBGWSG6BTNCKCOB3DIFBGCVMUPQFYPA2G4O34RMTB343OYPXU5DJDVMN")
+        let extraOuterSigner = try KeyPair.generateRandomKeyPair()
+        let destinationId = "GDW6AUTBXTOC7FIKUO5BOO3OGLK4SF7ZPOBLMQHMZDI45J2Z6VXRB5NR"
+
+        let innerAccount = Account(keyPair: innerSource, sequenceNumber: 999)
+        let payment = try PaymentOperation(
+            sourceAccountId: nil,
+            destinationAccountId: destinationId,
+            asset: Asset(type: AssetType.ASSET_TYPE_NATIVE)!,
+            amount: Decimal(15)
+        )
+        let innerTx = try Transaction(sourceAccount: innerAccount, operations: [payment], memo: Memo.text("sign-test"))
+        try innerTx.sign(keyPair: innerSource, network: .testnet)
+
+        let feeBump = try FeeBumpTransaction(
+            sourceAccount: MuxedAccount(keyPair: feeSource, sequenceNumber: 0),
+            fee: 200,
+            innerTransaction: innerTx
+        )
+        try feeBump.sign(keyPair: extraOuterSigner, network: .testnet)
+
+        let inputEnvelope = try feeBump.encodedEnvelope()
+        let expectedHash = try feeBump.getTransactionHashData(network: .testnet)
+        let originalInnerSignatures = innerTx.transactionXDR.signatures
+        let originalOuterSignatures = try feeBump.feeBumpTransactionXDR.toFBEnvelopeXDR().signatures
+
+        let imported = try FeeBumpTransaction(envelopeXdr: inputEnvelope)
+        try imported.sign(keyPair: feeSource, network: .testnet)
+
+        XCTAssertEqual(try imported.getTransactionHashData(network: .testnet), expectedHash)
+
+        let signedEnvelope = try TransactionEnvelopeXDR(fromBase64: try imported.encodedEnvelope())
+        guard case .feeBump(let signedFB) = signedEnvelope,
+              case .v1(let signedInner) = signedFB.tx.innerTx else {
+            return XCTFail("Expected signed fee bump envelope")
+        }
+
+        XCTAssertEqual(signedFB.signatures.count, originalOuterSignatures.count + 1)
+        XCTAssertEqual(try XDREncoder.encode(signedFB.signatures[0]), try XDREncoder.encode(originalOuterSignatures[0]))
+        let addedSig = signedFB.signatures[1]
+        XCTAssertEqual(addedSig.hint.wrapped, Data(feeSource.publicKey.bytes.suffix(4)))
+        XCTAssertTrue(try feeSource.publicKey.verify(signature: [UInt8](addedSig.signature), message: [UInt8](expectedHash)))
+
+        XCTAssertEqual(signedInner.signatures.count, originalInnerSignatures.count)
+        XCTAssertEqual(try XDREncoder.encode(signedInner.signatures), try XDREncoder.encode(originalInnerSignatures))
+    }
 }

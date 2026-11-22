@@ -82,6 +82,55 @@ public class FeeBumpTransaction: @unchecked Sendable {
 
     }
 
+    /// Creates a FeeBumpTransaction object from a base64-encoded TransactionEnvelope XDR string.
+    ///
+    /// The transaction keeps the decoded fee bump XDR as it is, including its fee and outer
+    /// signatures, without applying minimum-fee checks: `encodedEnvelope()` returns the input
+    /// envelope plus any signatures added later, and `getTransactionHash(network:)` returns the
+    /// hash of the input. `sourceAccount` is a `MuxedAccount` for the decoded fee source with its
+    /// muxed ID and sequence number 0, not incremented, because a fee bump consumes no sequence
+    /// number of its fee source. `innerTransaction` holds the decoded inner transaction with its
+    /// inner signatures.
+    ///
+    /// - Parameter envelopeXdr: The base64-encoded fee bump `TransactionEnvelope` XDR string.
+    ///
+    /// - Throws: `StellarSDKError.invalidArgument` if the envelope is a V0 or V1 transaction
+    ///   envelope rather than a fee bump envelope, XDR decoding errors if the string does not
+    ///   decode as a transaction envelope, and any error thrown by `Transaction(envelopeXdr:)` when
+    ///   decoding the inner transaction.
+    public init(envelopeXdr: String) throws {
+        let xdrDecoder = XDRDecoder(data: [UInt8](base64: envelopeXdr))
+        let transactionEnvelopeXDR = try TransactionEnvelopeXDR(fromBinary: xdrDecoder)
+        let envelopeFeeBump: FeeBumpTransactionEnvelopeXDR
+        switch transactionEnvelopeXDR {
+        case .feeBump(let envelope):
+            envelopeFeeBump = envelope
+        case .v0:
+            throw StellarSDKError.invalidArgument(message: "Expected a fee bump transaction envelope, got a V0 transaction envelope (ENVELOPE_TYPE_TX_V0).")
+        case .v1:
+            throw StellarSDKError.invalidArgument(message: "Expected a fee bump transaction envelope, got a V1 transaction envelope (ENVELOPE_TYPE_TX).")
+        }
+
+        let feeBumpTxXDR = envelopeFeeBump.tx
+        let feeSource = try MuxedAccount(
+            accountId: feeBumpTxXDR.sourceAccount.accountId,
+            sequenceNumber: 0,
+            id: feeBumpTxXDR.sourceAccount.id
+        )
+
+        self.sourceAccount = feeSource
+        self.sourceAccountId = feeSource.accountId
+        self.fee = feeBumpTxXDR.fee
+        self.innerTransaction = try Transaction(envelopeXdr: envelopeXdr)
+        self.innerTransactionXDR = feeBumpTxXDR.innerTx
+
+        var keptFeeBumpXDR = feeBumpTxXDR
+        for signature in envelopeFeeBump.signatures {
+            keptFeeBumpXDR.addSignature(signature: signature)
+        }
+        self._feeBumpTransactionXDR = keptFeeBumpXDR
+    }
+
     /// Each transaction needs to be signed before sending it to the stellar network.
     ///
     /// - Parameter keyPair: key pair to be used as a signer. Must containing the private key.
