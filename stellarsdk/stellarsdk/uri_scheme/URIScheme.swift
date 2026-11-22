@@ -71,8 +71,6 @@ public typealias TransactionConfirmationClosure = @Sendable (TransactionXDR) -> 
 /// See also:
 /// - [SEP-0007 Specification](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0007.md)
 public final class URIScheme: Sendable {
-    let sdk = StellarSDK()
-
     public init() {}
 
     /// Generates a SEP-0007 compliant URI to request transaction signing.
@@ -252,84 +250,141 @@ public final class URIScheme: Sendable {
     }
     
     
-    /// Signs and submits a transaction from a SEP-0007 URI to the Stellar network.
+    /// Signs and submits a transaction from a SEP-0007 `tx` URI.
     ///
-    /// Parses the transaction from the URI, optionally confirms it via the callback,
-    /// signs it with the provided key pair, and submits it to the network or callback URL.
+    /// Parses the `xdr` parameter from a `web+stellar:tx?` URI regardless of parameter order,
+    /// decodes a V0, V1, or fee bump transaction envelope, optionally asks for confirmation, signs
+    /// the transaction with `keyPair` for `network` (signing the fee bump hash for a fee bump
+    /// envelope while leaving the inner transaction and its signatures unchanged), and submits the
+    /// resulting envelope.
     ///
-    /// - Parameter url: A SEP-0007 compliant URL containing the transaction to sign
-    /// - Parameter keyPair: The KeyPair of the signer account
-    /// - Parameter network: The Stellar network to use (defaults to public)
-    /// - Parameter transactionConfirmation: Optional closure to confirm the transaction before signing (return false to cancel)
-    /// - Returns: SubmitTransactionEnum indicating success, memo requirement, or failure
+    /// When the `callback` parameter is present, values starting with `"url:"` are used as given
+    /// and other values are percent-decoded once. Only `"url:"` callbacks are supported; they must
+    /// use HTTPS (HTTP is allowed only for `localhost`, `127.0.0.1`, or `::1`), and the signed
+    /// envelope is sent in a `POST` request as `application/x-www-form-urlencoded` with field `xdr`.
+    /// Any other callback type or invalid percent-encoding fails without sending a request.
+    ///
+    /// When `callback` is omitted, the signed envelope is submitted to the Horizon server matching
+    /// `network` (`StellarSDK.publicNet()`, `StellarSDK.testNet()`, or `StellarSDK.futureNet()`),
+    /// running the SEP-0029 memo requirement check. `.custom` networks have no known Horizon URL
+    /// and fail unless a `url:` callback is provided.
+    ///
+    /// Signing errors, including a `KeyPair` without a private key, return `.failure` with
+    /// `HorizonRequestError.requestFailed` naming the cause, and nothing is sent.
+    ///
+    /// - Parameter url: A SEP-0007 `web+stellar:tx?` URI containing the transaction to sign.
+    /// - Parameter keyPair: The signing `KeyPair` (must include the private key).
+    /// - Parameter network: The Stellar network to sign for and, when no callback is set, submit to (defaults to `.public`).
+    /// - Parameter transactionConfirmation: Optional closure to confirm the transaction before
+    ///   signing (return `false` to cancel). Receives `transactionXDR` for a V0 or V1 envelope, or
+    ///   `innerTransaction.transactionXDR` for a fee bump envelope.
+    /// - Returns: `SubmitTransactionEnum` indicating success, a SEP-0029 memo requirement, or failure.
     public func signAndSubmitTransaction(forURL url: String,
                                          signerKeyPair keyPair: KeyPair,
                                          network: Network = .public,
                                          transactionConfirmation: TransactionConfirmationClosure? = nil) async -> SubmitTransactionEnum {
-        
-        if let transactionXDR = getTransactionXDR(fromURL: url) {
-            if let isConfirmed = transactionConfirmation?(transactionXDR), !isConfirmed {
-                return .failure(error: HorizonRequestError.requestFailed(message: "Transaction was not confirmed!", horizonErrorResponse: nil))
-            }
-            var transaction = transactionXDR
-            try? transaction.sign(keyPair: keyPair, network: network)
-            let callback1 = self.getValue(forParam: .callback, fromURL: url)
-            let response = await self.submitTransaction(transactionXDR: transaction, callback: callback1, keyPair: keyPair)
-            return response
-        } else {
+        guard let parsedTransaction = parseTransaction(fromURL: url) else {
             return .failure(error: HorizonRequestError.requestFailed(message: "TransactionXDR missing from url!", horizonErrorResponse: nil))
         }
+
+        if let isConfirmed = transactionConfirmation?(parsedTransaction.confirmationTransactionXDR), !isConfirmed {
+            return .failure(error: HorizonRequestError.requestFailed(message: "Transaction was not confirmed!", horizonErrorResponse: nil))
+        }
+
+        do {
+            try parsedTransaction.sign(keyPair: keyPair, network: network)
+        } catch let error as StellarSDKError {
+            let cause: String
+            switch error {
+            case .invalidArgument(let message),
+                 .xdrDecodingError(let message),
+                 .xdrEncodingError(let message),
+                 .encodingError(let message),
+                 .decodingError(let message):
+                cause = message
+            }
+            return .failure(error: HorizonRequestError.requestFailed(message: "Failed to sign transaction: \(cause)", horizonErrorResponse: nil))
+        } catch {
+            return .failure(error: HorizonRequestError.requestFailed(message: "Failed to sign transaction: \(error)", horizonErrorResponse: nil))
+        }
+
+        let encodedEnvelope: String
+        do {
+            encodedEnvelope = try parsedTransaction.encodedEnvelope()
+        } catch {
+            return .failure(error: HorizonRequestError.requestFailed(message: "Failed to encode transaction envelope: \(error)", horizonErrorResponse: nil))
+        }
+
+        let callback = getTxQueryValue(forParam: .callback, fromURL: url)
+        return await submitTransaction(encodedEnvelope: encodedEnvelope, callback: callback, network: network)
     }
-    
-    /// Sends the transaction to the callback URL or to the Stellar network if no callback is set.
-    ///
-    /// - Parameter transactionXDR: The signed transaction XDR to submit
-    /// - Parameter callback: Optional callback URL (prefixed with "url:") to send the transaction to
-    /// - Parameter keyPair: The KeyPair used for signing
-    /// - Parameter skipMemoRequiredCheck: Whether to skip SEP-0029 memo requirement validation
-    /// - Returns: SubmitTransactionEnum indicating success, memo requirement, or failure
-    private func submitTransaction(transactionXDR: TransactionXDR?, callback: String? = nil, keyPair: KeyPair, skipMemoRequiredCheck:Bool = false) async -> SubmitTransactionEnum {
-        if let transactionEncodedEnvelope = try? transactionXDR?.encodedEnvelope() {
-            if var callback = callback, callback.hasPrefix("url:") {
-                callback = String(callback.dropFirst(4))
-                guard let callbackURL = URL(string: callback),
-                      let scheme = callbackURL.scheme?.lowercased(),
-                      let host = callbackURL.host?.lowercased() else {
+
+    /// Sends a signed transaction envelope to the callback URL, or to the Horizon server for
+    /// `network` when `callback` is nil.
+    private func submitTransaction(encodedEnvelope: String, callback: String?, network: Network) async -> SubmitTransactionEnum {
+        if let rawCallback = callback {
+            let urlCallbackPrefix = "url:"
+            let resolvedCallback: String
+            if rawCallback.hasPrefix(urlCallbackPrefix) {
+                resolvedCallback = rawCallback
+            } else {
+                guard let decoded = rawCallback.removingPercentEncoding else {
                     return .failure(error: HorizonRequestError.requestFailed(message: "Invalid callback URL", horizonErrorResponse: nil))
                 }
-                let isLocalhost = host == "localhost" || host == "127.0.0.1" || host == "::1"
-                if scheme != "https" && !(scheme == "http" && isLocalhost) {
-                    return .failure(error: HorizonRequestError.requestFailed(message: "Callback URL must use HTTPS (HTTP allowed only for localhost)", horizonErrorResponse: nil))
-                }
-                let serviceHelper = ServiceHelper(baseURL: callback)
-                var dataStr = ""
-                if let urlEncodedTransaction = transactionEncodedEnvelope.urlEncoded {
-                    dataStr = String("xdr=") + urlEncodedTransaction
+                resolvedCallback = decoded
+            }
+
+            guard resolvedCallback.hasPrefix(urlCallbackPrefix) else {
+                let callbackType: String
+                if let colonIndex = resolvedCallback.firstIndex(of: ":") {
+                    callbackType = String(resolvedCallback[..<colonIndex])
                 } else {
-                    return .failure(error: HorizonRequestError.requestFailed(message: "error while urlencoding transaction", horizonErrorResponse: nil))
+                    callbackType = resolvedCallback
                 }
-                let data1 = dataStr.data(using: .utf8)
-                let response = await serviceHelper.POSTRequestWithPath(path: "", body: data1, contentType: "application/x-www-form-urlencoded")
-                let _ = serviceHelper
-                switch response {
-                case .success(_):
-                    return .success
-                case .failure(let error):
-                    return .failure(error: error)
-                }
-            } else {
-                let response = await self.sdk.transactions.postTransaction(transactionEnvelope: transactionEncodedEnvelope, skipMemoRequiredCheck: skipMemoRequiredCheck)
-                switch response {
-                case .success(_):
-                    return .success
-                case .destinationRequiresMemo(let destinationAccountId):
-                    return .destinationRequiresMemo(destinationAccountId: destinationAccountId)
-                case .failure(let error):
-                    return .failure(error: error)
-                }
+                let message = callbackType.isEmpty
+                    ? "Unsupported callback type (only 'url:' callbacks are supported)"
+                    : "Unsupported callback type '\(callbackType)' (only 'url:' callbacks are supported)"
+                return .failure(error: HorizonRequestError.requestFailed(message: message, horizonErrorResponse: nil))
+            }
+
+            let callbackTarget = String(resolvedCallback.dropFirst(urlCallbackPrefix.count))
+            guard let callbackURL = URL(string: callbackTarget),
+                  let scheme = callbackURL.scheme?.lowercased(),
+                  let host = callbackURL.host?.lowercased() else {
+                return .failure(error: HorizonRequestError.requestFailed(message: "Invalid callback URL", horizonErrorResponse: nil))
+            }
+            let isLocalhost = host == "localhost" || host == "127.0.0.1" || host == "::1"
+            if scheme != "https" && !(scheme == "http" && isLocalhost) {
+                return .failure(error: HorizonRequestError.requestFailed(message: "Callback URL must use HTTPS (HTTP allowed only for localhost)", horizonErrorResponse: nil))
+            }
+
+            let serviceHelper = ServiceHelper(baseURL: callbackTarget)
+            guard let urlEncodedTransaction = encodedEnvelope.urlEncoded else {
+                return .failure(error: HorizonRequestError.requestFailed(message: "error while urlencoding transaction", horizonErrorResponse: nil))
+            }
+            let body = ("xdr=" + urlEncodedTransaction).data(using: .utf8)
+            let response = await serviceHelper.POSTRequestWithPath(path: "", body: body, contentType: "application/x-www-form-urlencoded")
+            switch response {
+            case .success(_):
+                return .success
+            case .failure(let error):
+                return .failure(error: error)
             }
         } else {
-            return .failure(error: HorizonRequestError.requestFailed(message: "encodedEnvelop failed!", horizonErrorResponse: nil))
+            guard let sdk = horizonSDK(for: network) else {
+                return .failure(error: HorizonRequestError.requestFailed(
+                    message: "No Horizon URL is known for custom network '\(network.passphrase)'. Provide a callback URL or submit the signed transaction directly.",
+                    horizonErrorResponse: nil))
+            }
+            let response = await sdk.transactions.postTransaction(transactionEnvelope: encodedEnvelope, skipMemoRequiredCheck: false)
+            switch response {
+            case .success(_):
+                return .success
+            case .destinationRequiresMemo(let destinationAccountId):
+                return .destinationRequiresMemo(destinationAccountId: destinationAccountId)
+            case .failure(let error):
+                return .failure(error: error)
+            }
         }
     }
     
@@ -354,35 +409,89 @@ public final class URIScheme: Sendable {
         }
         return nil
     }
-    
-    /// Extracts the raw XDR field value from a SEP-0007 URI.
-    ///
-    /// - Parameter url: The SEP-0007 URI to parse
-    /// - Returns: The URL-encoded XDR string if found, nil otherwise
-    private func getTransactionXDRFieldValue(fromURL url: String) -> String? {
-        let fields = url.split(separator: "&")
-        for field in fields {
-            if field.hasPrefix("\(URISchemeName)\(SignOperation)\(SignTransactionParams.xdr)") {
-                return field.replacingOccurrences(of: "\(URISchemeName)\(SignOperation)\(SignTransactionParams.xdr)=", with: "")
+
+    private enum ParsedTransaction {
+        case transaction(Transaction)
+        case feeBump(FeeBumpTransaction)
+
+        var confirmationTransactionXDR: TransactionXDR {
+            switch self {
+            case .transaction(let transaction):
+                return transaction.transactionXDR
+            case .feeBump(let feeBumpTransaction):
+                return feeBumpTransaction.innerTransaction.transactionXDR
             }
         }
-        
+
+        func sign(keyPair: KeyPair, network: Network) throws {
+            switch self {
+            case .transaction(let transaction):
+                try transaction.sign(keyPair: keyPair, network: network)
+            case .feeBump(let feeBumpTransaction):
+                try feeBumpTransaction.sign(keyPair: keyPair, network: network)
+            }
+        }
+
+        func encodedEnvelope() throws -> String {
+            switch self {
+            case .transaction(let transaction):
+                return try transaction.encodedEnvelope()
+            case .feeBump(let feeBumpTransaction):
+                return try feeBumpTransaction.encodedEnvelope()
+            }
+        }
+    }
+
+    private func horizonSDK(for network: Network) -> StellarSDK? {
+        switch network {
+        case .public:
+            return StellarSDK.publicNet()
+        case .testnet:
+            return StellarSDK.testNet()
+        case .futurenet:
+            return StellarSDK.futureNet()
+        case .custom:
+            return nil
+        }
+    }
+
+    /// Extracts the raw value of the first `param=` query field from a `web+stellar:tx?` URI.
+    private func getTxQueryValue(forParam param: SignTransactionParams, fromURL url: String) -> String? {
+        let prefix = "\(URISchemeName)\(SignOperation)"
+        guard url.hasPrefix(prefix) else {
+            return nil
+        }
+        let query = url.dropFirst(prefix.count)
+        let fieldPrefix = "\(param)="
+        for field in query.split(separator: "&") {
+            if field.hasPrefix(fieldPrefix) {
+                return String(field.dropFirst(fieldPrefix.count))
+            }
+        }
         return nil
     }
-    
-    /// Parses and returns the TransactionXDR object from a SEP-0007 URI.
-    ///
-    /// - Parameter url: The SEP-0007 URI containing the transaction XDR
-    /// - Returns: The decoded TransactionXDR object if successful, nil otherwise
-    private func getTransactionXDR(fromURL url: String) -> TransactionXDR? {
-        let base64UrlEncodedTransactionEnvelope = getTransactionXDRFieldValue(fromURL: url)
-        let base64TransactionEnvelope = base64UrlEncodedTransactionEnvelope?.urlDecoded
-        if let base64TransactionEnvelope = base64TransactionEnvelope {
-            if let transactionXDR = try? Transaction(envelopeXdr: base64TransactionEnvelope).transactionXDR {
-                return transactionXDR
-            }
+
+    /// Parses a V0, V1, or fee bump transaction envelope from a `web+stellar:tx?` URI.
+    private func parseTransaction(fromURL url: String) -> ParsedTransaction? {
+        guard let urlEncodedEnvelope = getTxQueryValue(forParam: .xdr, fromURL: url),
+              let base64Envelope = urlEncodedEnvelope.removingPercentEncoding else {
+            return nil
         }
-        
-        return nil
+        let xdrDecoder = XDRDecoder(data: [UInt8](base64: base64Envelope))
+        guard let envelopeXDR = try? TransactionEnvelopeXDR(fromBinary: xdrDecoder) else {
+            return nil
+        }
+        switch envelopeXDR {
+        case .v0, .v1:
+            guard let transaction = try? Transaction(envelopeXdr: base64Envelope) else {
+                return nil
+            }
+            return .transaction(transaction)
+        case .feeBump:
+            guard let feeBumpTransaction = try? FeeBumpTransaction(envelopeXdr: base64Envelope) else {
+                return nil
+            }
+            return .feeBump(feeBumpTransaction)
+        }
     }
 }

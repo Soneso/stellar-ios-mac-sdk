@@ -24,11 +24,14 @@ class URISchemeUnitTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
+        URLProtocol.registerClass(ServerMock.self)
         uriScheme = URIScheme()
         uriSchemeValidator = URISchemeValidator()
     }
 
     override func tearDown() {
+        ServerMock.removeAll()
+        URLProtocol.unregisterClass(ServerMock.self)
         uriScheme = nil
         uriSchemeValidator = nil
         super.tearDown()
@@ -1791,5 +1794,691 @@ class URISchemeUnitTests: XCTestCase {
         } else {
             XCTFail("Expected failure for invalid callback URL")
         }
+    }
+
+    // MARK: - Sign and Submit Tests
+
+    private let mockCallbackHost = "sep7-callback.example.com"
+
+    private var mockHorizonSubmitSuccessResponse: String {
+        return """
+        {
+            "_links": {
+                "self": {"href": "https://horizon.stellar.org/transactions/test"},
+                "account": {"href": "https://horizon.stellar.org/accounts/GABC"},
+                "ledger": {"href": "https://horizon.stellar.org/ledgers/123"},
+                "operations": {"href": "https://horizon.stellar.org/transactions/test/operations{?cursor,limit,order}", "templated": true},
+                "effects": {"href": "https://horizon.stellar.org/transactions/test/effects{?cursor,limit,order}", "templated": true},
+                "precedes": {"href": "https://horizon.stellar.org/transactions?order=asc&cursor=123"},
+                "succeeds": {"href": "https://horizon.stellar.org/transactions?order=desc&cursor=123"}
+            },
+            "id": "test123",
+            "paging_token": "123456",
+            "hash": "abc123def456",
+            "ledger": 100,
+            "created_at": "2018-02-21T15:16:05Z",
+            "source_account": "GAJNSTFWKUKRXAHMPWG6BM4ACWNIS57S47KQZZQGQCM6H4WTM7VQUFMN",
+            "source_account_sequence": "123456789",
+            "fee_account": "GAJNSTFWKUKRXAHMPWG6BM4ACWNIS57S47KQZZQGQCM6H4WTM7VQUFMN",
+            "max_fee": "100",
+            "fee_charged": "100",
+            "operation_count": 1,
+            "memo_type": "none",
+            "signatures": [],
+            "envelope_xdr": "AAAAAgAAAABn/gGugyO02pFFGaHeLzNEHF4xG6LdYuDPD98S59AjuwADDUABL9thAAAHOQAAAAEAAAAAAAAAAAAAAABnflzGAAAAAAAAAAIAAAAAAAAAF17U/Ee2yWNcLItkCC67OfbsTUVaBlLoBV+SBdMv/ujIAAAAAAAAoHQAAAAAAACgCwAAAAAAAKDeAAAAAAAAAAYAAAADAAAAAAAAAAFVU0RDAAAAADuZETgO/piLoKiQDrHP5E82b32+lGvtB3JA9/Yk3xXFAAAAAXNVU0QAAAAAj2+KyPmYjEMFuwqWpv33O3NZCGoASCtyAGDvCBhfZ/QAAAAeAAAAAAAAAAAAAAAAAAAAAA==",
+            "result_xdr": "AAAAAAAAAGQAAAAAAAAAAQAAAAAAAAAGAAAAAAAAAAA="
+        }
+        """
+    }
+
+    private struct SubmissionMocks {
+        let callback: RequestRecorder
+        let publicHorizon: RequestRecorder
+        let testnetHorizon: RequestRecorder
+        let futurenetHorizon: RequestRecorder
+
+        func reset() {
+            callback.reset()
+            publicHorizon.reset()
+            testnetHorizon.reset()
+            futurenetHorizon.reset()
+        }
+
+        var totalRequestCount: Int {
+            callback.all.count + publicHorizon.all.count + testnetHorizon.all.count + futurenetHorizon.all.count
+        }
+    }
+
+    private func installSubmissionMocks() -> SubmissionMocks {
+        let callbackRecorder = RequestRecorder()
+        let publicRecorder = RequestRecorder()
+        let testnetRecorder = RequestRecorder()
+        let futurenetRecorder = RequestRecorder()
+        let horizonJSON = mockHorizonSubmitSuccessResponse
+
+        ServerMock.add(mock: RequestMock(host: mockCallbackHost, path: "*", httpMethod: "POST", statusCode: 200) { _, request in
+            callbackRecorder.record(request)
+            return "{}"
+        })
+        ServerMock.add(mock: RequestMock(host: "horizon.stellar.org", path: "/transactions", httpMethod: "POST", statusCode: 200) { _, request in
+            publicRecorder.record(request)
+            return horizonJSON
+        })
+        ServerMock.add(mock: RequestMock(host: "horizon-testnet.stellar.org", path: "/transactions", httpMethod: "POST", statusCode: 200) { _, request in
+            testnetRecorder.record(request)
+            return horizonJSON
+        })
+        ServerMock.add(mock: RequestMock(host: "horizon-futurenet.stellar.org", path: "/transactions", httpMethod: "POST", statusCode: 200) { _, request in
+            futurenetRecorder.record(request)
+            return horizonJSON
+        })
+
+        return SubmissionMocks(
+            callback: callbackRecorder,
+            publicHorizon: publicRecorder,
+            testnetHorizon: testnetRecorder,
+            futurenetHorizon: futurenetRecorder
+        )
+    }
+
+    private func createMemoTransaction(sequenceNumber: Int64 = 123456) throws -> Transaction {
+        let source = try KeyPair(secretSeed: testSourceSecretSeed)
+        let account = Account(keyPair: source, sequenceNumber: sequenceNumber)
+        let payment = try PaymentOperation(
+            sourceAccountId: nil,
+            destinationAccountId: testDestinationAccountId,
+            asset: Asset(type: AssetType.ASSET_TYPE_NATIVE)!,
+            amount: Decimal(10)
+        )
+        return try Transaction(
+            sourceAccount: account,
+            operations: [payment],
+            memo: Memo.text("sep7-test")
+        )
+    }
+
+    private func createFeeBumpTransaction(network: Network = .testnet) throws -> (feeBump: FeeBumpTransaction, inner: Transaction, feeSource: KeyPair) {
+        let innerSource = try KeyPair(secretSeed: testSourceSecretSeed)
+        let inner = try createMemoTransaction()
+        try inner.sign(keyPair: innerSource, network: network)
+
+        let feeSource = try KeyPair(secretSeed: testSignerSecretSeed)
+        let feeSourceAccount = MuxedAccount(keyPair: feeSource, sequenceNumber: 0)
+        let feeBump = try FeeBumpTransaction(sourceAccount: feeSourceAccount, fee: 200, innerTransaction: inner)
+        return (feeBump, inner, feeSource)
+    }
+
+    private func decodePostedEnvelope(from body: String, fieldName: String) throws -> TransactionEnvelopeXDR {
+        let prefix = "\(fieldName)="
+        XCTAssertTrue(body.hasPrefix(prefix), "Expected body to start with \(prefix), got: \(body)")
+        let encoded = String(body.dropFirst(prefix.count))
+        let base64 = try XCTUnwrap(encoded.removingPercentEncoding, "Failed to URL-decode \(fieldName) body")
+        return try TransactionEnvelopeXDR(fromBase64: base64)
+    }
+
+    // Fee bump tx URI with a url: callback posts the fee bump envelope with an outer signature.
+    func testSignAndSubmitFeeBumpToCallback() async throws {
+        let mocks = installSubmissionMocks()
+        let (feeBump, _, feeSource) = try createFeeBumpTransaction(network: .testnet)
+        let existingOuterSigner = try KeyPair.generateRandomKeyPair()
+        try feeBump.sign(keyPair: existingOuterSigner, network: .testnet)
+
+        let inputEnvelopeBase64 = try feeBump.encodedEnvelope()
+        let inputEnvelope = try TransactionEnvelopeXDR(fromBase64: inputEnvelopeBase64)
+        guard case .feeBump(let inputFeeBumpEnvelope) = inputEnvelope,
+              case .v1(let inputInnerEnvelope) = inputFeeBumpEnvelope.tx.innerTx else {
+            return XCTFail("Expected input envelope to be a fee bump")
+        }
+        let expectedHash = try feeBump.getTransactionHashData(network: .testnet)
+
+        let encodedXdr = try XCTUnwrap(inputEnvelopeBase64.urlEncoded)
+        let uri = "web+stellar:tx?xdr=\(encodedXdr)&callback=url:https://\(mockCallbackHost)/submit"
+
+        let result = await uriScheme.signAndSubmitTransaction(forURL: uri, signerKeyPair: feeSource, network: .testnet)
+
+        guard case .success = result else {
+            return XCTFail("Expected .success, got \(result)")
+        }
+        XCTAssertEqual(mocks.callback.all.count, 1)
+        XCTAssertEqual(mocks.publicHorizon.all.count, 0)
+        XCTAssertEqual(mocks.testnetHorizon.all.count, 0)
+        XCTAssertEqual(mocks.futurenetHorizon.all.count, 0)
+
+        let request = try XCTUnwrap(mocks.callback.all.first)
+        XCTAssertEqual(request.url, "https://\(mockCallbackHost)/submit")
+        XCTAssertEqual(request.contentType, "application/x-www-form-urlencoded")
+
+        let postedEnvelope = try decodePostedEnvelope(from: request.body, fieldName: "xdr")
+        guard case .feeBump(let postedFeeBumpEnvelope) = postedEnvelope else {
+            return XCTFail("Expected posted envelope to be a fee bump, got \(postedEnvelope)")
+        }
+
+        XCTAssertEqual(try XDREncoder.encode(postedFeeBumpEnvelope.tx), try XDREncoder.encode(inputFeeBumpEnvelope.tx))
+
+        guard case .v1(let postedInnerEnvelope) = postedFeeBumpEnvelope.tx.innerTx else {
+            return XCTFail("Expected V1 inner envelope")
+        }
+        XCTAssertEqual(postedInnerEnvelope.signatures.count, inputInnerEnvelope.signatures.count)
+        XCTAssertEqual(try XDREncoder.encode(postedInnerEnvelope.signatures), try XDREncoder.encode(inputInnerEnvelope.signatures))
+
+        XCTAssertEqual(postedFeeBumpEnvelope.signatures.count, inputFeeBumpEnvelope.signatures.count + 1)
+        XCTAssertEqual(try XDREncoder.encode(postedFeeBumpEnvelope.signatures[0]), try XDREncoder.encode(inputFeeBumpEnvelope.signatures[0]))
+
+        let addedSignature = postedFeeBumpEnvelope.signatures[1]
+        XCTAssertEqual(addedSignature.hint.wrapped, Data(feeSource.publicKey.bytes.suffix(4)))
+        XCTAssertTrue(try feeSource.publicKey.verify(signature: [UInt8](addedSignature.signature), message: [UInt8](expectedHash)))
+    }
+
+    // URL-encoded callback from getSignTransactionURI posts to callback; broken percent-encoding fails.
+    func testSignAndSubmitEncodedCallback() async throws {
+        let mocks = installSubmissionMocks()
+        let tx = try createMemoTransaction()
+        let signer = try KeyPair(secretSeed: testSourceSecretSeed)
+        let expectedHash = try tx.getTransactionHashData(network: .testnet)
+
+        let callbackTarget = "https://\(mockCallbackHost)/collect?order=42&mode=fast"
+        let uri = uriScheme.getSignTransactionURI(transactionXDR: tx.transactionXDR, callBack: "url:\(callbackTarget)")
+
+        let result = await uriScheme.signAndSubmitTransaction(forURL: uri, signerKeyPair: signer, network: .testnet)
+
+        guard case .success = result else {
+            return XCTFail("Expected .success for encoded callback URI, got \(result)")
+        }
+        XCTAssertEqual(mocks.callback.all.count, 1, "Encoded callback URI should post to callback")
+        XCTAssertEqual(mocks.publicHorizon.all.count, 0)
+        XCTAssertEqual(mocks.testnetHorizon.all.count, 0)
+        XCTAssertEqual(mocks.futurenetHorizon.all.count, 0)
+
+        if let request = mocks.callback.all.first {
+            XCTAssertEqual(request.url, callbackTarget)
+            XCTAssertEqual(request.contentType, "application/x-www-form-urlencoded")
+            let postedEnvelope = try decodePostedEnvelope(from: request.body, fieldName: "xdr")
+            guard case .v1(let v1) = postedEnvelope else {
+                return XCTFail("Expected V1 envelope, got \(postedEnvelope)")
+            }
+            XCTAssertEqual(v1.signatures.count, 1)
+            XCTAssertTrue(try signer.publicKey.verify(signature: [UInt8](v1.signatures[0].signature), message: [UInt8](expectedHash)))
+        }
+
+        // Invalid percent-encoding in callback fails with "Invalid callback URL" and sends nothing.
+        mocks.reset()
+        let encodedXdr = try XCTUnwrap(try tx.encodedEnvelope().urlEncoded)
+        let badCallbackUri = "web+stellar:tx?xdr=\(encodedXdr)&callback=url%3Ahttps%3A%2F%2F\(mockCallbackHost)%2F%ZZ"
+        let badResult = await uriScheme.signAndSubmitTransaction(forURL: badCallbackUri, signerKeyPair: signer, network: .testnet)
+        guard case .failure(.requestFailed(let message, _)) = badResult else {
+            return XCTFail("Expected requestFailed for invalid percent-encoded callback, got \(badResult)")
+        }
+        XCTAssertEqual(message, "Invalid callback URL")
+        XCTAssertEqual(mocks.totalRequestCount, 0)
+    }
+
+    // Horizon routing matches signing network; custom network fails without callback and works with one; fee bump posts to Horizon.
+    func testSignAndSubmitHorizonByNetwork() async throws {
+        let mocks = installSubmissionMocks()
+        let signer = try KeyPair(secretSeed: testSourceSecretSeed)
+
+        // .public -> horizon.stellar.org
+        let publicTx = try createMemoTransaction(sequenceNumber: 100)
+        let publicUri = uriScheme.getSignTransactionURI(transactionXDR: publicTx.transactionXDR)
+        let publicResult = await uriScheme.signAndSubmitTransaction(forURL: publicUri, signerKeyPair: signer, network: .public)
+        guard case .success = publicResult else {
+            return XCTFail("Expected .success for .public, got \(publicResult)")
+        }
+        XCTAssertEqual(mocks.publicHorizon.all.count, 1, "Expected .public to post to horizon.stellar.org")
+        XCTAssertEqual(mocks.testnetHorizon.all.count, 0)
+        XCTAssertEqual(mocks.futurenetHorizon.all.count, 0)
+        XCTAssertEqual(mocks.callback.all.count, 0)
+        if let req = mocks.publicHorizon.all.first {
+            let envelope = try decodePostedEnvelope(from: req.body, fieldName: "tx")
+            if case .v1(let v1) = envelope {
+                XCTAssertEqual(v1.signatures.count, 1)
+                let hash = try publicTx.getTransactionHashData(network: .public)
+                XCTAssertTrue(try signer.publicKey.verify(signature: [UInt8](v1.signatures[0].signature), message: [UInt8](hash)))
+            } else {
+                XCTFail("Expected V1 envelope")
+            }
+        }
+
+        // .testnet -> horizon-testnet.stellar.org
+        mocks.reset()
+        let testnetTx = try createMemoTransaction(sequenceNumber: 101)
+        let testnetUri = uriScheme.getSignTransactionURI(transactionXDR: testnetTx.transactionXDR)
+        let testnetResult = await uriScheme.signAndSubmitTransaction(forURL: testnetUri, signerKeyPair: signer, network: .testnet)
+        guard case .success = testnetResult else {
+            return XCTFail("Expected .success for .testnet, got \(testnetResult)")
+        }
+        XCTAssertEqual(mocks.testnetHorizon.all.count, 1)
+        XCTAssertEqual(mocks.publicHorizon.all.count, 0)
+        XCTAssertEqual(mocks.futurenetHorizon.all.count, 0)
+        XCTAssertEqual(mocks.callback.all.count, 0)
+        if let req = mocks.testnetHorizon.all.first {
+            let envelope = try decodePostedEnvelope(from: req.body, fieldName: "tx")
+            if case .v1(let v1) = envelope {
+                XCTAssertEqual(v1.signatures.count, 1)
+                let hash = try testnetTx.getTransactionHashData(network: .testnet)
+                XCTAssertTrue(try signer.publicKey.verify(signature: [UInt8](v1.signatures[0].signature), message: [UInt8](hash)))
+            } else {
+                XCTFail("Expected V1 envelope")
+            }
+        }
+
+        // .futurenet -> horizon-futurenet.stellar.org
+        mocks.reset()
+        let futurenetTx = try createMemoTransaction(sequenceNumber: 102)
+        let futurenetUri = uriScheme.getSignTransactionURI(transactionXDR: futurenetTx.transactionXDR)
+        let futurenetResult = await uriScheme.signAndSubmitTransaction(forURL: futurenetUri, signerKeyPair: signer, network: .futurenet)
+        guard case .success = futurenetResult else {
+            return XCTFail("Expected .success for .futurenet, got \(futurenetResult)")
+        }
+        XCTAssertEqual(mocks.futurenetHorizon.all.count, 1, "Expected .futurenet to post to horizon-futurenet.stellar.org")
+        XCTAssertEqual(mocks.publicHorizon.all.count, 0)
+        XCTAssertEqual(mocks.testnetHorizon.all.count, 0)
+        XCTAssertEqual(mocks.callback.all.count, 0)
+        if let req = mocks.futurenetHorizon.all.first {
+            let envelope = try decodePostedEnvelope(from: req.body, fieldName: "tx")
+            if case .v1(let v1) = envelope {
+                XCTAssertEqual(v1.signatures.count, 1)
+                let hash = try futurenetTx.getTransactionHashData(network: .futurenet)
+                XCTAssertTrue(try signer.publicKey.verify(signature: [UInt8](v1.signatures[0].signature), message: [UInt8](hash)))
+            } else {
+                XCTFail("Expected V1 envelope")
+            }
+        }
+
+        // .custom without callback -> failure, nothing sent
+        mocks.reset()
+        let customNetwork = Network.custom(passphrase: "Private Stellar Network ; 2026")
+        let customTx = try createMemoTransaction(sequenceNumber: 103)
+        let customUriNoCallback = uriScheme.getSignTransactionURI(transactionXDR: customTx.transactionXDR)
+        let customNoCallbackResult = await uriScheme.signAndSubmitTransaction(forURL: customUriNoCallback, signerKeyPair: signer, network: customNetwork)
+        if case .failure(.requestFailed(let message, _)) = customNoCallbackResult {
+            XCTAssertTrue(message.lowercased().contains("horizon"), "Expected custom network Horizon error, got: \(message)")
+            XCTAssertTrue(message.lowercased().contains("custom"), "Expected custom network error, got: \(message)")
+        } else {
+            XCTFail("Expected failure for .custom without callback, got \(customNoCallbackResult)")
+        }
+        XCTAssertEqual(mocks.totalRequestCount, 0)
+
+        // .custom with url: callback -> posts envelope signed with custom passphrase
+        mocks.reset()
+        let customCallbackTx = try createMemoTransaction(sequenceNumber: 104)
+        let customCallbackUri = uriScheme.getSignTransactionURI(
+            transactionXDR: customCallbackTx.transactionXDR,
+            callBack: "url:https://\(mockCallbackHost)/custom"
+        )
+        let customCallbackResult = await uriScheme.signAndSubmitTransaction(forURL: customCallbackUri, signerKeyPair: signer, network: customNetwork)
+        guard case .success = customCallbackResult else {
+            return XCTFail("Expected .success for .custom with callback, got \(customCallbackResult)")
+        }
+        XCTAssertEqual(mocks.callback.all.count, 1)
+        XCTAssertEqual(mocks.publicHorizon.all.count, 0)
+        XCTAssertEqual(mocks.testnetHorizon.all.count, 0)
+        XCTAssertEqual(mocks.futurenetHorizon.all.count, 0)
+        if let req = mocks.callback.all.first {
+            let envelope = try decodePostedEnvelope(from: req.body, fieldName: "xdr")
+            if case .v1(let v1) = envelope {
+                XCTAssertEqual(v1.signatures.count, 1)
+                let customHash = try customCallbackTx.getTransactionHashData(network: customNetwork)
+                XCTAssertTrue(try signer.publicKey.verify(signature: [UInt8](v1.signatures[0].signature), message: [UInt8](customHash)))
+            } else {
+                XCTFail("Expected V1 envelope")
+            }
+        }
+
+        // Fee bump without callback -> posts fee bump envelope to network's Horizon
+        mocks.reset()
+        let (feeBump, _, feeSource) = try createFeeBumpTransaction(network: .testnet)
+        let feeBumpInputBase64 = try feeBump.encodedEnvelope()
+        let feeBumpHash = try feeBump.getTransactionHashData(network: .testnet)
+        let feeBumpUri = "web+stellar:tx?xdr=\(try XCTUnwrap(feeBumpInputBase64.urlEncoded))"
+        let feeBumpResult = await uriScheme.signAndSubmitTransaction(forURL: feeBumpUri, signerKeyPair: feeSource, network: .testnet)
+        guard case .success = feeBumpResult else {
+            return XCTFail("Expected .success for fee bump to Horizon, got \(feeBumpResult)")
+        }
+        XCTAssertEqual(mocks.testnetHorizon.all.count, 1)
+        XCTAssertEqual(mocks.publicHorizon.all.count, 0)
+        XCTAssertEqual(mocks.futurenetHorizon.all.count, 0)
+        XCTAssertEqual(mocks.callback.all.count, 0)
+        if let req = mocks.testnetHorizon.all.first {
+            let envelope = try decodePostedEnvelope(from: req.body, fieldName: "tx")
+            guard case .feeBump(let fb) = envelope else {
+                return XCTFail("Expected fee bump envelope posted to Horizon, got \(envelope)")
+            }
+            XCTAssertEqual(fb.signatures.count, 1)
+            XCTAssertTrue(try feeSource.publicKey.verify(signature: [UInt8](fb.signatures[0].signature), message: [UInt8](feeBumpHash)))
+        }
+    }
+
+    // A tx URI whose xdr parameter is not first signs and posts the transaction; non-tx prefixes fail.
+    func testSignAndSubmitXdrNotFirstParameter() async throws {
+        let mocks = installSubmissionMocks()
+        let tx = try createMemoTransaction()
+        let signer = try KeyPair(secretSeed: testSourceSecretSeed)
+        let expectedHash = try tx.getTransactionHashData(network: .testnet)
+        let encodedXdr = try XCTUnwrap(try tx.encodedEnvelope().urlEncoded)
+        let callbackTarget = "https://\(mockCallbackHost)/submit?callback=1"
+        let encodedCallback = try XCTUnwrap("url:\(callbackTarget)".urlEncoded)
+
+        let uri = "web+stellar:tx?msg=hello%20world&callback=\(encodedCallback)&xdr=\(encodedXdr)&origin_domain=example.com"
+        let result = await uriScheme.signAndSubmitTransaction(forURL: uri, signerKeyPair: signer, network: .testnet)
+
+        guard case .success = result else {
+            return XCTFail("Expected .success when xdr is not first parameter, got \(result)")
+        }
+        XCTAssertEqual(mocks.callback.all.count, 1)
+        XCTAssertEqual(mocks.publicHorizon.all.count, 0)
+        XCTAssertEqual(mocks.testnetHorizon.all.count, 0)
+        XCTAssertEqual(mocks.futurenetHorizon.all.count, 0)
+
+        let request = try XCTUnwrap(mocks.callback.all.first)
+        XCTAssertEqual(request.url, callbackTarget)
+        let postedEnvelope = try decodePostedEnvelope(from: request.body, fieldName: "xdr")
+        guard case .v1(let v1) = postedEnvelope else {
+            return XCTFail("Expected V1 envelope, got \(postedEnvelope)")
+        }
+        XCTAssertEqual(v1.signatures.count, 1)
+        XCTAssertTrue(try signer.publicKey.verify(signature: [UInt8](v1.signatures[0].signature), message: [UInt8](expectedHash)))
+
+        // Raw callback whose target URL contains callback= in its own query keeps the inner query parameter.
+        mocks.reset()
+        let rawCallbackUri = "web+stellar:tx?callback=url:\(callbackTarget)&xdr=\(encodedXdr)"
+        let rawCallbackResult = await uriScheme.signAndSubmitTransaction(forURL: rawCallbackUri, signerKeyPair: signer, network: .testnet)
+        guard case .success = rawCallbackResult else {
+            return XCTFail("Expected .success for raw callback with callback= in query, got \(rawCallbackResult)")
+        }
+        XCTAssertEqual(mocks.callback.all.count, 1)
+        XCTAssertEqual(mocks.publicHorizon.all.count, 0)
+        XCTAssertEqual(mocks.testnetHorizon.all.count, 0)
+        XCTAssertEqual(mocks.futurenetHorizon.all.count, 0)
+        let rawCallbackRequest = try XCTUnwrap(mocks.callback.all.first)
+        XCTAssertEqual(rawCallbackRequest.url, callbackTarget)
+
+        // Non-tx URI prefix is rejected before signing or sending.
+        mocks.reset()
+        let wrongPrefixUri = "web+stellar:pay?xdr=\(encodedXdr)"
+        let wrongPrefixResult = await uriScheme.signAndSubmitTransaction(forURL: wrongPrefixUri, signerKeyPair: signer, network: .testnet)
+        guard case .failure(.requestFailed(let message, _)) = wrongPrefixResult else {
+            return XCTFail("Expected failure for non-tx URI prefix, got \(wrongPrefixResult)")
+        }
+        XCTAssertEqual(message, "TransactionXDR missing from url!")
+        XCTAssertEqual(mocks.totalRequestCount, 0)
+    }
+
+    // Confirmation closure receives the inner TransactionXDR for a fee bump, and returning false cancels before signing.
+    func testSignAndSubmitFeeBumpConfirmation() async throws {
+        let mocks = installSubmissionMocks()
+        let (feeBump, inner, feeSource) = try createFeeBumpTransaction(network: .testnet)
+        let encodedXdr = try XCTUnwrap(try feeBump.encodedEnvelope().urlEncoded)
+        let uri = "web+stellar:tx?xdr=\(encodedXdr)&callback=url:https://\(mockCallbackHost)/submit"
+
+        let capture = ConfirmationCapture()
+        let publicOnlyFeeSource = try KeyPair(accountId: feeSource.accountId)
+        let result = await uriScheme.signAndSubmitTransaction(
+            forURL: uri,
+            signerKeyPair: publicOnlyFeeSource,
+            network: .testnet,
+            transactionConfirmation: { transactionXDR in
+                capture.record(transactionXDR)
+                return false
+            }
+        )
+
+        guard case .failure(.requestFailed(let message, _)) = result else {
+            return XCTFail("Expected requestFailed when confirmation returns false, got \(result)")
+        }
+        XCTAssertEqual(message, "Transaction was not confirmed!")
+        let confirmedTx = try XCTUnwrap(capture.value)
+        XCTAssertEqual(try confirmedTx.encodedEnvelope(), try inner.encodedEnvelope())
+        XCTAssertEqual(mocks.totalRequestCount, 0)
+    }
+
+    // A present callback that does not start with url: after decoding returns failure and sends nothing.
+    func testSignAndSubmitUnsupportedCallback() async throws {
+        let mocks = installSubmissionMocks()
+        let tx = try createMemoTransaction()
+        let signer = try KeyPair(secretSeed: testSourceSecretSeed)
+        let encodedXdr = try XCTUnwrap(try tx.encodedEnvelope().urlEncoded)
+
+        // Encoded non-url callback type
+        let encodedPostCallback = try XCTUnwrap("post:https://\(mockCallbackHost)/submit".urlEncoded)
+        let postUri = "web+stellar:tx?xdr=\(encodedXdr)&callback=\(encodedPostCallback)"
+        let postResult = await uriScheme.signAndSubmitTransaction(forURL: postUri, signerKeyPair: signer, network: .testnet)
+        if case .failure(.requestFailed(let message, _)) = postResult {
+            XCTAssertTrue(message.contains("post"), "Expected message to name unsupported callback type 'post', got: \(message)")
+        } else {
+            XCTFail("Expected failure for unsupported callback type, got \(postResult)")
+        }
+        XCTAssertEqual(mocks.totalRequestCount, 0, "Unsupported callback must not send to Horizon or callback")
+
+        // Raw callback without url: prefix
+        mocks.reset()
+        let rawUri = "web+stellar:tx?xdr=\(encodedXdr)&callback=mailto:wallet@example.com"
+        let rawResult = await uriScheme.signAndSubmitTransaction(forURL: rawUri, signerKeyPair: signer, network: .testnet)
+        if case .failure(.requestFailed(let message, _)) = rawResult {
+            XCTAssertTrue(message.contains("mailto"), "Expected message to name unsupported callback type 'mailto', got: \(message)")
+        } else {
+            XCTFail("Expected failure for unsupported mailto callback, got \(rawResult)")
+        }
+        XCTAssertEqual(mocks.totalRequestCount, 0)
+
+        // Callback without a type delimiter
+        mocks.reset()
+        let bareUri = "web+stellar:tx?xdr=\(encodedXdr)&callback=custom"
+        let bareResult = await uriScheme.signAndSubmitTransaction(forURL: bareUri, signerKeyPair: signer, network: .testnet)
+        if case .failure(.requestFailed(let message, _)) = bareResult {
+            XCTAssertTrue(message.contains("custom"), "Expected message to name unsupported callback type 'custom', got: \(message)")
+        } else {
+            XCTFail("Expected failure for unsupported bare callback, got \(bareResult)")
+        }
+        XCTAssertEqual(mocks.totalRequestCount, 0)
+
+        // Empty callback value
+        mocks.reset()
+        let emptyUri = "web+stellar:tx?xdr=\(encodedXdr)&callback="
+        let emptyResult = await uriScheme.signAndSubmitTransaction(forURL: emptyUri, signerKeyPair: signer, network: .testnet)
+        if case .failure(.requestFailed(let message, _)) = emptyResult {
+            XCTAssertTrue(message.contains("Unsupported callback type"), "Expected unsupported callback message, got: \(message)")
+        } else {
+            XCTFail("Expected failure for empty callback value, got \(emptyResult)")
+        }
+        XCTAssertEqual(mocks.totalRequestCount, 0)
+    }
+
+    // A KeyPair without a private key returns failure and sends nothing, for V1 and fee bump envelopes.
+    func testSignAndSubmitPublicOnlyKeyPairRejected() async throws {
+        let mocks = installSubmissionMocks()
+        let publicOnly = try KeyPair(accountId: testSourceAccountId)
+
+        // V1 envelope
+        let tx = try createMemoTransaction()
+        let v1Uri = uriScheme.getSignTransactionURI(transactionXDR: tx.transactionXDR)
+        let v1Result = await uriScheme.signAndSubmitTransaction(forURL: v1Uri, signerKeyPair: publicOnly, network: .testnet)
+        if case .failure(.requestFailed(let message, _)) = v1Result {
+            XCTAssertTrue(message.lowercased().contains("private key"), "Expected missing private key cause, got: \(message)")
+        } else {
+            XCTFail("Expected failure for V1 with public-only keypair, got \(v1Result)")
+        }
+        XCTAssertEqual(mocks.totalRequestCount, 0, "Public-only keypair must not send V1 transaction")
+
+        // Fee bump envelope
+        mocks.reset()
+        let (feeBump, _, feeSource) = try createFeeBumpTransaction(network: .testnet)
+        let publicOnlyFeeSource = try KeyPair(accountId: feeSource.accountId)
+        let encodedFeeBump = try XCTUnwrap(try feeBump.encodedEnvelope().urlEncoded)
+        let feeBumpUri = "web+stellar:tx?xdr=\(encodedFeeBump)&callback=url:https://\(mockCallbackHost)/submit"
+        let feeBumpResult = await uriScheme.signAndSubmitTransaction(forURL: feeBumpUri, signerKeyPair: publicOnlyFeeSource, network: .testnet)
+        if case .failure(.requestFailed(let message, _)) = feeBumpResult {
+            XCTAssertTrue(message.lowercased().contains("private key"), "Expected missing private key cause, got: \(message)")
+        } else {
+            XCTFail("Expected failure for fee bump with public-only keypair, got \(feeBumpResult)")
+        }
+        XCTAssertEqual(mocks.totalRequestCount, 0, "Public-only keypair must not send fee bump transaction")
+    }
+
+    // Undecodable XDR payloads and zero-operation envelopes return failure and send nothing.
+    func testSignAndSubmitUndecodableTransactionRejected() async throws {
+        let mocks = installSubmissionMocks()
+        let signer = try KeyPair(secretSeed: testSourceSecretSeed)
+
+        // Valid base64 that does not decode as a TransactionEnvelopeXDR.
+        let invalidEnvelopeBase64 = Data([0, 0, 0, 0]).base64EncodedString()
+        let encodedInvalidEnvelope = try XCTUnwrap(invalidEnvelopeBase64.urlEncoded)
+        let invalidEnvelopeUri = "web+stellar:tx?xdr=\(encodedInvalidEnvelope)&callback=url:https://\(mockCallbackHost)/submit"
+        let invalidEnvelopeResult = await uriScheme.signAndSubmitTransaction(forURL: invalidEnvelopeUri, signerKeyPair: signer, network: .testnet)
+        guard case .failure(.requestFailed(let invalidMessage, _)) = invalidEnvelopeResult else {
+            return XCTFail("Expected requestFailed for non-envelope base64 xdr, got \(invalidEnvelopeResult)")
+        }
+        XCTAssertEqual(invalidMessage, "TransactionXDR missing from url!")
+        XCTAssertEqual(mocks.totalRequestCount, 0)
+
+        // V1 envelope whose TransactionXDR has zero operations.
+        mocks.reset()
+        let zeroOpsTxXDR = TransactionXDR(
+            sourceAccount: signer.publicKey,
+            seqNum: 123456,
+            cond: .none,
+            memo: .none,
+            operations: [],
+            maxOperationFee: 100
+        )
+        let zeroOpsV1Envelope = TransactionEnvelopeXDR.v1(TransactionV1EnvelopeXDR(tx: zeroOpsTxXDR, signatures: []))
+        let zeroOpsV1Base64 = Data(try XDREncoder.encode(zeroOpsV1Envelope)).base64EncodedString()
+        let encodedZeroOpsV1 = try XCTUnwrap(zeroOpsV1Base64.urlEncoded)
+        let zeroOpsV1Uri = "web+stellar:tx?xdr=\(encodedZeroOpsV1)&callback=url:https://\(mockCallbackHost)/submit"
+        let zeroOpsV1Result = await uriScheme.signAndSubmitTransaction(forURL: zeroOpsV1Uri, signerKeyPair: signer, network: .testnet)
+        guard case .failure(.requestFailed(let v1Message, _)) = zeroOpsV1Result else {
+            return XCTFail("Expected requestFailed for zero-operation V1 envelope, got \(zeroOpsV1Result)")
+        }
+        XCTAssertEqual(v1Message, "TransactionXDR missing from url!")
+        XCTAssertEqual(mocks.totalRequestCount, 0)
+
+        // Fee bump envelope whose inner V1 transaction has zero operations.
+        mocks.reset()
+        let feeSource = try KeyPair(secretSeed: testSignerSecretSeed)
+        let zeroOpsInnerEnvelope = TransactionV1EnvelopeXDR(tx: zeroOpsTxXDR, signatures: [])
+        let zeroOpsFeeBumpTxXDR = FeeBumpTransactionXDR(
+            sourceAccount: MuxedAccountXDR.ed25519(feeSource.publicKey.bytes),
+            innerTx: .v1(zeroOpsInnerEnvelope),
+            fee: 200
+        )
+        let zeroOpsFeeBumpEnvelope = TransactionEnvelopeXDR.feeBump(
+            FeeBumpTransactionEnvelopeXDR(tx: zeroOpsFeeBumpTxXDR, signatures: [])
+        )
+        let zeroOpsFeeBumpBase64 = Data(try XDREncoder.encode(zeroOpsFeeBumpEnvelope)).base64EncodedString()
+        let encodedZeroOpsFeeBump = try XCTUnwrap(zeroOpsFeeBumpBase64.urlEncoded)
+        let zeroOpsFeeBumpUri = "web+stellar:tx?xdr=\(encodedZeroOpsFeeBump)&callback=url:https://\(mockCallbackHost)/submit"
+        let zeroOpsFeeBumpResult = await uriScheme.signAndSubmitTransaction(forURL: zeroOpsFeeBumpUri, signerKeyPair: feeSource, network: .testnet)
+        guard case .failure(.requestFailed(let feeBumpMessage, _)) = zeroOpsFeeBumpResult else {
+            return XCTFail("Expected requestFailed for zero-operation fee bump envelope, got \(zeroOpsFeeBumpResult)")
+        }
+        XCTAssertEqual(feeBumpMessage, "TransactionXDR missing from url!")
+        XCTAssertEqual(mocks.totalRequestCount, 0)
+    }
+
+    // A V0 transaction envelope URI signs and posts an envelope whose signature verifies against the transaction hash.
+    func testSignAndSubmitV0Envelope() async throws {
+        let mocks = installSubmissionMocks()
+        let tx = try createMemoTransaction()
+        let txXDR = tx.transactionXDR
+        let signer = try KeyPair(secretSeed: testSourceSecretSeed)
+        let expectedHash = try tx.getTransactionHashData(network: .testnet)
+
+        let sourcePublicKey = try PublicKey(accountId: txXDR.sourceAccount.accountId)
+        let v0TxXDR = TransactionV0XDR(
+            sourceAccount: sourcePublicKey,
+            seqNum: txXDR.seqNum,
+            timeBounds: nil,
+            memo: txXDR.memo,
+            operations: txXDR.operations,
+            maxOperationFee: txXDR.fee / UInt32(txXDR.operations.count)
+        )
+        let v0Envelope = TransactionEnvelopeXDR.v0(TransactionV0EnvelopeXDR(tx: v0TxXDR, signatures: []))
+        let v0Base64 = Data(try XDREncoder.encode(v0Envelope)).base64EncodedString()
+        let encodedXdr = try XCTUnwrap(v0Base64.urlEncoded)
+        let callbackTarget = "https://\(mockCallbackHost)/submit"
+        let uri = "web+stellar:tx?xdr=\(encodedXdr)&callback=url:\(callbackTarget)"
+
+        let result = await uriScheme.signAndSubmitTransaction(forURL: uri, signerKeyPair: signer, network: .testnet)
+
+        guard case .success = result else {
+            return XCTFail("Expected .success for V0 envelope, got \(result)")
+        }
+        XCTAssertEqual(mocks.callback.all.count, 1)
+        XCTAssertEqual(mocks.publicHorizon.all.count, 0)
+        XCTAssertEqual(mocks.testnetHorizon.all.count, 0)
+        XCTAssertEqual(mocks.futurenetHorizon.all.count, 0)
+
+        let request = try XCTUnwrap(mocks.callback.all.first)
+        XCTAssertEqual(request.url, callbackTarget)
+        XCTAssertEqual(request.contentType, "application/x-www-form-urlencoded")
+
+        let postedEnvelope = try decodePostedEnvelope(from: request.body, fieldName: "xdr")
+        let signatures: [DecoratedSignatureXDR]
+        switch postedEnvelope {
+        case .v0(let v0):
+            signatures = v0.signatures
+        case .v1(let v1):
+            signatures = v1.signatures
+        case .feeBump:
+            return XCTFail("Expected V0 or V1 envelope, got \(postedEnvelope)")
+        }
+
+        XCTAssertEqual(signatures.count, 1)
+        let signature = signatures[0]
+        XCTAssertEqual(signature.hint.wrapped, Data(signer.publicKey.bytes.suffix(4)))
+        XCTAssertTrue(try signer.publicKey.verify(signature: [UInt8](signature.signature), message: [UInt8](expectedHash)))
+    }
+}
+
+private struct RecordedRequest: Sendable {
+    let url: String
+    let contentType: String?
+    let body: String
+}
+
+private final class RequestRecorder: @unchecked Sendable {
+    private let lock = NSLock()
+    private var requests: [RecordedRequest] = []
+
+    func record(_ request: URLRequest) {
+        let bodyData = request.httpBody ?? request.httpBodyStream?.readfully() ?? Data()
+        let bodyString = String(data: bodyData, encoding: .utf8) ?? ""
+        let entry = RecordedRequest(
+            url: request.url?.absoluteString ?? "",
+            contentType: request.value(forHTTPHeaderField: "Content-Type"),
+            body: bodyString
+        )
+        lock.lock()
+        requests.append(entry)
+        lock.unlock()
+    }
+
+    var all: [RecordedRequest] {
+        lock.lock()
+        defer { lock.unlock() }
+        return requests
+    }
+
+    func reset() {
+        lock.lock()
+        requests.removeAll()
+        lock.unlock()
+    }
+}
+
+private final class ConfirmationCapture: @unchecked Sendable {
+    private let lock = NSLock()
+    private var captured: TransactionXDR?
+
+    func record(_ tx: TransactionXDR) {
+        lock.lock()
+        captured = tx
+        lock.unlock()
+    }
+
+    var value: TransactionXDR? {
+        lock.lock()
+        defer { lock.unlock() }
+        return captured
     }
 }
