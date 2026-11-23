@@ -14,8 +14,7 @@ public struct TxSetComponentXDRTxsMaybeDiscountedFeeXDR: XDRCodable, Sendable {
 
   public init(from decoder: Decoder) throws {
     var container = try decoder.unkeyedContainer()
-    let baseFeePresent = try container.decode(Int32.self)
-    if baseFeePresent != 0 {
+    if try container.decode(Bool.self) {
       baseFee = try container.decode(Int64.self)
     } else {
       baseFee = nil

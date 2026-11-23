@@ -15,8 +15,7 @@ public struct ManageDataOperationXDR: XDRCodable, Sendable {
   public init(from decoder: Decoder) throws {
     var container = try decoder.unkeyedContainer()
     dataName = try container.decode(String.self)
-    let dataValuePresent = try container.decode(Int32.self)
-    if dataValuePresent != 0 {
+    if try container.decode(Bool.self) {
       dataValue = try container.decode(DataValueXDR.self)
     } else {
       dataValue = nil

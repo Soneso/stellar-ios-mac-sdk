@@ -29,20 +29,17 @@ public struct PreconditionsV2XDR: XDRCodable, Sendable {
 
   public init(from decoder: Decoder) throws {
     var container = try decoder.unkeyedContainer()
-    let timeBoundsPresent = try container.decode(Int32.self)
-    if timeBoundsPresent != 0 {
+    if try container.decode(Bool.self) {
       timeBounds = try container.decode(TimeBoundsXDR.self)
     } else {
       timeBounds = nil
     }
-    let ledgerBoundsPresent = try container.decode(Int32.self)
-    if ledgerBoundsPresent != 0 {
+    if try container.decode(Bool.self) {
       ledgerBounds = try container.decode(LedgerBoundsXDR.self)
     } else {
       ledgerBounds = nil
     }
-    let sequenceNumberPresent = try container.decode(Int32.self)
-    if sequenceNumberPresent != 0 {
+    if try container.decode(Bool.self) {
       sequenceNumber = try container.decode(Int64.self)
     } else {
       sequenceNumber = nil

@@ -15,8 +15,7 @@ public struct SorobanTransactionMetaV2XDR: XDRCodable, Sendable {
   public init(from decoder: Decoder) throws {
     var container = try decoder.unkeyedContainer()
     ext = try container.decode(SorobanTransactionMetaExt.self)
-    let returnValuePresent = try container.decode(Int32.self)
-    if returnValuePresent != 0 {
+    if try container.decode(Bool.self) {
       returnValue = try container.decode(SCValXDR.self)
     } else {
       returnValue = nil

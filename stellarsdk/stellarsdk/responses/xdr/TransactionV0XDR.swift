@@ -40,7 +40,11 @@ public struct TransactionV0XDR: XDRCodable, Sendable {
         }
         fee = try container.decode(UInt32.self)
         seqNum = try container.decode(Int64.self)
-        timeBounds = try decodeArray(type: TimeBoundsXDR.self, dec: decoder).first
+        if try container.decode(Bool.self) {
+            timeBounds = try container.decode(TimeBoundsXDR.self)
+        } else {
+            timeBounds = nil
+        }
         memo = try container.decode(MemoXDR.self)
         operations = try decodeArray(type: OperationXDR.self, dec: decoder)
         reserved = try container.decodeExtensionPoint("TransactionV0XDR")

@@ -30,8 +30,7 @@ public struct TransactionMetaV3XDR: XDRCodable, Sendable {
     txChangesBefore = try container.decode(LedgerEntryChangesXDR.self)
     operations = try decodeArray(type: OperationMetaXDR.self, dec: decoder)
     txChangesAfter = try container.decode(LedgerEntryChangesXDR.self)
-    let sorobanMetaPresent = try container.decode(Int32.self)
-    if sorobanMetaPresent != 0 {
+    if try container.decode(Bool.self) {
       sorobanMeta = try container.decode(SorobanTransactionMetaXDR.self)
     } else {
       sorobanMeta = nil

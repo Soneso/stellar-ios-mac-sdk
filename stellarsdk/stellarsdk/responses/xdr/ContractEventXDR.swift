@@ -24,8 +24,7 @@ public struct ContractEventXDR: XDRCodable, Sendable {
   public init(from decoder: Decoder) throws {
     var container = try decoder.unkeyedContainer()
     ext = try container.decode(ExtensionPoint.self)
-    let hashPresent = try container.decode(Int32.self)
-    if hashPresent != 0 {
+    if try container.decode(Bool.self) {
       hash = try container.decode(WrappedData32.self)
     } else {
       hash = nil

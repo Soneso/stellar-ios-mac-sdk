@@ -38,56 +38,47 @@ public struct SetOptionsOperationXDR: XDRCodable, Sendable {
 
   public init(from decoder: Decoder) throws {
     var container = try decoder.unkeyedContainer()
-    let inflationDestinationPresent = try container.decode(Int32.self)
-    if inflationDestinationPresent != 0 {
+    if try container.decode(Bool.self) {
       inflationDestination = try container.decode(PublicKey.self)
     } else {
       inflationDestination = nil
     }
-    let clearFlagsPresent = try container.decode(Int32.self)
-    if clearFlagsPresent != 0 {
+    if try container.decode(Bool.self) {
       clearFlags = try container.decode(UInt32.self)
     } else {
       clearFlags = nil
     }
-    let setFlagsPresent = try container.decode(Int32.self)
-    if setFlagsPresent != 0 {
+    if try container.decode(Bool.self) {
       setFlags = try container.decode(UInt32.self)
     } else {
       setFlags = nil
     }
-    let masterWeightPresent = try container.decode(Int32.self)
-    if masterWeightPresent != 0 {
+    if try container.decode(Bool.self) {
       masterWeight = try container.decode(UInt32.self)
     } else {
       masterWeight = nil
     }
-    let lowThresholdPresent = try container.decode(Int32.self)
-    if lowThresholdPresent != 0 {
+    if try container.decode(Bool.self) {
       lowThreshold = try container.decode(UInt32.self)
     } else {
       lowThreshold = nil
     }
-    let medThresholdPresent = try container.decode(Int32.self)
-    if medThresholdPresent != 0 {
+    if try container.decode(Bool.self) {
       medThreshold = try container.decode(UInt32.self)
     } else {
       medThreshold = nil
     }
-    let highThresholdPresent = try container.decode(Int32.self)
-    if highThresholdPresent != 0 {
+    if try container.decode(Bool.self) {
       highThreshold = try container.decode(UInt32.self)
     } else {
       highThreshold = nil
     }
-    let homeDomainPresent = try container.decode(Int32.self)
-    if homeDomainPresent != 0 {
+    if try container.decode(Bool.self) {
       homeDomain = try container.decode(String.self)
     } else {
       homeDomain = nil
     }
-    let signerPresent = try container.decode(Int32.self)
-    if signerPresent != 0 {
+    if try container.decode(Bool.self) {
       signer = try container.decode(SignerXDR.self)
     } else {
       signer = nil

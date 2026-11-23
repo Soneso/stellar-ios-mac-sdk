@@ -31,14 +31,12 @@ public struct SCPStatementXDRPrepareXDR: XDRCodable, Sendable {
     var container = try decoder.unkeyedContainer()
     quorumSetHash = try container.decode(HashXDR.self)
     ballot = try container.decode(SCPBallotXDR.self)
-    let preparedPresent = try container.decode(Int32.self)
-    if preparedPresent != 0 {
+    if try container.decode(Bool.self) {
       prepared = try container.decode(SCPBallotXDR.self)
     } else {
       prepared = nil
     }
-    let preparedPrimePresent = try container.decode(Int32.self)
-    if preparedPrimePresent != 0 {
+    if try container.decode(Bool.self) {
       preparedPrime = try container.decode(SCPBallotXDR.self)
     } else {
       preparedPrime = nil
