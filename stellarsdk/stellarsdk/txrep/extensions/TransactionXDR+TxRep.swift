@@ -108,15 +108,19 @@ extension TransactionXDR {
 
         let ext = try parseTransactionExt(map, prefix: prefix)
 
-        return TransactionXDR(
+        // TransactionXDR.init multiplies maxOperationFee by operations.count;
+        // TxRep carries the total fee directly.
+        var tx = TransactionXDR(
             sourceAccount: sourceAccount,
             seqNum: seqNum,
             cond: cond,
             memo: memo,
             operations: operations,
-            maxOperationFee: operations.isEmpty ? fee : fee / UInt32(max(1, operations.count)),
+            maxOperationFee: 0,
             ext: ext
         )
+        tx.fee = fee
+        return tx
     }
 }
 
