@@ -167,6 +167,21 @@ extension XDRDecoder {
     var remainingBytes: Int {
         return max(data.count - cursor, 0)
     }
+
+    /// Consumes zero padding to the XDR four-byte boundary after a value of `byteCount` bytes.
+    func readPadding(after byteCount: Int) throws {
+        let paddingCount = (4 - byteCount % 4) % 4
+        guard remainingBytes >= paddingCount else {
+            throw Error.prematureEndOfData
+        }
+        for _ in 0..<paddingCount {
+            let offset = cursor
+            let byte = try UInt8(fromBinary: self)
+            guard byte == 0 else {
+                throw StellarSDKError.xdrDecodingError(message: "XDR padding must be zero, byte 0x\(String(format: "%02X", byte)) found at offset \(offset)")
+            }
+        }
+    }
 }
 
 /// Internal methods for decoding raw data.
