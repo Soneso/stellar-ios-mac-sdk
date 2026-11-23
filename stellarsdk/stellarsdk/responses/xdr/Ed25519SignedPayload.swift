@@ -27,7 +27,7 @@ public struct Ed25519SignedPayload: XDRCodable, Sendable {
 
 extension Ed25519SignedPayload {
   public func toTxRep(prefix: String, lines: inout [String]) throws {
-    lines.append("\(prefix).ed25519: \(TxRepHelper.bytesToHex(self.ed25519.wrapped))")
+    lines.append("\(prefix).ed25519: \(try TxRepHelper.bytesToHex(self.ed25519, key: "\(prefix).ed25519"))")
     lines.append("\(prefix).payload: \(TxRepHelper.bytesToHex(self.payload))")
   }
 

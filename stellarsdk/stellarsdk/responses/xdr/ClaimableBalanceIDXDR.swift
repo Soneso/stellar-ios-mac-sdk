@@ -41,7 +41,7 @@ extension ClaimableBalanceIDXDR {
     switch self {
     case .claimableBalanceIDTypeV0(let val):
       lines.append("\(prefix).type: CLAIMABLE_BALANCE_ID_TYPE_V0")
-      lines.append("\(prefix).v0: \(TxRepHelper.bytesToHex(val.wrapped))")
+      lines.append("\(prefix).v0: \(try TxRepHelper.bytesToHex(val, key: "\(prefix).v0"))")
     }
   }
 

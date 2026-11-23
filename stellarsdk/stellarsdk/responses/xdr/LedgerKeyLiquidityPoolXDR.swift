@@ -23,7 +23,7 @@ public struct LedgerKeyLiquidityPoolXDR: XDRCodable, Sendable {
 
 extension LedgerKeyLiquidityPoolXDR {
   public func toTxRep(prefix: String, lines: inout [String]) throws {
-    lines.append("\(prefix).liquidityPoolID: \(TxRepHelper.bytesToHex(self.liquidityPoolID.wrapped))")
+    lines.append("\(prefix).liquidityPoolID: \(try TxRepHelper.bytesToHex(self.liquidityPoolID, key: "\(prefix).liquidityPoolID"))")
   }
 
   public static func fromTxRep(_ map: [String: String], prefix: String) throws -> LedgerKeyLiquidityPoolXDR {

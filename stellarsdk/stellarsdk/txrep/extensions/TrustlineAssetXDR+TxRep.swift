@@ -44,8 +44,9 @@ extension TrustlineAssetXDR {
         case .alphanum4, .alphanum12:
             lines.append("\(prefix): \(try TxRepHelper.formatTrustlineAsset(self))")
         case .poolShare(let poolId):
+            let hex = try TxRepHelper.bytesToHex(poolId, key: "\(prefix).liquidityPoolID")
             lines.append("\(prefix).type: ASSET_TYPE_POOL_SHARE")
-            lines.append("\(prefix).liquidityPoolID: \(TxRepHelper.bytesToHex(poolId.wrapped))")
+            lines.append("\(prefix).liquidityPoolID: \(hex)")
         }
     }
 

@@ -28,11 +28,10 @@ public struct MuxedAccountMed25519XDR: XDRCodable, Sendable {
     }
     
     public func encode(to encoder: Encoder) throws {
+        let wrapped = try WrappedData32.exact(sourceAccountEd25519)
         var container = encoder.unkeyedContainer()
-        
+
         try container.encode(id)
-        var bytesArray = sourceAccountEd25519
-        let wrapped = WrappedData32(Data(bytes: &bytesArray, count: bytesArray.count))
         try container.encode(wrapped)
     }
     
@@ -73,10 +72,9 @@ public struct MuxedAccountMed25519XDRInverted: XDRCodable, Sendable {
     }
     
     public func encode(to encoder: Encoder) throws {
+        let wrapped = try WrappedData32.exact(sourceAccountEd25519)
         var container = encoder.unkeyedContainer()
-        
-        var bytesArray = sourceAccountEd25519
-        let wrapped = WrappedData32(Data(bytes: &bytesArray, count: bytesArray.count))
+
         try container.encode(wrapped)
         try container.encode(id)
     }
@@ -93,13 +91,19 @@ public struct MuxedAccountMed25519XDRInverted: XDRCodable, Sendable {
 // SCAddressXDR.muxedAccount, which does get a generated union TxRep.
 //
 // The serialized representation follows the SEP-0011 M... strkey encoding
-// via the pre-existing accountId accessor (which wraps the struct in a
-// MuxedAccountXDR and invokes the M-strkey formatter). Parsing reverses the
-// transformation by decoding the M-strkey through the existing TxRepHelper
-// and extracting the inner med25519 arm.
+// via TxRepHelper.formatMuxedAccount, which rejects an account key whose
+// byte count differs from 32. Parsing reverses the transformation by
+// decoding the M-strkey through TxRepHelper and extracting the inner
+// med25519 arm.
 extension MuxedAccountMed25519XDR {
     public func toTxRep(prefix: String, lines: inout [String]) throws {
-        lines.append("\(prefix): \(self.accountId)")
+        let accountId: String
+        do {
+            accountId = try TxRepHelper.formatMuxedAccount(.med25519(self))
+        } catch {
+            throw TxRepError.invalidValue(key: prefix)
+        }
+        lines.append("\(prefix): \(accountId)")
     }
 
     public static func fromTxRep(_ map: [String: String], prefix: String) throws -> MuxedAccountMed25519XDR {

@@ -239,7 +239,7 @@ module TxRepTypes
   TXREP_COMPACT_TYPES = {
     'PublicKey'            => { format: 'TxRepHelper.formatAccountId',       parse: 'TxRepHelper.parseAccountId',       format_throws: false },
     'AllowTrustOpAssetXDR' => { format: 'TxRepHelper.formatAllowTrustAsset', parse: 'TxRepHelper.parseAllowTrustAsset', format_throws: true  },
-    'AssetXDR'             => { format: 'TxRepHelper.formatAsset',           parse: 'TxRepHelper.parseAsset',           format_throws: false },
+    'AssetXDR'             => { format: 'TxRepHelper.formatAsset',           parse: 'TxRepHelper.parseAsset',           format_throws: true  },
     'MuxedAccountXDR'      => { format: 'TxRepHelper.formatMuxedAccount',    parse: 'TxRepHelper.parseMuxedAccount',    format_throws: true  },
     'SignerKeyXDR'         => { format: 'TxRepHelper.formatSignerKey',       parse: 'TxRepHelper.parseSignerKey',       format_throws: true  },
   }.freeze

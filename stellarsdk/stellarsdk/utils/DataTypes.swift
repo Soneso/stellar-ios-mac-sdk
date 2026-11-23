@@ -38,7 +38,7 @@ public protocol WrappedData: XDRCodable, Equatable, Sendable {
     /// The underlying binary data.
     var wrapped: Data { get set }
 
-    /// Encodes the data to XDR format.
+    /// Encodes the data to XDR format, throwing `StellarSDKError.invalidArgument` if `wrapped.count` differs from `capacity`.
     func xdrEncode(to encoder: XDREncoder) throws
 
     /// Creates an empty instance.
@@ -53,7 +53,22 @@ public protocol WrappedData: XDRCodable, Equatable, Sendable {
 
 extension WrappedData {
     public func xdrEncode(to encoder: XDREncoder) throws {
+        guard wrapped.count == Self.capacity else {
+            throw Self.invalidLengthError(got: wrapped.count)
+        }
         try wrapped.forEach { try $0.encode(to: encoder) }
+    }
+
+    /// Wraps `bytes` when its byte count equals `Self.capacity`, throwing otherwise.
+    static func exact(_ bytes: [UInt8]) throws -> Self {
+        guard bytes.count == Self.capacity else {
+            throw invalidLengthError(got: bytes.count)
+        }
+        return Self(Data(bytes))
+    }
+
+    private static func invalidLengthError(got count: Int) -> StellarSDKError {
+        return StellarSDKError.invalidArgument(message: "expected \(Self.capacity) bytes, got \(count)")
     }
     
     public init(fromBinary decoder: XDRDecoder) throws {

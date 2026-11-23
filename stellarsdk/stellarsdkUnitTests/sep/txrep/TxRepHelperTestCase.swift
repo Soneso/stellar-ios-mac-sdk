@@ -704,8 +704,8 @@ final class TxRepHelperTestCase: XCTestCase {
 
     // MARK: - formatAsset() / parseAsset()
 
-    func testFormatAssetNative() {
-        XCTAssertEqual(TxRepHelper.formatAsset(.native), "XLM")
+    func testFormatAssetNative() throws {
+        XCTAssertEqual(try TxRepHelper.formatAsset(.native), "XLM")
     }
 
     func testFormatAssetAlphanum4() throws {
@@ -714,7 +714,7 @@ final class TxRepHelperTestCase: XCTestCase {
             assetCode: WrappedData4(Data([0x55, 0x53, 0x44, 0x00])), // USD\0
             issuer: issuer
         ))
-        let formatted = TxRepHelper.formatAsset(asset)
+        let formatted = try TxRepHelper.formatAsset(asset)
         XCTAssertTrue(formatted.hasPrefix("USD:G"), "Expected USD:G…, got \(formatted)")
     }
 
@@ -726,7 +726,7 @@ final class TxRepHelperTestCase: XCTestCase {
             assetCode: WrappedData12(codeBytes),
             issuer: issuer
         ))
-        let formatted = TxRepHelper.formatAsset(asset)
+        let formatted = try TxRepHelper.formatAsset(asset)
         XCTAssertTrue(formatted.hasPrefix("LONGCODE:G"), "Expected LONGCODE:G…, got \(formatted)")
     }
 
@@ -746,7 +746,7 @@ final class TxRepHelperTestCase: XCTestCase {
             assetCode: WrappedData4(Data([0x55, 0x53, 0x44, 0x00])),
             issuer: issuer
         ))
-        let formatted = TxRepHelper.formatAsset(original)
+        let formatted = try TxRepHelper.formatAsset(original)
         let parsed = try TxRepHelper.parseAsset(formatted)
         if case .alphanum4(let a) = parsed {
             XCTAssertEqual(a.issuer.accountId, issuer.accountId)
@@ -763,7 +763,7 @@ final class TxRepHelperTestCase: XCTestCase {
             assetCode: WrappedData12(codeBytes),
             issuer: issuer
         ))
-        let formatted = TxRepHelper.formatAsset(original)
+        let formatted = try TxRepHelper.formatAsset(original)
         let parsed = try TxRepHelper.parseAsset(formatted)
         if case .alphanum12 = parsed { /* ok */ } else { XCTFail("Expected .alphanum12") }
     }

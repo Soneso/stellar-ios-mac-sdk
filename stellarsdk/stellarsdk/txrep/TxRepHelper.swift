@@ -115,6 +115,20 @@ public final class TxRepHelper: Sendable {
         return bytes.base16EncodedString()
     }
 
+    /// Encode a fixed-width binary wrapper as a lowercase hex string.
+    ///
+    /// - Parameters:
+    ///   - value: Fixed-width binary wrapper to encode.
+    ///   - key: TxRep key reported in `TxRepError.invalidValue(key:)` when the byte count differs from `T.capacity`.
+    /// - Returns: Lowercase hex string of `2 * T.capacity` characters.
+    /// - Throws: `TxRepError.invalidValue(key:)` if `value.wrapped.count` differs from `T.capacity`.
+    static func bytesToHex<T: WrappedData>(_ value: T, key: String) throws -> String {
+        guard value.wrapped.count == T.capacity else {
+            throw TxRepError.invalidValue(key: key)
+        }
+        return value.wrapped.base16EncodedString()
+    }
+
     /// Decode a hex string to bytes.
     ///
     /// `"0"` decodes to empty `Data`. Odd-length hex strings are left-padded with a
@@ -472,6 +486,16 @@ public final class TxRepHelper: Sendable {
     /// - Returns: G- or M-address string.
     /// - Throws: `TxRepError.invalidValue(key:)` if encoding fails.
     public static func formatMuxedAccount(_ mux: MuxedAccountXDR) throws -> String {
+        let keyBytes: [UInt8]
+        switch mux {
+        case .ed25519(let bytes):
+            keyBytes = bytes
+        case .med25519(let med):
+            keyBytes = med.sourceAccountEd25519
+        }
+        guard keyBytes.count == WrappedData32.capacity else {
+            throw TxRepError.invalidValue(key: "muxedAccount")
+        }
         let accountId = mux.accountId
         if accountId.isEmpty {
             throw TxRepError.invalidValue(key: "muxedAccount")
@@ -498,16 +522,17 @@ public final class TxRepHelper: Sendable {
     ///
     /// - Parameter asset: The asset XDR value.
     /// - Returns: TxRep asset string.
-    public static func formatAsset(_ asset: AssetXDR) -> String {
+    /// - Throws: `TxRepError.invalidValue(key:)` if the asset code byte count differs from its fixed width.
+    public static func formatAsset(_ asset: AssetXDR) throws -> String {
         switch asset {
         case .native:
             return "XLM"
         case .alphanum4(let a):
-            let code = assetCodeFromData(a.assetCode.wrapped)
+            let code = try assetCodeFromData(a.assetCode)
             let issuer = formatAccountId(a.issuer)
             return "\(code):\(issuer)"
         case .alphanum12(let a):
-            let code = assetCodeFromData(a.assetCode.wrapped)
+            let code = try assetCodeFromData(a.assetCode)
             let issuer = formatAccountId(a.issuer)
             return "\(code):\(issuer)"
         }
@@ -516,7 +541,7 @@ public final class TxRepHelper: Sendable {
     /// Parse a TxRep asset string to an `AssetXDR`.
     ///
     /// Accepts `"XLM"` or `"native"` for native, and `"CODE:ISSUER"` for credit assets.
-    /// Asset codes of 1–4 characters produce `alphanum4`; 5–12 produce `alphanum12`.
+    /// Asset codes of 1 to 4 UTF-8 bytes produce `alphanum4`; 5 to 12 UTF-8 bytes produce `alphanum12`.
     ///
     /// - Parameter value: TxRep asset string.
     /// - Returns: `AssetXDR` value.
@@ -525,20 +550,11 @@ public final class TxRepHelper: Sendable {
         if value == "XLM" || value == "native" {
             return .native
         }
-        let parts = value.split(separator: ":", maxSplits: 1).map(String.init)
-        guard parts.count == 2 else {
-            throw TxRepError.invalidValue(key: SecretSeedRedaction.redactingSecretSeeds(in: value))
-        }
-        let code = parts[0].trimmingCharacters(in: .whitespaces)
-        let issuerStr = parts[1].trimmingCharacters(in: .whitespaces)
-        guard !code.isEmpty, code.count <= 12 else {
-            throw TxRepError.invalidValue(key: SecretSeedRedaction.redactingSecretSeeds(in: value))
-        }
-        let issuer = try parseAccountId(issuerStr)
-        if code.count <= 4 {
-            return .alphanum4(Alpha4XDR(assetCode: assetCodeToData4(code), issuer: issuer))
+        let parsed = try parseCreditAssetCodeAndIssuer(value)
+        if parsed.byteCount <= AssetCode4XDR.capacity {
+            return .alphanum4(Alpha4XDR(assetCode: assetCodeToData4(parsed.code), issuer: parsed.issuer))
         } else {
-            return .alphanum12(Alpha12XDR(assetCode: assetCodeToData12(code), issuer: issuer))
+            return .alphanum12(Alpha12XDR(assetCode: assetCodeToData12(parsed.code), issuer: parsed.issuer))
         }
     }
 
@@ -550,17 +566,17 @@ public final class TxRepHelper: Sendable {
     ///
     /// - Parameter asset: The change-trust asset XDR value.
     /// - Returns: TxRep asset string.
-    /// - Throws: `TxRepError.invalidValue(key:)` for pool-share or unknown asset types.
+    /// - Throws: `TxRepError.invalidValue(key:)` for pool-share assets or an asset code whose byte count differs from its fixed width.
     public static func formatChangeTrustAsset(_ asset: ChangeTrustAssetXDR) throws -> String {
         switch asset {
         case .native:
             return "XLM"
         case .alphanum4(let a):
-            let code = assetCodeFromData(a.assetCode.wrapped)
+            let code = try assetCodeFromData(a.assetCode)
             let issuer = formatAccountId(a.issuer)
             return "\(code):\(issuer)"
         case .alphanum12(let a):
-            let code = assetCodeFromData(a.assetCode.wrapped)
+            let code = try assetCodeFromData(a.assetCode)
             let issuer = formatAccountId(a.issuer)
             return "\(code):\(issuer)"
         case .poolShare:
@@ -580,20 +596,11 @@ public final class TxRepHelper: Sendable {
         if value == "XLM" || value == "native" {
             return .native
         }
-        let parts = value.split(separator: ":", maxSplits: 1).map(String.init)
-        guard parts.count == 2 else {
-            throw TxRepError.invalidValue(key: SecretSeedRedaction.redactingSecretSeeds(in: value))
-        }
-        let code = parts[0].trimmingCharacters(in: .whitespaces)
-        let issuerStr = parts[1].trimmingCharacters(in: .whitespaces)
-        guard !code.isEmpty, code.count <= 12 else {
-            throw TxRepError.invalidValue(key: SecretSeedRedaction.redactingSecretSeeds(in: value))
-        }
-        let issuer = try parseAccountId(issuerStr)
-        if code.count <= 4 {
-            return .alphanum4(Alpha4XDR(assetCode: assetCodeToData4(code), issuer: issuer))
+        let parsed = try parseCreditAssetCodeAndIssuer(value)
+        if parsed.byteCount <= AssetCode4XDR.capacity {
+            return .alphanum4(Alpha4XDR(assetCode: assetCodeToData4(parsed.code), issuer: parsed.issuer))
         } else {
-            return .alphanum12(Alpha12XDR(assetCode: assetCodeToData12(code), issuer: issuer))
+            return .alphanum12(Alpha12XDR(assetCode: assetCodeToData12(parsed.code), issuer: parsed.issuer))
         }
     }
 
@@ -604,22 +611,22 @@ public final class TxRepHelper: Sendable {
     ///
     /// - Parameter asset: The trustline asset XDR value.
     /// - Returns: TxRep asset string.
-    /// - Throws: `TxRepError.invalidValue(key:)` for unknown asset types.
+    /// - Throws: `TxRepError.invalidValue(key:)` if the asset code or pool ID byte count differs from its fixed width.
     public static func formatTrustlineAsset(_ asset: TrustlineAssetXDR) throws -> String {
         switch asset {
         case .native:
             return "XLM"
         case .alphanum4(let a):
-            let code = assetCodeFromData(a.assetCode.wrapped)
+            let code = try assetCodeFromData(a.assetCode)
             let issuer = formatAccountId(a.issuer)
             return "\(code):\(issuer)"
         case .alphanum12(let a):
-            let code = assetCodeFromData(a.assetCode.wrapped)
+            let code = try assetCodeFromData(a.assetCode)
             let issuer = formatAccountId(a.issuer)
             return "\(code):\(issuer)"
         case .poolShare(let poolId):
             // Pool ID is a 32-byte hash encoded as 64 lowercase hex characters.
-            return poolId.wrapped.base16EncodedString()
+            return try bytesToHex(poolId, key: "liquidityPoolID")
         }
     }
 
@@ -635,27 +642,20 @@ public final class TxRepHelper: Sendable {
         if value == "XLM" || value == "native" {
             return .native
         }
-        // 64-char hex without a colon → pool share.
-        if value.count == 64, !value.contains(":") {
-            guard let poolData = value.data(using: .hexadecimal) else {
+        // 64-char hex without a colon parses as a 32-byte pool share id.
+        if value.count == WrappedData32.capacity * 2, !value.contains(":") {
+            guard isAllHex(value),
+                  let poolData = value.data(using: .hexadecimal),
+                  poolData.count == WrappedData32.capacity else {
                 throw TxRepError.invalidValue(key: SecretSeedRedaction.redactingSecretSeeds(in: value))
             }
             return .poolShare(WrappedData32(poolData))
         }
-        let parts = value.split(separator: ":", maxSplits: 1).map(String.init)
-        guard parts.count == 2 else {
-            throw TxRepError.invalidValue(key: SecretSeedRedaction.redactingSecretSeeds(in: value))
-        }
-        let code = parts[0].trimmingCharacters(in: .whitespaces)
-        let issuerStr = parts[1].trimmingCharacters(in: .whitespaces)
-        guard !code.isEmpty, code.count <= 12 else {
-            throw TxRepError.invalidValue(key: SecretSeedRedaction.redactingSecretSeeds(in: value))
-        }
-        let issuer = try parseAccountId(issuerStr)
-        if code.count <= 4 {
-            return .alphanum4(Alpha4XDR(assetCode: assetCodeToData4(code), issuer: issuer))
+        let parsed = try parseCreditAssetCodeAndIssuer(value)
+        if parsed.byteCount <= AssetCode4XDR.capacity {
+            return .alphanum4(Alpha4XDR(assetCode: assetCodeToData4(parsed.code), issuer: parsed.issuer))
         } else {
-            return .alphanum12(Alpha12XDR(assetCode: assetCodeToData12(code), issuer: issuer))
+            return .alphanum12(Alpha12XDR(assetCode: assetCodeToData12(parsed.code), issuer: parsed.issuer))
         }
     }
 
@@ -749,29 +749,30 @@ public final class TxRepHelper: Sendable {
     ///
     /// - Parameter asset: The allow-trust asset XDR value.
     /// - Returns: Asset code string (e.g., `"USDC"`).
-    /// - Throws: `TxRepError.invalidValue(key:)` for unknown asset types.
+    /// - Throws: `TxRepError.invalidValue(key:)` if the asset code byte count differs from its fixed width.
     public static func formatAllowTrustAsset(_ asset: AllowTrustOpAssetXDR) throws -> String {
         switch asset {
         case .alphanum4(let code):
-            return assetCodeFromData(code.wrapped)
+            return try assetCodeFromData(code)
         case .alphanum12(let code):
-            return assetCodeFromData(code.wrapped)
+            return try assetCodeFromData(code)
         }
     }
 
     /// Parse an asset code string to an `AllowTrustOpAssetXDR`.
     ///
-    /// Codes of 1–4 characters produce `alphanum4`; 5–12 produce `alphanum12`.
+    /// Codes of 1 to 4 UTF-8 bytes produce `alphanum4`; 5 to 12 UTF-8 bytes produce `alphanum12`.
     ///
     /// - Parameter code: Asset code string.
     /// - Returns: `AllowTrustOpAssetXDR` value.
-    /// - Throws: `TxRepError.invalidValue(key:)` if the code is empty or longer than 12 characters.
+    /// - Throws: `TxRepError.invalidValue(key:)` if the code is empty or longer than 12 UTF-8 bytes.
     public static func parseAllowTrustAsset(_ code: String) throws -> AllowTrustOpAssetXDR {
         let trimmed = code.trimmingCharacters(in: .whitespaces)
-        guard !trimmed.isEmpty, trimmed.count <= 12 else {
+        let byteCount = trimmed.utf8.count
+        guard byteCount > 0, byteCount <= AssetCode12XDR.capacity else {
             throw TxRepError.invalidValue(key: SecretSeedRedaction.redactingSecretSeeds(in: code))
         }
-        if trimmed.count <= 4 {
+        if byteCount <= AssetCode4XDR.capacity {
             return .alphanum4(assetCodeToData4(trimmed))
         } else {
             return .alphanum12(assetCodeToData12(trimmed))
@@ -842,33 +843,47 @@ public final class TxRepHelper: Sendable {
 
     // MARK: - Private helpers
 
-    /// Extract an asset code string from raw fixed-size data, stripping trailing null bytes.
-    private static func assetCodeFromData(_ data: Data) -> String {
-        var bytes = Array(data)
+    /// Split and validate `"CODE:ISSUER"` using the UTF-8 byte length of the asset code.
+    private static func parseCreditAssetCodeAndIssuer(_ value: String) throws -> (code: String, byteCount: Int, issuer: PublicKey) {
+        let parts = value.split(separator: ":", maxSplits: 1).map(String.init)
+        guard parts.count == 2 else {
+            throw TxRepError.invalidValue(key: SecretSeedRedaction.redactingSecretSeeds(in: value))
+        }
+        let code = parts[0].trimmingCharacters(in: .whitespaces)
+        let issuerStr = parts[1].trimmingCharacters(in: .whitespaces)
+        let byteCount = code.utf8.count
+        guard byteCount > 0, byteCount <= AssetCode12XDR.capacity else {
+            throw TxRepError.invalidValue(key: SecretSeedRedaction.redactingSecretSeeds(in: value))
+        }
+        let issuer = try parseAccountId(issuerStr)
+        return (code, byteCount, issuer)
+    }
+
+    /// Extract an asset code string from a fixed-size wrapper, stripping trailing null bytes.
+    private static func assetCodeFromData<T: WrappedData>(_ code: T) throws -> String {
+        guard code.wrapped.count == T.capacity else {
+            throw TxRepError.invalidValue(key: "assetCode")
+        }
+        var bytes = Array(code.wrapped)
         while let last = bytes.last, last == 0 {
             bytes.removeLast()
         }
         return String(bytes: bytes, encoding: .utf8) ?? ""
     }
 
-    /// Convert an asset code string to null-padded 4-byte `AssetCode4XDR` (`WrappedData4`).
+    /// Pad the UTF-8 bytes of an asset code with zero bytes to 4 bytes (`AssetCode4XDR`).
     private static func assetCodeToData4(_ code: String) -> AssetCode4XDR {
-        var data = Data(count: 4)
-        let encoded = Array(code.utf8)
-        for i in 0..<min(encoded.count, 4) {
-            data[i] = encoded[i]
-        }
-        return WrappedData4(data)
+        return assetCodeToWrappedData(code, as: AssetCode4XDR.self)
     }
 
-    /// Convert an asset code string to null-padded 12-byte `AssetCode12XDR` (`WrappedData12`).
+    /// Pad the UTF-8 bytes of an asset code with zero bytes to 12 bytes (`AssetCode12XDR`).
     private static func assetCodeToData12(_ code: String) -> AssetCode12XDR {
-        var data = Data(count: 12)
-        let encoded = Array(code.utf8)
-        for i in 0..<min(encoded.count, 12) {
-            data[i] = encoded[i]
-        }
-        return WrappedData12(data)
+        return assetCodeToWrappedData(code, as: AssetCode12XDR.self)
+    }
+
+    /// Pad the UTF-8 bytes of an asset code with zero bytes to `T.capacity` bytes.
+    private static func assetCodeToWrappedData<T: WrappedData>(_ code: String, as _: T.Type) -> T {
+        return T(Data(code.utf8))
     }
 
     // MARK: - Required-field helpers (throw missingValue when absent)

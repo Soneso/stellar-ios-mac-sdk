@@ -90,10 +90,10 @@ extension MemoXDR {
       lines.append("\(prefix).id: \(val)")
     case .hash(let val):
       lines.append("\(prefix).type: MEMO_HASH")
-      lines.append("\(prefix).hash: \(TxRepHelper.bytesToHex(val.wrapped))")
+      lines.append("\(prefix).hash: \(try TxRepHelper.bytesToHex(val, key: "\(prefix).hash"))")
     case .returnHash(let val):
       lines.append("\(prefix).type: MEMO_RETURN")
-      lines.append("\(prefix).retHash: \(TxRepHelper.bytesToHex(val.wrapped))")
+      lines.append("\(prefix).retHash: \(try TxRepHelper.bytesToHex(val, key: "\(prefix).retHash"))")
     }
   }
 

@@ -27,7 +27,7 @@ public struct DecoratedSignatureXDR: XDRCodable, Sendable {
 
 extension DecoratedSignatureXDR {
   public func toTxRep(prefix: String, lines: inout [String]) throws {
-    lines.append("\(prefix).hint: \(TxRepHelper.bytesToHex(self.hint.wrapped))")
+    lines.append("\(prefix).hint: \(try TxRepHelper.bytesToHex(self.hint, key: "\(prefix).hint"))")
     lines.append("\(prefix).signature: \(TxRepHelper.bytesToHex(self.signature))")
   }
 

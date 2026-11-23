@@ -79,7 +79,7 @@ extension SCAddressXDR {
       lines.append("\(prefix).accountId: \(TxRepHelper.formatAccountId(val))")
     case .contract(let val):
       lines.append("\(prefix).type: SC_ADDRESS_TYPE_CONTRACT")
-      lines.append("\(prefix).contractId: \(TxRepHelper.bytesToHex(val.wrapped))")
+      lines.append("\(prefix).contractId: \(try TxRepHelper.bytesToHex(val, key: "\(prefix).contractId"))")
     case .muxedAccount(let val):
       lines.append("\(prefix).type: SC_ADDRESS_TYPE_MUXED_ACCOUNT")
       try val.toTxRep(prefix: "\(prefix).muxedAccount", lines: &lines)
@@ -88,7 +88,7 @@ extension SCAddressXDR {
       try val.toTxRep(prefix: "\(prefix).claimableBalanceId", lines: &lines)
     case .liquidityPoolId(let val):
       lines.append("\(prefix).type: SC_ADDRESS_TYPE_LIQUIDITY_POOL")
-      lines.append("\(prefix).liquidityPoolId: \(TxRepHelper.bytesToHex(val.wrapped))")
+      lines.append("\(prefix).liquidityPoolId: \(try TxRepHelper.bytesToHex(val, key: "\(prefix).liquidityPoolId"))")
     case .muxedContract(let val):
       lines.append("\(prefix).type: SC_ADDRESS_TYPE_MUXED_CONTRACT")
       try val.toTxRep(prefix: "\(prefix).muxedContract", lines: &lines)

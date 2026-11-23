@@ -28,7 +28,7 @@ public struct ContractIDPreimageFromAddressXDR: XDRCodable, Sendable {
 extension ContractIDPreimageFromAddressXDR {
   public func toTxRep(prefix: String, lines: inout [String]) throws {
     try self.address.toTxRep(prefix: "\(prefix).address", lines: &lines)
-    lines.append("\(prefix).salt: \(TxRepHelper.bytesToHex(self.salt.wrapped))")
+    lines.append("\(prefix).salt: \(try TxRepHelper.bytesToHex(self.salt, key: "\(prefix).salt"))")
   }
 
   public static func fromTxRep(_ map: [String: String], prefix: String) throws -> ContractIDPreimageFromAddressXDR {

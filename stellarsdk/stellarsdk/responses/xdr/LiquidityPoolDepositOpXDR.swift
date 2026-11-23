@@ -45,7 +45,7 @@ public struct LiquidityPoolDepositOpXDR: XDRCodable, Sendable {
 
 extension LiquidityPoolDepositOpXDR {
   public func toTxRep(prefix: String, lines: inout [String]) throws {
-    lines.append("\(prefix).liquidityPoolID: \(TxRepHelper.bytesToHex(self.liquidityPoolID.wrapped))")
+    lines.append("\(prefix).liquidityPoolID: \(try TxRepHelper.bytesToHex(self.liquidityPoolID, key: "\(prefix).liquidityPoolID"))")
     lines.append("\(prefix).maxAmountA: \(self.maxAmountA)")
     lines.append("\(prefix).maxAmountB: \(self.maxAmountB)")
     try self.minPrice.toTxRep(prefix: "\(prefix).minPrice", lines: &lines)

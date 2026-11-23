@@ -27,7 +27,7 @@ public struct Alpha4XDR: XDRCodable, Sendable {
 
 extension Alpha4XDR {
   public func toTxRep(prefix: String, lines: inout [String]) throws {
-    lines.append("\(prefix).assetCode: \(TxRepHelper.bytesToHex(self.assetCode.wrapped))")
+    lines.append("\(prefix).assetCode: \(try TxRepHelper.bytesToHex(self.assetCode, key: "\(prefix).assetCode"))")
     lines.append("\(prefix).issuer: \(TxRepHelper.formatAccountId(self.issuer))")
   }
 

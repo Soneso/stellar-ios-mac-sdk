@@ -27,8 +27,12 @@ extension TransactionV0XDR {
     ///   - lines: Output array; lines are appended in SEP-0011 order.
     /// - Throws: `TxRepError` on encoding failure.
     public func toTxRep(prefix: String, lines: inout [String]) throws {
-        // Convert raw Ed25519 bytes to a G-address string.
-        let pk = PublicKey(unchecked: self.sourceAccountEd25519)
+        let pk: PublicKey
+        do {
+            pk = try PublicKey(self.sourceAccountEd25519)
+        } catch {
+            throw TxRepError.invalidValue(key: "\(prefix).sourceAccount")
+        }
         lines.append("\(prefix).sourceAccount: \(pk.accountId)")
         lines.append("\(prefix).fee: \(self.fee)")
         lines.append("\(prefix).seqNum: \(self.seqNum)")
