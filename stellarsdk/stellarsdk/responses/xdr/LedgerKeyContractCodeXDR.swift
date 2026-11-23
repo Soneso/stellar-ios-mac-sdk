@@ -23,7 +23,7 @@ public struct LedgerKeyContractCodeXDR: XDRCodable, Sendable {
 
 extension LedgerKeyContractCodeXDR {
   public func toTxRep(prefix: String, lines: inout [String]) throws {
-    lines.append("\(prefix).hash: \(TxRepHelper.bytesToHex(self.hash.wrapped))")
+    lines.append("\(prefix).hash: \(try TxRepHelper.bytesToHex(self.hash, key: "\(prefix).hash"))")
   }
 
   public static func fromTxRep(_ map: [String: String], prefix: String) throws -> LedgerKeyContractCodeXDR {

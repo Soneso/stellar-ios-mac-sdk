@@ -82,14 +82,15 @@ public enum MuxedAccountXDR: XDRCodable, Sendable {
     
     public func encode(to encoder: Encoder) throws {
         var container = encoder.unkeyedContainer()
-        try container.encode(type())
-        
+
         switch self {
         case .ed25519(let sourceAccountEd25519):
-            var bytesArray = sourceAccountEd25519
-            let wrapped = WrappedData32(Data(bytes: &bytesArray, count: bytesArray.count))
+            let wrapped = try WrappedData32.exact(sourceAccountEd25519)
+            try container.encode(type())
             try container.encode(wrapped)
         case .med25519(let mux):
+            _ = try WrappedData32.exact(mux.sourceAccountEd25519)
+            try container.encode(type())
             try container.encode(mux)
         }
     }

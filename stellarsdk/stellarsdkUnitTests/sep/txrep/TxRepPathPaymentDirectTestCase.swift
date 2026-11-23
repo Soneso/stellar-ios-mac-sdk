@@ -159,7 +159,7 @@ final class TxRepPathPaymentDirectTestCase: XCTestCase {
         // PathPaymentOperationXDR.toTxRep writes path assets using the compact CODE:ISSUER format.
         // Build a compact asset string for the path using TxRepHelper.formatAsset.
         let pathAsset = try makeAlphanum4Asset(code: "EUR")
-        let compactPathAsset = TxRepHelper.formatAsset(pathAsset)
+        let compactPathAsset = try TxRepHelper.formatAsset(pathAsset)
 
         let lines = """
         op.sendAsset: XLM

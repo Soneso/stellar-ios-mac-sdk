@@ -40,7 +40,7 @@ public struct LiquidityPoolWithdrawOpXDR: XDRCodable, Sendable {
 
 extension LiquidityPoolWithdrawOpXDR {
   public func toTxRep(prefix: String, lines: inout [String]) throws {
-    lines.append("\(prefix).liquidityPoolID: \(TxRepHelper.bytesToHex(self.liquidityPoolID.wrapped))")
+    lines.append("\(prefix).liquidityPoolID: \(try TxRepHelper.bytesToHex(self.liquidityPoolID, key: "\(prefix).liquidityPoolID"))")
     lines.append("\(prefix).amount: \(self.amount)")
     lines.append("\(prefix).minAmountA: \(self.minAmountA)")
     lines.append("\(prefix).minAmountB: \(self.minAmountB)")

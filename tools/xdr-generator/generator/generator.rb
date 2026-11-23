@@ -613,15 +613,17 @@ class Generator < Xdrgen::Generators::Base
   # Emits toTxRep(prefix:lines:) and fromTxRep(_:prefix:) on a generated struct
   # via a Swift extension block appended after the struct's primary declaration.
   # Each non-extension-point field is dispatched to the appropriate helper based
-  # on a classification produced by +txrep_field_kind+:
+  # on its field kind (produced by +txrep_field_kind+, or :string_bytes for
+  # bytes-backed string fields):
   #
-  #   :primitive     - Int32/UInt32/Int64/UInt64/Bool (raw interpolation)
-  #   :string        - String (TxRepHelper.escapeString / .unescapeString)
-  #   :opaque        - Data / WrappedDataN (TxRepHelper.bytesToHex / .hexToBytes)
-  #   :wrapped_data  - WrappedDataN / typealias thereof (.wrapped accessor)
-  #   :compact       - Types in TXREP_COMPACT_TYPES (single-line formatter)
-  #   :named         - Nested XDR type (delegate to its own .toTxRep / .fromTxRep)
-  #   :array         - [T] (emit .len + indexed loop)
+  #   :primitive    - Int32/UInt32/Int64/UInt64/Bool (raw interpolation)
+  #   :string       - String (TxRepHelper.escapeString / .unescapeString or .requireString)
+  #   :string_bytes - Data holding bytes-backed string (TxRepHelper.escapeBytes / .unescapeBytes or .requireStringBytes)
+  #   :opaque       - Data (TxRepHelper.bytesToHex(_:) / .hexToBytes or .requireHex)
+  #                   and WrappedDataN (TxRepHelper.bytesToHex(_:key:) / .require<WrappedDataN>)
+  #   :compact      - Types in TXREP_COMPACT_TYPES (single-line formatter)
+  #   :named        - Nested XDR type (delegate to its own .toTxRep / .fromTxRep)
+  #   :array        - [T] (emit .len + indexed loop)
   #
   # The Swift property accessor (self.fieldName) always uses the SDK field name
   # while the TxRep key string uses the raw XDR field name obtained via
@@ -871,7 +873,7 @@ class Generator < Xdrgen::Generators::Base
       out.puts "lines.append(\"#{prefix_frag}: \\(TxRepHelper.escapeBytes(#{accessor}))\")"
     when :opaque
       if kind[:wrapped_type]
-        out.puts "lines.append(\"#{prefix_frag}: \\(TxRepHelper.bytesToHex(#{accessor}.wrapped))\")"
+        out.puts "lines.append(\"#{prefix_frag}: \\(try TxRepHelper.bytesToHex(#{accessor}, key: \"#{prefix_frag}\"))\")"
       else
         out.puts "lines.append(\"#{prefix_frag}: \\(TxRepHelper.bytesToHex(#{accessor}))\")"
       end
@@ -1029,11 +1031,12 @@ class Generator < Xdrgen::Generators::Base
   # Return a Swift expression string that parses a single scalar (non-array)
   # value of the given kind from the map at the given prefix expression.
   #
-  # When required is true, opaque and compact types use the TxRepHelper.require*
-  # family of helpers that throw TxRepError.missingValue when the key is absent
-  # and TxRepError.invalidValue (keyed on the field name, not the raw value)
-  # when the conversion fails.  This matches the behaviour expected by the error-
-  # handling regression tests.  Primitive types always use the ?? default form
+  # When required is true, :string, :string_bytes, :opaque, and :compact types
+  # use the TxRepHelper.require* family of helpers, which throw
+  # TxRepError.missingValue when the key is absent and TxRepError.invalidValue
+  # (keyed on the field name, not the raw value) when conversion fails. Fixed-
+  # width :opaque fields (WrappedDataN) always use TxRepHelper.require<WrappedDataN>
+  # regardless of required. Primitive types always use the ?? default form
   # because there is no way to distinguish "explicitly set to 0" from "absent".
   def txrep_parse_expr(kind, prefix_expr, required: false)
     case kind[:style]
@@ -1063,18 +1066,12 @@ class Generator < Xdrgen::Generators::Base
         "try TxRepHelper.unescapeBytes(TxRepHelper.getValue(map, #{prefix_expr}) ?? \"\")"
       end
     when :opaque
-      if required
-        if kind[:wrapped_type]
-          "try TxRepHelper.require#{kind[:wrapped_type]}(map, #{prefix_expr})"
-        else
-          "try TxRepHelper.requireHex(map, #{prefix_expr})"
-        end
+      if kind[:wrapped_type]
+        "try TxRepHelper.require#{kind[:wrapped_type]}(map, #{prefix_expr})"
+      elsif required
+        "try TxRepHelper.requireHex(map, #{prefix_expr})"
       else
-        if kind[:wrapped_type]
-          "#{kind[:wrapped_type]}(try TxRepHelper.hexToBytes(TxRepHelper.getValue(map, #{prefix_expr}) ?? \"\"))"
-        else
-          "try TxRepHelper.hexToBytes(TxRepHelper.getValue(map, #{prefix_expr}) ?? \"\")"
-        end
+        "try TxRepHelper.hexToBytes(TxRepHelper.getValue(map, #{prefix_expr}) ?? \"\")"
       end
     when :compact
       if required

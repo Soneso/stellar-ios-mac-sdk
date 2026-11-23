@@ -149,6 +149,25 @@ class GeneratorSnapshotTest < Minitest::Test
     assert_includes content, "reserved", "FIELD_OVERRIDES should rename ext to reserved"
   end
 
+  def test_txrep_fixed_opaque_writer_checks_width
+    sig_content = File.read(File.join(@output_dir, "DecoratedSignatureXDR.swift"))
+    assert_includes sig_content,
+                    'lines.append("\(prefix).hint: \(try TxRepHelper.bytesToHex(self.hint, key: "\(prefix).hint"))")',
+                    "Fixed opaque field hint should format through the width-checking bytesToHex helper"
+
+    code_content = File.read(File.join(@output_dir, "LedgerKeyContractCodeXDR.swift"))
+    assert_includes code_content,
+                    'lines.append("\(prefix).hash: \(try TxRepHelper.bytesToHex(self.hash, key: "\(prefix).hash"))")',
+                    "Fixed opaque field hash should format through the width-checking bytesToHex helper"
+  end
+
+  def test_txrep_variable_opaque_writer_unchanged
+    sig_content = File.read(File.join(@output_dir, "DecoratedSignatureXDR.swift"))
+    assert_includes sig_content,
+                    'lines.append("\(prefix).signature: \(TxRepHelper.bytesToHex(self.signature))")',
+                    "Variable opaque field signature should format through unchecked bytesToHex"
+  end
+
   private
 
   def assert_snapshot(filename)

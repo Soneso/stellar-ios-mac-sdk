@@ -525,15 +525,29 @@ class SCValXDRToNativeUnitTests: XCTestCase {
     func testAddressWithoutStrKeyStaysTheValueItself() {
         // A contract id of 33 bytes has no strkey, and WrappedData32 pads a shorter
         // payload to 32 bytes, so an oversized one is what reaches the encoder.
-        let value = SCValXDR.address(.contract(WrappedData32(Data(count: 33))))
-        assertIsValueItself(value.toNative(), value)
+        let payload = Data(count: 33)
+        let value = SCValXDR.address(.contract(WrappedData32(payload)))
+        guard case .address(.contract(let returned)) = value.toNative() as? SCValXDR else {
+            XCTFail("expected the SCValXDR address itself")
+            return
+        }
+        XCTAssertEqual(returned.wrapped, payload)
     }
 
     func testMapWithAddressKeyWithoutStrKey() {
+        let payload = Data(count: 33)
         let value = SCValXDR.map([
-            entry(.address(.contract(WrappedData32(Data(count: 33)))), .u32(1)),
+            entry(.address(.contract(WrappedData32(payload))), .u32(1)),
         ])
-        assertIsValueItself(value.toNative(), value)
+        guard case .map(let entries?) = value.toNative() as? SCValXDR,
+              entries.count == 1,
+              case .address(.contract(let returnedKey)) = entries[0].key,
+              case .u32(let returnedVal) = entries[0].val else {
+            XCTFail("expected the SCValXDR map itself")
+            return
+        }
+        XCTAssertEqual(returnedKey.wrapped, payload)
+        XCTAssertEqual(returnedVal, 1)
     }
 
     // MARK: - Arms with no native counterpart

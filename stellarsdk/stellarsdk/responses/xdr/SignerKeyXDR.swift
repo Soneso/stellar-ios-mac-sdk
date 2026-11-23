@@ -62,13 +62,13 @@ extension SignerKeyXDR {
     switch self {
     case .ed25519(let val):
       lines.append("\(prefix).type: SIGNER_KEY_TYPE_ED25519")
-      lines.append("\(prefix).ed25519: \(TxRepHelper.bytesToHex(val.wrapped))")
+      lines.append("\(prefix).ed25519: \(try TxRepHelper.bytesToHex(val, key: "\(prefix).ed25519"))")
     case .preAuthTx(let val):
       lines.append("\(prefix).type: SIGNER_KEY_TYPE_PRE_AUTH_TX")
-      lines.append("\(prefix).preAuthTx: \(TxRepHelper.bytesToHex(val.wrapped))")
+      lines.append("\(prefix).preAuthTx: \(try TxRepHelper.bytesToHex(val, key: "\(prefix).preAuthTx"))")
     case .hashX(let val):
       lines.append("\(prefix).type: SIGNER_KEY_TYPE_HASH_X")
-      lines.append("\(prefix).hashX: \(TxRepHelper.bytesToHex(val.wrapped))")
+      lines.append("\(prefix).hashX: \(try TxRepHelper.bytesToHex(val, key: "\(prefix).hashX"))")
     case .signedPayload(let val):
       lines.append("\(prefix).type: SIGNER_KEY_TYPE_ED25519_SIGNED_PAYLOAD")
       try val.toTxRep(prefix: "\(prefix).ed25519SignedPayload", lines: &lines)

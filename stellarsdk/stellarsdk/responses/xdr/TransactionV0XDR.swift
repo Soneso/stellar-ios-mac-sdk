@@ -47,9 +47,8 @@ public struct TransactionV0XDR: XDRCodable, Sendable {
     }
     
     public func encode(to encoder: Encoder) throws {
+        let wrapped = try WrappedData32.exact(sourceAccountEd25519)
         var container = encoder.unkeyedContainer()
-        var bytesArray = sourceAccountEd25519
-        let wrapped = WrappedData32(Data(bytes: &bytesArray, count: bytesArray.count))
         try container.encode(wrapped)
         try container.encode(fee)
         try container.encode(seqNum)

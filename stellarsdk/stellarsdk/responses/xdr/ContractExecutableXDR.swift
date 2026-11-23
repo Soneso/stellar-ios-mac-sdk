@@ -54,7 +54,7 @@ extension ContractExecutableXDR {
     switch self {
     case .wasm(let val):
       lines.append("\(prefix).type: CONTRACT_EXECUTABLE_WASM")
-      lines.append("\(prefix).wasm_hash: \(TxRepHelper.bytesToHex(val.wrapped))")
+      lines.append("\(prefix).wasm_hash: \(try TxRepHelper.bytesToHex(val, key: "\(prefix).wasm_hash"))")
     case .token:
       lines.append("\(prefix).type: CONTRACT_EXECUTABLE_STELLAR_ASSET")
     case .externalRef(let val):
