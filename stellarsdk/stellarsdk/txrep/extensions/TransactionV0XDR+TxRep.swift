@@ -139,12 +139,12 @@ extension TransactionV0XDR {
         }
 
         return TransactionV0XDR(
-            sourceAccount: pk,
+            sourceAccountEd25519: pk.bytes,
+            fee: fee,
             seqNum: seqNum,
             timeBounds: timeBounds,
             memo: memo,
-            operations: operations,
-            maxOperationFee: operations.isEmpty ? fee : fee / UInt32(max(1, operations.count))
+            operations: operations
         )
     }
 }
