@@ -259,7 +259,8 @@ extension String: XDRCodable {
     /// The bytes must be valid UTF-8 and are kept as they are, a leading byte order mark
     /// included, so encoding the result writes the decoded bytes again.
     ///
-    /// - Throws: XDRDecoder.Error.invalidUTF8 with the bytes read when they are not valid UTF-8
+    /// - Throws: XDRDecoder.Error.invalidUTF8 for invalid UTF-8, XDRDecoder.Error.prematureEndOfData
+    ///   for missing bytes, StellarSDKError.xdrDecodingError for an excessive byte count or nonzero padding
     public init(fromBinary decoder: XDRDecoder) throws {
         let utf8: [UInt8] = try Array(fromBinary: decoder)
         if let str = String(xdrUTF8: utf8) {
@@ -268,9 +269,7 @@ extension String: XDRCodable {
             throw XDRDecoder.Error.invalidUTF8(utf8)
         }
 
-        if utf8.count % 4 != 0 {
-            _ = try (0..<(4 - utf8.count % 4)).forEach { _ in try _ = UInt8(fromBinary: decoder) }
-        }
+        try decoder.readPadding(after: utf8.count)
     }
 }
 
@@ -338,13 +337,14 @@ extension Data: XDRCodable {
     /// Decodes variable-length data from XDR format.
     ///
     /// Reads the byte count, then the bytes, consuming any padding bytes.
+    ///
+    /// - Throws: XDRDecoder.Error.prematureEndOfData for missing bytes,
+    ///   StellarSDKError.xdrDecodingError for an excessive byte count or nonzero padding
     public init(fromBinary decoder: XDRDecoder) throws {
         let bytes: [UInt8] = try Array(fromBinary: decoder)
         self.init(bytes)
         
-        if bytes.count % 4 != 0 {
-            _ = try (0..<(4 - bytes.count % 4)).forEach { _ in try _ = UInt8(fromBinary: decoder) }
-        }
+        try decoder.readPadding(after: bytes.count)
     }
     
     /// Decodes fixed-size data from XDR format.

@@ -192,7 +192,7 @@ final class SACSpecUnitTests: XCTestCase {
         XCTAssertEqual(bytes[19], 0)
         bytes[19] = 1
 
-        assertDecodingError("The embedded SAC spec does not decode at byte offset 0: the entry re-encodes to different bytes") {
+        assertDecodingError("The embedded SAC spec does not decode at byte offset 0: xdrDecodingError(message: \"XDR padding must be zero, byte 0x01 found at offset 19\")") {
             try decode(bytes)
         }
     }

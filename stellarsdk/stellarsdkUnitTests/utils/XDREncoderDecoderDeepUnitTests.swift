@@ -11,6 +11,131 @@ import XCTest
 
 class XDREncoderDecoderDeepUnitTests: XCTestCase {
 
+    func testDataRejectsNonzeroPadding() throws {
+        try checkPadding(Data.self) { Data($0.utf8) }
+    }
+
+    func testStringRejectsNonzeroPadding() throws {
+        try checkPadding(String.self) { $0 }
+    }
+
+    private func checkPadding<T: XDRCodable & Equatable>(_ type: T.Type, value: (String) -> T) throws {
+        let valid: [([UInt8], String)] = [
+            ([0, 0, 0, 0], ""),
+            ([0, 0, 0, 1, 0x41, 0, 0, 0], "A"),
+            ([0, 0, 0, 2, 0xC3, 0xA9, 0, 0], "é"),
+            ([0, 0, 0, 3, 0x41, 0x42, 0x43, 0], "ABC"),
+            ([0, 0, 0, 4, 0x41, 0x42, 0x43, 0x44], "ABCD")
+        ]
+        for (bytes, text) in valid {
+            let decoder = XDRDecoder(data: bytes + [0x12, 0x34, 0x56, 0x78])
+            let decoded = try decoder.decode(type)
+            XCTAssertEqual(decoded, value(text))
+            XCTAssertEqual(try XDREncoder.encode(decoded), bytes)
+            XCTAssertEqual(try decoder.decode(UInt32.self), 0x12345678)
+            XCTAssertEqual(decoder.remainingBytes, 0)
+        }
+        let invalid: [([UInt8], String)] = [
+            ([0, 0, 0, 1, 0x41, 1, 0, 0], "XDR padding must be zero, byte 0x01 found at offset 5"),
+            ([0, 0, 0, 1, 0x41, 0, 2, 0], "XDR padding must be zero, byte 0x02 found at offset 6"),
+            ([0, 0, 0, 1, 0x41, 0, 0, 0xFF], "XDR padding must be zero, byte 0xFF found at offset 7"),
+            ([0, 0, 0, 2, 0xC3, 0xA9, 1, 0], "XDR padding must be zero, byte 0x01 found at offset 6"),
+            ([0, 0, 0, 2, 0xC3, 0xA9, 0, 1], "XDR padding must be zero, byte 0x01 found at offset 7"),
+            ([0, 0, 0, 3, 0x41, 0x42, 0x43, 1], "XDR padding must be zero, byte 0x01 found at offset 7"),
+            ([0, 0, 0, 1, 0x41, 0, 2, 3], "XDR padding must be zero, byte 0x02 found at offset 6")
+        ]
+        for (bytes, message) in invalid {
+            assertPaddingError(message) { try XDRDecoder.decode(type, data: bytes) }
+        }
+    }
+
+    func testEnvelopeRejectsNonzeroMemoPadding() throws {
+        let keyPair = KeyPair(publicKey: try PublicKey([UInt8](repeating: 0x11, count: 32)))
+        let transaction = try Transaction(sourceAccount: Account(keyPair: keyPair, sequenceNumber: 1),
+                                          operations: [ManageDataOperation(sourceAccountId: nil, name: "a")],
+                                          memo: .text("abcde"))
+        var bytes = [UInt8](try XCTUnwrap(Data(base64Encoded: transaction.encodedEnvelope())))
+        // The V1 envelope's discriminant, source, fee, sequence and preconditions occupy 56 bytes.
+        XCTAssertEqual(Array(bytes[56..<72]), [0, 0, 0, 1, 0, 0, 0, 5, 0x61, 0x62, 0x63, 0x64, 0x65, 0, 0, 0])
+        XCTAssertEqual(try XDREncoder.encode(XDRDecoder.decode(TransactionEnvelopeXDR.self, data: bytes)), bytes)
+        bytes[70] = 1
+        assertPaddingError("XDR padding must be zero, byte 0x01 found at offset 70") {
+            try XDRDecoder.decode(TransactionEnvelopeXDR.self, data: bytes)
+        }
+        assertPaddingError("XDR padding must be zero, byte 0x01 found at offset 70") {
+            try TransactionEnvelopeXDR(xdr: Data(bytes).base64EncodedString())
+        }
+    }
+
+    func testNestedSCValRejectsNonzeroPadding() throws {
+        for value in [SCValXDR.string("a"), .symbol("a"), .bytes(Data("a".utf8))] {
+            var bytes = try XDREncoder.encode(SCValXDR.vec([value]))
+            // The vector discriminant, present flag, count and element discriminant precede the length.
+            XCTAssertEqual(Array(bytes[16..<24]), [0, 0, 0, 1, 0x61, 0, 0, 0])
+            XCTAssertEqual(try XDREncoder.encode(XDRDecoder.decode(SCValXDR.self, data: bytes)), bytes)
+            bytes[22] = 1
+            assertPaddingError("XDR padding must be zero, byte 0x01 found at offset 22") {
+                try XDRDecoder.decode(SCValXDR.self, data: bytes)
+            }
+        }
+    }
+
+    func testTruncatedPaddingThrowsPrematureEndOfData() {
+        let inputs: [[UInt8]] = [
+            [0, 0, 0, 1, 0x41],
+            [0, 0, 0, 1, 0x41, 0],
+            [0, 0, 0, 1, 0x41, 0, 0],
+            [0, 0, 0, 1, 0x41, 1],
+            [0, 0, 0, 2, 0xC3, 0xA9],
+            [0, 0, 0, 2, 0xC3, 0xA9, 0],
+            [0, 0, 0, 2, 0xC3, 0xA9, 1],
+            [0, 0, 0, 3, 0x41, 0x42, 0x43]
+        ]
+        for bytes in inputs {
+            for type in [Data.self, String.self] as [any XDRDecodable.Type] {
+                XCTAssertThrowsError(try type.init(fromBinary: XDRDecoder(data: bytes))) { error in
+                    guard case XDRDecoder.Error.prematureEndOfData = error else {
+                        return XCTFail("Expected prematureEndOfData, got \(error)")
+                    }
+                }
+            }
+        }
+    }
+
+    func testTruncatedSCValBytesPaddingThrowsPrematureEndOfDataFromBase64() throws {
+        let bytes = try XDREncoder.encode(SCValXDR.bytes(Data("a".utf8)))
+        XCTAssertEqual(bytes, [0, 0, 0, 13, 0, 0, 0, 1, 0x61, 0, 0, 0])
+        for missing in 1...3 {
+            let xdr = Data(bytes.dropLast(missing)).base64EncodedString()
+            XCTAssertThrowsError(try SCValXDR(xdr: xdr)) { error in
+                guard case XDRDecoder.Error.prematureEndOfData = error else {
+                    return XCTFail("Expected prematureEndOfData, got \(error)")
+                }
+            }
+        }
+    }
+
+    func testInvalidUTF8PrecedesPaddingValidation() {
+        for bytes: [UInt8] in [[0, 0, 0, 1, 0xFF, 1], [0, 0, 0, 1, 0xFF, 1, 0, 0]] {
+            XCTAssertThrowsError(try XDRDecoder.decode(String.self, data: bytes)) { error in
+                guard case XDRDecoder.Error.invalidUTF8(let invalid) = error else {
+                    return XCTFail("Expected invalidUTF8, got \(error)")
+                }
+                XCTAssertEqual(invalid, [0xFF])
+            }
+        }
+    }
+
+    private func assertPaddingError<T>(_ expected: String, file: StaticString = #filePath,
+                                       line: UInt = #line, decode: () throws -> T) {
+        XCTAssertThrowsError(try decode(), file: file, line: line) { error in
+            guard case StellarSDKError.xdrDecodingError(let message) = error else {
+                return XCTFail("Expected xdrDecodingError, got \(error)", file: file, line: line)
+            }
+            XCTAssertEqual(message, expected, file: file, line: line)
+        }
+    }
+
     // MARK: - XDREncoder Initialization Tests
 
     func testXDREncoderInitialization() {

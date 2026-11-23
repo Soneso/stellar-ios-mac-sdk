@@ -117,8 +117,8 @@ public final class SACClient: Sendable {
     /// Decodes `base64` as a sequence of spec entries whose bytes have the sha256 `sha256Hex`
     /// in lowercase hex.
     ///
-    /// The XDR decoder skips the padding bytes of strings and data unchecked, so every entry
-    /// is encoded again and compared with the bytes it was read from.
+    /// Every entry is encoded again to verify that its decoded representation preserves
+    /// the embedded bytes.
     ///
     /// - Throws: `StellarSDKError.xdrDecodingError` as ``specEntries()`` describes.
     internal static func decodeSpec(base64: String, sha256Hex: String) throws -> [SCSpecEntryXDR] {
