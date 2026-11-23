@@ -14,8 +14,7 @@ public struct OperationXDR: XDRCodable, Sendable {
 
   public init(from decoder: Decoder) throws {
     var container = try decoder.unkeyedContainer()
-    let sourceAccountPresent = try container.decode(Int32.self)
-    if sourceAccountPresent != 0 {
+    if try container.decode(Bool.self) {
       sourceAccount = try container.decode(MuxedAccountXDR.self)
     } else {
       sourceAccount = nil

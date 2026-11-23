@@ -15,8 +15,7 @@ public struct SCContractInstanceXDR: XDRCodable, Sendable {
   public init(from decoder: Decoder) throws {
     var container = try decoder.unkeyedContainer()
     executable = try container.decode(ContractExecutableXDR.self)
-    let storagePresent = try container.decode(Int32.self)
-    if storagePresent != 0 {
+    if try container.decode(Bool.self) {
       storage = try decodeArray(type: SCMapEntryXDR.self, dec: decoder)
     } else {
       storage = nil

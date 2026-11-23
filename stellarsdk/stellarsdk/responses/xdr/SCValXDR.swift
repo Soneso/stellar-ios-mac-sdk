@@ -81,15 +81,13 @@ public indirect enum SCValXDR: XDRCodable, Sendable {
       let val = try container.decode(String.self)
       self = .symbol(val)
     case SCValType.vec.rawValue:
-      let vecPresent = try container.decode(Int32.self)
-      if vecPresent != 0 {
+      if try container.decode(Bool.self) {
         self = .vec(try container.decode([SCValXDR].self))
       } else {
         self = .vec(nil)
       }
     case SCValType.map.rawValue:
-      let mapPresent = try container.decode(Int32.self)
-      if mapPresent != 0 {
+      if try container.decode(Bool.self) {
         self = .map(try container.decode([SCMapEntryXDR].self))
       } else {
         self = .map(nil)

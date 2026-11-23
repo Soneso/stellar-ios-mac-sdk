@@ -67,7 +67,7 @@ func decodeArray<T: Codable>(type:T.Type, dec:Decoder, maxCount: UInt32 = UInt32
     return array
 }
 
-/// Decodes an array where each element is XDR-optional (Int32 present flag + value).
+/// Decodes an array where each element is XDR-optional (Bool present flag + value).
 ///
 /// Used for arrays of optional typedef types like `SponsorshipDescriptor`
 /// (`typedef AccountID* SponsorshipDescriptor`), where each array element
@@ -80,7 +80,8 @@ func decodeArray<T: Codable>(type:T.Type, dec:Decoder, maxCount: UInt32 = UInt32
 /// - Parameter maxCount: Maximum number of elements the schema allows
 /// - Returns: Array of optional elements
 /// - Throws: StellarSDKError.xdrDecodingError if the count exceeds `maxCount` or the remaining
-///   bytes, XDRDecoder.Error if decoding an element fails
+///   bytes, XDRDecoder.Error.boolOutOfRange for a flag other than 0 or 1, XDRDecoder.Error if
+///   decoding an element fails
 func decodeArrayOfOptional<T: Codable>(type: T.Type, dec: Decoder, maxCount: UInt32 = UInt32.max) throws -> [T?] {
     guard let decoder = dec as? XDRDecoder else {
         throw XDRDecoder.Error.typeNotConformingToDecodable(Decoder.Type.self)
@@ -94,8 +95,7 @@ func decodeArrayOfOptional<T: Codable>(type: T.Type, dec: Decoder, maxCount: UIn
     var array = [T?]()
     array.reserveCapacity(Int(count))
     for _ in 0..<count {
-        let present = try decoder.decode(Int32.self)
-        if present != 0 {
+        if try decoder.decode(Bool.self) {
             array.append(try decoder.decode(type))
         } else {
             array.append(nil)

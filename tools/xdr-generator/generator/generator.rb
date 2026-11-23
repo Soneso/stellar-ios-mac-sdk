@@ -371,9 +371,9 @@ class Generator < Xdrgen::Generators::Base
       end
     else
       if is_optional
-        # Optional: XDR optional uses explicit flag + value pattern.
-        out.puts "let #{field}Present = try container.decode(Int32.self)"
-        out.puts "if #{field}Present != 0 {"
+        # Optional: XDR optional uses explicit flag + value pattern. The flag is an
+        # XDR bool, so Bool decoding rejects a value other than 0 or 1.
+        out.puts "if try container.decode(Bool.self) {"
         out.indent do
           # When the override type is an array (e.g. [SCMapEntryXDR]),
           # use decodeArray to read the count prefix correctly.
@@ -1990,8 +1990,8 @@ class Generator < Xdrgen::Generators::Base
     when :optional
       # Optional union arm: use explicit flag pattern instead of decodeArray(...).first
       # which fails for types without explicit init(from:) (e.g. WrappedData32, Data).
-      out.puts "let #{case_name}Present = try container.decode(Int32.self)"
-      out.puts "if #{case_name}Present != 0 {"
+      # The flag is an XDR bool, so Bool decoding rejects a value other than 0 or 1.
+      out.puts "if try container.decode(Bool.self) {"
       out.indent do
         out.puts "self = .#{case_name}(try container.decode(#{entry[:decode_type]}.self))"
       end
