@@ -196,6 +196,46 @@ final class TransactionStringBytesUnitTests: XCTestCase {
 
     // MARK: - Transaction import
 
+    private let inflationV1Envelope = "AAAAAgAAAAC7JAuE3XvquOnbsgv2SRztjuk4RoBVefQ0rlrFMMQvfAAAAGQAAAAAAAHUwQAAAAAAAAAAAAAAAQAAAAAAAAAJAAAAAAAAAAA="
+    private let inflationTestnetHash = "f945e9bb73f4cb635b8b192874d39f8d99ced394c64db42bbec2dd7af867998d"
+
+    func testInflationV1ImportKeepsEnvelopeAndHashes() throws {
+        let transaction = try Transaction(envelopeXdr: inflationV1Envelope)
+        XCTAssertEqual(transaction.operations.count, 1)
+        XCTAssertTrue(try XCTUnwrap(transaction.operations.first) is InflationOperation)
+        XCTAssertEqual(try transaction.encodedEnvelope(), inflationV1Envelope)
+        XCTAssertEqual(try transaction.getTransactionHash(network: .testnet), inflationTestnetHash)
+        XCTAssertEqual(try transaction.getTransactionHash(network: .public),
+                       "797002f6f64ec5c7d0ce624a1eae82d5101c7dff547bbf12285baff13b45a99f")
+    }
+
+    func testInflationV0ImportWritesV1AndKeepsHash() throws {
+        let input = "AAAAALskC4Tde+q46duyC/ZJHO2O6ThGgFV59DSuWsUwxC98AAAAZAAAAAAAAdTBAAAAAAAAAAAAAAABAAAAAAAAAAkAAAAAAAAAAA=="
+        let transaction = try Transaction(envelopeXdr: input)
+        XCTAssertTrue(try XCTUnwrap(transaction.operations.first) is InflationOperation)
+        XCTAssertEqual(try transaction.getTransactionHash(network: .testnet), inflationTestnetHash)
+        XCTAssertEqual(try transaction.encodedEnvelope(), inflationV1Envelope)
+    }
+
+    func testInflationFeeBumpImportKeepsEnvelopeAndHashes() throws {
+        let input = "AAAABQAAAAC7JAuE3XvquOnbsgv2SRztjuk4RoBVefQ0rlrFMMQvfAAAAAAAAADIAAAAAgAAAAC7JAuE3XvquOnbsgv2SRztjuk4RoBVefQ0rlrFMMQvfAAAAGQAAAAAAAHUwQAAAAAAAAAAAAAAAQAAAAAAAAAJAAAAAAAAAAAAAAAAAAAAAA=="
+        let transaction = try FeeBumpTransaction(envelopeXdr: input)
+        XCTAssertTrue(try XCTUnwrap(transaction.innerTransaction.operations.first) is InflationOperation)
+        XCTAssertEqual(try transaction.getTransactionHash(network: .testnet),
+                       "1e2c7089c9035f1f5869db1dc6cf9a9234affe389d3fbbb5a56cebd6ef16f658")
+        XCTAssertEqual(try transaction.innerTransaction.getTransactionHash(network: .testnet), inflationTestnetHash)
+        XCTAssertEqual(try transaction.encodedEnvelope(), input)
+    }
+
+    func testInflationTransactionBodyImportKeepsHash() throws {
+        guard case .v1(let envelope) = try TransactionEnvelopeXDR(fromBase64: inflationV1Envelope) else {
+            return XCTFail("expected a V1 envelope")
+        }
+        let transaction = try Transaction(xdr: XCTUnwrap(envelope.tx.xdrEncoded))
+        XCTAssertTrue(try XCTUnwrap(transaction.operations.first) is InflationOperation)
+        XCTAssertEqual(try transaction.getTransactionHash(network: .testnet), inflationTestnetHash)
+    }
+
     func testV1ImportKeepsTheEnvelopeAndTheHash() throws {
         for vector in v1Vectors {
             let transaction = try Transaction(envelopeXdr: vector.envelope)
@@ -319,24 +359,17 @@ final class TransactionStringBytesUnitTests: XCTestCase {
         }
     }
 
-    /// Every operation of the XDR corpus except inflation, which `Operation.fromXDR` does not
-    /// read, inside a one-operation V1 envelope: the import gives the input bytes and the hash of
-    /// the input.
+    /// Every operation of the XDR corpus inside a one-operation V1 envelope: the import gives
+    /// the input bytes and the hash of the input.
     func testCorpusOperationsImportToTheirInputBytes() throws {
         let url = try XCTUnwrap(Bundle.module.url(forResource: "corpus", withExtension: "json"))
         let corpus = try JSONDecoder().decode(OperationCorpus.self, from: Data(contentsOf: url))
         let operationEntries = corpus.entries.filter { $0.type == "Operation" || $0.type == "OperationBody" }
-        let inflationCount = try operationEntries.filter { try Self.namesInflation($0) }.count
-        var checked = 0
         for entry in operationEntries {
             let bytes = [UInt8](try XCTUnwrap(Data(base64Encoded: entry.xdr)))
             let operationXDR = entry.type == "Operation"
                 ? try XDRDecoder.decode(OperationXDR.self, data: bytes)
                 : OperationXDR(body: try XDRDecoder.decode(OperationBodyXDR.self, data: bytes))
-            if case .inflation = operationXDR.body {
-                continue
-            }
-            checked += 1
             let transactionXDR = try makeTransactionXDR(operations: [operationXDR])
             let envelope = try XCTUnwrap(try transactionXDR.toEnvelopeXDR().xdrEncoded)
             let body = try XCTUnwrap(transactionXDR.xdrEncoded)
@@ -353,15 +386,7 @@ final class TransactionStringBytesUnitTests: XCTestCase {
                 XCTFail("\(entry.json): the import failed with \(error)")
             }
         }
-        XCTAssertGreaterThan(operationEntries.count, inflationCount)
-        XCTAssertEqual(checked, operationEntries.count - inflationCount)
-    }
-
-    /// Whether the XDR-JSON of a corpus operation or operation body names the inflation operation.
-    private static func namesInflation(_ entry: OperationCorpus.Entry) throws -> Bool {
-        let value = try JSONSerialization.jsonObject(with: Data(entry.json.utf8), options: [.fragmentsAllowed])
-        let body = entry.type == "Operation" ? (value as? [String: Any])?["body"] : value
-        return body as? String == "inflation"
+        XCTAssertGreaterThan(operationEntries.count, 0)
     }
 
     // MARK: - Raw memo reuse

@@ -11,6 +11,39 @@ import stellarsdk
 
 class OperationXDRTestCase: XCTestCase {
 
+    func testInflationOperationWithoutSourceFromXDR() throws {
+        let input = "AAAAAAAAAAk="
+        let xdr = try XDRDecoder.decode(OperationXDR.self, data: [UInt8](try XCTUnwrap(Data(base64Encoded: input))))
+        let operation = try Operation.fromXDR(operationXDR: xdr)
+        XCTAssertTrue(operation is InflationOperation)
+        XCTAssertNil(operation.sourceAccountId)
+        XCTAssertEqual(try operation.toXDRBase64(), input)
+    }
+
+    func testInflationOperationWithEd25519SourceFromXDR() throws {
+        let input = "AAAAAQAAAAC7JAuE3XvquOnbsgv2SRztjuk4RoBVefQ0rlrFMMQvfAAAAAk="
+        let xdr = try XDRDecoder.decode(OperationXDR.self, data: [UInt8](try XCTUnwrap(Data(base64Encoded: input))))
+        let operation = try Operation.fromXDR(operationXDR: xdr)
+        XCTAssertTrue(operation is InflationOperation)
+        XCTAssertEqual(operation.sourceAccountId, "GC5SIC4E3V56VOHJ3OZAX5SJDTWY52JYI2AFK6PUGSXFVRJQYQXXZBZF")
+        XCTAssertEqual(try operation.toXDRBase64(), input)
+    }
+
+    func testInflationOperationWithMed25519SourceFromXDR() throws {
+        let input = "AAAAAQAAAQD//////////7skC4Tde+q46duyC/ZJHO2O6ThGgFV59DSuWsUwxC98AAAACQ=="
+        let xdr = try XDRDecoder.decode(OperationXDR.self, data: [UInt8](try XCTUnwrap(Data(base64Encoded: input))))
+        let operation = try Operation.fromXDR(operationXDR: xdr)
+        XCTAssertTrue(operation is InflationOperation)
+        XCTAssertEqual(operation.sourceAccountId, "MC5SIC4E3V56VOHJ3OZAX5SJDTWY52JYI2AFK6PUGSXFVRJQYQXXZ7777777777775G6K")
+        XCTAssertEqual(try operation.toXDRBase64(), input)
+    }
+
+    func testInflationOperationConstructionEncodesFixedBytes() throws {
+        XCTAssertEqual(try InflationOperation().toXDRBase64(), "AAAAAAAAAAk=")
+        let operation = InflationOperation(sourceAccountId: "GC5SIC4E3V56VOHJ3OZAX5SJDTWY52JYI2AFK6PUGSXFVRJQYQXXZBZF")
+        XCTAssertEqual(try operation.toXDRBase64(), "AAAAAQAAAAC7JAuE3XvquOnbsgv2SRztjuk4RoBVefQ0rlrFMMQvfAAAAAk=")
+    }
+
     func testCreateAccountOperation() {
         do {
             // GC5SIC4E3V56VOHJ3OZAX5SJDTWY52JYI2AFK6PUGSXFVRJQYQXXZBZF

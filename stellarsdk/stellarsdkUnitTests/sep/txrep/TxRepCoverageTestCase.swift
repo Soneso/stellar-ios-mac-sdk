@@ -1374,7 +1374,7 @@ final class TxRepCoverageTestCase: XCTestCase {
     // MARK: - InflationOperation — covers OperationBodyXDR INFLATION case
 
     func testInflationOperationRoundtrip() throws {
-        // Build an inflation operation at the XDR level (no SDK-level class exists).
+        // Build an inflation operation at the XDR level.
         let source = try KeyPair(secretSeed: sourceSeed)
         let infOp = OperationXDR(sourceAccount: MuxedAccountXDR?.none, body: .inflation)
 

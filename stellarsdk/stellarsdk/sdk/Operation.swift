@@ -86,8 +86,9 @@ public class Operation: @unchecked Sendable {
     ///
     /// - Returns the created Operation object
     ///
-    /// - Throws StellarSDKError.invalidArgument error if the given OperationXDR object has an unknown type,
-    ///   and StellarSDKError.xdrDecodingError if an asset of the operation has an invalid asset code.
+    /// - Throws: `StellarSDKError.invalidArgument` if a change-trust liquidity pool share has two native assets
+    ///   or assets in the wrong protocol order; `StellarSDKError.xdrDecodingError` if an asset code is empty,
+    ///   too short for its type, or not valid UTF-8.
     ///
     public static func fromXDR(operationXDR:OperationXDR) throws -> Operation {
         var mSourceAccountId: String?
@@ -117,6 +118,8 @@ public class Operation: @unchecked Sendable {
             return AllowTrustOperation(fromXDR: allowTrust, sourceAccountId: mSourceAccountId)
         case .accountMerge(let destination):
             return try AccountMergeOperation(destinationAccountId: destination.accountId, sourceAccountId: mSourceAccountId)
+        case .inflation:
+            return InflationOperation(sourceAccountId: mSourceAccountId)
         case .manageDataOp(let manageData):
             return ManageDataOperation(fromXDR: manageData, sourceAccountId: mSourceAccountId)
         case .bumpSequenceOp(let bumpSequenceData):
@@ -147,8 +150,6 @@ public class Operation: @unchecked Sendable {
             return ExtendFootprintTTLOperation(fromXDR: data, sourceAccountId: mSourceAccountId)
         case .restoreFootprintOp(let data):
             return RestoreFootprintOperation(fromXDR: data, sourceAccountId: mSourceAccountId)
-        default:
-            throw StellarSDKError.invalidArgument(message: "Unknown operation body \(operationXDR.body)")
         }
     }
 
