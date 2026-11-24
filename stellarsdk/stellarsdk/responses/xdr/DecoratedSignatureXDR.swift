@@ -15,13 +15,13 @@ public struct DecoratedSignatureXDR: XDRCodable, Sendable {
   public init(from decoder: Decoder) throws {
     var container = try decoder.unkeyedContainer()
     hint = try container.decode(SignatureHintXDR.self)
-    signature = try container.decode(SignatureXDR.self)
+    signature = try container.decodeOpaque(maxLength: 64)
   }
 
   public func encode(to encoder: Encoder) throws {
     var container = encoder.unkeyedContainer()
     try container.encode(hint)
-    try container.encode(signature)
+    try container.encodeOpaque(signature, maxLength: 64)
   }
 }
 
@@ -33,7 +33,7 @@ extension DecoratedSignatureXDR {
 
   public static func fromTxRep(_ map: [String: String], prefix: String) throws -> DecoratedSignatureXDR {
     let hint: SignatureHintXDR = try TxRepHelper.requireWrappedData4(map, "\(prefix).hint")
-    let signature: SignatureXDR = try TxRepHelper.requireHex(map, "\(prefix).signature")
+    let signature: SignatureXDR = try TxRepHelper.requireMaxLength(try TxRepHelper.requireHex(map, "\(prefix).signature"), 64, key: "\(prefix).signature")
     return DecoratedSignatureXDR(hint: hint, signature: signature)
   }
 }

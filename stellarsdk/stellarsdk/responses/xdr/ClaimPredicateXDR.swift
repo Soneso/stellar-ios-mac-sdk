@@ -19,10 +19,10 @@ public indirect enum ClaimPredicateXDR: XDRCodable, Sendable {
     case ClaimPredicateType.claimPredicateUnconditional.rawValue:
       self = .claimPredicateUnconditional
     case ClaimPredicateType.claimPredicateAnd.rawValue:
-      let val = try decodeArray(type: ClaimPredicateXDR.self, dec: decoder)
+      let val = try decodeArray(type: ClaimPredicateXDR.self, dec: decoder, maxCount: 2)
       self = .claimPredicateAnd(val)
     case ClaimPredicateType.claimPredicateOr.rawValue:
-      let val = try decodeArray(type: ClaimPredicateXDR.self, dec: decoder)
+      let val = try decodeArray(type: ClaimPredicateXDR.self, dec: decoder, maxCount: 2)
       self = .claimPredicateOr(val)
     case ClaimPredicateType.claimPredicateNot.rawValue:
       if try container.decode(Bool.self) {
@@ -60,9 +60,9 @@ public indirect enum ClaimPredicateXDR: XDRCodable, Sendable {
     case .claimPredicateUnconditional:
       break
     case .claimPredicateAnd(let val):
-      try container.encode(val)
+      try container.encodeArray(val, maxCount: 2)
     case .claimPredicateOr(let val):
-      try container.encode(val)
+      try container.encodeArray(val, maxCount: 2)
     case .claimPredicateNot(let val):
       if let val = val {
         try container.encode(Int32(1))
@@ -209,11 +209,11 @@ extension ClaimPredicateXDR: XdrJsonCodable {
       throw XdrJsonError.invalidValue(type: "ClaimPredicateXDR", key: "unconditional",
                                       message: "this arm carries no value, so it is written as a bare string")
     case "and":
-      let claimPredicateAndElements = try XdrJson.array(member.value, type: "ClaimPredicateXDR", key: "and")
+      let claimPredicateAndElements = try XdrJson.requireMaxCount(try XdrJson.array(member.value, type: "ClaimPredicateXDR", key: "and"), 2, type: "ClaimPredicateXDR", key: "and")
       let claimPredicateAnd: [ClaimPredicateXDR] = try claimPredicateAndElements.map { element in try ClaimPredicateXDR.fromXdrJsonValue(element) }
       return .claimPredicateAnd(claimPredicateAnd)
     case "or":
-      let claimPredicateOrElements = try XdrJson.array(member.value, type: "ClaimPredicateXDR", key: "or")
+      let claimPredicateOrElements = try XdrJson.requireMaxCount(try XdrJson.array(member.value, type: "ClaimPredicateXDR", key: "or"), 2, type: "ClaimPredicateXDR", key: "or")
       let claimPredicateOr: [ClaimPredicateXDR] = try claimPredicateOrElements.map { element in try ClaimPredicateXDR.fromXdrJsonValue(element) }
       return .claimPredicateOr(claimPredicateOr)
     case "not":

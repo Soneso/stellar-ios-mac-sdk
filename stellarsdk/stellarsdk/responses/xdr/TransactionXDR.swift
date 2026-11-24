@@ -44,7 +44,7 @@ public struct TransactionXDR: XDRCodable, Sendable {
         seqNum = try container.decode(Int64.self)
         cond = try container.decode(PreconditionsXDR.self)
         memo = try container.decode(MemoXDR.self)
-        operations = try decodeArray(type: OperationXDR.self, dec: decoder)
+        operations = try decodeArray(type: OperationXDR.self, dec: decoder, maxCount: 100)
         ext = try container.decode(TransactionExtXDR.self)
     }
     
@@ -56,7 +56,7 @@ public struct TransactionXDR: XDRCodable, Sendable {
         try container.encode(seqNum)
         try container.encode(cond)
         try container.encode(memo)
-        try container.encode(operations)
+        try container.encodeArray(operations, maxCount: 100)
         try container.encode(ext)
     }
     

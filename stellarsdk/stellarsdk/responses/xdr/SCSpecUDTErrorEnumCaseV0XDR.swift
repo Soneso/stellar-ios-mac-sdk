@@ -20,15 +20,15 @@ public struct SCSpecUDTErrorEnumCaseV0XDR: XDRCodable, Sendable {
 
   public init(from decoder: Decoder) throws {
     var container = try decoder.unkeyedContainer()
-    doc = try container.decode(String.self)
-    name = try container.decode(String.self)
+    doc = try container.decodeString(maxLength: 1024)
+    name = try container.decodeString(maxLength: 60)
     value = try container.decode(UInt32.self)
   }
 
   public func encode(to encoder: Encoder) throws {
     var container = encoder.unkeyedContainer()
-    try container.encode(doc)
-    try container.encode(name)
+    try container.encodeString(doc, maxLength: 1024)
+    try container.encodeString(name, maxLength: 60)
     try container.encode(value)
   }
 }
@@ -44,8 +44,8 @@ extension SCSpecUDTErrorEnumCaseV0XDR: XdrJsonCodable {
 
   public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> SCSpecUDTErrorEnumCaseV0XDR {
     let members = try XdrJson.object(value, type: "SCSpecUDTErrorEnumCaseV0XDR", keys: ["doc", "name", "value"])
-    let doc: String = try XdrJson.unescapedText(try XdrJson.field(members, key: "doc", type: "SCSpecUDTErrorEnumCaseV0XDR"), type: "SCSpecUDTErrorEnumCaseV0XDR", key: "doc")
-    let name: String = try XdrJson.unescapedText(try XdrJson.field(members, key: "name", type: "SCSpecUDTErrorEnumCaseV0XDR"), type: "SCSpecUDTErrorEnumCaseV0XDR", key: "name")
+    let doc: String = try XdrJson.requireMaxLength(try XdrJson.unescapedText(try XdrJson.field(members, key: "doc", type: "SCSpecUDTErrorEnumCaseV0XDR"), type: "SCSpecUDTErrorEnumCaseV0XDR", key: "doc"), 1024, type: "SCSpecUDTErrorEnumCaseV0XDR", key: "doc")
+    let name: String = try XdrJson.requireMaxLength(try XdrJson.unescapedText(try XdrJson.field(members, key: "name", type: "SCSpecUDTErrorEnumCaseV0XDR"), type: "SCSpecUDTErrorEnumCaseV0XDR", key: "name"), 60, type: "SCSpecUDTErrorEnumCaseV0XDR", key: "name")
     let valueField: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "value", type: "SCSpecUDTErrorEnumCaseV0XDR"), type: "SCSpecUDTErrorEnumCaseV0XDR", key: "value")
     return SCSpecUDTErrorEnumCaseV0XDR(
       doc: doc,

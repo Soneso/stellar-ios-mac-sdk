@@ -22,14 +22,14 @@ public struct AuthCertXDR: XDRCodable, Sendable {
     var container = try decoder.unkeyedContainer()
     pubkey = try container.decode(Curve25519PublicXDR.self)
     expiration = try container.decode(UInt64.self)
-    sig = try container.decode(SignatureXDR.self)
+    sig = try container.decodeOpaque(maxLength: 64)
   }
 
   public func encode(to encoder: Encoder) throws {
     var container = encoder.unkeyedContainer()
     try container.encode(pubkey)
     try container.encode(expiration)
-    try container.encode(sig)
+    try container.encodeOpaque(sig, maxLength: 64)
   }
 }
 

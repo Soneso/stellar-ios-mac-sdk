@@ -18,7 +18,7 @@ public enum MemoXDR: XDRCodable, Sendable {
     case MemoType.MEMO_TYPE_NONE.rawValue:
       self = .none
     case MemoType.MEMO_TYPE_TEXT.rawValue:
-      let val = try container.decode(Data.self)
+      let val = try container.decodeStringBytes(maxLength: 28)
       self = .text(val)
     case MemoType.MEMO_TYPE_ID.rawValue:
       let val = try container.decode(UInt64.self)
@@ -52,7 +52,7 @@ public enum MemoXDR: XDRCodable, Sendable {
     case .none:
       break
     case .text(let val):
-      try container.encode(val)
+      try container.encodeStringBytes(val, maxLength: 28)
     case .id(let val):
       try container.encode(val)
     case .hash(let val):
@@ -106,7 +106,7 @@ extension MemoXDR {
     case "MEMO_NONE":
       return .none
     case "MEMO_TEXT":
-      let val = try TxRepHelper.requireStringBytes(map, "\(prefix).text")
+      let val = try TxRepHelper.requireMaxLength(try TxRepHelper.requireStringBytes(map, "\(prefix).text"), 28, key: "\(prefix).text")
       return .text(val)
     case "MEMO_ID":
       let val = try TxRepHelper.parseUInt64(TxRepHelper.getValue(map, "\(prefix).id") ?? "0")
@@ -166,7 +166,7 @@ extension MemoXDR: XdrJsonCodable {
       throw XdrJsonError.invalidValue(type: "MemoXDR", key: "none",
                                       message: "this arm carries no value, so it is written as a bare string")
     case "text":
-      let text: Data = try XdrJson.unescapeString(member.value, type: "MemoXDR", key: "text")
+      let text: Data = try XdrJson.requireMaxLength(try XdrJson.unescapeString(member.value, type: "MemoXDR", key: "text"), 28, type: "MemoXDR", key: "text")
       return .text(text)
     case "id":
       let id: UInt64 = try Uint64XDRJsonCodec.fromXdrJsonValue(member.value, type: "MemoXDR", key: "id")

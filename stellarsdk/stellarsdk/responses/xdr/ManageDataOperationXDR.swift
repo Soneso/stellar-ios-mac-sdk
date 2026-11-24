@@ -14,9 +14,9 @@ public struct ManageDataOperationXDR: XDRCodable, Sendable {
 
   public init(from decoder: Decoder) throws {
     var container = try decoder.unkeyedContainer()
-    dataName = try container.decode(String.self)
+    dataName = try container.decodeString(maxLength: 64)
     if try container.decode(Bool.self) {
-      dataValue = try container.decode(DataValueXDR.self)
+      dataValue = try container.decodeOpaque(maxLength: 64)
     } else {
       dataValue = nil
     }
@@ -24,10 +24,10 @@ public struct ManageDataOperationXDR: XDRCodable, Sendable {
 
   public func encode(to encoder: Encoder) throws {
     var container = encoder.unkeyedContainer()
-    try container.encode(dataName)
+    try container.encodeString(dataName, maxLength: 64)
     if let val = dataValue {
       try container.encode(Int32(1))
-      try container.encode(val)
+      try container.encodeOpaque(val, maxLength: 64)
     } else {
       try container.encode(Int32(0))
     }
@@ -46,10 +46,10 @@ extension ManageDataOperationXDR {
   }
 
   public static func fromTxRep(_ map: [String: String], prefix: String) throws -> ManageDataOperationXDR {
-    let dataName: String = try TxRepHelper.requireString(map, "\(prefix).dataName")
+    let dataName: String = try TxRepHelper.requireMaxLength(try TxRepHelper.requireString(map, "\(prefix).dataName"), 64, key: "\(prefix).dataName")
     let dataValue: DataValueXDR?
     if TxRepHelper.getValue(map, "\(prefix).dataValue._present") == "true" {
-      dataValue = try TxRepHelper.hexToBytes(TxRepHelper.getValue(map, "\(prefix).dataValue") ?? "")
+      dataValue = try TxRepHelper.requireMaxLength(try TxRepHelper.hexToBytes(TxRepHelper.getValue(map, "\(prefix).dataValue") ?? ""), 64, key: "\(prefix).dataValue")
     } else {
       dataValue = nil
     }

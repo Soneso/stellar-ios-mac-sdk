@@ -25,7 +25,7 @@ public struct StellarValueXDR: XDRCodable, Sendable {
     var container = try decoder.unkeyedContainer()
     txSetHash = try container.decode(HashXDR.self)
     closeTime = try container.decode(UInt64.self)
-    upgrades = try decodeArray(type: UpgradeTypeXDR.self, dec: decoder)
+    upgrades = try decodeOpaqueArray(dec: decoder, maxCount: 6, maxLength: 128)
     ext = try container.decode(StellarValueXDRExtXDR.self)
   }
 
@@ -33,7 +33,7 @@ public struct StellarValueXDR: XDRCodable, Sendable {
     var container = encoder.unkeyedContainer()
     try container.encode(txSetHash)
     try container.encode(closeTime)
-    try container.encode(upgrades)
+    try container.encodeOpaqueArray(upgrades, maxCount: 6, maxLength: 128)
     try container.encode(ext)
   }
 }
@@ -52,7 +52,7 @@ extension StellarValueXDR: XdrJsonCodable {
     let members = try XdrJson.object(value, type: "StellarValueXDR", keys: ["tx_set_hash", "close_time", "upgrades", "ext"])
     let txSetHash: HashXDR = try HashXDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "tx_set_hash", type: "StellarValueXDR"), type: "StellarValueXDR", key: "tx_set_hash")
     let closeTime: UInt64 = try TimePointXDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "close_time", type: "StellarValueXDR"), type: "StellarValueXDR", key: "close_time")
-    let upgradesElements = try XdrJson.array(try XdrJson.field(members, key: "upgrades", type: "StellarValueXDR"), type: "StellarValueXDR", key: "upgrades")
+    let upgradesElements = try XdrJson.requireMaxCount(try XdrJson.array(try XdrJson.field(members, key: "upgrades", type: "StellarValueXDR"), type: "StellarValueXDR", key: "upgrades"), 6, type: "StellarValueXDR", key: "upgrades")
     let upgrades: [UpgradeTypeXDR] = try upgradesElements.map { element in try UpgradeTypeXDRJsonCodec.fromXdrJsonValue(element, type: "StellarValueXDR", key: "upgrades") }
     let ext: StellarValueXDRExtXDR = try StellarValueXDRExtXDR.fromXdrJsonValue(try XdrJson.field(members, key: "ext", type: "StellarValueXDR"))
     return StellarValueXDR(

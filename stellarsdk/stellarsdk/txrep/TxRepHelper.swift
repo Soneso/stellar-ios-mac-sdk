@@ -975,6 +975,39 @@ public final class TxRepHelper: Sendable {
         }
     }
 
+    /// Require a string value to hold at most the bytes its XDR definition declares.
+    ///
+    /// The length is the byte count of the value's UTF-8 form.
+    ///
+    /// - Parameter value: The value read for `key`
+    /// - Parameter maxLength: Maximum byte length the XDR definition declares
+    /// - Parameter key: The TxRep key the value was read from
+    /// - Returns: `value`
+    /// - Throws: `TxRepError.invalidValue` with the key `"<key> > <maxLength>"` when the value
+    ///   is longer
+    static func requireMaxLength(_ value: String, _ maxLength: Int, key: String) throws -> String {
+        guard value.utf8.count <= maxLength else {
+            throw TxRepError.invalidValue(key: "\(key) > \(maxLength)")
+        }
+        return value
+    }
+
+    /// Require a string or opaque value held as bytes to hold at most the bytes its XDR
+    /// definition declares.
+    ///
+    /// - Parameter value: The bytes read for `key`
+    /// - Parameter maxLength: Maximum byte length the XDR definition declares
+    /// - Parameter key: The TxRep key the value was read from
+    /// - Returns: `value`
+    /// - Throws: `TxRepError.invalidValue` with the key `"<key> > <maxLength>"` when the value
+    ///   is longer
+    static func requireMaxLength(_ value: Data, _ maxLength: Int, key: String) throws -> Data {
+        guard value.count <= maxLength else {
+            throw TxRepError.invalidValue(key: "\(key) > \(maxLength)")
+        }
+        return value
+    }
+
     /// Require an `Int64` field from the map.
     public static func requireInt64(_ map: [String: String], _ key: String) throws -> Int64 {
         guard let raw = getValue(map, key) else {

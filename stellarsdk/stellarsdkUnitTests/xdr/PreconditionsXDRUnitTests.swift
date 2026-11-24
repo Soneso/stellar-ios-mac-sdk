@@ -317,8 +317,7 @@ class PreconditionsXDRUnitTests: XCTestCase {
         let minSeqLedgerGap: UInt32 = 100
 
         let signerKey1 = SignerKeyXDR.ed25519(WrappedData32(Data(repeating: 0xAB, count: 32)))
-        let signerKey2 = SignerKeyXDR.preAuthTx(WrappedData32(Data(repeating: 0xCD, count: 32)))
-        let signerKey3 = SignerKeyXDR.hashX(WrappedData32(Data(repeating: 0xEF, count: 32)))
+        let signerKey2 = SignerKeyXDR.hashX(WrappedData32(Data(repeating: 0xEF, count: 32)))
 
         let v2 = PreconditionsV2XDR(
             timeBounds: timeBounds,
@@ -326,7 +325,7 @@ class PreconditionsXDRUnitTests: XCTestCase {
             sequenceNumber: sequenceNumber,
             minSeqAge: minSeqAge,
             minSeqLedgerGap: minSeqLedgerGap,
-            extraSigners: [signerKey1, signerKey2, signerKey3]
+            extraSigners: [signerKey1, signerKey2]
         )
         let preconditions = PreconditionsXDR.v2(v2)
 
@@ -345,7 +344,7 @@ class PreconditionsXDRUnitTests: XCTestCase {
             XCTAssertEqual(decodedV2.sequenceNumber, sequenceNumber)
             XCTAssertEqual(decodedV2.minSeqAge, minSeqAge)
             XCTAssertEqual(decodedV2.minSeqLedgerGap, minSeqLedgerGap)
-            XCTAssertEqual(decodedV2.extraSigners.count, 3)
+            XCTAssertEqual(decodedV2.extraSigners.count, 2)
         default:
             XCTFail("Expected .v2 precondition")
         }
@@ -377,54 +376,43 @@ class PreconditionsXDRUnitTests: XCTestCase {
     }
 
     func testPreconditionsXDRV2MultipleExtraSigners() throws {
-        let signerKey1 = SignerKeyXDR.ed25519(WrappedData32(Data(repeating: 0x11, count: 32)))
-        let signerKey2 = SignerKeyXDR.preAuthTx(WrappedData32(Data(repeating: 0x22, count: 32)))
-        let signerKey3 = SignerKeyXDR.hashX(WrappedData32(Data(repeating: 0x33, count: 32)))
-        let signerKey4 = SignerKeyXDR.ed25519(WrappedData32(Data(repeating: 0x44, count: 32)))
+        // A transaction carries at most two extra signers, so the four signer keys are
+        // round-tripped in two pairs.
+        let pairs: [[(SignerKeyXDR, String, UInt8)]] = [
+            [(.ed25519(WrappedData32(Data(repeating: 0x11, count: 32))), "ed25519", 0x11),
+             (.preAuthTx(WrappedData32(Data(repeating: 0x22, count: 32))), "preAuthTx", 0x22)],
+            [(.hashX(WrappedData32(Data(repeating: 0x33, count: 32))), "hashX", 0x33),
+             (.ed25519(WrappedData32(Data(repeating: 0x44, count: 32))), "ed25519", 0x44)],
+        ]
 
-        let v2 = PreconditionsV2XDR(
-            timeBounds: nil,
-            ledgerBounds: nil,
-            sequenceNumber: nil,
-            minSeqAge: 0,
-            minSeqLedgerGap: 0,
-            extraSigners: [signerKey1, signerKey2, signerKey3, signerKey4]
-        )
-        let preconditions = PreconditionsXDR.v2(v2)
+        for pair in pairs {
+            let v2 = PreconditionsV2XDR(
+                timeBounds: nil,
+                ledgerBounds: nil,
+                sequenceNumber: nil,
+                minSeqAge: 0,
+                minSeqLedgerGap: 0,
+                extraSigners: pair.map { $0.0 }
+            )
+            let preconditions = PreconditionsXDR.v2(v2)
 
-        let encoded = try XDREncoder.encode(preconditions)
-        let decoded = try XDRDecoder.decode(PreconditionsXDR.self, data: encoded)
+            let encoded = try XDREncoder.encode(preconditions)
+            let decoded = try XDRDecoder.decode(PreconditionsXDR.self, data: encoded)
 
-        switch decoded {
-        case .v2(let decodedV2):
-            XCTAssertEqual(decodedV2.extraSigners.count, 4)
-
-            // Verify each signer type
-            if case .ed25519(let data) = decodedV2.extraSigners[0] {
-                XCTAssertEqual(data.wrapped, Data(repeating: 0x11, count: 32))
-            } else {
-                XCTFail("Expected ed25519 signer at index 0")
+            guard case .v2(let decodedV2) = decoded else {
+                XCTFail("Expected .v2 precondition")
+                continue
             }
-
-            if case .preAuthTx(let data) = decodedV2.extraSigners[1] {
-                XCTAssertEqual(data.wrapped, Data(repeating: 0x22, count: 32))
-            } else {
-                XCTFail("Expected preAuthTx signer at index 1")
+            XCTAssertEqual(decodedV2.extraSigners.count, 2)
+            for (index, (_, type, byte)) in pair.enumerated() {
+                let expected = Data(repeating: byte, count: 32)
+                switch (type, decodedV2.extraSigners[index]) {
+                case ("ed25519", .ed25519(let data)), ("preAuthTx", .preAuthTx(let data)), ("hashX", .hashX(let data)):
+                    XCTAssertEqual(data.wrapped, expected)
+                default:
+                    XCTFail("Expected \(type) signer at index \(index), got \(decodedV2.extraSigners[index])")
+                }
             }
-
-            if case .hashX(let data) = decodedV2.extraSigners[2] {
-                XCTAssertEqual(data.wrapped, Data(repeating: 0x33, count: 32))
-            } else {
-                XCTFail("Expected hashX signer at index 2")
-            }
-
-            if case .ed25519(let data) = decodedV2.extraSigners[3] {
-                XCTAssertEqual(data.wrapped, Data(repeating: 0x44, count: 32))
-            } else {
-                XCTFail("Expected ed25519 signer at index 3")
-            }
-        default:
-            XCTFail("Expected .v2 precondition")
         }
     }
 

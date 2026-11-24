@@ -48,6 +48,42 @@ private func requireArrayCount<Count: BinaryInteger>(_ count: Count, minElementW
 /// - Throws: StellarSDKError.xdrDecodingError if the count exceeds `maxCount` or the remaining
 ///   bytes, XDRDecoder.Error if decoding an element fails
 func decodeArray<T: Codable>(type:T.Type, dec:Decoder, maxCount: UInt32 = UInt32.max) throws -> [T] {
+    return try decodeArray(dec: dec, maxCount: maxCount) { try $0.decode(type) }
+}
+
+/// Decodes an array of XDR strings, each at most `maxLength` bytes of UTF-8.
+///
+/// The array count is validated as `decodeArray(type:dec:maxCount:)` validates it, and each
+/// element's length before its bytes are read.
+///
+/// - Parameter dec: Decoder to read from
+/// - Parameter maxCount: Maximum number of elements the schema allows
+/// - Parameter maxLength: Maximum byte length the schema allows for each element
+/// - Returns: Decoded array of strings
+/// - Throws: StellarSDKError.xdrDecodingError if the count or an element's length exceeds its
+///   maximum, XDRDecoder.Error if decoding an element fails
+func decodeStringArray(dec: Decoder, maxCount: UInt32 = UInt32.max, maxLength: UInt32) throws -> [String] {
+    return try decodeArray(dec: dec, maxCount: maxCount) { try $0.decodeString(maxLength: maxLength) }
+}
+
+/// Decodes an array of variable-length opaque values, each at most `maxLength` bytes.
+///
+/// The array count is validated as `decodeArray(type:dec:maxCount:)` validates it, and each
+/// element's length before its bytes are read.
+///
+/// - Parameter dec: Decoder to read from
+/// - Parameter maxCount: Maximum number of elements the schema allows
+/// - Parameter maxLength: Maximum byte length the schema allows for each element
+/// - Returns: Decoded array of byte values
+/// - Throws: StellarSDKError.xdrDecodingError if the count or an element's length exceeds its
+///   maximum, XDRDecoder.Error if decoding an element fails
+func decodeOpaqueArray(dec: Decoder, maxCount: UInt32 = UInt32.max, maxLength: UInt32) throws -> [Data] {
+    return try decodeArray(dec: dec, maxCount: maxCount) { try $0.decodeOpaque(maxLength: maxLength) }
+}
+
+/// Reads a variable-length array's count, validates it against `maxCount` and the remaining
+/// bytes before storage is reserved, then reads each element with `element`.
+private func decodeArray<T>(dec: Decoder, maxCount: UInt32, element: (XDRDecoder) throws -> T) throws -> [T] {
     guard let decoder = dec as? XDRDecoder else {
         throw XDRDecoder.Error.typeNotConformingToDecodable(Decoder.Type.self)
     }
@@ -60,8 +96,7 @@ func decodeArray<T: Codable>(type:T.Type, dec:Decoder, maxCount: UInt32 = UInt32
     var array = [T]()
     array.reserveCapacity(Int(count))
     for _ in 0 ..< count {
-        let decoded = try decoder.decode(type)
-        array.append(decoded)
+        array.append(try element(decoder))
     }
 
     return array
@@ -111,12 +146,17 @@ func decodeArrayOfOptional<T: Codable>(type: T.Type, dec: Decoder, maxCount: UIn
 ///
 /// - Parameter array: Array of optional elements to encode
 /// - Parameter enc: Encoder to write to
-/// - Throws: XDREncoder.Error if encoding fails
-func encodeArrayOfOptional<T: Encodable>(_ array: [T?], enc: Encoder) throws {
+/// - Parameter maxCount: Maximum number of elements the schema allows
+/// - Throws: StellarSDKError.xdrEncodingError if the array holds more than `maxCount` elements
+///   and the encoder applies the declared maxima, XDREncoder.Error if encoding fails
+func encodeArrayOfOptional<T: Encodable>(_ array: [T?], enc: Encoder, maxCount: UInt32 = UInt32.max) throws {
     guard let encoder = enc as? XDREncoder else {
         throw XDREncoder.Error.typeNotConformingToXDREncodable(type(of: enc))
     }
 
+    if encoder.enforcesDeclaredMaxima {
+        try requireEncodedArrayCount(array.count, maxCount: maxCount)
+    }
     try encoder.encode(UInt32(array.count))
     for element in array {
         if let value = element {

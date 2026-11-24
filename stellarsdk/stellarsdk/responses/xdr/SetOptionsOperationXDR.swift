@@ -74,7 +74,7 @@ public struct SetOptionsOperationXDR: XDRCodable, Sendable {
       highThreshold = nil
     }
     if try container.decode(Bool.self) {
-      homeDomain = try container.decode(String.self)
+      homeDomain = try container.decodeString(maxLength: 32)
     } else {
       homeDomain = nil
     }
@@ -131,7 +131,7 @@ public struct SetOptionsOperationXDR: XDRCodable, Sendable {
     }
     if let val = homeDomain {
       try container.encode(Int32(1))
-      try container.encode(val)
+      try container.encodeString(val, maxLength: 32)
     } else {
       try container.encode(Int32(0))
     }
@@ -247,7 +247,7 @@ extension SetOptionsOperationXDR {
     }
     let homeDomain: String?
     if TxRepHelper.getValue(map, "\(prefix).homeDomain._present") == "true" {
-      homeDomain = try TxRepHelper.unescapeString(TxRepHelper.getValue(map, "\(prefix).homeDomain") ?? "")
+      homeDomain = try TxRepHelper.requireMaxLength(try TxRepHelper.unescapeString(TxRepHelper.getValue(map, "\(prefix).homeDomain") ?? ""), 32, key: "\(prefix).homeDomain")
     } else {
       homeDomain = nil
     }

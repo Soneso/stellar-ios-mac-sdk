@@ -23,18 +23,18 @@ public struct SCSpecFunctionV0XDR: XDRCodable, Sendable {
 
   public init(from decoder: Decoder) throws {
     var container = try decoder.unkeyedContainer()
-    doc = try container.decode(String.self)
-    name = try container.decode(String.self)
+    doc = try container.decodeString(maxLength: 1024)
+    name = try container.decodeString(maxLength: 32)
     inputs = try decodeArray(type: SCSpecFunctionInputV0XDR.self, dec: decoder)
-    outputs = try decodeArray(type: SCSpecTypeDefXDR.self, dec: decoder)
+    outputs = try decodeArray(type: SCSpecTypeDefXDR.self, dec: decoder, maxCount: 1)
   }
 
   public func encode(to encoder: Encoder) throws {
     var container = encoder.unkeyedContainer()
-    try container.encode(doc)
-    try container.encode(name)
+    try container.encodeString(doc, maxLength: 1024)
+    try container.encodeString(name, maxLength: 32)
     try container.encode(inputs)
-    try container.encode(outputs)
+    try container.encodeArray(outputs, maxCount: 1)
   }
 }
 
@@ -50,11 +50,11 @@ extension SCSpecFunctionV0XDR: XdrJsonCodable {
 
   public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> SCSpecFunctionV0XDR {
     let members = try XdrJson.object(value, type: "SCSpecFunctionV0XDR", keys: ["doc", "name", "inputs", "outputs"])
-    let doc: String = try XdrJson.unescapedText(try XdrJson.field(members, key: "doc", type: "SCSpecFunctionV0XDR"), type: "SCSpecFunctionV0XDR", key: "doc")
+    let doc: String = try XdrJson.requireMaxLength(try XdrJson.unescapedText(try XdrJson.field(members, key: "doc", type: "SCSpecFunctionV0XDR"), type: "SCSpecFunctionV0XDR", key: "doc"), 1024, type: "SCSpecFunctionV0XDR", key: "doc")
     let name: String = try SCSymbolXDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "name", type: "SCSpecFunctionV0XDR"), type: "SCSpecFunctionV0XDR", key: "name")
     let inputsElements = try XdrJson.array(try XdrJson.field(members, key: "inputs", type: "SCSpecFunctionV0XDR"), type: "SCSpecFunctionV0XDR", key: "inputs")
     let inputs: [SCSpecFunctionInputV0XDR] = try inputsElements.map { element in try SCSpecFunctionInputV0XDR.fromXdrJsonValue(element) }
-    let outputsElements = try XdrJson.array(try XdrJson.field(members, key: "outputs", type: "SCSpecFunctionV0XDR"), type: "SCSpecFunctionV0XDR", key: "outputs")
+    let outputsElements = try XdrJson.requireMaxCount(try XdrJson.array(try XdrJson.field(members, key: "outputs", type: "SCSpecFunctionV0XDR"), type: "SCSpecFunctionV0XDR", key: "outputs"), 1, type: "SCSpecFunctionV0XDR", key: "outputs")
     let outputs: [SCSpecTypeDefXDR] = try outputsElements.map { element in try SCSpecTypeDefXDR.fromXdrJsonValue(element) }
     return SCSpecFunctionV0XDR(
       doc: doc,

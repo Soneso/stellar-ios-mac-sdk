@@ -22,14 +22,14 @@ public struct CreateClaimableBalanceOpXDR: XDRCodable, Sendable {
     var container = try decoder.unkeyedContainer()
     asset = try container.decode(AssetXDR.self)
     amount = try container.decode(Int64.self)
-    claimants = try decodeArray(type: ClaimantXDR.self, dec: decoder)
+    claimants = try decodeArray(type: ClaimantXDR.self, dec: decoder, maxCount: 10)
   }
 
   public func encode(to encoder: Encoder) throws {
     var container = encoder.unkeyedContainer()
     try container.encode(asset)
     try container.encode(amount)
-    try container.encode(claimants)
+    try container.encodeArray(claimants, maxCount: 10)
   }
 }
 
@@ -72,7 +72,7 @@ extension CreateClaimableBalanceOpXDR: XdrJsonCodable {
     let members = try XdrJson.object(value, type: "CreateClaimableBalanceOpXDR", keys: ["asset", "amount", "claimants"])
     let asset: AssetXDR = try AssetXDR.fromXdrJsonValue(try XdrJson.field(members, key: "asset", type: "CreateClaimableBalanceOpXDR"))
     let amount: Int64 = try Int64XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "amount", type: "CreateClaimableBalanceOpXDR"), type: "CreateClaimableBalanceOpXDR", key: "amount")
-    let claimantsElements = try XdrJson.array(try XdrJson.field(members, key: "claimants", type: "CreateClaimableBalanceOpXDR"), type: "CreateClaimableBalanceOpXDR", key: "claimants")
+    let claimantsElements = try XdrJson.requireMaxCount(try XdrJson.array(try XdrJson.field(members, key: "claimants", type: "CreateClaimableBalanceOpXDR"), type: "CreateClaimableBalanceOpXDR", key: "claimants"), 10, type: "CreateClaimableBalanceOpXDR", key: "claimants")
     let claimants: [ClaimantXDR] = try claimantsElements.map { element in try ClaimantXDR.fromXdrJsonValue(element) }
     return CreateClaimableBalanceOpXDR(
       asset: asset,

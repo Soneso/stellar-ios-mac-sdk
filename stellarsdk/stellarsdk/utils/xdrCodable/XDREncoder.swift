@@ -41,7 +41,24 @@ public extension XDREncodable {
 public class XDREncoder: @unchecked Sendable {
     public var data: [UInt8] = []
 
-    public init() {}
+    /// Whether the bounded encode helpers refuse a value above the maximum its XDR definition
+    /// declares. The nested values of a value are written to the same encoder, so the setting
+    /// holds for all of them.
+    let enforcesDeclaredMaxima: Bool
+
+    public init() {
+        enforcesDeclaredMaxima = true
+    }
+
+    /// Creates an encoder that applies the declared maxima only when `enforcingDeclaredMaxima`
+    /// is true. Without them it writes a value above a declared maximum as it is, for byte
+    /// comparisons that must accept such a value. Every other check stays, such as the width
+    /// of a fixed-length field.
+    ///
+    /// - Parameter enforcingDeclaredMaxima: Whether a value above its declared maximum throws
+    init(enforcingDeclaredMaxima: Bool) {
+        enforcesDeclaredMaxima = enforcingDeclaredMaxima
+    }
 }
 
 /// A convenience function for creating an encoder, encoding a value, and
@@ -180,7 +197,7 @@ extension XDREncoder: Encoder {
         }
     }
     
-    private struct UnkeyedContanier: UnkeyedEncodingContainer, SingleValueEncodingContainer {
+    private struct UnkeyedContanier: UnkeyedEncodingContainer, SingleValueEncodingContainer, XDREncodingContainer {
         var encoder: XDREncoder
         
         var codingPath: [CodingKey] { return [] }

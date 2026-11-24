@@ -905,20 +905,25 @@ public final class OZPolicyManager: OZManagerHelpers, @unchecked Sendable {
 
     /// Encodes an `SCValXDR` value to its raw XDR byte sequence.
     ///
+    /// The bytes compare and hash the default policies of an `OZSmartAccountConfig`, so a
+    /// value above a maximum its XDR definition declares is written as it is: such a config
+    /// still equals itself and differs from a config with another value.
+    ///
     /// Exposed at `internal` visibility so unit tests can verify byte-level
     /// encoding determinism without exporting the helper to SDK consumers.
     ///
     /// - Parameter scVal: The value to encode.
     /// - Returns: The XDR-encoded byte sequence.
     internal static func scValToXdrBytes(_ scVal: SCValXDR) -> [UInt8] {
+        let encoder = XDREncoder(enforcingDeclaredMaxima: false)
         do {
-            return try XDREncoder.encode(scVal)
+            try scVal.xdrEncode(to: encoder)
         } catch {
-            // why: every `SCValXDR` is serializable by construction, so a
-            // failure here signals a malformed value produced upstream. Trap
-            // rather than return empty bytes, which would collapse distinct
-            // values onto byte-equal sort keys.
+            // Without the declared maxima, encoding fails only for a value that has no XDR
+            // form, such as a fixed-width field of another width. Trap rather than return
+            // empty bytes, which would make distinct values compare equal.
             preconditionFailure("SCValXDR encoding must not fail: \(error)")
         }
+        return encoder.data
     }
 }

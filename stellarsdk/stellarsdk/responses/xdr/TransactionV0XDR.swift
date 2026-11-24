@@ -46,7 +46,7 @@ public struct TransactionV0XDR: XDRCodable, Sendable {
             timeBounds = nil
         }
         memo = try container.decode(MemoXDR.self)
-        operations = try decodeArray(type: OperationXDR.self, dec: decoder)
+        operations = try decodeArray(type: OperationXDR.self, dec: decoder, maxCount: 100)
         reserved = try container.decodeExtensionPoint("TransactionV0XDR")
     }
     
@@ -62,7 +62,7 @@ public struct TransactionV0XDR: XDRCodable, Sendable {
             try container.encode([TimeBoundsXDR]())
         }
         try container.encode(memo)
-        try container.encode(operations)
+        try container.encodeArray(operations, maxCount: 100)
         try container.encode(reserved)
     }
     

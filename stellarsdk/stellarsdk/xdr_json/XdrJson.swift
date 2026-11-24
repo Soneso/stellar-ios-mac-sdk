@@ -539,6 +539,45 @@ internal enum XdrJson {
         return text
     }
 
+    // MARK: - Declared maxima
+
+    /// Requires a string to hold at most the bytes its XDR definition declares, counted in
+    /// its UTF-8 form.
+    static func requireMaxLength(_ text: String, _ maxLength: Int,
+                                 type: String, key: String? = nil) throws -> String {
+        try requireMaxLength(byteCount: text.utf8.count, maxLength, type: type, key: key)
+        return text
+    }
+
+    /// Requires a string or opaque value held as bytes to hold at most the bytes its XDR
+    /// definition declares.
+    static func requireMaxLength(_ data: Data, _ maxLength: Int,
+                                 type: String, key: String? = nil) throws -> Data {
+        try requireMaxLength(byteCount: data.count, maxLength, type: type, key: key)
+        return data
+    }
+
+    /// Requires the elements of a variable-length array to number at most the maximum its
+    /// XDR definition declares.
+    static func requireMaxCount(_ elements: [XdrJsonValue], _ maxCount: Int,
+                                type: String, key: String? = nil) throws -> [XdrJsonValue] {
+        guard elements.count <= maxCount else {
+            throw XdrJsonError.invalidValue(
+                type: type, key: key,
+                message: "expected at most \(maxCount) elements, got \(elements.count)")
+        }
+        return elements
+    }
+
+    private static func requireMaxLength(byteCount: Int, _ maxLength: Int,
+                                         type: String, key: String?) throws {
+        guard byteCount <= maxLength else {
+            throw XdrJsonError.invalidValue(
+                type: type, key: key,
+                message: "expected at most \(maxLength) bytes, got \(byteCount)")
+        }
+    }
+
     // MARK: - Wide integers
 
     /// Renders a 128-bit or 256-bit two's-complement value as the single decimal string

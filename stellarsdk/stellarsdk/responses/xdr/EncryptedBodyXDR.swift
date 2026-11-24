@@ -23,7 +23,7 @@ public enum EncryptedBodyXDRJsonCodec {
   }
 
   static func fromXdrJsonValue(_ value: XdrJsonValue, type: String, key: String?) throws -> EncryptedBodyXDR {
-    let decoded: Data = try XdrJson.hex(value, type: type, key: key)
+    let decoded: Data = try XdrJson.requireMaxLength(try XdrJson.hex(value, type: type, key: key), 64000, type: type, key: key)
     return decoded
   }
 

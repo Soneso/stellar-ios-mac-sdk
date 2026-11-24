@@ -440,7 +440,173 @@ final class Sep51NegativeInputUnitTests: XCTestCase {
         }
     }
 
+    // MARK: - Declared maxima
+
+    // Writing XDR-JSON applies no maximum, so each oversized document below is the rendering of
+    // a value the binary encoder would refuse.
+
+    func testStringAtItsDeclaredMaximumIsReadAndOneByteMoreIsRejected() throws {
+        let atMaximum = #"{"text":"aaaaaaaaaaaaaaaaaaaaaaaaaaaa"}"#
+        XCTAssertEqual(try MemoXDR.text(Data(repeating: 0x61, count: 28)).toXdrJson(), atMaximum)
+        guard case .text(let text) = try MemoXDR.fromXdrJson(atMaximum) else {
+            return XCTFail("expected the text arm")
+        }
+        XCTAssertEqual(text, Data(repeating: 0x61, count: 28))
+
+        Self.assertAboveDeclaredMaximum(try MemoXDR.fromXdrJson(#"{"text":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}"#),
+                                        type: "MemoXDR", key: "text", message: "expected at most 28 bytes, got 29")
+
+        let multiByte = try MemoXDR.text(Data((String(repeating: "é", count: 14) + "a").utf8)).toXdrJson()
+        Self.assertAboveDeclaredMaximum(try MemoXDR.fromXdrJson(multiByte),
+                                        type: "MemoXDR", key: "text", message: "expected at most 28 bytes, got 29")
+    }
+
+    func testStringTypedefsAboveTheirDeclaredMaximumAreRejectedWhereTheyAreDeclared() throws {
+        let symbol = try SCValXDR.symbol(String(repeating: "s", count: 33)).toXdrJson()
+        Self.assertAboveDeclaredMaximum(try SCValXDR.fromXdrJson(symbol),
+                                        type: "SCValXDR", key: "symbol", message: "expected at most 32 bytes, got 33")
+
+        let dataName = try ManageDataOperationXDR(dataName: String(repeating: "n", count: 65)).toXdrJson()
+        Self.assertAboveDeclaredMaximum(try ManageDataOperationXDR.fromXdrJson(dataName),
+                                        type: "ManageDataOperationXDR", key: "data_name",
+                                        message: "expected at most 64 bytes, got 65")
+
+        let functionName = try InvokeContractArgsXDR(contractAddress: .contract(WrappedData32(Data(repeating: 1, count: 32))),
+                                                     functionName: Data(repeating: 0x66, count: 33), args: []).toXdrJson()
+        Self.assertAboveDeclaredMaximum(try InvokeContractArgsXDR.fromXdrJson(functionName),
+                                        type: "InvokeContractArgsXDR", key: "function_name",
+                                        message: "expected at most 32 bytes, got 33")
+    }
+
+    func testOpaqueTypedefsAboveTheirDeclaredMaximumAreRejected() throws {
+        let hint = WrappedData4(Data([1, 2, 3, 4]))
+        let atMaximum = DecoratedSignatureXDR(hint: hint, signature: Data(repeating: 0x33, count: 64))
+        XCTAssertEqual(try DecoratedSignatureXDR.fromXdrJson(try atMaximum.toXdrJson()).signature, atMaximum.signature)
+
+        let signature = try DecoratedSignatureXDR(hint: hint, signature: Data(repeating: 0x33, count: 65)).toXdrJson()
+        Self.assertAboveDeclaredMaximum(try DecoratedSignatureXDR.fromXdrJson(signature),
+                                        type: "DecoratedSignatureXDR", key: "signature",
+                                        message: "expected at most 64 bytes, got 65")
+
+        let dataValue = try ManageDataOperationXDR(dataName: "n", dataValue: Data(repeating: 0x76, count: 65)).toXdrJson()
+        Self.assertAboveDeclaredMaximum(try ManageDataOperationXDR.fromXdrJson(dataValue),
+                                        type: "ManageDataOperationXDR", key: "data_value",
+                                        message: "expected at most 64 bytes, got 65")
+    }
+
+    func testOperationsAndSignaturesAboveTheirDeclaredMaximumAreRejected() throws {
+        let source = try PublicKey(accountId: "GAVRMS4QIOCC4QMOSKILOOOHCSO4FEKOXZPNLKFFN6W7SD2KUB7NBPLN")
+        let operation = OperationXDR(body: .bumpSequenceOp(BumpSequenceOperationXDR(bumpTo: 1)))
+        func transaction(_ count: Int) -> TransactionXDR {
+            TransactionXDR(sourceAccount: source, seqNum: 1, cond: .none, memo: .none,
+                           operations: [OperationXDR](repeating: operation, count: count))
+        }
+        func transactionV0(_ count: Int) -> TransactionV0XDR {
+            TransactionV0XDR(sourceAccount: source, seqNum: 1, timeBounds: nil, memo: .none,
+                             operations: [OperationXDR](repeating: operation, count: count))
+        }
+
+        XCTAssertEqual(try TransactionXDR.fromXdrJson(try transaction(100).toXdrJson()).operations.count, 100)
+        Self.assertAboveDeclaredMaximum(try TransactionXDR.fromXdrJson(try transaction(101).toXdrJson()),
+                                        type: "TransactionXDR", key: "operations",
+                                        message: "expected at most 100 elements, got 101")
+        Self.assertAboveDeclaredMaximum(try TransactionV0XDR.fromXdrJson(try transactionV0(101).toXdrJson()),
+                                        type: "TransactionV0XDR", key: "operations",
+                                        message: "expected at most 100 elements, got 101")
+
+        let signature = DecoratedSignatureXDR(hint: WrappedData4(Data([1, 2, 3, 4])),
+                                              signature: Data(repeating: 0x33, count: 64))
+        let twenty = [DecoratedSignatureXDR](repeating: signature, count: 20)
+        let twentyOne = [DecoratedSignatureXDR](repeating: signature, count: 21)
+        let v1AtMaximum = try TransactionV1EnvelopeXDR(tx: transaction(1), signatures: twenty).toXdrJson()
+        XCTAssertEqual(try TransactionV1EnvelopeXDR.fromXdrJson(v1AtMaximum).signatures.count, 20)
+
+        Self.assertAboveDeclaredMaximum(
+            try TransactionV1EnvelopeXDR.fromXdrJson(
+                try TransactionV1EnvelopeXDR(tx: transaction(1), signatures: twentyOne).toXdrJson()),
+            type: "TransactionV1EnvelopeXDR", key: "signatures", message: "expected at most 20 elements, got 21")
+        Self.assertAboveDeclaredMaximum(
+            try TransactionV0EnvelopeXDR.fromXdrJson(
+                try TransactionV0EnvelopeXDR(tx: transactionV0(1), signatures: twentyOne).toXdrJson()),
+            type: "TransactionV0EnvelopeXDR", key: "signatures", message: "expected at most 20 elements, got 21")
+        let feeBump = FeeBumpTransactionXDR(
+            sourceAccount: .ed25519(source.bytes),
+            innerTx: .v1(TransactionV1EnvelopeXDR(tx: transaction(1), signatures: [])), fee: 200)
+        Self.assertAboveDeclaredMaximum(
+            try FeeBumpTransactionEnvelopeXDR.fromXdrJson(
+                try FeeBumpTransactionEnvelopeXDR(tx: feeBump, signatures: twentyOne).toXdrJson()),
+            type: "FeeBumpTransactionEnvelopeXDR", key: "signatures", message: "expected at most 20 elements, got 21")
+    }
+
+    func testGeneratedArraysAboveTheirDeclaredMaximumAreRejected() throws {
+        let source = try PublicKey(accountId: "GAVRMS4QIOCC4QMOSKILOOOHCSO4FEKOXZPNLKFFN6W7SD2KUB7NBPLN")
+
+        let path = OperationBodyXDR.pathPaymentStrictReceiveOp(PathPaymentOperationXDR(
+            sendAsset: .native, sendMax: 1, destination: .ed25519(source.bytes), destinationAsset: .native,
+            destinationAmount: 1, path: [AssetXDR](repeating: .native, count: 6)))
+        Self.assertAboveDeclaredMaximum(try OperationBodyXDR.fromXdrJson(try path.toXdrJson()),
+                                        type: "PathPaymentStrictReceiveOp", key: "path",
+                                        message: "expected at most 5 elements, got 6")
+
+        let claimant = ClaimantXDR.claimantTypeV0(ClaimantV0XDR(accountID: source, predicate: .claimPredicateUnconditional))
+        let claimants = CreateClaimableBalanceOpXDR(asset: .native, amount: 1,
+                                                    claimants: [ClaimantXDR](repeating: claimant, count: 11))
+        Self.assertAboveDeclaredMaximum(try CreateClaimableBalanceOpXDR.fromXdrJson(try claimants.toXdrJson()),
+                                        type: "CreateClaimableBalanceOpXDR", key: "claimants",
+                                        message: "expected at most 10 elements, got 11")
+
+        let signers = PreconditionsV2XDR(minSeqAge: 0, minSeqLedgerGap: 0,
+                                         extraSigners: [SignerKeyXDR](repeating: .ed25519(WrappedData32(Data(source.bytes))),
+                                                                      count: 3))
+        Self.assertAboveDeclaredMaximum(try PreconditionsV2XDR.fromXdrJson(try signers.toXdrJson()),
+                                        type: "PreconditionsV2XDR", key: "extra_signers",
+                                        message: "expected at most 2 elements, got 3")
+
+        let tuple = SCSpecTypeTupleXDR(valueTypes: [SCSpecTypeDefXDR](repeating: .bool, count: 13))
+        Self.assertAboveDeclaredMaximum(try SCSpecTypeTupleXDR.fromXdrJson(try tuple.toXdrJson()),
+                                        type: "SCSpecTypeTupleXDR", key: "value_types",
+                                        message: "expected at most 12 elements, got 13")
+
+        let predicate = ClaimPredicateXDR.claimPredicateAnd(
+            [ClaimPredicateXDR](repeating: .claimPredicateUnconditional, count: 3))
+        Self.assertAboveDeclaredMaximum(try ClaimPredicateXDR.fromXdrJson(try predicate.toXdrJson()),
+                                        type: "ClaimPredicateXDR", key: "and",
+                                        message: "expected at most 2 elements, got 3")
+
+        let adverts = TxAdvertVectorXDR(wrapped: [WrappedData32](repeating: WrappedData32(Data(repeating: 2, count: 32)),
+                                                                 count: 1001))
+        Self.assertAboveDeclaredMaximum(try TxAdvertVectorXDR.fromXdrJson(try adverts.toXdrJson()),
+                                        type: "TxAdvertVectorXDR", key: nil,
+                                        message: "expected at most 1000 elements, got 1001")
+    }
+
+    func testEventPrefixTopicsBoundTheArrayAndEachTopic() throws {
+        func event(_ topics: [String]) -> SCSpecEventV0XDR {
+            SCSpecEventV0XDR(doc: "", lib: "", name: "e", prefixTopics: topics, params: [], dataFormat: .singleValue)
+        }
+        XCTAssertEqual(try SCSpecEventV0XDR.fromXdrJson(try event(["a", "b"]).toXdrJson()).prefixTopics, ["a", "b"])
+        Self.assertAboveDeclaredMaximum(try SCSpecEventV0XDR.fromXdrJson(try event(["a", "b", "c"]).toXdrJson()),
+                                        type: "SCSpecEventV0XDR", key: "prefix_topics",
+                                        message: "expected at most 2 elements, got 3")
+        Self.assertAboveDeclaredMaximum(
+            try SCSpecEventV0XDR.fromXdrJson(try event([String(repeating: "t", count: 33)]).toXdrJson()),
+            type: "SCSpecEventV0XDR", key: "prefix_topics", message: "expected at most 32 bytes, got 33")
+    }
+
     // MARK: - Helpers
+
+    private static func assertAboveDeclaredMaximum<T>(_ read: @autoclosure () throws -> T, type: String, key: String?,
+                                                      message: String,
+                                                      file: StaticString = #filePath, line: UInt = #line) {
+        XCTAssertThrowsError(try read(), file: file, line: line) { error in
+            guard case XdrJsonError.invalidValue(let actualType, let actualKey, let actualMessage) = error else {
+                return XCTFail("wrong error: \(error)", file: file, line: line)
+            }
+            XCTAssertEqual(actualType, type, file: file, line: line)
+            XCTAssertEqual(actualKey, key, file: file, line: line)
+            XCTAssertEqual(actualMessage, message, file: file, line: line)
+        }
+    }
 
     private static func timeBounds(minTime: String) throws -> TimeBoundsXDR {
         try TimeBoundsXDR.fromXdrJson("{\"min_time\":\(minTime),\"max_time\":\"1\"}")

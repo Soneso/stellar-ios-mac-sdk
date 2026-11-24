@@ -51,9 +51,9 @@ public struct AccountEntryXDR: XDRCodable, Sendable {
       inflationDest = nil
     }
     flags = try container.decode(UInt32.self)
-    homeDomain = try container.decode(String.self)
+    homeDomain = try container.decodeString(maxLength: 32)
     thresholds = try container.decode(ThresholdsXDR.self)
-    signers = try decodeArray(type: SignerXDR.self, dec: decoder)
+    signers = try decodeArray(type: SignerXDR.self, dec: decoder, maxCount: 20)
     ext = try container.decode(AccountEntryExtXDR.self)
   }
 
@@ -70,9 +70,9 @@ public struct AccountEntryXDR: XDRCodable, Sendable {
       try container.encode(Int32(0))
     }
     try container.encode(flags)
-    try container.encode(homeDomain)
+    try container.encodeString(homeDomain, maxLength: 32)
     try container.encode(thresholds)
-    try container.encode(signers)
+    try container.encodeArray(signers, maxCount: 20)
     try container.encode(ext)
   }
 }
@@ -109,7 +109,7 @@ extension AccountEntryXDR: XdrJsonCodable {
     let flags: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "flags", type: "AccountEntryXDR"), type: "AccountEntryXDR", key: "flags")
     let homeDomain: String = try String32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "home_domain", type: "AccountEntryXDR"), type: "AccountEntryXDR", key: "home_domain")
     let thresholds: ThresholdsXDR = try ThresholdsXDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "thresholds", type: "AccountEntryXDR"), type: "AccountEntryXDR", key: "thresholds")
-    let signersElements = try XdrJson.array(try XdrJson.field(members, key: "signers", type: "AccountEntryXDR"), type: "AccountEntryXDR", key: "signers")
+    let signersElements = try XdrJson.requireMaxCount(try XdrJson.array(try XdrJson.field(members, key: "signers", type: "AccountEntryXDR"), type: "AccountEntryXDR", key: "signers"), 20, type: "AccountEntryXDR", key: "signers")
     let signers: [SignerXDR] = try signersElements.map { element in try SignerXDR.fromXdrJsonValue(element) }
     let ext: AccountEntryExtXDR = try AccountEntryExtXDR.fromXdrJsonValue(try XdrJson.field(members, key: "ext", type: "AccountEntryXDR"))
     return AccountEntryXDR(

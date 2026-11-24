@@ -11,12 +11,12 @@ public struct ContractCostParamsXDR: XDRCodable, Sendable {
   }
 
   public init(from decoder: Decoder) throws {
-    entries = try decodeArray(type: ContractCostParamEntryXDR.self, dec: decoder)
+    entries = try decodeArray(type: ContractCostParamEntryXDR.self, dec: decoder, maxCount: 1024)
   }
 
   public func encode(to encoder: Encoder) throws {
     var container = encoder.unkeyedContainer()
-    try container.encode(entries)
+    try container.encodeArray(entries, maxCount: 1024)
   }
 }
 
@@ -26,7 +26,7 @@ extension ContractCostParamsXDR: XdrJsonCodable {
   }
 
   public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> ContractCostParamsXDR {
-    let decodedElements = try XdrJson.array(value, type: "ContractCostParamsXDR")
+    let decodedElements = try XdrJson.requireMaxCount(try XdrJson.array(value, type: "ContractCostParamsXDR"), 1024, type: "ContractCostParamsXDR")
     let decoded: [ContractCostParamEntryXDR] = try decodedElements.map { element in try ContractCostParamEntryXDR.fromXdrJsonValue(element) }
     return ContractCostParamsXDR(entries: decoded)
   }

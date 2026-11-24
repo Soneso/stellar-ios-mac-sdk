@@ -23,17 +23,17 @@ public struct SCSpecUDTStructV0XDR: XDRCodable, Sendable {
 
   public init(from decoder: Decoder) throws {
     var container = try decoder.unkeyedContainer()
-    doc = try container.decode(String.self)
-    lib = try container.decode(String.self)
-    name = try container.decode(String.self)
+    doc = try container.decodeString(maxLength: 1024)
+    lib = try container.decodeString(maxLength: 80)
+    name = try container.decodeString(maxLength: 1024)
     fields = try decodeArray(type: SCSpecUDTStructFieldV0XDR.self, dec: decoder)
   }
 
   public func encode(to encoder: Encoder) throws {
     var container = encoder.unkeyedContainer()
-    try container.encode(doc)
-    try container.encode(lib)
-    try container.encode(name)
+    try container.encodeString(doc, maxLength: 1024)
+    try container.encodeString(lib, maxLength: 80)
+    try container.encodeString(name, maxLength: 1024)
     try container.encode(fields)
   }
 }
@@ -50,9 +50,9 @@ extension SCSpecUDTStructV0XDR: XdrJsonCodable {
 
   public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> SCSpecUDTStructV0XDR {
     let members = try XdrJson.object(value, type: "SCSpecUDTStructV0XDR", keys: ["doc", "lib", "name", "fields"])
-    let doc: String = try XdrJson.unescapedText(try XdrJson.field(members, key: "doc", type: "SCSpecUDTStructV0XDR"), type: "SCSpecUDTStructV0XDR", key: "doc")
-    let lib: String = try XdrJson.unescapedText(try XdrJson.field(members, key: "lib", type: "SCSpecUDTStructV0XDR"), type: "SCSpecUDTStructV0XDR", key: "lib")
-    let name: String = try XdrJson.unescapedText(try XdrJson.field(members, key: "name", type: "SCSpecUDTStructV0XDR"), type: "SCSpecUDTStructV0XDR", key: "name")
+    let doc: String = try XdrJson.requireMaxLength(try XdrJson.unescapedText(try XdrJson.field(members, key: "doc", type: "SCSpecUDTStructV0XDR"), type: "SCSpecUDTStructV0XDR", key: "doc"), 1024, type: "SCSpecUDTStructV0XDR", key: "doc")
+    let lib: String = try XdrJson.requireMaxLength(try XdrJson.unescapedText(try XdrJson.field(members, key: "lib", type: "SCSpecUDTStructV0XDR"), type: "SCSpecUDTStructV0XDR", key: "lib"), 80, type: "SCSpecUDTStructV0XDR", key: "lib")
+    let name: String = try XdrJson.requireMaxLength(try XdrJson.unescapedText(try XdrJson.field(members, key: "name", type: "SCSpecUDTStructV0XDR"), type: "SCSpecUDTStructV0XDR", key: "name"), 1024, type: "SCSpecUDTStructV0XDR", key: "name")
     let fieldsElements = try XdrJson.array(try XdrJson.field(members, key: "fields", type: "SCSpecUDTStructV0XDR"), type: "SCSpecUDTStructV0XDR", key: "fields")
     let fields: [SCSpecUDTStructFieldV0XDR] = try fieldsElements.map { element in try SCSpecUDTStructFieldV0XDR.fromXdrJsonValue(element) }
     return SCSpecUDTStructV0XDR(

@@ -11,12 +11,12 @@ public struct TimeSlicedPeerDataListXDR: XDRCodable, Sendable {
   }
 
   public init(from decoder: Decoder) throws {
-    wrapped = try decodeArray(type: TimeSlicedPeerDataXDR.self, dec: decoder)
+    wrapped = try decodeArray(type: TimeSlicedPeerDataXDR.self, dec: decoder, maxCount: 25)
   }
 
   public func encode(to encoder: Encoder) throws {
     var container = encoder.unkeyedContainer()
-    try container.encode(wrapped)
+    try container.encodeArray(wrapped, maxCount: 25)
   }
 }
 
@@ -26,7 +26,7 @@ extension TimeSlicedPeerDataListXDR: XdrJsonCodable {
   }
 
   public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> TimeSlicedPeerDataListXDR {
-    let decodedElements = try XdrJson.array(value, type: "TimeSlicedPeerDataListXDR")
+    let decodedElements = try XdrJson.requireMaxCount(try XdrJson.array(value, type: "TimeSlicedPeerDataListXDR"), 25, type: "TimeSlicedPeerDataListXDR")
     let decoded: [TimeSlicedPeerDataXDR] = try decodedElements.map { element in try TimeSlicedPeerDataXDR.fromXdrJsonValue(element) }
     return TimeSlicedPeerDataListXDR(wrapped: decoded)
   }

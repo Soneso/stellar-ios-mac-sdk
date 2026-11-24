@@ -706,7 +706,7 @@ extension OperationBodyXDR: XdrJsonCodable {
     let destination: MuxedAccountXDR = try MuxedAccountXDR.fromXdrJsonValue(try XdrJson.field(members, key: "destination", type: "PathPaymentStrictReceiveOp"))
     let destinationAsset: AssetXDR = try AssetXDR.fromXdrJsonValue(try XdrJson.field(members, key: "dest_asset", type: "PathPaymentStrictReceiveOp"))
     let destinationAmount: Int64 = try Int64XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "dest_amount", type: "PathPaymentStrictReceiveOp"), type: "PathPaymentStrictReceiveOp", key: "dest_amount")
-    let pathElements = try XdrJson.array(try XdrJson.field(members, key: "path", type: "PathPaymentStrictReceiveOp"), type: "PathPaymentStrictReceiveOp", key: "path")
+    let pathElements = try XdrJson.requireMaxCount(try XdrJson.array(try XdrJson.field(members, key: "path", type: "PathPaymentStrictReceiveOp"), type: "PathPaymentStrictReceiveOp", key: "path"), 5, type: "PathPaymentStrictReceiveOp", key: "path")
     let path: [AssetXDR] = try pathElements.map { element in try AssetXDR.fromXdrJsonValue(element) }
     return PathPaymentOperationXDR(
       sendAsset: sendAsset,
@@ -794,7 +794,7 @@ extension OperationBodyXDR: XdrJsonCodable {
     let destination: MuxedAccountXDR = try MuxedAccountXDR.fromXdrJsonValue(try XdrJson.field(members, key: "destination", type: "PathPaymentStrictSendOp"))
     let destinationAsset: AssetXDR = try AssetXDR.fromXdrJsonValue(try XdrJson.field(members, key: "dest_asset", type: "PathPaymentStrictSendOp"))
     let destinationAmount: Int64 = try Int64XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "dest_min", type: "PathPaymentStrictSendOp"), type: "PathPaymentStrictSendOp", key: "dest_min")
-    let pathElements = try XdrJson.array(try XdrJson.field(members, key: "path", type: "PathPaymentStrictSendOp"), type: "PathPaymentStrictSendOp", key: "path")
+    let pathElements = try XdrJson.requireMaxCount(try XdrJson.array(try XdrJson.field(members, key: "path", type: "PathPaymentStrictSendOp"), type: "PathPaymentStrictSendOp", key: "path"), 5, type: "PathPaymentStrictSendOp", key: "path")
     let path: [AssetXDR] = try pathElements.map { element in try AssetXDR.fromXdrJsonValue(element) }
     return PathPaymentOperationXDR(
       sendAsset: sendAsset,

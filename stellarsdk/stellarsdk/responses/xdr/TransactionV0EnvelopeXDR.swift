@@ -27,7 +27,7 @@ public class TransactionV0EnvelopeXDR: NSObject, XDRCodable, @unchecked Sendable
         var container = try decoder.unkeyedContainer()
 
         tx = try container.decode(TransactionV0XDR.self)
-        _signatures = try decodeArray(type: DecoratedSignatureXDR.self, dec: decoder)
+        _signatures = try decodeArray(type: DecoratedSignatureXDR.self, dec: decoder, maxCount: 20)
     }
 
     public func encode(to encoder: Encoder) throws {
@@ -37,7 +37,7 @@ public class TransactionV0EnvelopeXDR: NSObject, XDRCodable, @unchecked Sendable
         lock.lock()
         let sigs = _signatures
         lock.unlock()
-        try container.encode(sigs)
+        try container.encodeArray(sigs, maxCount: 20)
     }
 
     public func appendSignature(_ signature: DecoratedSignatureXDR) {

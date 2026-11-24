@@ -14,13 +14,13 @@ public struct SignedTimeSlicedSurveyStopCollectingMessageXDR: XDRCodable, Sendab
 
   public init(from decoder: Decoder) throws {
     var container = try decoder.unkeyedContainer()
-    signature = try container.decode(SignatureXDR.self)
+    signature = try container.decodeOpaque(maxLength: 64)
     stopCollecting = try container.decode(TimeSlicedSurveyStopCollectingMessageXDR.self)
   }
 
   public func encode(to encoder: Encoder) throws {
     var container = encoder.unkeyedContainer()
-    try container.encode(signature)
+    try container.encodeOpaque(signature, maxLength: 64)
     try container.encode(stopCollecting)
   }
 }

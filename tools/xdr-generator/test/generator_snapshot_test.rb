@@ -168,7 +168,158 @@ class GeneratorSnapshotTest < Minitest::Test
                     "Variable opaque field signature should format through unchecked bytesToHex"
   end
 
+  # -- Declared maxima --
+
+  def test_declared_maximum_bounds_a_variable_array_named_by_a_constant
+    content = generated("AccountEntryXDR.swift")
+    assert_includes content, "signers = try decodeArray(type: SignerXDR.self, dec: decoder, maxCount: 20)"
+    assert_includes content, "try container.encodeArray(signers, maxCount: 20)"
+    assert_includes content, "try XdrJson.requireMaxCount(try XdrJson.array(try XdrJson.field(members, " \
+                             'key: "signers", type: "AccountEntryXDR"), type: "AccountEntryXDR", key: "signers"), 20, ' \
+                             'type: "AccountEntryXDR", key: "signers")'
+  end
+
+  def test_declared_maximum_bounds_an_array_of_optional_elements
+    content = generated("AccountEntryExtensionV2.swift")
+    assert_includes content, "try decodeArrayOfOptional(type: PublicKey.self, dec: decoder, maxCount: 20)"
+    assert_includes content, "try encodeArrayOfOptional(signerSponsoringIDs, enc: encoder, maxCount: 20)"
+  end
+
+  def test_declared_maximum_bounds_a_string_field
+    content = generated("ErrorXDR.swift")
+    assert_includes content, "msg = try container.decodeString(maxLength: 100)"
+    assert_includes content, "try container.encodeString(msg, maxLength: 100)"
+    assert_includes content, 'try XdrJson.requireMaxLength(try XdrJson.unescapedText(try XdrJson.field(members, ' \
+                             'key: "msg", type: "ErrorXDR"), type: "ErrorXDR", key: "msg"), 100, type: "ErrorXDR", key: "msg")'
+  end
+
+  def test_declared_maximum_bounds_an_opaque_field
+    content = generated("Ed25519SignedPayload.swift")
+    assert_includes content, "payload = try container.decodeOpaque(maxLength: 64)"
+    assert_includes content, "try container.encodeOpaque(payload, maxLength: 64)"
+    assert_includes content, 'try TxRepHelper.requireMaxLength(try TxRepHelper.requireHex(map, "\(prefix).payload"), ' \
+                             '64, key: "\(prefix).payload")'
+  end
+
+  def test_declared_maximum_follows_string_and_opaque_typedefs_to_the_site
+    data_entry = generated("DataEntryXDR.swift")
+    assert_includes data_entry, "dataName = try container.decodeString(maxLength: 64)"
+    assert_includes data_entry, "dataValue = try container.decodeOpaque(maxLength: 64)"
+
+    set_options = generated("SetOptionsOperationXDR.swift")
+    assert_includes set_options, "homeDomain = try container.decodeString(maxLength: 32)"
+    assert_includes set_options, "try container.encodeString(val, maxLength: 32)"
+    assert_includes set_options, 'homeDomain = try TxRepHelper.requireMaxLength(try TxRepHelper.unescapeString(' \
+                                 'TxRepHelper.getValue(map, "\(prefix).homeDomain") ?? ""), 32, key: "\(prefix).homeDomain")'
+
+    assert_includes generated("String64XDR.swift"),
+                    "try XdrJson.requireMaxLength(try XdrJson.unescapedText(value, type: type, key: key), 64, type: type, key: key)"
+    assert_includes generated("SignatureXDR.swift"),
+                    "try XdrJson.requireMaxLength(try XdrJson.hex(value, type: type, key: key), 64, type: type, key: key)"
+  end
+
+  def test_declared_maximum_bounds_each_element_of_an_array_of_bounded_typedefs
+    event = generated("SCSpecEventV0XDR.swift")
+    assert_includes event, "prefixTopics = try decodeStringArray(dec: decoder, maxCount: 2, maxLength: 32)"
+    assert_includes event, "try container.encodeStringArray(prefixTopics, maxCount: 2, maxLength: 32)"
+
+    value = generated("StellarValueXDR.swift")
+    assert_includes value, "upgrades = try decodeOpaqueArray(dec: decoder, maxCount: 6, maxLength: 128)"
+    assert_includes value, "try container.encodeOpaqueArray(upgrades, maxCount: 6, maxLength: 128)"
+  end
+
+  def test_declared_maximum_bounds_union_arms
+    predicate = generated("ClaimPredicateXDR.swift")
+    assert_includes predicate, "let val = try decodeArray(type: ClaimPredicateXDR.self, dec: decoder, maxCount: 2)"
+    assert_includes predicate, "try container.encodeArray(val, maxCount: 2)"
+
+    sc_val = generated("SCValXDR.swift")
+    assert_includes sc_val, "let val = try container.decodeString(maxLength: 32)"
+    assert_includes sc_val, "try container.encodeString(val, maxLength: 32)"
+  end
+
+  def test_declared_maximum_bounds_bytes_backed_strings_as_strings
+    content = generated("InvokeContractArgsXDR.swift")
+    assert_includes content, "functionName = try container.decodeStringBytes(maxLength: 32)"
+    assert_includes content, "try container.encodeStringBytes(functionName, maxLength: 32)"
+    assert_includes content, 'try TxRepHelper.requireMaxLength(try TxRepHelper.requireStringBytes(map, ' \
+                             '"\(prefix).functionName"), 32, key: "\(prefix).functionName")'
+  end
+
+  def test_declared_maximum_bounds_an_array_typedef_wrapper
+    content = generated("TxAdvertVectorXDR.swift")
+    assert_includes content, "wrapped = try decodeArray(type: HashXDR.self, dec: decoder, maxCount: 1000)"
+    assert_includes content, "try container.encodeArray(wrapped, maxCount: 1000)"
+  end
+
+  def test_unbounded_sites_stay_unbounded
+    sc_val = generated("SCValXDR.swift")
+    assert_includes sc_val, "let val = try container.decode(Data.self)"
+    assert_includes sc_val, "self = .vec(try container.decode([SCValXDR].self))"
+
+    args = generated("InvokeContractArgsXDR.swift")
+    assert_includes args, "args = try decodeArray(type: SCValXDR.self, dec: decoder)"
+    assert_includes args, "try container.encode(args)"
+  end
+
+  def test_declared_maximum_resolves_constants_and_typedef_chains
+    content = generate_probe(<<~XDR).fetch("ProbeStructXDR.swift")
+      namespace stellar {
+      const PROBE_LIMIT = 7;
+      typedef string ProbeName<10>;
+      typedef ProbeName ProbeAlias;
+      struct ProbeStruct {
+        ProbeAlias alias;
+        int items<PROBE_LIMIT>;
+        string open<>;
+      };
+      }
+    XDR
+    assert_includes content, "alias = try container.decodeString(maxLength: 10)"
+    assert_includes content, "try container.encodeString(alias, maxLength: 10)"
+    assert_includes content, "items = try decodeArray(type: Int32.self, dec: decoder, maxCount: 7)"
+    assert_includes content, "try container.encodeArray(items, maxCount: 7)"
+    assert_includes content, "`open` = try container.decode(String.self)"
+    assert_includes content, "try container.encode(`open`)"
+  end
+
+  def test_unresolvable_maximum_constant_fails_generation
+    error = assert_raises(RuntimeError) do
+      generate_probe(<<~XDR)
+        namespace stellar {
+        struct ProbeStruct {
+          int items<PROBE_UNKNOWN_LIMIT>;
+        };
+        }
+      XDR
+    end
+    assert_includes error.message, "Could not resolve constant: PROBE_UNKNOWN_LIMIT"
+  end
+
   private
+
+  # The generator, minus the check that every bytes-backed field of the Stellar definitions
+  # was rendered, for definitions that declare none of them.
+  class ProbeGenerator < Generator
+    def verify_bytes_backed_string_fields!; end
+  end
+
+  def generated(filename)
+    File.read(File.join(@output_dir, filename))
+  end
+
+  # Generates +source+ in a scratch directory and returns each file's content by name.
+  def generate_probe(source)
+    Dir.mktmpdir("xdr_probe_") do |dir|
+      path = File.join(dir, "probe.x")
+      File.write(path, source)
+      output = File.join(dir, "out")
+      FileUtils.mkdir_p(output)
+      Xdrgen::Compilation.new([path], output_dir: output + "/", generator: ProbeGenerator,
+                                      namespace: "stellar").compile
+      Dir.glob(File.join(output, "*.swift")).to_h { |f| [File.basename(f), File.read(f)] }
+    end
+  end
 
   def assert_snapshot(filename)
     generated = File.join(@output_dir, filename)

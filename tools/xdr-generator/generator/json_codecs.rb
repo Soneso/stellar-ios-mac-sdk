@@ -114,11 +114,12 @@ module Sep51JsonCodecs
       element_type = swift_type.sub(/\A\[(.*)\]\z/m, '\1')
       json_array_codec(json_element_codec(decl, owner: owner, key: key, swift_type: element_type),
                        owner: owner, key: key,
-                       fixed_size: decl.fixed? ? resolve_size(decl) : nil)
+                       fixed_size: decl.fixed? ? resolve_size(decl) : nil,
+                       max_count: array_maximum(decl))
     when AST::Declarations::Opaque
       json_opaque_codec(decl.type, owner: owner, key: key, swift_type: swift_type)
     when AST::Declarations::String
-      json_string_codec(owner: owner, key: key)
+      json_string_codec(owner: owner, key: key, bound: byte_sequence_bound(decl))
     else
       json_element_codec(decl, owner: owner, key: key, swift_type: swift_type)
     end
@@ -155,7 +156,7 @@ module Sep51JsonCodecs
     when AST::Typespecs::UnsignedHyper
       json_hyper_codec(signed: false, owner: owner, key: key, swift_type: swift_type)
     when AST::Typespecs::String
-      json_string_codec(owner: owner, key: key)
+      json_string_codec(owner: owner, key: key, bound: byte_sequence_bound(type.decl))
     when AST::Typespecs::Opaque
       json_opaque_codec(type, owner: owner, key: key, swift_type: swift_type)
     when AST::Typespecs::Simple
@@ -326,14 +327,22 @@ module Sep51JsonCodecs
     )
   end
 
-  def json_string_codec(owner:, key:)
+  # A string whose XDR definition declares a maximum checks the UTF-8 byte count on input.
+  def json_string_codec(owner:, key:, bound: nil)
     context = json_context(owner, key)
     Codec.new(
       swift_type: 'String',
       emit: ->(accessor) { "XdrJson.escapedString(#{accessor})" },
-      read: ->(value) { "try XdrJson.unescapedText(#{value}, #{context})" },
+      read: ->(value) { json_max_length_read("try XdrJson.unescapedText(#{value}, #{context})", bound, context) },
       emit_throws: false
     )
+  end
+
+  # Wraps a read expression in the declared-maximum check of its string or opaque value.
+  def json_max_length_read(expression, bound, context)
+    return expression if bound.nil?
+
+    "try XdrJson.requireMaxLength(#{expression}, #{bound[:max]}, #{context})"
   end
 
   # Opaque data renders as lowercase hexadecimal in both the fixed and the variable form.
@@ -346,10 +355,11 @@ module Sep51JsonCodecs
     context = json_context(owner, key)
 
     unless type.fixed?
+      bound = byte_sequence_bound(type.decl)
       return Codec.new(
         swift_type: 'Data',
         emit: ->(accessor) { "XdrJson.hex(#{accessor})" },
-        read: ->(value) { "try XdrJson.hex(#{value}, #{context})" },
+        read: ->(value) { json_max_length_read("try XdrJson.hex(#{value}, #{context})", bound, context) },
         emit_throws: false
       )
     end
@@ -404,8 +414,9 @@ module Sep51JsonCodecs
   end
 
   # An array renders as a JSON array, empty included. A fixed-length array checks its
-  # element count on input, because a wrong count would re-encode to the wrong bytes.
-  def json_array_codec(element, owner:, key:, fixed_size:)
+  # element count on input, because a wrong count would re-encode to the wrong bytes, and a
+  # variable-length array checks the maximum its XDR definition declares.
+  def json_array_codec(element, owner:, key:, fixed_size:, max_count: nil)
     context = json_context(owner, key)
 
     Codec.new(
@@ -414,7 +425,9 @@ module Sep51JsonCodecs
         "XdrJson.array(#{accessor}.map { element in #{element.emit_expression('element')} })"
       },
       read_statements: lambda { |out, value, local|
-        out.puts "let #{local}Elements = try XdrJson.array(#{value}, #{context})"
+        elements = "try XdrJson.array(#{value}, #{context})"
+        elements = "try XdrJson.requireMaxCount(#{elements}, #{max_count}, #{context})" if max_count
+        out.puts "let #{local}Elements = #{elements}"
         if fixed_size
           out.puts "guard #{local}Elements.count == Int(#{fixed_size}) else {"
           out.indent do

@@ -22,16 +22,16 @@ public struct DataEntryXDR: XDRCodable, Sendable {
   public init(from decoder: Decoder) throws {
     var container = try decoder.unkeyedContainer()
     accountID = try container.decode(PublicKey.self)
-    dataName = try container.decode(String.self)
-    dataValue = try container.decode(DataValueXDR.self)
+    dataName = try container.decodeString(maxLength: 64)
+    dataValue = try container.decodeOpaque(maxLength: 64)
     _ = try container.decodeExtensionPoint("DataEntryXDR")
   }
 
   public func encode(to encoder: Encoder) throws {
     var container = encoder.unkeyedContainer()
     try container.encode(accountID)
-    try container.encode(dataName)
-    try container.encode(dataValue)
+    try container.encodeString(dataName, maxLength: 64)
+    try container.encodeOpaque(dataValue, maxLength: 64)
     try container.encode(reserved)
   }
 }
