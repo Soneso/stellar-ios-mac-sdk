@@ -41,9 +41,11 @@ extension TransactionV0EnvelopeXDR {
                                          keys: ["tx", "signatures"])
         let tx = try TransactionV0XDR.fromXdrJsonValue(
             try XdrJson.field(members, key: "tx", type: "TransactionV0EnvelopeXDR"))
-        let signatureValues = try XdrJson.array(
-            try XdrJson.field(members, key: "signatures", type: "TransactionV0EnvelopeXDR"),
-            type: "TransactionV0EnvelopeXDR", key: "signatures")
+        let signatureValues = try XdrJson.requireMaxCount(
+            try XdrJson.array(
+                try XdrJson.field(members, key: "signatures", type: "TransactionV0EnvelopeXDR"),
+                type: "TransactionV0EnvelopeXDR", key: "signatures"),
+            20, type: "TransactionV0EnvelopeXDR", key: "signatures")
         let signatures = try signatureValues.map { element in
             try DecoratedSignatureXDR.fromXdrJsonValue(element)
         }
@@ -85,9 +87,11 @@ extension TransactionV1EnvelopeXDR {
                                          keys: ["tx", "signatures"])
         let tx = try TransactionXDR.fromXdrJsonValue(
             try XdrJson.field(members, key: "tx", type: "TransactionV1EnvelopeXDR"))
-        let signatureValues = try XdrJson.array(
-            try XdrJson.field(members, key: "signatures", type: "TransactionV1EnvelopeXDR"),
-            type: "TransactionV1EnvelopeXDR", key: "signatures")
+        let signatureValues = try XdrJson.requireMaxCount(
+            try XdrJson.array(
+                try XdrJson.field(members, key: "signatures", type: "TransactionV1EnvelopeXDR"),
+                type: "TransactionV1EnvelopeXDR", key: "signatures"),
+            20, type: "TransactionV1EnvelopeXDR", key: "signatures")
         let signatures = try signatureValues.map { element in
             try DecoratedSignatureXDR.fromXdrJsonValue(element)
         }
@@ -129,9 +133,11 @@ extension FeeBumpTransactionEnvelopeXDR {
                                          keys: ["tx", "signatures"])
         let tx = try FeeBumpTransactionXDR.fromXdrJsonValue(
             try XdrJson.field(members, key: "tx", type: "FeeBumpTransactionEnvelopeXDR"))
-        let signatureValues = try XdrJson.array(
-            try XdrJson.field(members, key: "signatures", type: "FeeBumpTransactionEnvelopeXDR"),
-            type: "FeeBumpTransactionEnvelopeXDR", key: "signatures")
+        let signatureValues = try XdrJson.requireMaxCount(
+            try XdrJson.array(
+                try XdrJson.field(members, key: "signatures", type: "FeeBumpTransactionEnvelopeXDR"),
+                type: "FeeBumpTransactionEnvelopeXDR", key: "signatures"),
+            20, type: "FeeBumpTransactionEnvelopeXDR", key: "signatures")
         let signatures = try signatureValues.map { element in
             try DecoratedSignatureXDR.fromXdrJsonValue(element)
         }

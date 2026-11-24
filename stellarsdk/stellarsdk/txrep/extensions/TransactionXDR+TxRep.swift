@@ -157,7 +157,8 @@ internal func parseMemo(_ map: [String: String], prefix: String) throws -> MemoX
         guard let raw = TxRepHelper.getValue(map, textKey) else {
             throw TxRepError.missingValue(key: textKey)
         }
-        return .text(try TxRepHelper.decodeMemoTextBytes(raw))
+        let text = try TxRepHelper.decodeMemoTextBytes(raw)
+        return .text(try TxRepHelper.requireMaxLength(text, 28, key: textKey))
     case "MEMO_ID":
         return .id(try TxRepHelper.requireUInt64(map, "\(prefix).memo.id"))
     case "MEMO_HASH":

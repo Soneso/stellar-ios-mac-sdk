@@ -29,20 +29,20 @@ public struct SCSpecEventV0XDR: XDRCodable, Sendable {
 
   public init(from decoder: Decoder) throws {
     var container = try decoder.unkeyedContainer()
-    doc = try container.decode(String.self)
-    lib = try container.decode(String.self)
-    name = try container.decode(String.self)
-    prefixTopics = try decodeArray(type: String.self, dec: decoder)
+    doc = try container.decodeString(maxLength: 1024)
+    lib = try container.decodeString(maxLength: 80)
+    name = try container.decodeString(maxLength: 1024)
+    prefixTopics = try decodeStringArray(dec: decoder, maxCount: 2, maxLength: 32)
     params = try decodeArray(type: SCSpecEventParamV0XDR.self, dec: decoder)
     dataFormat = try container.decode(SCSpecEventDataFormat.self)
   }
 
   public func encode(to encoder: Encoder) throws {
     var container = encoder.unkeyedContainer()
-    try container.encode(doc)
-    try container.encode(lib)
-    try container.encode(name)
-    try container.encode(prefixTopics)
+    try container.encodeString(doc, maxLength: 1024)
+    try container.encodeString(lib, maxLength: 80)
+    try container.encodeString(name, maxLength: 1024)
+    try container.encodeStringArray(prefixTopics, maxCount: 2, maxLength: 32)
     try container.encode(params)
     try container.encode(dataFormat)
   }
@@ -62,10 +62,10 @@ extension SCSpecEventV0XDR: XdrJsonCodable {
 
   public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> SCSpecEventV0XDR {
     let members = try XdrJson.object(value, type: "SCSpecEventV0XDR", keys: ["doc", "lib", "name", "prefix_topics", "params", "data_format"])
-    let doc: String = try XdrJson.unescapedText(try XdrJson.field(members, key: "doc", type: "SCSpecEventV0XDR"), type: "SCSpecEventV0XDR", key: "doc")
-    let lib: String = try XdrJson.unescapedText(try XdrJson.field(members, key: "lib", type: "SCSpecEventV0XDR"), type: "SCSpecEventV0XDR", key: "lib")
-    let name: String = try XdrJson.unescapedText(try XdrJson.field(members, key: "name", type: "SCSpecEventV0XDR"), type: "SCSpecEventV0XDR", key: "name")
-    let prefixTopicsElements = try XdrJson.array(try XdrJson.field(members, key: "prefix_topics", type: "SCSpecEventV0XDR"), type: "SCSpecEventV0XDR", key: "prefix_topics")
+    let doc: String = try XdrJson.requireMaxLength(try XdrJson.unescapedText(try XdrJson.field(members, key: "doc", type: "SCSpecEventV0XDR"), type: "SCSpecEventV0XDR", key: "doc"), 1024, type: "SCSpecEventV0XDR", key: "doc")
+    let lib: String = try XdrJson.requireMaxLength(try XdrJson.unescapedText(try XdrJson.field(members, key: "lib", type: "SCSpecEventV0XDR"), type: "SCSpecEventV0XDR", key: "lib"), 80, type: "SCSpecEventV0XDR", key: "lib")
+    let name: String = try XdrJson.requireMaxLength(try XdrJson.unescapedText(try XdrJson.field(members, key: "name", type: "SCSpecEventV0XDR"), type: "SCSpecEventV0XDR", key: "name"), 1024, type: "SCSpecEventV0XDR", key: "name")
+    let prefixTopicsElements = try XdrJson.requireMaxCount(try XdrJson.array(try XdrJson.field(members, key: "prefix_topics", type: "SCSpecEventV0XDR"), type: "SCSpecEventV0XDR", key: "prefix_topics"), 2, type: "SCSpecEventV0XDR", key: "prefix_topics")
     let prefixTopics: [String] = try prefixTopicsElements.map { element in try SCSymbolXDRJsonCodec.fromXdrJsonValue(element, type: "SCSpecEventV0XDR", key: "prefix_topics") }
     let paramsElements = try XdrJson.array(try XdrJson.field(members, key: "params", type: "SCSpecEventV0XDR"), type: "SCSpecEventV0XDR", key: "params")
     let params: [SCSpecEventParamV0XDR] = try paramsElements.map { element in try SCSpecEventParamV0XDR.fromXdrJsonValue(element) }

@@ -11,12 +11,12 @@ public struct TxAdvertVectorXDR: XDRCodable, Sendable {
   }
 
   public init(from decoder: Decoder) throws {
-    wrapped = try decodeArray(type: HashXDR.self, dec: decoder)
+    wrapped = try decodeArray(type: HashXDR.self, dec: decoder, maxCount: 1000)
   }
 
   public func encode(to encoder: Encoder) throws {
     var container = encoder.unkeyedContainer()
-    try container.encode(wrapped)
+    try container.encodeArray(wrapped, maxCount: 1000)
   }
 }
 
@@ -26,7 +26,7 @@ extension TxAdvertVectorXDR: XdrJsonCodable {
   }
 
   public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> TxAdvertVectorXDR {
-    let decodedElements = try XdrJson.array(value, type: "TxAdvertVectorXDR")
+    let decodedElements = try XdrJson.requireMaxCount(try XdrJson.array(value, type: "TxAdvertVectorXDR"), 1000, type: "TxAdvertVectorXDR")
     let decoded: [HashXDR] = try decodedElements.map { element in try HashXDRJsonCodec.fromXdrJsonValue(element, type: "TxAdvertVectorXDR", key: nil) }
     return TxAdvertVectorXDR(wrapped: decoded)
   }

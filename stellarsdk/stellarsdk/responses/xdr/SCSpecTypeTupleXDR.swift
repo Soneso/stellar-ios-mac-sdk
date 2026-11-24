@@ -11,12 +11,12 @@ public struct SCSpecTypeTupleXDR: XDRCodable, Sendable {
   }
 
   public init(from decoder: Decoder) throws {
-    valueTypes = try decodeArray(type: SCSpecTypeDefXDR.self, dec: decoder)
+    valueTypes = try decodeArray(type: SCSpecTypeDefXDR.self, dec: decoder, maxCount: 12)
   }
 
   public func encode(to encoder: Encoder) throws {
     var container = encoder.unkeyedContainer()
-    try container.encode(valueTypes)
+    try container.encodeArray(valueTypes, maxCount: 12)
   }
 }
 
@@ -29,7 +29,7 @@ extension SCSpecTypeTupleXDR: XdrJsonCodable {
 
   public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> SCSpecTypeTupleXDR {
     let members = try XdrJson.object(value, type: "SCSpecTypeTupleXDR", keys: ["value_types"])
-    let valueTypesElements = try XdrJson.array(try XdrJson.field(members, key: "value_types", type: "SCSpecTypeTupleXDR"), type: "SCSpecTypeTupleXDR", key: "value_types")
+    let valueTypesElements = try XdrJson.requireMaxCount(try XdrJson.array(try XdrJson.field(members, key: "value_types", type: "SCSpecTypeTupleXDR"), type: "SCSpecTypeTupleXDR", key: "value_types"), 12, type: "SCSpecTypeTupleXDR", key: "value_types")
     let valueTypes: [SCSpecTypeDefXDR] = try valueTypesElements.map { element in try SCSpecTypeDefXDR.fromXdrJsonValue(element) }
     return SCSpecTypeTupleXDR(valueTypes: valueTypes)
   }

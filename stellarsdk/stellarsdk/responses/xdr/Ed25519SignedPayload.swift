@@ -15,13 +15,13 @@ public struct Ed25519SignedPayload: XDRCodable, Sendable {
   public init(from decoder: Decoder) throws {
     var container = try decoder.unkeyedContainer()
     ed25519 = try container.decode(Uint256XDR.self)
-    payload = try container.decode(Data.self)
+    payload = try container.decodeOpaque(maxLength: 64)
   }
 
   public func encode(to encoder: Encoder) throws {
     var container = encoder.unkeyedContainer()
     try container.encode(ed25519)
-    try container.encode(payload)
+    try container.encodeOpaque(payload, maxLength: 64)
   }
 }
 
@@ -33,7 +33,7 @@ extension Ed25519SignedPayload {
 
   public static func fromTxRep(_ map: [String: String], prefix: String) throws -> Ed25519SignedPayload {
     let ed25519: Uint256XDR = try TxRepHelper.requireWrappedData32(map, "\(prefix).ed25519")
-    let payload: Data = try TxRepHelper.requireHex(map, "\(prefix).payload")
+    let payload: Data = try TxRepHelper.requireMaxLength(try TxRepHelper.requireHex(map, "\(prefix).payload"), 64, key: "\(prefix).payload")
     return Ed25519SignedPayload(ed25519: ed25519, payload: payload)
   }
 }

@@ -20,15 +20,15 @@ public struct SCSpecFunctionInputV0XDR: XDRCodable, Sendable {
 
   public init(from decoder: Decoder) throws {
     var container = try decoder.unkeyedContainer()
-    doc = try container.decode(String.self)
-    name = try container.decode(String.self)
+    doc = try container.decodeString(maxLength: 1024)
+    name = try container.decodeString(maxLength: 30)
     type = try container.decode(SCSpecTypeDefXDR.self)
   }
 
   public func encode(to encoder: Encoder) throws {
     var container = encoder.unkeyedContainer()
-    try container.encode(doc)
-    try container.encode(name)
+    try container.encodeString(doc, maxLength: 1024)
+    try container.encodeString(name, maxLength: 30)
     try container.encode(type)
   }
 }
@@ -44,8 +44,8 @@ extension SCSpecFunctionInputV0XDR: XdrJsonCodable {
 
   public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> SCSpecFunctionInputV0XDR {
     let members = try XdrJson.object(value, type: "SCSpecFunctionInputV0XDR", keys: ["doc", "name", XdrJson.DeclaredKey("type", alias: "type_")])
-    let doc: String = try XdrJson.unescapedText(try XdrJson.field(members, key: "doc", type: "SCSpecFunctionInputV0XDR"), type: "SCSpecFunctionInputV0XDR", key: "doc")
-    let name: String = try XdrJson.unescapedText(try XdrJson.field(members, key: "name", type: "SCSpecFunctionInputV0XDR"), type: "SCSpecFunctionInputV0XDR", key: "name")
+    let doc: String = try XdrJson.requireMaxLength(try XdrJson.unescapedText(try XdrJson.field(members, key: "doc", type: "SCSpecFunctionInputV0XDR"), type: "SCSpecFunctionInputV0XDR", key: "doc"), 1024, type: "SCSpecFunctionInputV0XDR", key: "doc")
+    let name: String = try XdrJson.requireMaxLength(try XdrJson.unescapedText(try XdrJson.field(members, key: "name", type: "SCSpecFunctionInputV0XDR"), type: "SCSpecFunctionInputV0XDR", key: "name"), 30, type: "SCSpecFunctionInputV0XDR", key: "name")
     let type: SCSpecTypeDefXDR = try SCSpecTypeDefXDR.fromXdrJsonValue(try XdrJson.field(members, key: XdrJson.DeclaredKey("type", alias: "type_"), type: "SCSpecFunctionInputV0XDR"))
     return SCSpecFunctionInputV0XDR(
       doc: doc,

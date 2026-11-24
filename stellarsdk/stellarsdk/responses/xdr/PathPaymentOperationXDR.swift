@@ -34,7 +34,7 @@ public struct PathPaymentOperationXDR: XDRCodable, Sendable {
     destination = try container.decode(MuxedAccountXDR.self)
     destinationAsset = try container.decode(AssetXDR.self)
     destinationAmount = try container.decode(Int64.self)
-    path = try decodeArray(type: AssetXDR.self, dec: decoder)
+    path = try decodeArray(type: AssetXDR.self, dec: decoder, maxCount: 5)
   }
 
   public func encode(to encoder: Encoder) throws {
@@ -44,7 +44,7 @@ public struct PathPaymentOperationXDR: XDRCodable, Sendable {
     try container.encode(destination)
     try container.encode(destinationAsset)
     try container.encode(destinationAmount)
-    try container.encode(path)
+    try container.encodeArray(path, maxCount: 5)
   }
 }
 

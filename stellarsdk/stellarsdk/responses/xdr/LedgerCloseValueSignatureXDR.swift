@@ -15,13 +15,13 @@ public struct LedgerCloseValueSignatureXDR: XDRCodable, Sendable {
   public init(from decoder: Decoder) throws {
     var container = try decoder.unkeyedContainer()
     nodeID = try container.decode(NodeIDXDR.self)
-    signature = try container.decode(SignatureXDR.self)
+    signature = try container.decodeOpaque(maxLength: 64)
   }
 
   public func encode(to encoder: Encoder) throws {
     var container = encoder.unkeyedContainer()
     try container.encode(nodeID)
-    try container.encode(signature)
+    try container.encodeOpaque(signature, maxLength: 64)
   }
 }
 

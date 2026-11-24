@@ -44,7 +44,7 @@ public enum StellarMessageXDR: XDRCodable, Sendable {
       let val = try container.decode(DontHaveXDR.self)
       self = .dontHave(val)
     case MessageTypeXDR.peers.rawValue:
-      let val = try decodeArray(type: PeerAddressXDR.self, dec: decoder)
+      let val = try decodeArray(type: PeerAddressXDR.self, dec: decoder, maxCount: 100)
       self = .peers(val)
     case MessageTypeXDR.getTxSet.rawValue:
       let val = try container.decode(Uint256XDR.self)
@@ -139,7 +139,7 @@ public enum StellarMessageXDR: XDRCodable, Sendable {
     case .dontHave(let val):
       try container.encode(val)
     case .peers(let val):
-      try container.encode(val)
+      try container.encodeArray(val, maxCount: 100)
     case .txSetHash(let val):
       try container.encode(val)
     case .txSet(let val):
@@ -310,7 +310,7 @@ extension StellarMessageXDR: XdrJsonCodable {
       let dontHave: DontHaveXDR = try DontHaveXDR.fromXdrJsonValue(member.value)
       return .dontHave(dontHave)
     case "peers":
-      let peersElements = try XdrJson.array(member.value, type: "StellarMessageXDR", key: "peers")
+      let peersElements = try XdrJson.requireMaxCount(try XdrJson.array(member.value, type: "StellarMessageXDR", key: "peers"), 100, type: "StellarMessageXDR", key: "peers")
       let peers: [PeerAddressXDR] = try peersElements.map { element in try PeerAddressXDR.fromXdrJsonValue(element) }
       return .peers(peers)
     case "get_tx_set":

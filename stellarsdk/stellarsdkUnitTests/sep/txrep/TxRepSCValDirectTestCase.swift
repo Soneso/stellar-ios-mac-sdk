@@ -307,6 +307,18 @@ final class TxRepSCValDirectTestCase: XCTestCase {
         }
     }
 
+    func testSymbolAboveTheMaximumIsRejected() throws {
+        let atMaximum = try roundtrip(.symbol(String(repeating: "s", count: 32)))
+        guard case .symbol(let symbol) = atMaximum else { return XCTFail("Expected .symbol") }
+        XCTAssertEqual(symbol, String(repeating: "s", count: 32))
+
+        let map = ["v.type": "SCV_SYMBOL", "v.sym": "\"\(String(repeating: "s", count: 33))\""]
+        XCTAssertThrowsError(try SCValXDR.fromTxRep(map, prefix: "v")) { error in
+            guard case TxRepError.invalidValue(let key) = error else { return XCTFail("expected invalidValue, got \(error)") }
+            XCTAssertEqual(key, "v.sym > 32")
+        }
+    }
+
     // MARK: - .vec
 
     func testVecNil() throws {

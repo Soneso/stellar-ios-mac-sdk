@@ -326,7 +326,9 @@ class Generator < Xdrgen::Generators::Base
     # A bytes-backed `string` field decodes as Data: the string wire form (length
     # prefix, bytes, padding to four) is the one Data's XDR conformance reads.
     if struct_name && bytes_backed_string_getter(struct_name, member.name, member.declaration)
-      out.puts "#{field} = try container.decode(Data.self)"
+      bound = byte_sequence_bound(member.declaration)
+      decode = bound ? bounded_decode_expression(bound, bytes_backed: true) : "try container.decode(Data.self)"
+      out.puts "#{field} = #{decode}"
       return
     end
 
@@ -344,22 +346,26 @@ class Generator < Xdrgen::Generators::Base
     if struct_name && FIELD_TYPE_OVERRIDES.key?(struct_name) &&
        FIELD_TYPE_OVERRIDES[struct_name].key?(field)
       base = FIELD_TYPE_OVERRIDES[struct_name][field]
+      require_unbounded_override(struct_name, field, decl)
     end
+    bound = byte_sequence_bound(decl)
 
     case decl
     when AST::Declarations::Array
       if decl.fixed?
         # Fixed-length array: decode N elements in a loop.
+        array_element_bound(decl)
         size = resolve_size(decl)
         inner_type = base
         out.puts "#{field} = try (0..<#{size}).map { _ in try container.decode(#{inner_type}.self) }"
       elsif is_optional
         # Variable-length array of optional elements (e.g. SponsorshipDescriptor[]):
         # each element has its own UInt32 present flag + value.
-        out.puts "#{field} = try decodeArrayOfOptional(type: #{base}.self, dec: decoder)"
+        array_element_bound(decl)
+        out.puts "#{field} = try decodeArrayOfOptional(type: #{base}.self, dec: decoder#{max_count_argument(decl)})"
       else
         # Variable-length array: use decodeArray helper.
-        out.puts "#{field} = try decodeArray(type: #{base}.self, dec: decoder)"
+        out.puts "#{field} = #{variable_array_decode_expression(decl, base)}"
       end
     when AST::Declarations::Opaque
       if decl.fixed?
@@ -367,7 +373,7 @@ class Generator < Xdrgen::Generators::Base
         out.puts "#{field} = try container.decode(#{base}.self)"
       else
         # Variable opaque -- Data.
-        out.puts "#{field} = try container.decode(#{base}.self)"
+        out.puts "#{field} = #{bound ? bounded_decode_expression(bound) : "try container.decode(#{base}.self)"}"
       end
     else
       if is_optional
@@ -380,6 +386,8 @@ class Generator < Xdrgen::Generators::Base
           if base =~ /^\[(.+)\]$/
             inner = $1
             out.puts "#{field} = try decodeArray(type: #{inner}.self, dec: decoder)"
+          elsif bound
+            out.puts "#{field} = #{bounded_decode_expression(bound)}"
           else
             out.puts "#{field} = try container.decode(#{base}.self)"
           end
@@ -389,6 +397,8 @@ class Generator < Xdrgen::Generators::Base
           out.puts "#{field} = nil"
         end
         out.puts "}"
+      elsif bound
+        out.puts "#{field} = #{bounded_decode_expression(bound)}"
       else
         out.puts "#{field} = try container.decode(#{base}.self)"
       end
@@ -402,19 +412,21 @@ class Generator < Xdrgen::Generators::Base
       out.puts "var container = encoder.unkeyedContainer()"
       struct.members.each do |m|
         field = resolve_field_name(struct_name, m.name)
-        render_encode_field(out, field, m)
+        render_encode_field(out, field, m, struct_name)
       end
     end
     out.puts "}"
   end
 
   # Emit a single field encode statement.
-  def render_encode_field(out, field, member)
+  def render_encode_field(out, field, member, struct_name)
     decl = member.declaration
     is_optional = member.type.sub_type == :optional
     unless is_optional
       is_optional = typedef_is_optional?(decl.type)
     end
+    bytes_backed = !bytes_backed_string_getter(struct_name, member.name, decl).nil?
+    bound = byte_sequence_bound(decl)
 
     case decl
     when AST::Declarations::Array
@@ -424,10 +436,10 @@ class Generator < Xdrgen::Generators::Base
       elsif is_optional
         # Variable-length array of optional elements (e.g. SponsorshipDescriptor[]):
         # each element has its own UInt32 present flag + value.
-        out.puts "try encodeArrayOfOptional(#{field}, enc: encoder)"
+        out.puts "try encodeArrayOfOptional(#{field}, enc: encoder#{max_count_argument(decl)})"
       else
         # Variable-length array: the Array XDREncodable extension handles the count prefix.
-        out.puts "try container.encode(#{field})"
+        out.puts variable_array_encode_statement(decl, field)
       end
     else
       if is_optional
@@ -437,13 +449,15 @@ class Generator < Xdrgen::Generators::Base
         out.puts "if let val = #{field} {"
         out.indent do
           out.puts "try container.encode(Int32(1))"
-          out.puts "try container.encode(val)"
+          out.puts bound ? bounded_encode_statement(bound, 'val', bytes_backed: bytes_backed) : "try container.encode(val)"
         end
         out.puts "} else {"
         out.indent do
           out.puts "try container.encode(Int32(0))"
         end
         out.puts "}"
+      elsif bound
+        out.puts bounded_encode_statement(bound, field, bytes_backed: bytes_backed)
       else
         out.puts "try container.encode(#{field})"
       end
@@ -639,7 +653,7 @@ class Generator < Xdrgen::Generators::Base
       xdr_name = txrep_field_name(struct_name, field)
       if bytes_backed_string_getter(struct_name, m.name, m.declaration)
         is_opt = m.type.sub_type == :optional || typedef_is_optional?(m.declaration.type)
-        kind = { style: :string_bytes, is_optional: is_opt }
+        kind = txrep_bounded_kind({ style: :string_bytes, is_optional: is_opt }, byte_sequence_bound(m.declaration))
       else
         kind = txrep_field_kind(m, type_str)
       end
@@ -717,6 +731,33 @@ class Generator < Xdrgen::Generators::Base
   # The top-level :is_optional flag covers both field-level optionality
   # (XDR `T*`) and typedef-wrapped optionals.
   def txrep_field_kind(member, type_str)
+    decl = member.declaration
+    kind = txrep_field_kind_unbounded(member, type_str)
+    if kind[:style] == :array
+      element_bound = decl.is_a?(AST::Declarations::Array) ? array_element_bound(decl) : nil
+      kind[:element] = txrep_bounded_kind(kind[:element], element_bound)
+      kind
+    else
+      txrep_bounded_kind(kind, byte_sequence_bound(decl))
+    end
+  end
+
+  # Attaches the declared maximum of a string or variable opaque value to its TxRep kind, so
+  # reading the value checks it. Generation stops when the kind cannot hold such a value.
+  def txrep_bounded_kind(kind, bound)
+    return kind if bound.nil?
+
+    holds_bytes = %i[string string_bytes].include?(kind[:style]) ||
+                  (kind[:style] == :opaque && kind[:is_data])
+    unless holds_bytes
+      raise "TxRep: a value bounded to #{bound[:max]} bytes renders as #{kind[:style].inspect}, " \
+            'which reads no length the bound could check'
+    end
+    kind.merge(bound: bound)
+  end
+
+  # The TxRep kind of a struct member, without its declared maximum.
+  def txrep_field_kind_unbounded(member, type_str)
     decl = member.declaration
     is_optional = member.type.sub_type == :optional || typedef_is_optional?(decl.type)
 
@@ -1039,6 +1080,15 @@ class Generator < Xdrgen::Generators::Base
   # regardless of required. Primitive types always use the ?? default form
   # because there is no way to distinguish "explicitly set to 0" from "absent".
   def txrep_parse_expr(kind, prefix_expr, required: false)
+    expression = txrep_parse_expr_unbounded(kind, prefix_expr, required: required)
+    bound = kind[:bound]
+    return expression if bound.nil?
+
+    "try TxRepHelper.requireMaxLength(#{expression}, #{bound[:max]}, key: #{prefix_expr})"
+  end
+
+  # The parse expression for a value of the given kind, without its declared maximum.
+  def txrep_parse_expr_unbounded(kind, prefix_expr, required: false)
     case kind[:style]
     when :primitive
       case kind[:name]
@@ -1397,18 +1447,19 @@ class Generator < Xdrgen::Generators::Base
   # txrep_field_kind but works off the arm metadata already gathered in
   # build_union_case_entries.
   def union_arm_txrep_kind(entry)
-    return { style: :string_bytes } if entry[:bytes_backed]
-
     arm = entry[:arm_ast]
     decl = arm.declaration
+    return txrep_bounded_kind({ style: :string_bytes }, byte_sequence_bound(decl)) if entry[:bytes_backed]
+
     base_kind =
       case entry[:decode_style]
       when :simple
-        classify_arm_scalar(decl, entry[:decode_type])
+        txrep_bounded_kind(classify_arm_scalar(decl, entry[:decode_type]), byte_sequence_bound(decl))
       when :array
+        element_bound = decl.is_a?(AST::Declarations::Array) ? array_element_bound(decl) : nil
         {
           style: :array,
-          element: classify_arm_scalar(decl, entry[:decode_type]),
+          element: txrep_bounded_kind(classify_arm_scalar(decl, entry[:decode_type]), element_bound),
           fixed: decl.is_a?(AST::Declarations::Array) && decl.fixed?,
           size: nil,
           max: txrep_array_max(decl),
@@ -1416,7 +1467,7 @@ class Generator < Xdrgen::Generators::Base
       when :optional
         # Optional union arms decode via the explicit _present flag. Return
         # the inner kind; callers wrap it in the if/else themselves.
-        classify_arm_scalar(decl, entry[:decode_type])
+        txrep_bounded_kind(classify_arm_scalar(decl, entry[:decode_type]), byte_sequence_bound(decl))
       else
         raise "union_arm_txrep_kind: unexpected decode_style #{entry[:decode_style].inspect}"
       end
@@ -1834,6 +1885,7 @@ class Generator < Xdrgen::Generators::Base
           disc_return: "0", # placeholder
           decode_style: decode_style,
           decode_type: resolve_arm_decode_type(da),
+          arm_ast: da,
           is_default: true,
         }
       end
@@ -1985,7 +2037,7 @@ class Generator < Xdrgen::Generators::Base
     when :void
       out.puts "self = .#{case_name}"
     when :array
-      out.puts "let val = try decodeArray(type: #{entry[:decode_type]}.self, dec: decoder)"
+      out.puts "let val = #{variable_array_decode_expression(entry[:arm_ast].declaration, entry[:decode_type])}"
       out.puts "self = .#{case_name}(val)"
     when :optional
       # Optional union arm: use explicit flag pattern instead of decodeArray(...).first
@@ -1993,7 +2045,7 @@ class Generator < Xdrgen::Generators::Base
       # The flag is an XDR bool, so Bool decoding rejects a value other than 0 or 1.
       out.puts "if try container.decode(Bool.self) {"
       out.indent do
-        out.puts "self = .#{case_name}(try container.decode(#{entry[:decode_type]}.self))"
+        out.puts "self = .#{case_name}(#{union_arm_decode_expression(entry)})"
       end
       out.puts "} else {"
       out.indent do
@@ -2001,9 +2053,25 @@ class Generator < Xdrgen::Generators::Base
       end
       out.puts "}"
     when :simple
-      out.puts "let val = try container.decode(#{entry[:decode_type]}.self)"
+      out.puts "let val = #{union_arm_decode_expression(entry)}"
       out.puts "self = .#{case_name}(val)"
     end
+  end
+
+  # The decode expression for one value of a :simple or :optional union arm.
+  def union_arm_decode_expression(entry)
+    bound = byte_sequence_bound(entry[:arm_ast].declaration)
+    return bounded_decode_expression(bound, bytes_backed: !entry[:bytes_backed].nil?) if bound
+
+    "try container.decode(#{entry[:decode_type]}.self)"
+  end
+
+  # The encode statement for one value of a :simple or :optional union arm, held in `val`.
+  def union_arm_encode_statement(entry)
+    bound = byte_sequence_bound(entry[:arm_ast].declaration)
+    return bounded_encode_statement(bound, 'val', bytes_backed: !entry[:bytes_backed].nil?) if bound
+
+    "try container.encode(val)"
   end
 
   # ---------------------------------------------------------------------------
@@ -2052,7 +2120,7 @@ class Generator < Xdrgen::Generators::Base
             out.puts "if let val = val {"
             out.indent do
               out.puts "try container.encode(Int32(1))"
-              out.puts "try container.encode(val)"
+              out.puts union_arm_encode_statement(entry)
             end
             out.puts "} else {"
             out.indent do
@@ -2060,10 +2128,15 @@ class Generator < Xdrgen::Generators::Base
             end
             out.puts "}"
           end
+        elsif entry[:decode_style] == :array
+          out.puts "case .#{case_name}(let val):"
+          out.indent do
+            out.puts variable_array_encode_statement(entry[:arm_ast].declaration, 'val')
+          end
         else
           out.puts "case .#{case_name}(let val):"
           out.indent do
-            out.puts "try container.encode(val)"
+            out.puts union_arm_encode_statement(entry)
           end
         end
       end
@@ -2145,7 +2218,7 @@ class Generator < Xdrgen::Generators::Base
           out.puts "var container = try decoder.unkeyedContainer()"
           out.puts "#{field_name} = try (0..<#{size}).map { _ in try container.decode(#{element_type}.self) }"
         else
-          out.puts "#{field_name} = try decodeArray(type: #{element_type}.self, dec: decoder)"
+          out.puts "#{field_name} = #{variable_array_decode_expression(decl, element_type)}"
         end
       end
       out.puts "}"
@@ -2156,9 +2229,10 @@ class Generator < Xdrgen::Generators::Base
       out.indent do
         out.puts "var container = encoder.unkeyedContainer()"
         if decl.fixed?
+          array_element_bound(decl)
           out.puts "for element in #{field_name} { try container.encode(element) }"
         else
-          out.puts "try container.encode(#{field_name})"
+          out.puts variable_array_encode_statement(decl, field_name)
         end
       end
       out.puts "}"
@@ -2465,6 +2539,144 @@ class Generator < Xdrgen::Generators::Base
     size
   end
 
+  # ---------------------------------------------------------------------------
+  # Declared maxima
+  # ---------------------------------------------------------------------------
+  #
+  # A variable-length array, string or opaque declaration can name a maximum. The binary
+  # codec, TxRep reading and XDR-JSON reading enforce it at every site holding such a value.
+  # A string or opaque typedef renders as a typealias of String or Data, which cannot carry
+  # the bound, so a site naming the typedef passes the typedef's maximum itself.
+  #
+  # The emitted maximum is the resolved number. xdrgen raises for a constant name no `const`
+  # defines, which fails the generation.
+
+  # The resolved maximum of a bounded declaration's size.
+  def declared_maximum(decl)
+    Integer(decl.resolved_size)
+  end
+
+  # The maximum element count of a variable-length array declaration; nil for a fixed or an
+  # unbounded array and for a declaration that is no array.
+  def array_maximum(decl)
+    return nil unless decl.is_a?(AST::Declarations::Array) && !decl.fixed? && decl.size
+
+    declared_maximum(decl)
+  end
+
+  # The bound of the string or opaque value a non-array declaration holds, directly or through
+  # typedefs, as { kind: :string | :opaque, max: Integer }; nil when the value is unbounded or
+  # is no string or opaque.
+  def byte_sequence_bound(decl)
+    case decl
+    when AST::Declarations::String
+      decl.size ? { kind: :string, max: declared_maximum(decl) } : nil
+    when AST::Declarations::Opaque
+      !decl.fixed? && decl.size ? { kind: :opaque, max: declared_maximum(decl) } : nil
+    when AST::Declarations::Array
+      nil
+    else
+      typespec_byte_sequence_bound(decl.type)
+    end
+  end
+
+  # The bound a typespec carries through the string or opaque typedefs it names. An array
+  # typedef renders as a wrapper struct that enforces its own bound, unless the type table
+  # collapses it to a bare Swift array; a bounded collapsed array has no site to carry its
+  # bound and stops the generation.
+  def typespec_byte_sequence_bound(type)
+    return nil unless type.is_a?(AST::Typespecs::Simple)
+
+    resolved = type.resolved_type
+    return nil unless resolved.is_a?(AST::Definitions::Typedef)
+
+    inner = resolved.declaration
+    unless inner.is_a?(AST::Declarations::Array)
+      bound = byte_sequence_bound(inner)
+      if bound && TYPE_OVERRIDES.key?(name(resolved))
+        raise "#{name(resolved)} declares at most #{bound[:max]} bytes, but TYPE_OVERRIDES " \
+              "renders it as #{TYPE_OVERRIDES[name(resolved)]}, which the bounded codec helpers do not cover"
+      end
+      return bound
+    end
+
+    if TYPE_OVERRIDES[name(resolved)]&.start_with?('[') && array_maximum(inner)
+      raise "#{name(resolved)} declares at most #{array_maximum(inner)} elements, but " \
+            "TYPE_OVERRIDES renders it as a bare array that cannot enforce the bound"
+    end
+    nil
+  end
+
+  # The bound of each element of an array declaration: the string or opaque typedef its
+  # elements name, or nil. Generation stops for a bounded element shape the codec helpers do
+  # not cover.
+  def array_element_bound(decl)
+    bound = typespec_byte_sequence_bound(decl.type)
+    return nil if bound.nil?
+
+    if decl.fixed? || decl.type.sub_type == :optional || typedef_is_optional?(decl.type)
+      raise "#{decl.name}: a fixed array or an array of optional elements of bounded " \
+            "#{bound[:kind]} values has no bounded codec helper"
+    end
+    bound
+  end
+
+  # Stops the generation when FIELD_TYPE_OVERRIDES moves a bounded site to another Swift type:
+  # the bounded helpers decode and encode String, Data and arrays only.
+  def require_unbounded_override(struct_name, field, decl)
+    return if byte_sequence_bound(decl).nil? && array_maximum(decl).nil?
+
+    raise "#{struct_name}.#{field} declares a maximum, but FIELD_TYPE_OVERRIDES renders it " \
+          "as #{FIELD_TYPE_OVERRIDES[struct_name][field]}, which the bounded codec helpers do not cover"
+  end
+
+  # The ", maxCount: N" argument of a bounded array site, or an empty string.
+  def max_count_argument(decl)
+    maximum = array_maximum(decl)
+    maximum ? ", maxCount: #{maximum}" : ''
+  end
+
+  # The decode expression for a bounded string or opaque value.
+  def bounded_decode_expression(bound, bytes_backed: false)
+    helper =
+      if bound[:kind] == :opaque then 'decodeOpaque'
+      elsif bytes_backed then 'decodeStringBytes'
+      else 'decodeString'
+      end
+    "try container.#{helper}(maxLength: #{bound[:max]})"
+  end
+
+  # The encode statement for a bounded string or opaque value.
+  def bounded_encode_statement(bound, accessor, bytes_backed: false)
+    helper =
+      if bound[:kind] == :opaque then 'encodeOpaque'
+      elsif bytes_backed then 'encodeStringBytes'
+      else 'encodeString'
+      end
+    "try container.#{helper}(#{accessor}, maxLength: #{bound[:max]})"
+  end
+
+  # The decode expression for a variable-length array whose element type is +base+.
+  def variable_array_decode_expression(decl, base)
+    element = array_element_bound(decl)
+    if element
+      helper = element[:kind] == :string ? 'decodeStringArray' : 'decodeOpaqueArray'
+      return "try #{helper}(dec: decoder#{max_count_argument(decl)}, maxLength: #{element[:max]})"
+    end
+    "try decodeArray(type: #{base}.self, dec: decoder#{max_count_argument(decl)})"
+  end
+
+  # The encode statement for a variable-length array held in +accessor+.
+  def variable_array_encode_statement(decl, accessor)
+    element = array_element_bound(decl)
+    if element
+      helper = element[:kind] == :string ? 'encodeStringArray' : 'encodeOpaqueArray'
+      return "try container.#{helper}(#{accessor}#{max_count_argument(decl)}, maxLength: #{element[:max]})"
+    end
+    maximum = array_maximum(decl)
+    maximum ? "try container.encodeArray(#{accessor}, maxCount: #{maximum})" : "try container.encode(#{accessor})"
+  end
+
   # Check whether the given AST typespec is a primitive / base type
   # (as opposed to a user-defined struct/enum/union/typedef).
   def is_base_type?(type)
@@ -2598,12 +2810,12 @@ class Generator < Xdrgen::Generators::Base
   # The XDR-JSON conversion for a bytes-backed `string` position: the same
   # SEP-0051 escape ladder a string's UTF-8 bytes go through, applied to the
   # bytes the position holds.
-  def json_bytes_backed_string_codec(owner:, key:)
+  def json_bytes_backed_string_codec(owner:, key:, bound: nil)
     context = json_context(owner, key)
     Sep51JsonCodecs::Codec.new(
       swift_type: 'Data',
       emit: ->(accessor) { "XdrJson.escapedString(#{accessor})" },
-      read: ->(value) { "try XdrJson.unescapeString(#{value}, #{context})" },
+      read: ->(value) { json_max_length_read("try XdrJson.unescapeString(#{value}, #{context})", bound, context) },
       emit_throws: false
     )
   end
@@ -2875,7 +3087,8 @@ class Generator < Xdrgen::Generators::Base
       if is_extension_point_field?(struct_name, field)
         entry.merge(json_extension_point_entry(label, key, m))
       elsif bytes_backed_string_getter(struct_name, m.name, m.declaration)
-        entry.merge(codec: json_bytes_backed_string_codec(owner: label, key: key))
+        entry.merge(codec: json_bytes_backed_string_codec(owner: label, key: key,
+                                                          bound: byte_sequence_bound(m.declaration)))
       else
         entry.merge(codec: json_codec(m.declaration, owner: label, key: key,
                                       swift_type: resolve_field_type(struct_name, field, m)))
@@ -3180,7 +3393,10 @@ class Generator < Xdrgen::Generators::Base
   end
 
   def json_arm_codec(entry, label, key)
-    return json_bytes_backed_string_codec(owner: label, key: key) if entry[:bytes_backed]
+    if entry[:bytes_backed]
+      return json_bytes_backed_string_codec(owner: label, key: key,
+                                            bound: byte_sequence_bound(entry[:arm_ast].declaration))
+    end
 
     json_codec(entry[:arm_ast].declaration, owner: label, key: key,
                swift_type: entry[:associated_type])
@@ -3337,7 +3553,8 @@ class Generator < Xdrgen::Generators::Base
     init_label = TYPEDEF_INIT_LABEL.fetch(typedef_name, field_name)
     element = json_codec_for_type(decl.type, owner: typedef_name, key: nil, swift_type: element_type)
     codec = json_array_codec(element, owner: typedef_name, key: nil,
-                             fixed_size: decl.fixed? ? resolve_size(decl) : nil)
+                             fixed_size: decl.fixed? ? resolve_size(decl) : nil,
+                             max_count: array_maximum(decl))
 
     render_json_extension(out, typedef_name) do
       out.puts 'public func toXdrJsonValue() throws -> XdrJsonValue {'

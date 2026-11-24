@@ -46,7 +46,7 @@ public struct PreconditionsV2XDR: XDRCodable, Sendable {
     }
     minSeqAge = try container.decode(UInt64.self)
     minSeqLedgerGap = try container.decode(UInt32.self)
-    extraSigners = try decodeArray(type: SignerKeyXDR.self, dec: decoder)
+    extraSigners = try decodeArray(type: SignerKeyXDR.self, dec: decoder, maxCount: 2)
   }
 
   public func encode(to encoder: Encoder) throws {
@@ -71,7 +71,7 @@ public struct PreconditionsV2XDR: XDRCodable, Sendable {
     }
     try container.encode(minSeqAge)
     try container.encode(minSeqLedgerGap)
-    try container.encode(extraSigners)
+    try container.encodeArray(extraSigners, maxCount: 2)
   }
 }
 
@@ -174,7 +174,7 @@ extension PreconditionsV2XDR: XdrJsonCodable {
     }
     let minSeqAge: UInt64 = try DurationXDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "min_seq_age", type: "PreconditionsV2XDR"), type: "PreconditionsV2XDR", key: "min_seq_age")
     let minSeqLedgerGap: UInt32 = try Uint32XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "min_seq_ledger_gap", type: "PreconditionsV2XDR"), type: "PreconditionsV2XDR", key: "min_seq_ledger_gap")
-    let extraSignersElements = try XdrJson.array(try XdrJson.field(members, key: "extra_signers", type: "PreconditionsV2XDR"), type: "PreconditionsV2XDR", key: "extra_signers")
+    let extraSignersElements = try XdrJson.requireMaxCount(try XdrJson.array(try XdrJson.field(members, key: "extra_signers", type: "PreconditionsV2XDR"), type: "PreconditionsV2XDR", key: "extra_signers"), 2, type: "PreconditionsV2XDR", key: "extra_signers")
     let extraSigners: [SignerKeyXDR] = try extraSignersElements.map { element in try SignerKeyXDR.fromXdrJsonValue(element) }
     return PreconditionsV2XDR(
       timeBounds: timeBounds,

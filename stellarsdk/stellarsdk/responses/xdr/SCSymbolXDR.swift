@@ -23,7 +23,7 @@ public enum SCSymbolXDRJsonCodec {
   }
 
   static func fromXdrJsonValue(_ value: XdrJsonValue, type: String, key: String?) throws -> SCSymbolXDR {
-    let decoded: String = try XdrJson.unescapedText(value, type: type, key: key)
+    let decoded: String = try XdrJson.requireMaxLength(try XdrJson.unescapedText(value, type: type, key: key), 32, type: type, key: key)
     return decoded
   }
 

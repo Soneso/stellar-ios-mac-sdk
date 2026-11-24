@@ -78,7 +78,7 @@ public indirect enum SCValXDR: XDRCodable, Sendable {
       let val = try container.decode(Data.self)
       self = .string(val)
     case SCValType.symbol.rawValue:
-      let val = try container.decode(String.self)
+      let val = try container.decodeString(maxLength: 32)
       self = .symbol(val)
     case SCValType.vec.rawValue:
       if try container.decode(Bool.self) {
@@ -175,7 +175,7 @@ public indirect enum SCValXDR: XDRCodable, Sendable {
     case .string(let val):
       try container.encode(val)
     case .symbol(let val):
-      try container.encode(val)
+      try container.encodeString(val, maxLength: 32)
     case .vec(let val):
       if let val = val {
         try container.encode(Int32(1))
@@ -370,7 +370,7 @@ extension SCValXDR {
       let val = try TxRepHelper.requireStringBytes(map, "\(prefix).str")
       return .string(val)
     case "SCV_SYMBOL":
-      let val = try TxRepHelper.requireString(map, "\(prefix).sym")
+      let val = try TxRepHelper.requireMaxLength(try TxRepHelper.requireString(map, "\(prefix).sym"), 32, key: "\(prefix).sym")
       return .symbol(val)
     case "SCV_VEC":
       if TxRepHelper.getValue(map, "\(prefix).vec._present") == "true" {

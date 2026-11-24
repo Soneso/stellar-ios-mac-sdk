@@ -15,13 +15,13 @@ public struct LedgerKeyDataXDR: XDRCodable, Sendable {
   public init(from decoder: Decoder) throws {
     var container = try decoder.unkeyedContainer()
     accountID = try container.decode(PublicKey.self)
-    dataName = try container.decode(String.self)
+    dataName = try container.decodeString(maxLength: 64)
   }
 
   public func encode(to encoder: Encoder) throws {
     var container = encoder.unkeyedContainer()
     try container.encode(accountID)
-    try container.encode(dataName)
+    try container.encodeString(dataName, maxLength: 64)
   }
 }
 
@@ -33,7 +33,7 @@ extension LedgerKeyDataXDR {
 
   public static func fromTxRep(_ map: [String: String], prefix: String) throws -> LedgerKeyDataXDR {
     let accountID: PublicKey = try TxRepHelper.requireAccountId(map, "\(prefix).accountID")
-    let dataName: String = try TxRepHelper.requireString(map, "\(prefix).dataName")
+    let dataName: String = try TxRepHelper.requireMaxLength(try TxRepHelper.requireString(map, "\(prefix).dataName"), 64, key: "\(prefix).dataName")
     return LedgerKeyDataXDR(accountID: accountID, dataName: dataName)
   }
 }

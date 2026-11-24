@@ -12,12 +12,12 @@ public struct SCSpecTypeUDTXDR: XDRCodable, Sendable {
 
   public init(from decoder: Decoder) throws {
     var container = try decoder.unkeyedContainer()
-    name = try container.decode(String.self)
+    name = try container.decodeString(maxLength: 1024)
   }
 
   public func encode(to encoder: Encoder) throws {
     var container = encoder.unkeyedContainer()
-    try container.encode(name)
+    try container.encodeString(name, maxLength: 1024)
   }
 }
 
@@ -30,7 +30,7 @@ extension SCSpecTypeUDTXDR: XdrJsonCodable {
 
   public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> SCSpecTypeUDTXDR {
     let members = try XdrJson.object(value, type: "SCSpecTypeUDTXDR", keys: ["name"])
-    let name: String = try XdrJson.unescapedText(try XdrJson.field(members, key: "name", type: "SCSpecTypeUDTXDR"), type: "SCSpecTypeUDTXDR", key: "name")
+    let name: String = try XdrJson.requireMaxLength(try XdrJson.unescapedText(try XdrJson.field(members, key: "name", type: "SCSpecTypeUDTXDR"), type: "SCSpecTypeUDTXDR", key: "name"), 1024, type: "SCSpecTypeUDTXDR", key: "name")
     return SCSpecTypeUDTXDR(name: name)
   }
 }

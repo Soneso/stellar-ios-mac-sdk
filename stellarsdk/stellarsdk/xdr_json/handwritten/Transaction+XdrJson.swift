@@ -65,9 +65,11 @@ extension TransactionV0XDR: XdrJsonCodable {
 
         let memo = try MemoXDR.fromXdrJsonValue(
             try XdrJson.field(members, key: "memo", type: "TransactionV0XDR"))
-        let operationValues = try XdrJson.array(
-            try XdrJson.field(members, key: "operations", type: "TransactionV0XDR"),
-            type: "TransactionV0XDR", key: "operations")
+        let operationValues = try XdrJson.requireMaxCount(
+            try XdrJson.array(
+                try XdrJson.field(members, key: "operations", type: "TransactionV0XDR"),
+                type: "TransactionV0XDR", key: "operations"),
+            100, type: "TransactionV0XDR", key: "operations")
         let operations = try operationValues.map { element in try OperationXDR.fromXdrJsonValue(element) }
         _ = try TransactionV0XDRExtXDR.fromXdrJsonValue(
             try XdrJson.field(members, key: "ext", type: "TransactionV0XDR"))
@@ -126,9 +128,11 @@ extension TransactionXDR: XdrJsonCodable {
             try XdrJson.field(members, key: "cond", type: "TransactionXDR"))
         let memo = try MemoXDR.fromXdrJsonValue(
             try XdrJson.field(members, key: "memo", type: "TransactionXDR"))
-        let operationValues = try XdrJson.array(
-            try XdrJson.field(members, key: "operations", type: "TransactionXDR"),
-            type: "TransactionXDR", key: "operations")
+        let operationValues = try XdrJson.requireMaxCount(
+            try XdrJson.array(
+                try XdrJson.field(members, key: "operations", type: "TransactionXDR"),
+                type: "TransactionXDR", key: "operations"),
+            100, type: "TransactionXDR", key: "operations")
         let operations = try operationValues.map { element in try OperationXDR.fromXdrJsonValue(element) }
         let ext = try TransactionExtXDR.fromXdrJsonValue(
             try XdrJson.field(members, key: "ext", type: "TransactionXDR"))

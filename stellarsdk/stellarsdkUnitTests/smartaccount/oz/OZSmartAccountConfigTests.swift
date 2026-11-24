@@ -1067,6 +1067,81 @@ final class OZSmartAccountConfigTests: XCTestCase {
         )
         XCTAssertNotEqual(configWithAdapter.hashValue, configWithoutAdapter.hashValue)
     }
+
+    // MARK: - Default policies above a declared XDR maximum
+
+    /// A symbol of `count` bytes; the XDR definition of a symbol allows at most 32.
+    private func symbol(_ character: Character, count: Int) -> SCValXDR {
+        return .symbol(String(repeating: character, count: count))
+    }
+
+    private func makeConfig(defaultPolicy: SCValXDR) throws -> OZSmartAccountConfig {
+        return try OZSmartAccountConfig(
+            rpcUrl: validRpcUrl,
+            networkPassphrase: validPassphrase,
+            accountWasmHash: validWasmHash,
+            webauthnVerifierAddress: validVerifier,
+            defaultPolicies: [validVerifier: defaultPolicy]
+        )
+    }
+
+    func test_equality_defaultPolicyAboveDeclaredMaximumEqualsItself() throws {
+        let config = try makeConfig(defaultPolicy: symbol("s", count: 33))
+
+        XCTAssertEqual(config, config)
+        XCTAssertEqual(Set([config]).count, 1)
+        XCTAssertTrue(Set([config]).contains(config))
+    }
+
+    func test_equality_equalDefaultPoliciesAboveDeclaredMaximumCollapseInASet() throws {
+        let config1 = try makeConfig(defaultPolicy: symbol("s", count: 33))
+        let config2 = try makeConfig(defaultPolicy: symbol("s", count: 33))
+
+        XCTAssertEqual(config1, config2)
+        XCTAssertEqual(config1.hashValue, config2.hashValue)
+        XCTAssertEqual(Set([config1, config2]).count, 1)
+    }
+
+    func test_equality_defaultPoliciesAboveDeclaredMaximumWithOtherTextNotEqual() throws {
+        let config1 = try makeConfig(defaultPolicy: symbol("s", count: 33))
+        let config2 = try makeConfig(defaultPolicy: symbol("t", count: 33))
+
+        XCTAssertNotEqual(config1, config2)
+        XCTAssertEqual(Set([config1, config2]).count, 2)
+    }
+
+    func test_equality_defaultPolicyAboveDeclaredMaximumNotEqualToOneAtTheMaximum() throws {
+        let aboveMaximum = try makeConfig(defaultPolicy: symbol("s", count: 33))
+        let atMaximum = try makeConfig(defaultPolicy: symbol("s", count: 32))
+
+        XCTAssertNotEqual(aboveMaximum, atMaximum)
+        XCTAssertEqual(Set([aboveMaximum, atMaximum]).count, 2)
+    }
+
+    func test_equality_symbolAboveDeclaredMaximumNestedInAVec() throws {
+        let config1 = try makeConfig(defaultPolicy: .vec([.u32(1), symbol("s", count: 33)]))
+        let config2 = try makeConfig(defaultPolicy: .vec([.u32(1), symbol("s", count: 33)]))
+        let other = try makeConfig(defaultPolicy: .vec([.u32(1), symbol("t", count: 33)]))
+
+        XCTAssertEqual(config1, config1)
+        XCTAssertEqual(config1, config2)
+        XCTAssertEqual(Set([config1, config2]).count, 1)
+        XCTAssertNotEqual(config1, other)
+    }
+
+    func test_equality_symbolAboveDeclaredMaximumNestedInAMapValue() throws {
+        func policy(_ character: Character) -> SCValXDR {
+            return .map([SCMapEntryXDR(key: .symbol("limit"), val: symbol(character, count: 33))])
+        }
+        let config1 = try makeConfig(defaultPolicy: policy("s"))
+        let config2 = try makeConfig(defaultPolicy: policy("s"))
+        let other = try makeConfig(defaultPolicy: policy("t"))
+
+        XCTAssertEqual(config1, config1)
+        XCTAssertEqual(config1, config2)
+        XCTAssertEqual(Set([config1, config2]).count, 1)
+        XCTAssertNotEqual(config1, other)
+    }
 }
 
 // MARK: - _TestExternalWalletAdapter

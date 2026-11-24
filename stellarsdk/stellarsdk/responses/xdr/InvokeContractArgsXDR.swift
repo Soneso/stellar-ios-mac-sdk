@@ -36,14 +36,14 @@ public struct InvokeContractArgsXDR: XDRCodable, Sendable {
   public init(from decoder: Decoder) throws {
     var container = try decoder.unkeyedContainer()
     contractAddress = try container.decode(SCAddressXDR.self)
-    functionName = try container.decode(Data.self)
+    functionName = try container.decodeStringBytes(maxLength: 32)
     args = try decodeArray(type: SCValXDR.self, dec: decoder)
   }
 
   public func encode(to encoder: Encoder) throws {
     var container = encoder.unkeyedContainer()
     try container.encode(contractAddress)
-    try container.encode(functionName)
+    try container.encodeStringBytes(functionName, maxLength: 32)
     try container.encode(args)
   }
 }
@@ -60,7 +60,7 @@ extension InvokeContractArgsXDR {
 
   public static func fromTxRep(_ map: [String: String], prefix: String) throws -> InvokeContractArgsXDR {
     let contractAddress: SCAddressXDR = try SCAddressXDR.fromTxRep(map, prefix: "\(prefix).contractAddress")
-    let functionName: Data = try TxRepHelper.requireStringBytes(map, "\(prefix).functionName")
+    let functionName: Data = try TxRepHelper.requireMaxLength(try TxRepHelper.requireStringBytes(map, "\(prefix).functionName"), 32, key: "\(prefix).functionName")
     let argsLen = try TxRepHelper.parseInt(TxRepHelper.getValue(map, "\(prefix).args.len") ?? "0")
     guard argsLen >= 0 else {
       throw TxRepError.invalidValue(key: "\(prefix).args.len: \(argsLen)")
@@ -86,7 +86,7 @@ extension InvokeContractArgsXDR: XdrJsonCodable {
   public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> InvokeContractArgsXDR {
     let members = try XdrJson.object(value, type: "InvokeContractArgsXDR", keys: ["contract_address", "function_name", "args"])
     let contractAddress: SCAddressXDR = try SCAddressXDR.fromXdrJsonValue(try XdrJson.field(members, key: "contract_address", type: "InvokeContractArgsXDR"))
-    let functionName: Data = try XdrJson.unescapeString(try XdrJson.field(members, key: "function_name", type: "InvokeContractArgsXDR"), type: "InvokeContractArgsXDR", key: "function_name")
+    let functionName: Data = try XdrJson.requireMaxLength(try XdrJson.unescapeString(try XdrJson.field(members, key: "function_name", type: "InvokeContractArgsXDR"), type: "InvokeContractArgsXDR", key: "function_name"), 32, type: "InvokeContractArgsXDR", key: "function_name")
     let argsElements = try XdrJson.array(try XdrJson.field(members, key: "args", type: "InvokeContractArgsXDR"), type: "InvokeContractArgsXDR", key: "args")
     let args: [SCValXDR] = try argsElements.map { element in try SCValXDR.fromXdrJsonValue(element) }
     return InvokeContractArgsXDR(

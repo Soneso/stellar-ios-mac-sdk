@@ -27,7 +27,7 @@ public struct ClaimableBalanceEntryXDR: XDRCodable, Sendable {
   public init(from decoder: Decoder) throws {
     var container = try decoder.unkeyedContainer()
     claimableBalanceID = try container.decode(ClaimableBalanceIDXDR.self)
-    claimants = try decodeArray(type: ClaimantXDR.self, dec: decoder)
+    claimants = try decodeArray(type: ClaimantXDR.self, dec: decoder, maxCount: 10)
     asset = try container.decode(AssetXDR.self)
     amount = try container.decode(Int64.self)
     ext = try container.decode(ClaimableBalanceEntryExtXDR.self)
@@ -36,7 +36,7 @@ public struct ClaimableBalanceEntryXDR: XDRCodable, Sendable {
   public func encode(to encoder: Encoder) throws {
     var container = encoder.unkeyedContainer()
     try container.encode(claimableBalanceID)
-    try container.encode(claimants)
+    try container.encodeArray(claimants, maxCount: 10)
     try container.encode(asset)
     try container.encode(amount)
     try container.encode(ext)
@@ -57,7 +57,7 @@ extension ClaimableBalanceEntryXDR: XdrJsonCodable {
   public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> ClaimableBalanceEntryXDR {
     let members = try XdrJson.object(value, type: "ClaimableBalanceEntryXDR", keys: ["balance_id", "claimants", "asset", "amount", "ext"])
     let claimableBalanceID: ClaimableBalanceIDXDR = try ClaimableBalanceIDXDR.fromXdrJsonValue(try XdrJson.field(members, key: "balance_id", type: "ClaimableBalanceEntryXDR"))
-    let claimantsElements = try XdrJson.array(try XdrJson.field(members, key: "claimants", type: "ClaimableBalanceEntryXDR"), type: "ClaimableBalanceEntryXDR", key: "claimants")
+    let claimantsElements = try XdrJson.requireMaxCount(try XdrJson.array(try XdrJson.field(members, key: "claimants", type: "ClaimableBalanceEntryXDR"), type: "ClaimableBalanceEntryXDR", key: "claimants"), 10, type: "ClaimableBalanceEntryXDR", key: "claimants")
     let claimants: [ClaimantXDR] = try claimantsElements.map { element in try ClaimantXDR.fromXdrJsonValue(element) }
     let asset: AssetXDR = try AssetXDR.fromXdrJsonValue(try XdrJson.field(members, key: "asset", type: "ClaimableBalanceEntryXDR"))
     let amount: Int64 = try Int64XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "amount", type: "ClaimableBalanceEntryXDR"), type: "ClaimableBalanceEntryXDR", key: "amount")

@@ -506,6 +506,32 @@ final class OZPolicyInstallParamsTests: XCTestCase {
         XCTAssertFalse(bytes.isEmpty, "XDR encoding of Void must produce non-empty bytes (the type discriminant alone is 4 bytes)")
     }
 
+    func test_scValToXdrBytes_symbolBytesAreItsXdrEncoding() throws {
+        XCTAssertEqual(OZPolicyManager.scValToXdrBytes(.symbol("abc")), [0, 0, 0, 15, 0, 0, 0, 3, 97, 98, 99, 0])
+    }
+
+    func test_scValToXdrBytes_symbolAboveDeclaredMaximumIsWrittenAsItIs() throws {
+        let symbol = SCValXDR.symbol(String(repeating: "s", count: 33))
+        let expected: [UInt8] = [0, 0, 0, 15, 0, 0, 0, 33]
+            + [UInt8](repeating: 0x73, count: 33)
+            + [0, 0, 0]
+
+        XCTAssertEqual(OZPolicyManager.scValToXdrBytes(symbol), expected)
+    }
+
+    func test_scValToXdrBytes_leavesTheDeclaredMaximaOfOtherEncodingsInPlace() throws {
+        let symbol = SCValXDR.symbol(String(repeating: "s", count: 33))
+        _ = OZPolicyManager.scValToXdrBytes(symbol)
+
+        XCTAssertThrowsError(try XDREncoder.encode(symbol)) { error in
+            guard case StellarSDKError.xdrEncodingError(let message) = error else {
+                return XCTFail("expected xdrEncodingError, got \(error)")
+            }
+            XCTAssertEqual(message, "XDR string length 33 exceeds the maximum of 32")
+        }
+        XCTAssertNil(symbol.xdrEncoded)
+    }
+
     // ========================================================================
     // Cross-type — sealed-arm exhaustivity (2 cases)
     // ========================================================================

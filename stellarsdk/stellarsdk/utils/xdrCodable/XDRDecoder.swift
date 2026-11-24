@@ -139,14 +139,8 @@ public extension XDRDecoder {
             return try decode(Bool.self) as! T
             
         case let binaryT as XDRDecodable.Type:
-            depth += 1
-            guard depth <= XDRDecoder.maxDecodingDepth else {
-                depth -= 1
-                throw Error.maxDecodingDepthExceeded
-            }
-            defer { depth -= 1 }
-            return try binaryT.init(fromBinary: self) as! T
-            
+            return try nested { try binaryT.init(fromBinary: self) as! T }
+
         default:
             throw Error.typeNotConformingToXDRDecodable(type)
         }
@@ -166,6 +160,21 @@ extension XDRDecoder {
     /// The number of bytes remaining in the buffer from the current cursor position.
     var remainingBytes: Int {
         return max(data.count - cursor, 0)
+    }
+
+    /// Runs `body` one nesting level deeper, under the depth limit `decode(_:)` applies to
+    /// every value it reads.
+    ///
+    /// - Throws: `XDRDecoder.Error.maxDecodingDepthExceeded` when the level exceeds the limit,
+    ///   and what `body` throws
+    func nested<T>(_ body: () throws -> T) throws -> T {
+        depth += 1
+        guard depth <= XDRDecoder.maxDecodingDepth else {
+            depth -= 1
+            throw Error.maxDecodingDepthExceeded
+        }
+        defer { depth -= 1 }
+        return try body()
     }
 
     /// Consumes zero padding to the XDR four-byte boundary after a value of `byteCount` bytes.
@@ -255,7 +264,7 @@ extension XDRDecoder: Decoder {
         }
     }
     
-    private struct UnkeyedContainer: UnkeyedDecodingContainer, SingleValueDecodingContainer {
+    private struct UnkeyedContainer: UnkeyedDecodingContainer, SingleValueDecodingContainer, XDRDecodingContainer {
         var decoder: XDRDecoder
         
         var codingPath: [CodingKey] { return [] }

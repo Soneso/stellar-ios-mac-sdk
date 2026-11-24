@@ -1368,4 +1368,149 @@ class TxRepErrorHandlingTestCase: XCTestCase {
             }
         }
     }
+
+    // MARK: - Declared maxima
+
+    private func bumpSequenceTxRep(memo: String = "tx.memo.type: MEMO_NONE", signatures: String = "signatures.len: 0") -> String {
+        """
+        type: ENVELOPE_TYPE_TX
+        tx.sourceAccount: GAVRMS4QIOCC4QMOSKILOOOHCSO4FEKOXZPNLKFFN6W7SD2KUB7NBPLN
+        tx.fee: 100
+        tx.seqNum: 46489056724385793
+        tx.cond.type: PRECOND_NONE
+        \(memo)
+        tx.operations.len: 1
+        tx.operations[0].sourceAccount._present: false
+        tx.operations[0].body.type: BUMP_SEQUENCE
+        tx.operations[0].body.bumpSequenceOp.bumpTo: 46489056724385800
+        tx.ext.v: 0
+        \(signatures)
+        """
+    }
+
+    private func assertAboveDeclaredMaximum(_ txRep: String, key: String,
+                                            file: StaticString = #filePath, line: UInt = #line) {
+        XCTAssertThrowsError(try TxRep.fromTxRep(txRep: txRep), file: file, line: line) { error in
+            guard case TxRepError.invalidValue(let actual) = error else {
+                return XCTFail("expected invalidValue, got \(error)", file: file, line: line)
+            }
+            XCTAssertEqual(actual, key, file: file, line: line)
+        }
+    }
+
+    func testMemoTextAtTheMaximumIsReadAndOneByteMoreIsRejected() throws {
+        let atMaximum = bumpSequenceTxRep(memo: """
+        tx.memo.type: MEMO_TEXT
+        tx.memo.text: "\(String(repeating: "a", count: 28))"
+        """)
+        let envelope = try TransactionEnvelopeXDR(xdr: try TxRep.fromTxRep(txRep: atMaximum))
+        guard case .text(let text) = envelope.txMemo else { return XCTFail("expected MEMO_TEXT") }
+        XCTAssertEqual(text, Data(repeating: 0x61, count: 28))
+
+        assertAboveDeclaredMaximum(bumpSequenceTxRep(memo: """
+        tx.memo.type: MEMO_TEXT
+        tx.memo.text: "\(String(repeating: "a", count: 29))"
+        """), key: "tx.memo.text > 28")
+    }
+
+    func testMemoTextCountsTheBytesOfMultiByteCharacters() throws {
+        let atMaximum = bumpSequenceTxRep(memo: """
+        tx.memo.type: MEMO_TEXT
+        tx.memo.text: "\(String(repeating: "é", count: 14))"
+        """)
+        XCTAssertNoThrow(try TxRep.fromTxRep(txRep: atMaximum))
+
+        assertAboveDeclaredMaximum(bumpSequenceTxRep(memo: """
+        tx.memo.type: MEMO_TEXT
+        tx.memo.text: "\(String(repeating: "é", count: 14))a"
+        """), key: "tx.memo.text > 28")
+    }
+
+    func testGeneratedMemoTextAboveTheMaximumIsRejected() throws {
+        let atMaximum = try MemoXDR.fromTxRep(["memo.type": "MEMO_TEXT",
+                                               "memo.text": "\"\(String(repeating: "a", count: 28))\""],
+                                              prefix: "memo")
+        guard case .text(let text) = atMaximum else { return XCTFail("expected MEMO_TEXT") }
+        XCTAssertEqual(text, Data(repeating: 0x61, count: 28))
+
+        XCTAssertThrowsError(try MemoXDR.fromTxRep(["memo.type": "MEMO_TEXT",
+                                                    "memo.text": "\"\(String(repeating: "a", count: 29))\""],
+                                                   prefix: "memo")) { error in
+            guard case TxRepError.invalidValue(let key) = error else { return XCTFail("expected invalidValue, got \(error)") }
+            XCTAssertEqual(key, "memo.text > 28")
+        }
+    }
+
+    func testSignatureAboveTheMaximumIsRejected() throws {
+        let atMaximum = bumpSequenceTxRep(signatures: """
+        signatures.len: 1
+        signatures[0].hint: abcd1234
+        signatures[0].signature: \(String(repeating: "33", count: 64))
+        """)
+        XCTAssertNoThrow(try TxRep.fromTxRep(txRep: atMaximum))
+
+        assertAboveDeclaredMaximum(bumpSequenceTxRep(signatures: """
+        signatures.len: 1
+        signatures[0].hint: abcd1234
+        signatures[0].signature: \(String(repeating: "33", count: 65))
+        """), key: "signatures[0].signature > 64")
+    }
+
+    func testManageDataNameAndValueAboveTheMaximumAreRejected() throws {
+        func manageData(name: String, value: String) -> String {
+            """
+            type: ENVELOPE_TYPE_TX
+            tx.sourceAccount: GAVRMS4QIOCC4QMOSKILOOOHCSO4FEKOXZPNLKFFN6W7SD2KUB7NBPLN
+            tx.fee: 100
+            tx.seqNum: 46489056724385793
+            tx.cond.type: PRECOND_NONE
+            tx.memo.type: MEMO_NONE
+            tx.operations.len: 1
+            tx.operations[0].sourceAccount._present: false
+            tx.operations[0].body.type: MANAGE_DATA
+            tx.operations[0].body.manageDataOp.dataName: "\(name)"
+            tx.operations[0].body.manageDataOp.dataValue._present: true
+            tx.operations[0].body.manageDataOp.dataValue: \(value)
+            tx.ext.v: 0
+            signatures.len: 0
+            """
+        }
+        XCTAssertNoThrow(try TxRep.fromTxRep(txRep: manageData(name: String(repeating: "n", count: 64),
+                                                              value: String(repeating: "76", count: 64))))
+        assertAboveDeclaredMaximum(manageData(name: String(repeating: "n", count: 65), value: "76"),
+                                   key: "tx.operations[0].body.manageDataOp.dataName > 64")
+        assertAboveDeclaredMaximum(manageData(name: "n", value: String(repeating: "76", count: 65)),
+                                   key: "tx.operations[0].body.manageDataOp.dataValue > 64")
+    }
+
+    func testHomeDomainAboveTheMaximumIsRejected() throws {
+        func setOptions(homeDomain: String) throws -> String {
+            let operation = OperationXDR(body: .setOptionsOp(SetOptionsOperationXDR(homeDomain: homeDomain)))
+            let tx = TransactionXDR(sourceAccount: try PublicKey(accountId: "GAVRMS4QIOCC4QMOSKILOOOHCSO4FEKOXZPNLKFFN6W7SD2KUB7NBPLN"),
+                                    seqNum: 1, cond: .none, memo: .none, operations: [operation])
+            let envelope = TransactionEnvelopeXDR.v1(TransactionV1EnvelopeXDR(tx: tx, signatures: []))
+            return try TxRep.toTxRep(transactionEnvelope: XCTUnwrap(envelope.xdrEncoded))
+        }
+        let atMaximum = try setOptions(homeDomain: String(repeating: "d", count: 32))
+        XCTAssertNoThrow(try TxRep.fromTxRep(txRep: atMaximum))
+
+        let aboveMaximum = atMaximum.replacingOccurrences(of: "\"\(String(repeating: "d", count: 32))\"",
+                                                          with: "\"\(String(repeating: "d", count: 33))\"")
+        XCTAssertNotEqual(aboveMaximum, atMaximum)
+        assertAboveDeclaredMaximum(aboveMaximum, key: "tx.operations[0].body.setOptionsOp.homeDomain > 32")
+    }
+
+    func testSignedPayloadAboveTheMaximumIsRejected() throws {
+        let ed25519 = String(repeating: "11", count: 32)
+        let atMaximum = try Ed25519SignedPayload.fromTxRep(["p.ed25519": ed25519, "p.payload": String(repeating: "70", count: 64)],
+                                                           prefix: "p")
+        XCTAssertEqual(atMaximum.payload, Data(repeating: 0x70, count: 64))
+
+        XCTAssertThrowsError(try Ed25519SignedPayload.fromTxRep(["p.ed25519": ed25519,
+                                                                 "p.payload": String(repeating: "70", count: 65)],
+                                                                prefix: "p")) { error in
+            guard case TxRepError.invalidValue(let key) = error else { return XCTFail("expected invalidValue, got \(error)") }
+            XCTAssertEqual(key, "p.payload > 64")
+        }
+    }
 }

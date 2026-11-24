@@ -15,13 +15,13 @@ public struct ErrorXDR: XDRCodable, Sendable {
   public init(from decoder: Decoder) throws {
     var container = try decoder.unkeyedContainer()
     code = try container.decode(ErrorCodeXDR.self)
-    msg = try container.decode(String.self)
+    msg = try container.decodeString(maxLength: 100)
   }
 
   public func encode(to encoder: Encoder) throws {
     var container = encoder.unkeyedContainer()
     try container.encode(code)
-    try container.encode(msg)
+    try container.encodeString(msg, maxLength: 100)
   }
 }
 
@@ -36,7 +36,7 @@ extension ErrorXDR: XdrJsonCodable {
   public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> ErrorXDR {
     let members = try XdrJson.object(value, type: "ErrorXDR", keys: ["code", "msg"])
     let code: ErrorCodeXDR = try ErrorCodeXDR.fromXdrJsonValue(try XdrJson.field(members, key: "code", type: "ErrorXDR"))
-    let msg: String = try XdrJson.unescapedText(try XdrJson.field(members, key: "msg", type: "ErrorXDR"), type: "ErrorXDR", key: "msg")
+    let msg: String = try XdrJson.requireMaxLength(try XdrJson.unescapedText(try XdrJson.field(members, key: "msg", type: "ErrorXDR"), type: "ErrorXDR", key: "msg"), 100, type: "ErrorXDR", key: "msg")
     return ErrorXDR(code: code, msg: msg)
   }
 }

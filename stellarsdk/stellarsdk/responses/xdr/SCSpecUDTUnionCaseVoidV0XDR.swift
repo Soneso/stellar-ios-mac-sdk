@@ -14,14 +14,14 @@ public struct SCSpecUDTUnionCaseVoidV0XDR: XDRCodable, Sendable {
 
   public init(from decoder: Decoder) throws {
     var container = try decoder.unkeyedContainer()
-    doc = try container.decode(String.self)
-    name = try container.decode(String.self)
+    doc = try container.decodeString(maxLength: 1024)
+    name = try container.decodeString(maxLength: 60)
   }
 
   public func encode(to encoder: Encoder) throws {
     var container = encoder.unkeyedContainer()
-    try container.encode(doc)
-    try container.encode(name)
+    try container.encodeString(doc, maxLength: 1024)
+    try container.encodeString(name, maxLength: 60)
   }
 }
 
@@ -35,8 +35,8 @@ extension SCSpecUDTUnionCaseVoidV0XDR: XdrJsonCodable {
 
   public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> SCSpecUDTUnionCaseVoidV0XDR {
     let members = try XdrJson.object(value, type: "SCSpecUDTUnionCaseVoidV0XDR", keys: ["doc", "name"])
-    let doc: String = try XdrJson.unescapedText(try XdrJson.field(members, key: "doc", type: "SCSpecUDTUnionCaseVoidV0XDR"), type: "SCSpecUDTUnionCaseVoidV0XDR", key: "doc")
-    let name: String = try XdrJson.unescapedText(try XdrJson.field(members, key: "name", type: "SCSpecUDTUnionCaseVoidV0XDR"), type: "SCSpecUDTUnionCaseVoidV0XDR", key: "name")
+    let doc: String = try XdrJson.requireMaxLength(try XdrJson.unescapedText(try XdrJson.field(members, key: "doc", type: "SCSpecUDTUnionCaseVoidV0XDR"), type: "SCSpecUDTUnionCaseVoidV0XDR", key: "doc"), 1024, type: "SCSpecUDTUnionCaseVoidV0XDR", key: "doc")
+    let name: String = try XdrJson.requireMaxLength(try XdrJson.unescapedText(try XdrJson.field(members, key: "name", type: "SCSpecUDTUnionCaseVoidV0XDR"), type: "SCSpecUDTUnionCaseVoidV0XDR", key: "name"), 60, type: "SCSpecUDTUnionCaseVoidV0XDR", key: "name")
     return SCSpecUDTUnionCaseVoidV0XDR(doc: doc, name: name)
   }
 }

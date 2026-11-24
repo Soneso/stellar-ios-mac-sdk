@@ -15,13 +15,13 @@ public struct SCPEnvelopeXDR: XDRCodable, Sendable {
   public init(from decoder: Decoder) throws {
     var container = try decoder.unkeyedContainer()
     statement = try container.decode(SCPStatementXDR.self)
-    signature = try container.decode(SignatureXDR.self)
+    signature = try container.decodeOpaque(maxLength: 64)
   }
 
   public func encode(to encoder: Encoder) throws {
     var container = encoder.unkeyedContainer()
     try container.encode(statement)
-    try container.encode(signature)
+    try container.encodeOpaque(signature, maxLength: 64)
   }
 }
 

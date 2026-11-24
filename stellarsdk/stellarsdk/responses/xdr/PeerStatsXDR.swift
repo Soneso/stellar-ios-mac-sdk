@@ -57,7 +57,7 @@ public struct PeerStatsXDR: XDRCodable, Sendable {
   public init(from decoder: Decoder) throws {
     var container = try decoder.unkeyedContainer()
     id = try container.decode(NodeIDXDR.self)
-    versionStr = try container.decode(String.self)
+    versionStr = try container.decodeString(maxLength: 100)
     messagesRead = try container.decode(UInt64.self)
     messagesWritten = try container.decode(UInt64.self)
     bytesRead = try container.decode(UInt64.self)
@@ -76,7 +76,7 @@ public struct PeerStatsXDR: XDRCodable, Sendable {
   public func encode(to encoder: Encoder) throws {
     var container = encoder.unkeyedContainer()
     try container.encode(id)
-    try container.encode(versionStr)
+    try container.encodeString(versionStr, maxLength: 100)
     try container.encode(messagesRead)
     try container.encode(messagesWritten)
     try container.encode(bytesRead)
@@ -117,7 +117,7 @@ extension PeerStatsXDR: XdrJsonCodable {
   public static func fromXdrJsonValue(_ value: XdrJsonValue) throws -> PeerStatsXDR {
     let members = try XdrJson.object(value, type: "PeerStatsXDR", keys: ["id", "version_str", "messages_read", "messages_written", "bytes_read", "bytes_written", "seconds_connected", "unique_flood_bytes_recv", "duplicate_flood_bytes_recv", "unique_fetch_bytes_recv", "duplicate_fetch_bytes_recv", "unique_flood_message_recv", "duplicate_flood_message_recv", "unique_fetch_message_recv", "duplicate_fetch_message_recv"])
     let id: NodeIDXDR = try NodeIDXDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "id", type: "PeerStatsXDR"), type: "PeerStatsXDR", key: "id")
-    let versionStr: String = try XdrJson.unescapedText(try XdrJson.field(members, key: "version_str", type: "PeerStatsXDR"), type: "PeerStatsXDR", key: "version_str")
+    let versionStr: String = try XdrJson.requireMaxLength(try XdrJson.unescapedText(try XdrJson.field(members, key: "version_str", type: "PeerStatsXDR"), type: "PeerStatsXDR", key: "version_str"), 100, type: "PeerStatsXDR", key: "version_str")
     let messagesRead: UInt64 = try Uint64XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "messages_read", type: "PeerStatsXDR"), type: "PeerStatsXDR", key: "messages_read")
     let messagesWritten: UInt64 = try Uint64XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "messages_written", type: "PeerStatsXDR"), type: "PeerStatsXDR", key: "messages_written")
     let bytesRead: UInt64 = try Uint64XDRJsonCodec.fromXdrJsonValue(try XdrJson.field(members, key: "bytes_read", type: "PeerStatsXDR"), type: "PeerStatsXDR", key: "bytes_read")

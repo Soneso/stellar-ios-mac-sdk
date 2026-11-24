@@ -14,13 +14,13 @@ public struct SignedTimeSlicedSurveyRequestMessageXDR: XDRCodable, Sendable {
 
   public init(from decoder: Decoder) throws {
     var container = try decoder.unkeyedContainer()
-    requestSignature = try container.decode(SignatureXDR.self)
+    requestSignature = try container.decodeOpaque(maxLength: 64)
     request = try container.decode(TimeSlicedSurveyRequestMessageXDR.self)
   }
 
   public func encode(to encoder: Encoder) throws {
     var container = encoder.unkeyedContainer()
-    try container.encode(requestSignature)
+    try container.encodeOpaque(requestSignature, maxLength: 64)
     try container.encode(request)
   }
 }
