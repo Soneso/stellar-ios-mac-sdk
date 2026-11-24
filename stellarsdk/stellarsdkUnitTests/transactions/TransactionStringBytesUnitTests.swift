@@ -209,12 +209,13 @@ final class TransactionStringBytesUnitTests: XCTestCase {
                        "797002f6f64ec5c7d0ce624a1eae82d5101c7dff547bbf12285baff13b45a99f")
     }
 
-    func testInflationV0ImportWritesV1AndKeepsHash() throws {
+    func testInflationV0ImportKeepsV0EnvelopeAndHash() throws {
         let input = "AAAAALskC4Tde+q46duyC/ZJHO2O6ThGgFV59DSuWsUwxC98AAAAZAAAAAAAAdTBAAAAAAAAAAAAAAABAAAAAAAAAAkAAAAAAAAAAA=="
         let transaction = try Transaction(envelopeXdr: input)
         XCTAssertTrue(try XCTUnwrap(transaction.operations.first) is InflationOperation)
         XCTAssertEqual(try transaction.getTransactionHash(network: .testnet), inflationTestnetHash)
-        XCTAssertEqual(try transaction.encodedEnvelope(), inflationV1Envelope)
+        XCTAssertEqual(try transaction.encodedEnvelope(), input)
+        XCTAssertEqual(try transaction.transactionXDR.encodedEnvelope(), inflationV1Envelope)
     }
 
     func testInflationFeeBumpImportKeepsEnvelopeAndHashes() throws {
@@ -252,12 +253,13 @@ final class TransactionStringBytesUnitTests: XCTestCase {
         }
     }
 
-    func testV0ImportGivesTheV1FormWithTheSameHash() throws {
+    func testV0ImportKeepsV0EnvelopeAndV1TransactionXDR() throws {
         for vector in v0Vectors {
             let transaction = try Transaction(envelopeXdr: vector.envelope)
             XCTAssertEqual(transaction.fee, vector.fee)
             XCTAssertEqual(transaction.transactionXDR.fee, vector.fee)
-            XCTAssertEqual(try transaction.encodedEnvelope(), vector.v1Envelope)
+            XCTAssertEqual(try transaction.encodedEnvelope(), vector.envelope)
+            XCTAssertEqual(try transaction.transactionXDR.encodedEnvelope(), vector.v1Envelope)
             XCTAssertEqual(try transaction.getTransactionHash(network: .testnet), vector.hash)
         }
     }
@@ -411,6 +413,270 @@ final class TransactionStringBytesUnitTests: XCTestCase {
         transaction.setMemo(memo: transaction.memo)
         XCTAssertEqual(transaction.transactionXDR.memo.xdrEncoded,
                        MemoXDR.text(Data([0xef, 0xbf, 0xbd, 0xef, 0xbf, 0xbd, 0x20, 0x61, 0x62, 0x63])).xdrEncoded)
+    }
+
+    // MARK: - V0 envelope round-trip
+
+    private struct V0Fixture {
+        let tx: TransactionV0XDR
+        let signature: DecoratedSignatureXDR
+        let base64: String
+    }
+
+    private func makeV0Fixture(timeBounds: TimeBoundsXDR? = TimeBoundsXDR(minTime: 1_700_000_000, maxTime: 1_800_000_000),
+                               memo: MemoXDR = .text("v0 envelope")) throws -> V0Fixture {
+        let v0Tx = TransactionV0XDR(
+            sourceAccount: try sourceKeyPair().publicKey,
+            seqNum: 5,
+            timeBounds: timeBounds,
+            memo: memo,
+            operations: [try payment()],
+            maxOperationFee: 100
+        )
+        let signature = DecoratedSignatureXDR(
+            hint: WrappedData4(Data([0x1d, 0x1e, 0x1f, 0x20])),
+            signature: Data((1...64).map { UInt8($0) })
+        )
+        let envelope = TransactionEnvelopeXDR.v0(TransactionV0EnvelopeXDR(tx: v0Tx, signatures: [signature]))
+        let base64 = Data(try XDREncoder.encode(envelope)).base64EncodedString()
+        return V0Fixture(tx: v0Tx, signature: signature, base64: base64)
+    }
+
+    func testV0EnvelopeRoundTripsWithTimeBoundsMemoAndSignature() throws {
+        let fixture = try makeV0Fixture()
+        let transaction = try Transaction(envelopeXdr: fixture.base64)
+        let written = try transaction.encodedEnvelope()
+        let decoded = try TransactionEnvelopeXDR(fromBase64: written)
+
+        XCTAssertEqual(decoded.type(), EnvelopeType.txV0.rawValue)
+        XCTAssertEqual(written, fixture.base64)
+        XCTAssertEqual(transaction.transactionXDR.xdrEncoded, fixture.tx.v1Equivalent.xdrEncoded)
+    }
+
+    func testV0EnvelopeRoundTripsWithoutTimeBoundsAndMemoNone() throws {
+        let fixture = try makeV0Fixture(timeBounds: nil, memo: .none)
+        let transaction = try Transaction(envelopeXdr: fixture.base64)
+        let written = try transaction.encodedEnvelope()
+        let decoded = try TransactionEnvelopeXDR(fromBase64: written)
+
+        XCTAssertEqual(decoded.type(), EnvelopeType.txV0.rawValue)
+        XCTAssertEqual(written, fixture.base64)
+    }
+
+    func testV0EnvelopeSigningAppendsSignatureAndUsesV1Hash() throws {
+        let fixture = try makeV0Fixture()
+        let signer = try KeyPair(secretSeed: "SC4CGETADVYTCR5HEAVZRB3DZQY5Y4J7RFNJTRA6ESMHIPEZUSTE2QDK")
+        let transaction = try Transaction(envelopeXdr: fixture.base64)
+        try transaction.sign(keyPair: signer, network: .testnet)
+
+        let written = try transaction.encodedEnvelope()
+        let decoded = try TransactionEnvelopeXDR(fromBase64: written)
+        XCTAssertEqual(decoded.type(), EnvelopeType.txV0.rawValue)
+
+        let payload = TransactionSignaturePayload(
+            networkId: WrappedData32(Network.testnet.networkId),
+            taggedTransaction: .tx(fixture.tx.v1Equivalent)
+        )
+        let expectedHashData = Data(try XDREncoder.encode(payload)).sha256Hash
+        XCTAssertEqual(try transaction.getTransactionHashData(network: .testnet), expectedHashData)
+        XCTAssertEqual(try transaction.getTransactionHash(network: .testnet), expectedHashData.base16EncodedString())
+
+        guard case .v0(let v0Envelope) = decoded else {
+            return XCTFail("Expected ENVELOPE_TYPE_TX_V0, got \(decoded)")
+        }
+        XCTAssertEqual(v0Envelope.signatures.count, 2)
+        XCTAssertEqual(v0Envelope.signatures[0].xdrEncoded, fixture.signature.xdrEncoded)
+        XCTAssertEqual(v0Envelope.signatures[1].hint.wrapped, Data(signer.publicKey.bytes.suffix(4)))
+        XCTAssertTrue(try signer.verify(signature: [UInt8](v0Envelope.signatures[1].signature), message: [UInt8](expectedHashData)))
+
+        let expectedSecondSignature = signer.signDecorated([UInt8](expectedHashData))
+        let expectedEnvelope = TransactionEnvelopeXDR.v0(
+            TransactionV0EnvelopeXDR(tx: fixture.tx, signatures: [fixture.signature, expectedSecondSignature])
+        )
+        XCTAssertEqual(written, Data(try XDREncoder.encode(expectedEnvelope)).base64EncodedString())
+    }
+
+    func testFeeBumpAroundV0TransactionUsesV1InnerEnvelopeAndRoundTrips() throws {
+        let fixture = try makeV0Fixture()
+        let inner = try Transaction(envelopeXdr: fixture.base64)
+        XCTAssertEqual(try inner.encodedEnvelope(), fixture.base64)
+        let feeSourceKeyPair = try KeyPair(secretSeed: "SBGWSG6BTNCKCOB3DIFBGCVMUPQFYPA2G4O34RMTB343OYPXU5DJDVMN")
+        let feeSource = MuxedAccount(keyPair: feeSourceKeyPair, sequenceNumber: 0, id: nil)
+        let feeBump = try FeeBumpTransaction(sourceAccount: feeSource, fee: 200, innerTransaction: inner)
+
+        let expectedInnerEnvelope = TransactionV1EnvelopeXDR(tx: fixture.tx.v1Equivalent, signatures: [fixture.signature])
+        let expectedFeeBumpTx = FeeBumpTransactionXDR(
+            sourceAccount: feeSource.xdr,
+            innerTx: .v1(expectedInnerEnvelope),
+            fee: 200
+        )
+        let payload = TransactionSignaturePayload(
+            networkId: WrappedData32(Network.testnet.networkId),
+            taggedTransaction: .feeBump(expectedFeeBumpTx)
+        )
+        let expectedHashData = Data(try XDREncoder.encode(payload)).sha256Hash
+        let expectedUnsignedEnvelope = TransactionEnvelopeXDR.feeBump(
+            FeeBumpTransactionEnvelopeXDR(tx: expectedFeeBumpTx, signatures: [])
+        )
+
+        XCTAssertEqual(try feeBump.getTransactionHashData(network: .testnet), expectedHashData)
+        XCTAssertEqual(try feeBump.getTransactionHash(network: .testnet), expectedHashData.base16EncodedString())
+        XCTAssertEqual(try feeBump.encodedEnvelope(), Data(try XDREncoder.encode(expectedUnsignedEnvelope)).base64EncodedString())
+
+        try feeBump.sign(keyPair: feeSourceKeyPair, network: .testnet)
+        let expectedOuterSignature = feeSourceKeyPair.signDecorated([UInt8](expectedHashData))
+        let expectedSignedEnvelope = TransactionEnvelopeXDR.feeBump(
+            FeeBumpTransactionEnvelopeXDR(tx: expectedFeeBumpTx, signatures: [expectedOuterSignature])
+        )
+        let expectedSignedBase64 = Data(try XDREncoder.encode(expectedSignedEnvelope)).base64EncodedString()
+        let signedBase64 = try feeBump.encodedEnvelope()
+        XCTAssertEqual(signedBase64, expectedSignedBase64)
+
+        guard case .feeBump(let decodedFeeBump) = try TransactionEnvelopeXDR(fromBase64: signedBase64),
+              case .v1(let decodedInner) = decodedFeeBump.tx.innerTx else {
+            return XCTFail("Expected a fee bump envelope with a V1 inner envelope")
+        }
+        XCTAssertEqual(decodedInner.tx.xdrEncoded, fixture.tx.v1Equivalent.xdrEncoded)
+        XCTAssertEqual(decodedInner.signatures.count, 1)
+        XCTAssertEqual(decodedInner.signatures[0].xdrEncoded, fixture.signature.xdrEncoded)
+
+        let roundTripped = try FeeBumpTransaction(envelopeXdr: signedBase64)
+        XCTAssertEqual(try roundTripped.encodedEnvelope(), expectedSignedBase64)
+        XCTAssertEqual(try roundTripped.getTransactionHash(network: .testnet), expectedHashData.base16EncodedString())
+        XCTAssertEqual(try roundTripped.innerTransaction.encodedEnvelope(),
+                       Data(try XDREncoder.encode(TransactionEnvelopeXDR.v1(expectedInnerEnvelope))).base64EncodedString())
+    }
+
+    func testV1EnvelopeWithSameFieldsRoundTripsAsV1() throws {
+        let fixture = try makeV0Fixture()
+        let v1Envelope = TransactionEnvelopeXDR.v1(
+            TransactionV1EnvelopeXDR(tx: fixture.tx.v1Equivalent, signatures: [fixture.signature])
+        )
+        let input = Data(try XDREncoder.encode(v1Envelope)).base64EncodedString()
+
+        let transaction = try Transaction(envelopeXdr: input)
+        let written = try transaction.encodedEnvelope()
+        let decoded = try TransactionEnvelopeXDR(fromBase64: written)
+
+        XCTAssertEqual(decoded.type(), EnvelopeType.tx.rawValue)
+        XCTAssertEqual(written, input)
+
+        let v0Transaction = try Transaction(envelopeXdr: fixture.base64)
+        let v0Written = try v0Transaction.encodedEnvelope()
+        let v0Decoded = try TransactionEnvelopeXDR(fromBase64: v0Written)
+
+        XCTAssertEqual(v0Decoded.type(), EnvelopeType.txV0.rawValue)
+        XCTAssertEqual(v0Written, fixture.base64)
+    }
+
+    func testV0SetSorobanTransactionDataWritesV1Envelope() throws {
+        let fixture = try makeV0Fixture()
+        let transaction = try Transaction(envelopeXdr: fixture.base64)
+
+        let before = try transaction.encodedEnvelope()
+        XCTAssertEqual(try TransactionEnvelopeXDR(fromBase64: before).type(), EnvelopeType.txV0.rawValue)
+        XCTAssertEqual(before, fixture.base64)
+
+        let sorobanData = SorobanTransactionDataXDR(
+            ext: .void,
+            resources: SorobanResourcesXDR(
+                footprint: LedgerFootprintXDR(readOnly: [], readWrite: []),
+                instructions: 1000,
+                diskReadBytes: 200,
+                writeBytes: 100
+            ),
+            resourceFee: 500
+        )
+        transaction.setSorobanTransactionData(data: sorobanData)
+
+        let after = try transaction.encodedEnvelope()
+        let decoded = try TransactionEnvelopeXDR(fromBase64: after)
+        XCTAssertEqual(decoded.type(), EnvelopeType.tx.rawValue)
+        guard case .v1(let v1Envelope) = decoded else {
+            return XCTFail("Expected ENVELOPE_TYPE_TX, got \(decoded)")
+        }
+        XCTAssertEqual(v1Envelope.tx.ext.xdrEncoded, TransactionExtXDR.sorobanTransactionData(sorobanData).xdrEncoded)
+        XCTAssertEqual(v1Envelope.signatures.count, 1)
+        XCTAssertEqual(v1Envelope.signatures[0].xdrEncoded, fixture.signature.xdrEncoded)
+
+        var expectedTx = fixture.tx.v1Equivalent
+        expectedTx.ext = .sorobanTransactionData(sorobanData)
+        let expectedEnvelope = TransactionEnvelopeXDR.v1(TransactionV1EnvelopeXDR(tx: expectedTx, signatures: [fixture.signature]))
+        XCTAssertEqual(after, Data(try XDREncoder.encode(expectedEnvelope)).base64EncodedString())
+    }
+
+    func testV0SetPreconditionsSwitchesBetweenV0AndV1() throws {
+        let fixture = try makeV0Fixture()
+        let transaction = try Transaction(envelopeXdr: fixture.base64)
+
+        let before = try transaction.encodedEnvelope()
+        XCTAssertEqual(try TransactionEnvelopeXDR(fromBase64: before).type(), EnvelopeType.txV0.rawValue)
+        XCTAssertEqual(before, fixture.base64)
+
+        let timeBounds = TimeBounds(minTime: 1_700_000_000, maxTime: 1_800_000_000)
+        let ledgerBounds = LedgerBounds(minLedger: 100, maxLedger: 200)
+        let v2Preconditions = TransactionPreconditions(ledgerBounds: ledgerBounds, timeBounds: timeBounds)
+        transaction.setPreconditions(preconditions: v2Preconditions)
+
+        let afterLedgerBounds = try transaction.encodedEnvelope()
+        let decodedLedgerBounds = try TransactionEnvelopeXDR(fromBase64: afterLedgerBounds)
+        XCTAssertEqual(decodedLedgerBounds.type(), EnvelopeType.tx.rawValue)
+        guard case .v1(let v1LedgerBounds) = decodedLedgerBounds else {
+            return XCTFail("Expected ENVELOPE_TYPE_TX, got \(decodedLedgerBounds)")
+        }
+        XCTAssertEqual(v1LedgerBounds.tx.cond.xdrEncoded, v2Preconditions.toXdr().xdrEncoded)
+        XCTAssertEqual(v1LedgerBounds.signatures.count, 1)
+        XCTAssertEqual(v1LedgerBounds.signatures[0].xdrEncoded, fixture.signature.xdrEncoded)
+
+        // Clearing preconditions restores a V0 envelope with absent time bounds.
+        transaction.setPreconditions(preconditions: nil)
+        let cleared = try transaction.encodedEnvelope()
+        let decodedCleared = try TransactionEnvelopeXDR(fromBase64: cleared)
+        XCTAssertEqual(decodedCleared.type(), EnvelopeType.txV0.rawValue)
+        if case .v0(let v0Cleared) = decodedCleared {
+            XCTAssertNil(v0Cleared.tx.timeBounds)
+            XCTAssertEqual(v0Cleared.signatures.count, 1)
+            XCTAssertEqual(v0Cleared.signatures[0].xdrEncoded, fixture.signature.xdrEncoded)
+        } else {
+            XCTFail("Expected ENVELOPE_TYPE_TX_V0 after clearing preconditions, got \(decodedCleared)")
+        }
+
+        // Setting preconditions whose V2-only fields are absent or zero keeps the V0 form.
+        let timeOnlyDefaultV2 = TransactionPreconditions(
+            ledgerBounds: nil,
+            timeBounds: timeBounds,
+            minSeqNumber: nil,
+            minSeqAge: 0,
+            minSeqLedgerGap: 0,
+            extraSigners: []
+        )
+        transaction.setPreconditions(preconditions: timeOnlyDefaultV2)
+        let restored = try transaction.encodedEnvelope()
+        XCTAssertEqual(try TransactionEnvelopeXDR(fromBase64: restored).type(), EnvelopeType.txV0.rawValue)
+        XCTAssertEqual(restored, fixture.base64)
+
+        // Each remaining V2 precondition field requires V1 and is preserved.
+        let extraSigner = SignerKeyXDR.ed25519(WrappedData32(Data(repeating: 7, count: 32)))
+        let v2Cases = [
+            TransactionPreconditions(timeBounds: timeBounds, minSeqNumber: 4),
+            TransactionPreconditions(timeBounds: timeBounds, minSeqAge: 60),
+            TransactionPreconditions(timeBounds: timeBounds, minSeqLedgerGap: 5),
+            TransactionPreconditions(timeBounds: timeBounds, extraSigners: [extraSigner]),
+        ]
+        for v2Case in v2Cases {
+            transaction.setPreconditions(preconditions: v2Case)
+            let encoded = try transaction.encodedEnvelope()
+            let decoded = try TransactionEnvelopeXDR(fromBase64: encoded)
+            XCTAssertEqual(decoded.type(), EnvelopeType.tx.rawValue)
+            if case .v1(let v1Case) = decoded {
+                XCTAssertEqual(v1Case.tx.cond.xdrEncoded, v2Case.toXdr().xdrEncoded)
+            } else {
+                XCTFail("Expected ENVELOPE_TYPE_TX, got \(decoded)")
+            }
+        }
+
+        transaction.setPreconditions(preconditions: TransactionPreconditions(timeBounds: timeBounds))
+        XCTAssertEqual(try transaction.encodedEnvelope(), fixture.base64)
     }
 
     // MARK: - Helpers

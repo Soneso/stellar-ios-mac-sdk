@@ -2375,7 +2375,7 @@ class URISchemeUnitTests: XCTestCase {
         XCTAssertEqual(mocks.totalRequestCount, 0)
     }
 
-    // A V0 transaction envelope URI signs and posts an envelope whose signature verifies against the transaction hash.
+    // A V0 transaction envelope URI signs and posts a V0 envelope whose signature verifies against the transaction hash.
     func testSignAndSubmitV0Envelope() async throws {
         let mocks = installSubmissionMocks()
         let tx = try createMemoTransaction()
@@ -2413,15 +2413,10 @@ class URISchemeUnitTests: XCTestCase {
         XCTAssertEqual(request.contentType, "application/x-www-form-urlencoded")
 
         let postedEnvelope = try decodePostedEnvelope(from: request.body, fieldName: "xdr")
-        let signatures: [DecoratedSignatureXDR]
-        switch postedEnvelope {
-        case .v0(let v0):
-            signatures = v0.signatures
-        case .v1(let v1):
-            signatures = v1.signatures
-        case .feeBump:
-            return XCTFail("Expected V0 or V1 envelope, got \(postedEnvelope)")
+        guard case .v0(let v0) = postedEnvelope else {
+            return XCTFail("Expected V0 envelope, got \(postedEnvelope)")
         }
+        let signatures = v0.signatures
 
         XCTAssertEqual(signatures.count, 1)
         let signature = signatures[0]

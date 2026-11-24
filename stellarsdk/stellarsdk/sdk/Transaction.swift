@@ -44,7 +44,7 @@ public class Transaction: @unchecked Sendable {
         defer { lock.unlock() }
         return _preconditions
     }
-    /// The XDR representation of this transaction.
+    /// The V1 XDR representation (`TransactionXDR`) of this transaction, including when read from a V0 envelope.
     public var transactionXDR:TransactionXDR {
         lock.lock()
         defer { lock.unlock() }
@@ -65,6 +65,7 @@ public class Transaction: @unchecked Sendable {
     private var _memo:Memo
     private var _preconditions:TransactionPreconditions?
     private var _transactionXDR:TransactionXDR
+    private let decodedFromV0: Bool
     private let lock = NSLock()
 
     /// Creates a new Transaction object.
@@ -119,6 +120,7 @@ public class Transaction: @unchecked Sendable {
                                              operations: operationsXDR,
                                              maxOperationFee: maxOperationFee,
                                              ext: tExt)
+        self.decodedFromV0 = false
 
         self.sourceAccount.incrementSequenceNumber()
 
@@ -169,10 +171,12 @@ public class Transaction: @unchecked Sendable {
     /// Creates a new Transaction object from an Transaction Envelope XDR string.
     ///
     /// The transaction keeps the decoded XDR as it is, with the envelope's signatures: the hash, new
-    /// signatures and `transactionXDR` give the input bytes, and `fee` is the decoded total fee. A V0
-    /// envelope gives its V1 form, which has the same hash; `encodedEnvelope()` writes that V1 form.
-    /// A fee bump envelope gives its inner transaction with the inner signatures. Use
-    /// `FeeBumpTransaction(envelopeXdr:)` to read a fee bump envelope as a fee bump transaction.
+    /// signatures and `transactionXDR` give the input bytes, and `fee` is the decoded total fee. For
+    /// a V0 envelope, `transactionXDR` and the hash are its V1 form, and `encodedEnvelope()` writes a
+    /// V0 envelope while the transaction fits the V0 format (no Soroban transaction data and no
+    /// CAP-21 V2 preconditions) and a V1 envelope otherwise. A fee bump envelope gives its inner
+    /// transaction with the inner signatures. Use `FeeBumpTransaction(envelopeXdr:)` to read a fee
+    /// bump envelope as a fee bump transaction.
     ///
     /// - Parameter envelopeXdr: The XDR string to be parsed into a Transaction object.
     ///
@@ -183,18 +187,22 @@ public class Transaction: @unchecked Sendable {
         let xdrDecoder = XDRDecoder.init(data: [UInt8].init(base64: envelopeXdr))
         let transactionEnvelopeXDR = try TransactionEnvelopeXDR(fromBinary: xdrDecoder)
         let transactionXDR: TransactionXDR
+        let decodedFromV0: Bool
         switch transactionEnvelopeXDR {
         case .v0(let envelopeV0):
             transactionXDR = envelopeV0.tx.v1Equivalent
+            decodedFromV0 = true
         case .v1(let envelopeV1):
             transactionXDR = envelopeV1.tx
+            decodedFromV0 = false
         case .feeBump(let envelopeFeeBump):
             switch envelopeFeeBump.tx.innerTx {
             case .v1(let innerEnvelope):
                 transactionXDR = innerEnvelope.tx
             }
+            decodedFromV0 = false
         }
-        try self.init(importing: transactionXDR, signatures: transactionEnvelopeXDR.txSignatures)
+        try self.init(importing: transactionXDR, signatures: transactionEnvelopeXDR.txSignatures, decodedFromV0: decodedFromV0)
     }
 
     /// Creates a transaction that keeps `transactionXDR` as decoded, with `signatures` appended.
@@ -202,7 +210,7 @@ public class Transaction: @unchecked Sendable {
     /// The high-level properties are derived from it: the source account at the sequence number
     /// before `seqNum`, incremented once to `seqNum`, the operations, the preconditions, the fee and
     /// the display memo.
-    private init(importing transactionXDR: TransactionXDR, signatures: [DecoratedSignatureXDR]) throws {
+    private init(importing transactionXDR: TransactionXDR, signatures: [DecoratedSignatureXDR], decodedFromV0: Bool = false) throws {
         let transactionSourceAccount = try MuxedAccount(accountId: transactionXDR.sourceAccount.accountId, sequenceNumber: Transaction.precedingSequenceNumber(transactionXDR.seqNum), id: transactionXDR.sourceAccount.id)
         var operations = [Operation]()
         for operationXDR in transactionXDR.operations {
@@ -224,6 +232,7 @@ public class Transaction: @unchecked Sendable {
             keptTransactionXDR.addSignature(signature: signature)
         }
         self._transactionXDR = keptTransactionXDR
+        self.decodedFromV0 = decodedFromV0
 
         self.sourceAccount.incrementSequenceNumber()
     }
@@ -261,9 +270,35 @@ public class Transaction: @unchecked Sendable {
     }
 
     /// Returns the base64-encoded transaction envelope XDR for submission to the network.
+    ///
+    /// Writes a V0 envelope (`ENVELOPE_TYPE_TX_V0`) when the transaction was read from a V0
+    /// envelope and its current state fits the V0 format (no Soroban transaction data and no
+    /// CAP-21 V2 preconditions); writes a V1 envelope (`ENVELOPE_TYPE_TX`) otherwise.
     public func encodedEnvelope() throws -> String {
         lock.lock()
         defer { lock.unlock() }
+        if decodedFromV0, case .void = _transactionXDR.ext {
+            let timeBounds: TimeBoundsXDR?
+            switch _transactionXDR.cond {
+            case .none:
+                timeBounds = nil
+            case .time(let tb):
+                timeBounds = tb
+            case .v2:
+                return try _transactionXDR.encodedEnvelope()
+            }
+            let v0Tx = TransactionV0XDR(
+                sourceAccountEd25519: sourceAccount.keyPair.publicKey.bytes,
+                fee: _transactionXDR.fee,
+                seqNum: _transactionXDR.seqNum,
+                timeBounds: timeBounds,
+                memo: _transactionXDR.memo,
+                operations: _transactionXDR.operations
+            )
+            let envelope = TransactionEnvelopeXDR.v0(TransactionV0EnvelopeXDR(tx: v0Tx, signatures: _transactionXDR.signatures))
+            let encoded = try XDREncoder.encode(envelope)
+            return Data(encoded).base64EncodedString()
+        }
         return try _transactionXDR.encodedEnvelope()
     }
 
