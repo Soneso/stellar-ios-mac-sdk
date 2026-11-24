@@ -47,6 +47,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Reading a transaction from TxRep with `TxRep.fromTxRep(txRep:)` keeps its fee as written for every operation count. This covers V1 and V0 envelopes and the inner transaction of a fee bump. Before this change, the import rounded the fee down to a multiple of the operation count and set it to 0 for a transaction without operations, so the envelope bytes and the hash changed.
 - Reading XDR throws `StellarSDKError.xdrDecodingError` for a string or variable-length opaque value whose padding bytes are not zero. The message names the byte and its offset. This covers every XDR type with such a field, such as the text memo of a transaction. Before this change, such a value decoded, so two different byte strings decoded to the same value, and encoding it again wrote zero padding.
 - Reading XDR throws `XDRDecoder.Error.boolOutOfRange` for an optional value whose presence flag is not 0 or 1, and input with flags of 0 or 1 decodes as before. Before this change, such a value could decode, and encoding it again wrote the flag as 1, so the encoded bytes differed from the input.
+- `Transaction(envelopeXdr:)`, `Transaction(xdr:)`, and `FeeBumpTransaction(envelopeXdr:)` read an inflation operation as the new `InflationOperation`, which writes it back as read. Before this change, `Operation.fromXDR(operationXDR:)` threw `StellarSDKError.invalidArgument` for the operation, so a transaction that held one could not be read into a `Transaction` object.
 
 ## [3.16.0] - 2026-11-16
 
