@@ -343,7 +343,7 @@ case .failure(let error):
 
 Use `signAndSubmitTransaction()` to sign a transaction from a URI and submit it. The method handles submission to either a callback URL or directly to the Stellar network.
 
-> **Note:** The SDK's `signAndSubmitTransaction` always signs with `Network.testnet` internally regardless of the `network` parameter passed in. For mainnet use, extract the XDR and sign/submit manually.
+The method signs for the given network. Without a callback, it submits to that network's Horizon for public, testnet, or futurenet. A custom network requires a `url:` callback.
 
 ```swift
 import stellarsdk
