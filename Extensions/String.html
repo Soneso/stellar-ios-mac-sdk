@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          stellarsdk 3.16.0 Docs
+          stellarsdk 3.17.0 Docs
         </a>
          (94% documented)
       </p>
@@ -358,6 +358,9 @@
                 <a class="nav-group-task-link" href="../Classes/HealthService.html">HealthService</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/InflationOperation.html">InflationOperation</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes.html#/s:10stellarsdk26InflationOperationResponseC">InflationOperationResponse</a>
               </li>
               <li class="nav-group-task">
@@ -629,6 +632,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes/RevokeSponsorshipOperationResponse.html">RevokeSponsorshipOperationResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/SACClient.html">SACClient</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes/Seed.html">Seed</a>
@@ -1296,6 +1302,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Enums/ResolveResponseEnum.html">ResolveResponseEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/SACSpec.html">SACSpec</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Enums/SendChallengeResponseEnum.html">SendChallengeResponseEnum</a>
@@ -3929,7 +3938,7 @@ if it does not hold the 32 bytes a liquidity pool id is wide
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/utils/xdrCodable/XDRCodableExtensions.swift#L249-L255">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/utils/xdrCodable/XDRCodableExtensions.swift#L289-L295">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3947,7 +3956,16 @@ if it does not hold the 32 bytes a liquidity pool id is wide
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Undocumented</p>
+                        <p>Decodes a string from XDR format.</p>
+
+<p>The bytes must be valid UTF-8 and are kept as they are, a leading byte order mark
+included, so encoding the result writes the decoded bytes again.</p>
+<div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    XDRDecoder.Error.invalidUTF8 for invalid UTF-8, XDRDecoder.Error.prematureEndOfData
+for missing bytes, StellarSDKError.xdrDecodingError for an excessive byte count or nonzero padding
+
+</div>
 
                       </div>
                       <div class="declaration">
@@ -3959,7 +3977,7 @@ if it does not hold the 32 bytes a liquidity pool id is wide
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/utils/xdrCodable/XDRCodableExtensions.swift#L257-L268">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/utils/xdrCodable/XDRCodableExtensions.swift#L304-L313">Show on GitHub</a>
                       </div>
                     </section>
                   </div>

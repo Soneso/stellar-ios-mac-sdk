@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          stellarsdk 3.16.0 Docs
+          stellarsdk 3.17.0 Docs
         </a>
          (94% documented)
       </p>
@@ -358,6 +358,9 @@
                 <a class="nav-group-task-link" href="../Classes/HealthService.html">HealthService</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/InflationOperation.html">InflationOperation</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes.html#/s:10stellarsdk26InflationOperationResponseC">InflationOperationResponse</a>
               </li>
               <li class="nav-group-task">
@@ -629,6 +632,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes/RevokeSponsorshipOperationResponse.html">RevokeSponsorshipOperationResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/SACClient.html">SACClient</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes/Seed.html">Seed</a>
@@ -1296,6 +1302,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Enums/ResolveResponseEnum.html">ResolveResponseEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/SACSpec.html">SACSpec</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Enums/SendChallengeResponseEnum.html">SendChallengeResponseEnum</a>
@@ -2476,7 +2485,7 @@ you can provide a callback function for signing the auth entry:</p>
 transaction is invoked by yet another party, check out in the SorobanClientTest.atomicSwapTest()</p>
 
               <div class="slightly-smaller">
-                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/AssembledTransaction.swift#L178-L782">Show on GitHub</a>
+                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/AssembledTransaction.swift#L178-L835">Show on GitHub</a>
               </div>
           </div>
         </section>
@@ -2650,6 +2659,9 @@ transaction is invoked by yet another party, check out in the SorobanClientTest.
                       <div class="abstract">
                         <p>Creates a new assembled transaction with specified configuration options.</p>
 
+<p>With <code>options.readOnly</code>, the transaction builds without loading the source account,
+on sequence number 0, and refuses to sign its envelope, to submit, and to restore.</p>
+
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
@@ -2660,7 +2672,7 @@ transaction is invoked by yet another party, check out in the SorobanClientTest.
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/AssembledTransaction.swift#L199-L203">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/AssembledTransaction.swift#L205-L210">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2695,7 +2707,7 @@ transaction is invoked by yet another party, check out in the SorobanClientTest.
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/AssembledTransaction.swift#L208-L213">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/AssembledTransaction.swift#L215-L220">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2731,7 +2743,7 @@ address kind throws <code>StellarSDKError.invalidArgument</code> before the sour
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/AssembledTransaction.swift#L219-L235">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/AssembledTransaction.swift#L226-L242">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2774,6 +2786,10 @@ again without its auth entries. <code>AssembledTransactionError.automaticRestore
 when the restore transaction ends with a status other than success; other errors of the
 restore (transport, signing, simulation) propagate unchanged.</p>
 
+<p>A transaction built with <code>options.readOnly</code> never restores: where a restore would
+run, it throws <code>AssembledTransactionError.missingPrivateKey</code> naming the source account,
+before any further request.</p>
+
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
@@ -2784,7 +2800,7 @@ restore (transport, signing, simulation) propagate unchanged.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/AssembledTransaction.swift#L258-L305">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/AssembledTransaction.swift#L269-L319">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2806,6 +2822,13 @@ restore (transport, signing, simulation) propagate unchanged.</p>
                       <div class="pointer"></div>
                       <div class="abstract">
                         <p>Restores expired contract state using the restore preamble from simulation.</p>
+<div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    <code>AssembledTransactionError.missingPrivateKey</code> naming the source account,
+before any request, when the transaction was built with <code>options.readOnly</code>: a
+restore is signed and submitted by the source account.
+
+</div>
 
                       </div>
                       <div class="declaration">
@@ -2817,7 +2840,7 @@ restore (transport, signing, simulation) propagate unchanged.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/AssembledTransaction.swift#L308-L311">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/AssembledTransaction.swift#L326-L332">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2839,6 +2862,15 @@ restore (transport, signing, simulation) propagate unchanged.</p>
                       <div class="pointer"></div>
                       <div class="abstract">
                         <p>Signs the transaction with source account and submits it to the network.</p>
+<div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    <code>AssembledTransactionError.missingPrivateKey</code> naming the source account,
+before any request, when the transaction was built with <code>options.readOnly</code>, also
+with <code>force</code> set, with a keypair given, and with <code><a href="../Classes/AssembledTransaction.html#/s:10stellarsdk20AssembledTransactionC6signedAA0C0CSgvp">signed</a></code> set by hand. While <code><a href="../Classes/AssembledTransaction.html#/s:10stellarsdk20AssembledTransactionC6signedAA0C0CSgvp">signed</a></code>
+is nil, an unsimulated transaction and a read call without <code>force</code> throw their own
+errors first, as in <code><a href="../Classes/AssembledTransaction.html#/s:10stellarsdk20AssembledTransactionC4sign20sourceAccountKeyPair5forceyAA0gH0CSg_SbtKF">sign(sourceAccountKeyPair:force:)</a></code>.
+
+</div>
 
                       </div>
                       <div class="declaration">
@@ -2850,7 +2882,7 @@ restore (transport, signing, simulation) propagate unchanged.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/AssembledTransaction.swift#L314-L319">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/AssembledTransaction.swift#L341-L346">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2873,6 +2905,11 @@ restore (transport, signing, simulation) propagate unchanged.</p>
     <p class="aside-title">Throws</p>
     <code>AssembledTransactionError.multipleSignersRequired</code> while an account address
 that <code>needsNonInvokerSigningBy()</code> reports carries no signature.
+<code>AssembledTransactionError.missingPrivateKey</code> naming the source account when the
+transaction was built with <code>options.readOnly</code>, also with <code>force</code> set and with a
+keypair given: such a transaction is never submitted, so its envelope is never
+signed. An unsimulated transaction and a read call without <code>force</code> throw their own
+errors first.
 
 </div>
 
@@ -2886,7 +2923,7 @@ that <code>needsNonInvokerSigningBy()</code> reports carries no signature.
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/AssembledTransaction.swift#L325-L353">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/AssembledTransaction.swift#L357-L388">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2917,6 +2954,9 @@ status requests are retried until then.</p>
     <p class="aside-title">Throws</p>
     <code>AssembledTransactionError.pollInterrupted</code> naming the last status request
 error when the transaction has not completed by the deadline.
+<code>AssembledTransactionError.missingPrivateKey</code> naming the source account, before any
+request and before <code><a href="../Classes/AssembledTransaction.html#/s:10stellarsdk20AssembledTransactionC6signedAA0C0CSgvp">signed</a></code> is read, when the transaction was built with
+<code>options.readOnly</code>.
 
 </div>
 
@@ -2930,7 +2970,7 @@ error when the transaction has not completed by the deadline.
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/AssembledTransaction.swift#L364-L396">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/AssembledTransaction.swift#L402-L437">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2992,7 +3032,7 @@ signature. Defaults to <code>false</code>.</p>
                         </table>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/AssembledTransaction.swift#L414-L417">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/AssembledTransaction.swift#L455-L458">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3023,7 +3063,7 @@ Returns true if the call has no auth entries and writes no ledger data.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/AssembledTransaction.swift#L481-L486">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/AssembledTransaction.swift#L522-L527">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3059,7 +3099,7 @@ when the response has neither an error nor transaction data.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/AssembledTransaction.swift#L495-L524">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/AssembledTransaction.swift#L536-L565">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3121,7 +3161,7 @@ to <code>authorizeEntryCallback</code>.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/AssembledTransaction.swift#L556-L623">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/AssembledTransaction.swift#L597-L664">Show on GitHub</a>
                       </div>
                     </section>
                   </div>

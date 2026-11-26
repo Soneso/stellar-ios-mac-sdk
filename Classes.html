@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="index.html">
-          stellarsdk 3.16.0 Docs
+          stellarsdk 3.17.0 Docs
         </a>
          (94% documented)
       </p>
@@ -356,6 +356,9 @@
                 <a class="nav-group-task-link" href="Classes/HealthService.html">HealthService</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Classes/InflationOperation.html">InflationOperation</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Classes.html#/s:10stellarsdk26InflationOperationResponseC">InflationOperationResponse</a>
               </li>
               <li class="nav-group-task">
@@ -627,6 +630,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Classes/RevokeSponsorshipOperationResponse.html">RevokeSponsorshipOperationResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Classes/SACClient.html">SACClient</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Classes/Seed.html">Seed</a>
@@ -1294,6 +1300,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Enums/ResolveResponseEnum.html">ResolveResponseEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/SACSpec.html">SACSpec</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Enums/SendChallengeResponseEnum.html">SendChallengeResponseEnum</a>
@@ -7516,7 +7525,7 @@ See <a href="https://developers.stellar.org">Stellar developer docs</a></p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Asset.swift#L13-L152">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Asset.swift#L13-L171">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -7547,7 +7556,7 @@ See <a href="https://developers.stellar.org">Stellar developer docs</a></p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Asset.swift#L155-L301">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Asset.swift#L174-L320">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -8027,7 +8036,42 @@ See <a href="https://github.com/stellar/stellar-protocol/blob/master/core/cap-00
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/FeeBumpTransaction.swift#L21-L132">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/FeeBumpTransaction.swift#L21-L181">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10stellarsdk18InflationOperationC"></a>
+                    <a name="//apple_ref/swift/Class/InflationOperation" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk18InflationOperationC">InflationOperation</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>An inflation operation, which has no parameters.</p>
+
+<p>The network refuses this operation with <code>opNOT_SUPPORTED</code> since protocol 12
+(<a href="https://github.com/stellar/stellar-protocol/blob/master/core/cap-0026.md">CAP-26</a>).
+This class represents it in transactions read from XDR so they can be read, encoded and hashed.</p>
+
+                        <a href="Classes/InflationOperation.html" class="slightly-smaller">See more</a>
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">class</span> <span class="kt">InflationOperation</span> <span class="p">:</span> <span class="kt"><a href="Classes/Operation.html">Operation</a></span><span class="p">,</span> <span class="kd">@unchecked</span> <span class="kt">Sendable</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/InflationOperation.swift#L16-L28">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -8388,7 +8432,7 @@ multi-signature transactions or channel accounts.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Operation.swift#L56-L206">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Operation.swift#L56-L207">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -8809,7 +8853,7 @@ See <a href="https://developers.stellar.org">Stellar developer docs</a></p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Transaction.swift#L13-L308">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Transaction.swift#L13-L407">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -8840,7 +8884,7 @@ See <a href="https://developers.stellar.org">Stellar developer docs</a></p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/TransactionPreconditions.swift#L14-L109">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/TransactionPreconditions.swift#L14-L112">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -11019,7 +11063,7 @@ a non-empty list routes through the multi-signer ceremony coordinator.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZPolicyManager.swift#L405-L924">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/smartaccount/oz/OZPolicyManager.swift#L405-L929">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -11902,7 +11946,7 @@ see: <a href="https://developers.stellar.org">Stellar developer docs</a></p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/SorobanContractParser.swift#L13-L148">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/SorobanContractParser.swift#L13-L178">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -11935,7 +11979,7 @@ See also: <a href="https://developers.stellar.org">Stellar developer docs</a></p
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/SorobanContractParser.swift#L153-L286">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/SorobanContractParser.swift#L183-L316">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -12245,7 +12289,7 @@ transaction is invoked by yet another party, check out in the SorobanClientTest.
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/AssembledTransaction.swift#L178-L782">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/AssembledTransaction.swift#L178-L835">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -12276,7 +12320,7 @@ transaction is invoked by yet another party, check out in the SorobanClientTest.
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/AssembledTransactionOptions.swift#L12-L46">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/AssembledTransactionOptions.swift#L12-L78">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -12728,6 +12772,92 @@ that need to be converted to XdrSCVal for Soroban contract invocation.</p>
                 <li class="item">
                   <div>
                     <code>
+                    <a name="/s:10stellarsdk9SACClientC"></a>
+                    <a name="//apple_ref/swift/Class/SACClient" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk9SACClientC">SACClient</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Typed client for a Stellar Asset Contract (SAC).</p>
+
+<p>A Stellar Asset Contract is the token contract built into the network for a classic asset,
+the native asset (XLM) included. Its id derives from the asset and the network
+(<code><a href="Classes/Asset.html#/s:10stellarsdk5AssetC10contractId7networkSSAA7NetworkO_tKF">contractId(network:)</a></code>), and it has no wasm on chain, so the client carries the
+contract spec itself (<code>specEntries()</code>) and opens without an RPC request.</p>
+
+<p>Opening a client:</p>
+
+<ul>
+<li><code>forAsset(asset:sourceAccountKeyPair:network:rpcUrl:urlSession:)</code> and
+<code>forContractId(contractId:sourceAccountKeyPair:network:rpcUrl:urlSession:)</code> open a
+client for a source account. Its keypair signs the transactions the client submits, and
+the account must exist, because building a transaction reads its sequence number.</li>
+<li><code>readOnlyForAsset(asset:network:rpcUrl:urlSession:)</code> and
+<code>readOnlyForContractId(contractId:network:rpcUrl:urlSession:)</code> open a read-only client,
+which needs no keypair and no account. Its transactions name the placeholder source
+account <code>READ_ONLY_SOURCE_ACCOUNT_ID</code>, the all-zero ed25519 public key, for which no
+secret key exists. They simulate, and they allow
+<code><a href="Classes/AssembledTransaction.html#/s:10stellarsdk20AssembledTransactionC15signAuthEntries13signerKeyPair22authorizeEntryCallback19validUntilLedgerSeqyAA0hI0C_AA020SorobanAuthorizationK3XDRVAK_AA7NetworkOtYaKcSgs6UInt32VSgtYaKF">signAuthEntries(signerKeyPair:authorizeEntryCallback:validUntilLedgerSeq:)</a></code>
+with an authorizing account&rsquo;s keypair, but they refuse to sign their envelope, to
+submit, and to restore archived entries.</li>
+</ul>
+
+<p>Amounts are base units, the smallest unit of the asset: a token has 7 decimals, so one
+token is 10,000,000 base units. The contract counts them as a signed 128-bit integer, which
+this client takes and returns as a decimal <code>String</code>. <code>toBaseUnits(_:)</code> converts a decimal
+amount such as <code>&quot;12.5&quot;</code>.</p>
+
+<p>The reads <code>balance(holder:)</code>, <code>decimals()</code>, <code>name()</code> and <code>symbol()</code> only simulate:
+they never sign, submit, or restore, on either kind of client. A missing account or
+trustline surfaces as the contract&rsquo;s error, never as a zero balance.</p>
+
+<p>The writes take <code>methodOptions</code> for the fee, the timeout, and the simulation.
+<code>transfer(from:to:amount:methodOptions:)</code> returns the transaction, simulated by default,
+for the caller to authorize, sign, and send. <code>transferAndSend(to:amount:methodOptions:)</code>
+transfers from the client&rsquo;s source account, signs, sends, and waits for the result. With
+<code>simulate: false</code>, <code>transfer(from:to:amount:methodOptions:)</code> returns an unsimulated
+transaction and <code>transferAndSend(to:amount:methodOptions:)</code> throws; call <code>simulate()</code> on
+the returned transaction before inspecting or completing authorization entries.</p>
+
+<p>The other functions of the contract, such as <code>approve</code> or <code>mint</code>, go through
+<code>sorobanClient</code> and its <code>buildInvokeMethodTx</code>, like the functions of any contract a
+<code><a href="Classes/SorobanClient.html">SorobanClient</a></code> opens.</p>
+<pre class="highlight swift"><code><span class="k">let</span> <span class="nv">reader</span> <span class="o">=</span> <span class="k">try</span> <span class="kt">SACClient</span><span class="o">.</span><span class="nf">readOnlyForAsset</span><span class="p">(</span><span class="nv">asset</span><span class="p">:</span> <span class="n">asset</span><span class="p">,</span>
+                                            <span class="nv">network</span><span class="p">:</span> <span class="kt">Network</span><span class="o">.</span><span class="n">testnet</span><span class="p">,</span>
+                                            <span class="nv">rpcUrl</span><span class="p">:</span> <span class="s">"https://soroban-testnet.stellar.org"</span><span class="p">)</span>
+<span class="k">let</span> <span class="nv">balance</span> <span class="o">=</span> <span class="k">try</span> <span class="k">await</span> <span class="n">reader</span><span class="o">.</span><span class="nf">balance</span><span class="p">(</span><span class="nv">holder</span><span class="p">:</span> <span class="k">try</span> <span class="kt">SCAddressXDR</span><span class="p">(</span><span class="nv">accountId</span><span class="p">:</span> <span class="n">accountId</span><span class="p">))</span>
+
+<span class="k">let</span> <span class="nv">client</span> <span class="o">=</span> <span class="k">try</span> <span class="kt">SACClient</span><span class="o">.</span><span class="nf">forAsset</span><span class="p">(</span><span class="nv">asset</span><span class="p">:</span> <span class="n">asset</span><span class="p">,</span>
+                                    <span class="nv">sourceAccountKeyPair</span><span class="p">:</span> <span class="n">senderKeyPair</span><span class="p">,</span>
+                                    <span class="nv">network</span><span class="p">:</span> <span class="kt">Network</span><span class="o">.</span><span class="n">testnet</span><span class="p">,</span>
+                                    <span class="nv">rpcUrl</span><span class="p">:</span> <span class="s">"https://soroban-testnet.stellar.org"</span><span class="p">)</span>
+<span class="k">let</span> <span class="nv">response</span> <span class="o">=</span> <span class="k">try</span> <span class="k">await</span> <span class="n">client</span><span class="o">.</span><span class="nf">transferAndSend</span><span class="p">(</span><span class="nv">to</span><span class="p">:</span> <span class="k">try</span> <span class="kt">SCAddressXDR</span><span class="p">(</span><span class="nv">accountId</span><span class="p">:</span> <span class="n">receiverId</span><span class="p">),</span>
+                                                <span class="nv">amount</span><span class="p">:</span> <span class="k">try</span> <span class="kt">SACClient</span><span class="o">.</span><span class="nf">toBaseUnits</span><span class="p">(</span><span class="s">"12.5"</span><span class="p">))</span>
+</code></pre>
+
+                        <a href="Classes/SACClient.html" class="slightly-smaller">See more</a>
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">final</span> <span class="kd">class</span> <span class="kt">SACClient</span> <span class="p">:</span> <span class="kt">Sendable</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/SACClient.swift#L66-L573">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
                     <a name="/s:10stellarsdk26SimulateHostFunctionResultC"></a>
                     <a name="//apple_ref/swift/Class/SimulateHostFunctionResult" class="dashAnchor"></a>
                     <a class="token" href="#/s:10stellarsdk26SimulateHostFunctionResultC">SimulateHostFunctionResult</a>
@@ -12835,7 +12965,7 @@ For more control over transaction construction, use AssembledTransaction directl
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/SorobanClient.swift#L57-L434">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/SorobanClient.swift#L57-L505">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -13344,7 +13474,7 @@ parsing, formatting, and Stellar type conversion.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/txrep/TxRepHelper.swift#L17-L1096">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/txrep/TxRepHelper.swift#L17-L1166">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -13403,7 +13533,7 @@ transactions or make payments, and wallets can parse these URIs to fulfill the r
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/uri_scheme/URIScheme.swift#L73-L388">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/uri_scheme/URIScheme.swift#L73-L497">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -13662,7 +13792,7 @@ includes detailed information about error responses, XDR data, and result codes 
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/utils/xdrCodable/XDREncoder.swift#L41-L45">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/utils/xdrCodable/XDREncoder.swift#L41-L62">Show on GitHub</a>
                       </div>
                     </section>
                   </div>

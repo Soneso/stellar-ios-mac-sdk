@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          stellarsdk 3.16.0 Docs
+          stellarsdk 3.17.0 Docs
         </a>
          (94% documented)
       </p>
@@ -358,6 +358,9 @@
                 <a class="nav-group-task-link" href="../Classes/HealthService.html">HealthService</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/InflationOperation.html">InflationOperation</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes.html#/s:10stellarsdk26InflationOperationResponseC">InflationOperationResponse</a>
               </li>
               <li class="nav-group-task">
@@ -629,6 +632,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes/RevokeSponsorshipOperationResponse.html">RevokeSponsorshipOperationResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/SACClient.html">SACClient</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes/Seed.html">Seed</a>
@@ -1296,6 +1302,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Enums/ResolveResponseEnum.html">ResolveResponseEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/SACSpec.html">SACSpec</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Enums/SendChallengeResponseEnum.html">SendChallengeResponseEnum</a>
@@ -2390,7 +2399,7 @@ For more control over transaction construction, use AssembledTransaction directl
 </ul>
 
               <div class="slightly-smaller">
-                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/SorobanClient.swift#L57-L434">Show on GitHub</a>
+                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/SorobanClient.swift#L57-L505">Show on GitHub</a>
               </div>
           </div>
         </section>
@@ -2477,6 +2486,11 @@ For more control over transaction construction, use AssembledTransaction directl
                       <div class="abstract">
                         <p>Loads the contract info for the contractId provided by the options, and the constructs a SorobanClient by using the loaded contract info.</p>
 
+<p>A Stellar Asset Contract has no wasm on chain to load a spec from. When the load fails
+and the contract&rsquo;s instance names the built-in token executable, the client opens with
+the embedded spec that <code><a href="../Classes/SACClient.html#/s:10stellarsdk9SACClientC11specEntriesSayAA14SCSpecEntryXDROGyKFZ">specEntries()</a></code> decodes; every other failed load
+throws its own error.</p>
+
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
@@ -2508,7 +2522,101 @@ before any request, naming the kind of address given.</p>
                         </table>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/SorobanClient.swift#L96-L108">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/SorobanClient.swift#L105-L127">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10stellarsdk13SorobanClientC14forSpecEntries04specF07options8readOnlyACSayAA14SCSpecEntryXDROG_AA0C7OptionsCSbtKFZ"></a>
+                    <a name="//apple_ref/swift/Method/forSpecEntries(specEntries:options:readOnly:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk13SorobanClientC14forSpecEntries04specF07options8readOnlyACSayAA14SCSpecEntryXDROG_AA0C7OptionsCSbtKFZ">forSpecEntries(specEntries:<wbr>options:<wbr>readOnly:<wbr>)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Constructs a SorobanClient from spec entries the caller already holds, without an RPC
+request.</p>
+
+<p>Use it for a contract whose spec is known up front, such as the Stellar Asset
+Contract, whose spec <code><a href="../Classes/SACClient.html#/s:10stellarsdk9SACClientC11specEntriesSayAA14SCSpecEntryXDROGyKFZ">specEntries()</a></code> returns. The entries are kept as
+given, and they are not compared with the contract on chain.</p>
+
+<p>With <code>readOnly</code>, every transaction the client builds carries
+<code><a href="../Classes/AssembledTransactionOptions.html#/s:10stellarsdk27AssembledTransactionOptionsC8readOnlySbvp">readOnly</a></code>: it simulates without loading the source
+account, allows authorization entry signing, and refuses to sign its envelope, to
+submit, and to restore archived entries.</p>
+<div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    <code>StellarSDKError.invalidArgument</code> naming the kind of address given when the
+contract id of the options is any other string.
+
+</div>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">static</span> <span class="kd">func</span> <span class="nf">forSpecEntries</span><span class="p">(</span><span class="nv">specEntries</span><span class="p">:</span> <span class="p">[</span><span class="kt">SCSpecEntryXDR</span><span class="p">],</span> <span class="nv">options</span><span class="p">:</span> <span class="kt"><a href="../Classes/ClientOptions.html">ClientOptions</a></span><span class="p">,</span> <span class="nv">readOnly</span><span class="p">:</span> <span class="kt">Bool</span> <span class="o">=</span> <span class="kc">false</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt">SorobanClient</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>specEntries</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The spec entries of the contract.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>options</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Client options; their contract id is a &ldquo;C&hellip;&rdquo; strkey or the 64 character
+hex of the 32 byte id.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>readOnly</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Whether the client&rsquo;s transactions are built for reading only. Default false.</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>The client for the contract.</p>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/SorobanClient.swift#L149-L154">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2541,9 +2649,17 @@ before any request, naming the kind of address given.</p>
 
 <p>The contract must be installed before deployment. Use SorobanClient.install to
 upload the contract code and obtain a wasm hash, then use that hash in the deploy request.</p>
+
+<p>Code that the parser rejects, including code without a <code>contractspecv0</code> section, cannot be
+deployed with this function when the code entry can be read: the parser&rsquo;s error is then
+thrown before anything is submitted. An operation built with
+<code>InvokeHostFunctionOperation.forCreatingContractWithConstructor</code> and submitted directly
+deploys it.</p>
 <div class="aside aside-throws">
     <p class="aside-title">Throws</p>
-    SorobanClientError if deployment fails
+    <code><a href="../Enums/SorobanContractParserError.html">SorobanContractParserError</a></code> when the code under the wasm hash does not parse:
+before anything is submitted when the code entry can be read, and after the deployment
+when the contract is loaded by its id instead; SorobanClientError if deployment fails
 
 </div>
 
@@ -2609,7 +2725,7 @@ upload the contract code and obtain a wasm hash, then use that hash in the deplo
                         <p>SorobanClient instance connected to the newly deployed contract</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/SorobanClient.swift#L150-L196">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/SorobanClient.swift#L204-L254">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2650,9 +2766,18 @@ and the tag and carrying the resolver&rsquo;s message.</p>
 <p>The returned client&rsquo;s spec comes from the wasm the tag names at deployment
 time. Re-pointing the tag later changes the code the instance runs, not the
 spec this client loaded.</p>
+
+<p>Code that the parser rejects, including code without a <code>contractspecv0</code> section, cannot be
+deployed with this function when the code entry can be read: the parser&rsquo;s error is then
+thrown before anything is submitted. An operation built with
+<code>InvokeHostFunctionOperation.forCreatingContractFromExternalRefWithConstructor</code> and
+submitted directly deploys it.</p>
 <div class="aside aside-throws">
     <p class="aside-title">Throws</p>
-    SorobanClientError if the reference does not resolve or deployment fails
+    <code><a href="../Enums/SorobanContractParserError.html">SorobanContractParserError</a></code> when the code the tag names does not parse: before
+anything is submitted when the code entry can be read, and after the deployment when the
+contract is loaded by its id instead; SorobanClientError if the reference does not
+resolve or deployment fails
 
 </div>
 
@@ -2689,7 +2814,7 @@ spec this client loaded.</p>
                         <p>The client for the newly deployed contract</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/SorobanClient.swift#L222-L290">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/SorobanClient.swift#L289-L360">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2800,7 +2925,7 @@ and can return the existing hash without submitting a transaction (unless force 
                         <p>Hex-encoded hash of the installed WASM code</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/SorobanClient.swift#L332-L361">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/SorobanClient.swift#L402-L431">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2830,7 +2955,7 @@ and can return the existing hash without submitting a transaction (unless force 
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/SorobanClient.swift#L364-L366">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/SorobanClient.swift#L434-L436">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2921,7 +3046,7 @@ The contract id must be a C&hellip; strkey or the 64 hexadecimal characters of t
                         </table>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/SorobanClient.swift#L379-L397">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/SorobanClient.swift#L449-L467">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2999,7 +3124,7 @@ The contract id must be a C&hellip; strkey or the 64 hexadecimal characters of t
                         </table>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/SorobanClient.swift#L408-L420">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/SorobanClient.swift#L478-L491">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3033,7 +3158,7 @@ The contract id must be a C&hellip; strkey or the 64 hexadecimal characters of t
                         <p>Array of SCSpecEntryXDR objects</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/SorobanClient.swift#L424-L426">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/SorobanClient.swift#L495-L497">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3067,7 +3192,7 @@ The contract id must be a C&hellip; strkey or the 64 hexadecimal characters of t
                         <p>ContractSpec instance that can be used for type conversions</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/SorobanClient.swift#L430-L432">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/SorobanClient.swift#L501-L503">Show on GitHub</a>
                       </div>
                     </section>
                   </div>

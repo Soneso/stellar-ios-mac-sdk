@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          stellarsdk 3.16.0 Docs
+          stellarsdk 3.17.0 Docs
         </a>
          (94% documented)
       </p>
@@ -358,6 +358,9 @@
                 <a class="nav-group-task-link" href="../Classes/HealthService.html">HealthService</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/InflationOperation.html">InflationOperation</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes.html#/s:10stellarsdk26InflationOperationResponseC">InflationOperationResponse</a>
               </li>
               <li class="nav-group-task">
@@ -629,6 +632,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes/RevokeSponsorshipOperationResponse.html">RevokeSponsorshipOperationResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/SACClient.html">SACClient</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes/Seed.html">Seed</a>
@@ -1296,6 +1302,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Enums/ResolveResponseEnum.html">ResolveResponseEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/SACSpec.html">SACSpec</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Enums/SendChallengeResponseEnum.html">SendChallengeResponseEnum</a>
@@ -2338,7 +2347,7 @@
 See <a href="https://github.com/stellar/stellar-protocol/blob/master/core/cap-0015.md">https://github.com/stellar/stellar-protocol/blob/master/core/cap-0015.md</a></p>
 
               <div class="slightly-smaller">
-                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/FeeBumpTransaction.swift#L21-L132">Show on GitHub</a>
+                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/FeeBumpTransaction.swift#L21-L181">Show on GitHub</a>
               </div>
           </div>
         </section>
@@ -2633,6 +2642,71 @@ See <a href="https://github.com/stellar/stellar-protocol/blob/master/core/cap-00
                 <li class="item">
                   <div>
                     <code>
+                    <a name="/s:10stellarsdk18FeeBumpTransactionC11envelopeXdrACSS_tKcfc"></a>
+                    <a name="//apple_ref/swift/Method/init(envelopeXdr:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk18FeeBumpTransactionC11envelopeXdrACSS_tKcfc">init(envelopeXdr:<wbr>)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Creates a FeeBumpTransaction object from a base64-encoded TransactionEnvelope XDR string.</p>
+
+<p>The transaction keeps the decoded fee bump XDR as it is, including its fee and outer
+signatures, without applying minimum-fee checks: <code><a href="../Classes/FeeBumpTransaction.html#/s:10stellarsdk18FeeBumpTransactionC15encodedEnvelopeSSyKF">encodedEnvelope()</a></code> returns the input
+envelope plus any signatures added later, and <code><a href="../Classes/FeeBumpTransaction.html#/s:10stellarsdk18FeeBumpTransactionC03getD4Hash7networkSSAA7NetworkO_tKF">getTransactionHash(network:)</a></code> returns the
+hash of the input. <code><a href="../Classes/FeeBumpTransaction.html#/s:10stellarsdk18FeeBumpTransactionC13sourceAccountAA0dF0_pvp">sourceAccount</a></code> is a <code><a href="../Classes/MuxedAccount.html">MuxedAccount</a></code> for the decoded fee source with its
+muxed ID and sequence number 0, not incremented, because a fee bump consumes no sequence
+number of its fee source. <code><a href="../Classes/FeeBumpTransaction.html#/s:10stellarsdk18FeeBumpTransactionC05innerD0AA0D0Cvp">innerTransaction</a></code> holds the decoded inner transaction with its
+inner signatures.</p>
+<div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    <p><code>StellarSDKError.invalidArgument</code> if the envelope is a V0 or V1 transaction
+envelope rather than a fee bump envelope, XDR decoding errors if the string does not
+decode as a transaction envelope, and any error thrown by <code>Transaction(envelopeXdr:)</code> when
+decoding the inner transaction.</p>
+
+</div>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="nf">init</span><span class="p">(</span><span class="nv">envelopeXdr</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="k">throws</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>envelopeXdr</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The base64-encoded fee bump <code>TransactionEnvelope</code> XDR string.</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/FeeBumpTransaction.swift#L101-L132">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
                     <a name="/s:10stellarsdk18FeeBumpTransactionC4sign7keyPair7networkyAA03KeyG0C_AA7NetworkOtKF"></a>
                     <a name="//apple_ref/swift/Method/sign(keyPair:network:)" class="dashAnchor"></a>
                     <a class="token" href="#/s:10stellarsdk18FeeBumpTransactionC4sign7keyPair7networkyAA03KeyG0C_AA7NetworkOtKF">sign(keyPair:<wbr>network:<wbr>)</a>
@@ -2686,7 +2760,7 @@ See <a href="https://github.com/stellar/stellar-protocol/blob/master/core/cap-00
                         </table>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/FeeBumpTransaction.swift#L90-L99">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/FeeBumpTransaction.swift#L139-L148">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2716,7 +2790,7 @@ See <a href="https://github.com/stellar/stellar-protocol/blob/master/core/cap-00
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/FeeBumpTransaction.swift#L102-L106">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/FeeBumpTransaction.swift#L151-L155">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2746,7 +2820,7 @@ See <a href="https://github.com/stellar/stellar-protocol/blob/master/core/cap-00
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/FeeBumpTransaction.swift#L109-L113">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/FeeBumpTransaction.swift#L158-L162">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2776,7 +2850,7 @@ See <a href="https://github.com/stellar/stellar-protocol/blob/master/core/cap-00
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/FeeBumpTransaction.swift#L116-L122">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/FeeBumpTransaction.swift#L165-L171">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2806,7 +2880,7 @@ See <a href="https://github.com/stellar/stellar-protocol/blob/master/core/cap-00
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/FeeBumpTransaction.swift#L125-L131">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/FeeBumpTransaction.swift#L174-L180">Show on GitHub</a>
                       </div>
                     </section>
                   </div>

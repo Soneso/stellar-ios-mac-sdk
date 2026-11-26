@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          stellarsdk 3.16.0 Docs
+          stellarsdk 3.17.0 Docs
         </a>
          (94% documented)
       </p>
@@ -358,6 +358,9 @@
                 <a class="nav-group-task-link" href="../Classes/HealthService.html">HealthService</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/InflationOperation.html">InflationOperation</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes.html#/s:10stellarsdk26InflationOperationResponseC">InflationOperationResponse</a>
               </li>
               <li class="nav-group-task">
@@ -629,6 +632,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes/RevokeSponsorshipOperationResponse.html">RevokeSponsorshipOperationResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/SACClient.html">SACClient</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes/Seed.html">Seed</a>
@@ -1296,6 +1302,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Enums/ResolveResponseEnum.html">ResolveResponseEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/SACSpec.html">SACSpec</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Enums/SendChallengeResponseEnum.html">SendChallengeResponseEnum</a>
@@ -2338,7 +2347,7 @@
 See <a href="https://developers.stellar.org">Stellar developer docs</a></p>
 
               <div class="slightly-smaller">
-                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Transaction.swift#L13-L308">Show on GitHub</a>
+                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Transaction.swift#L13-L407">Show on GitHub</a>
               </div>
           </div>
         </section>
@@ -2480,7 +2489,11 @@ See <a href="https://developers.stellar.org">Stellar developer docs</a></p>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Optional extra information attached to the transaction.</p>
+                        <p>Optional extra information attached to the transaction, for display.</p>
+
+<p>A text memo whose bytes are not valid UTF-8 reads with U+FFFD replacement characters, so
+this value cannot give the original bytes, their length or byte equality. The exact memo,
+which the hash and the signatures cover, is <code>transactionXDR.memo</code>.</p>
 
                       </div>
                       <div class="declaration">
@@ -2492,7 +2505,7 @@ See <a href="https://developers.stellar.org">Stellar developer docs</a></p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Transaction.swift#L32-L36">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Transaction.swift#L36-L40">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2522,7 +2535,7 @@ See <a href="https://developers.stellar.org">Stellar developer docs</a></p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Transaction.swift#L38-L42">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Transaction.swift#L42-L46">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2540,7 +2553,7 @@ See <a href="https://developers.stellar.org">Stellar developer docs</a></p>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>The XDR representation of this transaction.</p>
+                        <p>The V1 XDR representation (<code>TransactionXDR</code>) of this transaction, including when read from a V0 envelope.</p>
 
                       </div>
                       <div class="declaration">
@@ -2552,7 +2565,7 @@ See <a href="https://developers.stellar.org">Stellar developer docs</a></p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Transaction.swift#L44-L48">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Transaction.swift#L48-L52">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2582,7 +2595,7 @@ See <a href="https://developers.stellar.org">Stellar developer docs</a></p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Transaction.swift#L51-L57">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Transaction.swift#L55-L61">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2691,7 +2704,124 @@ See <a href="https://developers.stellar.org">Stellar developer docs</a></p>
                         </table>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Transaction.swift#L75-L121">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Transaction.swift#L80-L127">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10stellarsdk11TransactionC13sourceAccount10operations7memoXDR13preconditions15maxOperationFee07sorobanB4DataAcA0bD0_p_SayAA0J0CGAA04MemoG0OAA0B13PreconditionsCSgs6UInt32VAA07SorobanbmG0VSgtKcfc"></a>
+                    <a name="//apple_ref/swift/Method/init(sourceAccount:operations:memoXDR:preconditions:maxOperationFee:sorobanTransactionData:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk11TransactionC13sourceAccount10operations7memoXDR13preconditions15maxOperationFee07sorobanB4DataAcA0bD0_p_SayAA0J0CGAA04MemoG0OAA0B13PreconditionsCSgs6UInt32VAA07SorobanbmG0VSgtKcfc">init(sourceAccount:<wbr>operations:<wbr>memoXDR:<wbr>preconditions:<wbr>maxOperationFee:<wbr>sorobanTransactionData:<wbr>)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Creates a new Transaction object whose memo is the given XDR memo, byte for byte.</p>
+
+<p>Use it to carry a decoded memo, such as <code>transactionXDR.memo</code> of another transaction, into a
+new transaction: a text memo keeps bytes that are not valid UTF-8, which a <code><a href="../Enums/Memo.html">Memo</a></code> cannot hold.</p>
+<div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    <p><code>StellarSDKError.invalidArgument</code> when <code><a href="../Classes/Transaction.html#/s:10stellarsdk11TransactionC10operationsSayAA9OperationCGvp">operations</a></code> is empty, and the errors of <code><a href="../Classes/Operation.html#/s:10stellarsdk9OperationC5toXDRAA0bD0VyKF">Operation.toXDR()</a></code>.</p>
+
+</div>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">convenience</span> <span class="nf">init</span><span class="p">(</span><span class="nv">sourceAccount</span><span class="p">:</span> <span class="kt"><a href="../Protocols/TransactionAccount.html">TransactionAccount</a></span><span class="p">,</span> <span class="nv">operations</span><span class="p">:</span> <span class="p">[</span><span class="kt"><a href="../Classes/Operation.html">Operation</a></span><span class="p">],</span> <span class="nv">memoXDR</span><span class="p">:</span> <span class="kt">MemoXDR</span><span class="p">,</span> <span class="nv">preconditions</span><span class="p">:</span> <span class="kt"><a href="../Classes/TransactionPreconditions.html">TransactionPreconditions</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">maxOperationFee</span><span class="p">:</span> <span class="kt">UInt32</span> <span class="o">=</span> <span class="kt">Transaction</span><span class="o">.</span><span class="n"><a href="../Classes/Transaction.html#/s:10stellarsdk11TransactionC10minBaseFees6UInt32VvpZ">minBaseFee</a></span><span class="p">,</span> <span class="nv">sorobanTransactionData</span><span class="p">:</span> <span class="kt">SorobanTransactionDataXDR</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span> <span class="k">throws</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>sourceAccount</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Account that originates the transaction.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>operations</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The operations of the transaction, executed in order; at least one.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>memoXDR</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The memo as it is written into the transaction.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>preconditions</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Optional. Transaction preconditions as defined in CAP-21</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>maxOperationFee</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Optional. The maximum fee in stroops per operation; the transaction fee is this value times the number of operations.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>sorobanTransactionData</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Optional. Soroban Transaction Data</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Transaction.swift#L142-L146">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2722,7 +2852,7 @@ See <a href="https://developers.stellar.org">Stellar developer docs</a></p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Transaction.swift#L125-L128">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Transaction.swift#L150-L153">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2741,10 +2871,14 @@ See <a href="https://developers.stellar.org">Stellar developer docs</a></p>
                       <div class="pointer"></div>
                       <div class="abstract">
                         <p>Creates a new Transaction object from an XDR string.</p>
+
+<p>The transaction keeps the decoded XDR as it is: <code><a href="../Classes/Transaction.html#/s:10stellarsdk11TransactionC14transactionXDRAA0bD0Vvp">transactionXDR</a></code>, the hash, new signatures
+and <code><a href="../Classes/Transaction.html#/s:10stellarsdk11TransactionC15encodedEnvelopeSSyKF">encodedEnvelope()</a></code> give the input bytes, and <code><a href="../Classes/Transaction.html#/s:10stellarsdk11TransactionC3fees6UInt32Vvp">fee</a></code> is the decoded total fee.</p>
 <div class="aside aside-throws">
     <p class="aside-title">Throws</p>
-    <p><code>StellarSDKError.invalidArgument</code> for a sequence number of <code>Int64.min</code>, and the errors of
-<code><a href="../Classes/Operation.html#/s:10stellarsdk9OperationC7fromXDR09operationD0AcA0bD0V_tKFZ">Operation.fromXDR(operationXDR:)</a></code> for an operation it cannot decode.</p>
+    <p><code>StellarSDKError.invalidArgument</code> for a sequence number of <code>Int64.min</code> and for a
+transaction without operations, and the errors of <code><a href="../Classes/Operation.html#/s:10stellarsdk9OperationC7fromXDR09operationD0AcA0bD0V_tKFZ">Operation.fromXDR(operationXDR:)</a></code> for an
+operation it cannot decode.</p>
 
 </div>
 
@@ -2777,7 +2911,7 @@ See <a href="https://developers.stellar.org">Stellar developer docs</a></p>
                         </table>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Transaction.swift#L136-L152">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Transaction.swift#L165-L169">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2796,10 +2930,19 @@ See <a href="https://developers.stellar.org">Stellar developer docs</a></p>
                       <div class="pointer"></div>
                       <div class="abstract">
                         <p>Creates a new Transaction object from an Transaction Envelope XDR string.</p>
+
+<p>The transaction keeps the decoded XDR as it is, with the envelope&rsquo;s signatures: the hash, new
+signatures and <code><a href="../Classes/Transaction.html#/s:10stellarsdk11TransactionC14transactionXDRAA0bD0Vvp">transactionXDR</a></code> give the input bytes, and <code><a href="../Classes/Transaction.html#/s:10stellarsdk11TransactionC3fees6UInt32Vvp">fee</a></code> is the decoded total fee. For
+a V0 envelope, <code><a href="../Classes/Transaction.html#/s:10stellarsdk11TransactionC14transactionXDRAA0bD0Vvp">transactionXDR</a></code> and the hash are its V1 form, and <code><a href="../Classes/Transaction.html#/s:10stellarsdk11TransactionC15encodedEnvelopeSSyKF">encodedEnvelope()</a></code> writes a
+V0 envelope while the transaction fits the V0 format (no Soroban transaction data and no
+CAP-21 V2 preconditions) and a V1 envelope otherwise. A fee bump envelope gives its inner
+transaction with the inner signatures. Use <code>FeeBumpTransaction(envelopeXdr:)</code> to read a fee
+bump envelope as a fee bump transaction.</p>
 <div class="aside aside-throws">
     <p class="aside-title">Throws</p>
-    <p><code>StellarSDKError.invalidArgument</code> for a sequence number of <code>Int64.min</code>, and the errors of
-<code><a href="../Classes/Operation.html#/s:10stellarsdk9OperationC7fromXDR09operationD0AcA0bD0V_tKFZ">Operation.fromXDR(operationXDR:)</a></code> for an operation it cannot decode.</p>
+    <p><code>StellarSDKError.invalidArgument</code> for a sequence number of <code>Int64.min</code> and for a
+transaction without operations, and the errors of <code><a href="../Classes/Operation.html#/s:10stellarsdk9OperationC7fromXDR09operationD0AcA0bD0V_tKFZ">Operation.fromXDR(operationXDR:)</a></code> for an
+operation it cannot decode.</p>
 
 </div>
 
@@ -2832,7 +2975,7 @@ See <a href="https://developers.stellar.org">Stellar developer docs</a></p>
                         </table>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Transaction.swift#L160-L181">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Transaction.swift#L186-L206">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2893,7 +3036,7 @@ See <a href="https://developers.stellar.org">Stellar developer docs</a></p>
                         </table>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Transaction.swift#L197-L206">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Transaction.swift#L254-L263">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2923,7 +3066,7 @@ See <a href="https://developers.stellar.org">Stellar developer docs</a></p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Transaction.swift#L209-L213">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Transaction.swift#L266-L270">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2943,6 +3086,10 @@ See <a href="https://developers.stellar.org">Stellar developer docs</a></p>
                       <div class="abstract">
                         <p>Returns the base64-encoded transaction envelope XDR for submission to the network.</p>
 
+<p>Writes a V0 envelope (<code>ENVELOPE_TYPE_TX_V0</code>) when the transaction was read from a V0
+envelope and its current state fits the V0 format (no Soroban transaction data and no
+CAP-21 V2 preconditions); writes a V1 envelope (<code>ENVELOPE_TYPE_TX</code>) otherwise.</p>
+
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
@@ -2953,7 +3100,7 @@ See <a href="https://developers.stellar.org">Stellar developer docs</a></p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Transaction.swift#L216-L220">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Transaction.swift#L277-L303">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2983,7 +3130,7 @@ See <a href="https://developers.stellar.org">Stellar developer docs</a></p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Transaction.swift#L223-L229">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Transaction.swift#L306-L312">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3013,7 +3160,7 @@ See <a href="https://developers.stellar.org">Stellar developer docs</a></p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Transaction.swift#L232-L238">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Transaction.swift#L315-L321">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3043,7 +3190,7 @@ See <a href="https://developers.stellar.org">Stellar developer docs</a></p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Transaction.swift#L241-L246">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Transaction.swift#L324-L329">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3073,7 +3220,7 @@ See <a href="https://developers.stellar.org">Stellar developer docs</a></p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Transaction.swift#L249-L254">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Transaction.swift#L332-L337">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3103,7 +3250,7 @@ See <a href="https://developers.stellar.org">Stellar developer docs</a></p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Transaction.swift#L257-L271">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Transaction.swift#L340-L354">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3123,6 +3270,10 @@ See <a href="https://developers.stellar.org">Stellar developer docs</a></p>
                       <div class="abstract">
                         <p>Updates the transaction memo. If nil, sets memo to none.</p>
 
+<p>The memo is written from its value: a text memo read from <code><a href="../Classes/Transaction.html#/s:10stellarsdk11TransactionC4memoAA4MemoOvp">memo</a></code> of a transaction whose memo
+bytes are not valid UTF-8 writes its replacement characters, not the original bytes. Use
+<code><a href="../Classes/Transaction.html#/s:10stellarsdk11TransactionC7setMemo7memoXDRyAA0dF0O_tF">setMemo(memoXDR:)</a></code> to keep the bytes.</p>
+
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
@@ -3133,7 +3284,41 @@ See <a href="https://developers.stellar.org">Stellar developer docs</a></p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Transaction.swift#L274-L279">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Transaction.swift#L361-L366">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10stellarsdk11TransactionC7setMemo7memoXDRyAA0dF0O_tF"></a>
+                    <a name="//apple_ref/swift/Method/setMemo(memoXDR:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk11TransactionC7setMemo7memoXDRyAA0dF0O_tF">setMemo(memoXDR:<wbr>)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Updates the transaction memo to the given XDR memo, byte for byte.</p>
+
+<p>Use it to carry a decoded memo, such as <code>transactionXDR.memo</code> of another transaction, into
+this transaction: a text memo keeps bytes that are not valid UTF-8. <code><a href="../Classes/Transaction.html#/s:10stellarsdk11TransactionC4memoAA4MemoOvp">memo</a></code> then reads its
+display value.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">setMemo</span><span class="p">(</span><span class="nv">memoXDR</span><span class="p">:</span> <span class="kt">MemoXDR</span><span class="p">)</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Transaction.swift#L373-L378">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3163,7 +3348,7 @@ See <a href="https://developers.stellar.org">Stellar developer docs</a></p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Transaction.swift#L282-L291">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Transaction.swift#L381-L390">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3193,7 +3378,7 @@ See <a href="https://developers.stellar.org">Stellar developer docs</a></p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Transaction.swift#L294-L299">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Transaction.swift#L393-L398">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3223,7 +3408,7 @@ See <a href="https://developers.stellar.org">Stellar developer docs</a></p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Transaction.swift#L302-L307">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Transaction.swift#L401-L406">Show on GitHub</a>
                       </div>
                     </section>
                   </div>

@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          stellarsdk 3.16.0 Docs
+          stellarsdk 3.17.0 Docs
         </a>
          (94% documented)
       </p>
@@ -358,6 +358,9 @@
                 <a class="nav-group-task-link" href="../Classes/HealthService.html">HealthService</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/InflationOperation.html">InflationOperation</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes.html#/s:10stellarsdk26InflationOperationResponseC">InflationOperationResponse</a>
               </li>
               <li class="nav-group-task">
@@ -629,6 +632,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes/RevokeSponsorshipOperationResponse.html">RevokeSponsorshipOperationResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/SACClient.html">SACClient</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes/Seed.html">Seed</a>
@@ -1296,6 +1302,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Enums/ResolveResponseEnum.html">ResolveResponseEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/SACSpec.html">SACSpec</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Enums/SendChallengeResponseEnum.html">SendChallengeResponseEnum</a>
@@ -2716,6 +2725,13 @@
                       <div class="abstract">
                         <p>Creates a memo from a MemoXDR instance</p>
 
+<p>A text memo carries the text its bytes spell. Bytes that are not valid UTF-8 read as
+U+FFFD replacement characters, so such a memo is display text: its <code><a href="../Enums/Memo.html#/s:10stellarsdk12MemoProtocolP5toXDRAA0bE0OyF">toXDR()</a></code> writes
+other bytes than the input, its UTF-8 count can exceed 28 bytes, and two inputs with
+different bytes can give equal memos. The exact bytes stay in the <code>MemoXDR</code>, which
+<code>Transaction(sourceAccount:operations:memoXDR:)</code> and <code><a href="../Classes/Transaction.html#/s:10stellarsdk11TransactionC7setMemo7memoXDRyAA0dF0O_tF">Transaction.setMemo(memoXDR:)</a></code>
+take as they are.</p>
+
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
@@ -2745,7 +2761,7 @@
                         </table>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Memo.swift#L88-L101">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Memo.swift#L95-L108">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2774,7 +2790,7 @@
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Memo.swift#L103-L111">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Memo.swift#L110-L118">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2803,7 +2819,7 @@
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Memo.swift#L116-L125">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Memo.swift#L123-L132">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2832,7 +2848,7 @@
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Memo.swift#L127-L130">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Memo.swift#L134-L137">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2861,7 +2877,7 @@
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Memo.swift#L134-L143">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Memo.swift#L141-L150">Show on GitHub</a>
                       </div>
                     </section>
                   </div>

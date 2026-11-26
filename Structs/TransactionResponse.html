@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          stellarsdk 3.16.0 Docs
+          stellarsdk 3.17.0 Docs
         </a>
          (94% documented)
       </p>
@@ -358,6 +358,9 @@
                 <a class="nav-group-task-link" href="../Classes/HealthService.html">HealthService</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/InflationOperation.html">InflationOperation</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes.html#/s:10stellarsdk26InflationOperationResponseC">InflationOperationResponse</a>
               </li>
               <li class="nav-group-task">
@@ -629,6 +632,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes/RevokeSponsorshipOperationResponse.html">RevokeSponsorshipOperationResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/SACClient.html">SACClient</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes/Seed.html">Seed</a>
@@ -1296,6 +1302,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Enums/ResolveResponseEnum.html">ResolveResponseEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/SACSpec.html">SACSpec</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Enums/SendChallengeResponseEnum.html">SendChallengeResponseEnum</a>
@@ -2375,7 +2384,7 @@ If any operation fails, the entire transaction fails and no changes are made.</p
 </ul>
 
               <div class="slightly-smaller">
-                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/responses/transactions_responses/TransactionResponse.swift#L48-L286">Show on GitHub</a>
+                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/responses/transactions_responses/TransactionResponse.swift#L48-L310">Show on GitHub</a>
               </div>
           </div>
         </section>
@@ -2909,6 +2918,10 @@ If any operation fails, the entire transaction fails and no changes are made.</p
                       <div class="abstract">
                         <p>Parsed memo object. Nil for memo type &ldquo;none&rdquo;.</p>
 
+<p>A text memo is read from <code><a href="../Structs/TransactionResponse.html#/s:10stellarsdk19TransactionResponseV9memoBytes10Foundation4DataVSgvp">memoBytes</a></code> when Horizon sends them, as display text: bytes that
+are not valid UTF-8 read as U+FFFD replacement characters. <code><a href="../Structs/TransactionResponse.html#/s:10stellarsdk19TransactionResponseV9memoBytes10Foundation4DataVSgvp">memoBytes</a></code> and the memo of
+<code><a href="../Structs/TransactionResponse.html#/s:10stellarsdk19TransactionResponseV19transactionEnvelopeAA0bE3XDROvp">transactionEnvelope</a></code> hold the exact bytes.</p>
+
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
@@ -2919,7 +2932,38 @@ If any operation fails, the entire transaction fails and no changes are made.</p
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/responses/transactions_responses/TransactionResponse.swift#L102">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/responses/transactions_responses/TransactionResponse.swift#L106">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10stellarsdk19TransactionResponseV9memoBytes10Foundation4DataVSgvp"></a>
+                    <a name="//apple_ref/swift/Property/memoBytes" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk19TransactionResponseV9memoBytes10Foundation4DataVSgvp">memoBytes</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>The bytes of a text memo, from Horizon&rsquo;s <code>memo_bytes</code>. Nil for the other memo types and when
+Horizon does not send the field.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">let</span> <span class="nv">memoBytes</span><span class="p">:</span> <span class="kt">Data</span><span class="p">?</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/responses/transactions_responses/TransactionResponse.swift#L110">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2949,7 +2993,7 @@ If any operation fails, the entire transaction fails and no changes are made.</p
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/responses/transactions_responses/TransactionResponse.swift#L105">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/responses/transactions_responses/TransactionResponse.swift#L113">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2979,7 +3023,7 @@ If any operation fails, the entire transaction fails and no changes are made.</p
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/responses/transactions_responses/TransactionResponse.swift#L108">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/responses/transactions_responses/TransactionResponse.swift#L116">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3009,7 +3053,7 @@ If any operation fails, the entire transaction fails and no changes are made.</p
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/responses/transactions_responses/TransactionResponse.swift#L111">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/responses/transactions_responses/TransactionResponse.swift#L119">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3039,7 +3083,7 @@ If any operation fails, the entire transaction fails and no changes are made.</p
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/responses/transactions_responses/TransactionResponse.swift#L114">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/responses/transactions_responses/TransactionResponse.swift#L122">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3069,7 +3113,7 @@ If any operation fails, the entire transaction fails and no changes are made.</p
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/responses/transactions_responses/TransactionResponse.swift#L117">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/responses/transactions_responses/TransactionResponse.swift#L125">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3099,7 +3143,7 @@ If any operation fails, the entire transaction fails and no changes are made.</p
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/responses/transactions_responses/TransactionResponse.swift#L120">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/responses/transactions_responses/TransactionResponse.swift#L128">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3129,7 +3173,7 @@ If any operation fails, the entire transaction fails and no changes are made.</p
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/responses/transactions_responses/TransactionResponse.swift#L123">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/responses/transactions_responses/TransactionResponse.swift#L131">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3159,7 +3203,7 @@ If any operation fails, the entire transaction fails and no changes are made.</p
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/responses/transactions_responses/TransactionResponse.swift#L126">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/responses/transactions_responses/TransactionResponse.swift#L134">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3188,7 +3232,7 @@ If any operation fails, the entire transaction fails and no changes are made.</p
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/responses/transactions_responses/TransactionResponse.swift#L157-L252">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/responses/transactions_responses/TransactionResponse.swift#L166-L276">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3247,7 +3291,7 @@ no operation sits at the index, or when the operation there is not a
 CreateClaimableBalance</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/responses/transactions_responses/TransactionResponse.swift#L264-L285">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/responses/transactions_responses/TransactionResponse.swift#L288-L309">Show on GitHub</a>
                       </div>
                     </section>
                   </div>

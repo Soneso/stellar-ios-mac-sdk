@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          stellarsdk 3.16.0 Docs
+          stellarsdk 3.17.0 Docs
         </a>
          (94% documented)
       </p>
@@ -358,6 +358,9 @@
                 <a class="nav-group-task-link" href="../Classes/HealthService.html">HealthService</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/InflationOperation.html">InflationOperation</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes.html#/s:10stellarsdk26InflationOperationResponseC">InflationOperationResponse</a>
               </li>
               <li class="nav-group-task">
@@ -629,6 +632,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes/RevokeSponsorshipOperationResponse.html">RevokeSponsorshipOperationResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/SACClient.html">SACClient</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes/Seed.html">Seed</a>
@@ -1296,6 +1302,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Enums/ResolveResponseEnum.html">ResolveResponseEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/SACSpec.html">SACSpec</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Enums/SendChallengeResponseEnum.html">SendChallengeResponseEnum</a>
@@ -2365,7 +2374,7 @@ transactions or make payments, and wallets can parse these URIs to fulfill the r
 </ul>
 
               <div class="slightly-smaller">
-                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/uri_scheme/URIScheme.swift#L73-L388">Show on GitHub</a>
+                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/uri_scheme/URIScheme.swift#L73-L497">Show on GitHub</a>
               </div>
           </div>
         </section>
@@ -2399,7 +2408,7 @@ transactions or make payments, and wallets can parse these URIs to fulfill the r
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/uri_scheme/URIScheme.swift#L76">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/uri_scheme/URIScheme.swift#L74">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2560,7 +2569,7 @@ transactions or make payments, and wallets can parse these URIs to fulfill the r
                         <p>A SEP-0007 compliant URI string for the transaction signing request</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/uri_scheme/URIScheme.swift#L94-L152">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/uri_scheme/URIScheme.swift#L92-L150">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2748,7 +2757,7 @@ the memo is base64-encoded before URL encoding.</p>
                         <p>A SEP-0007 compliant URI string for the payment request</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/uri_scheme/URIScheme.swift#L173-L252">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/uri_scheme/URIScheme.swift#L171-L250">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2769,10 +2778,27 @@ the memo is base64-encoded before URL encoding.</p>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Signs and submits a transaction from a SEP-0007 URI to the Stellar network.</p>
+                        <p>Signs and submits a transaction from a SEP-0007 <code>tx</code> URI.</p>
 
-<p>Parses the transaction from the URI, optionally confirms it via the callback,
-signs it with the provided key pair, and submits it to the network or callback URL.</p>
+<p>Parses the <code>xdr</code> parameter from a <code>web+stellar:tx?</code> URI regardless of parameter order,
+decodes a V0, V1, or fee bump transaction envelope, optionally asks for confirmation, signs
+the transaction with <code>keyPair</code> for <code>network</code> (signing the fee bump hash for a fee bump
+envelope while leaving the inner transaction and its signatures unchanged), and submits the
+resulting envelope.</p>
+
+<p>When the <code>callback</code> parameter is present, values starting with <code>&quot;url:&quot;</code> are used as given
+and other values are percent-decoded once. Only <code>&quot;url:&quot;</code> callbacks are supported; they must
+use HTTPS (HTTP is allowed only for <code>localhost</code>, <code>127.0.0.1</code>, or <code>::1</code>), and the signed
+envelope is sent in a <code>POST</code> request as <code>application/x-www-form-urlencoded</code> with field <code>xdr</code>.
+Any other callback type or invalid percent-encoding fails without sending a request.</p>
+
+<p>When <code>callback</code> is omitted, the signed envelope is submitted to the Horizon server matching
+<code>network</code> (<code><a href="../Classes/StellarSDK.html#/s:10stellarsdk10StellarSDKC9publicNetACyFZ">StellarSDK.publicNet()</a></code>, <code><a href="../Classes/StellarSDK.html#/s:10stellarsdk10StellarSDKC7testNetACyFZ">StellarSDK.testNet()</a></code>, or <code><a href="../Classes/StellarSDK.html#/s:10stellarsdk10StellarSDKC9futureNetACyFZ">StellarSDK.futureNet()</a></code>),
+running the SEP-0029 memo requirement check. <code>.custom</code> networks have no known Horizon URL
+and fail unless a <code>url:</code> callback is provided.</p>
+
+<p>Signing errors, including a <code><a href="../Classes/KeyPair.html">KeyPair</a></code> without a private key, return <code>.failure</code> with
+<code>HorizonRequestError.requestFailed</code> naming the cause, and nothing is sent.</p>
 
                       </div>
                       <div class="declaration">
@@ -2798,7 +2824,7 @@ signs it with the provided key pair, and submits it to the network or callback U
                               </td>
                               <td>
                                 <div>
-                                  <p>A SEP-0007 compliant URL containing the transaction to sign</p>
+                                  <p>A SEP-0007 <code>web+stellar:tx?</code> URI containing the transaction to sign.</p>
                                 </div>
                               </td>
                             </tr>
@@ -2810,7 +2836,7 @@ signs it with the provided key pair, and submits it to the network or callback U
                               </td>
                               <td>
                                 <div>
-                                  <p>The KeyPair of the signer account</p>
+                                  <p>The signing <code><a href="../Classes/KeyPair.html">KeyPair</a></code> (must include the private key).</p>
                                 </div>
                               </td>
                             </tr>
@@ -2822,7 +2848,7 @@ signs it with the provided key pair, and submits it to the network or callback U
                               </td>
                               <td>
                                 <div>
-                                  <p>The Stellar network to use (defaults to public)</p>
+                                  <p>The Stellar network to sign for and, when no callback is set, submit to (defaults to <code>.public</code>).</p>
                                 </div>
                               </td>
                             </tr>
@@ -2834,7 +2860,9 @@ signs it with the provided key pair, and submits it to the network or callback U
                               </td>
                               <td>
                                 <div>
-                                  <p>Optional closure to confirm the transaction before signing (return false to cancel)</p>
+                                  <p>Optional closure to confirm the transaction before
+signing (return <code>false</code> to cancel). Receives <code>transactionXDR</code> for a V0 or V1 envelope, or
+<code>innerTransaction.transactionXDR</code> for a fee bump envelope.</p>
                                 </div>
                               </td>
                             </tr>
@@ -2843,10 +2871,10 @@ signs it with the provided key pair, and submits it to the network or callback U
                       </div>
                       <div>
                         <h4>Return Value</h4>
-                        <p>SubmitTransactionEnum indicating success, memo requirement, or failure</p>
+                        <p><code><a href="../Enums/SubmitTransactionEnum.html">SubmitTransactionEnum</a></code> indicating success, a SEP-0029 memo requirement, or failure.</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/uri_scheme/URIScheme.swift#L265-L282">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/uri_scheme/URIScheme.swift#L282-L320">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2911,7 +2939,7 @@ signs it with the provided key pair, and submits it to the network or callback U
                         <p>The parameter value if found, nil otherwise</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/uri_scheme/URIScheme.swift#L341-L356">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/uri_scheme/URIScheme.swift#L396-L411">Show on GitHub</a>
                       </div>
                     </section>
                   </div>

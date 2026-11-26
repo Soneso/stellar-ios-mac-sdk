@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="index.html">
-          stellarsdk 3.16.0 Docs
+          stellarsdk 3.17.0 Docs
         </a>
          (94% documented)
       </p>
@@ -356,6 +356,9 @@
                 <a class="nav-group-task-link" href="Classes/HealthService.html">HealthService</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Classes/InflationOperation.html">InflationOperation</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Classes.html#/s:10stellarsdk26InflationOperationResponseC">InflationOperationResponse</a>
               </li>
               <li class="nav-group-task">
@@ -627,6 +630,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Classes/RevokeSponsorshipOperationResponse.html">RevokeSponsorshipOperationResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Classes/SACClient.html">SACClient</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Classes/Seed.html">Seed</a>
@@ -1294,6 +1300,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Enums/ResolveResponseEnum.html">ResolveResponseEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/SACSpec.html">SACSpec</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Enums/SendChallengeResponseEnum.html">SendChallengeResponseEnum</a>
@@ -5826,7 +5835,7 @@ candidate and re-call <code>connectWallet(options:)</code> with the chosen contr
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/SorobanContractParser.swift#L289-L296">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/SorobanContractParser.swift#L319-L335">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -6484,7 +6493,7 @@ Note that submission does not wait for completion.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/ContractIdUtils.swift#L12-L41">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/ContractIdUtils.swift#L12-L48">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -6516,6 +6525,41 @@ Note that submission does not wait for completion.</p>
                       </div>
                       <div class="slightly-smaller">
                         <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/ContractSpec.swift#L762-L777">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10stellarsdk7SACSpecO"></a>
+                    <a name="//apple_ref/swift/Enum/SACSpec" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk7SACSpecO">SACSpec</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>The embedded Stellar Asset Contract spec, decoded by <code><a href="Classes/SACClient.html#/s:10stellarsdk9SACClientC11specEntriesSayAA14SCSpecEntryXDROGyKFZ">specEntries()</a></code>.</p>
+
+<p>A Stellar Asset Contract is built into the network and has no wasm on chain to read a spec
+from, so the SDK carries the spec the upstream repository <code>stellar/stellar-asset-contract-spec</code> publishes as
+<code>stellar-asset-spec.xdr</code>: a sequence of XDR <code>SCSpecEntry</code> values, one per contract function and event.</p>
+
+                        <a href="Enums/SACSpec.html" class="slightly-smaller">See more</a>
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">SACSpec</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/contract/SACSpec.swift#L11-L22">Show on GitHub</a>
                       </div>
                     </section>
                   </div>

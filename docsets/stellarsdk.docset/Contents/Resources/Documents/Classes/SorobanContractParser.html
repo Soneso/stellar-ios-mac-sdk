@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          stellarsdk 3.16.0 Docs
+          stellarsdk 3.17.0 Docs
         </a>
          (94% documented)
       </p>
@@ -358,6 +358,9 @@
                 <a class="nav-group-task-link" href="../Classes/HealthService.html">HealthService</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/InflationOperation.html">InflationOperation</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes.html#/s:10stellarsdk26InflationOperationResponseC">InflationOperationResponse</a>
               </li>
               <li class="nav-group-task">
@@ -629,6 +632,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes/RevokeSponsorshipOperationResponse.html">RevokeSponsorshipOperationResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/SACClient.html">SACClient</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes/Seed.html">Seed</a>
@@ -1296,6 +1302,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Enums/ResolveResponseEnum.html">ResolveResponseEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/SACSpec.html">SACSpec</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Enums/SendChallengeResponseEnum.html">SendChallengeResponseEnum</a>
@@ -2338,7 +2347,7 @@
 see: <a href="https://developers.stellar.org">Stellar developer docs</a></p>
 
               <div class="slightly-smaller">
-                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/SorobanContractParser.swift#L13-L148">Show on GitHub</a>
+                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/SorobanContractParser.swift#L13-L178">Show on GitHub</a>
               </div>
           </div>
         </section>
@@ -2360,10 +2369,26 @@ see: <a href="https://developers.stellar.org">Stellar developer docs</a></p>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Parses a soroban contract byteCode to get Environment Meta, Contract Spec and Contract Meta.
-see: <a href="https://developers.stellar.org">Stellar developer docs</a>
-Returns SorobanContractInfo containing the parsed data.
-Throws SorobanContractParserError if any exception occurred during the byte code parsing. E.g. invalid byte code.</p>
+                        <p>Parses a soroban contract byteCode to get Environment Meta, Contract Spec and Contract Meta.</p>
+
+<p>The byte code is read as a wasm module: after the header, every section is walked by its id
+and its size. The content of the first <code>contractenvmetav0</code> and <code>contractspecv0</code> custom
+section is decoded as a stream of <code>SCEnvMetaEntryXDR</code> and <code>SCSpecEntryXDR</code> entries up to the
+end of the section; later sections with one of these names do not change the result. The
+interface version comes from the first environment meta entry. Every <code>contractmetav0</code>
+section is decoded on its own as a stream of <code>SCMetaEntryXDR</code> entries, and the entries of all
+of them are read in module order, as SEP-46 defines. Values with the same metadata key are
+joined with a comma. For the <code>sep</code> key, this implements SEP-47.
+see: <a href="https://developers.stellar.org">Stellar developer docs</a></p>
+<div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    <code>SorobanContractParserError.malformedModule</code> when the header or the framing of any
+section does not fit the input, <code>.invalidSectionEntry</code> when an entry of one of the three
+sections does not decode, has an unknown kind or is cut by the end of its section,
+<code>.environmentMetaNotFound</code> when the first <code>contractenvmetav0</code> section is absent or empty, and
+<code>.specEntriesNotFound</code> when the module has no <code>contractspecv0</code> section.
+
+</div>
 
                       </div>
                       <div class="declaration">
@@ -2374,8 +2399,31 @@ Throws SorobanContractParserError if any exception occurred during the byte code
 
                         </div>
                       </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>byteCode</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The contract wasm.</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>SorobanContractInfo containing the parsed data.</p>
+                      </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/SorobanContractParser.swift#L19-L48">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/SorobanContractParser.swift#L42-L70">Show on GitHub</a>
                       </div>
                     </section>
                   </div>

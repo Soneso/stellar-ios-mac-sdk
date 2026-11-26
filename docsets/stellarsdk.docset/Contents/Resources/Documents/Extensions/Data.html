@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          stellarsdk 3.16.0 Docs
+          stellarsdk 3.17.0 Docs
         </a>
          (94% documented)
       </p>
@@ -358,6 +358,9 @@
                 <a class="nav-group-task-link" href="../Classes/HealthService.html">HealthService</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/InflationOperation.html">InflationOperation</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes.html#/s:10stellarsdk26InflationOperationResponseC">InflationOperationResponse</a>
               </li>
               <li class="nav-group-task">
@@ -629,6 +632,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes/RevokeSponsorshipOperationResponse.html">RevokeSponsorshipOperationResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/SACClient.html">SACClient</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes/Seed.html">Seed</a>
@@ -1296,6 +1302,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Enums/ResolveResponseEnum.html">ResolveResponseEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/SACSpec.html">SACSpec</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Enums/SendChallengeResponseEnum.html">SendChallengeResponseEnum</a>
@@ -3445,7 +3454,7 @@ the data is not exactly the width its key type names.
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/utils/xdrCodable/XDRCodableExtensions.swift#L298-L305">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/utils/xdrCodable/XDRCodableExtensions.swift#L361-L368">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3477,7 +3486,7 @@ the data is not exactly the width its key type names.
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/utils/xdrCodable/XDRCodableExtensions.swift#L310-L312">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/utils/xdrCodable/XDRCodableExtensions.swift#L373-L375">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3498,6 +3507,12 @@ the data is not exactly the width its key type names.
                         <p>Decodes variable-length data from XDR format.</p>
 
 <p>Reads the byte count, then the bytes, consuming any padding bytes.</p>
+<div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    XDRDecoder.Error.prematureEndOfData for missing bytes,
+StellarSDKError.xdrDecodingError for an excessive byte count or nonzero padding
+
+</div>
 
                       </div>
                       <div class="declaration">
@@ -3509,7 +3524,7 @@ the data is not exactly the width its key type names.
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/utils/xdrCodable/XDRCodableExtensions.swift#L317-L324">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/utils/xdrCodable/XDRCodableExtensions.swift#L383-L388">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3579,7 +3594,7 @@ remaining bytes
                         </table>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/utils/xdrCodable/XDRCodableExtensions.swift#L335-L338">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/utils/xdrCodable/XDRCodableExtensions.swift#L399-L402">Show on GitHub</a>
                       </div>
                     </section>
                   </div>

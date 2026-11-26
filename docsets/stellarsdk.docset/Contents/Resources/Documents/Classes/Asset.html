@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          stellarsdk 3.16.0 Docs
+          stellarsdk 3.17.0 Docs
         </a>
          (94% documented)
       </p>
@@ -358,6 +358,9 @@
                 <a class="nav-group-task-link" href="../Classes/HealthService.html">HealthService</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/InflationOperation.html">InflationOperation</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes.html#/s:10stellarsdk26InflationOperationResponseC">InflationOperationResponse</a>
               </li>
               <li class="nav-group-task">
@@ -629,6 +632,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes/RevokeSponsorshipOperationResponse.html">RevokeSponsorshipOperationResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/SACClient.html">SACClient</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes/Seed.html">Seed</a>
@@ -1296,6 +1302,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Enums/ResolveResponseEnum.html">ResolveResponseEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/SACSpec.html">SACSpec</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Enums/SendChallengeResponseEnum.html">SendChallengeResponseEnum</a>
@@ -2338,7 +2347,7 @@
 See <a href="https://developers.stellar.org">Stellar developer docs</a></p>
 
               <div class="slightly-smaller">
-                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Asset.swift#L13-L152">Show on GitHub</a>
+                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Asset.swift#L13-L171">Show on GitHub</a>
               </div>
           </div>
         </section>
@@ -2608,6 +2617,71 @@ Throws StellarSDKError.xdrEncodingError if the XDR Object could not be created.<
                 <li class="item">
                   <div>
                     <code>
+                    <a name="/s:10stellarsdk5AssetC10contractId7networkSSAA7NetworkO_tKF"></a>
+                    <a name="//apple_ref/swift/Method/contractId(network:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk5AssetC10contractId7networkSSAA7NetworkO_tKF">contractId(network:<wbr>)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Derives the id of this asset&rsquo;s Stellar Asset Contract (SAC) on the given network.</p>
+
+<p>Every classic asset has one SAC per network, the native asset (XLM) included, and its
+id depends only on the asset and the network. The id is the one the contract gets when
+<code><a href="../Classes/InvokeHostFunctionOperation.html#/s:10stellarsdk27InvokeHostFunctionOperationC21forDeploySACWithAsset5asset15sourceAccountIdAcA0I0C_SSSgtKFZ">forDeploySACWithAsset(asset:sourceAccountId:)</a></code> deploys
+it, so it is known before the deployment. The derivation hashes locally and sends no
+request; it does not tell whether the contract is deployed.</p>
+<div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    <code>StellarSDKError.xdrEncodingError</code> for a liquidity pool share, which has no
+Stellar Asset Contract, and when the asset does not encode as XDR.
+
+</div>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">contractId</span><span class="p">(</span><span class="nv">network</span><span class="p">:</span> <span class="kt"><a href="../Enums/Network.html">Network</a></span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt">String</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>network</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The network the contract lives on.</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>The contract id as its &ldquo;C&hellip;&rdquo; strkey.</p>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Asset.swift#L118-L123">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
                     <a name="/s:10stellarsdk5AssetC011toTrustlineB3XDRAA0dbE0OyKF"></a>
                     <a name="//apple_ref/swift/Method/toTrustlineAssetXDR()" class="dashAnchor"></a>
                     <a class="token" href="#/s:10stellarsdk5AssetC011toTrustlineB3XDRAA0dbE0OyKF">toTrustlineAssetXDR()</a>
@@ -2630,7 +2704,7 @@ Throws StellarSDKError.xdrEncodingError if the XDR Object could not be created.<
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Asset.swift#L107-L122">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Asset.swift#L126-L141">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2684,7 +2758,7 @@ Throws StellarSDKError.xdrEncodingError if the XDR Object could not be created.<
                         </table>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Asset.swift#L132-L151">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Asset.swift#L151-L170">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
