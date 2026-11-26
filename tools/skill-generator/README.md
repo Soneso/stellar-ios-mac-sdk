@@ -6,11 +6,12 @@ source.
 
 ## What it does
 
-Recursively walks `stellarsdk/stellarsdk/` and extracts every public class,
-struct, enum, protocol, actor, and extension into a compact signature-only
-markdown reference. The output is consumed by the `stellar-ios-mac-sdk` agent
-skill and lets AI coding agents look up method/property signatures without
-reading the raw Swift source.
+Recursively walks `stellarsdk/stellarsdk/` and extracts public classes,
+structs, enums, protocols, actors (including generic declarations), extensions
+with public members, and public top-level typealiases into a compact
+signature-only markdown reference. The output is consumed by the
+`stellar-ios-mac-sdk` agent skill and lets AI coding agents look up
+method/property signatures without reading the raw Swift source.
 
 ## Prerequisites
 
@@ -78,7 +79,32 @@ added since the last release.
   emitted.
 - **Also captured**: enum cases, type-inferred constants and properties (those
   written without an explicit `: Type` annotation), `final`-prefixed and
-  `private(set)` properties, and generic initializers.
+  `private(set)` properties, generic initializers with their `where` clauses,
+  and `prefix` / `postfix` operator methods.
+- **Type headers**: generic parameter and `where` clauses are retained on
+  class, struct, enum, protocol and actor headers. Types sort by their bare
+  names. Public nested types have their own sections with unqualified names,
+  as well as a name-only entry in their enclosing type's member list.
+- **Extension sections**: extensions merge by bare name and
+  whitespace-normalized `where` clause within each bucket. Headers retain the
+  clause as `## extension Name where ...`; conformances are omitted. Equal
+  clauses share a section with deduplicated members; different clauses and
+  unconstrained extensions stay separate. Sections of the same bare name keep
+  first-seen order. Extensions with no public members are omitted.
+- **Typealiases**: public top-level aliases appear alphabetically in a
+  `### Typealiases` block at the start of their source-file bucket. Public
+  nested aliases appear in the enclosing type's member list. Both retain the
+  right-hand side, including type attributes.
+- **Attributes**: leading declaration attributes such as `@discardableResult`
+  and `@inline` are removed. Type attributes such as `@Sendable` and `@escaping`
+  are preserved within emitted signatures, including parameter, return,
+  property and associated-value types and emitted typealias right-hand sides.
+  `@unchecked` in type conformance lists is preserved. A type's `@available`
+  versions above the iOS/macOS deployment floors read from `Package.swift`
+  produce one header note, such as `// iOS 16.0+, macOS 13.0+`. Versions at or
+  below the floors add nothing, and the note is not repeated on members.
+  Deprecated members retain a deprecation note and a replacement name when
+  the attribute supplies `renamed:`.
 
 ## Output format
 
@@ -93,7 +119,9 @@ init(arg: Type) throws
 func publicMethod(arg: Type) async throws -> ReturnType
 ```
 
-Enums additionally list their cases first:
+Members appear in this order: typealiases, static/class constants, enum cases,
+nested type names, properties, initializers, methods, subscripts. For an enum
+with only cases, the section looks like:
 
 ```
 ## enum SomeResult: Sendable
@@ -103,12 +131,24 @@ case failure(error: SomeError)
 
 Types are grouped into buckets driven by the source-file path (core, requests,
 responses, soroban, crypto, operations, sdk).
+The stats line counts type sections (declarations plus merged extensions) and
+their members, including nested aliases and nested type entries. Top-level
+aliases are counted separately in the generation log.
 
 ## Limitations
 
-This is a regex-based parser, not a Swift compiler frontend. It correctly
-handles every pattern present in the current SDK source but is not a general
-Swift parser. If a future SDK change uses a declaration shape that the script
+This is a regex-based parser, not a Swift compiler frontend. Its output is
+limited to the declarations and signature details described above.
+If a future SDK change uses a declaration shape that the script
 does not yet recognize, the affected types silently drop from the output.
 After any large API change, check the regenerated `api_reference.md`
 against the actual source (counts and a few spot-checked sections).
+
+Generic clauses use a single `<...>` match; nested angle-bracket syntax is not
+fully parsed. Methods without an explicit return type omit trailing `where`
+clauses. Extension conformance lists are omitted. Nested sections do not carry
+the enclosing type's generic context or availability note. Member-level platform
+availability is not handled. Modifier normalization does not hoist access past
+`prefix` or `postfix`, so operators must put `public` before those modifiers. The
+scanner does not fully support nested block comments, comma-containing enum raw
+strings, or declaration keywords inside string literals.
