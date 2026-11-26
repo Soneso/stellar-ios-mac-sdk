@@ -64,7 +64,7 @@ class Sep10DocTest: XCTestCase {
         let operation1 = ManageDataOperation(
             sourceAccountId: accountId,
             name: domain + " auth",
-            data: generateNonce(length: 64)?.data(using: .utf8)
+            data: generateNonce(length: 48)?.data(using: .utf8)
         )
         let operation2 = ManageDataOperation(
             sourceAccountId: serverKeyPair.accountId,
@@ -101,7 +101,7 @@ class Sep10DocTest: XCTestCase {
         let operation1 = ManageDataOperation(
             sourceAccountId: accountId,
             name: domain + " auth",
-            data: generateNonce(length: 64)?.data(using: .utf8)
+            data: generateNonce(length: 48)?.data(using: .utf8)
         )
         let operation2 = ManageDataOperation(
             sourceAccountId: serverKeyPair.accountId,

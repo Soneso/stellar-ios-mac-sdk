@@ -486,7 +486,7 @@ class Sep10MockTest: XCTestCase {
         let firstOp = ManageDataOperation(
             sourceAccountId: accountId,
             name: domain + " auth",
-            data: generateNonce(length: 64)?.data(using: .utf8)
+            data: generateNonce(length: 48)?.data(using: .utf8)
         )
 
         // Second op: 'web_auth_domain', source = server, value = host of authServer

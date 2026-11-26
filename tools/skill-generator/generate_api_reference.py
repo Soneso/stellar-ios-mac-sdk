@@ -79,12 +79,14 @@ GENERICS = r'(?:<[^>]+>)?'
 # stored/computed property or a static constant.
 _PROP_OTHER_MODS = ('static', 'class', 'lazy', 'weak', 'unowned', 'final')
 # Modifiers that may appear on a method.
-_METHOD_OTHER_MODS = ('static', 'class', 'final', 'override', 'mutating', 'nonmutating')
+_METHOD_OTHER_MODS = ('static', 'class', 'final', 'override', 'mutating', 'nonmutating',
+                      'prefix', 'postfix')
 # Modifiers that may appear on an initializer.
 _INIT_OTHER_MODS = ('convenience', 'required', 'override')
 
 # Precompiled per-declaration patterns (compiled once at module load).
-RE_ATTRIBUTE = re.compile(r'@\w+(?:\([^)]*\))?\s*')
+# Declaration attributes precede the declaration; attributes within types stay.
+RE_ATTRIBUTE = re.compile(r'^(?:@\w+(?:\([^)]*\))?\s*)+')
 RE_EXPLICIT_NONPUBLIC = re.compile(r'^(?:private|fileprivate|internal)\b')
 RE_HAS_PUBLIC = re.compile(r'\b(?:public|open)\b')
 
@@ -136,8 +138,9 @@ RE_TYPE_DECL = re.compile(
     r'((?:final|open)\s+)?'
     r'(class|struct|enum|protocol|actor|extension)\s+'
     r'(\w+)'
+    r'(<[^>{]*>)?'
     r'((?:\s*:\s*[\w<>,\s&@]+)?)'  # @ supports @unchecked, @retroactive, etc.
-    r'(?:\s+where\s+[^{]+)?'
+    r'(?:\s+(where\s+[^{]+))?'
     r'\s*\{',
     re.MULTILINE
 )
@@ -149,6 +152,9 @@ class MemberInfo:
     name: str
     kind: str = ""  # "class", "struct", "enum", "protocol", "actor", "extension"
     access: str = "public"
+    generics: str = ""
+    where_clause: str = ""
+    availability_note: str = ""
     protocols: List[str] = field(default_factory=list)
     typealiases: List[str] = field(default_factory=list)
     constants: List[str] = field(default_factory=list)
@@ -186,7 +192,6 @@ def strip_comments(content: str) -> str:
     while i < n:
         # String literals
         if content[i] == '"':
-            quote = content[i]
             # Triple-quoted strings
             if i + 2 < n and content[i:i+3] == '"""':
                 result.append('"""')
@@ -203,21 +208,9 @@ def strip_comments(content: str) -> str:
                         result.append(content[i])
                         i += 1
             else:
-                result.append(quote)
-                i += 1
-                while i < n and content[i] != quote:
-                    if content[i] == '\\':
-                        result.append(content[i:i+2])
-                        i += 2
-                    elif content[i] == '\n':
-                        # Swift strings can't contain unescaped newlines
-                        break
-                    else:
-                        result.append(content[i])
-                        i += 1
-                if i < n and content[i] == quote:
-                    result.append(quote)
-                    i += 1
+                end = skip_string(content, i)
+                result.append(content[i:end])
+                i = end
         # Multi-line comments
         elif content[i:i+2] == '/*':
             i += 2
@@ -240,6 +233,25 @@ def strip_comments(content: str) -> str:
     return ''.join(result)
 
 
+def skip_string(text: str, start: int) -> int:
+    """Return the index just past the string literal that opens at `start`;
+    a raw string (`#"`) has no interpolation.
+    """
+    is_raw = start > 0 and text[start - 1] == '#'
+    i = start + 1
+    while i < len(text):
+        if not is_raw and text.startswith('\\(', i):
+            # Interpolation can contain quoted strings of its own.
+            i = balance(text, i + 1, '(', ')') + 1
+        elif text[i] == '\\':
+            i += 2
+        elif text[i] == '"':
+            return i + 1
+        else:
+            i += 1
+    return len(text)
+
+
 def balance(text: str, start: int, open_ch: str, close_ch: str) -> int:
     """Find the index of the delimiter matching the `open_ch` at `start`.
 
@@ -249,18 +261,17 @@ def balance(text: str, start: int, open_ch: str, close_ch: str) -> int:
     depth = 0
     i = start
     n = len(text)
-    in_string = False
 
     while i < n:
-        if text[i] == '"' and (i == 0 or text[i-1] != '\\'):
-            in_string = not in_string
-        elif not in_string:
-            if text[i] == open_ch:
-                depth += 1
-            elif text[i] == close_ch:
-                depth -= 1
-                if depth == 0:
-                    return i
+        if text[i] == '"':
+            i = skip_string(text, i)
+            continue
+        if text[i] == open_ch:
+            depth += 1
+        elif text[i] == close_ch:
+            depth -= 1
+            if depth == 0:
+                return i
         i += 1
 
     return n - 1
@@ -353,21 +364,15 @@ def split_top_level_declarations(body: str) -> List[str]:
     paren_depth = 0
     i = 0
     n = len(body)
-    in_string = False
 
     while i < n:
         ch = body[i]
 
         # Track string literals
-        if ch == '"' and (i == 0 or body[i-1] != '\\'):
-            in_string = not in_string
-            current.append(ch)
-            i += 1
-            continue
-
-        if in_string:
-            current.append(ch)
-            i += 1
+        if ch == '"':
+            end = skip_string(body, i)
+            current.append(body[i:end])
+            i = end
             continue
 
         # Track paren depth so multi-line signatures (parameters spread over
@@ -378,8 +383,9 @@ def split_top_level_declarations(body: str) -> List[str]:
             if paren_depth > 0:
                 paren_depth -= 1
 
-        # Track brace depth
-        if ch == '{':
+        # A brace inside parentheses (a closure argument or parameter default)
+        # belongs to the declaration.
+        if ch == '{' and paren_depth == 0:
             if depth == 0:
                 # This is start of a member body - find matching }
                 decl_text = ''.join(current).strip()
@@ -392,13 +398,12 @@ def split_top_level_declarations(body: str) -> List[str]:
                 continue
             else:
                 depth += 1
-        elif ch == '}':
+        elif ch == '}' and paren_depth == 0:
             depth -= 1
         elif ch == '\n' and depth == 0 and paren_depth == 0:
             # Check if this line ends a declaration
             line = ''.join(current).strip()
-            # Computed properties/getters have { get } on same line
-            if line and not line.endswith(',') and '{' not in line:
+            if line and not line.endswith(','):
                 # Check if next non-whitespace is not a continuation
                 j = i + 1
                 while j < n and body[j] in (' ', '\t', '\n'):
@@ -474,7 +479,7 @@ def extract_type_members(body: str, type_name: str,
                             else "  // deprecated")
             decl = decl[:mavail.start()] + decl[close + 1:]
 
-        # Remove attributes
+        # Remove leading declaration attributes, preserving type attributes.
         decl = RE_ATTRIBUTE.sub('', decl).strip()
         if not decl:
             # Pure-attribute chunk: keep the marker for the declaration it precedes.
@@ -549,6 +554,9 @@ def extract_type_members(body: str, type_name: str,
             sig += f"init{failable}{generics}({params})"
             if mods_after:
                 sig += " " + " ".join(mods_after)
+            where_match = re.search(r'\bwhere\s+.+$', trailer)
+            if where_match:
+                sig += " " + where_match.group(0)
             info.initializers.append(sig + dep_note)
             continue
 
@@ -649,25 +657,28 @@ def count_members(info: MemberInfo) -> int:
 
 def merge_extensions(types: List[MemberInfo]) -> List[MemberInfo]:
     """
-    Collapse multiple `extension <Type>` blocks on the same extended type into a
-    single section. Members are concatenated in stable (first-seen) order and
-    de-duplicated. Bare extensions that contribute no public members are dropped
-    so they do not emit an empty section. Non-extension types pass through
-    unchanged and keep their original relative order.
+    Merge extensions by bare name and whitespace-normalized `where` clause
+    within one bucket. Sections and members keep first-seen order, with members
+    de-duplicated. Extensions that contribute no public members are dropped so
+    they do not emit an empty section. Non-extension types pass through unchanged
+    and keep their original relative order.
     """
     result: List[MemberInfo] = []
-    ext_by_name: dict[str, MemberInfo] = {}
+    ext_by_key: dict[tuple[str, str], MemberInfo] = {}
 
     for info in types:
         if info.kind != "extension":
             result.append(info)
             continue
 
-        existing = ext_by_name.get(info.name)
+        where_clause = compact_whitespace(info.where_clause)
+        key = (info.name, where_clause)
+        existing = ext_by_key.get(key)
         if existing is None:
             # Placeholder kept in output order; emitted only if non-empty.
-            merged = MemberInfo(name=info.name, kind="extension", access=info.access)
-            ext_by_name[info.name] = merged
+            merged = MemberInfo(name=info.name, kind="extension", access=info.access,
+                                where_clause=where_clause)
+            ext_by_key[key] = merged
             result.append(merged)
             existing = merged
 
@@ -682,6 +693,36 @@ def merge_extensions(types: List[MemberInfo]) -> List[MemberInfo]:
     # Drop extensions that ended up with no public members.
     return [info for info in result
             if info.kind != "extension" or count_members(info) > 0]
+
+
+def type_availability_note(prefix: str) -> str:
+    """Describe type availability above the deployment floors in Package.swift.
+
+    Only the `@available` directly before the declaration is read.
+    """
+    attr = re.search(r'@available\s*\(([^)]*)\)\s*$', prefix)
+    if not attr:
+        return ""
+
+    def version_parts(version: str) -> tuple[int, ...]:
+        parts = [int(p) for p in version.replace('_', '.').split('.')]
+        while parts and parts[-1] == 0:
+            parts.pop()
+        return tuple(parts)
+
+    package = (REPO_ROOT / "Package.swift").read_text(encoding='utf-8')
+    floors = {platform: version_parts(version) for platform, version in
+              re.findall(r'\.(iOS|macOS)\(\.v([\d_]+)\)', package)}
+    restrictions = [f"{platform} {version}+" for platform, version in
+                    re.findall(r'\b(iOS|macOS)\s+([\d.]+)', attr.group(1))
+                    if version_parts(version) > floors[platform]]
+    return "  // " + ", ".join(restrictions) if restrictions else ""
+
+
+def parse_top_level_typealiases(filepath: Path) -> List[str]:
+    """Extract public file-scope aliases using the member signature rules."""
+    clean = strip_comments(filepath.read_text(encoding='utf-8', errors='replace'))
+    return extract_type_members(clean, "", "file", "internal").typealiases
 
 
 def parse_swift_file(filepath: Path) -> List[MemberInfo]:
@@ -709,7 +750,9 @@ def parse_swift_file(filepath: Path) -> List[MemberInfo]:
         modifier = (m.group(2) or "").strip()
         kind = m.group(3)
         type_name = m.group(4)
-        inheritance = (m.group(5) or "").strip()
+        generics = m.group(5) or ""
+        inheritance = (m.group(6) or "").strip()
+        where_clause = (m.group(7) or "").strip()
 
         # Re-enforce the public/open gate for non-extension types. Only an
         # `extension` may appear without a leading public/open modifier.
@@ -749,6 +792,9 @@ def parse_swift_file(filepath: Path) -> List[MemberInfo]:
         info.kind = kind
         info.access = ctx_access
         info.protocols = protocols
+        info.generics = generics
+        info.where_clause = compact_whitespace(where_clause)
+        info.availability_note = type_availability_note(clean[:m.start()])
 
         results.append(info)
 
@@ -763,12 +809,15 @@ def format_type_header(info: MemberInfo) -> str:
     # used only to gate its members).
     if info.kind != "extension" and info.access and info.access != "public":
         header += f"{info.access} "
-    header += f"{info.kind} {info.name}"
+    header += f"{info.kind} {info.name}{info.generics}"
 
     if info.protocols:
         header += f": {', '.join(info.protocols)}"
 
-    return header
+    if info.where_clause:
+        header += f" {info.where_clause}"
+
+    return header + info.availability_note
 
 
 def format_type_section(info: MemberInfo) -> str:
@@ -791,6 +840,7 @@ def main() -> None:
 
     # Collect all Swift files, grouped
     groups: dict[str, List[MemberInfo]] = {k: [] for k in GROUP_TITLES}
+    aliases: dict[str, List[str]] = {k: [] for k in GROUP_TITLES}
     stats = {"files": 0, "types": 0, "members": 0, "skipped_dirs": 0, "errors": 0}
 
     def _skip_dir(name: str) -> bool:
@@ -811,6 +861,7 @@ def main() -> None:
 
             try:
                 types = parse_swift_file(filepath)
+                aliases[group].extend(parse_top_level_typealiases(filepath))
                 if types:  # Only count files that had types
                     stats["files"] += 1
 
@@ -824,13 +875,14 @@ def main() -> None:
                 print(f"  ERROR parsing {rel_path}: {e}", file=sys.stderr)
                 stats["errors"] += 1
 
-    # Merge extension blocks per type within each group, then sort
-    # alphabetically. Merging is done after the full walk so extension blocks
-    # split across multiple files collapse into a single section. Stats are
+    # Merge extensions by bare name and normalized where clause within each
+    # bucket after the full walk, including blocks split across files. Sort by
+    # bare name, keeping same-name sections in first-seen order. Stats are
     # tallied from the merged result so they reflect what is emitted.
     for group_key in groups:
         groups[group_key] = merge_extensions(groups[group_key])
         groups[group_key].sort(key=lambda t: t.name)
+        aliases[group_key].sort()
 
     for group in groups.values():
         for typ in group:
@@ -856,7 +908,7 @@ def main() -> None:
     toc_lines = [
         f"- [{title}](#{github_slug(title)})\n"
         for group_key, title in GROUP_TITLES.items()
-        if groups[group_key]
+        if groups[group_key] or aliases[group_key]
     ]
     parts.append("**Contents:**\n\n")
     parts.extend(toc_lines)
@@ -864,12 +916,16 @@ def main() -> None:
 
     for group_key, title in GROUP_TITLES.items():
         type_list = groups[group_key]
-        if not type_list:
+        if not type_list and not aliases[group_key]:
             continue
 
         parts.append("---\n")
         parts.append(f"## {title}\n")
         parts.append("---\n\n")
+
+        if aliases[group_key]:
+            parts.append("### Typealiases\n")
+            parts.append("\n".join(aliases[group_key]) + "\n\n")
 
         for typ in type_list:
             parts.append(format_type_section(typ))
@@ -885,6 +941,7 @@ def main() -> None:
     print(f"Files processed: {stats['files']}", file=sys.stderr)
     print(f"Types extracted: {stats['types']}", file=sys.stderr)
     print(f"Total members: {stats['members']}", file=sys.stderr)
+    print(f"Top-level typealiases: {sum(len(items) for items in aliases.values())}", file=sys.stderr)
     print(f"Directories skipped: {stats['skipped_dirs']}", file=sys.stderr)
     print(f"Errors: {stats['errors']}", file=sys.stderr)
     print(f"Output written to: {OUTPUT_PATH}", file=sys.stderr)

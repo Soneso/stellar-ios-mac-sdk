@@ -201,7 +201,7 @@ Memos attach metadata to transactions:
 # No memo
 tx.memo.type: MEMO_NONE
 
-# Text memo (max 28 bytes UTF-8)
+# Text memo (max 28 bytes; UTF-8 is not required)
 tx.memo.type: MEMO_TEXT
 tx.memo.text: "Hello"
 

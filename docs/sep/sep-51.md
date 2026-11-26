@@ -304,7 +304,7 @@ Three points where the SDK follows the specification text and the `stellar-xdr` 
 
 ### Limitations
 
-**Non-UTF-8 strings.** The escape ladder is byte-wise and reversible for any byte, but the SDK stores every XDR `string<>` in a Swift `String`, which is always well-formed Unicode. An XDR string carrying invalid UTF-8 cannot be held by this SDK at any layer, so those documents cannot be round-tripped here. Opaque fields are `Data` and are byte-exact, so asset codes and hashes are unaffected.
+**Non-UTF-8 strings.** XDR strings stored as Swift `String` require valid UTF-8. The byte-backed fields are `MemoXDR.text`, `SCValXDR.string`, `InvokeContractArgsXDR.functionName`, `SCValXDR.executableTag`, and `ContractExecutableExternalRefXDR.tag`. They preserve non-UTF-8 bytes and write them as escapes. Opaque fields are `Data` and are byte-exact.
 
 **Zero-length signed payloads.** A `SignerKey` of type `ED25519_SIGNED_PAYLOAD` with an empty payload is valid XDR, but no `P…` strkey the ecosystem accepts encodes it. Converting the XDR value to XDR-JSON raises `XdrJsonError.unrepresentable`. On input, a `P…` strkey with an empty payload fails the strkey decode, so reading it raises `XdrJsonError.invalidValue` with the message `Ed25519SignedPayload: not a signed payload strkey: P…`. The reference implementation renders the value as `<INVALID:G…:EMPTY_PAYLOAD>`, with the signer's `G…` key in the middle, and refuses to encode that text back. Payloads of one byte and longer convert normally.
 

@@ -1,8 +1,8 @@
 # SEP-0023 (Strkeys) Compatibility Matrix
 
-**Generated:** 2026-11-16
+**Generated:** 2026-11-26
 
-**SDK Version:** 3.16.0
+**SDK Version:** 3.17.0
 
 **SEP Version:** 1.4.0
 

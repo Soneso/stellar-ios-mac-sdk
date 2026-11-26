@@ -157,7 +157,7 @@ Shared with the reference: a twelve-byte asset code string must unescape to five
 
 ## Limitations
 
-- **Non-UTF-8 strings.** Every XDR `string<>` is a Swift `String`, so a value carrying invalid UTF-8 cannot be held by the SDK at all. Opaque fields are `Data` and are byte-exact.
+- **Non-UTF-8 strings.** XDR strings stored as Swift `String` require valid UTF-8. The byte-backed fields are `MemoXDR.text`, `SCValXDR.string`, `InvokeContractArgsXDR.functionName`, `SCValXDR.executableTag`, and `ContractExecutableExternalRefXDR.tag`. They preserve non-UTF-8 bytes and write them as escapes. Opaque fields are `Data` and are byte-exact.
 - **Zero-length signed payloads.** A `SignerKey` of type `ED25519_SIGNED_PAYLOAD` with an empty payload raises `unrepresentable` on conversion to XDR-JSON: no `P…` strkey the ecosystem accepts encodes it. On input, a `P…` strkey with an empty payload fails the strkey decode and raises `invalidValue` (`Ed25519SignedPayload: not a signed payload strkey: P…`). The reference renders the value as `<INVALID:G…:EMPTY_PAYLOAD>` and refuses to encode that text back. One byte and longer convert normally.
 
 ## Divergences from the reference implementation

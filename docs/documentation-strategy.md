@@ -445,7 +445,8 @@ docs/
 │   ├── 3.10.0.md              # Migrating to 3.10.0
 │   ├── 3.12.0.md              # Migrating to 3.12.0
 │   ├── 3.13.0.md              # Migrating to 3.13.0
-│   └── 3.16.0.md              # Migrating to 3.16.0
+│   ├── 3.16.0.md              # Migrating to 3.16.0
+│   └── 3.17.0.md              # Migrating to 3.17.0
 └── documentation-strategy.md   # This file
 ```
 

@@ -1,8 +1,8 @@
 # SEP-0010 (Stellar Web Authentication) Compatibility Matrix
 
-**Generated:** 2026-11-16
+**Generated:** 2026-11-26
 
-**SDK Version:** 3.16.0
+**SDK Version:** 3.17.0
 
 **SEP Version:** 3.4.1
 
