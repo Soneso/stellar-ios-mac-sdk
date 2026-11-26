@@ -1,8 +1,8 @@
 # SEP-0046 (Contract Meta) Compatibility Matrix
 
-**Generated:** 2026-11-16
+**Generated:** 2026-11-26
 
-**SDK Version:** 3.16.0
+**SDK Version:** 3.17.0
 
 **SEP Version:** 1.0.0
 
@@ -55,16 +55,16 @@ A standard for the storage of metadata in contract Wasm files.
 
 | Field | Required | Status | SDK Property | Description |
 |-------|----------|--------|--------------|-------------|
-| `contractmetav0_section` | ✓ | ✅ | `parseMeta` | Support for storing metadata in "contractmetav0" Wasm custom sections |
-| `multiple_entries_single_section` | ✓ | ✅ | `parseMeta` | Support for multiple metadata entries in a single custom section |
-| `multiple_sections` | ✓ | ✅ | `parseMeta` | Support for multiple "contractmetav0" sections interpreted sequentially |
+| `contractmetav0_section` | ✓ | ✅ | `readCustomSections` | Support for storing metadata in "contractmetav0" Wasm custom sections |
+| `multiple_entries_single_section` | ✓ | ✅ | `decodeEntries` | Support for multiple metadata entries in a single custom section |
+| `multiple_sections` | ✓ | ✅ | `parseContractByteCode` | Support for multiple "contractmetav0" sections interpreted sequentially |
 
 ### Encoding Format
 
 | Field | Required | Status | SDK Property | Description |
 |-------|----------|--------|--------------|-------------|
-| `scmetaentry_xdr` | ✓ | ✅ | `parseMeta` | Use SCMetaEntry XDR type for structuring metadata |
-| `binary_stream_encoding` | ✓ | ✅ | `parseMeta` | Encode entries as a stream of binary values |
+| `scmetaentry_xdr` | ✓ | ✅ | `SCMetaEntryXDR` | Use SCMetaEntry XDR type for structuring metadata |
+| `binary_stream_encoding` | ✓ | ✅ | `decodeEntries` | Encode entries as a stream of binary values |
 | `key_value_pairs` | ✓ | ✅ | `metaEntries` | Store metadata as key-value string pairs |
 
 ### Implementation Support
@@ -72,8 +72,8 @@ A standard for the storage of metadata in contract Wasm files.
 | Field | Required | Status | SDK Property | Description |
 |-------|----------|--------|--------------|-------------|
 | `parse_contract_meta` | ✓ | ✅ | `parseContractByteCode` | Parse contract metadata from contract bytecode |
-| `extract_meta_entries` | ✓ | ✅ | `parseMeta` | Extract meta entries as key-value pairs from contract |
-| `decode_scmetaentry` | ✓ | ✅ | `parseMeta` | Decode SCMetaEntry XDR structures |
+| `extract_meta_entries` | ✓ | ✅ | `metaEntries` | Extract meta entries as key-value pairs from contract |
+| `decode_scmetaentry` | ✓ | ✅ | `decodeEntries` | Decode SCMetaEntry XDR structures |
 
 ## Implementation Gaps
 

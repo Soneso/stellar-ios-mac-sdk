@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.17.0] - 2026-11-26
+
+Migration guide: [docs/migration/3.17.0.md](docs/migration/3.17.0.md)
+
 ### Added
 - `FeeBumpTransaction(envelopeXdr:)` reads a fee bump envelope as a fee bump transaction. It keeps the decoded bytes and the outer signatures, so the hash and `encodedEnvelope()` match the input. A V0 or V1 envelope throws `StellarSDKError.invalidArgument`.
 - `Transaction(sourceAccount:operations:memoXDR:preconditions:maxOperationFee:sorobanTransactionData:)` and `Transaction.setMemo(memoXDR:)` write a `MemoXDR` as it is. A memo taken from `transactionXDR.memo` of another transaction keeps bytes that are not valid UTF-8. `Transaction.memo` and `Memo(memoXDR:)` give display text, with U+FFFD replacement characters for such bytes.
@@ -24,6 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Breaking: `InvokeContractArgsXDR.functionName` carries `Data`, the bytes of the name as the XDR holds them. Read the name with `functionNameString`, which gives nil for bytes that are not valid UTF-8. `InvokeContractArgsXDR(contractAddress:functionName:args:)` with a `String` name compiles unchanged and stores the UTF-8 bytes of the name.
 - Breaking: `TxRepHelper.formatAsset(_:)` throws, so callers add `try`. It fails with `TxRepError.invalidValue` for an asset code whose byte count is not the width of its type.
 - `SorobanClient.forClientOptions` opens Stellar Asset Contracts with the embedded spec.
+- The documentation and agent skill 1.13.0 cover the Stellar Asset Contract client and describe memo text, contract strings, and function names as the bytes the XDR holds. The skill's API reference lists the public API of 3.17.0.
 
 ### Fixed
 - A transaction read from a V0 envelope with `Transaction(envelopeXdr:)` writes a V0 envelope from `encodedEnvelope()`. An unchanged transaction gives the bytes of the input. It writes a V1 envelope while it holds Soroban data or a `PRECOND_V2` precondition. The hash, `transactionXDR` and the inner transaction of a fee bump keep the V1 form. Before this change, such a transaction was written as a V1 envelope.

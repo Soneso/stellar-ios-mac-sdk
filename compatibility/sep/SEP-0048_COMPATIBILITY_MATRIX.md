@@ -1,8 +1,8 @@
 # SEP-0048 (Contract Interface Specification) Compatibility Matrix
 
-**Generated:** 2026-11-16
+**Generated:** 2026-11-26
 
-**SDK Version:** 3.16.0
+**SDK Version:** 3.17.0
 
 **SEP Version:** 1.1.0
 
@@ -38,7 +38,7 @@ A standard for contracts to self-describe their exported interface.
 
 - **`SorobanContractParser`**: Parses Soroban contract bytecode to extract Environment Meta, Contract Spec, and Contract Meta from Wasm custom sections
 - **`SorobanContractInfo`**: Stores parsed contract information including envInterfaceVersion, specEntries, metaEntries, and categorized access via funcs, udtStructs, udtUnions, udtEnums, udtErrorEnums, events properties
-- **`SorobanContractParserError`**: Error enum for contract parsing failures (invalidByteCode, environmentMetaNotFound, specEntriesNotFound)
+- **`SorobanContractParserError`**: Error enum for contract parsing failures (invalidByteCode, environmentMetaNotFound, specEntriesNotFound, malformedModule, invalidSectionEntry)
 - **`ContractSpec`**: Utility class for working with contract specifications (funcs(), udtStructs(), udtUnions(), udtEnums(), udtErrorEnums(), events(), getFunc(), getEvent(), findEntry(), nativeToXdrSCVal())
 - **`ContractSpecError`**: Error enum for contract spec operations
 - **`SCSpecEntryXDR`**: XDR type for contract specification entries (functionV0, structV0, unionV0, enumV0, errorEnumV0, eventV0)
@@ -67,9 +67,9 @@ A standard for contracts to self-describe their exported interface.
 
 | Field | Required | Status | SDK Property | Description |
 |-------|----------|--------|--------------|-------------|
-| `contractspecv0_section` | ✓ | ✅ | `parseContractSpec` | Support for "contractspecv0" Wasm custom section for contract specifications |
-| `contractenvmetav0_section` | ✓ | ✅ | `parseEnvironmentMeta` | Support for "contractenvmetav0" Wasm custom section for environment metadata |
-| `contractmetav0_section` | ✓ | ✅ | `parseMeta` | Support for "contractmetav0" Wasm custom section for contract metadata |
+| `contractspecv0_section` | ✓ | ✅ | `readCustomSections` | Support for "contractspecv0" Wasm custom section for contract specifications |
+| `contractenvmetav0_section` | ✓ | ✅ | `readCustomSections` | Support for "contractenvmetav0" Wasm custom section for environment metadata |
+| `contractmetav0_section` | ✓ | ✅ | `readCustomSections` | Support for "contractmetav0" Wasm custom section for contract metadata |
 | `xdr_binary_encoding` | ✓ | ✅ | `XDRDecoder` | Parse XDR binary encoded specification entries |
 
 ### Entry Types
@@ -111,9 +111,9 @@ A standard for contracts to self-describe their exported interface.
 | Field | Required | Status | SDK Property | Description |
 |-------|----------|--------|--------------|-------------|
 | `parse_contract_bytecode` | ✓ | ✅ | `parseContractByteCode` | Parse contract specifications from Wasm bytecode |
-| `parse_environment_meta` | ✓ | ✅ | `parseEnvironmentMeta` | Parse environment metadata for interface version |
-| `parse_contract_meta` | ✓ | ✅ | `parseMeta` | Parse contract metadata key-value pairs |
-| `extract_spec_entries` | ✓ | ✅ | `parseContractSpec` | Extract and decode all specification entries from Wasm bytecode |
+| `parse_environment_meta` | ✓ | ✅ | `parseContractByteCode` | Parse environment metadata for interface version |
+| `parse_contract_meta` | ✓ | ✅ | `parseContractByteCode` | Parse contract metadata key-value pairs |
+| `extract_spec_entries` | ✓ | ✅ | `decodeEntries` | Extract and decode all specification entries from Wasm bytecode |
 
 ### XDR Support
 
