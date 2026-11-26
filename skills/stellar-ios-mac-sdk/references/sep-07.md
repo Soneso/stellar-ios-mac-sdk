@@ -519,21 +519,21 @@ let uri = uriScheme.getSignTransactionURI(
 )
 ```
 
-**SDK bug: `signAndSubmitTransaction` ignores the `network` parameter and always signs for testnet:**
+**Signing and submission use the given network:**
 
-Inspecting the SDK source (`URIScheme.swift` line 273), `signAndSubmitTransaction` always calls `transaction.sign(keyPair: keyPair, network: Network.testnet)` regardless of the `network` parameter passed in. This means the method only works correctly for testnet transactions. For production use, prefer extracting the XDR from the URI and signing + submitting manually:
+`signAndSubmitTransaction` signs for the given network. Without a callback, it submits to that network's Horizon for public, testnet, or futurenet. A custom network requires a `url:` callback.
 
 ```swift
-// NOTE: signAndSubmitTransaction always signs with Network.testnet internally
-// For mainnet use, sign and submit manually instead:
+import stellarsdk
+
 let uriScheme = URIScheme()
-if let encodedXdr = uriScheme.getValue(forParam: .xdr, fromURL: uri),
-   let decodedXdr = encodedXdr.removingPercentEncoding {
-    var txXDR = try Transaction(envelopeXdr: decodedXdr).transactionXDR
-    try txXDR.sign(keyPair: signerKeyPair, network: .public)  // correct network
-    let sdk = StellarSDK.publicNet()
-    let response = await sdk.transactions.submitTransaction(transaction: try Transaction(envelopeXdr: txXDR.encodedEnvelope()))
-}
+let txXDR = transaction.transactionXDR
+let uri = uriScheme.getSignTransactionURI(transactionXDR: txXDR)
+let result = await uriScheme.signAndSubmitTransaction(
+    forURL: uri,
+    signerKeyPair: signerKeyPair,
+    network: .public
+)
 ```
 
 **`originDomain` must be a valid FQDN for `checkURISchemeIsValid` to pass:**

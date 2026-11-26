@@ -1331,7 +1331,8 @@ if let map = result.map {
 | `timepoint`, `duration` | `UInt64` |
 | `u128`, `i128`, `u256`, `i256` | decimal `String` |
 | `bytes` | `Data` |
-| `string`, `symbol` | `String` |
+| `string` | `String` for valid UTF-8; otherwise the original `SCValXDR` |
+| `symbol` | `String` |
 | `address` | strkey `String` (`G`, `M`, `C`, `B`, `L` or `W`) via `SCAddressXDR.toStrKey()` |
 | `vec` | `[Any?]`, element order preserved |
 | `map` | `[AnyHashable: Any?]` |
@@ -1339,9 +1340,9 @@ if let map = result.map {
 
 Integers keep their exact width, so a `u64` above `Int.max` survives the conversion. The 128 and 256 bit arms come as decimal strings; cast them to `String`, not to a number. Addresses come as the strkey that Soroban tooling speaks, and the raw `SCAddressXDR` stays reachable through the `address` accessor.
 
-Where no native representation exists, the conversion hands the value back unchanged, and `is SCValXDR` tells you that happened. Beyond the five arms at the bottom of the table, that covers an address whose bytes have no strkey encoding, and a map that no Swift dictionary holds.
+Where no native representation exists, the conversion hands the value back unchanged, and `is SCValXDR` tells you that happened. This includes the five fallback arms, strings with invalid UTF-8, addresses without a strkey encoding, and maps without a dictionary representation.
 
-**Map keys.** A map converts as a whole or not at all. Keys take the same conversion as values wherever Swift's `Hashable` allows it: symbols and strings become `String`, the fixed width integers keep their width, 128 and 256 bit keys become decimal strings, byte keys stay `Data`, and address keys become their strkey. A `void`, `vec` or `map` key has no dictionary counterpart, and neither has a key of one of the five fallback arms. Such a key leaves the whole map as the `SCValXDR` itself.
+**Map keys.** A map converts as a whole or not at all. Keys take the same conversion as values wherever Swift's `Hashable` allows it. Symbols and valid UTF-8 strings become `String`. The fixed width integers keep their width, and 128 and 256 bit keys become decimal strings. Byte keys stay `Data`, and address keys become their strkey. A `void`, `vec` or `map` key has no dictionary counterpart, and neither has a key of one of the five fallback arms. A string key with invalid UTF-8 also has no dictionary counterpart. Such a key leaves the whole map as the `SCValXDR` itself.
 
 The second thing that leaves a map unconverted is a pair of keys that turn out equal. Dictionary keys compare as `AnyHashable`, which reads the fixed width integers as one number: a `u32` key `5` and a `u64` key `5` are the same key, so a map carrying both falls back. The same holds for a 128 or 256 bit key and a `symbol` of the same digits, since the wide integer key is its decimal string. `Bool` takes no part in the numeric reading, so a `bool` key `true` and a `u32` key `1` are two keys and the map converts.
 

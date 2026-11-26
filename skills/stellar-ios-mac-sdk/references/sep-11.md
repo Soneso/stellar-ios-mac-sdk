@@ -197,7 +197,7 @@ All five Stellar memo types are supported:
 | Memo type | TxRep key | Value |
 |-----------|-----------|-------|
 | `MEMO_NONE` | `tx.memo.type` | `MEMO_NONE` (no additional key) |
-| `MEMO_TEXT` | `tx.memo.text` | JSON-encoded string (quoted) |
+| `MEMO_TEXT` | `tx.memo.text` | Quoted string with byte escapes |
 | `MEMO_ID` | `tx.memo.id` | Unsigned integer |
 | `MEMO_HASH` | `tx.memo.hash` | Hex-encoded 32-byte hash |
 | `MEMO_RETURN` | `tx.memo.retHash` | Hex-encoded 32-byte hash |
@@ -515,7 +515,10 @@ let txRep = try TxRep.toTxRep(transactionEnvelope: tx.encodedEnvelope())
 let rebuiltTx = try TxRep.fromTxRep(txRep: txRep)  // amounts restored correctly
 ```
 
-**Memo text in TxRep is JSON-encoded (quoted):**
+**Memo text in TxRep is quoted and uses byte escapes:**
+
+Backslashes and double quotes use `\\` and `\"`. Newlines, carriage returns, and tabs use `\n`, `\r`, and `\t`. Other bytes outside printable ASCII (`0x20` to `0x7e`) use `\xNN`, with two lowercase hexadecimal digits. Other printable ASCII bytes appear unchanged.
+
 ```
 // In TxRep output:
 tx.memo.text: "Hello, World!"

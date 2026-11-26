@@ -302,20 +302,21 @@ public func toStrKey() throws -> String // SCAddressXDR: the "G"/"M"/"C"/"B"/"L"
 | `.timepoint` / `.duration` | `UInt64` |
 | `.u128` / `.i128` / `.u256` / `.i256` | decimal `String` |
 | `.bytes` | `Data` |
-| `.string` / `.symbol` | `String` |
+| `.string` | `String` for valid UTF-8; otherwise the original `SCValXDR` |
+| `.symbol` | `String` |
 | `.address` | strkey `String` via `SCAddressXDR.toStrKey()` |
 | `.vec` | `[Any?]`, element order preserved; a nil array gives `[]` |
 | `.map` | `[AnyHashable: Any?]`, or the `SCValXDR` itself; a nil array gives `[:]` |
 | `.error`, `.contractInstance`, `.ledgerKeyContractInstance`, `.ledgerKeyNonce`, `.executableTag` | the `SCValXDR` itself |
 
-An address whose bytes have no strkey encoding also comes back as the `SCValXDR` itself.
+A string with invalid UTF-8 or an address whose bytes have no strkey encoding comes back as the original `SCValXDR`.
 
 **Map key rules.** A map converts as a whole or not at all, and falls back to the `SCValXDR` itself when either
 
-1. a key has no `Hashable` counterpart -- a `.void`, `.vec` or `.map` key, a key of one of the five arms above, or an address key with no strkey; or
+1. a key has no `Hashable` counterpart: `.void`, `.vec`, `.map`, a fallback arm, a string with invalid UTF-8, or an address without a strkey; or
 2. two keys turn out equal as `AnyHashable`.
 
-Keys otherwise take the value conversion: `.symbol`/`.string` become `String`, the fixed width integers keep their width, `.u128`/`.i128`/`.u256`/`.i256` become decimal `String`, `.bytes` stays `Data`, `.address` becomes its strkey.
+Keys otherwise take the value conversion: symbols and valid UTF-8 strings become `String`. The fixed width integers keep their width, and 128 and 256 bit keys become decimal strings. Byte keys stay `Data`, and address keys become their strkey.
 
 `AnyHashable` reads the fixed width integers as one number, which decides what collides:
 
