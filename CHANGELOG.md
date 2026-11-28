@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- A security policy (`SECURITY.md`): vulnerabilities are reported through GitHub's private vulnerability reporting, and only the latest stable release receives security fixes.
+
 ## [3.17.0] - 2026-11-26
 
 Migration guide: [docs/migration/3.17.0.md](docs/migration/3.17.0.md)
