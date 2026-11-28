@@ -34,7 +34,7 @@ The user documentation under `docs/` and the skill under `skills/` describe the 
 - The conventions in `AGENTS.md`: typed API, `Sendable` types, documentation comments on public declarations, the error and response conventions of the API you extend.
 - The CHANGELOG entry; no hand edits to generated files; no change to the user documentation or the skill.
 
-CI runs the unit suite with coverage on a macOS runner; the Codecov project status must pass.
+CI runs the unit suite on macOS runners with Xcode 16.0, 26.6, and 27.2, with coverage only on Xcode 27.2; the Codecov project status must pass.
 
 ## Questions
 
