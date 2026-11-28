@@ -10,6 +10,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - A security policy (`SECURITY.md`): vulnerabilities are reported through GitHub's private vulnerability reporting, and only the latest stable release receives security fixes.
 
+### Changed
+- Unit tests run in CI on Xcode 16.0, 26.6, and 27.2.
+
 ## [3.17.0] - 2026-11-26
 
 Migration guide: [docs/migration/3.17.0.md](docs/migration/3.17.0.md)

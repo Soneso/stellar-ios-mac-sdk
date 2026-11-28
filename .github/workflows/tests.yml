@@ -10,7 +10,19 @@ permissions:
 
 jobs:
   unit-tests:
-    runs-on: macos-15
+    name: Unit Tests (Xcode ${{ matrix.xcode }})
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: macos-15
+            xcode: '16.0'
+          - runner: macos-26
+            xcode: '26.6'
+          - runner: xcode-27
+            xcode: '27.2'
+            coverage: true
     permissions:
       contents: read
       id-token: write
@@ -18,11 +30,24 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
+      - name: Select Xcode
+        run: |
+          sudo xcode-select -s "/Applications/Xcode_${{ matrix.xcode }}.app"
+          xcodebuild -version
+          swift --version
+
       - name: Run unit tests with coverage
+        if: matrix.coverage
         run: |
           swift test --filter stellarsdkUnitTests --enable-code-coverage
 
+      - name: Run unit tests
+        if: ${{ !matrix.coverage }}
+        run: |
+          swift test --filter stellarsdkUnitTests
+
       - name: Export coverage
+        if: matrix.coverage
         run: |
           mkdir -p coverage
           BIN_PATH=$(swift build --show-bin-path)
@@ -39,6 +64,7 @@ jobs:
             -format=lcov > coverage/lcov.info
 
       - name: Upload coverage to Codecov
+        if: matrix.coverage
         uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
         with:
           use_oidc: true
